@@ -1,0 +1,26 @@
+# 1 "macro.f90"
+
+
+
+
+
+
+
+
+
+
+
+MODULE PROCEDURE SetNeumannBoundary
+
+	IF( PRESENT( MeshObj ) ) THEN
+		Obj % NeumannBoundary => MeshObj
+		Obj % isNeumannBoundary = .TRUE.
+	ELSE IF( PRESENT( Tag ) ) THEN
+		ALLOCATE( Obj % NeumannBoundary )
+		CALL Obj % NeumannBoundary % Initiate( FacetElement( ) )
+		CALL Obj % mshFile % getElements( Obj % NeumannBoundary, Tag )
+		CALL ConnectFacetToCell( Obj % Omega, Obj % NeumannBoundary )
+		Obj % isNeumannBoundary = .TRUE.
+	END IF
+
+END PROCEDURE SetNeumannBoundary

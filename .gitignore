@@ -1,0 +1,25 @@
+# ignore following extesions
+# added by vikas
+# 2-Dec-2018
+*.a
+*.mod
+*.smod
+*.o
+*.out
+*.i90
+*.if90
+*.DS_Store
+*.prj
+*.drawio
+vscode-settings
+include/
+lib/
+opt/
+bin/
+# pkgs/
+# old-classes/
+# examples/
+# docs/
+# easifem.wiki/
+# pages/
+# doc/

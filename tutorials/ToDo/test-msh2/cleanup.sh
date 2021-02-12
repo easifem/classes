@@ -1,0 +1,1 @@
+rm *_Physical* *Format* *Names*

@@ -1,0 +1,165 @@
+MODULE GenericList_Class
+  USE GlobalData
+  IMPLICIT NONE
+  
+  INTEGER( I4B ), ALLOCATABLE :: GenericListData( : )
+
+  PRIVATE
+  PUBLIC :: GenericList_, GenericListData, GenericList_Initiate, &
+      & GenericList_DeallocateData, GenericList_SetNode, &
+      & GenericList_GetNode, GenericList_NextNode, GenericList_InsertNode
+
+
+  !---------------------------------------------------------------------------
+  !                                                          GenericList_
+  !---------------------------------------------------------------------------
+  
+  TYPE :: GenericList_
+    PRIVATE
+    INTEGER, POINTER :: DATA( : ) => NULL( )
+    TYPE( GenericList_ ), POINTER :: Next => NULL( )
+
+    ! CONTAINS
+    ! PROCEDURE, PUBLIC, PASS( Obj ) :: GenericList_Initiate, &
+    !   & GenericList_DeallocateData, GenericList_SetNode, &
+    !   & GenericList_GetNode, GenericList_NextNode, GenericList_InsertNode
+
+  END TYPE GenericList_
+  
+  !---------------------------------------------------------------------------
+  !                                                                  Contains
+  !---------------------------------------------------------------------------
+
+  CONTAINS
+
+  !---------------------------------------------------------------------------
+  !                                                      GenericList_Initiate
+  !---------------------------------------------------------------------------
+
+  SUBROUTINE GenericList_Initiate( Obj, Data )
+
+    ! Define intent of dummy variables
+    TYPE( GenericList_ ), INTENT( INOUT ), POINTER :: Obj
+    INTEGER( I4B ), INTENT( IN ), OPTIONAL :: Data( : )
+
+    ALLOCATE( Obj )
+    NULLIFY( Obj % Next )
+
+    IF( PRESENT( Data ) ) THEN
+
+      ALLOCATE( Obj % Data( SIZE( Data ) ) )
+      Obj % Data = Data
+
+    ELSE
+
+      NULLIFY( Obj % DATA )
+
+    END IF
+
+  END SUBROUTINE GenericList_Initiate
+
+  !---------------------------------------------------------------------------
+  !                                                GenericList_DeallocateData
+  !---------------------------------------------------------------------------
+
+  SUBROUTINE GenericList_DeallocateData( Obj )
+
+    ! Define intent of dummy variables
+    TYPE( GenericList_ ), INTENT( INOUT ), POINTER :: Obj
+
+    ! Define internal variables
+    TYPE( GenericList_ ), POINTER :: Current, Next
+
+
+    Current => Obj
+
+    DO WHILE( ASSOCIATED( Current ) )
+      Next => Current % Next
+      IF( ASSOCIATED( Current % Data ) ) THEN
+        DEALLOCATE( Current % Data )
+        NULLIFY( Obj % Data )
+      END IF
+
+      DEALLOCATE( Current )
+      NULLIFY( Current )
+      Current => Next
+    END DO
+
+  END SUBROUTINE GenericList_DeallocateData
+
+  !---------------------------------------------------------------------------
+  !                                                     GenericList_SetNode
+  !---------------------------------------------------------------------------
+
+  SUBROUTINE GenericList_SetNode( Obj, Data )
+
+    ! Define intent of dummy variables
+    TYPE( GenericList_ ), INTENT( INOUT ), POINTER :: Obj
+    INTEGER( I4B ), INTENT( IN ) :: Data( : )
+
+
+    IF( ASSOCIATED( Obj % Data ) ) THEN
+      DEALLOCATE( Obj % Data )
+      NULLIFY( Obj % Data )
+    END IF
+
+    ALLOCATE( Obj % Data( SIZE( Data ) ) )
+    Obj % Data = Data
+
+  END SUBROUTINE GenericList_SetNode
+
+  !---------------------------------------------------------------------------
+  !                                                       GenericList_GetNode
+  !---------------------------------------------------------------------------
+
+  FUNCTION GenericList_GetNode( Obj ) RESULT( Data )
+
+    ! Define intent of dummy variables
+    TYPE( GenericList_ ), INTENT( INOUT ), POINTER :: Obj
+    INTEGER( I4B ), POINTER :: Data( : )
+
+    Data => Obj % Data
+
+  END FUNCTION GenericList_GetNode
+
+  !---------------------------------------------------------------------------
+  !                                                      GenericList_NextNode
+  !---------------------------------------------------------------------------
+
+  FUNCTION GenericList_NextNode( Obj ) RESULT( Next )
+
+    ! Define intent of dummy variables
+    TYPE( GenericList_ ), INTENT( INOUT ), POINTER :: Obj
+    TYPE( GenericList_ ), POINTER :: Next
+    Next => Obj % Next
+  END FUNCTION GenericList_NextNode
+
+
+  !---------------------------------------------------------------------------
+  !                                                    GenericList_InsertNode
+  !---------------------------------------------------------------------------
+
+  SUBROUTINE GenericList_InsertNode( Obj, Data )
+
+    ! Define intent of dummy variables
+    TYPE( GenericList_ ), INTENT( INOUT ), POINTER :: Obj
+    INTEGER( I4B ), INTENT( IN ), OPTIONAL :: Data( : )
+
+    ! Define internal variables
+    TYPE( GenericList_ ), POINTER :: Next
+
+    ALLOCATE( Next )
+
+    IF( PRESENT( Data ) ) THEN
+      ALLOCATE( Next % Data( SIZE( Data ) ) )
+      Next % Data = Data
+    ELSE
+      NULLIFY( Next % Data )
+    END IF
+
+    Next % Next => Obj % Next
+    Obj % Next => Next
+
+  END SUBROUTINE GenericList_InsertNode
+
+END MODULE GenericList_Class
