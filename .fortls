@@ -1,0 +1,15 @@
+{
+  "source_dirs": [
+    "src",
+    "tests"
+    ],
+  "excl_suffixes": ["_skip.f90"],
+  "pp_suffixes": [".f90", ".inc", ".part"],
+  "pp_defs": {},
+  "include_dirs": [
+    "/Users/vikassharma/.easifem/vscode/include/"
+    ],
+  "ext_source_dirs": [],
+  "lowercase_intrinsics": false,
+  "debug_log": false
+}
