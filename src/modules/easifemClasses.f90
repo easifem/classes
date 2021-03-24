@@ -15,7 +15,7 @@ MODULE easifemClasses
   USE ThermCondModel_Class
   USE VolHeatCapModel_Class
   USE SFCCModel_Class
-  
+
   USE mod_functional
   USE ogpf
 
