@@ -11,11 +11,20 @@
 *.DS_Store
 *.prj
 *.drawio
+*.log
 vscode-settings
+docs/
+media/
 include/
 lib/
 opt/
 bin/
+easifem/
+*/build/
+build/
+src/build/
+src/modules/build/
+src/submodules/build/
 # pkgs/
 # old-classes/
 # examples/
