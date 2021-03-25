@@ -1,9 +1,26 @@
-!>
-! `Mesh_Class` module contains three data user defined data types related to
-!  finite element meshes: [[Mesh_]], [[MeshData_]], and [[MeshConnectivity_]].
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+!
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 March 2021
+! summary: 	 `Mesh_Class` module contains three data user defined data types related to finite element meshes: [[Mesh_]], [[MeshData_]], and [[MeshConnectivity_]].
 
 MODULE Mesh_Class
-  !! This module contains `Mesh_` `MeshData_` and `MeshConnectivity_`
 USE BaseType
 USE GlobalData
 USE FE
@@ -16,27 +33,21 @@ REAL( DFP ), PARAMETER :: default_factor = 1.5_DFP
 !                                                                      Mesh_
 !----------------------------------------------------------------------------
 
-!> author: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: Data type for mesh
 !
-! In **EASIFEM** `Mesh_` datatype is simply a collection of finite elements.
-! To avoid working with linked list I have encapsulated a vector of
-! `ElementPointer_`. This way, adding or removing of an element
-! to existing mesh becomes simple.
-!
-! @warning
-!   Dont use `Obj % SetTotalElements()` method in external programs
-! @endwarning
+!{!pages/Mesh.md}
 
 TYPE :: Mesh_
   TYPE( ElementPointer_ ), ALLOCATABLE :: Elem( : )
     !! Collection of finite elements
-  INTEGER( I4B ) :: NSD
+  INTEGER( I4B ) :: NSD = 0
     !! spatial dimension
-  INTEGER( I4B ) :: tElements
+  INTEGER( I4B ) :: tElements = 0
     !! total elements in mesh
-  INTEGER( I4B ) :: maxElements
+  INTEGER( I4B ) :: maxElements = 0
     !! maximum size of the wrapper
-
   CONTAINS
     PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => Deallocate_Data
       !! Deallocate data
@@ -69,11 +80,7 @@ END TYPE Mesh_
 !----------------------------------------------------------------------------
 
 PUBLIC :: Mesh_
-
-TYPE( Mesh_ ), PARAMETER, PUBLIC :: TypeMesh = Mesh_( &
-  & Elem = NULL( ), &
-  & NSD = 0, tElements = 0, &
-  & maxElements = 0 )
+TYPE( Mesh_ ), PARAMETER, PUBLIC :: TypeMesh = Mesh_( Elem = NULL() )
 
 !----------------------------------------------------------------------------
 !
@@ -92,19 +99,21 @@ PUBLIC :: MeshPointer_
 !                                                       Initiate@MeshMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-!!  Allocate the size of the mesh
-
-!> authos: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: Allocate the size of the mesh
 !
-!  Allocate the size of the mesh. Generic name ---> Initiate()
+!### Introduction
+!
+! Allocate the size of the mesh. Generic name ---> Initiate()
 !
 !### Usage
 !
-! ```fortran
-!call obj % initiate( NSD = 2, tELements = 10 )
-! ```end fortran
+!```fortran
+! call obj % initiate( NSD = 2, tELements = 10 )
+!```end fortran
 
+INTERFACE
 MODULE PURE SUBROUTINE allocateMeshSize( Obj, NSD, tElements, factor )
   !! allocate the size of the mesh
   CLASS( Mesh_ ), INTENT( INOUT) :: Obj
@@ -130,19 +139,21 @@ PUBLIC :: Initiate
 !                                                           Mesh@MeshMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-!!  Function for constructing [[Mesh_]]
-
-!> authos: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: 	  Function for constructing [[Mesh_]]
+!
+!### Introduction
 !
 !  Function for constructing [[Mesh_]]
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !obj = Mesh( NSD = 2, tELements = 10 )
-! ```end fortran
+!```end fortran
 
+INTERFACE
 MODULE PURE FUNCTION Constructor1( NSD, tElements, factor ) RESULT( Ans )
   TYPE( Mesh_ ) :: Ans
     !! Mesh object
@@ -166,8 +177,29 @@ PUBLIC :: Mesh
 !                                                   Mesh_Pointer@MeshMethods
 !----------------------------------------------------------------------------
 
-!>
-! Generic function for constructing pointer to [[mesh_]]
+!> authos: Dr Vikas Sharma
+!
+!  Function for constructing pointer to [[Mesh_]]
+!
+!### Usage
+!
+!```fortran
+! class( mesh_ ), pointer :: obj
+! obj => mesh_pointer( NSD = 2, tELements = 10 )
+!```end fortran
+
+INTERFACE
+MODULE FUNCTION Constructor_1( NSD, tElements, factor ) RESULT( Ans )
+  CLASS( Mesh_ ), POINTER :: Ans
+  INTEGER( I4B ), INTENT( IN ) :: tElements, NSD
+  REAL( DFP ), INTENT( IN ), OPTIONAL :: factor
+END FUNCTION Constructor_1
+END INTERFACE
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: Generic function for constructing pointer to [[mesh_]]
+
 INTERFACE Mesh_Pointer
   MODULE PROCEDURE Constructor_1
 END INTERFACE Mesh_Pointer
@@ -178,22 +210,23 @@ PUBLIC :: Mesh_Pointer
 !                                                 DeallocateData@MeshMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-!!  Deallocate data stored in [[mesh_]]
-
-!> authos: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: Deallocate data stored in [[mesh_]]
 !
-!  Deallocate data stored in [[mesh_]]
+!### Introduction
+!
+! Deallocate data stored in [[mesh_]]
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !call deallocateData( Obj = Obj )
-! ```end fortran
+!```end fortran
 
+INTERFACE
 MODULE SUBROUTINE Deallocate_Data( Obj )
   CLASS( Mesh_ ), INTENT( INOUT) :: Obj
-    !! mesh object
 END SUBROUTINE Deallocate_Data
 END INTERFACE
 
@@ -209,25 +242,28 @@ PUBLIC :: DeallocateData
 !                                                         SetSize@MeshMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-!! Set total elements in mesh object
-
-!> authos: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: Set total elements in mesh object
+!
+!### Introduction
 !
 !  Set total elements in mesh object
 !
-! @note
+!@note
 ! this routine runs through the element array and counts element pointers
 ! that are associated, and return the total number of associated elements.
 ! Therefore, it should be called only after appending/removing an element
 ! from the mesh.
-! @endnote
+!@endnote
 !
 !### Usage
-! ```fortran
+!
+!```fortran
 !call obj % SetSize( )
-! ```end fortran
+!```end fortran
 
+INTERFACE
 MODULE PURE SUBROUTINE set_total_elements( Obj )
   CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
     !! mesh object
@@ -238,18 +274,21 @@ END INTERFACE
 !                                                 AppendElement@MeshMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-!! Add an element to mesh
-
-!> authos: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: Add an element to mesh
 !
-!  Append an element, increate total elements in mesh by one
+!### Introduction
+!
+!  Append an element, and increase the total elements in mesh by one
 !
 !### Usage
-! ```fortran
+!```fortran
 ! call obj % append( Elem )
-! ```
+!```
 
+
+INTERFACE
 MODULE SUBROUTINE add_element( Obj, Elem )
   CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
     !! mesh obj
@@ -262,19 +301,21 @@ END INTERFACE
 !                                                     SetElement@MeshMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-!! Set an element to a mesh
-
-!> authos: Dr Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 	25 March 2021
+! summary: 	 Set an element to a mesh
+!
+!### Introduction
 !
 ! Seting element; total number of elements remain same
 ! Size of mesh should be sufficient while using this.
 !
 !### Usage
-! ```fortran
+!```fortran
 ! call obj % setElement( Elem )
-! ```
+!```
 
+INTERFACE
 MODULE PURE SUBROUTINE Set_element( Obj, Elem, iel )
   CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
     !! Mesh object
@@ -301,10 +342,10 @@ INTERFACE
 ! @endwarning
 !
 !### Usage
-! ```fortran
+!```fortran
 ! class( element_ ), pointer :: elem
 ! elem => obj % ElementPointer( iel )
-! ```
+!```
 
 MODULE FUNCTION getElement_Pointer( Obj, iel ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: Obj
@@ -335,9 +376,9 @@ INTERFACE
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 ! call obj % removeElement( iel = iel, extraoption = 2 )
-! ```
+!```
 
 MODULE SUBROUTINE remove_element( Obj, iel, extraoption )
   CLASS( Mesh_ ), INTENT( INOUT) :: Obj
@@ -361,9 +402,9 @@ INTERFACE
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !	telem = Obj % SIZE( Obj )
-! ```
+!```
 
 MODULE PURE FUNCTION total_elements( Obj ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: Obj
@@ -385,9 +426,9 @@ INTERFACE
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !	call display( obj, 'mesh', stdout )
-! ```
+!```
 
 MODULE SUBROUTINE display_mesh( Obj, Msg, UnitNo )
   CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
@@ -420,9 +461,9 @@ INTERFACE
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !	call obj % getNptrs( Nptrs )
-! ```
+!```
 
 MODULE PURE SUBROUTINE get_nptrs( Obj, Nptrs )
   CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
@@ -445,9 +486,9 @@ INTERFACE
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !	call getNptrs( Obj, Nptrs )
-! ```
+!```
 
 MODULE PURE SUBROUTINE mesh_pointer_get_nptrs( Obj, Nptrs )
   TYPE( MeshPointer_ ), INTENT( INOUT ) :: Obj( : )
@@ -484,9 +525,9 @@ INTERFACE
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !	call Obj % setMaterialType( MatType = 1 )
-! ```
+!```
 
 MODULE PURE SUBROUTINE setMaterialType_1(  Obj, MatType )
   CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
@@ -494,36 +535,5 @@ MODULE PURE SUBROUTINE setMaterialType_1(  Obj, MatType )
   INTEGER( I4B ), INTENT( IN ) :: MatType
 END SUBROUTINE setMaterialType_1
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 Contains
-!----------------------------------------------------------------------------
-
-CONTAINS
-
-!> authos: Dr Vikas Sharma
-!
-!  Function for constructing pointer to [[Mesh_]]
-!
-!### Usage
-!
-! ```fortran
-! class( mesh_ ), pointer :: obj
-! obj => mesh_pointer( NSD = 2, tELements = 10 )
-! ```end fortran
-
-FUNCTION Constructor_1( NSD, tElements, factor ) RESULT( Ans )
-  CLASS( Mesh_ ), POINTER :: Ans
-  INTEGER( I4B ), INTENT( IN ) :: tElements, NSD
-  REAL( DFP ), INTENT( IN ), OPTIONAL :: factor
-
-  ALLOCATE( Ans )
-  IF( PRESENT( factor ) ) THEN
-    CALL Ans % Initiate( NSD = NSD, tElements = tElements, factor = factor )
-  ELSE
-    CALL Ans % Initiate( NSD = NSD, tElements = tElements )
-  END IF
-
-END FUNCTION Constructor_1
 
 END MODULE Mesh_Class

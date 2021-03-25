@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
-set(PROJECT_NAME "easifemBase")
+set(PROJECT_NAME "easifemClasses")
 project(${PROJECT_NAME})
 enable_language(C)
 enable_language(Fortran)
@@ -15,8 +15,8 @@ set(VERSION_MAJOR "1")
 set(VERSION_MINOR "1")
 set(VERSION_BugFix "0")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
-set(CMAKE_PROJECT_DESCRIPTION "easifem base")
-set(CMAKE_PROJECT_HOMEPAGE_URL "https://github.com/")
+set(CMAKE_PROJECT_DESCRIPTION "easifem classes")
+set(CMAKE_PROJECT_HOMEPAGE_URL "https://github.com/vickysharma0812")
 set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
 set(namespace "${PROJECT_NAME}")
 
@@ -35,8 +35,20 @@ endif()
 # install openblas
 # list(APPEND CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/cmake")
 if(NOT CMAKE_PREFIX_PATH)
-  set(CMAKE_PREFIX_PATH "$ENV{EASIFEM_EXTPKGS}")
+  list(APPEND CMAKE_PREFIX_PATH "$ENV{EASIFEM_EXTPKGS}")
+  list(APPEND CMAKE_PREFIX_PATH "$ENV{EASIFEM_BASE}")
 endif()
+
+find_package( easifemBase REQUIRED )
+if( easifemBase_FOUND )
+  message(STATUS "easifemBase found")
+  get_target_property(
+    easifemBase_INCLUDEDIR
+    easifemBase::easifemBase
+    INTERFACE_INCLUDE_DIRECTORIES)
+endif()
+
+
 set(BLA_VENDOR "OpenBLAS")
 find_package( LAPACK REQUIRED )
 if( LAPACK_FOUND )
@@ -117,7 +129,6 @@ foreach(p LIB BIN INCLUDE CMAKE)
   message(STATUS "Installing ${p} componenets to ${_path}")
 endforeach()
 
-
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 if (BUILD_SHARED_LIBS)
   message(STATUS "${PROJECT_NAME} will be built as a shared library.")
@@ -162,6 +173,7 @@ target_link_libraries(
   ${LAPACK_LIBRARIES}
   ${BLAS_LIBRARIES}
   "$<$<BOOL:${OpenMP_FOUND}>:${OpenMP_Fortran_LIBRARIES}>"
+  easifemBase::easifemBase
 )
 
 # target_compile_definitions()
@@ -183,6 +195,7 @@ target_include_directories(
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
   $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
+  "${easifemBase_INCLUDEDIR}"
 )
 
 include(src/modules/CMakeLists.txt)

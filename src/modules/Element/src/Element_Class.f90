@@ -122,6 +122,10 @@ END INTERFACE
 !                                                       Initiate@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Initiate an instance of [[Element_]]
+
 INTERFACE
 ! This is a subroutine
 MODULE PURE SUBROUTINE s_Initiate_obj( Obj, Nptrs, Mat_Type, RefElem )
@@ -141,17 +145,42 @@ PUBLIC :: Initiate
 !                                                       Element@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Construct an instance of [[Element_]]
+
+
 INTERFACE
 MODULE FUNCTION Constructor1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
   TYPE( Element_ ) :: Obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
   CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: RefElem
 END FUNCTION Constructor1
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                       Element@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Construct an instance of [[Element_]]
+
+INTERFACE
 MODULE FUNCTION Constructor2( ) RESULT( Obj )
   TYPE( Element_ ) :: Obj
 END FUNCTION Constructor2
+END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                       Element@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Construct an instance of [[Element_]]
+
+INTERFACE
 MODULE FUNCTION Constructor3( AnotherObj ) RESULT( Obj )
   TYPE( Element_ ) :: Obj
   CLASS( Element_ ), TARGET, INTENT( INOUT ) :: AnotherObj
@@ -163,6 +192,55 @@ INTERFACE Element
 END INTERFACE Element
 
 PUBLIC :: Element
+
+!----------------------------------------------------------------------------
+!                                                            Element_Pointer
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns a pointer to an instance of [[Element_]]
+
+INTERFACE
+MODULE FUNCTION Constructor_1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
+  CLASS( Element_ ), POINTER :: Obj
+  INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
+  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: RefElem
+END FUNCTION Constructor_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Element_Pointer
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns a pointer to an instance of [[Element_]]
+
+INTERFACE
+MODULE FUNCTION Constructor_2( ) RESULT( Obj )
+  CLASS( Element_ ), POINTER :: Obj
+  ! ALLOCATE( Obj )
+  ! Obj % Mat_Type = -1
+  ! Obj % Nptrs = [-1]
+  ! Obj % RefElem => NULL( )
+END FUNCTION Constructor_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Element_Pointer
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns a pointer to an instance of [[Element_]]
+
+INTERFACE
+MODULE FUNCTION Constructor_3( AnotherObj ) RESULT( Obj )
+  CLASS( Element_ ), POINTER :: Obj
+  CLASS( Element_ ), TARGET, INTENT( INOUT ) :: AnotherObj
+END FUNCTION Constructor_3
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Element_Pointer@Constructor
@@ -179,6 +257,10 @@ PUBLIC :: Element_Pointer
 !                                                 setMaterialType@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	set the material property of an element
+
 INTERFACE
 MODULE PURE SUBROUTINE setMaterialType_1( Obj, MatType  )
   CLASS( Element_ ), INTENT( INOUT ) :: Obj
@@ -187,40 +269,12 @@ END SUBROUTINE setMaterialType_1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        Display@Constructor
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE m_display_Obj( Obj, msg, UnitNo, FullDisp )
-  CLASS( Element_ ), INTENT( IN ) :: Obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
-END SUBROUTINE m_display_Obj
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        Display@Constructor
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE s_display_Obj( Obj, msg, UnitNo, FullDisp )
-  TYPE( Element_ ), INTENT( IN ) :: Obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
-END SUBROUTINE s_display_Obj
-END INTERFACE
-
-INTERFACE Display
-  MODULE PROCEDURE s_display_Obj
-END INTERFACE Display
-
-PUBLIC :: Display
-
-!----------------------------------------------------------------------------
 !                                                DeallocateData@Constructor
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Deallocate the data stored inside [[Element_]]
 
 INTERFACE
   MODULE PURE SUBROUTINE Deallocate_Data( Obj )
@@ -238,6 +292,10 @@ PUBLIC :: DeallocateData
 !                                              isBoundaryElement@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns true if the element is a boundary element
+
 INTERFACE
   MODULE PURE FUNCTION m_isBoundaryElement( Obj, NSD ) RESULT( Ans )
     CLASS( Element_ ), INTENT( IN ) :: Obj
@@ -250,6 +308,10 @@ END INTERFACE
 !                                                        getNptrs@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns the node numbers and connectivity
+
 INTERFACE
 MODULE PURE FUNCTION m_getNptrs( Obj ) RESULT( Nptrs )
   CLASS( Element_ ), INTENT( IN ) :: Obj
@@ -261,6 +323,10 @@ END INTERFACE
 !                                                      setNptrs@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Set the node number and connnectivity
+
 INTERFACE
 MODULE PURE SUBROUTINE m_setNptrs( Obj, Nptrs )
   CLASS( Element_ ), INTENT( INOUT ) :: Obj
@@ -268,9 +334,54 @@ MODULE PURE SUBROUTINE m_setNptrs( Obj, Nptrs )
 END SUBROUTINE m_setNptrs
 END INTERFACE
 
+
+!----------------------------------------------------------------------------
+!                                                               Display@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	display the content of [[Element_]]
+
+INTERFACE
+MODULE SUBROUTINE m_display_Obj( Obj, msg, UnitNo, FullDisp )
+  CLASS( Element_ ), INTENT( IN ) :: Obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
+  INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
+END SUBROUTINE m_display_Obj
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Display@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	display the content of [[Element_]]
+
+INTERFACE
+MODULE SUBROUTINE s_display_Obj( Obj, msg, UnitNo, FullDisp )
+  TYPE( Element_ ), INTENT( IN ) :: Obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
+  INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
+END SUBROUTINE s_display_Obj
+END INTERFACE
+
+INTERFACE Display
+  MODULE PROCEDURE s_display_Obj
+END INTERFACE Display
+
+PUBLIC :: Display
+
 !----------------------------------------------------------------------------
 !                                                 getElemShapeData@ShapeData
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns the element shape data
 
 INTERFACE
 MODULE PURE SUBROUTINE get_elemsd_H1_Lagrange( Obj, ElemSD, Quad, xiJ, &
@@ -284,11 +395,14 @@ MODULE PURE SUBROUTINE get_elemsd_H1_Lagrange( Obj, ElemSD, Quad, xiJ, &
 END SUBROUTINE get_elemsd_H1_Lagrange
 END INTERFACE
 
-!------------------------------------------------------------------------------
-!                                                        getCellNptrs@Virtual
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                      getCellNptrs@Virtual
+!----------------------------------------------------------------------------
 
-! Get Obj % Cell % Nptrs
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns the cell pointer
+
 INTERFACE
 MODULE PURE FUNCTION getCellNptrs( Obj ) RESULT( Ans )
   CLASS( Element_ ), INTENT( IN ) :: Obj
@@ -300,7 +414,10 @@ END INTERFACE
 !                                                   SetPointerToCell@Virtual
 !----------------------------------------------------------------------------
 
-! Set Obj % Cell
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	set the pointer to the cell object
+
 INTERFACE
 MODULE PURE SUBROUTINE SetPointerToCell( Obj, CellObj )
   CLASS( Element_ ), INTENT( INOUT ) :: Obj
@@ -312,7 +429,10 @@ END INTERFACE
 !                                                   getPointerToCell@Virtual
 !----------------------------------------------------------------------------
 
-!Get Obj % Cell
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns pointer to cell
+
 INTERFACE
 MODULE FUNCTION getPointerToCell( Obj ) RESULT( CellObj )
   CLASS( Element_ ), INTENT( IN ), TARGET :: Obj
@@ -320,9 +440,13 @@ MODULE FUNCTION getPointerToCell( Obj ) RESULT( CellObj )
 END FUNCTION getPointerToCell
 END INTERFACE
 
-!------------------------------------------------------------------------------
-!                                                    FreePointerToCell@Virtual
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                  FreePointerToCell@Virtual
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Free the pointer to cell
 
 INTERFACE
   MODULE PURE SUBROUTINE FreePointerToCell( Obj )
@@ -330,9 +454,13 @@ INTERFACE
   END SUBROUTINE FreePointerToCell
 END INTERFACE
 
-!------------------------------------------------------------------------------
-!                                                      getFacetLocalID@Virtual
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                     getFacetLocalID@Virtual
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Returns facet local id
 
 INTERFACE
 MODULE PURE FUNCTION getFacetLocalID( Obj ) RESULT( Ans )
@@ -341,9 +469,13 @@ MODULE PURE FUNCTION getFacetLocalID( Obj ) RESULT( Ans )
 END FUNCTION getFacetLocalID
 END INTERFACE
 
-!------------------------------------------------------------------------------
-!                                                      setFacetLocalID@Virtual
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                   setFacetLocalID@Virtual
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: set the facet localID
 
 INTERFACE
   MODULE PURE SUBROUTINE setFacetLocalID( Obj, Id )
@@ -352,9 +484,13 @@ INTERFACE
   END SUBROUTINE setFacetLocalID
 END INTERFACE
 
-!------------------------------------------------------------------------------
-!                                                   getFacetLocalNptrs@Virtual
-!------------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                getFacetLocalNptrs@Virtual
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	get the facet local nptrs
 
 INTERFACE
 MODULE PURE FUNCTION getFacetLocalNptrs( Obj ) RESULT( Nptrs )
@@ -362,47 +498,5 @@ MODULE PURE FUNCTION getFacetLocalNptrs( Obj ) RESULT( Nptrs )
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
 END FUNCTION getFacetLocalNptrs
 END INTERFACE
-
-!------------------------------------------------------------------------------
-!                                                                     Contains
-!------------------------------------------------------------------------------
-
-CONTAINS
-
-!------------------------------------------------------------------------------
-!                                                              Element_Pointer
-!------------------------------------------------------------------------------
-
-FUNCTION Constructor_1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
-  CLASS( Element_ ), POINTER :: Obj
-  INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
-  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: RefElem
-
-  ALLOCATE( Obj )
-  CALL Obj % Initiate( Nptrs = Nptrs, Mat_Type = Mat_Type, RefElem = RefElem )
-END FUNCTION Constructor_1
-
-!------------------------------------------------------------------------------
-!                                                              Element_Pointer
-!------------------------------------------------------------------------------
-
-FUNCTION Constructor_2( ) RESULT( Obj )
-  CLASS( Element_ ), POINTER :: Obj
-  ALLOCATE( Obj )
-  Obj % Mat_Type = -1
-  Obj % Nptrs = [-1]
-  Obj % RefElem => NULL( )
-END FUNCTION Constructor_2
-
-!------------------------------------------------------------------------------
-!                                                             Element_Pointer
-!------------------------------------------------------------------------------
-
-FUNCTION Constructor_3( AnotherObj ) RESULT( Obj )
-  CLASS( Element_ ), POINTER :: Obj
-  CLASS( Element_ ), TARGET, INTENT( INOUT ) :: AnotherObj
-  ALLOCATE( Obj )
-  CALL Obj % Initiate( AnotherObj )
-END FUNCTION Constructor_3
 
 END MODULE Element_Class

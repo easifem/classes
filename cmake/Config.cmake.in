@@ -1,0 +1,40 @@
+# easifemClassesConfig.cmake.in
+#-----------------------------
+#
+# easifemClasses cmake module
+# This module sets the following variables in your project:
+#
+# ::
+#
+# easifemClasses_FOUND - true if easifemClasses found on the system
+# easifemClasses_VERSION - easifem version in format Major.Minor.Release
+#
+#
+# Exported targets:
+#
+# ::
+#
+#
+#
+# easifemClasses::easifemClasses-shared
+# easifemClasses::easifem-Static
+#
+#
+# Suggested usage:
+#
+# ::
+#
+# find_package(easifemClasses)
+# find_package(easifemClasses 1.0.0 CONFIG REQUIRED)
+#
+# The following variables can be set to guide the search for this package:
+#
+#
+
+@PACKAGE_INIT@
+
+include(
+  "${CMAKE_CURRENT_LIST_DIR}/@TARGETS_EXPORT_NAME@.cmake")
+check_required_components(
+    "@PROJECT_NAME@"
+  )
