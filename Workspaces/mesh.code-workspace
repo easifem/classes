@@ -1,0 +1,36 @@
+{
+	"folders": [
+		{
+			"name": "Domain",
+			"path": "../src/modules/Domain"
+		},
+		{
+			"name": "FEMesh",
+			"path": "../src/modules/FEMesh"
+		},
+		{
+			"name": "Mesh",
+			"path": "../src/modules/Mesh"
+		},
+		{
+			"name": "MeshData",
+			"path": "../src/modules/MeshData"
+		},
+		{
+			"name": "MeshConnectivity",
+			"path": "../src/modules/MeshConnectivity"
+		},
+		{
+			"name": "Domain",
+			"path": "../src/submodules/Domain"
+		},
+		{
+			"name": "FEMesh",
+			"path": "../src/submodules/FEMesh"
+		},
+		{
+			"name": "Mesh",
+			"path": "../src/submodules/Mesh"
+		}
+	]
+}
