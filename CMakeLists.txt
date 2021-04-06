@@ -5,14 +5,14 @@
 # 17/02/2021 this file was created
 #-----------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
 set(PROJECT_NAME "easifemClasses")
 project(${PROJECT_NAME})
 enable_language(C)
 enable_language(Fortran)
 enable_language(CXX)
 set(VERSION_MAJOR "1")
-set(VERSION_MINOR "1")
+set(VERSION_MINOR "0")
 set(VERSION_BugFix "0")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
 set(CMAKE_PROJECT_DESCRIPTION "easifem classes")
@@ -39,6 +39,7 @@ if(NOT CMAKE_PREFIX_PATH)
   list(APPEND CMAKE_PREFIX_PATH "$ENV{EASIFEM_BASE}")
 endif()
 
+# easifemBase
 find_package( easifemBase REQUIRED )
 if( easifemBase_FOUND )
   message(STATUS "easifemBase found")
@@ -48,7 +49,7 @@ if( easifemBase_FOUND )
     INTERFACE_INCLUDE_DIRECTORIES)
 endif()
 
-
+# BLAS and LAPACK
 set(BLA_VENDOR "OpenBLAS")
 find_package( LAPACK REQUIRED )
 if( LAPACK_FOUND )
@@ -81,6 +82,32 @@ if(USE_OpenMP)
     message("OpenMP NOT FOUND: building without it")
   endif()
 endif()
+
+
+#Single precision or double precision
+option(USE_Real32 OFF)
+option(USE_Real64 OFF)
+
+if(USE_Real32)
+  list( APPEND TARGET_COMPILE_DEF "-DUSE_Real32" )
+elseif(USE_Real64)
+  list( APPEND TARGET_COMPILE_DEF "-DUSE_Real64" )
+else()
+  list( APPEND TARGET_COMPILE_DEF "-DUSE_Real64" )
+endif()
+
+#Single precision or double precision
+option(USE_Int32 OFF)
+option(USE_Int64 OFF)
+if(USE_Int32)
+  list( APPEND TARGET_COMPILE_DEF "-DUSE_Int32" )
+elseif(USE_Real64)
+  list( APPEND TARGET_COMPILE_DEF "-DUSE_Int64" )
+else()
+  list( APPEND TARGET_COMPILE_DEF "-DUSE_Int32" )
+endif()
+
+list( APPEND TARGET_COMPILE_DEF "-D${CMAKE_HOST_SYSTEM_NAME}_SYSTEM" )
 
 # CREATING DIRECTORIES FOR EASIFEM_BASE
 include( GNUInstallDirs )
