@@ -9,13 +9,20 @@ import platform
 
 
 def installRequest(LIB):
+    while True:
+        choice = input(
+            f"Do you want to Install {LIB} 'yes' or 'no' [Y/n]: ").lower()
+        if choice in ['Y', 'y', 'ye', 'yes']:
+          return True
+        else:
+          return False
+
+
+def getOption(key, opt):
   while True:
-    choice = input(
-        f"Do you want to Install {LIB} 'yes' or 'no' [Y/n]: ").lower()
-    if choice in ['y', 'ye', 'yes']:
-      return True
-    else:
-      return False
+    separator = ', '
+    return input(f"select option for {key}, possible options are : {separator.join(opt)} : ") + " "
+
 
 print("Detecting OS type...")
 _os = platform.system()
@@ -25,9 +32,28 @@ if _os == 'Windows':
     #print("Please use Windows Subsystem Linux(WSL) ")
     #print("Installation DONE!!")
 else:
-    if installRequest('OpenMP'):
-      cmake_def = '-DUSE_OPENMP'
-    cmake_def = cmake_def + " -DBUILD_TYPE='Release' -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${EASIFEM_BASE}"
-    os.system( f"cmake -S ./ -B ./build {cmake_def}")
-    os.system(f"cmake --build ./build --target install" )
+    cmake_def = ""
+    opt = getOption("USE_OpenMP", ["ON", "OFF"])
+    if(opt == " "):
+        opt = "ON"
+    cmake_def += " -DUSE_OpenMP=" + opt
+
+    opt = getOption("BUILD_TYPE", ["Release", "Debug"])
+    if(opt == " "):
+        opt = "Release"
+    cmake_def += " -DBUILD_TYPE=" + opt
+
+    opt = getOption("BUILD_SHARED_LIBS", ["ON", "OFF"])
+    if(opt == " "):
+        opt = "ON"
+    cmake_def += " -DBUILD_SHARED_LIBS=" + opt
+
+    cmake_def += " -DCMAKE_INSTALL_PREFIX=${EASIFEM_CLASSES}"
+
+    cmake_def += " -DUSE_Int32=ON -DUSE_Real64=ON"
+
+    print("CMAKE DEF : ", cmake_def)
+
+    os.system(f"cmake -S ./ -B ./build {cmake_def}")
+    os.system(f"cmake --build ./build --target install")
     print("Installation DONE!!")

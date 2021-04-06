@@ -15,31 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE easifemClasses
-USE ExceptionHandler_Class
-USE List_Class
-USE IntList_Class
-USE RealList_Class
-USE StringList_Class
-! USE FE
-  ! USE FE
-  ! USE Mesh_Class
-  ! USE MeshData_Class
-  ! USE MeshConnectivity_Class
-  ! USE Domain_Class
-  ! USE QuadratureVariables_Class
-  ! USE gmsh_class
-  ! USE gmshMesh_Class
-  ! USE vtkType
-  ! USE LinSolver_Class
+SUBMODULE( RealList_Class ) Method
+IMPLICIT NONE
+CHARACTER( LEN = * ), PARAMETER :: modName = "RealList_Class.f90"
 
-  ! USE Material_Class
-  ! USE stdMaterials
-  ! USE ThermCondModel_Class
-  ! USE VolHeatCapModel_Class
-  ! USE SFCCModel_Class
+CONTAINS
+#define LIST_NODE_NAME RealListNode_
+#define DATA_TYPE_NAME REAL( DFP )
+#define LIST_NAME RealList_
+#define EXCEPTION eRealListType
+#include "../../List/src/TempList_Class@Method.inc"
 
-  ! USE mod_functional
-  ! USE ogpf
-
-END MODULE easifemClasses
+END SUBMODULE Method
