@@ -18,4 +18,10 @@
 #define FTL_TEMPLATE_TYPE INTEGER( I4B )
 #define FTL_TEMPLATE_TYPE_NAME Int
 #define FTL_INSTANTIATE_TEMPLATE
-#include "../../ftlMacro/ftlList.inc"
+
+#ifdef USE_CMAKE
+! MODULE ftlListInt_Class
+MODULE ftlListInt_Class
+#endif
+
+#include "../../ftlMacros/ftlList.inc"

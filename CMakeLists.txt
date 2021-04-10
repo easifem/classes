@@ -24,6 +24,8 @@ include(CMakePrintHelpers)
 include(FortranCInterface)
 FortranCInterface_VERIFY()
 
+list( APPEND TARGET_COMPILE_DEF "-DUSE_CMAKE" )
+
 # SYSTEM INFORMATION
 # Disable in-source builds to prevent source tree corruption.
 if(" ${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL " ${CMAKE_CURRENT_BINARY_DIR}")

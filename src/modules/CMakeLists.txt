@@ -13,6 +13,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
 #StringList
 include(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
 
+#fltListInt
+include(${CMAKE_CURRENT_LIST_DIR}/ftlListInt/CMakeLists.txt)
+
 # #Element
 # include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
 # #FacetElement

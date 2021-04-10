@@ -57,11 +57,14 @@
 #define FTL_TEMPLATE_TYPE_WRAP FTL_TEMPLATE_TYPE
 #endif
 
-! MODULE CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Module)
-!! Name of the MODULE will be ftlListInt_Class, ftlListString_Class, ...
-
+#ifdef USE_CMAKE
+#else
+! Name of the MODULE will be ftlListInt_Class, ftlListString_Class, ...
 MODULE CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_Classs)
-USE GlobalData
+#endif
+
+USE BaseMethod
+
 #ifdef FTL_TEMPLATE_TYPE_MODULE
 USE FTL_TEMPLATE_TYPE_MODULE
 #endif
@@ -103,6 +106,7 @@ TYPE, PUBLIC :: CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_)
   CONTAINS
     PRIVATE
     GENERIC, PUBLIC :: New => NewDefault, NewCopyOther, NewFill, NewFromArray, NewFromIteratorPair
+    GENERIC, PUBLIC :: Initiate => NewDefault, NewCopyOther, NewFill, NewFromArray, NewFromIteratorPair
     GENERIC, PUBLIC :: ASSIGNMENT(=) => AssignOther, AssignArray
     GENERIC, PUBLIC :: Insert => InsertSingle, InsertFill, InsertArray, InsertIteratorPair
     GENERIC, PUBLIC :: Add => PushBack
@@ -122,7 +126,7 @@ TYPE, PUBLIC :: CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_)
     PROCEDURE, PUBLIC, PASS( Obj ) :: PopFront
     PROCEDURE, PUBLIC, PASS( Obj ) :: PopBack
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Delete
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Delete => Delete_Obj
     PROCEDURE, PUBLIC, PASS( Obj ) :: Size => SizeList
     PROCEDURE, PUBLIC, PASS( Obj ) :: isEmpty => Empty
     FINAL :: Finalizer
@@ -163,6 +167,10 @@ TYPE, PUBLIC :: CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Iterator_)
   PROCEDURE, PUBLIC :: Dec
 END TYPE
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 INTERFACE OPERATOR( .EQ. )
   MODULE PROCEDURE EqualOther
 END INTERFACE
@@ -172,10 +180,6 @@ INTERFACE OPERATOR( .NE. )
   MODULE PROCEDURE UnequalOther
 END INTERFACE
 PUBLIC :: OPERATOR( .NE. )
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
 
 INTERFACE Size
   MODULE PROCEDURE SizeList
@@ -191,6 +195,12 @@ INTERFACE ftlMove
   MODULE PROCEDURE ftlMoveList
 END INTERFACE
 PUBLIC :: ftlMove
+
+INTERFACE Display
+  MODULE PROCEDURE Display_Iterator, Display_Obj
+END INTERFACE Display
+
+PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !
@@ -414,7 +424,7 @@ END FUNCTION
 !
 !----------------------------------------------------------------------------
 
-IMPURE ELEMENTAL SUBROUTINE Delete( Obj )
+IMPURE ELEMENTAL SUBROUTINE Delete_Obj( Obj )
   CLASS( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_) ), INTENT(INOUT), TARGET :: Obj
 
   ! Internal variables
@@ -504,7 +514,7 @@ IMPURE ELEMENTAL SUBROUTINE AssignOther(Obj, other)
   CALL Obj%New()
   i = 1; n = other%Size()
   it = other%Begin()
-  DO WHILE( i .LE. other%Size() )
+  DO WHILE( i .LE. n )
     CALL Obj%add( it%value )
     i = i + 1
     CALL it%Inc()
@@ -819,5 +829,53 @@ END FUNCTION
 !
 !----------------------------------------------------------------------------
 
-END MODULE CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_Classs)
+SUBROUTINE  Display_Iterator( Obj, Msg, UnitNo )
+  CLASS( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Iterator_) ), INTENT( IN ) :: Obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
+  IF( ASSOCIATED( Obj%value ) ) THEN
+    CALL Display( Obj%value, Msg, UnitNo )
+  END IF
+END SUBROUTINE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE  Display_Obj( Obj, Msg, UnitNo )
+  CLASS( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_) ), INTENT( IN ) :: Obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
+
+  ! Define internal variables
+  INTEGER( I4B ) :: i, ii
+  TYPE( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Iterator_) ) :: it, last
+
+  i = Input(stdout, UnitNo )
+  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
+    WRITE( i, "(A)" ) "#" // TRIM( Msg )
+  END IF
+
+  IF( Obj%isEmpty() ) THEN
+    WRITE( i, "(A)" ) "List is Empty"
+    RETURN
+  END IF
+
+  it = Obj%Begin()
+  last = Obj%End()
+  ii = 0
+  DO WHILE( it .NE. last )
+    ii = ii + 1
+    CALL Display( it, "("// TRIM(Str(ii, no_sign=.true.)) // "):", i )
+    CALL it%inc()
+  END DO
+END SUBROUTINE
+
+
+
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+END MODULE
 #endif
