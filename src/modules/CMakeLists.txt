@@ -20,12 +20,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/ftlListReal/CMakeLists.txt)
 #fltListString
 include(${CMAKE_CURRENT_LIST_DIR}/ftlListString/CMakeLists.txt)
 
-# #Element
-# include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
-# #FacetElement
-# include(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
-# #FE
-# include(${CMAKE_CURRENT_LIST_DIR}/FE/CMakeLists.txt)
+#Element
+include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
+#FacetElement
+include(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
+#FE
+include(${CMAKE_CURRENT_LIST_DIR}/FE/CMakeLists.txt)
 # #Mesh
 # include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 
