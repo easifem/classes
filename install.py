@@ -38,10 +38,10 @@ else:
         opt = "ON"
     cmake_def += " -DUSE_OpenMP=" + opt
 
-    opt = getOption("BUILD_TYPE", ["Release", "Debug"])
+    opt = getOption("CMAKE_BUILD_TYPE", ["Release", "Debug"])
     if(opt == " "):
         opt = "Release"
-    cmake_def += " -DBUILD_TYPE=" + opt
+    cmake_def += " -DCMAKE_BUILD_TYPE=" + opt
 
     opt = getOption("BUILD_SHARED_LIBS", ["ON", "OFF"])
     if(opt == " "):

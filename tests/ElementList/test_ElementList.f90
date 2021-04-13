@@ -15,17 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-module test_IntList
+module test_ElementList
 use easifemBase
 use easifemClasses
 implicit none
 contains
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 subroutine test1
-type( IntList_ ) :: Obj
+type( ElementList_ ) :: Obj
 call note( "test-1: testing Initiate() and Delete()")
 call Obj%Initiate()
 call Obj%DeallocateData()
@@ -36,12 +37,21 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test2
-type( IntList_ ) :: Obj
+type( ElementList_ ) :: Obj
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val
 integer( i4b ) :: n
-integer( i4b ) :: val
+
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL Elem%Initiate( nptrs = [1,2,3], Mat_Type = 1, RefElem = RefElem )
+
 call note( "test-2: testing Initiate(n,val)")
-n = 5; val = 1
+n = 5
+val = Elem
 call Obj%Initiate( n=n, val=val )
+call display( obj, "obj: " )
+call val%setNptrs([1,2])
+call display( obj, "test-2: obj:(after) " )
 call Obj%Delete()
 end subroutine
 
@@ -50,13 +60,21 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test3
-type( IntList_ ) :: Obj1, Obj2
+type( ElementList_ ) :: Obj1, Obj2
 integer( i4b ) :: n
-integer( i4b ) :: val
+type( ElementList_ ) :: Obj
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val
+
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL Elem%Initiate( nptrs = [1,2,3], Mat_Type = 1, RefElem = RefElem )
+n = 2; val = Elem
+
 call note( "test-3: testing Initiate(Obj1, Obj2)")
-n = 5; val = 1
 call Obj1%Initiate( n=n, val=val )
 call Obj2%Initiate( Obj1 )
+call display( obj1, 'test-3: obj1: ')
+call display( obj2, 'test-3: obj2: ')
 call Obj1%Delete()
 call Obj2%Delete()
 end subroutine
@@ -66,13 +84,19 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test4
-type( IntList_ ) :: Obj1, Obj2
+type( ElementList_ ) :: Obj1, Obj2
 integer( i4b ) :: n
-integer( i4b ) :: val
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val
+
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL Elem%Initiate( nptrs = [1,2,3], Mat_Type = 1, RefElem = RefElem )
+
 call note( "test-4: testing Obj1=Obj2")
-n = 5; val = 1
+n = 2; val = Elem
 call Obj1%Initiate( n=n, val=val )
 Obj2=Obj1
+call display( Obj2, "Obj2: " )
 call Obj1%Delete()
 call Obj2%Delete()
 end subroutine
@@ -82,10 +106,19 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test5
-type( IntList_ ) :: Obj
-integer( i4b ) :: val( 4 ) = [1,2,3,4]
+type( ElementList_ ) :: Obj
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val( 2 )
+
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL val(1)%Initiate( nptrs = [1,2], Mat_Type = 1, RefElem = RefElem )
+CALL val(2)%Initiate( nptrs = [2,3], Mat_Type = 1, RefElem = RefElem )
+
 call note( "test-5: testing Obj%initiate(val)")
 call Obj%Initiate( val )
+call Display( obj, "test-5 (before): ")
+call val(2)%setNptrs([4,5])
+call Display( obj, "test-5 (before): ")
 call Obj%Delete()
 end subroutine
 
@@ -94,10 +127,16 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test6
-type( IntList_ ) :: Obj
-integer( i4b ) :: val( 4 ) = [1,2,3,4]
+type( ElementList_ ) :: Obj
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val( 2 )
+
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL val(1)%Initiate( nptrs = [1,2], Mat_Type = 1, RefElem = RefElem )
+CALL val(2)%Initiate( nptrs = [2,3], Mat_Type = 1, RefElem = RefElem )
 call note( "test-6: testing Obj=val")
 Obj=val
+call display( obj, "test-6: obj: ")
 call Obj%Delete()
 end subroutine
 
@@ -106,13 +145,18 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test7
-type( IntList_ ) :: Obj
-integer( i4b ) :: val( 4 ) = [1,2,3,4]
+type( ElementList_ ) :: Obj
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val( 2 )
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL val(1)%Initiate( nptrs = [1,2], Mat_Type = 1, RefElem = RefElem )
+CALL val(2)%Initiate( nptrs = [2,3], Mat_Type = 1, RefElem = RefElem )
+
 call note( "test-7: testing Obj%isEmpty(), Obj%SIZE()")
 call ok( Obj%isEmpty(), "Obj%isEmpty")
 Obj=val
-call ok( .NOT. Obj%isEmpty(), "Obj%isEmpty")
-call ok( Obj%SIZE() == SIZE(val), "Obj%SIZE()")
+call ok( .NOT. Obj%isEmpty(), "Obj%isEmpty" )
+call ok( Obj%SIZE() == SIZE(val), "Obj%SIZE()" )
 call Obj%Delete()
 end subroutine
 
@@ -121,10 +165,15 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test8
-type( IntList_ ) :: Obj
-integer( i4b ) :: val( 5 ), i
+type( ElementList_ ) :: Obj
+integer( i4b ) ::  i
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val( 2 )
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL val(1)%Initiate( nptrs = [1,2], Mat_Type = 1, RefElem = RefElem )
+CALL val(2)%Initiate( nptrs = [2,3], Mat_Type = 1, RefElem = RefElem )
+
 call note( "test-8: testing Obj=val")
-val = [1,2,3,4,5]
 call obj%initiate()
 do i = 1, size( val )
   call Obj%PushBack(val(i))
@@ -132,6 +181,7 @@ end do
 do i = 1, size( val )
   call Obj%PushFront(val(i))
 end do
+call display( obj, "test-9: obj: ")
 call Obj%delete()
 end subroutine
 
@@ -140,20 +190,26 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test9
-type( IntList_ ) :: Obj
-type( IntListIterator_ ) :: iter
+type( ElementList_ ) :: Obj
+type( ElementListIterator_ ) :: iter
 integer( i4b ) :: i
+CLASS( ReferenceElement_ ), POINTER :: RefElem
+TYPE( Element_ ) :: Elem, val( 2 )
+RefElem => ReferenceLine_Pointer( NSD = 1 )
+CALL val(1)%Initiate( nptrs = [1,2], Mat_Type = 1, RefElem = RefElem )
+CALL val(2)%Initiate( nptrs = [2,3], Mat_Type = 1, RefElem = RefElem )
+
 call note( "test-9: testing Obj=val")
 call obj%initiate()
-call obj%pushback( 1 )
-call obj%pushback( 2 )
-call obj%pushback( 4 )
-call display( obj, "[1,2,4]" )
+call obj%pushback( val(1) )
+call obj%pushback( val(2) )
+call display( obj, "first two element" )
 iter = Obj%Begin()
-call iter%inc(2)
-call display( iter, "Entry should be 4: ")
-! call obj%insert( iter, [3] )
-! call display( obj, "It should be [1,2,3,4]: " )
+call iter%inc(1)
+call display( iter, "Second element: ")
+call Elem%Initiate( nptrs = [3,4], Mat_Type=1, RefElem = RefElem )
+call obj%insert( iter, Elem )
+call display( obj, "After adding a new element: " )
 call Obj%delete()
 end subroutine
 
@@ -164,10 +220,16 @@ end module
 !----------------------------------------------------------------------------
 
 program main
-use test_IntList
+use test_ElementList
 implicit none
 call plan( 61 )
-call test1; call test2; call test3; call test4
-call test5; call test6; call test7; call test8
+call test1
+call test2
+call test3
+call test4
+call test5
+call test6
+call test7
+call test8
 call test9
 end program main

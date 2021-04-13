@@ -16,10 +16,18 @@
 !
 
 MODULE FE
+USE BaseType
+USE GlobalData
 USE Element_Class
 USE FacetElement_Class
 IMPLICIT NONE
 PUBLIC
+
+PRIVATE :: Element_Factory
+INTERFACE Factory
+  MODULE PROCEDURE Element_Factory
+END INTERFACE Factory
+PUBLIC :: Factory
 
 CONTAINS
 
@@ -32,12 +40,10 @@ CONTAINS
 ! summary: Dynamically returns the finite element
 
 FUNCTION getFEPointer( Obj, Nptrs, Mat_Type, RefElem ) RESULT( Ans )
-  USE BaseType
-  USE GlobalData
   ! Define internal variable
   CLASS( Element_ ), INTENT( IN ) :: Obj
   INTEGER( I4B ), INTENT( IN) :: Nptrs( : ), Mat_Type
-  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: RefElem
+  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: RefElem
   CLASS( Element_ ), POINTER :: Ans
   !
   SELECT TYPE( Obj )
@@ -47,5 +53,22 @@ FUNCTION getFEPointer( Obj, Nptrs, Mat_Type, RefElem ) RESULT( Ans )
     Ans => FacetElement_Pointer( Nptrs, Mat_Type, RefElem )
   END SELECT
 END FUNCTION getFEPointer
+
+!----------------------------------------------------------------------------
+!                                                                 Factory
+!----------------------------------------------------------------------------
+
+FUNCTION Element_Factory( Obj ) RESULT( Ans )
+  CLASS( Element_ ), INTENT( IN ) :: Obj
+  CLASS( Element_ ), POINTER :: Ans
+  SELECT TYPE( Obj )
+  TYPE IS( Element_ )
+    ALLOCATE( Element_ :: Ans )
+    CALL Ans%Initiate( Obj )
+  TYPE IS( FacetElement_ )
+    ALLOCATE( FacetElement_ :: Ans )
+    CALL Ans%Initiate( Obj )
+  END SELECT
+END FUNCTION Element_Factory
 
 END MODULE FE

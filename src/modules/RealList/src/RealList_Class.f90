@@ -15,33 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#define FTL_TEMPLATE_TYPE REAL( DFP )
+#define FTL_TEMPLATE_TYPE_NAME Real
+#define FTL_INSTANTIATE_TEMPLATE
+
+#ifdef USE_CMAKE
+! MODULE ftlListInt_Class
 MODULE RealList_Class
-USE GlobalData
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
-IMPLICIT NONE
-PRIVATE
+#endif
 
-TYPE( ExceptionHandler_ ), PUBLIC, SAVE :: eRealListType
-#define LIST_NODE_NAME RealListNode_
-#define DATA_TYPE_NAME REAL( DFP )
-#define LIST_NAME RealList_
-#define EXCEPTION eRealListType
-#include "../../List/src/TempList_Class.inc"
-
-TYPE( LIST_NODE_NAME ), PARAMETER, PUBLIC :: TypeRealListNode = RealListNode_(data=1.0_DFP)
-TYPE( LIST_NAME ), PARAMETER, PUBLIC :: TypeRealList = RealList_()
-
-TYPE RealListNodePointer_
-  CLASS( LIST_NODE_NAME ), POINTER :: ptr => NULL()
-END TYPE RealListNodePointer_
-
-PUBLIC :: RealListNodePointer_
-
-
-TYPE RealListPointer_
-  CLASS( LIST_NAME ), POINTER :: ptr => NULL( )
-END TYPE RealListPointer_
-
-PUBLIC :: RealListPointer_
-
-END MODULE RealList_Class
+#include "../../ftlMacros/ftlList.inc"

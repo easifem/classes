@@ -15,16 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( StringList_Class ) Method
-USE BaseMethod
-IMPLICIT NONE
-CHARACTER( LEN = * ), PARAMETER :: modName = "StringList_Class.f90"
+#define FTL_TEMPLATE_TYPE Element_
+#define FTL_TEMPLATE_TYPE_IS_DERIVED
+#define FTL_TEMPLATE_TYPE_IS_CLASS
+#define FTL_TEMPLATE_TYPE_NAME Element
+#define FTL_INSTANTIATE_TEMPLATE
+#define FTL_TEMPLATE_TYPE_MODULE FE
 
-CONTAINS
-#define LIST_NODE_NAME StringListNode_
-#define DATA_TYPE_NAME TYPE( String )
-#define LIST_NAME StringList_
-#define EXCEPTION eStringListType
-#include "../../List/src/TempList_Class@Method.inc"
+#ifdef USE_CMAKE
+MODULE ElementList_Class
+#endif
 
-END SUBMODULE Method
+#include "../../ftlMacros/ftlList.inc"

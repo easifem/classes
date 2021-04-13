@@ -15,35 +15,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#define FTL_TEMPLATE_TYPE String
+#define FTL_TEMPLATE_TYPE_IS_DERIVED
+#define FTL_TEMPLATE_TYPE_NAME String
+#define FTL_INSTANTIATE_TEMPLATE
+
+#ifdef USE_CMAKE
+! MODULE ftlListInt_Class
 MODULE StringList_Class
-USE GlobalData
-USE BaseType, ONLY: String, TypeString
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
-IMPLICIT NONE
-PRIVATE
+#endif
 
-TYPE( ExceptionHandler_ ), PUBLIC, SAVE :: eStringListType
-#define LIST_NODE_NAME StringListNode_
-#define DATA_TYPE_NAME TYPE( String )
-#define LIST_NAME StringList_
-#define EXCEPTION eStringListType
-#include "../../List/src/TempList_Class.inc"
-
-TYPE( LIST_NODE_NAME ), PARAMETER, PUBLIC :: TypeStringListNode = StringListNode_(data=TypeString)
-TYPE( LIST_NAME ), PARAMETER, PUBLIC :: TypeStringList = StringList_()
-
-TYPE StringListNodePointer_
-  CLASS( LIST_NODE_NAME ), POINTER :: ptr => NULL()
-END TYPE StringListNodePointer_
-
-PUBLIC :: StringListNodePointer_
-
-
-TYPE StringListPointer_
-  CLASS( LIST_NAME ), POINTER :: ptr => NULL( )
-END TYPE StringListPointer_
-
-PUBLIC :: StringListPointer_
-
-END MODULE StringList_Class
-
+#include "../../ftlMacros/ftlList.inc"

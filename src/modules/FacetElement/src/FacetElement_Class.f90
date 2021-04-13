@@ -86,7 +86,7 @@ INTERFACE
 MODULE FUNCTION Constructor1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
   TYPE( FacetElement_ ) :: Obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
-  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: RefElem
+  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: RefElem
 END FUNCTION Constructor1
 END INTERFACE
 
@@ -115,7 +115,7 @@ END INTERFACE
 INTERFACE
 MODULE FUNCTION Constructor3( AnotherObj ) RESULT( Obj )
   TYPE( FacetElement_ ) :: Obj
-  CLASS( Element_ ), TARGET, INTENT( INOUT ) :: AnotherObj
+  CLASS( Element_ ), TARGET, INTENT( IN ) :: AnotherObj
 END FUNCTION Constructor3
 END INTERFACE
 
@@ -137,7 +137,7 @@ INTERFACE
 MODULE FUNCTION Constructor_1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
   CLASS( FacetElement_ ), POINTER :: Obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
-  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: RefElem
+  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: RefElem
 END FUNCTION Constructor_1
 END INTERFACE
 
@@ -166,7 +166,7 @@ END INTERFACE
 INTERFACE
 MODULE FUNCTION Constructor_3( AnotherObj ) RESULT( Obj )
   CLASS( FacetElement_ ), POINTER :: Obj
-  CLASS( FacetElement_ ), TARGET, INTENT( INOUT ) :: AnotherObj
+  CLASS( FacetElement_ ), TARGET, INTENT( IN ) :: AnotherObj
 END FUNCTION Constructor_3
 END INTERFACE
 
