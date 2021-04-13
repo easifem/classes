@@ -15,6 +15,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
 
 #fltListInt
 include(${CMAKE_CURRENT_LIST_DIR}/ftlListInt/CMakeLists.txt)
+#fltListReal
+include(${CMAKE_CURRENT_LIST_DIR}/ftlListReal/CMakeLists.txt)
+#fltListString
+include(${CMAKE_CURRENT_LIST_DIR}/ftlListString/CMakeLists.txt)
 
 # #Element
 # include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)

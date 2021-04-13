@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-module test_ftlListInt
+module test_ftlListString
 use easifemBase
 use easifemClasses
 implicit none
@@ -25,7 +25,7 @@ contains
 !----------------------------------------------------------------------------
 
 subroutine test1
-type( ftlListInt_ ) :: Obj
+type( ftlListString_ ) :: Obj
 call note( "test-1: testing Initiate() and Delete()")
 call Obj%Initiate()
 call Obj%DeallocateData()
@@ -36,12 +36,13 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test2
-type( ftlListInt_ ) :: Obj
+type( ftlListString_ ) :: Obj
 integer( i4b ) :: n
-integer( i4b ) :: val
+type( string ) :: val
 call note( "test-2: testing Initiate(n,val)")
-n = 5; val = 1
+n = 5; val = "Hello World"
 call Obj%Initiate( n=n, val=val )
+call display( obj, "obj: " )
 call Obj%Delete()
 end subroutine
 
@@ -50,13 +51,15 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test3
-type( ftlListInt_ ) :: Obj1, Obj2
+type( ftlListString_ ) :: Obj1, Obj2
 integer( i4b ) :: n
-integer( i4b ) :: val
+type( string ) :: val
 call note( "test-3: testing Initiate(Obj1, Obj2)")
 n = 5; val = 1
 call Obj1%Initiate( n=n, val=val )
 call Obj2%Initiate( Obj1 )
+call display( obj1, 'test-3: obj1: ')
+call display( obj2, 'test-3: obj2: ')
 call Obj1%Delete()
 call Obj2%Delete()
 end subroutine
@@ -66,9 +69,9 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test4
-type( ftlListInt_ ) :: Obj1, Obj2
+type( ftlListString_ ) :: Obj1, Obj2
 integer( i4b ) :: n
-integer( i4b ) :: val
+type( string ) :: val
 call note( "test-4: testing Obj1=Obj2")
 n = 5; val = 1
 call Obj1%Initiate( n=n, val=val )
@@ -82,10 +85,17 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test5
-type( ftlListInt_ ) :: Obj
-integer( i4b ) :: val( 4 ) = [1,2,3,4]
+type( ftlListString_ ) :: Obj
+type( string ) :: val( 4 )
+
+
+val(1) = string( "hello" )
+val(2) = string( "world" )
+val(3) = string( "!" )
+
 call note( "test-5: testing Obj%initiate(val)")
 call Obj%Initiate( val )
+call Display( obj, "test-5: ")
 call Obj%Delete()
 end subroutine
 
@@ -94,10 +104,12 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test6
-type( ftlListInt_ ) :: Obj
-integer( i4b ) :: val( 4 ) = [1,2,3,4]
+type( ftlListString_ ) :: Obj
+type( string ) :: val( 4 )
+val = [string(1), string(2), string(3), string(4)]
 call note( "test-6: testing Obj=val")
 Obj=val
+call display( obj, "test-6: obj: ")
 call Obj%Delete()
 end subroutine
 
@@ -106,8 +118,9 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test7
-type( ftlListInt_ ) :: Obj
-integer( i4b ) :: val( 4 ) = [1,2,3,4]
+type( ftlListString_ ) :: Obj
+type( string ) :: val( 4 )
+val = [string(1), string(2), string(3), string(4)]
 call note( "test-7: testing Obj%isEmpty(), Obj%SIZE()")
 call ok( Obj%isEmpty(), "Obj%isEmpty")
 Obj=val
@@ -121,10 +134,12 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test8
-type( ftlListInt_ ) :: Obj
-integer( i4b ) :: val( 5 ), i
+type( ftlListString_ ) :: Obj
+type( string ) :: val( 5 )
+integer( i4b ) ::  i
+
 call note( "test-8: testing Obj=val")
-val = [1,2,3,4,5]
+val = [string(1), string(2), string(3), string(4), string(5)]
 call obj%initiate()
 do i = 1, size( val )
   call Obj%PushBack(val(i))
@@ -132,6 +147,7 @@ end do
 do i = 1, size( val )
   call Obj%PushFront(val(i))
 end do
+call display( obj, "test-9: obj: ")
 call Obj%delete()
 end subroutine
 
@@ -140,14 +156,14 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test9
-type( ftlListInt_ ) :: Obj
-type( ftlListIntIterator_ ) :: iter
+type( ftlListString_ ) :: Obj
+type( ftlListStringIterator_ ) :: iter
 integer( i4b ) :: i
 call note( "test-9: testing Obj=val")
 call obj%initiate()
-call obj%pushback( 1 )
-call obj%pushback( 2 )
-call obj%pushback( 4 )
+call obj%pushback( string(1) )
+call obj%pushback( string(2) )
+call obj%pushback( string(4) )
 call display( obj, "[1,2,4]" )
 iter = Obj%Begin()
 call iter%inc(2)
@@ -164,10 +180,11 @@ end module
 !----------------------------------------------------------------------------
 
 program main
-use test_ftlListInt
+use test_ftlListString
 implicit none
 call plan( 61 )
-call test1; call test2; call test3; call test4
-call test5; call test6; call test7; call test8
+call test1; call test2;
+call test3; call test4; call test5;
+call test6; call test7; call test8
 call test9
 end program main

@@ -62,7 +62,7 @@
 ! Name of the MODULE will be ftlListInt_Class, ftlListString_Class, ...
 MODULE CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,_Classs)
 #endif
-
+USE BaseType
 USE BaseMethod
 
 #ifdef FTL_TEMPLATE_TYPE_MODULE
@@ -780,27 +780,54 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Inc(Obj)
+! todo
+! check the bounds
+! if bounds are crossed raise error
+RECURSIVE SUBROUTINE Inc(Obj, n)
   CLASS( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Iterator_) ), INTENT(INOUT) :: Obj
-  Obj%node => Obj%node%next
-  SELECT TYPE( node => Obj%node )
-    TYPE IS( DataNode_ )
-    Obj%value => node%data
-  END SELECT
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
+
+  ! Define internal variables
+  INTEGER( I4B ) :: i
+  IF( PRESENT( n ) ) THEN
+    DO i = 1, n
+      CALL Inc( Obj )
+    END DO
+  ELSE
+    Obj%node => Obj%node%next
+    SELECT TYPE( node => Obj%node )
+      TYPE IS( DataNode_ )
+      Obj%value => node%data
+    END SELECT
+  END IF
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Dec(Obj)
-  CLASS( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Iterator_) ), INTENT(INOUT) :: Obj
 
-  Obj%node => Obj%node%prev
-  SELECT TYPE( node => Obj%node )
-    TYPE IS( DataNode_ )
-    Obj%value => node%data
-  END SELECT
+! todo
+! check the bounds
+! if bounds are crossed raise error
+RECURSIVE SUBROUTINE Dec(Obj, n)
+  CLASS( CAT3(ftlList,FTL_TEMPLATE_TYPE_NAME,Iterator_) ), INTENT(INOUT) :: Obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
+
+  ! Define internal variable
+  INTEGER( I4B ) :: i
+
+  IF( PRESENT( n ) ) THEN
+    DO i = 1, n
+      CALL Dec( Obj )
+    END DO
+  ELSE
+    Obj%node => Obj%node%prev
+    SELECT TYPE( node => Obj%node )
+      TYPE IS( DataNode_ )
+      Obj%value => node%data
+    END SELECT
+  END IF
 END SUBROUTINE
 
 !----------------------------------------------------------------------------

@@ -15,35 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE easifemClasses
-USE ExceptionHandler_Class
-USE List_Class
-USE IntList_Class
-USE RealList_Class
-USE StringList_Class
-!FTL Containers
-USE ftlListInt_Class
-USE ftlListReal_Class
-USE ftlListString_Class
-! USE FE
-  ! USE FE
-  ! USE Mesh_Class
-  ! USE MeshData_Class
-  ! USE MeshConnectivity_Class
-  ! USE Domain_Class
-  ! USE QuadratureVariables_Class
-  ! USE gmsh_class
-  ! USE gmshMesh_Class
-  ! USE vtkType
-  ! USE LinSolver_Class
+#define FTL_TEMPLATE_TYPE REAL( DFP )
+#define FTL_TEMPLATE_TYPE_NAME Real
+#define FTL_INSTANTIATE_TEMPLATE
 
-  ! USE Material_Class
-  ! USE stdMaterials
-  ! USE ThermCondModel_Class
-  ! USE VolHeatCapModel_Class
-  ! USE SFCCModel_Class
+#ifdef USE_CMAKE
+! MODULE ftlListInt_Class
+MODULE ftlListReal_Class
+#endif
 
-  ! USE mod_functional
-  ! USE ogpf
-
-END MODULE easifemClasses
+#include "../../ftlMacros/ftlList.inc"
