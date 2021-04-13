@@ -15,33 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#define FTL_TEMPLATE_TYPE INTEGER( I4B )
+#define FTL_TEMPLATE_TYPE_NAME Int
+#define FTL_INSTANTIATE_TEMPLATE
+
+#ifdef USE_CMAKE
+! MODULE ftlListInt_Class
 MODULE IntList_Class
-USE GlobalData
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
-IMPLICIT NONE
-PRIVATE
+#endif
 
-TYPE( ExceptionHandler_ ), PUBLIC, SAVE :: eIntListType
-#define LIST_NODE_NAME IntListNode_
-#define DATA_TYPE_NAME INTEGER( I4B )
-#define LIST_NAME IntList_
-#define EXCEPTION eIntListType
-#include "../../List/src/TempList_Class.inc"
-
-TYPE( LIST_NODE_NAME ), PARAMETER, PUBLIC :: TypeIntListNode = IntListNode_(data=1_I4B)
-TYPE( LIST_NAME ), PARAMETER, PUBLIC :: TypeIntList = IntList_()
-
-TYPE IntListNodePointer_
-  CLASS( LIST_NODE_NAME ), POINTER :: ptr => NULL()
-END TYPE IntListNodePointer_
-
-PUBLIC :: IntListNodePointer_
-
-
-TYPE IntListPointer_
-  CLASS( LIST_NAME ), POINTER :: ptr => NULL( )
-END TYPE IntListPointer_
-
-PUBLIC :: IntListPointer_
-
-END MODULE IntList_Class
+#include "../../ftlMacros/ftlList.inc"

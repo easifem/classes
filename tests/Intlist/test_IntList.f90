@@ -15,109 +15,159 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-module test_list
+module test_IntList
 use easifemBase
 use easifemClasses
 implicit none
 contains
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 subroutine test1
-type( Intlist_ ) :: obj
-integer( i4b ) :: data
-
-call display( "test-1: testing add(), final(), resetIter(), nextIter()")
-call obj%add(1)
-call obj%add(2)
-call obj%resetIter()
-call obj%nextIter(data)
-call ok( data == 1, "%nextIter")
-call obj%Finalize()
-end
+type( IntList_ ) :: Obj
+call note( "test-1: testing Initiate() and Delete()")
+call Obj%Initiate()
+call Obj%DeallocateData()
+end subroutine
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 subroutine test2
-type( Intlist_ ) :: obj
-INTEGER( I4B ) :: data
-INTEGER( I4B ) :: ii, n
+type( IntList_ ) :: Obj
+integer( i4b ) :: n
+integer( i4b ) :: val
+call note( "test-2: testing Initiate(n,val)")
+n = 5; val = 1
+call Obj%Initiate( n=n, val=val )
+call Obj%Delete()
+end subroutine
 
-call note("test-2: testing size(), getHead(), getTail(), getNth()")
-call obj%add(1)
-call obj%add(2)
-call obj%add(3)
-call obj%add(4)
-n = obj%size()
-call ok( n == 4, 'obj%size()' )
-do ii = 1, n
-  call obj%getNth( ii, data )
-  call ok( data .EQ. 1 * ii, "obj%getNth" )
-end do
-call obj%gethead(data)
-call ok( data .EQ. 1, "obj%gethead()")
-call obj%gettail(data)
-call ok( data .EQ. 4, "obj%gettail()")
-call obj%Finalize()
-end
-
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 subroutine test3
-type( intlist_ ) :: obj
-integer( i4b ) :: data
-integer :: ii
+type( IntList_ ) :: Obj1, Obj2
+integer( i4b ) :: n
+integer( i4b ) :: val
+call note( "test-3: testing Initiate(Obj1, Obj2)")
+n = 5; val = 1
+call Obj1%Initiate( n=n, val=val )
+call Obj2%Initiate( Obj1 )
+call Obj1%Delete()
+call Obj2%Delete()
+end subroutine
 
-call note( "test-3: push(), pop(), popHead(), popTail()")
-call equalline(); call display( "push()"); call equalline()
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-call obj%add(1)
-call obj%add(2)
-call obj%add(3)
-call obj%push(4)
+subroutine test4
+type( IntList_ ) :: Obj1, Obj2
+integer( i4b ) :: n
+integer( i4b ) :: val
+call note( "test-4: testing Obj1=Obj2")
+n = 5; val = 1
+call Obj1%Initiate( n=n, val=val )
+Obj2=Obj1
+call Obj1%Delete()
+call Obj2%Delete()
+end subroutine
 
-call ok( obj%size() == 4, 'obj%size()' )
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-do ii = 1, obj%size()
-  call obj%getNth( ii, data )
-  call ok( data == 1 * ii, "obj%getNth" )
+subroutine test5
+type( IntList_ ) :: Obj
+integer( i4b ) :: val( 4 ) = [1,2,3,4]
+call note( "test-5: testing Obj%initiate(val)")
+call Obj%Initiate( val )
+call Obj%Delete()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test6
+type( IntList_ ) :: Obj
+integer( i4b ) :: val( 4 ) = [1,2,3,4]
+call note( "test-6: testing Obj=val")
+Obj=val
+call Obj%Delete()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test7
+type( IntList_ ) :: Obj
+integer( i4b ) :: val( 4 ) = [1,2,3,4]
+call note( "test-7: testing Obj%isEmpty(), Obj%SIZE()")
+call ok( Obj%isEmpty(), "Obj%isEmpty")
+Obj=val
+call ok( .NOT. Obj%isEmpty(), "Obj%isEmpty")
+call ok( Obj%SIZE() == SIZE(val), "Obj%SIZE()")
+call Obj%Delete()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test8
+type( IntList_ ) :: Obj
+integer( i4b ) :: val( 5 ), i
+call note( "test-8: testing Obj=val")
+val = [1,2,3,4,5]
+call obj%initiate()
+do i = 1, size( val )
+  call Obj%PushBack(val(i))
 end do
-
-call equalline(); call display( "popHead()"); call equalline()
-call obj%popHead(data)
-call ok( data == 1, "obj%gettail()")
-do ii = 1, obj%size()
-  call obj%getNth( ii, data )
-  call ok( data == 1 * (ii+1), "obj%getNth" )
+do i = 1, size( val )
+  call Obj%PushFront(val(i))
 end do
+call Obj%delete()
+end subroutine
 
-call equalline(); call display( "popTail()"); call equalline()
-call obj%popTail(data)
-call ok( data == 4, "obj%gettail()")
-do ii = 1, obj%size()
-  call obj%getNth( ii, data )
-  call ok( data == (ii+2), "obj%getNth" )
-end do
-call obj%Finalize()
-end
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test9
+type( IntList_ ) :: Obj
+type( IntListIterator_ ) :: iter
+integer( i4b ) :: i
+call note( "test-9: testing Obj=val")
+call obj%initiate()
+call obj%pushback( 1 )
+call obj%pushback( 2 )
+call obj%pushback( 4 )
+call display( obj, "[1,2,4]" )
+iter = Obj%Begin()
+call iter%inc(2)
+call display( iter, "Entry should be 4: ")
+! call obj%insert( iter, [3] )
+! call display( obj, "It should be [1,2,3,4]: " )
+call Obj%delete()
+end subroutine
+
 end module
-
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 program main
-use test_list
+use test_IntList
 implicit none
 call plan( 61 )
-call test1
-call test2
-call test3
+call test1; call test2; call test3; call test4
+call test5; call test6; call test7; call test8
+call test9
 end program main

@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.10.0 FATAL_ERROR)
-set(PROJECT_NAME "ftlListElement")
+set(PROJECT_NAME "ElementList")
 project(${PROJECT_NAME})
 enable_language(Fortran)
 set(TARGET_NAME "test")
