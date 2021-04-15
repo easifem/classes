@@ -1,84 +1,34 @@
-
-# if working Fortran compiler present, enable Fortran before searching for libraries
-# include(CheckLanguage)
-# check_language(Fortran)
-# if(CMAKE_Fortran_COMPILER)
-#   enable_language(Fortran)
-# endif()
-
-message(STATUS
+MESSAGE(STATUS
 "Is the Fortran compiler loaded? ${CMAKE_Fortran_COMPILER_LOADED}")
 
-if(CMAKE_Fortran_COMPILER_LOADED)
-  message(STATUS "Fortran compiler ID = ${CMAKE_Fortran_COMPILER_ID}")
-  message(STATUS "Is the Fortran from GNU? ${CMAKE_COMPILER_IS_GNUFortran}")
-  message(STATUS
+IF(CMAKE_Fortran_COMPILER_LOADED)
+  MESSAGE(STATUS "Fortran compiler ID = ${CMAKE_Fortran_COMPILER_ID}")
+  MESSAGE(STATUS
     "The Fortran compiler version is: ${CMAKE_Fortran_COMPILER_VERSION}")
-endif()
+ENDIF()
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-endif()
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+ENDIF()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-  list(APPEND
-    dialect
-    "-ffree-form"
-    "-std=f2008"
-    "-fimplicit-none"
-    "-pedantic"
-    "-fall-intrinsics"
-  )
-  set(lang_std "-std=")
-  set(ppd "-cpp")
-  set(openmp "-fopenmp")
-  set(openacc "-fopenacc")
-  set(bounds "-fbounds-check")
-  set(debug "-g" "-fbacktrace" "-Wextra" "-Wall" )
-  set(pic "-fPIC")
-  set(opt_level 3)
-endif()
+IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES "gfortran*")
+  LIST(APPEND FORTRAN_FLAGS "-ffree-form" "-ffree-line-length-none" "-cpp" "-std=f2008" "-fimplicit-none" )
+  LIST(APPEND FORTRAN_FLAGS_RELEASE "-O3" )
+  LIST(APPEND FORTRAN_FLAGS_DEBUG "-fbounds-check" "-g" "-fbacktrace" "-Wextra" "-Wall" "-fprofile-arcs" "-ftest-coverage" "-Wimplicit-interface" )
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+ELSEIF(${CMAKE_Fortran_COMPILER_ID} STREQUAL "Intel" OR Fortran_COMPILER_NAME MATCHES "ifort*")
+  LIST(APPEND FORTRAN_FLAGS "-r8" "-fpp" "-W1")
+  LIST(APPEND FORTRAN_FLAGS_RELEASE "-O3")
+  LIST(APPEND FORTRAN_FLAGS_DEBUG "-O0" "-traceback" "-g" "-debug all" "-check all" "-ftrapuv" "-warn" "nointerfaces")
 
-endif()
+ELSEIF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "XL" OR Fortran_COMPILER_NAME MATCHES "xlf*")
+    LIST(APPEND FORTRAN_FLAGS "-q64" "-qrealsize=8" "-qsuffix=f=f90:cpp=f90")
+    LIST(APPEND FORTRAN_FLAGS_RELEASE "-O3" "-qstrict")
+    LIST(APPEND FORTRAN_FLAGS_DEBUG "-O0" "-g" "-qfullpath" "-qkeepparm")
+ELSE ()
+    MESSAGE(ERROR "No optimized Fortran compiler flags are known")
+ENDIF ()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-
-endif()
-
-
-list(APPEND FORTRAN_FLAGS
-  ${dialect}
-  ${ppd}
-  ${pic}
-)
-
-list(APPEND
-  FORTRAN_FLAGS_DEBUG
-  ${dialect}
-  ${bounds}
-  ${debug}
-  ${ppd}
-  ${pic}
-)
-
-list(APPEND
-  FORTRAN_FLAGS_RELEASE
-  ${dialect}
-  "-O${opt_level}"
-  ${ppd}
-  ${pic}
-)
-
-list( APPEND
-  FORTRAN_FLAGS_SPARSEKIT
-  "-O${opt_level}"
-  "${lang_std}legacy"
-  ${pic}
-  "-fno-trapping-math" "-mtune=native"
-)
-
-cmake_print_variables(FORTRAN_FLAGS)
-cmake_print_variables(FORTRAN_FLAGS_RELEASE)
-cmake_print_variables(FORTRAN_FLAGS_DEBUG)
+CMAKE_PRINT_VARIABLES(FORTRAN_FLAGS)
+CMAKE_PRINT_VARIABLES(FORTRAN_FLAGS_RELEASE)
+CMAKE_PRINT_VARIABLES(FORTRAN_FLAGS_DEBUG)
