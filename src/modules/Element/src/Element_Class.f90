@@ -24,6 +24,8 @@ USE BaseType
 IMPLICIT NONE
 PRIVATE
 
+CHARACTER( LEN = * ), PARAMETER :: modName='ELEMENT_CLASS'
+
 !----------------------------------------------------------------------------
 !                                                                  Element_
 !----------------------------------------------------------------------------
@@ -52,7 +54,8 @@ TYPE :: Element_
   GENERIC, PUBLIC :: getElemShapeData =>  get_elemsd_H1_Lagrange
     !! Returns element shape data
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: m_Initiate_obj, m_initiate_from_obj
+  PROCEDURE, PUBLIC, PASS( Obj ) :: m_Initiate_obj
+  PROCEDURE, PUBLIC, PASS( Obj ) :: m_initiate_from_obj
   PROCEDURE, PUBLIC, PASS( Obj ) :: Display => m_display_Obj
   PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryElement => m_isBoundaryElement
   PROCEDURE, PUBLIC, PASS( Obj ) :: getNptrs => m_getNptrs

@@ -48,7 +48,11 @@ else:
         opt = "ON"
     cmake_def += " -DBUILD_SHARED_LIBS=" + opt
 
-    cmake_def += " -DCMAKE_INSTALL_PREFIX=${EASIFEM_CLASSES}"
+    opt = getOption("CMAKE_INSTALL_PREFIX", ["${PREFIX}"])
+    if(opt == " "):
+        #   opt = "${HOME}/PENF"
+        opt = "${EASIFEM_CLASSES}"
+    cmake_def += " -DCMAKE_INSTALL_PREFIX=" + opt
 
     cmake_def += " -DUSE_Int32=ON -DUSE_Real64=ON"
 
