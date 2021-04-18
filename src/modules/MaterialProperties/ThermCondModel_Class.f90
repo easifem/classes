@@ -16,7 +16,7 @@ PRIVATE
 
 TYPE, ABSTRACT :: ThermCondModel_
   REAL( DFP ) :: ConstThermCondVal = 0.0_DFP
-  PROCEDURE( johansen_getval ), POINTER, PASS( Obj ) :: getValue => NULL()
+  PROCEDURE( johansen_getval ), POINTER, PASS( obj ) :: getValue => NULL()
 END TYPE ThermCondModel_
 
 PUBLIC :: ThermCondModel_
@@ -46,8 +46,8 @@ TYPE( UserThermCond_ ), PUBLIC, PARAMETER::TypeUserThermCond=UserThermCond_()
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION UserThermCond_Pointer(  ) RESULT( Ans )
-  CLASS( UserThermCond_ ), POINTER :: Ans
+MODULE FUNCTION UserThermCond_Pointer(  ) RESULT( ans )
+  CLASS( UserThermCond_ ), POINTER :: ans
 END FUNCTION UserThermCond_Pointer
 END INTERFACE
 
@@ -64,9 +64,9 @@ INTERFACE
 !
 ! This function returns the thermal conductivity values
 ! - `volFrac` contains volumetric fraction of solid, water, ice, air
-MODULE PURE FUNCTION UserThermCond_getval( Obj, volFrac_solid, &
-  & volFrac_water, volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( Ans )
-  CLASS( ThermCondModel_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION UserThermCond_getval( obj, volFrac_solid, &
+  & volFrac_water, volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( ans )
+  CLASS( ThermCondModel_ ), INTENT( IN ) :: obj
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_solid
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_water
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_ice
@@ -75,7 +75,7 @@ MODULE PURE FUNCTION UserThermCond_getval( Obj, volFrac_solid, &
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: x
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: y
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: z
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 END FUNCTION UserThermCond_getval
 END INTERFACE
 
@@ -117,8 +117,8 @@ TYPE( JohansenThermCond_ ), PUBLIC, PARAMETER :: TypeJohansenThermCond &
 INTERFACE
 MODULE FUNCTION JohansenThermCond_Pointer( Lambda_Sat, Lambda_Dry, &
   & Lambda_e, Gamma_d, QuartzContent, SoilState, SoilType ) &
-  & RESULT( Ans )
-  CLASS( JohansenThermCond_ ), POINTER :: Ans
+  & RESULT( ans )
+  CLASS( JohansenThermCond_ ), POINTER :: ans
   REAL( DFP ), OPTIONAL :: Lambda_Sat
   REAL( DFP ), OPTIONAL :: Lambda_Dry
   REAL( DFP ), OPTIONAL :: Lambda_e
@@ -142,9 +142,9 @@ INTERFACE
 !
 ! This function returns the thermal conductivity values
 ! - `volFrac` contains volumetric fraction of solid, water, ice, air
-MODULE PURE FUNCTION johansen_getval( Obj, volFrac_solid, volFrac_water, &
-  & volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( Ans )
-  CLASS( ThermCondModel_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION johansen_getval( obj, volFrac_solid, volFrac_water, &
+  & volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( ans )
+  CLASS( ThermCondModel_ ), INTENT( IN ) :: obj
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_solid
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_water
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_ice
@@ -153,7 +153,7 @@ MODULE PURE FUNCTION johansen_getval( Obj, volFrac_solid, volFrac_water, &
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: x
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: y
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: z
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 END FUNCTION johansen_getval
 END INTERFACE
 END MODULE ThermCondModel_Class

@@ -33,19 +33,19 @@ END PROCEDURE el_goto
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_read_file
-  CALL Obj % GotoTag( mshFile, ierr )
+  CALL obj % GotoTag( mshFile, ierr )
   IF( .NOT. ierr ) THEN
     IF( mshFormat % Version .GT. 2.0 ) THEN
-      READ( mshFile % UnitNo, * ) Obj % numEntityBlocks, Obj % numElements, &
-        & Obj % minElementTag, Obj % maxElementTag
-      IF( ( Obj % maxElementTag - Obj % minElementTag ) &
-        & .EQ. ( Obj % numElements - 1 ) ) THEN
-        Obj % isSparse = .FALSE.
+      READ( mshFile % UnitNo, * ) obj % numEntityBlocks, obj % numElements, &
+        & obj % minElementTag, obj % maxElementTag
+      IF( ( obj % maxElementTag - obj % minElementTag ) &
+        & .EQ. ( obj % numElements - 1 ) ) THEN
+        obj % isSparse = .FALSE.
       ELSE
-        Obj % isSparse = .TRUE.
+        obj % isSparse = .TRUE.
       END IF
     ELSE
-      READ( mshFile % UnitNo, * ) Obj % numElements
+      READ( mshFile % UnitNo, * ) obj % numElements
     END IF
   END IF
 END PROCEDURE el_read_file
@@ -71,14 +71,14 @@ MODULE PROCEDURE el_display
   CALL BlankLines( UnitNo = I, NOL = 1 )
   WRITE( I, "(A)" ) "| Property | Value |"
   WRITE( I, "(A)" ) "| :----    | ---:  |"
-  WRITE( I, "(A, I4, A)" ) "| Total Elements    | ", Obj % NumElements, " | "
-  WRITE( I, "(A, I4, A)" ) "| Total Entities | ", Obj % NumEntityBlocks, &
+  WRITE( I, "(A, I4, A)" ) "| Total Elements    | ", obj % NumElements, " | "
+  WRITE( I, "(A, I4, A)" ) "| Total Entities | ", obj % NumEntityBlocks, &
     & " | "
-  WRITE( I, "(A, I4, A)" ) "| Min Element Tag   | ", Obj % minElementTag, &
+  WRITE( I, "(A, I4, A)" ) "| Min Element Tag   | ", obj % minElementTag, &
     & " | "
-  WRITE( I, "(A, I4, A)" ) "| Max Element Tag   | ", Obj % maxElementTag, &
+  WRITE( I, "(A, I4, A)" ) "| Max Element Tag   | ", obj % maxElementTag, &
     & " | "
-  WRITE( I, "(A, G5.2, A)" ) "| isSparse       | ", Obj % isSparse, &
+  WRITE( I, "(A, G5.2, A)" ) "| isSparse       | ", obj % isSparse, &
     & " | "
 END PROCEDURE el_display
 
@@ -103,7 +103,7 @@ END PROCEDURE el_read_elem_line
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_telements_1
-  Ans = Obj % numElements
+  ans = obj % numElements
 END PROCEDURE el_telements_1
 
 !----------------------------------------------------------------------------
@@ -111,9 +111,9 @@ END PROCEDURE el_telements_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_deallocatedata
-SELECT TYPE( Obj )
+SELECT TYPE( obj )
 TYPE IS (mshElements_)
-  Obj = TypemshElements
+  obj = TypemshElements
 END SELECT
 END PROCEDURE el_deallocatedata
 

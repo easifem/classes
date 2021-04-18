@@ -14,7 +14,7 @@ program main
 !   obj = GaussLegendreQuadrature( TypeReferenceLine, n )
 !   call display( obj, "GaussLegendreQuadrature")
 
-!   CALL getQuadraturePoints( Obj, points, w, 1 )
+!   CALL getQuadraturePoints( obj, points, w, 1 )
 
 !   write( *, * ) points, w
 
@@ -31,7 +31,7 @@ block
   obj = GaussLegendreQuadrature( TypeReferenceTriangle, n )
   call display( obj, "GaussLegendreQuadrature")
 
-  call getQuadraturePoints( Obj, points, w )
+  call getQuadraturePoints( obj, points, w )
   call display_array( points, "points " )
 
 end block

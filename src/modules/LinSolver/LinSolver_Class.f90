@@ -72,16 +72,16 @@ INTEGER( I4B ), PARAMETER, PUBLIC :: &
 !### Usage
 !
 ! ```fortran
-!	CALL Obj % Initiate( Obj, SolverName, MaxIter, SolverName &
+!	CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
 !    & <, diagScale, ipar, fpar> )
-! CALL Obj % setPrecondition( Obj, precondtype <,ipar, fpar> )
-! CALL Obj % setSparsity( From )
-! CALL Obj % setDirichletBCNodes( Nptrs, dofs )
-! CALL Obj % setMatrix( From )
-! CALL Obj % solve( sol, rhs )
-! CALL Obj % Display( msg <,unitno > )
-! CALL Obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL Obj % DeallocateData( )
+! CALL obj % setPrecondition( obj, precondtype <,ipar, fpar> )
+! CALL obj % setSparsity( From )
+! CALL obj % setDirichletBCNodes( Nptrs, dofs )
+! CALL obj % setMatrix( From )
+! CALL obj % solve( sol, rhs )
+! CALL obj % Display( msg <,unitno > )
+! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
+! CALL obj % DeallocateData( )
 ! ```
 
 TYPE, ABSTRACT :: LinSolver_
@@ -108,28 +108,28 @@ TYPE, ABSTRACT :: LinSolver_
     !! Matrix Property
   CONTAINS
 
-  PROCEDURE( ls_init ), PUBLIC, DEFERRED, PASS( Obj ) :: Initiate
+  PROCEDURE( ls_init ), PUBLIC, DEFERRED, PASS( obj ) :: Initiate
     !! Initiate the object
-  PROCEDURE( ls_set_precon ), PUBLIC, DEFERRED, PASS( Obj ) :: setPrecondition
+  PROCEDURE( ls_set_precon ), PUBLIC, DEFERRED, PASS( obj ) :: setPrecondition
     !! Set preconditioner and its properties
   PROCEDURE( ls_set_sparsity ), PUBLIC, DEFERRED, PASS( To ) :: setSparsity
     !! Set sparsity pattern,
     !! Sparsity is also related to the connectivity of the mesh
-  PROCEDURE( ls_set_dbc_1 ), PUBLIC, DEFERRED, PASS( Obj ) :: set_dbcNodes_1
+  PROCEDURE( ls_set_dbc_1 ), PUBLIC, DEFERRED, PASS( obj ) :: set_dbcNodes_1
     !! Set Dirichlet boundary condition information
-  PROCEDURE( ls_set_dbc_2 ), PUBLIC, DEFERRED, PASS( Obj ) :: set_dbcNodes_2
+  PROCEDURE( ls_set_dbc_2 ), PUBLIC, DEFERRED, PASS( obj ) :: set_dbcNodes_2
     !! Set Dirichlet boundary condition information
   GENERIC, PUBLIC :: setDirichletBCNodes => set_dbcNodes_1, set_dbcNodes_2
     !! Set Dirichlet boundary condition information
   PROCEDURE( ls_set_matrix ), PUBLIC, DEFERRED, PASS( To ) :: setMatrix
     !! Set the matrix
-  PROCEDURE( ls_solve ), PUBLIC, DEFERRED, PASS( Obj ) :: Solve
+  PROCEDURE( ls_solve ), PUBLIC, DEFERRED, PASS( obj ) :: Solve
     !! Solve system of linear equation
-  PROCEDURE( ls_display ), PUBLIC, DEFERRED, PASS( Obj ) :: Display
+  PROCEDURE( ls_display ), PUBLIC, DEFERRED, PASS( obj ) :: Display
     !! Display the content
-  PROCEDURE( ls_w_res ), PUBLIC, DEFERRED, PASS( Obj ) :: writeResidueHistory
+  PROCEDURE( ls_w_res ), PUBLIC, DEFERRED, PASS( obj ) :: writeResidueHistory
     !! Write the residue history to a file
-  PROCEDURE( ls_deallocate ), PUBLIC, DEFERRED, PASS( Obj ) :: DeallocateData
+  PROCEDURE( ls_deallocate ), PUBLIC, DEFERRED, PASS( obj ) :: DeallocateData
     !! Deallocate Data
 END TYPE LinSolver_
 
@@ -155,16 +155,16 @@ END TYPE LinSolverPointer_
 !### Usage
 !
 ! ```fortran
-!	CALL Obj % Initiate( Obj, SolverName, MaxIter, SolverName &
+!	CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
 !    & <, diagScale, ipar, fpar> )
-! CALL Obj % setPrecondition( Obj, precondtype <,ipar, fpar> )
-! CALL Obj % setSparsity( From )
-! CALL Obj % setDirichletBCNodes( Nptrs, dofs )
-! CALL Obj % setMatrix( From )
-! CALL Obj % solve( sol, rhs )
-! CALL Obj % Display( msg <,unitno > )
-! CALL Obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL Obj % DeallocateData( )
+! CALL obj % setPrecondition( obj, precondtype <,ipar, fpar> )
+! CALL obj % setSparsity( From )
+! CALL obj % setDirichletBCNodes( Nptrs, dofs )
+! CALL obj % setMatrix( From )
+! CALL obj % solve( sol, rhs )
+! CALL obj % Display( msg <,unitno > )
+! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
+! CALL obj % DeallocateData( )
 ! ```
 !
 !### Solver name
@@ -222,25 +222,25 @@ TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
 
   CONTAINS
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => skit_initiate
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => skit_initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS( Obj ) :: setPrecondition => skit_setprecond
+  PROCEDURE, PUBLIC, PASS( obj ) :: setPrecondition => skit_setprecond
     !! Set preconditioner properties
   PROCEDURE, PUBLIC, PASS( To ) :: setSparsity => skit_set_sparsity
     !! Set sparsity pattern related information of tangent matrix
-  PROCEDURE, PUBLIC, PASS( Obj ) :: set_dbcNodes_1 => skit_setDBC_1
+  PROCEDURE, PUBLIC, PASS( obj ) :: set_dbcNodes_1 => skit_setDBC_1
     !! Set Information about the Dirichlet boundary nodes
-  PROCEDURE, PUBLIC, PASS( Obj ) :: set_dbcNodes_2 => skit_setDBC_2
+  PROCEDURE, PUBLIC, PASS( obj ) :: set_dbcNodes_2 => skit_setDBC_2
     !! Set Information about the Dirichlet boundary nodes
   PROCEDURE, PUBLIC, PASS( To ) :: setMatrix => skit_setmatrix
     !! Set/link tangent matrix to the linear solver engine
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Solve => skit_solve
+  PROCEDURE, PUBLIC, PASS( obj ) :: Solve => skit_solve
     !! Solve the system of linear equation
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Display => skit_display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => skit_display
     !! Display the contents
-  PROCEDURE, PUBLIC, PASS( Obj ) :: writeResidueHistory => skit_write_res_his
+  PROCEDURE, PUBLIC, PASS( obj ) :: writeResidueHistory => skit_write_res_his
     !! Output the residue history
-  PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => skit_deallocatedata
+  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => skit_deallocatedata
     !! DeallocateData
 END TYPE Sparsekit_
 
@@ -288,25 +288,25 @@ TYPE, EXTENDS( LinSolver_ ) :: LIS_
 
   CONTAINS
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => lis_initiate
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => lis_initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS( Obj ) :: setPrecondition => lis_setprecond
+  PROCEDURE, PUBLIC, PASS( obj ) :: setPrecondition => lis_setprecond
     !! Set preconditioner properties
   PROCEDURE, PUBLIC, PASS( To ) :: setSparsity => lis_set_sparsity
     !! Set sparsity pattern related information of tangent matrix
-  PROCEDURE, PUBLIC, PASS( Obj ) :: set_dbcNodes_1 => lis_setDBC_1
+  PROCEDURE, PUBLIC, PASS( obj ) :: set_dbcNodes_1 => lis_setDBC_1
     !! set Information about the Dirichlet boundary nodes
-  PROCEDURE, PUBLIC, PASS( Obj ) :: set_dbcNodes_2 => lis_setDBC_2
+  PROCEDURE, PUBLIC, PASS( obj ) :: set_dbcNodes_2 => lis_setDBC_2
     !! set Information about the Dirichlet boundary nodes
   PROCEDURE, PUBLIC, PASS( To ) :: setMatrix => lis_setmatrix
     !! set/link tangent matrix to the linear solver engine
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Solve => lis_solve_1
+  PROCEDURE, PUBLIC, PASS( obj ) :: Solve => lis_solve_1
     !! Solve the system of linear equation
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Display => lis_display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => lis_display
     !! Display the contents
-  PROCEDURE, PUBLIC, PASS( Obj ) :: writeResidueHistory => lis_write_res_his
+  PROCEDURE, PUBLIC, PASS( obj ) :: writeResidueHistory => lis_write_res_his
     !! Output the residue history
-  PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => lis_deallocatedata
+  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => lis_deallocatedata
     !! Deallocate Data
 END TYPE LIS_
 
@@ -333,9 +333,9 @@ PUBLIC :: LisPointer_
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_init( Obj, SolverName, MaxIter, Tol, diagScale, ipar, fpar )
+SUBROUTINE ls_init( obj, SolverName, MaxIter, Tol, diagScale, ipar, fpar )
   IMPORT :: LinSolver_, DFP, I4B
-  CLASS( Linsolver_ ), INTENT( INOUT ) :: Obj
+  CLASS( Linsolver_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: Tol
   INTEGER( I4B ), INTENT( IN ) :: MaxIter
   INTEGER( I4B ), INTENT( IN ) :: SolverName
@@ -350,9 +350,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_set_precon( Obj, precondtype, ipar, fpar )
+SUBROUTINE ls_set_precon( obj, precondtype, ipar, fpar )
   IMPORT :: LinSolver_, DFP, I4B
-  CLASS( LinSolver_ ), INTENT( INOUT) :: Obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -376,17 +376,17 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_set_dbc_1(  Obj, Nptrs, dofs )
+SUBROUTINE ls_set_dbc_1(  obj, Nptrs, dofs )
   IMPORT :: LinSolver_, I4B
-  CLASS( LinSolver_ ), INTENT( INOUT) :: Obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), dofs( : )
 END SUBROUTINE ls_set_dbc_1
 END INTERFACE
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_set_dbc_2(  Obj, Nptrs, dofs )
+SUBROUTINE ls_set_dbc_2(  obj, Nptrs, dofs )
   IMPORT :: LinSolver_, IntVector_, I4B
-  CLASS( LinSolver_ ), INTENT( INOUT) :: Obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE ls_set_dbc_2
@@ -410,9 +410,9 @@ END INTERFACE
 
 ! sol contains the initial guess
 ABSTRACT INTERFACE
-SUBROUTINE ls_solve( Obj, sol, rhs )
+SUBROUTINE ls_solve( obj, sol, rhs )
   IMPORT :: LinSolver_, DFP
-  CLASS( LinSolver_ ), INTENT( INOUT) :: Obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   REAL( DFP ), INTENT( INOUT) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE ls_solve
@@ -423,9 +423,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_display( Obj, msg, unitno )
+SUBROUTINE ls_display( obj, msg, unitno )
   IMPORT :: LinSolver_, I4B
-  CLASS( LinSolver_ ), INTENT( IN ) :: Obj
+  CLASS( LinSolver_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Unitno
 END SUBROUTINE ls_display
@@ -436,9 +436,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_w_res( Obj, path, prefix, fmt, iter )
+SUBROUTINE ls_w_res( obj, path, prefix, fmt, iter )
   IMPORT :: LinSolver_, I4B
-  CLASS( LinSolver_ ), INTENT( IN ) :: Obj
+  CLASS( LinSolver_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: path, prefix, fmt
   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: iter
 END SUBROUTINE ls_w_res
@@ -449,9 +449,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE ls_deallocate( Obj )
+SUBROUTINE ls_deallocate( obj )
   IMPORT :: LinSolver_
-  CLASS( LinSolver_ ), INTENT( INOUT) :: Obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
 END SUBROUTINE ls_deallocate
 END INTERFACE
 
@@ -473,9 +473,9 @@ INTERFACE
 ! or `lis_om` then `ipar(1)` denotes the number of restarts required in
 ! these algorithms. Default value is set to 20.
 
-MODULE SUBROUTINE skit_initiate( Obj, SolverName, MaxIter, Tol, &
+MODULE SUBROUTINE skit_initiate( obj, SolverName, MaxIter, Tol, &
   & diagScale, ipar, fpar )
-  CLASS( Sparsekit_ ), INTENT( INOUT ) :: Obj
+  CLASS( Sparsekit_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: Tol
   INTEGER( I4B ), INTENT( IN ) :: MaxIter
   INTEGER( I4B ), INTENT( IN ) :: SolverName
@@ -520,8 +520,8 @@ INTERFACE
 !   - `fpar(2)` denotes value of alpha
 !   - `fpar(3)` denotes permutation tolerance
 
-MODULE SUBROUTINE skit_setprecond( Obj, precondtype, ipar, fpar )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE skit_setprecond( obj, precondtype, ipar, fpar )
+  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -559,8 +559,8 @@ INTERFACE
 ! `Nptrs` denotes the dirichlet node numbers
 ! `storageFMT` can be `DOF_FMT` or `Nodes_FMT`
 
-MODULE SUBROUTINE skit_setDBC_1(  Obj, Nptrs, dofs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE skit_setDBC_1(  obj, Nptrs, dofs )
+  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_1
@@ -569,8 +569,8 @@ END INTERFACE
 INTERFACE
 !! set Dirichlet boundary condition information
 
-MODULE SUBROUTINE skit_setDBC_2(  Obj, Nptrs, dofs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE skit_setDBC_2(  obj, Nptrs, dofs )
+  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_2
@@ -594,8 +594,8 @@ END INTERFACE
 
 ! sol contains the initial guess
 INTERFACE
-MODULE SUBROUTINE skit_solve( Obj, sol, rhs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE skit_solve( obj, sol, rhs )
+  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
   REAL( DFP ), INTENT( INOUT) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE skit_solve
@@ -606,8 +606,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE skit_display( Obj, msg, unitno )
-  CLASS( Sparsekit_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE skit_display( obj, msg, unitno )
+  CLASS( Sparsekit_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Unitno
 END SUBROUTINE skit_display
@@ -624,8 +624,8 @@ PUBLIC :: Display
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE skit_write_res_his( Obj, path, prefix, fmt, iter )
-  CLASS( Sparsekit_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE skit_write_res_his( obj, path, prefix, fmt, iter )
+  CLASS( Sparsekit_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: path, prefix, fmt
   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: iter
 END SUBROUTINE skit_write_res_his
@@ -636,8 +636,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE skit_deallocatedata( Obj )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE skit_deallocatedata( obj )
+  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
 END SUBROUTINE skit_deallocatedata
 END INTERFACE
 
@@ -656,9 +656,9 @@ PUBLIC :: DeallocateData
 !<--- ipar( 1 ) : contains ell or restart or irestart
 !<--- fpar( 1 ) : contains value of omega
 INTERFACE
-MODULE SUBROUTINE lis_initiate( Obj, SolverName, MaxIter, Tol, &
+MODULE SUBROUTINE lis_initiate( obj, SolverName, MaxIter, Tol, &
   & diagScale, ipar, fpar )
-  CLASS( LIS_ ), INTENT( INOUT ) :: Obj
+  CLASS( LIS_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: Tol
   INTEGER( I4B ), INTENT( IN ) :: MaxIter, SolverName
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : ), diagScale
@@ -675,8 +675,8 @@ END INTERFACE Initiate
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE lis_setprecond( Obj, precondtype,  ipar, fpar )
-  CLASS( LIS_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE lis_setprecond( obj, precondtype,  ipar, fpar )
+  CLASS( LIS_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -687,8 +687,8 @@ END INTERFACE
 !                                                        setSparsity@Methods
 !----------------------------------------------------------------------------
 
-!<--- allocate Obj % A, Obj % IA, Obj % JA
-!<--- set size of Obj % lis_rhs, lis_sol, lis_mat
+!<--- allocate obj % A, obj % IA, obj % JA
+!<--- set size of obj % lis_rhs, lis_sol, lis_mat
 !<--- set all values of lis_rhs and lis_sol to zero
 !<--- set csr
 INTERFACE
@@ -704,16 +704,16 @@ END INTERFACE
 
 !<--- initiate dbcNptrs, dbcJA, dbcIndx, dbcIA
 INTERFACE
-MODULE SUBROUTINE lis_setDBC_1(  Obj, Nptrs, dofs )
-  CLASS( LIS_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE lis_setDBC_1(  obj, Nptrs, dofs )
+  CLASS( LIS_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE lis_setDBC_1
 END INTERFACE
 
 INTERFACE
-MODULE SUBROUTINE lis_setDBC_2(  Obj, Nptrs, dofs )
-  CLASS( LIS_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE lis_setDBC_2(  obj, Nptrs, dofs )
+  CLASS( LIS_ ), INTENT( INOUT) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE lis_setDBC_2
@@ -736,8 +736,8 @@ END INTERFACE
 
 ! sol contains the initial guess
 INTERFACE
-MODULE SUBROUTINE lis_solve_1( Obj, sol, rhs )
-  CLASS( LIS_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE lis_solve_1( obj, sol, rhs )
+  CLASS( LIS_ ), INTENT( INOUT) :: obj
   REAL( DFP ), INTENT( INOUT) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE lis_solve_1
@@ -748,8 +748,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE lis_display( Obj, msg, unitno )
-  CLASS( LIS_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE lis_display( obj, msg, unitno )
+  CLASS( LIS_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE lis_display
@@ -764,8 +764,8 @@ END INTERFACE Display
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE lis_write_res_his( Obj, path, prefix, fmt, iter )
-  CLASS( LIS_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE lis_write_res_his( obj, path, prefix, fmt, iter )
+  CLASS( LIS_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: path, prefix, fmt
   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: iter
 END SUBROUTINE lis_write_res_his
@@ -776,8 +776,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE lis_deallocatedata( Obj )
-  CLASS( LIS_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE lis_deallocatedata( obj )
+  CLASS( LIS_ ), INTENT( INOUT) :: obj
 END SUBROUTINE lis_deallocatedata
 END INTERFACE
 

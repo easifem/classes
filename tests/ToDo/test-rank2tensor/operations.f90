@@ -49,7 +49,7 @@ implicit none
 ! 	real( dfp ) :: T( 3, 3 ), invar
 
 ! 	call RANDOM_NUMBER( T )
-! 	CALL convert( From = T, To = Obj )
+! 	CALL convert( From = T, To = obj )
 ! 	call display( obj, "obj = " )
 ! 	invar = Det( obj )
 ! 	write( *, * ) invar
@@ -144,7 +144,7 @@ implicit none
 ! 	obj = T
 ! 	call display( obj, "sym(obj)")
 
-! 	call symEigen( Obj, Q, W )
+! 	call symEigen( obj, Q, W )
 
 ! 	call display_array( Q, "Q" )
 ! 	call display_array( W, "W" )
@@ -171,7 +171,7 @@ implicit none
 ! 	obj = T
 ! 	call display( obj, "sym(obj)")
 
-! 	call Eigen( Obj, Q, W )
+! 	call Eigen( obj, Q, W )
 
 ! 	call display_array( REAL( Q ), "REAL Q" )
 ! 	call display_array( REAL( W ), "REAL W" )
@@ -234,7 +234,7 @@ block
 	expobj = exp( obj )
 
 	call display( expobj, "exp" )
-	
+
 	! call display_array( MATMUL( T, Q( :, 1 ) ) / W( 1 ) - Q( :, 1 ), "0" )
 	! call display_array( MATMUL( T, Q( :, 2 ) ) / W( 2 ) - Q( :, 2 ), "0" )
 	! call display_array( MATMUL( T, Q( :, 3 ) ) / W( 3 ) - Q( :, 3 ), "0" )

@@ -24,8 +24,14 @@ MODULE FacetElement_Class
 USE GlobalData
 USE BaseType
 USE Element_Class
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
+
+CHARACTER( LEN=* ), PARAMETER :: modName="FACETELEMENT_CLASS"
+TYPE( ExceptionHandler_ ), SAVE :: eElement
+!$OMP THREADPRIVATE(eElement)
 
 !----------------------------------------------------------------------------
 !                                                              FacetElement_
@@ -38,36 +44,38 @@ PRIVATE
 !{!pages/FacetElement.md}
 
 TYPE, EXTENDS( Element_ ) :: FacetElement_
-  INTEGER( I4B ) :: LocalID
+  PRIVATE
+  INTEGER( I4B ) :: LocalID = 0_I4B
   CLASS( Element_ ), POINTER :: Cell => NULL( )
   CLASS( Element_ ), POINTER :: OuterCell => NULL( )
 
   CONTAINS
   ! Constructor
-  PROCEDURE, PUBLIC, PASS( Obj ) :: CellNptrs => getCellNptrs
-  PROCEDURE, PUBLIC, PASS( Obj ) :: PointerToCell => getPointerToCell
-  PROCEDURE, PUBLIC, PASS( Obj ) :: FacetLocalID => getFacetLocalID
-  PROCEDURE, PUBLIC, PASS( Obj ) :: FacetLocalNptrs => getFacetLocalNptrs
-  PROCEDURE, PUBLIC, PASS( Obj ) :: setPointerToCell
-  PROCEDURE, PUBLIC, PASS( Obj ) :: FreePointerToCell
-  PROCEDURE, PUBLIC, PASS( Obj ) :: setFacetLocalID
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Display => m_display_Obj
-  PROCEDURE, PUBLIC, PASS( Obj ) :: get_elemsd_H1_Lagrange
+  PROCEDURE, PUBLIC, PASS( obj ) :: getCellNptrs => faceElem_getCellNptrs
+  PROCEDURE, PUBLIC, PASS( obj ) :: setCellNptrs => faceElem_setCellNptrs
+  PROCEDURE, PUBLIC, PASS( obj ) :: getCellPointer => faceElem_getCellPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: setCellPointer => faceElem_setCellPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: FreeCellPointer => faceElem_freeCellPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalID => faceElem_getFacetLocalID
+  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetLocalID => faceElem_setFacetLocalID
+  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalNptrs => faceElem_getFacetLocalNptrs
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => faceElem_display
+  FINAL :: faceElem_deallocatedata
+  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => elem_deallocateData
 END TYPE FacetElement_
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 PUBLIC :: FacetElement_
-
-!----------------------------------------------------------------------------
-!                                                            TypeFacetElement
-!----------------------------------------------------------------------------
-
 TYPE( FacetElement_ ), PARAMETER, PUBLIC :: &
-  & TypeFacetElement = FacetElement_(Mat_Type = 0_I4B, &
-  & RefElem = NULL(), LocalID = 0_I4B)
+  & TypeFacetElement = FacetElement_( LocalID = 0_I4B )
 
 !----------------------------------------------------------------------------
 !                                                        FacetElementPointer_
 !----------------------------------------------------------------------------
+
 TYPE :: FacetElementPointer_
   CLASS( FacetElementPointer_ ), POINTER :: Ptr => NULL( )
 END TYPE FacetElementPointer_
@@ -81,12 +89,50 @@ PUBLIC :: FacetElementPointer_
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
 ! summary: 	Returns an instance of [[FacetElement_]]
+!
+!### Introduction
+! 	Returns an instance of [[FacetElement_]] from [[ParameterList_]]
+!
+!
+!### Usage
+!
+!```fortran
+! class( element_ ), pointer :: cell, obj
+! class( ReferenceElement_ ), pointer :: refelem
+! type( ParameterList_ ) :: param
+! integer( I4B ), ALLOCATABLE :: nptrs(:)
+! integer( I4B ) :: ierr
+! ! Reference Element
+! refelem => ReferenceTriangle_Pointer( NSD = 2 )
+! call FPL_INIT()
+! call param%init()
+! nptrs = [1,2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! ! Cell Element
+! cell => Element_Pointer( param=param, refelem=refelem )
+! call cell%display('test-1: cell elem:')
+! ! Facet element
+! nptrs = [2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! refelem => ReferenceLine_Pointer( NSD = 2 )
+! obj => FacetElement_Pointer(param=param, refelem=refelem)
+! select type( obj )
+! type is (FacetElement_)
+!   call obj%setCellPointer(cell)
+!   call obj%setFacetLocalID(2)
+! end select
+! call obj%display('test-1: facet elem:')
+! call param%free()
+! call FPL_FINALIZE()
+!```
 
 INTERFACE
-MODULE FUNCTION Constructor1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
-  TYPE( FacetElement_ ) :: Obj
-  INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
-  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: RefElem
+MODULE FUNCTION Constructor1( param, refelem ) RESULT( ans )
+  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: refelem
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( FacetElement_ ) :: ans
 END FUNCTION Constructor1
 END INTERFACE
 
@@ -97,30 +143,53 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
 ! summary: 	Returns an instance of [[FacetElement_]]
+!
+!### Introduction
+! 	Constructing an instance of [[FacetElement_]] from another instance of [[Element_]] or any of its child
+!
+!### Usage
+!
+!```fortran
+! class( element_ ), pointer :: cell, obj
+! class( ReferenceElement_ ), pointer :: refelem
+! type( ParameterList_ ) :: param
+! integer( I4B ), ALLOCATABLE :: nptrs(:)
+! integer( I4B ) :: ierr
+! ! Reference Element
+! refelem => ReferenceTriangle_Pointer( NSD = 2 )
+! call FPL_INIT()
+! call param%init()
+! nptrs = [1,2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! ! Cell Element
+! cell => Element_Pointer( param=param, refelem=refelem )
+! call cell%display('test-1: cell elem:')
+! ! Facet element
+! nptrs = [2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! refelem => ReferenceLine_Pointer( NSD = 2 )
+! obj => FacetElement_Pointer(param=param, refelem=refelem)
+! select type( obj )
+! type is (FacetElement_)
+!   call obj%setCellPointer(cell)
+!   call obj%setFacetLocalID(2)
+! end select
+! call obj%display('test-1: facet elem:')
+! call param%free()
+! call FPL_FINALIZE()
+!```
 
 INTERFACE
-MODULE FUNCTION Constructor2( ) RESULT( Obj )
-  TYPE( FacetElement_ ) :: Obj
+MODULE FUNCTION Constructor2( anotherobj ) RESULT( ans )
+  CLASS( Element_ ), TARGET, INTENT( IN ) :: anotherobj
+  TYPE( FacetElement_ ) :: ans
 END FUNCTION Constructor2
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                                   FacetElement@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns an instance of [[FacetElement_]]
-
-INTERFACE
-MODULE FUNCTION Constructor3( AnotherObj ) RESULT( Obj )
-  TYPE( FacetElement_ ) :: Obj
-  CLASS( Element_ ), TARGET, INTENT( IN ) :: AnotherObj
-END FUNCTION Constructor3
-END INTERFACE
-
 INTERFACE FacetElement
-  MODULE PROCEDURE Constructor1, Constructor2, Constructor3
+  MODULE PROCEDURE Constructor1, Constructor2
 END INTERFACE
 
 PUBLIC :: FacetElement
@@ -132,12 +201,46 @@ PUBLIC :: FacetElement
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
 ! summary: 	Returns a pointer to an instance of [[FacetElement_]]
+!
+!### Usage
+!
+!```fortran
+! class( element_ ), pointer :: cell, obj
+! class( ReferenceElement_ ), pointer :: refelem
+! type( ParameterList_ ) :: param
+! integer( I4B ), ALLOCATABLE :: nptrs(:)
+! integer( I4B ) :: ierr
+! ! Reference Element
+! refelem => ReferenceTriangle_Pointer( NSD = 2 )
+! call FPL_INIT()
+! call param%init()
+! nptrs = [1,2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! ! Cell Element
+! cell => Element_Pointer( param=param, refelem=refelem )
+! call cell%display('test-1: cell elem:')
+! ! Facet element
+! nptrs = [2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! refelem => ReferenceLine_Pointer( NSD = 2 )
+! obj => FacetElement_Pointer(param=param, refelem=refelem)
+! select type( obj )
+! type is (FacetElement_)
+!   call obj%setCellPointer(cell)
+!   call obj%setFacetLocalID(2)
+! end select
+! call obj%display('test-1: facet elem:')
+! call param%free()
+! call FPL_FINALIZE()
+!```
 
 INTERFACE
-MODULE FUNCTION Constructor_1( Nptrs, Mat_Type, RefElem ) RESULT( Obj )
-  CLASS( FacetElement_ ), POINTER :: Obj
-  INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), Mat_Type
-  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: RefElem
+MODULE FUNCTION Constructor_1( param, refelem ) RESULT( ans )
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: refelem
+  CLASS( FacetElement_ ), POINTER :: ans
 END FUNCTION Constructor_1
 END INTERFACE
 
@@ -148,36 +251,59 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
 ! summary: 	Returns a pointer to an instance of [[FacetElement_]]
-
-INTERFACE
-MODULE FUNCTION Constructor_2( ) RESULT( Obj )
-  CLASS( FacetElement_ ), POINTER :: Obj
-END FUNCTION Constructor_2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           FacetElement_Pointer@Constructor
-!----------------------------------------------------------------------------
-
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
 ! summary: 	Returns a pointer to an instance of [[FacetElement_]]
+!
+!### Usage
+!
+!```fortran
+! class( element_ ), pointer :: cell, obj
+! class( ReferenceElement_ ), pointer :: refelem
+! type( ParameterList_ ) :: param
+! integer( I4B ), ALLOCATABLE :: nptrs(:)
+! integer( I4B ) :: ierr
+! ! Reference Element
+! refelem => ReferenceTriangle_Pointer( NSD = 2 )
+! call FPL_INIT()
+! call param%init()
+! nptrs = [1,2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! ! Cell Element
+! cell => Element_Pointer( param=param, refelem=refelem )
+! call cell%display('test-1: cell elem:')
+! ! Facet element
+! nptrs = [2,3]
+! ierr = param%set(key='nptrs', value=nptrs)
+! ierr = param%set(key="mat_type", value=1)
+! refelem => ReferenceLine_Pointer( NSD = 2 )
+! obj => FacetElement_Pointer(param=param, refelem=refelem)
+! select type( obj )
+! type is (FacetElement_)
+!   call obj%setCellPointer(cell)
+!   call obj%setFacetLocalID(2)
+! end select
+! call obj%display('test-1: facet elem:')
+! call param%free()
+! call FPL_FINALIZE()
+!```
 
 INTERFACE
-MODULE FUNCTION Constructor_3( AnotherObj ) RESULT( Obj )
-  CLASS( FacetElement_ ), POINTER :: Obj
-  CLASS( FacetElement_ ), TARGET, INTENT( IN ) :: AnotherObj
-END FUNCTION Constructor_3
+MODULE FUNCTION Constructor_2( anotherobj ) RESULT( ans )
+  CLASS( FacetElement_ ), TARGET, INTENT( IN ) :: anotherobj
+  CLASS( FacetElement_ ), POINTER :: ans
+END FUNCTION Constructor_2
 END INTERFACE
 
 INTERFACE FacetElement_Pointer
-  MODULE PROCEDURE Constructor_1, Constructor_2, Constructor_3
+  MODULE PROCEDURE Constructor_1, Constructor_2
 END INTERFACE
 
 PUBLIC :: FacetElement_Pointer
 
 !----------------------------------------------------------------------------
-!                                                DeallocateData@Constructor
+!                                                 DeallocateData@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -185,16 +311,24 @@ PUBLIC :: FacetElement_Pointer
 ! summary: 	Deallocate the memeory occupied by [[FacetElement_]]
 
 INTERFACE
-MODULE PURE SUBROUTINE Deallocate_Data( Obj )
-  TYPE( FacetElement_ ), INTENT( INOUT ) :: Obj
-END SUBROUTINE Deallocate_Data
+MODULE PURE SUBROUTINE elem_deallocateData( obj )
+  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE elem_deallocateData
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE Deallocate_Data
-END INTERFACE DeallocateData
+!----------------------------------------------------------------------------
+!                                                          Final@Constructor
+!----------------------------------------------------------------------------
 
-PUBLIC :: DeallocateData
+!> authors: Vikas Sharma, Ph. D.
+! date: 	17 April 2021
+! summary: 	finalizer for [[FacetElement_]]
+
+INTERFACE
+MODULE SUBROUTINE faceElem_deallocateData( obj )
+  TYPE( FacetElement_ ), INTENT( INOUT) :: obj
+END SUBROUTINE faceElem_deallocateData
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                  getCellNptrs@Constructor
@@ -205,25 +339,25 @@ PUBLIC :: DeallocateData
 ! summary: 	Returns the node number of cell element
 
 INTERFACE
-MODULE PURE FUNCTION getCellNptrs( Obj ) RESULT( Ans )
-  CLASS( FacetElement_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
-END FUNCTION getCellNptrs
+MODULE PURE FUNCTION faceElem_getCellNptrs( obj ) RESULT( ans )
+  CLASS( FacetElement_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION faceElem_getCellNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               SetPointerToCell@Constructor
+!                                                  setCellNptrs@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
-! summary: 	Sets the pointer to cell element
+! summary: 	Returns the node number of cell element
 
 INTERFACE
-MODULE PURE SUBROUTINE SetPointerToCell( Obj, CellObj )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: Obj
-  CLASS( Element_ ), INTENT( INOUT ), TARGET :: CellObj
-END SUBROUTINE SetPointerToCell
+MODULE PURE SUBROUTINE faceElem_setCellNptrs( obj, nptrs )
+  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: nptrs( : )
+END SUBROUTINE faceElem_setCellNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -235,14 +369,29 @@ END INTERFACE
 ! summary: 	Returns the pointer to cell
 
 INTERFACE
-MODULE FUNCTION getPointerToCell( Obj ) RESULT( CellObj )
-  CLASS( FacetElement_ ), INTENT( IN ), TARGET :: Obj
-  CLASS( Element_ ), POINTER :: CellObj
-END FUNCTION getPointerToCell
+MODULE FUNCTION faceElem_getCellPointer( obj ) RESULT( ans )
+  CLASS( FacetElement_ ), INTENT( IN ), TARGET :: obj
+  CLASS( Element_ ), POINTER :: ans
+END FUNCTION faceElem_getCellPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            FreePointerToCell@Constructor
+!                                               SetPointerToCell@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	24 March 2021
+! summary: 	Sets the pointer to cell element
+
+INTERFACE
+MODULE PURE SUBROUTINE faceElem_setCellPointer( obj, cell )
+  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
+  CLASS( Element_ ), INTENT( INOUT ), TARGET :: cell
+END SUBROUTINE faceElem_setCellPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              FreePointerToCell@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -250,9 +399,9 @@ END INTERFACE
 ! summary: 	Free the pointer to cell
 
 INTERFACE
-MODULE PURE SUBROUTINE FreePointerToCell( Obj )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: Obj
-END SUBROUTINE FreePointerToCell
+MODULE PURE SUBROUTINE faceElem_freeCellPointer( obj )
+  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE faceElem_freeCellPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -264,25 +413,25 @@ END INTERFACE
 ! summary: 	Returns the facet local ID
 
 INTERFACE
-MODULE PURE FUNCTION getFacetLocalID( Obj ) RESULT( Ans )
-  CLASS( FacetElement_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans
-END FUNCTION getFacetLocalID
+MODULE PURE FUNCTION faceElem_getFacetLocalID( obj ) RESULT( ans )
+  CLASS( FacetElement_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION faceElem_getFacetLocalID
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               setFacetLocalID@Constructor
+!                                                getFacetLocalID@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	24 March 2021
-! summary: 	sets the Local ID of facet
+! summary: 	Returns the facet local ID
 
 INTERFACE
-MODULE PURE SUBROUTINE setFacetLocalID( Obj, Id )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: Obj
-  INTEGER( I4B ), INTENT( IN ) :: Id
-END SUBROUTINE setFacetLocalID
+MODULE PURE SUBROUTINE faceElem_setFacetLocalID( obj, id )
+  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: id
+END SUBROUTINE faceElem_setFacetLocalID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -294,12 +443,11 @@ END INTERFACE
 ! summary: Returns the Local node number of facet element
 
 INTERFACE
-MODULE PURE FUNCTION getFacetLocalNptrs( Obj ) RESULT( Nptrs )
-  CLASS( FacetElement_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
-END FUNCTION getFacetLocalNptrs
+MODULE FUNCTION faceElem_getFacetLocalNptrs( obj ) RESULT( nptrs )
+  CLASS( FacetElement_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
+END FUNCTION faceElem_getFacetLocalNptrs
 END INTERFACE
-
 
 !----------------------------------------------------------------------------
 !                                                               Display@IO
@@ -310,54 +458,12 @@ END INTERFACE
 ! summary: Displays content of [[FacetElement_]]
 
 INTERFACE
-MODULE SUBROUTINE m_display_Obj( Obj, msg, UnitNo, FullDisp )
-  CLASS( FacetElement_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE faceElem_display( obj, msg, UnitNo, FullDisp )
+  CLASS( FacetElement_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
-END SUBROUTINE m_display_Obj
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        Display@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: Displays content of [[FacetElement_]]
-
-INTERFACE
-MODULE SUBROUTINE s_display_Obj( Obj, msg, UnitNo, FullDisp )
-  TYPE( FacetElement_ ), INTENT( IN ) :: Obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
-END SUBROUTINE s_display_Obj
-END INTERFACE
-
-INTERFACE Display
-  MODULE PROCEDURE s_display_Obj
-END INTERFACE Display
-
-PUBLIC :: Display
-
-!----------------------------------------------------------------------------
-!                                                 getElemShapeData@ShapeData
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: Returns [[ElemShapeData_]]
-
-INTERFACE
-MODULE PURE SUBROUTINE get_elemsd_H1_Lagrange( Obj, ElemSD, Quad, xiJ, ContinuityType, InterpolType )
-  CLASS( FacetElement_ ), INTENT( INOUT) :: Obj
-  CLASS( ElemShapeData_ ), INTENT( INOUT) :: ElemSD
-  TYPE( QuadraturePoint_ ), INTENT( IN ) :: Quad
-  REAL( DFP ), INTENT( IN ) :: xIJ( :, : )
-  TYPE( H1_ ), INTENT( IN ) :: ContinuityType
-  TYPE( LagrangeInterpolation_ ), INTENT( IN ) :: InterpolType
-END SUBROUTINE get_elemsd_H1_Lagrange
+END SUBROUTINE faceElem_display
 END INTERFACE
 
 !----------------------------------------------------------------------------

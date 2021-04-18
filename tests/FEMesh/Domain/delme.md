@@ -8,13 +8,13 @@ executing main.out
 
 | Sr.No. |  NSD  | Physical Tag | Physical Name |  NumElem | NumNodes |
 | :---   | :---: | :---:        | :---:          |  :---: | ---: |
-| 1 | 1           | 1           | Gamma | 32          | 32 | 
-| 2 | 1           | 2           | Gamma_g_x | 20          | 21 | 
-| 3 | 1           | 3           | Gamma_g_y | 20          | 21 | 
-| 4 | 1           | 4           | Gamma_m | 4           | 5 | 
-| 5 | 2           | 1           | Omega_l | 40          | 29 | 
-| 6 | 2           | 2           | Omega_c | 40          | 29 | 
-| 7 | 2           | 3           | Omega_r | 40          | 29 | 
+| 1 | 1           | 1           | Gamma | 32          | 32 |
+| 2 | 1           | 2           | Gamma_g_x | 20          | 21 |
+| 3 | 1           | 3           | Gamma_g_y | 20          | 21 |
+| 4 | 1           | 4           | Gamma_m | 4           | 5 |
+| 5 | 2           | 1           | Omega_l | 40          | 29 |
+| 6 | 2           | 2           | Omega_c | 40          | 29 |
+| 7 | 2           | 3           | Omega_r | 40          | 29 |
 
 Physical Tag to Entities Tag
 | Physical Tag | PhysicalName | Entities Tag |
@@ -30,24 +30,24 @@ Physical Tag to Entities Tag
 
 | Property | Value |
 | :----    | ---:  |
-| Total Nodes    |   77 | 
-| Total Entities |   21 | 
-| Min Node Tag   |    1 | 
-| Max Node Tag   |   77 | 
-| isSparse       |     F | 
+| Total Nodes    |   77 |
+| Total Entities |   21 |
+| Min Node Tag   |    1 |
+| Max Node Tag   |   77 |
+| isSparse       |     F |
 ## Elements
 
 | Property | Value |
 | :----    | ---:  |
-| Total Elements    |  152 | 
-| Total Entities |   11 | 
-| Min Element Tag   |    1 | 
-| Max Element Tag   |  152 | 
-| isSparse       |     F | 
- 
-CREATING DOMAIN OBJECT FROM MSH4
+| Total Elements    |  152 |
+| Total Entities |   11 |
+| Min Element Tag   |    1 |
+| Max Element Tag   |  152 |
+| isSparse       |     F |
+
+CREATING DOMAIN objECT FROM MSH4
 =================================================
- 
+
   Total Omega :: 3
   Total Boundary :: 4
   Total Edge :: 0

@@ -16,17 +16,17 @@ MODULE PROCEDURE gmsh_mesh_initiate
   CALL Display( "READING GMSH FILE")
   CALL Display( "  opening Gmsh file")
 
-  CALL OpenFileToRead( Obj % mshFile, Path, FileName, Extension )
-  Obj % NSD = NSD
+  CALL OpenFileToRead( obj % mshFile, Path, FileName, Extension )
+  obj % NSD = NSD
 
   CALL Display( "  reading mesh format")
-  CALL Obj % Format % ReadFromFile( Obj % mshFile, ierr )
+  CALL obj % Format % ReadFromFile( obj % mshFile, ierr )
 
   CALL Display( "  reading physical group information")
-  CALL Obj % PhysicalNames % ReadFromFile( Obj % mshFile, ierr )
+  CALL obj % PhysicalNames % ReadFromFile( obj % mshFile, ierr )
 
   CALL Display( "  go to entity tags")
-  CALL TypemshEntity % GotoTag( Obj % mshFile, ierr )
+  CALL TypemshEntity % GotoTag( obj % mshFile, ierr )
 
   !---------------------------------------------------------------------------
   ! Entities
@@ -38,32 +38,32 @@ MODULE PROCEDURE gmsh_mesh_initiate
     INTEGER( I4B ) :: tp, tc, ts, tv, i, j, k, tpt
     INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
     ! we read header of Entities block
-    READ( Obj % mshFile % UnitNo, * ) tp, tc, ts, tv
-    IF( ALLOCATED( Obj % PointEntities ) ) DEALLOCATE( Obj % PointEntities )
-    IF( ALLOCATED( Obj % CurveEntities ) ) DEALLOCATE( Obj % CurveEntities )
-    IF( ALLOCATED( Obj % SurfaceEntities ) ) DEALLOCATE(Obj%SurfaceEntities)
-    IF( ALLOCATED( Obj % VolumeEntities ) ) DEALLOCATE(Obj%VolumeEntities)
-    IF( tp .NE. 0 ) ALLOCATE( Obj % PointEntities( tp ) )
-    IF( tc .NE. 0 ) ALLOCATE( Obj % CurveEntities( tc ) )
-    IF( ts .NE. 0 ) ALLOCATE( Obj % SurfaceEntities( ts ) )
-    IF( tv .NE. 0 ) ALLOCATE( Obj % VolumeEntities( tv ) )
+    READ( obj % mshFile % UnitNo, * ) tp, tc, ts, tv
+    IF( ALLOCATED( obj % PointEntities ) ) DEALLOCATE( obj % PointEntities )
+    IF( ALLOCATED( obj % CurveEntities ) ) DEALLOCATE( obj % CurveEntities )
+    IF( ALLOCATED( obj % SurfaceEntities ) ) DEALLOCATE(obj%SurfaceEntities)
+    IF( ALLOCATED( obj % VolumeEntities ) ) DEALLOCATE(obj%VolumeEntities)
+    IF( tp .NE. 0 ) ALLOCATE( obj % PointEntities( tp ) )
+    IF( tc .NE. 0 ) ALLOCATE( obj % CurveEntities( tc ) )
+    IF( ts .NE. 0 ) ALLOCATE( obj % SurfaceEntities( ts ) )
+    IF( tv .NE. 0 ) ALLOCATE( obj % VolumeEntities( tv ) )
 
     CALL Display( "  reading point entities" )
     CALL Display( "    creating physical point to entities map" )
 
     DO i = 1, tp
-      CALL Obj % PointEntities( i ) % ReadPointEntity( &
-        & Obj % mshFile, .false., ierr )
+      CALL obj % PointEntities( i ) % ReadPointEntity( &
+        & obj % mshFile, .false., ierr )
       ! get total physical tag
-      tpt = Obj %  PointEntities( i ) % TotalPhysicalTags( )
+      tpt = obj %  PointEntities( i ) % TotalPhysicalTags( )
       IF( tpt .NE. 0 ) THEN
         ! get physical tag int vector
-        PhysicalTag = Obj % PointEntities( i ) % PhysicalTag
+        PhysicalTag = obj % PointEntities( i ) % PhysicalTag
         DO j = 1, tpt
           ! get index of physical tag
-          k = Obj % PhysicalNames % IndexOfPhysicalPoint( PhysicalTag( j ) )
+          k = obj % PhysicalNames % IndexOfPhysicalPoint( PhysicalTag( j ) )
           ! append this index to entities
-          CALL Append( Obj % PhysicalNames % Entities( k ), [i] )
+          CALL Append( obj % PhysicalNames % Entities( k ), [i] )
         END DO
       END IF
     END DO
@@ -72,18 +72,18 @@ MODULE PROCEDURE gmsh_mesh_initiate
     CALL Display( "    creating physical curve to entities map" )
 
     DO i = 1, tc
-      CALL Obj % CurveEntities( i ) % ReadCurveEntity( &
-      & Obj % mshFile, .false., ierr )
+      CALL obj % CurveEntities( i ) % ReadCurveEntity( &
+      & obj % mshFile, .false., ierr )
       ! get total physical tag
-      tpt = Obj %  CurveEntities( i ) % TotalPhysicalTags( )
+      tpt = obj %  CurveEntities( i ) % TotalPhysicalTags( )
       IF( tpt .NE. 0 ) THEN
         ! get physical tag int vector
-        PhysicalTag = Obj % CurveEntities( i ) % PhysicalTag
+        PhysicalTag = obj % CurveEntities( i ) % PhysicalTag
         DO j = 1, tpt
           ! get index of physical tag
-          k = Obj % PhysicalNames % IndexOfPhysicalCurve( PhysicalTag( j ) )
+          k = obj % PhysicalNames % IndexOfPhysicalCurve( PhysicalTag( j ) )
           ! append this index to entities
-          CALL Append( Obj % PhysicalNames % Entities( k ), [i] )
+          CALL Append( obj % PhysicalNames % Entities( k ), [i] )
         END DO
       END IF
     END DO
@@ -92,19 +92,19 @@ MODULE PROCEDURE gmsh_mesh_initiate
     CALL Display( "    creating physical surface to entities map" )
 
     DO i = 1, ts
-      CALL Obj % SurfaceEntities( i ) % ReadSurfaceEntity( Obj % mshFile, &
+      CALL obj % SurfaceEntities( i ) % ReadSurfaceEntity( obj % mshFile, &
       & .false., ierr )
       ! get total physical tag
-      tpt = Obj %  SurfaceEntities( i ) % TotalPhysicalTags( )
+      tpt = obj %  SurfaceEntities( i ) % TotalPhysicalTags( )
 
       IF( tpt .NE. 0 ) THEN
         ! get physical tag int vector
-        PhysicalTag = Obj % SurfaceEntities( i ) % PhysicalTag
+        PhysicalTag = obj % SurfaceEntities( i ) % PhysicalTag
         DO j = 1, tpt
           ! get index of physical tag
-          k = Obj % PhysicalNames % IndexOfPhysicalSurface( PhysicalTag( j ) )
+          k = obj % PhysicalNames % IndexOfPhysicalSurface( PhysicalTag( j ) )
           ! append this index to entities
-          CALL Append( Obj % PhysicalNames % Entities( k ), [i] )
+          CALL Append( obj % PhysicalNames % Entities( k ), [i] )
         END DO
       END IF
     END DO
@@ -113,18 +113,18 @@ MODULE PROCEDURE gmsh_mesh_initiate
     CALL Display( "    creating physical volume to entities map" )
 
     DO i = 1, tv
-      CALL Obj % VolumeEntities( i ) % ReadVolumeEntity( Obj % mshFile, &
+      CALL obj % VolumeEntities( i ) % ReadVolumeEntity( obj % mshFile, &
       & .false., ierr )
       ! get total physical tag
-      tpt = Obj %  VolumeEntities( i ) % TotalPhysicalTags( )
+      tpt = obj %  VolumeEntities( i ) % TotalPhysicalTags( )
       IF( tpt .NE. 0 ) THEN
         ! get physical tag int vector
-        PhysicalTag = Obj % VolumeEntities( i ) % PhysicalTag
+        PhysicalTag = obj % VolumeEntities( i ) % PhysicalTag
         DO j = 1, tpt
           ! get index of physical tag
-          k = Obj % PhysicalNames % IndexOfPhysicalVolume( PhysicalTag( j ) )
+          k = obj % PhysicalNames % IndexOfPhysicalVolume( PhysicalTag( j ) )
           ! append this index to entities
-          CALL Append( Obj % PhysicalNames % Entities( k ), [i] )
+          CALL Append( obj % PhysicalNames % Entities( k ), [i] )
         END DO
       END IF
     END DO
@@ -144,43 +144,43 @@ MODULE PROCEDURE gmsh_mesh_initiate
     INTEGER( I4B ), ALLOCATABLE ::  NodeNumber( : )
     REAL( DFP ), ALLOCATABLE :: NodeCoord( :, : )
     ! we read first line of $Nodes block
-    CALL Obj % Nodes % ReadFromFile( Obj % mshFile, Obj % Format, ierr )
+    CALL obj % Nodes % ReadFromFile( obj % mshFile, obj % Format, ierr )
     !start reading each entity block
-    DO i = 1, Obj % Nodes % numEntityBlocks
+    DO i = 1, obj % Nodes % numEntityBlocks
       !read entity dimension and entity tag (uid)
-      READ( Obj % mshFile % UnitNo, * ) entityDim, entityTag, &
+      READ( obj % mshFile % UnitNo, * ) entityDim, entityTag, &
         & parametric, numNodesInBlock
       IF( ALLOCATED( NodeNumber ) ) DEALLOCATE( NodeNumber )
       ALLOCATE( NodeNumber( 1:numNodesInBlock ) )
       ! now we read node numbers in NodeNumber( : )
       DO k = 1, numNodesInBlock
-        READ( Obj % mshFile % UnitNo, * ) NodeNumber( k )
+        READ( obj % mshFile % UnitNo, * ) NodeNumber( k )
       END DO
       IF( ALLOCATED( NodeCoord ) ) DEALLOCATE( NodeCoord )
       ALLOCATE( NodeCoord( 1:3, 1:numNodesInBlock ) )
       ! now we read node coordinates
       DO k = 1, numNodesInBlock
-        READ( Obj % mshFile % UnitNo, * ) &
+        READ( obj % mshFile % UnitNo, * ) &
           & (NodeCoord(l, k), l = 1, 3)
       END DO
       !make case based on entity dimension
       SELECT CASE( entityDim )
         CASE( 0 )
-          j = getIndex( Obj % PointEntities, entityTag )
-          Obj % PointEntities( j ) % NodeNumber = NodeNumber
-          Obj % PointEntities( j ) % NodeCoord = NodeCoord
+          j = getIndex( obj % PointEntities, entityTag )
+          obj % PointEntities( j ) % NodeNumber = NodeNumber
+          obj % PointEntities( j ) % NodeCoord = NodeCoord
         CASE( 1 )
-          j = getIndex( Obj % CurveEntities, entityTag )
-          Obj % CurveEntities( j ) % NodeNumber = NodeNumber
-          Obj % CurveEntities( j ) % NodeCoord = NodeCoord
+          j = getIndex( obj % CurveEntities, entityTag )
+          obj % CurveEntities( j ) % NodeNumber = NodeNumber
+          obj % CurveEntities( j ) % NodeCoord = NodeCoord
         CASE( 2 )
-          j = getIndex( Obj % SurfaceEntities, entityTag )
-          Obj % SurfaceEntities( j ) % NodeNumber = NodeNumber
-          Obj % SurfaceEntities( j ) % NodeCoord = NodeCoord
+          j = getIndex( obj % SurfaceEntities, entityTag )
+          obj % SurfaceEntities( j ) % NodeNumber = NodeNumber
+          obj % SurfaceEntities( j ) % NodeCoord = NodeCoord
         CASE( 3 )
-          j = getIndex( Obj % VolumeEntities, entityTag )
-          Obj % VolumeEntities( j ) % NodeNumber = NodeNumber
-          Obj % VolumeEntities( j ) % NodeCoord = NodeCoord
+          j = getIndex( obj % VolumeEntities, entityTag )
+          obj % VolumeEntities( j ) % NodeNumber = NodeNumber
+          obj % VolumeEntities( j ) % NodeCoord = NodeCoord
       END SELECT
     END DO
     DEALLOCATE( NodeNumber, NodeCoord )
@@ -198,11 +198,11 @@ MODULE PROCEDURE gmsh_mesh_initiate
     INTEGER( I4B ) :: i, j, k, l, entityDim, entityTag, elemType, &
       & numElementsInBlock, tNodes, tpt
     INTEGER( I4B ), ALLOCATABLE :: ElemNumber( : ), Nptrs( :, : ), PhyTag( : )
-    CALL Obj % Elements % ReadFromFile( Obj % mshFile, Obj % Format, ierr )
+    CALL obj % Elements % ReadFromFile( obj % mshFile, obj % Format, ierr )
     ! start reading each entity block
-    DO i = 1, Obj % Elements % numEntityBlocks
+    DO i = 1, obj % Elements % numEntityBlocks
       ! read entity dimension and entity tag (uid)
-      READ( Obj % mshFile % UnitNo, * ) entityDim, entityTag, ElemType, &
+      READ( obj % mshFile % UnitNo, * ) entityDim, entityTag, ElemType, &
         numElementsInBlock
       ! get the total number of nodes in element
       tNodes = TotalNodesInElement( ElemType )
@@ -212,77 +212,77 @@ MODULE PROCEDURE gmsh_mesh_initiate
       ALLOCATE( Nptrs( tNodes, numElementsInBlock ) )
       ! now we read ElemNumber and Nptrs
       DO k = 1, numElementsInBlock
-        READ( Obj % mshFile % UnitNo, * ) ElemNumber( k ), &
+        READ( obj % mshFile % UnitNo, * ) ElemNumber( k ), &
           (Nptrs( l, k ), l = 1, tNodes)
       END DO
       ! make case based on entity dimension
       SELECT CASE( entityDim )
         CASE( 0 )
-          j = getIndex( Obj % PointEntities, entityTag )
+          j = getIndex( obj % PointEntities, entityTag )
           ! set the element type
-          Obj % PointEntities( j ) % ElemType = ElemType
-          Obj % PointEntities( j ) % ElemNumber = ElemNumber
-          Obj % PointEntities( j ) % Nptrs = Nptrs
+          obj % PointEntities( j ) % ElemType = ElemType
+          obj % PointEntities( j ) % ElemNumber = ElemNumber
+          obj % PointEntities( j ) % Nptrs = Nptrs
           ! counting nodes in each physical group
-          tpt = Obj % PointEntities( j ) % TotalPhysicalTags( )
+          tpt = obj % PointEntities( j ) % TotalPhysicalTags( )
           IF( tpt .NE. 0 ) THEN
             ! get the physical tag in nptrs
-            PhyTag = Obj % PointEntities( j ) % PhysicalTag
+            PhyTag = obj % PointEntities( j ) % PhysicalTag
             DO k = 1, tpt
-              l = Obj % PhysicalNames % IndexOfPhysicalPoint(PhyTag(k))
-              Obj % PhysicalNames % numElements( l ) =  &
-                & Obj % PhysicalNames % numElements( l ) + numElementsInBlock
+              l = obj % PhysicalNames % IndexOfPhysicalPoint(PhyTag(k))
+              obj % PhysicalNames % numElements( l ) =  &
+                & obj % PhysicalNames % numElements( l ) + numElementsInBlock
             END DO
           END IF
         CASE( 1 )
-          j = getIndex( Obj % CurveEntities, entityTag )
+          j = getIndex( obj % CurveEntities, entityTag )
           ! set the element type
-          Obj % CurveEntities( j ) % ElemType = ElemType
-          Obj % CurveEntities( j ) % ElemNumber = ElemNumber
-          Obj % CurveEntities( j ) % Nptrs = Nptrs
+          obj % CurveEntities( j ) % ElemType = ElemType
+          obj % CurveEntities( j ) % ElemNumber = ElemNumber
+          obj % CurveEntities( j ) % Nptrs = Nptrs
           ! counting nodes in each physical group
-          tpt = Obj % CurveEntities( j ) % TotalPhysicalTags( )
+          tpt = obj % CurveEntities( j ) % TotalPhysicalTags( )
           IF( tpt .NE. 0 ) THEN
             ! get the physical tag in nptrs
-            PhyTag = Obj % CurveEntities( j ) % PhysicalTag
+            PhyTag = obj % CurveEntities( j ) % PhysicalTag
             DO k = 1, tpt
-              l = Obj % PhysicalNames % IndexOfPhysicalCurve( PhyTag( k ) )
-              Obj % PhysicalNames % numElements( l ) =  &
-                & Obj % PhysicalNames % numElements( l ) + numElementsInBlock
+              l = obj % PhysicalNames % IndexOfPhysicalCurve( PhyTag( k ) )
+              obj % PhysicalNames % numElements( l ) =  &
+                & obj % PhysicalNames % numElements( l ) + numElementsInBlock
             END DO
           END IF
         CASE( 2 )
-          j = getIndex( Obj % SurfaceEntities, entityTag )
+          j = getIndex( obj % SurfaceEntities, entityTag )
           ! set the element type
-          Obj % SurfaceEntities( j ) % ElemType = ElemType
-          Obj % SurfaceEntities( j ) % ElemNumber = ElemNumber
-          Obj % SurfaceEntities( j ) % Nptrs = Nptrs
+          obj % SurfaceEntities( j ) % ElemType = ElemType
+          obj % SurfaceEntities( j ) % ElemNumber = ElemNumber
+          obj % SurfaceEntities( j ) % Nptrs = Nptrs
           ! counting nodes in each physical group
-          tpt = Obj % SurfaceEntities( j ) % TotalPhysicalTags( )
+          tpt = obj % SurfaceEntities( j ) % TotalPhysicalTags( )
           IF( tpt .NE. 0 ) THEN
             ! get the physical tag in nptrs
-            PhyTag = Obj % SurfaceEntities( j ) % PhysicalTag
+            PhyTag = obj % SurfaceEntities( j ) % PhysicalTag
             DO k = 1, tpt
-              l = Obj % PhysicalNames % IndexOfPhysicalSurface( PhyTag( k ) )
-              Obj % PhysicalNames % numElements( l ) =  &
-                & Obj % PhysicalNames % numElements( l ) + numElementsInBlock
+              l = obj % PhysicalNames % IndexOfPhysicalSurface( PhyTag( k ) )
+              obj % PhysicalNames % numElements( l ) =  &
+                & obj % PhysicalNames % numElements( l ) + numElementsInBlock
             END DO
           END IF
         CASE( 3 )
-          j = getIndex( Obj % VolumeEntities, entityTag )
+          j = getIndex( obj % VolumeEntities, entityTag )
           ! set the element type
-          Obj % VolumeEntities( j ) % ElemType = ElemType
-          Obj % VolumeEntities( j ) % ElemNumber = ElemNumber
-          Obj % VolumeEntities( j ) % Nptrs = Nptrs
+          obj % VolumeEntities( j ) % ElemType = ElemType
+          obj % VolumeEntities( j ) % ElemNumber = ElemNumber
+          obj % VolumeEntities( j ) % Nptrs = Nptrs
           ! counting nodes in each physical group
-          tpt = Obj % VolumeEntities( j ) % TotalPhysicalTags( )
+          tpt = obj % VolumeEntities( j ) % TotalPhysicalTags( )
           IF( tpt .NE. 0 ) THEN
             ! get the physical tag in nptrs
-            PhyTag = Obj % VolumeEntities( j ) % PhysicalTag
+            PhyTag = obj % VolumeEntities( j ) % PhysicalTag
             DO k = 1, tpt
-              l = Obj % PhysicalNames % IndexOfPhysicalVolume( PhyTag( k ) )
-              Obj % PhysicalNames % numElements( l ) =  &
-                & Obj % PhysicalNames % numElements( l ) + numElementsInBlock
+              l = obj % PhysicalNames % IndexOfPhysicalVolume( PhyTag( k ) )
+              obj % PhysicalNames % numElements( l ) =  &
+                & obj % PhysicalNames % numElements( l ) + numElementsInBlock
             END DO
           END IF
       END SELECT
@@ -303,82 +303,82 @@ MODULE PROCEDURE gmsh_mesh_initiate
     INTEGER( I4B ) :: tpt, i, j, k, tElements
     INTEGER( I4B ), ALLOCATABLE :: Indx( : ), entIndx( : ), Nptrs( : ), &
       & dummyNptrs( : )
-    ALLOCATE( Nptrs( Obj % Nodes % maxNodeTag ) )
+    ALLOCATE( Nptrs( obj % Nodes % maxNodeTag ) )
     ! Points
-    tpt = Obj % PhysicalNames % TotalPhysicalPoints( )
+    tpt = obj % PhysicalNames % TotalPhysicalPoints( )
     IF( tpt .NE. 0 ) THEN
-      Indx = Obj % PhysicalNames % getIndex( 0 )
+      Indx = obj % PhysicalNames % getIndex( 0 )
       ! loop over all physical points
       DO i = 1, tpt
         ! get Entities associated
-        entIndx = ArrayValues( Obj % PhysicalNames % Entities( Indx( i ) ), &
+        entIndx = ArrayValues( obj % PhysicalNames % Entities( Indx( i ) ), &
           & TypeIntI4B )
-        Obj % PhysicalNames % numNodes( Indx( i ) ) =  &
-        Obj % PhysicalNames % numNodes( Indx( i ) ) + SIZE( entIndx )
+        obj % PhysicalNames % numNodes( Indx( i ) ) =  &
+        obj % PhysicalNames % numNodes( Indx( i ) ) + SIZE( entIndx )
       END DO
     END IF
     ! Curve
-    tpt = Obj % PhysicalNames % TotalPhysicalCurves( )
+    tpt = obj % PhysicalNames % TotalPhysicalCurves( )
     IF( tpt .NE. 0 ) THEN
-      Indx = Obj % PhysicalNames % getIndex( 1 )
+      Indx = obj % PhysicalNames % getIndex( 1 )
       ! loop over physical points
       DO i = 1, tpt
         ! get Entities associated
-        entIndx = ArrayValues( Obj % PhysicalNames % Entities( Indx( i ) ), &
+        entIndx = ArrayValues( obj % PhysicalNames % Entities( Indx( i ) ), &
           & TypeIntI4B )
         Nptrs = 0_I4B
         DO j = 1, SIZE( entIndx )
-          tElements = Obj % CurveEntities( entIndx( j ) ) % TotalElements( )
+          tElements = obj % CurveEntities( entIndx( j ) ) % TotalElements( )
           DO k = 1, tElements
-            dummyNptrs = Obj % CurveEntities( entIndx( j ) ) % Nptrs( :, k )
+            dummyNptrs = obj % CurveEntities( entIndx( j ) ) % Nptrs( :, k )
             Nptrs( dummyNptrs ) = dummyNptrs
           END DO
         END DO
         ! count the nonzero nptrs
-        Obj % PhysicalNames % numNodes( Indx( i ) ) = COUNT( Nptrs .NE. 0 )
+        obj % PhysicalNames % numNodes( Indx( i ) ) = COUNT( Nptrs .NE. 0 )
       END DO
     END IF
     ! Surface
-    tpt = Obj % PhysicalNames % TotalPhysicalSurfaces( )
+    tpt = obj % PhysicalNames % TotalPhysicalSurfaces( )
     IF( tpt .NE. 0 ) THEN
-      Indx = Obj % PhysicalNames % getIndex( 2 )
+      Indx = obj % PhysicalNames % getIndex( 2 )
       ! loop over physical points
       DO i = 1, tpt
         ! get Entities associated
-        entIndx = ArrayValues( Obj % PhysicalNames % Entities( Indx( i ) ), &
+        entIndx = ArrayValues( obj % PhysicalNames % Entities( Indx( i ) ), &
           & TypeIntI4B )
         Nptrs = 0_I4B
         DO j = 1, SIZE( entIndx )
-          tElements = Obj % SurfaceEntities( entIndx( j ) ) % TotalElements( )
+          tElements = obj % SurfaceEntities( entIndx( j ) ) % TotalElements( )
           DO k = 1, tElements
-            dummyNptrs = Obj % SurfaceEntities( entIndx( j ) ) % Nptrs( :, k )
+            dummyNptrs = obj % SurfaceEntities( entIndx( j ) ) % Nptrs( :, k )
             Nptrs( dummyNptrs ) = dummyNptrs
           END DO
         END DO
         ! count the nonzero nptrs
-        Obj % PhysicalNames % numNodes( Indx( i ) ) = COUNT( Nptrs .NE. 0 )
+        obj % PhysicalNames % numNodes( Indx( i ) ) = COUNT( Nptrs .NE. 0 )
       END DO
     END IF
 
     ! Volume
-    tpt = Obj % PhysicalNames % TotalPhysicalVolumes( )
+    tpt = obj % PhysicalNames % TotalPhysicalVolumes( )
     IF( tpt .NE. 0 ) THEN
-      Indx = Obj % PhysicalNames % getIndex( 3 )
+      Indx = obj % PhysicalNames % getIndex( 3 )
       ! loop over physical points
       DO i = 1, tpt
         ! get Entities associated
-        entIndx = ArrayValues( Obj % PhysicalNames % Entities( Indx( i ) ), &
+        entIndx = ArrayValues( obj % PhysicalNames % Entities( Indx( i ) ), &
           & TypeIntI4B )
         Nptrs = 0_I4B
         DO j = 1, SIZE( entIndx )
-          tElements = Obj % VolumeEntities( entIndx( j ) ) % TotalElements( )
+          tElements = obj % VolumeEntities( entIndx( j ) ) % TotalElements( )
           DO k = 1, tElements
-            dummyNptrs = Obj % VolumeEntities( entIndx( j ) ) % Nptrs( :, k )
+            dummyNptrs = obj % VolumeEntities( entIndx( j ) ) % Nptrs( :, k )
             Nptrs( dummyNptrs ) = dummyNptrs
           END DO
         END DO
         ! count the nonzero nptrs
-        Obj % PhysicalNames % numNodes( Indx( i ) ) = COUNT( Nptrs .NE. 0 )
+        obj % PhysicalNames % numNodes( Indx( i ) ) = COUNT( Nptrs .NE. 0 )
       END DO
     END IF
     ! add deallocate stmt
@@ -389,10 +389,10 @@ MODULE PROCEDURE gmsh_mesh_initiate
   END BLOCK
 
   CALL Display( "  Summary")
-  CALL Display( Obj % Format, "## Mesh Format" )
-  CALL Display( Obj % PhysicalNames, "## Physical Names" )
-  CALL Display( Obj % Nodes, "## Nodes" )
-  CALL Display( Obj % Elements, "## Elements" )
+  CALL Display( obj % Format, "## Mesh Format" )
+  CALL Display( obj % PhysicalNames, "## Physical Names" )
+  CALL Display( obj % Nodes, "## Nodes" )
+  CALL Display( obj % Elements, "## Elements" )
 
 END PROCEDURE gmsh_mesh_initiate
 
@@ -401,7 +401,7 @@ END PROCEDURE gmsh_mesh_initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE gmsh_mesh_constuctor1
-  CALL Ans % Initiate( Path, FileName, Extension, NSD )
+  CALL ans % Initiate( Path, FileName, Extension, NSD )
 END PROCEDURE gmsh_mesh_constuctor1
 
 !----------------------------------------------------------------------------
@@ -409,14 +409,14 @@ END PROCEDURE gmsh_mesh_constuctor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE gmsh_mesh_deallocatedata
-  CALL DeallocateData( Obj % Format )
-  CALL DeallocateData( Obj % PhysicalNames )
-  CALL DeallocateData( Obj % Nodes )
-  CALL DeallocateData( Obj % Elements )
-  IF( ALLOCATED( Obj % PointEntities ) ) DEALLOCATE( Obj % PointEntities )
-  IF( ALLOCATED( Obj % CurveEntities ) ) DEALLOCATE( Obj % CurveEntities )
-  IF( ALLOCATED( Obj % SurfaceEntities ) ) DEALLOCATE( Obj % SurfaceEntities )
-  IF( ALLOCATED( Obj % VolumeEntities ) ) DEALLOCATE( Obj % VolumeEntities )
+  CALL DeallocateData( obj % Format )
+  CALL DeallocateData( obj % PhysicalNames )
+  CALL DeallocateData( obj % Nodes )
+  CALL DeallocateData( obj % Elements )
+  IF( ALLOCATED( obj % PointEntities ) ) DEALLOCATE( obj % PointEntities )
+  IF( ALLOCATED( obj % CurveEntities ) ) DEALLOCATE( obj % CurveEntities )
+  IF( ALLOCATED( obj % SurfaceEntities ) ) DEALLOCATE( obj % SurfaceEntities )
+  IF( ALLOCATED( obj % VolumeEntities ) ) DEALLOCATE( obj % VolumeEntities )
 END PROCEDURE gmsh_mesh_deallocatedata
 !----------------------------------------------------------------------------
 !                                                                    Display
@@ -437,59 +437,59 @@ MODULE PROCEDURE gmsh_mesh_display
   END IF
   ! Printiting the Gmsh Format
   CALL BlankLines( UnitNo = I, NOL = 1 )
-  CALL Display( Obj % Format, "Mesh Format = ", I )
+  CALL Display( obj % Format, "Mesh Format = ", I )
 
   ! Printing the PhysicalNames
   CALL BlankLines( UnitNo = I, NOL = 1 )
-  CALL Display( Obj % PhysicalNames, "Physical Names", I )
+  CALL Display( obj % PhysicalNames, "Physical Names", I )
 
   ! Printing the point entities
-  IF( ALLOCATED( Obj % PointEntities ) ) THEN
+  IF( ALLOCATED( obj % PointEntities ) ) THEN
     CALL BlankLines( UnitNo = I, NOL = 1 )
 
     WRITE( I, "(A)" ) "Point Entities"
-    DO j = 1, SIZE( Obj % PointEntities )
+    DO j = 1, SIZE( obj % PointEntities )
       CALL Display( &
-        & Obj % PointEntities( j ), &
+        & obj % PointEntities( j ), &
         & "PointEntities( "//TRIM( int2str( j ) )//" )", I )
     END DO
   END IF
   ! Printing the Curve entities
-  IF( ALLOCATED( Obj % CurveEntities ) ) THEN
+  IF( ALLOCATED( obj % CurveEntities ) ) THEN
     CALL BlankLines( UnitNo = I, NOL = 1 )
     WRITE( I, "(A)" ) "Curve Entities"
-    DO j = 1, SIZE( Obj % CurveEntities )
+    DO j = 1, SIZE( obj % CurveEntities )
       CALL Display( &
-        & Obj % CurveEntities( j ), &
+        & obj % CurveEntities( j ), &
         & "CurveEntities( "//TRIM( int2str( j ) )//" )", I )
     END DO
   END IF
   ! Printing the Surface entities
-  IF ( ALLOCATED( Obj % SurfaceEntities ) ) THEN
+  IF ( ALLOCATED( obj % SurfaceEntities ) ) THEN
     CALL BlankLines( UnitNo = I, NOL = 1 )
     WRITE( I, "(A)" ) "Surface Entities"
-    DO j = 1, SIZE( Obj % SurfaceEntities )
+    DO j = 1, SIZE( obj % SurfaceEntities )
       CALL Display( &
-        & Obj % SurfaceEntities( j ), &
+        & obj % SurfaceEntities( j ), &
         & "SurfaceEntities( "//TRIM( int2str( j ) )//" )", I )
     END DO
   END IF
   ! Printing the Volume entities
-  IF( ALLOCATED( Obj % VolumeEntities ) ) THEN
+  IF( ALLOCATED( obj % VolumeEntities ) ) THEN
     CALL BlankLines( UnitNo = I, NOL = 1 )
     WRITE( I, "(A)" ) "Volume Entities"
-    DO j = 1, SIZE( Obj % VolumeEntities )
+    DO j = 1, SIZE( obj % VolumeEntities )
       CALL Display( &
-        & Obj % VolumeEntities( j ), &
+        & obj % VolumeEntities( j ), &
         & "VolumeEntities( "//TRIM( int2str( j ) )//" )", I )
     END DO
   END IF
   ! Printing nodes
   CALL BlankLines( UnitNo = I, NOL = 1 )
-  CALL Display( Obj % Nodes, "Nodes", I )
+  CALL Display( obj % Nodes, "Nodes", I )
   ! Printing elements
   CALL BlankLines( UnitNo = I, NOL = 1 )
-  CALL Display( Obj % Elements, "Elements", I )
+  CALL Display( obj % Elements, "Elements", I )
 END PROCEDURE gmsh_mesh_display
 
 END SUBMODULE ConstructorMethods

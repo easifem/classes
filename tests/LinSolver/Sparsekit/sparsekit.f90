@@ -49,7 +49,7 @@ program main
   !   & , 'gnuplot', .false. )
   call display( mat, 'mat' )
 
-  CALL initiate( Obj  = Iterdata, &
+  CALL initiate( obj  = Iterdata, &
       & Tolerance = 1.0d-6, &
       & ConvergenceType = RelativeConvergence, &
       & ConvergenceIn = ConvergenceInRes, &
@@ -84,42 +84,42 @@ program main
   !   REAL( DFP ) :: val
 
   !   ! applying dbc
-  !   IF( ALLOCATED( Obj % dbcnptrs ) ) THEN
+  !   IF( ALLOCATED( obj % dbcnptrs ) ) THEN
   !     call display( 'flag-1')
-  !     tdbnptrs = SIZE( Obj % dbcnptrs )
+  !     tdbnptrs = SIZE( obj % dbcnptrs )
   !     DO j = 1, tdbnptrs
-  !       val = sol( Obj % dbcnptrs( j ) )
+  !       val = sol( obj % dbcnptrs( j ) )
 
-  !       DO i = Obj % dbcindx( j ), Obj % dbcindx( j + 1 ) - 1
-  !         rhs( Obj % dbcIA( i ) ) = rhs( Obj % dbcIA( i ) ) &
-  !           & - Obj % A( Obj % dbcJA( i ) ) * val
-  !         IF( Obj % dbcnptrs( j ) .EQ. Obj % dbcIA( i ) ) THEN
-  !           Obj % A( Obj % dbcJA( i ) ) = 1.0_DFP
+  !       DO i = obj % dbcindx( j ), obj % dbcindx( j + 1 ) - 1
+  !         rhs( obj % dbcIA( i ) ) = rhs( obj % dbcIA( i ) ) &
+  !           & - obj % A( obj % dbcJA( i ) ) * val
+  !         IF( obj % dbcnptrs( j ) .EQ. obj % dbcIA( i ) ) THEN
+  !           obj % A( obj % dbcJA( i ) ) = 1.0_DFP
   !         ELSE
-  !           Obj % A( Obj % dbcJA( i ) ) = 0.0_DFP
+  !           obj % A( obj % dbcJA( i ) ) = 0.0_DFP
   !         END IF
   !       END DO
-  !       rhs( Obj % dbcnptrs( j ) ) = val
+  !       rhs( obj % dbcnptrs( j ) ) = val
   !     END DO
 
-  !     call convert( Obj % A, Obj % IA, Obj % JA, mat )
+  !     call convert( obj % A, obj % IA, obj % JA, mat )
   !     call display( mat, 'mat' )
   !     call display( 'flag-2' )
   !     call display( rhs, 'rhs' )
 
   !     DO i = 1, tdbnptrs
-  !       a = Obj % IA( Obj % dbcnptrs( i ) )
-  !       b = Obj % IA( Obj % dbcnptrs( i ) + 1 ) - 1
+  !       a = obj % IA( obj % dbcnptrs( i ) )
+  !       b = obj % IA( obj % dbcnptrs( i ) + 1 ) - 1
   !       DO j = a, b
-  !         IF( Obj % JA( j ) .EQ. Obj % dbcnptrs( i ) ) THEN
-  !           Obj % A( j ) = 1.0_DFP
+  !         IF( obj % JA( j ) .EQ. obj % dbcnptrs( i ) ) THEN
+  !           obj % A( j ) = 1.0_DFP
   !         ELSE
-  !           Obj % A( j ) = 0.0_DFP
+  !           obj % A( j ) = 0.0_DFP
   !         END IF
   !       END DO
   !     END DO
 
-  !     call convert( Obj % A, Obj % IA, Obj % JA, mat )
+  !     call convert( obj % A, obj % IA, obj % JA, mat )
   !     call display( mat, 'mat' )
 
   !   END IF

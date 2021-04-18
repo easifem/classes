@@ -17,13 +17,13 @@ TYPE :: Material_
     !! Each entry in prop denotes a material parameter
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => mat_initiate
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mat_initiate
       !! Construct the object
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Append => mat_append
+    PROCEDURE, PUBLIC, PASS( obj ) :: Append => mat_append
       !! Append value to the list
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Size => mat_size
+    PROCEDURE, PUBLIC, PASS( obj ) :: Size => mat_size
       !! get total number of properties/parameters
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Property => mat_get_prop
+    PROCEDURE, PUBLIC, PASS( obj ) :: Property => mat_get_prop
       !! Returns property as a [keyvalue_] instance
 END TYPE Material_
 
@@ -39,8 +39,8 @@ TYPE( Material_ ), PARAMETER, PUBLIC :: TypeMaterial = &
 INTERFACE
 !! Subroutine that constructs [[material_]]
 
-MODULE PURE SUBROUTINE mat_initiate( Obj, tprop )
-  CLASS( Material_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE mat_initiate( obj, tprop )
+  CLASS( Material_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: tprop
 END SUBROUTINE mat_initiate
 END INTERFACE
@@ -59,9 +59,9 @@ PUBLIC :: Initiate
 INTERFACE
 !! Append keyval object to [[material_]]
 
-MODULE PURE SUBROUTINE mat_append( Obj, KeyValObj )
-  CLASS( Material_ ), INTENT( INOUT) :: Obj
-  TYPE( KeyValue_ ), INTENT( IN ) :: KeyValObj
+MODULE PURE SUBROUTINE mat_append( obj, KeyValobj )
+  CLASS( Material_ ), INTENT( INOUT) :: obj
+  TYPE( KeyValue_ ), INTENT( IN ) :: KeyValobj
 END SUBROUTINE mat_append
 END INTERFACE
 
@@ -72,9 +72,9 @@ END INTERFACE
 INTERFACE
 !! Get total number of parameters stored in [[material_]]
 
-MODULE PURE FUNCTION mat_size( Obj ) RESULT( Ans )
-  CLASS( Material_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION mat_size( obj ) RESULT( ans )
+  CLASS( Material_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION mat_size
 END INTERFACE
 
@@ -85,10 +85,10 @@ END INTERFACE
 INTERFACE
 !! Function that return a property as an instance of [[keyvalue_]]
 
-MODULE PURE FUNCTION mat_get_prop( Obj, Key ) RESULT( Ans )
-  CLASS( Material_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION mat_get_prop( obj, Key ) RESULT( ans )
+  CLASS( Material_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Key
-  TYPE( KeyValue_ ) :: Ans
+  TYPE( KeyValue_ ) :: ans
 END FUNCTION mat_get_prop
 END INTERFACE
 
@@ -99,8 +99,8 @@ END INTERFACE
 INTERFACE
 !! Deallocate data stored in [[material_]]
 
-MODULE PURE SUBROUTINE mat_deallocate(  Obj )
-  CLASS( Material_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE mat_deallocate(  obj )
+  CLASS( Material_ ), INTENT( INOUT) :: obj
 END SUBROUTINE mat_deallocate
 END INTERFACE
 
@@ -115,16 +115,16 @@ PUBLIC :: DeallocateData
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE mat_display( Obj, msg, unitno )
-  CLASS( Material_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE mat_display( obj, msg, unitno )
+  CLASS( Material_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE mat_display
 END INTERFACE
 
 INTERFACE
-MODULE SUBROUTINE mat_display_vec( Obj, msg, unitno )
-  TYPE( Material_ ), INTENT( IN ) :: Obj( : )
+MODULE SUBROUTINE mat_display_vec( obj, msg, unitno )
+  TYPE( Material_ ), INTENT( IN ) :: obj( : )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE mat_display_vec

@@ -3,7 +3,7 @@ program main
   use basemethod
   use GenericElement_Class
 
-  type( GenericElement_ ) :: Obj
+  type( GenericElement_ ) :: obj
   type( ElementData_ ) :: ElemData
   integer( i4b ), allocatable :: nptrs( : )
 

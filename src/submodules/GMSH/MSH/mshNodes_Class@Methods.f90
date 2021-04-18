@@ -32,19 +32,19 @@ END PROCEDURE n_goto
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_read_file
-  CALL Obj % GotoTag( mshFile, ierr )
+  CALL obj % GotoTag( mshFile, ierr )
   IF( .NOT. ierr ) THEN
     IF( mshFormat % Version .GT. 2.0 ) THEN
-      READ( mshFile % UnitNo, * ) Obj % numEntityBlocks, Obj % numNodes, &
-        & Obj % minNodeTag, Obj % maxNodeTag
-      IF( ( Obj % maxNodeTag - Obj % minNodeTag ) &
-        & .EQ. ( Obj % numNodes - 1 ) ) THEN
-        Obj % isSparse = .FALSE.
+      READ( mshFile % UnitNo, * ) obj % numEntityBlocks, obj % numNodes, &
+        & obj % minNodeTag, obj % maxNodeTag
+      IF( ( obj % maxNodeTag - obj % minNodeTag ) &
+        & .EQ. ( obj % numNodes - 1 ) ) THEN
+        obj % isSparse = .FALSE.
       ELSE
-        Obj % isSparse = .TRUE.
+        obj % isSparse = .TRUE.
       END IF
     ELSE
-      READ( mshFile % UnitNo, * ) Obj % numNodes
+      READ( mshFile % UnitNo, * ) obj % numNodes
     END IF
   END IF
 END PROCEDURE n_read_file
@@ -78,14 +78,14 @@ MODULE PROCEDURE n_display
   CALL BlankLines( UnitNo = I, NOL = 1 )
   WRITE( I, "(A)" ) "| Property | Value |"
   WRITE( I, "(A)" ) "| :----    | ---:  |"
-  WRITE( I, "(A, I4, A)" ) "| Total Nodes    | ", Obj % NumNodes, " | "
-  WRITE( I, "(A, I4, A)" ) "| Total Entities | ", Obj % NumEntityBlocks, &
+  WRITE( I, "(A, I4, A)" ) "| Total Nodes    | ", obj % NumNodes, " | "
+  WRITE( I, "(A, I4, A)" ) "| Total Entities | ", obj % NumEntityBlocks, &
     & " | "
-  WRITE( I, "(A, I4, A)" ) "| Min Node Tag   | ", Obj % minNodeTag, &
+  WRITE( I, "(A, I4, A)" ) "| Min Node Tag   | ", obj % minNodeTag, &
     & " | "
-  WRITE( I, "(A, I4, A)" ) "| Max Node Tag   | ", Obj % maxNodeTag, &
+  WRITE( I, "(A, I4, A)" ) "| Max Node Tag   | ", obj % maxNodeTag, &
     & " | "
-  WRITE( I, "(A, G5.2, A)" ) "| isSparse       | ", Obj % isSparse, &
+  WRITE( I, "(A, G5.2, A)" ) "| isSparse       | ", obj % isSparse, &
     & " | "
 END PROCEDURE n_display
 
@@ -94,9 +94,9 @@ END PROCEDURE n_display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_deallocatedata
-SELECT TYPE (Obj)
+SELECT TYPE (obj)
 TYPE IS (mshNodes_)
-  Obj = TypeMSHNodes
+  obj = TypeMSHNodes
 END SELECT
 END PROCEDURE n_deallocatedata
 

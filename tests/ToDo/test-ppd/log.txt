@@ -12,15 +12,15 @@
 
 MODULE PROCEDURE SetNeumannBoundary
 
-	IF( PRESENT( MeshObj ) ) THEN
-		Obj % NeumannBoundary => MeshObj
-		Obj % isNeumannBoundary = .TRUE.
+	IF( PRESENT( Meshobj ) ) THEN
+		obj % NeumannBoundary => Meshobj
+		obj % isNeumannBoundary = .TRUE.
 	ELSE IF( PRESENT( Tag ) ) THEN
-		ALLOCATE( Obj % NeumannBoundary )
-		CALL Obj % NeumannBoundary % Initiate( FacetElement( ) )
-		CALL Obj % mshFile % getElements( Obj % NeumannBoundary, Tag )
-		CALL ConnectFacetToCell( Obj % Omega, Obj % NeumannBoundary )
-		Obj % isNeumannBoundary = .TRUE.
+		ALLOCATE( obj % NeumannBoundary )
+		CALL obj % NeumannBoundary % Initiate( FacetElement( ) )
+		CALL obj % mshFile % getElements( obj % NeumannBoundary, Tag )
+		CALL ConnectFacetToCell( obj % Omega, obj % NeumannBoundary )
+		obj % isNeumannBoundary = .TRUE.
 	END IF
 
 END PROCEDURE SetNeumannBoundary

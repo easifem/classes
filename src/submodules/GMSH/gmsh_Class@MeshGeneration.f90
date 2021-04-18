@@ -10,13 +10,13 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE gmsh_from_gmsh
-  Ans = 0
-  SELECT CASE( Obj % nsd )
+  ans = 0
+  SELECT CASE( obj % nsd )
   CASE( 2 )
-    CALL remesh_domain_using_gmsh_2D( Obj=Obj%model%Mesh,&
+    CALL remesh_domain_using_gmsh_2D( obj=obj%model%Mesh,&
       & Nodes=Nodes, gmsh=gmsh )
   CASE( 3 )
-    CALL remesh_domain_using_gmsh_3D( Obj=Obj%model%Mesh,&
+    CALL remesh_domain_using_gmsh_3D( obj=obj%model%Mesh,&
       & Nodes=Nodes, gmsh=gmsh )
   END SELECT
 END PROCEDURE gmsh_from_gmsh
@@ -25,8 +25,8 @@ END PROCEDURE gmsh_from_gmsh
 !                                                                     Remesh
 !----------------------------------------------------------------------------
 
-SUBROUTINE remesh_domain_using_gmsh_3D( Obj, gmsh, Nodes )
-  CLASS( gmshMesh_ ), TARGET, INTENT( INOUT) :: Obj
+SUBROUTINE remesh_domain_using_gmsh_3D( obj, gmsh, Nodes )
+  CLASS( gmshMesh_ ), TARGET, INTENT( INOUT) :: obj
   CLASS( gmsh_ ), TARGET, INTENT( INOUT) :: gmsh
   REAL( DFP ), INTENT( IN ) :: Nodes( :, : )
 END SUBROUTINE
@@ -35,8 +35,8 @@ END SUBROUTINE
 !                                                                     Remesh
 !----------------------------------------------------------------------------
 
-SUBROUTINE remesh_domain_using_gmsh_2D( Obj, gmsh, Nodes )
-  CLASS( gmshMesh_ ), TARGET, INTENT( INOUT) :: Obj
+SUBROUTINE remesh_domain_using_gmsh_2D( obj, gmsh, Nodes )
+  CLASS( gmshMesh_ ), TARGET, INTENT( INOUT) :: obj
   CLASS( gmsh_ ), TARGET, INTENT( INOUT) :: gmsh
   REAL( DFP ), INTENT( IN ) :: Nodes( :, : )
 
@@ -94,10 +94,10 @@ SUBROUTINE remesh_domain_using_gmsh_2D( Obj, gmsh, Nodes )
     tag = obj % PhysicalNames % IndexOfPhysicalSurface( ii )
     Ent = obj % PhysicalNames % Entities(tag) % Val
     DO ient = 1, SIZE( Ent )
-      SurfaceEntity => Obj%SurfaceEntities(Ent(ient))
+      SurfaceEntity => obj%SurfaceEntities(Ent(ient))
       bent = SurfaceEntity%BoundingEntity
       DO ibent=1,SIZE(bent)
-        CurveEntity => Obj%CurveEntities(ABS(bent(ibent)))
+        CurveEntity => obj%CurveEntities(ABS(bent(ibent)))
         countLine = countLine + SIZE( CurveEntity%elemNumber )
       END DO
     END DO
@@ -119,13 +119,13 @@ SUBROUTINE remesh_domain_using_gmsh_2D( Obj, gmsh, Nodes )
 
     ! loop over surface entities
     DO ient = 1, SIZE( Ent )
-      SurfaceEntity => Obj%SurfaceEntities(Ent(ient))
+      SurfaceEntity => obj%SurfaceEntities(Ent(ient))
       bent = SurfaceEntity%BoundingEntity
 
       DO ibent=1,SIZE(bent)
 
         !! get the boundary curve
-        CurveEntity => Obj%CurveEntities(ABS(bent(ibent)))
+        CurveEntity => obj%CurveEntities(ABS(bent(ibent)))
 
         !! total number of end points in boundary curve
         tNodes = SIZE( CurveEntity%BoundingEntity )
@@ -203,7 +203,7 @@ SUBROUTINE remesh_domain_using_gmsh_2D( Obj, gmsh, Nodes )
 
     ! loop over curve entities
     DO ient = 1, SIZE( Ent )
-      CurveEntity => Obj%CurveEntities( Ent( ient ) )
+      CurveEntity => obj%CurveEntities( Ent( ient ) )
 
       ! first write boundary nodes
       tNodes = SIZE( CurveEntity % BoundingEntity )

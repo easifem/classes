@@ -11,14 +11,14 @@ CONTAINS
 
 MODULE PROCEDURE allocateMeshSize
   IF( PRESENT( factor ) ) THEN
-    Obj % maxElements= factor * tElements
+    obj % maxElements= factor * tElements
   ELSE
-    Obj % maxElements = default_factor * tElements
+    obj % maxElements = default_factor * tElements
   END IF
-  IF( ALLOCATED( Obj % Elem ) ) DEALLOCATE( Obj % Elem )
-  ALLOCATE( Obj % Elem( Obj % maxElements ) )
-  Obj % tElements = 0
-  Obj % NSD = NSD
+  IF( ALLOCATED( obj % Elem ) ) DEALLOCATE( obj % Elem )
+  ALLOCATE( obj % Elem( obj % maxElements ) )
+  obj % tElements = 0
+  obj % NSD = NSD
 END PROCEDURE allocateMeshSize
 
 !----------------------------------------------------------------------------
@@ -27,9 +27,9 @@ END PROCEDURE allocateMeshSize
 
 MODULE PROCEDURE Constructor1
   IF( PRESENT( factor ) ) THEN
-    CALL Ans % Initiate( NSD = NSD, tElements = tElements, factor = factor )
+    CALL ans % Initiate( NSD = NSD, tElements = tElements, factor = factor )
   ELSE
-    CALL Ans % Initiate( NSD = NSD, tElements = tElements )
+    CALL ans % Initiate( NSD = NSD, tElements = tElements )
   END IF
 END PROCEDURE Constructor1
 
@@ -38,10 +38,10 @@ END PROCEDURE Constructor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_data
-  IF( ALLOCATED( Obj % Elem ) ) DEALLOCATE( Obj % Elem )
-  Obj % tElements = 0
-  Obj % maxElements = 0
-  Obj % NSD = 0
+  IF( ALLOCATED( obj % Elem ) ) DEALLOCATE( obj % Elem )
+  obj % tElements = 0
+  obj % maxElements = 0
+  obj % NSD = 0
 END PROCEDURE Deallocate_data
 
 !----------------------------------------------------------------------------
@@ -55,13 +55,13 @@ MODULE PROCEDURE set_total_elements
   !
   tElements = 0; Elem => NULL( )
   !
-  DO iel = 1, Obj % maxElements
-    Elem => Obj % Elem( iel ) % Ptr ! get elem pointer
+  DO iel = 1, obj % maxElements
+    Elem => obj % Elem( iel ) % Ptr ! get elem pointer
     IF( .NOT. ASSOCIATED( Elem ) ) EXIT
     tElements = tElements + 1
   END DO
   !
-  Obj % tElements = tElements
+  obj % tElements = tElements
   !
   NULLIFY( Elem )
 END PROCEDURE set_total_elements
@@ -74,24 +74,24 @@ MODULE PROCEDURE add_element
   TYPE( ElementPointer_ ), ALLOCATABLE :: TempElem( : )
   INTEGER( I4B ) :: NSD, tElements, iel
 
-  IF( Obj % tElements .EQ. Obj % maxElements ) THEN
-    NSD = Obj % NSD; tElements= Obj % tElements
+  IF( obj % tElements .EQ. obj % maxElements ) THEN
+    NSD = obj % NSD; tElements= obj % tElements
     ALLOCATE( TempElem( tElements ) )
     DO iel = 1, tElements
-      TempElem( iel ) % Ptr => Obj % Elem( iel ) % Ptr
-      Obj % Elem( iel ) % Ptr => NULL( )
+      TempElem( iel ) % Ptr => obj % Elem( iel ) % Ptr
+      obj % Elem( iel ) % Ptr => NULL( )
     END DO
-    CALL DeallocateData( Obj )
-    CALL Obj % Initiate( NSD = NSD,  tElements = tElements+1 )
+    CALL DeallocateData( obj )
+    CALL obj % Initiate( NSD = NSD,  tElements = tElements+1 )
     DO iel = 1, tElements
-      Obj % Elem( iel ) % Ptr => TempElem( iel ) % Ptr
+      obj % Elem( iel ) % Ptr => TempElem( iel ) % Ptr
       TempElem( iel ) % Ptr => NULL( )
     END DO
-    Obj % tElements = tElements + 1
-    Obj % Elem( Obj % tElements ) % Ptr => Elem
+    obj % tElements = tElements + 1
+    obj % Elem( obj % tElements ) % Ptr => Elem
   ELSE
-    Obj % tElements = Obj % tElements + 1
-    Obj % Elem( Obj % tElements ) % Ptr => Elem
+    obj % tElements = obj % tElements + 1
+    obj % Elem( obj % tElements ) % Ptr => Elem
   END IF
 END PROCEDURE add_element
 
@@ -101,8 +101,8 @@ END PROCEDURE add_element
 
 MODULE PROCEDURE set_Element
   ! define internal variable
-  IF( iel .LE. Obj % tElements ) THEN
-    Obj % Elem( iel ) % Ptr => Elem
+  IF( iel .LE. obj % tElements ) THEN
+    obj % Elem( iel ) % Ptr => Elem
   END IF
 END PROCEDURE set_Element
 
@@ -111,10 +111,10 @@ END PROCEDURE set_Element
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getElement_Pointer
-  IF( iel .LE. Obj % maxElements ) THEN
-    Ans => Obj % Elem( iel ) % Ptr
+  IF( iel .LE. obj % maxElements ) THEN
+    ans => obj % Elem( iel ) % Ptr
   ELSE
-    Ans => NULL( )
+    ans => NULL( )
   END IF
 END PROCEDURE getElement_Pointer
 
@@ -128,33 +128,33 @@ MODULE PROCEDURE remove_element
   SELECT CASE( extraoption )
   CASE( 0 )
   ! nullify
-  Obj % Elem( iel ) % Ptr => NULL( )
+  obj % Elem( iel ) % Ptr => NULL( )
 
   CASE( 1 )
   ! nullify + deallocate
-  IF( ASSOCIATED( Obj % Elem( iel ) % Ptr ) ) THEN
-    DEALLOCATE( Obj % Elem( iel ) % Ptr )
+  IF( ASSOCIATED( obj % Elem( iel ) % Ptr ) ) THEN
+    DEALLOCATE( obj % Elem( iel ) % Ptr )
   END IF
-  Obj % Elem( iel ) % Ptr => NULL( )
+  obj % Elem( iel ) % Ptr => NULL( )
 
   CASE( 2 )
   ! nullify + rearrange
-  Obj % Elem( iel ) % Ptr => NULL( )
-  DO j = iel, Obj % tElements-1
-    Obj % Elem( j ) % Ptr => Obj % Elem( j + 1 ) % Ptr
+  obj % Elem( iel ) % Ptr => NULL( )
+  DO j = iel, obj % tElements-1
+    obj % Elem( j ) % Ptr => obj % Elem( j + 1 ) % Ptr
   END DO
-  Obj % Elem( Obj % tElements ) % Ptr => NULL( )
-  Obj % tElements = Obj % tElements - 1
+  obj % Elem( obj % tElements ) % Ptr => NULL( )
+  obj % tElements = obj % tElements - 1
 
   CASE( 3 )
   ! nullify + deallocate + rearrange
-  DEALLOCATE( Obj % Elem( iel ) % Ptr )
-  Obj % Elem( iel ) % Ptr => NULL( )
-  DO j = iel, Obj % tElements-1
-    Obj % Elem( j ) % Ptr => Obj % Elem( j + 1 ) % Ptr
+  DEALLOCATE( obj % Elem( iel ) % Ptr )
+  obj % Elem( iel ) % Ptr => NULL( )
+  DO j = iel, obj % tElements-1
+    obj % Elem( j ) % Ptr => obj % Elem( j + 1 ) % Ptr
   END DO
-  Obj % Elem( Obj % tElements ) % Ptr => NULL( )
-  Obj % tElements = Obj % tElements - 1
+  obj % Elem( obj % tElements ) % Ptr => NULL( )
+  obj % tElements = obj % tElements - 1
   END SELECT
 END PROCEDURE remove_element
 
@@ -163,7 +163,7 @@ END PROCEDURE remove_element
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE total_elements
-  Ans = Obj % tElements
+  ans = obj % tElements
 END PROCEDURE total_elements
 
 !----------------------------------------------------------------------------
@@ -186,8 +186,8 @@ MODULE PROCEDURE display_mesh
   END IF
   !
   Elem => NULL( )
-  DO iel =1, Obj % tElements
-    Elem => Obj % ElementPointer( iel )
+  DO iel =1, obj % tElements
+    Elem => obj % ElementPointer( iel )
     IF( .NOT. ASSOCIATED( Elem ) ) CYCLE
     CALL BlankLines( UnitNo = I, NOL = 1 )
     CALL Elem % Display( &
@@ -210,13 +210,13 @@ MODULE PROCEDURE get_nptrs
   !
   IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
   !
-  tElements = Obj % tElements
+  tElements = obj % tElements
   MaxNptrs = 0
   Elem => NULL( )
   !
   ! Find the largest nptrs
-  DO iel = 1, Obj % tElements
-    Elem => Obj % Elem( iel  ) % Ptr
+  DO iel = 1, obj % tElements
+    Elem => obj % Elem( iel  ) % Ptr
     IF( .NOT. ASSOCIATED( Elem ) ) EXIT
     Nptrs0 = .Nptrs. Elem
     Dummy = MAXVAL( Nptrs0 )
@@ -227,7 +227,7 @@ MODULE PROCEDURE get_nptrs
   DummyNptrs = 0
   !
   DO iel = 1, tElements
-    Elem => Obj % Elem( iel  ) % Ptr
+    Elem => obj % Elem( iel  ) % Ptr
     IF( .NOT. ASSOCIATED( Elem ) ) EXIT
     Nptrs0 = .Nptrs. Elem
     DummyNptrs( Nptrs0 ) = Nptrs0
@@ -263,10 +263,10 @@ MODULE PROCEDURE mesh_pointer_get_nptrs
   Elem => NULL( )
   !
   ! Find the largest nptrs
-  DO imesh = 1, SIZE( Obj )
-    IF( ASSOCIATED( Obj( imesh ) % Ptr ) ) THEN
-      DO iel = 1, Obj( imesh ) % Ptr % tElements
-        Elem => Obj( imesh ) % Ptr % Elem( iel  ) % Ptr
+  DO imesh = 1, SIZE( obj )
+    IF( ASSOCIATED( obj( imesh ) % Ptr ) ) THEN
+      DO iel = 1, obj( imesh ) % Ptr % tElements
+        Elem => obj( imesh ) % Ptr % Elem( iel  ) % Ptr
         IF( .NOT. ASSOCIATED( Elem ) ) EXIT
         Nptrs0 = .Nptrs. Elem
         Dummy = MAXVAL( Nptrs0 )
@@ -278,10 +278,10 @@ MODULE PROCEDURE mesh_pointer_get_nptrs
   ALLOCATE( DummyNptrs( MaxNptrs ) )
   DummyNptrs = 0
   !
-  DO imesh = 1, SIZE( Obj )
-    IF( ASSOCIATED( Obj( imesh ) % Ptr ) ) THEN
-      DO iel = 1, Obj( imesh ) % Ptr % tElements
-        Elem => Obj( imesh ) % Ptr % Elem( iel  ) % Ptr
+  DO imesh = 1, SIZE( obj )
+    IF( ASSOCIATED( obj( imesh ) % Ptr ) ) THEN
+      DO iel = 1, obj( imesh ) % Ptr % tElements
+        Elem => obj( imesh ) % Ptr % Elem( iel  ) % Ptr
         IF( .NOT. ASSOCIATED( Elem ) ) EXIT
         Nptrs0 = .Nptrs. Elem
         DummyNptrs( Nptrs0 ) = Nptrs0
@@ -312,8 +312,8 @@ MODULE PROCEDURE setMaterialType_1
   CLASS( Element_ ), POINTER :: Elem
 
   Elem => NULL( )
-  DO iel = 1, Obj % tElements
-    Elem => Obj % Elem( iel ) % Ptr
+  DO iel = 1, obj % tElements
+    Elem => obj % Elem( iel ) % Ptr
     IF( .NOT. ASSOCIATED( Elem ) ) EXIT
     CALL Elem % setMaterialType( MatType )
   END DO

@@ -20,7 +20,7 @@ TYPE, EXTENDS( gmshEntity_ ) :: gmshSurface_
     !! The first curve loop defines the exterior contour;
     !! additional curve loop define holes.
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => Surface_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => Surface_encode
 END TYPE gmshSurface_
 
 TYPE :: gmshSurfacePointer_
@@ -37,7 +37,7 @@ PUBLIC :: gmshSurface_Pointer
 
 TYPE, EXTENDS( gmshSurface_ ) :: gmshPlaneSurface_
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => PlaneSurface_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => PlaneSurface_encode
 END TYPE gmshPlaneSurface_
 
 TYPE :: gmshPlaneSurfacePointer_
@@ -54,7 +54,7 @@ PUBLIC :: gmshPlaneSurface_Pointer
 
 TYPE, EXTENDS( gmshSurface_ ) :: gmshSurfaceLoop_
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => SurfaceLoop_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => SurfaceLoop_encode
 END TYPE gmshSurfaceLoop_
 
 TYPE :: gmshSurfaceLoopPointer_
@@ -83,21 +83,21 @@ CONTAINS
 ! the surface to be a spherical patch (the extra parameter gives the
 ! tag of the center of the sphere).
 
-FUNCTION gmshSurface_Pointer ( wireTags, uid, sphereCenterTag ) RESULT( Ans )
+FUNCTION gmshSurface_Pointer ( wireTags, uid, sphereCenterTag ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: wireTags( : )
   INTEGER( I4B ), INTENT( IN ) :: uid
   INTEGER( I4B ), INTENT( IN ) :: sphereCenterTag
-  CLASS( gmshSurface_  ), POINTER :: Ans
+  CLASS( gmshSurface_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % wireTags = wireTags
-  Ans % sphereCenterTag = sphereCenterTag
-  Ans % uid = uid
-  Ans % dim = 2
+  ALLOCATE( ans )
+  ans % wireTags = wireTags
+  ans % sphereCenterTag = sphereCenterTag
+  ans % uid = uid
+  ans % dim = 2
 
 END FUNCTION gmshSurface_Pointer
 
-FUNCTION Surface_encode( Obj ) RESULT( Ans )
+FUNCTION Surface_encode( obj ) RESULT( ans )
   CLASS( gmshSurface_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -149,17 +149,17 @@ END FUNCTION Surface_encode
 ! another curve loop defining a hole in the same surface (in which case the
 ! two curve loops should be combined).
 
-FUNCTION gmshPlaneSurface_Pointer ( wireTags, uid ) RESULT( Ans )
+FUNCTION gmshPlaneSurface_Pointer ( wireTags, uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: wireTags( : ), uid
-  CLASS( gmshPlaneSurface_  ), POINTER :: Ans
+  CLASS( gmshPlaneSurface_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % wireTags = wireTags
-  Ans % uid = uid
-  Ans % dim = 2
+  ALLOCATE( ans )
+  ans % wireTags = wireTags
+  ans % uid = uid
+  ans % dim = 2
 END FUNCTION gmshPlaneSurface_Pointer
 
-FUNCTION PlaneSurface_encode( Obj ) RESULT( Ans )
+FUNCTION PlaneSurface_encode( obj ) RESULT( ans )
   CLASS( gmshPlaneSurface_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -188,17 +188,17 @@ END FUNCTION PlaneSurface_encode
 !                                 gmshSurfaceLoop_Pointer@SurfaceLoopMethods
 !----------------------------------------------------------------------------
 
-FUNCTION gmshSurfaceLoop_Pointer ( wireTags, uid ) RESULT( Ans )
+FUNCTION gmshSurfaceLoop_Pointer ( wireTags, uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: wireTags( : ), uid
-  CLASS( gmshSurfaceLoop_  ), POINTER :: Ans
+  CLASS( gmshSurfaceLoop_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % wireTags = wireTags
-  Ans % uid = uid
-  Ans % dim = 2
+  ALLOCATE( ans )
+  ans % wireTags = wireTags
+  ans % uid = uid
+  ans % dim = 2
 END FUNCTION gmshSurfaceLoop_Pointer
 
-FUNCTION SurfaceLoop_encode( Obj ) RESULT( Ans )
+FUNCTION SurfaceLoop_encode( obj ) RESULT( ans )
   CLASS( gmshSurfaceLoop_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 

@@ -88,7 +88,7 @@ program main
 
 	! 	call cpu_time( t1 )
 	! 	do i = 1, n
-	! 		obj2 % Val = Obj1 % Val
+	! 		obj2 % Val = obj1 % Val
 	! 	end do
 	! 	call cpu_time( t2 )
 	! 	write( *, "(A, G15.6)") "COPY( obj1 % Val, obj2 % Val ) :: ", t2 - t1

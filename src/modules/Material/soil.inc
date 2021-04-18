@@ -68,8 +68,8 @@ TYPE( Soil_ ), PUBLIC, PARAMETER :: TypeSoil = Soil_()
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE soil_display( Obj, msg, unitNo )
-  CLASS( Soil_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE soil_display( obj, msg, unitNo )
+  CLASS( Soil_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE soil_display
@@ -94,9 +94,9 @@ MODULE FUNCTION Soil_Constructor( State, SoilType, Gravel, Sand, Silt, &
   & ThermCondModel, ThermCondVal, UserThermCond, &
   & volHeatCap_solid, volHeatCapModel, volHeatCapVal, UserVolHeatCap, &
   & SFCCModel, UserSFCC_Value, UserSFCC_Slope, &
-  & SFCC_Theta_r, SFCC_Temp_l, SFCC_Temp_s, SFCC_Coeff ) RESULT( Ans )
+  & SFCC_Theta_r, SFCC_Temp_l, SFCC_Temp_s, SFCC_Coeff ) RESULT( ans )
 
-  TYPE( Soil_ ) :: Ans
+  TYPE( Soil_ ) :: ans
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: State
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: SoilType
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Gravel
@@ -137,20 +137,20 @@ END FUNCTION Soil_Constructor
 END INTERFACE
 
 ABSTRACT INTERFACE
-PURE FUNCTION sfcc_get_value( Obj, Temp ) RESULT( Ans )
+PURE FUNCTION sfcc_get_value( obj, Temp ) RESULT( ans )
   IMPORT :: SFCCModel_, DFP
-  CLASS( SFCCModel_ ), INTENT( IN ) :: Obj
+  CLASS( SFCCModel_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: Temp
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 END FUNCTION sfcc_get_value
 END INTERFACE
 
 ABSTRACT INTERFACE
-  PURE FUNCTION thermcond_get_value( Obj, volFrac_solid, volFrac_water, &
-    & volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( Ans )
+  PURE FUNCTION thermcond_get_value( obj, volFrac_solid, volFrac_water, &
+    & volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( ans )
 
     IMPORT :: ThermCondModel_, DFP
-    CLASS( ThermCondModel_ ), INTENT( IN ) :: Obj
+    CLASS( ThermCondModel_ ), INTENT( IN ) :: obj
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_solid
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_water
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_ice
@@ -159,16 +159,16 @@ ABSTRACT INTERFACE
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: x
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: y
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: z
-    REAL( DFP ) :: Ans
+    REAL( DFP ) :: ans
   END FUNCTION
 END INTERFACE
 
 ABSTRACT INTERFACE
-  PURE FUNCTION volHeatCap_get_value( Obj, volFrac_solid, volFrac_water, &
-    & volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( Ans )
+  PURE FUNCTION volHeatCap_get_value( obj, volFrac_solid, volFrac_water, &
+    & volFrac_ice, volFrac_air, Temp, x, y, z ) RESULT( ans )
 
     IMPORT :: volHeatCapModel_, DFP
-    CLASS( volHeatCapModel_ ), INTENT( IN ) :: Obj
+    CLASS( volHeatCapModel_ ), INTENT( IN ) :: obj
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_solid
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_water
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: volFrac_ice
@@ -177,7 +177,7 @@ ABSTRACT INTERFACE
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: x
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: y
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: z
-    REAL( DFP ) :: Ans
+    REAL( DFP ) :: ans
   END FUNCTION
 END INTERFACE
 

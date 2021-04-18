@@ -21,230 +21,230 @@ MODULE PROCEDURE gmsh_mesh_write_mesh
 
   ! Write PhysicalNames
   CALL Write( aFile, '$PhysicalNames' )
-  tsize = Obj%PhysicalNames%SIZE()
+  tsize = obj%PhysicalNames%SIZE()
   CALL Write( aFile, tsize )
 
   DO ii = 1, tsize
     WRITE( afile%UnitNo, * ) &
-      & Obj%PhysicalNames%NSD( ii ), &
-      & Obj%PhysicalNames%Tag( ii ), &
-      & '"'//TRIM(Obj%PhysicalNames%PhysicalName( ii )%chars()) // '"'
+      & obj%PhysicalNames%NSD( ii ), &
+      & obj%PhysicalNames%Tag( ii ), &
+      & '"'//TRIM(obj%PhysicalNames%PhysicalName( ii )%chars()) // '"'
   END DO
   CALL Write( aFile, '$EndPhysicalNames' )
 
   ! Write Entites
   CALL Write( aFile, '$Entities' )
   te = 0
-  IF( ALLOCATED( Obj%PointEntities ) ) te(1) = SIZE(Obj%PointEntities)
-  IF( ALLOCATED( Obj%CurveEntities ) ) te(2) = SIZE(Obj%CurveEntities)
-  IF( ALLOCATED( Obj%SurfaceEntities ) ) te(3) = SIZE(Obj%SurfaceEntities)
-  IF( ALLOCATED( Obj%VolumeEntities ) ) te(4) = SIZE(Obj%VolumeEntities)
+  IF( ALLOCATED( obj%PointEntities ) ) te(1) = SIZE(obj%PointEntities)
+  IF( ALLOCATED( obj%CurveEntities ) ) te(2) = SIZE(obj%CurveEntities)
+  IF( ALLOCATED( obj%SurfaceEntities ) ) te(3) = SIZE(obj%SurfaceEntities)
+  IF( ALLOCATED( obj%VolumeEntities ) ) te(4) = SIZE(obj%VolumeEntities)
   CALL WRITE( aFile, te, row=.true. )
     ! write point entities
   DO ii = 1, te(1)
     tsize=0
-    IF( ALLOCATED(Obj%PointEntities(ii)%PhysicalTag) ) THEN
-      tsize=SIZE(Obj%PointEntities(ii)%PhysicalTag)
+    IF( ALLOCATED(obj%PointEntities(ii)%PhysicalTag) ) THEN
+      tsize=SIZE(obj%PointEntities(ii)%PhysicalTag)
     END IF
 
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%PointEntities(ii)%Uid
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%PointEntities(ii)%X
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%PointEntities(ii)%Y
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%PointEntities(ii)%Z
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%PointEntities(ii)%Uid
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%PointEntities(ii)%X
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%PointEntities(ii)%Y
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%PointEntities(ii)%Z
     IF( tsize .EQ. 0 ) THEN
       WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tsize
     ELSE
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
-      CALL WRITE( afile,Obj%PointEntities(ii)%PhysicalTag, row=.true. )
+      CALL WRITE( afile,obj%PointEntities(ii)%PhysicalTag, row=.true. )
     END IF
   END DO
 
     ! write curve entities
   DO ii = 1, te(2)
     tsize=0
-    IF( ALLOCATED(Obj%CurveEntities(ii)%PhysicalTag) ) THEN
-      tsize=SIZE(Obj%CurveEntities(ii)%PhysicalTag)
+    IF( ALLOCATED(obj%CurveEntities(ii)%PhysicalTag) ) THEN
+      tsize=SIZE(obj%CurveEntities(ii)%PhysicalTag)
     END IF
 
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%CurveEntities(ii)%Uid
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%CurveEntities(ii)%minX
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%CurveEntities(ii)%minY
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%CurveEntities(ii)%minZ
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%CurveEntities(ii)%maxX
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%CurveEntities(ii)%maxY
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%CurveEntities(ii)%maxZ
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%CurveEntities(ii)%Uid
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%CurveEntities(ii)%minX
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%CurveEntities(ii)%minY
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%CurveEntities(ii)%minZ
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%CurveEntities(ii)%maxX
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%CurveEntities(ii)%maxY
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%CurveEntities(ii)%maxZ
 
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
     DO jj = 1, tsize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%CurveEntities(ii)%PhysicalTag(jj)
+        & obj%CurveEntities(ii)%PhysicalTag(jj)
     END DO
 
     tsize = 0
-    IF( ALLOCATED(Obj%CurveEntities(ii)%BoundingEntity) ) THEN
-      tsize=SIZE(Obj%CurveEntities(ii)%BoundingEntity)
+    IF( ALLOCATED(obj%CurveEntities(ii)%BoundingEntity) ) THEN
+      tsize=SIZE(obj%CurveEntities(ii)%BoundingEntity)
     END IF
 
     IF( tsize .EQ. 0 ) THEN
       WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tsize
     ELSE
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
-      CALL WRITE( afile,Obj%CurveEntities(ii)%BoundingEntity, .true. )
+      CALL WRITE( afile,obj%CurveEntities(ii)%BoundingEntity, .true. )
     END IF
   END DO
 
     ! write surface entities
   DO ii = 1, te(3)
     tsize=0
-    IF( ALLOCATED(Obj%SurfaceEntities(ii)%PhysicalTag) ) THEN
-      tsize=SIZE(Obj%SurfaceEntities(ii)%PhysicalTag)
+    IF( ALLOCATED(obj%SurfaceEntities(ii)%PhysicalTag) ) THEN
+      tsize=SIZE(obj%SurfaceEntities(ii)%PhysicalTag)
     END IF
 
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%Uid
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%minX
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%minY
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%minZ
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%maxX
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%maxY
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%maxZ
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%SurfaceEntities(ii)%Uid
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%SurfaceEntities(ii)%minX
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%SurfaceEntities(ii)%minY
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%SurfaceEntities(ii)%minZ
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%SurfaceEntities(ii)%maxX
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%SurfaceEntities(ii)%maxY
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%SurfaceEntities(ii)%maxZ
 
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
     DO jj = 1, tsize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%SurfaceEntities(ii)%PhysicalTag(jj)
+        & obj%SurfaceEntities(ii)%PhysicalTag(jj)
     END DO
 
     tsize = 0
-    IF( ALLOCATED(Obj%SurfaceEntities(ii)%BoundingEntity) ) THEN
-      tsize=SIZE(Obj%SurfaceEntities(ii)%BoundingEntity)
+    IF( ALLOCATED(obj%SurfaceEntities(ii)%BoundingEntity) ) THEN
+      tsize=SIZE(obj%SurfaceEntities(ii)%BoundingEntity)
     END IF
 
     IF( tsize .EQ. 0 ) THEN
       WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tsize
     ELSE
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
-      CALL WRITE( afile,Obj%SurfaceEntities(ii)%BoundingEntity, .true. )
+      CALL WRITE( afile,obj%SurfaceEntities(ii)%BoundingEntity, .true. )
     END IF
   END DO
 
   ! write volume entities
   DO ii = 1, te(4)
     tsize=0
-    IF( ALLOCATED(Obj%VolumeEntities(ii)%PhysicalTag) ) THEN
-      tsize=SIZE(Obj%VolumeEntities(ii)%PhysicalTag)
+    IF( ALLOCATED(obj%VolumeEntities(ii)%PhysicalTag) ) THEN
+      tsize=SIZE(obj%VolumeEntities(ii)%PhysicalTag)
     END IF
 
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%VolumeEntities(ii)%Uid
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%VolumeEntities(ii)%minX
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%VolumeEntities(ii)%minY
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%VolumeEntities(ii)%minZ
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%VolumeEntities(ii)%maxX
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%VolumeEntities(ii)%maxY
-    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) Obj%VolumeEntities(ii)%maxZ
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%VolumeEntities(ii)%Uid
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%VolumeEntities(ii)%minX
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%VolumeEntities(ii)%minY
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%VolumeEntities(ii)%minZ
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%VolumeEntities(ii)%maxX
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%VolumeEntities(ii)%maxY
+    WRITE( afile%unitno, FDFP, ADVANCE="NO" ) obj%VolumeEntities(ii)%maxZ
 
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
     DO jj = 1, tsize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%VolumeEntities(ii)%PhysicalTag(jj)
+        & obj%VolumeEntities(ii)%PhysicalTag(jj)
     END DO
 
     tsize = 0
-    IF( ALLOCATED(Obj%VolumeEntities(ii)%BoundingEntity) ) THEN
-      tsize=SIZE(Obj%VolumeEntities(ii)%BoundingEntity)
+    IF( ALLOCATED(obj%VolumeEntities(ii)%BoundingEntity) ) THEN
+      tsize=SIZE(obj%VolumeEntities(ii)%BoundingEntity)
     END IF
 
     IF( tsize .EQ. 0 ) THEN
       WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tsize
     ELSE
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) tsize
-      CALL WRITE( afile,Obj%VolumeEntities(ii)%BoundingEntity, .true. )
+      CALL WRITE( afile,obj%VolumeEntities(ii)%BoundingEntity, .true. )
     END IF
   END DO
   CALL Write( aFile, '$EndEntities' )
 
   ! Writes $Nodes
   CALL Write( aFile, '$Nodes' )
-  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%Nodes%numEntityBlocks
-  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%Nodes%numNodes
-  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%Nodes%minNodeTag
-  WRITE( afile%unitno, FInt32, ADVANCE="YES" ) Obj%Nodes%maxNodeTag
+  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%Nodes%numEntityBlocks
+  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%Nodes%numNodes
+  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%Nodes%minNodeTag
+  WRITE( afile%unitno, FInt32, ADVANCE="YES" ) obj%Nodes%maxNodeTag
     ! Write Nodes of point entity
   DO ii = 1, te( 1 )
-    IF( .NOT. ALLOCATED(Obj%PointEntities(ii)%NodeNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%PointEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%PointEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%PointEntities(ii)%NodeNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%PointEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%PointEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) 0
     tSize = 0
-    IF( ALLOCATED( Obj%PointEntities(ii)%NodeNumber ) ) THEN
-      tSize = SIZE(Obj%PointEntities(ii)%NodeNumber)
+    IF( ALLOCATED( obj%PointEntities(ii)%NodeNumber ) ) THEN
+      tSize = SIZE(obj%PointEntities(ii)%NodeNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
-      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) Obj%PointEntities(ii)%NodeNumber(jj)
+      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) obj%PointEntities(ii)%NodeNumber(jj)
     END DO
     DO jj = 1, tSize
-      CALL WRITE( afile, Nodes(:, Obj%PointEntities(ii)%NodeNumber(jj) ), &
+      CALL WRITE( afile, Nodes(:, obj%PointEntities(ii)%NodeNumber(jj) ), &
         & row=.true.)
     END DO
   END DO
     ! Write Nodes of curve entity
   DO ii = 1, te( 2 )
-    IF( .NOT. ALLOCATED(Obj%CurveEntities(ii)%NodeNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%CurveEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%CurveEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%CurveEntities(ii)%NodeNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%CurveEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%CurveEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) 0
     tSize = 0
-    IF( ALLOCATED( Obj%CurveEntities(ii)%NodeNumber ) ) THEN
-      tSize = SIZE(Obj%CurveEntities(ii)%NodeNumber)
+    IF( ALLOCATED( obj%CurveEntities(ii)%NodeNumber ) ) THEN
+      tSize = SIZE(obj%CurveEntities(ii)%NodeNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
-      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) Obj%CurveEntities(ii)%NodeNumber(jj)
+      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) obj%CurveEntities(ii)%NodeNumber(jj)
     END DO
     DO jj = 1, tSize
-      CALL WRITE( afile, Nodes(:, Obj%CurveEntities(ii)%NodeNumber(jj) ), &
+      CALL WRITE( afile, Nodes(:, obj%CurveEntities(ii)%NodeNumber(jj) ), &
         & row=.true.)
     END DO
   END DO
     ! Write Nodes of surface entity
   DO ii = 1, te( 3 )
-    IF( .NOT. ALLOCATED(Obj%SurfaceEntities(ii)%NodeNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%SurfaceEntities(ii)%NodeNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%SurfaceEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%SurfaceEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) 0
     tSize = 0
-    IF( ALLOCATED( Obj%SurfaceEntities(ii)%NodeNumber ) ) THEN
-      tSize = SIZE(Obj%SurfaceEntities(ii)%NodeNumber)
+    IF( ALLOCATED( obj%SurfaceEntities(ii)%NodeNumber ) ) THEN
+      tSize = SIZE(obj%SurfaceEntities(ii)%NodeNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
-      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) Obj%SurfaceEntities(ii)%NodeNumber(jj)
+      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) obj%SurfaceEntities(ii)%NodeNumber(jj)
     END DO
     DO jj = 1, tSize
-      CALL WRITE( afile, Nodes(:, Obj%SurfaceEntities(ii)%NodeNumber(jj) ), &
+      CALL WRITE( afile, Nodes(:, obj%SurfaceEntities(ii)%NodeNumber(jj) ), &
         & row=.true.)
     END DO
   END DO
     ! Write Nodes of volume entity
   DO ii = 1, te( 4 )
-    IF( .NOT. ALLOCATED(Obj%VolumeEntities(ii)%NodeNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%VolumeEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%VolumeEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%VolumeEntities(ii)%NodeNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%VolumeEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%VolumeEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) 0
     tSize = 0
-    IF( ALLOCATED( Obj%VolumeEntities(ii)%NodeNumber ) ) THEN
-      tSize = SIZE(Obj%VolumeEntities(ii)%NodeNumber)
+    IF( ALLOCATED( obj%VolumeEntities(ii)%NodeNumber ) ) THEN
+      tSize = SIZE(obj%VolumeEntities(ii)%NodeNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
-      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) Obj%VolumeEntities(ii)%NodeNumber(jj)
+      WRITE( afile%unitno, FInt32, ADVANCE="YES" ) obj%VolumeEntities(ii)%NodeNumber(jj)
     END DO
     DO jj = 1, tSize
-      CALL WRITE( afile, Nodes(:, Obj%VolumeEntities(ii)%NodeNumber(jj) ), &
+      CALL WRITE( afile, Nodes(:, obj%VolumeEntities(ii)%NodeNumber(jj) ), &
         & row=.true.)
     END DO
   END DO
@@ -252,87 +252,87 @@ MODULE PROCEDURE gmsh_mesh_write_mesh
 
     ! Writes $Nodes
   CALL Write( aFile, '$Elements' )
-  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%Elements%numEntityBlocks
-  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%Elements%numElements
-  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%Elements%minElementTag
-  WRITE( afile%unitno, FInt32, ADVANCE="YES" ) Obj%Elements%maxElementTag
+  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%Elements%numEntityBlocks
+  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%Elements%numElements
+  WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%Elements%minElementTag
+  WRITE( afile%unitno, FInt32, ADVANCE="YES" ) obj%Elements%maxElementTag
 
   ! Write elements of point entity
   DO ii = 1, te( 1 )
-    IF( .NOT. ALLOCATED(Obj%PointEntities(ii)%ElemNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%PointEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%PointEntities(ii)%Uid
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%PointEntities(ii)%ElemType
+    IF( .NOT. ALLOCATED(obj%PointEntities(ii)%ElemNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%PointEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%PointEntities(ii)%Uid
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%PointEntities(ii)%ElemType
     tSize = 0
-    IF( ALLOCATED( Obj%PointEntities(ii)%ElemNumber ) ) THEN
-      tSize = SIZE(Obj%PointEntities(ii)%ElemNumber)
+    IF( ALLOCATED( obj%PointEntities(ii)%ElemNumber ) ) THEN
+      tSize = SIZE(obj%PointEntities(ii)%ElemNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%PointEntities(ii)%ElemNumber(jj)
-      CALL WRITE( afile, Obj%PointEntities(ii)%Nptrs(:, jj), row=.true.)
+        & obj%PointEntities(ii)%ElemNumber(jj)
+      CALL WRITE( afile, obj%PointEntities(ii)%Nptrs(:, jj), row=.true.)
     END DO
   END DO
 
   ! Write elements of curve entity
   DO ii = 1, te( 2 )
-    IF( .NOT. ALLOCATED(Obj%CurveEntities(ii)%ElemNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%CurveEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%CurveEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%CurveEntities(ii)%ElemNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%CurveEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%CurveEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-      & Obj%CurveEntities(ii)%ElemType
+      & obj%CurveEntities(ii)%ElemType
     tSize = 0
-    IF( ALLOCATED( Obj%CurveEntities(ii)%ElemNumber ) ) THEN
-      tSize = SIZE(Obj%CurveEntities(ii)%ElemNumber)
+    IF( ALLOCATED( obj%CurveEntities(ii)%ElemNumber ) ) THEN
+      tSize = SIZE(obj%CurveEntities(ii)%ElemNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%CurveEntities(ii)%ElemNumber(jj)
-      CALL WRITE( afile, Obj%CurveEntities(ii)%Nptrs(:, jj), row=.true.)
+        & obj%CurveEntities(ii)%ElemNumber(jj)
+      CALL WRITE( afile, obj%CurveEntities(ii)%Nptrs(:, jj), row=.true.)
     END DO
   END DO
 
   ! Write elements of surface entity
   DO ii = 1, te( 3 )
-    IF( .NOT. ALLOCATED(Obj%SurfaceEntities(ii)%ElemNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%SurfaceEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%SurfaceEntities(ii)%ElemNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%SurfaceEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%SurfaceEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-      & Obj%SurfaceEntities(ii)%ElemType
+      & obj%SurfaceEntities(ii)%ElemType
     tSize = 0
-    IF( ALLOCATED( Obj%SurfaceEntities(ii)%ElemNumber ) ) THEN
-      tSize = SIZE(Obj%SurfaceEntities(ii)%ElemNumber)
+    IF( ALLOCATED( obj%SurfaceEntities(ii)%ElemNumber ) ) THEN
+      tSize = SIZE(obj%SurfaceEntities(ii)%ElemNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%SurfaceEntities(ii)%ElemNumber(jj)
-      CALL WRITE( afile, Obj%SurfaceEntities(ii)%Nptrs(:, jj), row=.true.)
+        & obj%SurfaceEntities(ii)%ElemNumber(jj)
+      CALL WRITE( afile, obj%SurfaceEntities(ii)%Nptrs(:, jj), row=.true.)
     END DO
   END DO
 
   ! Write elements of volume entity
   DO ii = 1, te( 4 )
-    IF( .NOT. ALLOCATED(Obj%VolumeEntities(ii)%ElemNumber) ) CYCLE
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%VolumeEntities(ii)%XiDim
-    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) Obj%VolumeEntities(ii)%Uid
+    IF( .NOT. ALLOCATED(obj%VolumeEntities(ii)%ElemNumber) ) CYCLE
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%VolumeEntities(ii)%XiDim
+    WRITE( afile%unitno, FInt32, ADVANCE="NO" ) obj%VolumeEntities(ii)%Uid
     WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-      & Obj%VolumeEntities(ii)%ElemType
+      & obj%VolumeEntities(ii)%ElemType
     tSize = 0
-    IF( ALLOCATED( Obj%VolumeEntities(ii)%ElemNumber ) ) THEN
-      tSize = SIZE(Obj%VolumeEntities(ii)%ElemNumber)
+    IF( ALLOCATED( obj%VolumeEntities(ii)%ElemNumber ) ) THEN
+      tSize = SIZE(obj%VolumeEntities(ii)%ElemNumber)
     END IF
     WRITE( afile%unitno, FInt32, ADVANCE="YES" ) tSize
 
     DO jj = 1, tSize
       WRITE( afile%unitno, FInt32, ADVANCE="NO" ) &
-        & Obj%VolumeEntities(ii)%ElemNumber(jj)
-      CALL WRITE( afile, Obj%VolumeEntities(ii)%Nptrs(:, jj), .true.)
+        & obj%VolumeEntities(ii)%ElemNumber(jj)
+      CALL WRITE( afile, obj%VolumeEntities(ii)%Nptrs(:, jj), .true.)
     END DO
   END DO
   CALL Write( aFile, '$EndElements' )
@@ -354,7 +354,7 @@ MODULE PROCEDURE gmsh_mesh_write_nodedata_1
   integer( i4b ), allocatable :: dofs( : )
   real( dfp ) :: val( 3 )
 
-  iname = IndexOf( dofObj, Name )
+  iname = IndexOf( dofobj, Name )
 
   if( size( indx ) .eq. 1 ) then
     stepno = "_"//trim( int2str( indx( 1 ) ) )
@@ -367,11 +367,11 @@ MODULE PROCEDURE gmsh_mesh_write_nodedata_1
   if( dofobj % map( iname, 2 ) .eq. -1 ) then
     spacecompo = .false.
     tspace = 1
-    path0 = TRIM( Obj % mshFile % Path ) // "/GMSH/NodeData/Scalar/"
+    path0 = TRIM( obj % mshFile % Path ) // "/GMSH/NodeData/Scalar/"
   else if( dofobj % map( iname, 2 ) .gt. 0 ) then
     spacecompo = .true.
     tspace = dofobj % map( iname, 2 )
-    path0 = TRIM( Obj % mshFile % Path ) // "/GMSH/NodeData/Vector/"
+    path0 = TRIM( obj % mshFile % Path ) // "/GMSH/NodeData/Vector/"
   end if
 
   !<--

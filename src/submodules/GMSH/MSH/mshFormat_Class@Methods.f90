@@ -37,14 +37,14 @@ END PROCEDURE fmt_goto
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_read_file
-  CALL Obj % GotoTag( mshFile, ierr )
+  CALL obj % GotoTag( mshFile, ierr )
   IF( .NOT. ierr ) THEN
-    READ( mshFile % UnitNo, * ) Obj % Version, Obj % FileType, Obj % DataSize
-    Obj % MeshFormat = TRIM( REAL2STR( Obj % Version ) ) // " " // &
-      & TRIM( INT2STR( Obj % FileType ) ) // " " &
-      & // TRIM( INT2STR( Obj % DataSize ) )
-    IF( Obj % FileType .NE. 1 ) THEN
-      Obj % isASCII = .TRUE.
+    READ( mshFile % UnitNo, * ) obj % Version, obj % FileType, obj % DataSize
+    obj % MeshFormat = TRIM( REAL2STR( obj % Version ) ) // " " // &
+      & TRIM( INT2STR( obj % FileType ) ) // " " &
+      & // TRIM( INT2STR( obj % DataSize ) )
+    IF( obj % FileType .NE. 1 ) THEN
+      obj % isASCII = .TRUE.
     END IF
   END IF
 END PROCEDURE fmt_read_file
@@ -62,7 +62,7 @@ MODULE PROCEDURE fmt_write_file
   IF( PRESENT( Str ) ) THEN
     WRITE( outFile % UnitNo, "( A )") TRIM( Str )
   END IF
-  WRITE( outFile % UnitNo, "( A )") TRIM( Obj % MeshFormat )
+  WRITE( outFile % UnitNo, "( A )") TRIM( obj % MeshFormat )
   IF( PRESENT( EndStr ) ) THEN
     WRITE( outFile % UnitNo, "( A )") TRIM( EndStr )
   END IF
@@ -83,7 +83,7 @@ MODULE PROCEDURE fmt_display
   IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
     WRITE( I, "(A)" ) TRIM( Msg )
   END IF
-  WRITE( I, "(A)" ) TRIM( Obj % MeshFormat )
+  WRITE( I, "(A)" ) TRIM( obj % MeshFormat )
 END PROCEDURE fmt_display
 
 !----------------------------------------------------------------------------
@@ -91,9 +91,9 @@ END PROCEDURE fmt_display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_deallocatedata
-SELECT TYPE( Obj )
+SELECT TYPE( obj )
 TYPE IS (mshFormat_)
-  Obj = TypemshFormat
+  obj = TypemshFormat
 END SELECT
 END PROCEDURE fmt_deallocatedata
 

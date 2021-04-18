@@ -9,23 +9,23 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MixVolHeatCap_Pointer
-  ALLOCATE( Ans )
+  ALLOCATE( ans )
 
   IF( PRESENT( volHeatCap_Solid ) ) THEN
-    Ans%volHeatCap_solid= volHeatCap_solid
-    Ans%is_volHeatCap_solid_given = .TRUE.
+    ans%volHeatCap_solid= volHeatCap_solid
+    ans%is_volHeatCap_solid_given = .TRUE.
   ELSE
-    Ans%volHeatCap_solid = volHeatCap_Quartz()
-    Ans%is_volHeatCap_solid_given = .FALSE.
+    ans%volHeatCap_solid = volHeatCap_Quartz()
+    ans%is_volHeatCap_solid_given = .FALSE.
   END IF
 
   IF( PRESENT( SoilState ) ) THEN
-    Ans%State = SoilState
+    ans%State = SoilState
   ELSE
-    Ans%State = Ans%Unfrozen
+    ans%State = ans%Unfrozen
   END IF
 
-  Ans % getValue => mixvolheatcap_getval
+  ans % getValue => mixvolheatcap_getval
 
 END PROCEDURE MixVolHeatCap_Pointer
 
@@ -36,7 +36,7 @@ END PROCEDURE MixVolHeatCap_Pointer
 MODULE PROCEDURE mixvolheatcap_getval
   REAL( DFP ) :: c_s, c_i, c_w, c_a
 
-SELECT TYPE( Obj )
+SELECT TYPE( obj )
 TYPE IS (MixVolHeatCap_)
 
   IF( PRESENT( Temp ) ) THEN
@@ -63,7 +63,7 @@ TYPE IS (MixVolHeatCap_)
     c_a = VolHeatCap_Air()
   END IF
 
-  Ans = VolFrac_solid * c_s + VolFrac_water * c_w + VolFrac_ice * c_i &
+  ans = VolFrac_solid * c_s + VolFrac_water * c_w + VolFrac_ice * c_i &
     & + VolFrac_air * c_a
 
 END SELECT

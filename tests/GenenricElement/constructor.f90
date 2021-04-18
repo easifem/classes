@@ -7,18 +7,18 @@ IMPLICIT NONE
 
 !test-1
 BLOCK
-CLASS( ReferenceElement_ ), POINTER :: RefElem
-! TYPE( ReferenceLine_ ), TARGET :: RefElem
-TYPE( GenericElement_ ) :: Obj
+CLASS( ReferenceElement_ ), POINTER :: refelem
+! TYPE( ReferenceLine_ ), TARGET :: refelem
+TYPE( GenericElement_ ) :: obj
 
-RefElem => ReferenceLine_Pointer( )
-CALL Obj % Initiate( [1,2,3], 1, RefElem )
-CALL Display( Obj, "Obj" )
+refelem => ReferenceLine_Pointer( )
+CALL obj % Initiate( [1,2,3], 1, refelem )
+CALL Display( obj, "obj" )
 END BLOCK
 
 ! ! test-2
 ! BLOCK
-!   TYPE( GenericElement_ ) :: Obj
+!   TYPE( GenericElement_ ) :: obj
 !   TYPE( ElementData_ ) :: ElemData
 
 !   ElemData % XiDimension = 2
@@ -26,29 +26,29 @@ END BLOCK
 !   ElemData % ElemTopology = Triangle
 !   ElemData % Mat_Type = 1
 
-!   Obj = GenericElement( [1,2,3], ElemData )
-!   CALL Display( Obj, "Empty Obj")
+!   obj = GenericElement( [1,2,3], ElemData )
+!   CALL Display( obj, "Empty obj")
 
 ! END BLOCK
 
 ! ! test-3
 ! BLOCK
-!   TYPE( GenericElement_ ) :: Obj
-!   Obj = GenericElement( )
-!   CALL Display( Obj, "Empty Obj")
+!   TYPE( GenericElement_ ) :: obj
+!   obj = GenericElement( )
+!   CALL Display( obj, "Empty obj")
 ! END BLOCK
 
 ! ! test-4
 ! BLOCK
-!   CLASS( GenericElement_ ), POINTER :: Obj
-!   Obj => GenericElement_Pointer( )
-!   ! ALLOCATE( Obj )
-!   CALL Display( Obj, "Empty Obj")
+!   CLASS( GenericElement_ ), POINTER :: obj
+!   obj => GenericElement_Pointer( )
+!   ! ALLOCATE( obj )
+!   CALL Display( obj, "Empty obj")
 ! END BLOCK
 
 ! ! test-5
 ! BLOCK
-!   CLASS( GenericElement_ ), POINTER :: Obj
+!   CLASS( GenericElement_ ), POINTER :: obj
 !   TYPE( ElementData_ ) :: ElemData
 
 !   ElemData % XiDimension = 2
@@ -56,14 +56,14 @@ END BLOCK
 !   ElemData % ElemTopology = Triangle
 !   ElemData % Mat_Type = 1
 
-!   Obj => GenericElement_Pointer( [1,2,3], ElemData )
-!   CALL Display( Obj, "Empty Obj")
+!   obj => GenericElement_Pointer( [1,2,3], ElemData )
+!   CALL Display( obj, "Empty obj")
 
 ! END BLOCK
 
 ! ! test-6
 ! BLOCK
-!   TYPE( GenericElement_ ) :: Obj, AnotherObj
+!   TYPE( GenericElement_ ) :: obj, anotherobj
 !   TYPE( ElementData_ ) :: ElemData
 
 !   ElemData % XiDimension = 2
@@ -71,17 +71,17 @@ END BLOCK
 !   ElemData % ElemTopology = Triangle
 !   ElemData % Mat_Type = 1
 
-!   Obj = GenericElement( [1,2,3], ElemData )
-!   CALL Display( Obj, "Obj")
+!   obj = GenericElement( [1,2,3], ElemData )
+!   CALL Display( obj, "obj")
 
-!   CALL Convert( From = Obj, To = AnotherObj )
-!   CALL Display( AnotherObj, "Another Obj")
+!   CALL Convert( From = obj, To = anotherobj )
+!   CALL Display( anotherobj, "Another obj")
 
 ! END BLOCK
 
 ! ! test-6
 ! BLOCK
-!   TYPE( GenericElement_ ) :: Obj, AnotherObj
+!   TYPE( GenericElement_ ) :: obj, anotherobj
 !   TYPE( ElementData_ ) :: ElemData
 
 !   ElemData % XiDimension = 2
@@ -89,17 +89,17 @@ END BLOCK
 !   ElemData % ElemTopology = Triangle
 !   ElemData % Mat_Type = 1
 
-!   Obj = GenericElement( [1,2,3], ElemData )
-!   CALL Display( Obj, "Obj")
+!   obj = GenericElement( [1,2,3], ElemData )
+!   CALL Display( obj, "obj")
 
-!   CALL DeallocateData( Obj )
-!   CALL Display( AnotherObj, "Another Obj")
+!   CALL DeallocateData( obj )
+!   CALL Display( anotherobj, "Another obj")
 
 ! END BLOCK
 
 ! test-6
 !BLOCK
-!  TYPE( GenericElement_ ) :: Obj, AnotherObj
+!  TYPE( GenericElement_ ) :: obj, anotherobj
 !  TYPE( ElementData_ ) :: ElemData
 !  LOGICAL( LGT ) :: isBndyElem
 
@@ -107,9 +107,9 @@ END BLOCK
 !  ElemData % NSD = 2
 !  ElemData % ElemTopology = Triangle
 !  ElemData % Mat_Type = 1
-!  Obj = GenericElement( [1,2,3], ElemData )
-!  CALL Display( Obj, "Obj")
-!  isBndyElem = Obj % isBoundaryElement( )
+!  obj = GenericElement( [1,2,3], ElemData )
+!  CALL Display( obj, "obj")
+!  isBndyElem = obj % isBoundaryElement( )
 !  CALL Display( isBndyElem, "isBoundaryElement")
 !END BLOCK
 

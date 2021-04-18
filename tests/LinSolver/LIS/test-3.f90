@@ -64,9 +64,9 @@ call setsparsity( From = tanmat, To = obj )
 call display( 'flag9' )
 
 nptrs( 1 ) % val = [1,10]
-call setDirichletBCNodes( Obj = obj, Nptrs = nptrs, dofs=[1] )
-call display( Obj % dbcNptrs, 'dbcNptrs')
-call display( Obj % dbcIA, 'dbcIA')
-call display( Obj % dbcJA, 'dbcJA')
-call display( Obj % dbcIndx, 'dbcIndx')
+call setDirichletBCNodes( obj = obj, Nptrs = nptrs, dofs=[1] )
+call display( obj % dbcNptrs, 'dbcNptrs')
+call display( obj % dbcIA, 'dbcIA')
+call display( obj % dbcJA, 'dbcJA')
+call display( obj % dbcIndx, 'dbcIndx')
 end program main

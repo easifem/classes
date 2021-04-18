@@ -33,7 +33,7 @@ call obj % initiate( &
     & indx = [1] )
 
 ! step-2
-call obj % writeGeometry( MeshObj = omega, &
+call obj % writeGeometry( Meshobj = omega, &
     & mdobj = mdobj, &
     & nodes = nodes )
 

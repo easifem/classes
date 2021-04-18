@@ -19,10 +19,10 @@ program main
   call obj % reset( 2.0_dfp )
   call obj % display( )
   call displayarray( (obj .value. 1), ".value." )
- 
+
   blockobj => obj .BlockmatPointer. 1
   call blockobj % display( )
-  
+
   mat => obj .valuepointer. 1
   call displayarray( mat, ".valuepointer" )
 

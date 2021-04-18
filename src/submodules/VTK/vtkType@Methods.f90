@@ -63,9 +63,9 @@ END PROCEDURE vtk_init
 MODULE PROCEDURE vtk_final
   INTEGER( I4B ) :: ierr
 
-  IF( Obj % inPiece ) THEN
+  IF( obj % inPiece ) THEN
     ierr = obj % afile % xml_writer % write_piece( )
-    Obj % inPiece = .FALSE.
+    obj % inPiece = .FALSE.
   END IF
 
   ierr = obj % afile % finalize( )
@@ -199,7 +199,7 @@ MODULE PROCEDURE vtk_write_mesh_data_1
   nptrs = meshobj % elem( 1 ) % ptr % getNptrs( )
   !! local
   local_nptrs = mdobj % local_nptrs( nptrs )
-  elemType = meshobj % elem( 1 ) % ptr % RefElem % Name
+  elemType = meshobj % elem( 1 ) % ptr % refelem % Name
   CALL getVTKelementType( elemType = elemType, &
     & vtk_type = vtk_type( 1 ), Nptrs = vtkIndx )
   nptrs = local_nptrs( vtkIndx )
@@ -214,7 +214,7 @@ MODULE PROCEDURE vtk_write_mesh_data_1
     !! local
     local_nptrs = mdobj % local_nptrs( nptrs )
 
-    elemType = meshobj % elem( ii ) % ptr % RefElem % Name
+    elemType = meshobj % elem( ii ) % ptr % refelem % Name
 
     CALL getVTKelementType( elemType = elemType, &
       & vtk_type = vtk_type( ii ), Nptrs = vtkIndx )
@@ -283,7 +283,7 @@ MODULE PROCEDURE vtk_write_mesh_data_2
 
 
   local_nptrs = meshobj % elem( 1 ) % ptr % getNptrs( )
-  elemType = meshobj % elem( 1 ) % ptr % RefElem % Name
+  elemType = meshobj % elem( 1 ) % ptr % refelem % Name
 
   CALL getVTKelementType( elemType = elemType, &
     & vtk_type = vtk_type( 1 ), Nptrs = vtkIndx )
@@ -298,7 +298,7 @@ MODULE PROCEDURE vtk_write_mesh_data_2
     !! global
     local_nptrs = meshobj % elem( ii ) % ptr % getNptrs( )
 
-    elemType = meshobj % elem( ii ) % ptr % RefElem % Name
+    elemType = meshobj % elem( ii ) % ptr % refelem % Name
 
     CALL getVTKelementType( elemType = elemType, &
       & vtk_type = vtk_type( ii ), Nptrs = vtkIndx )
@@ -405,7 +405,7 @@ MODULE PROCEDURE vtk_write_mesh_data_3
       !! global
       nptrs = meshobj(imesh)%ptr%elem(ii)%ptr%getNptrs( )
       local_nptrs = map(nptrs)
-      elemType = meshobj(imesh)%ptr%elem(ii)%ptr%RefElem%Name
+      elemType = meshobj(imesh)%ptr%elem(ii)%ptr%refelem%Name
       CALL getVTKelementType( elemType = elemType, &
         & vtk_type = vtk_type( n ), Nptrs = vtkIndx )
       nptrs=local_nptrs(vtkIndx)

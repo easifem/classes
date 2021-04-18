@@ -59,7 +59,7 @@ call setPrecondition( &
   & ipar = [0]  )
 
 call setsparsity( From = tanmat, To = obj )
-call setDirichletBCNodes( Obj = obj, Nptrs = [1,10], dofs=[1] )
+call setDirichletBCNodes( obj = obj, Nptrs = [1,10], dofs=[1] )
 call convert( from = tanmat, to = obj )
 call solve( obj = obj, rhs = rhs, sol = sol )
 call display( sol, 'sol' )

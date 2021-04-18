@@ -16,23 +16,23 @@ TYPE :: gmshGeoMesh_
   TYPE( Buffer_ ), POINTER :: buffer => NULL( )
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: write => geoMesh_write
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setSize => geoMesh_setSize
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setTransfiniteCurve => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: write => geoMesh_write
+    PROCEDURE, PUBLIC, PASS( obj ) :: setSize => geoMesh_setSize
+    PROCEDURE, PUBLIC, PASS( obj ) :: setTransfiniteCurve => &
       & geoMesh_setTransfiniteCurve
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setTransfiniteSurface => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setTransfiniteSurface => &
       & geoMesh_setTransfiniteSurface
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setTransfiniteVolume => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setTransfiniteVolume => &
       & geoMesh_setTransfiniteVolume
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setRecombine => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setRecombine => &
       & geoMesh_setRecombine
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setSmoothing => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setSmoothing => &
       & geoMesh_setSmoothing
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setReverse => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setReverse => &
       & geoMesh_setReverse
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setAlgorithm => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setAlgorithm => &
       & geoMesh_setAlgorithm
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setSizeFromBoundary => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setSizeFromBoundary => &
       & geoMesh_setSizeFromBoundary
 
 END TYPE gmshGeoMesh_
@@ -49,16 +49,16 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geoMesh_write( Obj, UnitNo ) RESULT( Ans )
-  CLASS( gmshGeoMesh_  ), INTENT( INOUT ) :: Obj
+FUNCTION geoMesh_write( obj, UnitNo ) RESULT( ans )
+  CLASS( gmshGeoMesh_  ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: UnitNo
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   INTEGER( I4B ) :: ii
 
-  IF( ASSOCIATED( Obj % buffer ) ) THEN
-    DO ii = 1, Obj % buffer % tLine
-      WRITE( UnitNo, "(DT)" ) Obj % buffer % Line( ii ) % Ptr
+  IF( ASSOCIATED( obj % buffer ) ) THEN
+    DO ii = 1, obj % buffer % tLine
+      WRITE( UnitNo, "(DT)" ) obj % buffer % Line( ii ) % Ptr
     END DO
   END IF
 
@@ -73,12 +73,12 @@ END FUNCTION geoMesh_write
 ! Set a mesh size constraint on the model entities dimTags. Currently only
 ! entities of dimension 0 (points) are handled.
 
-FUNCTION geoMesh_setSize( Obj, dim, tags, meshsize ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: Obj
+FUNCTION geoMesh_setSize( obj, dim, tags, meshsize ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tags( : )
   REAL( DFP ), INTENT( IN ) :: meshsize
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   ! internal variables
   INTEGER( I4B ) :: ii, n
@@ -94,7 +94,7 @@ FUNCTION geoMesh_setSize( Obj, dim, tags, meshsize ) RESULT( Ans )
 
   CALL Display( "      gmsh%model%geo%mesh%setSize()" )
 
-  Ans = 0
+  ans = 0
   n = SIZE( tags )
   ALLOCATE( s( n ) )
   DO ii = 1, n
@@ -110,11 +110,11 @@ FUNCTION geoMesh_setSize( Obj, dim, tags, meshsize ) RESULT( Ans )
     & trim( str( meshsize ) ) // &
     & " ;"
 
-  IF( .NOT. ASSOCIATED( Obj % buffer ) ) THEN
-    ALLOCATE( Obj % buffer )
+  IF( .NOT. ASSOCIATED( obj % buffer ) ) THEN
+    ALLOCATE( obj % buffer )
   END IF
 
-  CALL APPEND( Obj % buffer, ss )
+  CALL APPEND( obj % buffer, ss )
 
   DEALLOCATE( s )
 
@@ -132,14 +132,14 @@ END FUNCTION geoMesh_setSize
 ! are "Progres- sion" (geometrical progression with power coef) and "Bump"
 ! (refinement toward both extremities of the curve).
 
-FUNCTION geoMesh_setTransfiniteCurve( Obj, tag, nPoints, meshType, &
-  & coef ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: Obj
+FUNCTION geoMesh_setTransfiniteCurve( obj, tag, nPoints, meshType, &
+  & coef ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: tag
   INTEGER( I4B ), INTENT( IN ) :: nPoints
   CHARACTER( LEN = * ), INTENT( IN ) :: meshType
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: coef
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setTransfiniteCurve
 
 !----------------------------------------------------------------------------
@@ -156,13 +156,13 @@ END FUNCTION geoMesh_setTransfiniteCurve
 ! specifying the corners explicitly is mandatory if the surface has more
 ! that 3 or 4 points on its boundary.
 
-FUNCTION geoMesh_setTransfiniteSurface( Obj, tag, arrangement, &
-  & cornerTags ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: Obj
+FUNCTION geoMesh_setTransfiniteSurface( obj, tag, arrangement, &
+  & cornerTags ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: tag
   CHARACTER( LEN = * ), INTENT( IN ) ::  arrangement
   INTEGER( I4B ), INTENT( IN ) :: cornerTags( : )
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setTransfiniteSurface
 
 !----------------------------------------------------------------------------
@@ -179,12 +179,12 @@ END FUNCTION geoMesh_setTransfiniteSurface
 ! specifying the corners explicitly is mandatory if the surface has more
 ! that 3 or 4 points on its boundary.
 
-FUNCTION geoMesh_setTransfiniteVolume( Obj, tag, &
-  & cornerTags ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: Obj
+FUNCTION geoMesh_setTransfiniteVolume( obj, tag, &
+  & cornerTags ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: tag
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: cornerTags( : )
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setTransfiniteVolume
 
 !----------------------------------------------------------------------------
@@ -197,12 +197,12 @@ END FUNCTION geoMesh_setTransfiniteVolume
 ! dim and tag tag. Currently only entities of dimension 2
 ! (to recombine triangles into quadrangles) are supporte
 
-FUNCTION geoMesh_setRecombine( Obj, dim, tag, angle ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: Obj
+FUNCTION geoMesh_setRecombine( obj, dim, tag, angle ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tag
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: angle
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setRecombine
 
 !----------------------------------------------------------------------------
@@ -214,12 +214,12 @@ END FUNCTION geoMesh_setRecombine
 ! Set a smoothing meshing constraint on the model entity of dimension dim
 ! and tag tag. val iterations of a Laplace smoother are applied.
 
-FUNCTION geoMesh_setSmoothing( Obj, dim, tag, val ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: Obj
+FUNCTION geoMesh_setSmoothing( obj, dim, tag, val ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tag
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: val
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setSmoothing
 
 !----------------------------------------------------------------------------
@@ -231,12 +231,12 @@ END FUNCTION geoMesh_setSmoothing
 ! Set a smoothing meshing constraint on the model entity of dimension dim
 ! and tag tag. val iterations of a Laplace smoother are applied.
 
-FUNCTION geoMesh_setReverse( Obj, dim, tag, val ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: Obj
+FUNCTION geoMesh_setReverse( obj, dim, tag, val ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tag
   LOGICAL( LGT ), INTENT( IN ) :: val
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setReverse
 
 !----------------------------------------------------------------------------
@@ -248,12 +248,12 @@ END FUNCTION geoMesh_setReverse
 ! Set the meshing algorithm on the model entity of dimension dim and tag tag.
 ! Currently only supported for dim == 2.
 
-FUNCTION geoMesh_setAlgorithm( Obj, dim, tag, val ) RESULT( Ans )
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: Obj
+FUNCTION geoMesh_setAlgorithm( obj, dim, tag, val ) RESULT( ans )
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tag
   INTEGER( I4B ), INTENT( IN ) :: val
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setAlgorithm
 
 !----------------------------------------------------------------------------
@@ -265,12 +265,12 @@ END FUNCTION geoMesh_setAlgorithm
 ! Force the mesh size to be extended from the boundary, or not, for the model
 ! entity of dimension dim and tag tag. Currently only supported for dim == 2.
 
-FUNCTION geoMesh_setSizeFromBoundary( Obj, dim, tag, val ) RESULT( Ans)
-  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: Obj
+FUNCTION geoMesh_setSizeFromBoundary( obj, dim, tag, val ) RESULT( ans)
+  CLASS( gmshGeoMesh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tag
   INTEGER( I4B ), INTENT( IN ) :: val
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION geoMesh_setSizeFromBoundary
 
 !----------------------------------------------------------------------------

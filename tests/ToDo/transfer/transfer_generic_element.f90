@@ -30,4 +30,4 @@ program main
 
   ! Clean up
   deallocate(enc)
-end program main 
+end program main

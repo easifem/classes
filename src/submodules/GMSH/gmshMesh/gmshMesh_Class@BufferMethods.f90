@@ -14,12 +14,12 @@ MODULE PROCEDURE mesh_generate
 
   semi = ";"
 
-  IF( .NOT. ASSOCIATED( Obj % buffer ) ) THEN
-    ALLOCATE( Obj % buffer )
+  IF( .NOT. ASSOCIATED( obj % buffer ) ) THEN
+    ALLOCATE( obj % buffer )
   END IF
 
   Entry = "Mesh " // trim( str( dim, no_sign=.true. ) ) // semi
-  CALL Append( Obj % buffer, Entry )
+  CALL Append( obj % buffer, Entry )
 END PROCEDURE mesh_generate
 
 !----------------------------------------------------------------------------
@@ -28,9 +28,9 @@ END PROCEDURE mesh_generate
 
 MODULE PROCEDURE mesh_write
   INTEGER( I4B ) :: ii
-  IF( ASSOCIATED( Obj % buffer ) ) THEN
-    DO ii = 1, Obj % buffer % tLine
-      WRITE( UnitNo, "(DT)" ) Obj % buffer % Line( ii ) % Ptr
+  IF( ASSOCIATED( obj % buffer ) ) THEN
+    DO ii = 1, obj % buffer % tLine
+      WRITE( UnitNo, "(DT)" ) obj % buffer % Line( ii ) % Ptr
     END DO
   END IF
 END PROCEDURE mesh_write

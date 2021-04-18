@@ -107,19 +107,19 @@ END PROCEDURE exceptionMessage
 
 MODULE PROCEDURE copyFromSurrogate
   TYPE( ExceptionHandler_ ), POINTER :: tmpE
-  tmpE => Obj%surrogate
-  NULLIFY(Obj%surrogate)
-  Obj%stopOnError=tmpE%stopOnError
-  Obj%logFileActive=tmpE%logFileActive
-  Obj%quiet=tmpE%quiet
-  Obj%logFileUnit=tmpE%logFileUnit
-  Obj%nInfo=tmpE%nInfo
-  Obj%nWarn=tmpE%nWarn
-  Obj%nError=tmpE%nError
-  Obj%nFatal=tmpE%nFatal
-  Obj%nDebug=tmpE%nDebug
-  Obj%verbose=tmpE%verbose
-  Obj%lastMesg=tmpE%lastMesg
+  tmpE => obj%surrogate
+  NULLIFY(obj%surrogate)
+  obj%stopOnError=tmpE%stopOnError
+  obj%logFileActive=tmpE%logFileActive
+  obj%quiet=tmpE%quiet
+  obj%logFileUnit=tmpE%logFileUnit
+  obj%nInfo=tmpE%nInfo
+  obj%nWarn=tmpE%nWarn
+  obj%nError=tmpE%nError
+  obj%nFatal=tmpE%nFatal
+  obj%nDebug=tmpE%nDebug
+  obj%verbose=tmpE%verbose
+  obj%lastMesg=tmpE%lastMesg
   NULLIFY(tmpE)
 END PROCEDURE copyFromSurrogate
 
@@ -128,31 +128,31 @@ END PROCEDURE copyFromSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_assign_obj
-  Obj1%nInfo=Obj2%nInfo
-  Obj1%nWarn=Obj2%nWarn
-  Obj1%nDebug=Obj2%nDebug
-  Obj1%nError=Obj2%nError
-  Obj1%nFatal=Obj2%nFatal
-  Obj1%lastMesg=Obj2%lastMesg
-  Obj1%logFileUnit=Obj2%logFileUnit
-  Obj1%stopOnError=Obj2%stopOnError
-  Obj1%logFileActive=Obj2%logFileActive
-  Obj1%quiet=Obj2%quiet
-  Obj1%verbose=Obj2%verbose
-  Obj1%surrogate => Obj2%surrogate
+  obj1%nInfo=obj2%nInfo
+  obj1%nWarn=obj2%nWarn
+  obj1%nDebug=obj2%nDebug
+  obj1%nError=obj2%nError
+  obj1%nFatal=obj2%nFatal
+  obj1%lastMesg=obj2%lastMesg
+  obj1%logFileUnit=obj2%logFileUnit
+  obj1%stopOnError=obj2%stopOnError
+  obj1%logFileActive=obj2%logFileActive
+  obj1%quiet=obj2%quiet
+  obj1%verbose=obj2%verbose
+  obj1%surrogate => obj2%surrogate
 END PROCEDURE obj_assign_obj
 
 !----------------------------------------------------------------------------!                                                                 initCounter
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE initCounter
-  IF(ASSOCIATED(Obj%surrogate)) CALL copyFromSurrogate(Obj)
-  Obj%nInfo=0
-  Obj%nWarn=0
-  Obj%nError=0
-  Obj%nFatal=0
-  Obj%nDebug=0
-  Obj%lastMesg=''
+  IF(ASSOCIATED(obj%surrogate)) CALL copyFromSurrogate(obj)
+  obj%nInfo=0
+  obj%nWarn=0
+  obj%nError=0
+  obj%nFatal=0
+  obj%nDebug=0
+  obj%lastMesg=''
 END PROCEDURE initCounter
 
 !----------------------------------------------------------------------------
@@ -160,18 +160,18 @@ END PROCEDURE initCounter
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE reset
-  NULLIFY(Obj%surrogate)
-  Obj%nInfo=0
-  Obj%nWarn=0
-  Obj%nError=0
-  Obj%nFatal=0
-  Obj%nDebug=0
-  Obj%lastMesg=''
-  Obj%logFileUnit=666
-  Obj%stopOnError=.TRUE.
-  Obj%logFileActive=.FALSE.
-  Obj%quiet=(/.FALSE.,.FALSE.,.TRUE.,.FALSE./)
-  Obj%verbose=(/.TRUE.,.TRUE.,.FALSE.,.TRUE./)
+  NULLIFY(obj%surrogate)
+  obj%nInfo=0
+  obj%nWarn=0
+  obj%nError=0
+  obj%nFatal=0
+  obj%nDebug=0
+  obj%lastMesg=''
+  obj%logFileUnit=666
+  obj%stopOnError=.TRUE.
+  obj%logFileActive=.FALSE.
+  obj%quiet=(/.FALSE.,.FALSE.,.TRUE.,.FALSE./)
+  obj%verbose=(/.TRUE.,.TRUE.,.FALSE.,.TRUE./)
 END PROCEDURE reset
 
 END SUBMODULE Constructor

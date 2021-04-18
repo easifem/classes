@@ -28,13 +28,13 @@ TYPE :: mshNodes_
     !! isSparse
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => n_deallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => n_deallocateData
       !! DeallocateData From the object
-    PROCEDURE, PUBLIC, PASS( Obj ) :: GotoTag => n_goto
+    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => n_goto
       !! Go to the node tag in mesh file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadFromFile => n_read_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadFromFile => n_read_file
       !! read content from file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: WriteToFile => n_write_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => n_write_file
       !! write data to file
 END TYPE mshNodes_
 
@@ -65,8 +65,8 @@ INTERFACE
 !
 ! This subroutine go to the position where nodes are defined
 
-MODULE SUBROUTINE n_goto( Obj, mshFile, ierr )
-  CLASS( mshNodes_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE n_goto( obj, mshFile, ierr )
+  CLASS( mshNodes_ ), INTENT( IN ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
 END SUBROUTINE n_goto
@@ -83,8 +83,8 @@ INTERFACE
 !
 ! This subroutine read data from mesh file
 
-MODULE SUBROUTINE n_read_file( Obj, mshFile, mshFormat, ierr )
-  CLASS( mshNodes_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE n_read_file( obj, mshFile, mshFormat, ierr )
+  CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
@@ -102,8 +102,8 @@ INTERFACE
 !
 ! This subroutine writes data to a file
 
-MODULE SUBROUTINE n_write_file( Obj, mshFile, mshFormat, Str, EndStr )
-  CLASS( mshNodes_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE n_write_file( obj, mshFile, mshFormat, Str, EndStr )
+  CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
   TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
@@ -121,8 +121,8 @@ INTERFACE
 !
 ! This subroutine displays content of [[mshNodes_]]
 
-MODULE SUBROUTINE n_display( Obj, Msg, UnitNo )
-  CLASS( mshNodes_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE n_display( obj, Msg, UnitNo )
+  CLASS( mshNodes_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
 END SUBROUTINE n_display
@@ -145,8 +145,8 @@ INTERFACE
 !
 ! This subroutine deallocate the data from instance
 
-MODULE SUBROUTINE n_deallocatedata( Obj )
-  CLASS( mshNodes_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE n_deallocatedata( obj )
+  CLASS( mshNodes_ ), INTENT( INOUT) :: obj
 END SUBROUTINE n_deallocatedata
 END INTERFACE
 

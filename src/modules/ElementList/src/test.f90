@@ -176,38 +176,38 @@ TYPE, PUBLIC :: ftlListElement_
     GENERIC, PUBLIC :: DeallocateData => Delete
     GENERIC, PUBLIC :: Erase => EraseSingle, EraseIteratorPair
 
-    PROCEDURE, PASS( Obj ) :: NewDefault
-    PROCEDURE, PASS( Obj ) :: NewCopyOther
-    PROCEDURE, PASS( Obj ) :: NewFill
-    PROCEDURE, PASS( Obj ) :: NewFromArray
-    PROCEDURE, PASS( Obj ) :: NewFromIteratorPair
+    PROCEDURE, PASS( obj ) :: NewDefault
+    PROCEDURE, PASS( obj ) :: NewCopyOther
+    PROCEDURE, PASS( obj ) :: NewFill
+    PROCEDURE, PASS( obj ) :: NewFromArray
+    PROCEDURE, PASS( obj ) :: NewFromIteratorPair
 
-    PROCEDURE, PASS( Obj ) :: FixValuePtrs
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PushBack
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PushFront
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PopFront
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PopBack
+    PROCEDURE, PASS( obj ) :: FixValuePtrs
+    PROCEDURE, PUBLIC, PASS( obj ) :: PushBack
+    PROCEDURE, PUBLIC, PASS( obj ) :: PushFront
+    PROCEDURE, PUBLIC, PASS( obj ) :: PopFront
+    PROCEDURE, PUBLIC, PASS( obj ) :: PopBack
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Delete => Delete_Obj
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Size => SizeList
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isEmpty => Empty
+    PROCEDURE, PUBLIC, PASS( obj ) :: Delete => Delete_obj
+    PROCEDURE, PUBLIC, PASS( obj ) :: Size => SizeList
+    PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => Empty
     FINAL :: Finalizer
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Begin => BeginList
-    PROCEDURE, PUBLIC, PASS( Obj ) :: End => EndList
+    PROCEDURE, PUBLIC, PASS( obj ) :: Begin => BeginList
+    PROCEDURE, PUBLIC, PASS( obj ) :: End => EndList
 
-    PROCEDURE, PASS( Obj ) :: AssignOther
-    PROCEDURE, PASS( Obj ) :: AssignArray
+    PROCEDURE, PASS( obj ) :: AssignOther
+    PROCEDURE, PASS( obj ) :: AssignArray
 
-    PROCEDURE, PASS( Obj ) :: InsertSingle
-    PROCEDURE, PASS( Obj ) :: InsertFill
-    PROCEDURE, PASS( Obj ) :: InsertArray
-    PROCEDURE, PASS( Obj ) :: InsertIteratorPair
+    PROCEDURE, PASS( obj ) :: InsertSingle
+    PROCEDURE, PASS( obj ) :: InsertFill
+    PROCEDURE, PASS( obj ) :: InsertArray
+    PROCEDURE, PASS( obj ) :: InsertIteratorPair
 
-    PROCEDURE, PASS( Obj ) :: EraseSingle
-    PROCEDURE, PASS( Obj ) :: EraseIteratorPair
+    PROCEDURE, PASS( obj ) :: EraseSingle
+    PROCEDURE, PASS( obj ) :: EraseIteratorPair
 
-    PROCEDURE, PASS( Obj ), PUBLIC :: Resize
-    PROCEDURE, PASS( Obj ), PUBLIC :: Clear
+    PROCEDURE, PASS( obj ), PUBLIC :: Resize
+    PROCEDURE, PASS( obj ), PUBLIC :: Clear
 
 END TYPE
 
@@ -259,7 +259,7 @@ END INTERFACE
 PUBLIC :: ftlMove
 
 INTERFACE Display
-  MODULE PROCEDURE Display_Iterator, Display_Obj
+  MODULE PROCEDURE Display_Iterator, Display_obj
 END INTERFACE Display
 
 PUBLIC :: Display
@@ -274,29 +274,29 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewDefault( Obj )
-  CLASS( ftlListElement_ ), INTENT(INOUT), TARGET :: Obj
-  CALL Obj%Delete()
-  Obj%sentinel%next => Obj%sentinel
-  Obj%sentinel%prev => Obj%sentinel
+SUBROUTINE NewDefault( obj )
+  CLASS( ftlListElement_ ), INTENT(INOUT), TARGET :: obj
+  CALL obj%Delete()
+  obj%sentinel%next => obj%sentinel
+  obj%sentinel%prev => obj%sentinel
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-IMPURE ELEMENTAL SUBROUTINE NewCopyOther(Obj, other)
-  CLASS(ftlListElement_), INTENT(INOUT) :: Obj
+IMPURE ELEMENTAL SUBROUTINE NewCopyOther(obj, other)
+  CLASS(ftlListElement_), INTENT(INOUT) :: obj
   TYPE(ftlListElement_), INTENT(IN) :: other
 
   ! Internal variable
   TYPE(ftlListElementIterator_) :: it, iend
 
-  CALL Obj%New()
+  CALL obj%New()
   it = other%Begin()
   iend = other%End()
   DO WHILE( it .NE. iend )
-    CALL Obj%Add(it%value)
+    CALL obj%Add(it%value)
     CALL it%Inc()
   ENDDO
 END SUBROUTINE
@@ -305,18 +305,18 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewFill( Obj, n, val )
-  CLASS( ftlListElement_ ), INTENT(INOUT) :: Obj
+SUBROUTINE NewFill( obj, n, val )
+  CLASS( ftlListElement_ ), INTENT(INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: n
   CLASS(Element_) , TARGET, OPTIONAL, INTENT( IN ) :: val
 
   ! Internal variables
   INTEGER( I4B ) :: i
 
-  CALL Obj%New()
+  CALL obj%New()
   IF( PRESENT( val ) ) THEN
     DO i = 1, n
-      CALL Obj%Add(val)
+      CALL obj%Add(val)
     END DO
   ELSE
     STOP 'TODO: Implement ftlList%NewFill without val'
@@ -327,16 +327,16 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewFromArray(Obj, array)
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE NewFromArray(obj, array)
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   CLASS(Element_) , TARGET, INTENT( IN ) :: array(:)
 
   ! Internal variable
   INTEGER( I4B ) :: i, n
 
-  CALL Obj%New(); n = SIZE( array )
+  CALL obj%New(); n = SIZE( array )
   DO i = 1, n
-    CALL Obj%Add(array(i))
+    CALL obj%Add(array(i))
   END DO
 END SUBROUTINE
 
@@ -344,13 +344,13 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewFromIteratorPair( Obj, first, last )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE NewFromIteratorPair( obj, first, last )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   TYPE(ftlListElementIterator_), INTENT( IN ) :: first
   TYPE(ftlListElementIterator_), INTENT( IN ) :: last
 
-  CALL Obj%New()
-  CALL Obj%Insert( Obj%Begin(), first, last )
+  CALL obj%New()
+  CALL obj%Insert( obj%Begin(), first, last )
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
@@ -389,19 +389,19 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE FixValuePtrs( Obj )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE FixValuePtrs( obj )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
 
-  IF( Obj%psize == 0 ) THEN
-    NULLIFY( Obj%front, Obj%back )
+  IF( obj%psize == 0 ) THEN
+    NULLIFY( obj%front, obj%back )
   ELSE
-    SELECT TYPE( first => Obj%sentinel%next )
+    SELECT TYPE( first => obj%sentinel%next )
       TYPE IS( DataNode_ )
-      Obj%front => first%data
+      obj%front => first%data
     END SELECT
-    SELECT TYPE( last => Obj%sentinel%prev )
+    SELECT TYPE( last => obj%sentinel%prev )
       TYPE IS( DataNode_ )
-      Obj%back => last%data
+      obj%back => last%data
     END SELECT
   END IF
 END SUBROUTINE
@@ -410,26 +410,26 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE PushBack( Obj, val )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE PushBack( obj, val )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   CLASS(Element_) , INTENT( IN ) :: val
 
-  CALL InsertNodeAfter( Obj%sentinel%prev, val )
-  Obj%psize = Obj%psize + 1
-  CALL Obj%FixValuePtrs()
+  CALL InsertNodeAfter( obj%sentinel%prev, val )
+  obj%psize = obj%psize + 1
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE PushFront( Obj, val )
-  CLASS( ftlListElement_ ), INTENT( INOUT ), TARGET :: Obj
+SUBROUTINE PushFront( obj, val )
+  CLASS( ftlListElement_ ), INTENT( INOUT ), TARGET :: obj
   CLASS(Element_) , TARGET, INTENT( IN ) :: val
 
-  CALL InsertNodeBefore( Obj%sentinel%next, val )
-  Obj%psize = Obj%psize + 1
-  CALL Obj%FixValuePtrs()
+  CALL InsertNodeBefore( obj%sentinel%next, val )
+  obj%psize = obj%psize + 1
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 
@@ -447,10 +447,10 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-FUNCTION PopFront( Obj ) RESULT( Ans )
-  CLASS( ftlListElement_ ), INTENT(INOUT), TARGET :: Obj
+FUNCTION PopFront( obj ) RESULT( ans )
+  CLASS( ftlListElement_ ), INTENT(INOUT), TARGET :: obj
 
-  CLASS(Element_), POINTER :: Ans
+  CLASS(Element_), POINTER :: ans
 
 
 
@@ -458,117 +458,117 @@ FUNCTION PopFront( Obj ) RESULT( Ans )
   ! Internal variables
   CLASS( ListNode_ ), POINTER :: oldfirst
 
-  oldfirst => Obj%sentinel%next
+  oldfirst => obj%sentinel%next
 
 
-  Ans => Obj%front
-
-
-
+  ans => obj%front
 
 
 
 
 
-  Obj%psize = Obj%psize - 1
+
+
+
+  obj%psize = obj%psize - 1
   CALL UnlinkNode( oldfirst )
   DEALLOCATE( oldfirst )
-  CALL Obj%FixValuePtrs()
+  CALL obj%FixValuePtrs()
 END FUNCTION
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION PopBack(Obj) RESULT( Ans )
-  CLASS(ftlListElement_), INTENT(INOUT), TARGET :: Obj
+FUNCTION PopBack(obj) RESULT( ans )
+  CLASS(ftlListElement_), INTENT(INOUT), TARGET :: obj
 
-  CLASS(Element_), POINTER :: Ans
+  CLASS(Element_), POINTER :: ans
 
 
 
 
   ! Define internal variable
   CLASS(ListNode_), POINTER :: oldlast
-  oldlast => Obj%sentinel%prev
+  oldlast => obj%sentinel%prev
 
 
-  Ans => Obj%back
-
-
-
+  ans => obj%back
 
 
 
 
 
-  Obj%psize = Obj%psize - 1
+
+
+
+  obj%psize = obj%psize - 1
   CALL UnlinkNode(oldlast)
   DEALLOCATE(oldlast)
-  CALL Obj%FixValuePtrs()
+  CALL obj%FixValuePtrs()
 END FUNCTION
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-IMPURE ELEMENTAL SUBROUTINE Delete_Obj( Obj )
-  CLASS( ftlListElement_ ), INTENT(INOUT), TARGET :: Obj
+IMPURE ELEMENTAL SUBROUTINE Delete_obj( obj )
+  CLASS( ftlListElement_ ), INTENT(INOUT), TARGET :: obj
 
   ! Internal variables
   CLASS( ListNode_ ), POINTER :: walker, deletor
 
-  walker => Obj%sentinel%next
-  DO WHILE( ASSOCIATED( walker ) .AND. .NOT. ASSOCIATED(walker,Obj%sentinel) )
+  walker => obj%sentinel%next
+  DO WHILE( ASSOCIATED( walker ) .AND. .NOT. ASSOCIATED(walker,obj%sentinel) )
     deletor => walker
     walker => walker%next
     DEALLOCATE(deletor)
   END DO
-  Obj%psize = 0
-  NULLIFY( Obj%sentinel%prev )
-  NULLIFY( Obj%sentinel%next )
-  NULLIFY( Obj%front )
-  NULLIFY( Obj%back )
+  obj%psize = 0
+  NULLIFY( obj%sentinel%prev )
+  NULLIFY( obj%sentinel%next )
+  NULLIFY( obj%front )
+  NULLIFY( obj%back )
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PURE FUNCTION SizeList( Obj ) RESULT( Size )
-  CLASS( ftlListElement_ ), INTENT( IN ) :: Obj
+PURE FUNCTION SizeList( obj ) RESULT( Size )
+  CLASS( ftlListElement_ ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: Size
-  Size = Obj%psize
+  Size = obj%psize
 END FUNCTION
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PURE FUNCTION Empty(Obj) RESULT( Ans )
-  CLASS(ftlListElement_), INTENT(in) :: Obj
-  LOGICAL( LGT ) :: Ans
-  Ans = (Obj%psize == 0)
+PURE FUNCTION Empty(obj) RESULT( ans )
+  CLASS(ftlListElement_), INTENT(in) :: obj
+  LOGICAL( LGT ) :: ans
+  ans = (obj%psize == 0)
 END FUNCTION
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-IMPURE ELEMENTAL SUBROUTINE Finalizer( Obj )
-  TYPE( ftlListElement_ ), INTENT( INOUT ) :: Obj
-  CALL Obj%Delete()
+IMPURE ELEMENTAL SUBROUTINE Finalizer( obj )
+  TYPE( ftlListElement_ ), INTENT( INOUT ) :: obj
+  CALL obj%Delete()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION BeginList( Obj ) RESULT( Begin )
-  CLASS( ftlListElement_ ), INTENT( IN ), TARGET :: Obj
+FUNCTION BeginList( obj ) RESULT( Begin )
+  CLASS( ftlListElement_ ), INTENT( IN ), TARGET :: obj
   TYPE( ftlListElementIterator_ ) :: Begin
 
-  Begin%node => Obj%sentinel%next
+  Begin%node => obj%sentinel%next
   SELECT TYPE( node => Begin%node )
     TYPE IS ( DataNode_ )
     Begin%value => node%data
@@ -579,10 +579,10 @@ END FUNCTION
 !
 !----------------------------------------------------------------------------
 
-FUNCTION EndList( Obj ) result( End )
-  CLASS( ftlListElement_ ), INTENT( IN ), TARGET :: Obj
+FUNCTION EndList( obj ) result( End )
+  CLASS( ftlListElement_ ), INTENT( IN ), TARGET :: obj
   TYPE( ftlListElementIterator_ ) :: End
-  End%node => Obj%sentinel
+  End%node => obj%sentinel
 END FUNCTION
 
 !----------------------------------------------------------------------------
@@ -591,19 +591,19 @@ END FUNCTION
 
 ! TODO: implement using existing list nodes instead of copy construction
 !
-IMPURE ELEMENTAL SUBROUTINE AssignOther(Obj, other)
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+IMPURE ELEMENTAL SUBROUTINE AssignOther(obj, other)
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   TYPE( ftlListElement_ ), INTENT( IN ) :: other
 
   ! Define internal variables
   TYPE( ftlListElementIterator_ ) :: it
   INTEGER( I4B ) :: i, n
 
-  CALL Obj%New()
+  CALL obj%New()
   i = 1; n = other%Size()
   it = other%Begin()
   DO WHILE( i .LE. n )
-    CALL Obj%add( it%value )
+    CALL obj%add( it%value )
     i = i + 1
     CALL it%Inc()
   END DO
@@ -613,22 +613,22 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE AssignArray(Obj, array)
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE AssignArray(obj, array)
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   CLASS(Element_) , TARGET, INTENT( IN ) :: array(:)
-  CALL Obj%New(array)
+  CALL obj%New(array)
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE InsertSingle( Obj, position, val )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE InsertSingle( obj, position, val )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   TYPE( ftlListElementIterator_ ) :: position
   CLASS(Element_), TARGET, INTENT( IN ) :: val
 
-  call Obj%InsertFill( position, 1, val )
+  call obj%InsertFill( position, 1, val )
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
@@ -664,8 +664,8 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE InsertFill( Obj, position, n, val )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE InsertFill( obj, position, n, val )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   TYPE( ftlListElementIterator_ ) :: position
   INTEGER( I4B ), INTENT( IN ) :: n
   CLASS(Element_) , TARGET, INTENT( IN ) :: val
@@ -675,16 +675,16 @@ SUBROUTINE InsertFill( Obj, position, n, val )
   DO i = 1, n
     CALL InsertNodeBefore(position%node, val)
   END DO
-  Obj%psize = Obj%psize + n
-  CALL Obj%FixValuePtrs()
+  obj%psize = obj%psize + n
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE InsertArray( Obj, position, array )
-  CLASS( ftlListElement_ ), INTENT(INOUT) :: Obj
+SUBROUTINE InsertArray( obj, position, array )
+  CLASS( ftlListElement_ ), INTENT(INOUT) :: obj
   TYPE( ftlListElementIterator_ ) :: position
   CLASS(Element_), INTENT( IN )    :: array(:)
 
@@ -694,16 +694,16 @@ SUBROUTINE InsertArray( Obj, position, array )
   DO i = 1, n
     CALL InsertNodeBefore( position%node, array(i) )
   END DO
-  Obj%psize = Obj%psize + n
-  CALL Obj%FixValuePtrs()
+  obj%psize = obj%psize + n
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE InsertIteratorPair( Obj, position, first, last )
-  CLASS( ftlListElement_ ) , INTENT( INOUT ) :: Obj
+SUBROUTINE InsertIteratorPair( obj, position, first, last )
+  CLASS( ftlListElement_ ) , INTENT( INOUT ) :: obj
   TYPE( ftlListElementIterator_ ) :: position
   TYPE( ftlListElementIterator_ ), INTENT( IN ) :: first
   TYPE( ftlListElementIterator_ ), INTENT( IN ) :: last
@@ -714,32 +714,32 @@ SUBROUTINE InsertIteratorPair( Obj, position, first, last )
   it = first
   DO WHILE( it .NE. last)
     CALL InsertNodeBefore( position%node, it%value )
-    Obj%psize = Obj%psize + 1
+    obj%psize = obj%psize + 1
     CALL it%Inc()
   END DO
-  CALL Obj%FixValuePtrs()
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE EraseSingle( Obj, position )
-  CLASS( ftlListElement_ ), INTENT(INOUT) :: Obj
+SUBROUTINE EraseSingle( obj, position )
+  CLASS( ftlListElement_ ), INTENT(INOUT) :: obj
   TYPE( ftlListElementIterator_ ) :: position
 
   CALL UnlinkNode(position%node)
   DEALLOCATE(position%node)
-  Obj%psize = Obj%psize - 1
-  CALL Obj%FixValuePtrs()
+  obj%psize = obj%psize - 1
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE EraseIteratorPair( Obj, first, last )
-  CLASS( ftlListElement_ ) , INTENT( INOUT ) :: Obj
+SUBROUTINE EraseIteratorPair( obj, first, last )
+  CLASS( ftlListElement_ ) , INTENT( INOUT ) :: obj
   TYPE( ftlListElementIterator_ ) :: first
   TYPE(ftlListElementIterator_), INTENT( IN ) :: last
 
@@ -750,7 +750,7 @@ SUBROUTINE EraseIteratorPair( Obj, first, last )
     DO WHILE( walker .NE. last )
       deletor = walker
       CALL walker%Inc()
-      CALL Obj%EraseSingle(deletor)
+      CALL obj%EraseSingle(deletor)
     END DO
   END ASSOCIATE
 END SUBROUTINE
@@ -759,8 +759,8 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE SwapList( Obj, other )
-  TYPE( ftlListElement_ ), INTENT( INOUT ), TARGET :: Obj
+SUBROUTINE SwapList( obj, other )
+  TYPE( ftlListElement_ ), INTENT( INOUT ), TARGET :: obj
   TYPE( ftlListElement_ ), INTENT( INOUT ), TARGET :: other
 
   ! Define internal variables
@@ -768,19 +768,19 @@ SUBROUTINE SwapList( Obj, other )
   TYPE( ListNode_ ) :: tmpNode
   !
   ! fix pointers from data nodes to the sentinels
-  Obj%sentinel%prev%next => other%sentinel
-  Obj%sentinel%next%prev => other%sentinel
-  other%sentinel%prev%next => Obj%sentinel
-  other%sentinel%next%prev => Obj%sentinel
+  obj%sentinel%prev%next => other%sentinel
+  obj%sentinel%next%prev => other%sentinel
+  other%sentinel%prev%next => obj%sentinel
+  other%sentinel%next%prev => obj%sentinel
   ! exchange sentinels themselves
-  tmpNode = Obj%sentinel
-  tmpSize = Obj%psize
-  Obj%sentinel = other%sentinel
-  Obj%psize = other%psize
+  tmpNode = obj%sentinel
+  tmpSize = obj%psize
+  obj%sentinel = other%sentinel
+  obj%psize = other%psize
   other%sentinel = tmpNode
   other%psize = tmpSize
   ! fix front/back pointers for both lists
-  CALL Obj%FixValuePtrs()
+  CALL obj%FixValuePtrs()
   CALL other%FixValuePtrs()
 END SUBROUTINE
 
@@ -788,40 +788,40 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Resize( Obj, n, val )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
+SUBROUTINE Resize( obj, n, val )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ) , INTENT( IN ) :: n
   CLASS(Element_) , TARGET, INTENT( IN ), OPTIONAL :: val
   !
   TYPE( ftlListElementIterator_ ) :: it
   INTEGER( I4B ) :: i
   !
-  IF (n == Obj%psize) THEN
+  IF (n == obj%psize) THEN
     RETURN
-  ELSE IF (n < Obj%psize) THEN
-    it = Obj%Begin()
+  ELSE IF (n < obj%psize) THEN
+    it = obj%Begin()
     DO i = 2, n
       CALL it%Inc()
     END DO
     CALL it%Inc()
-    CALL Obj%Erase(it,Obj%End())
-  ELSE ! n > Obj%psize
-    DO i = 1, n - Obj%psize
-      CALL InsertNodeAfter(Obj%sentinel%prev, val)
+    CALL obj%Erase(it,obj%End())
+  ELSE ! n > obj%psize
+    DO i = 1, n - obj%psize
+      CALL InsertNodeAfter(obj%sentinel%prev, val)
     END DO
   END IF
   !
-  Obj%psize = n
-  CALL Obj%FixValuePtrs()
+  obj%psize = n
+  CALL obj%FixValuePtrs()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Clear( Obj )
-  CLASS( ftlListElement_ ), INTENT( INOUT ) :: Obj
-  CALL Obj%New()
+SUBROUTINE Clear( obj )
+  CLASS( ftlListElement_ ), INTENT( INOUT ) :: obj
+  CALL obj%New()
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
@@ -858,14 +858,14 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE NewItCopyOther( Obj, other )
-  CLASS(ftlListElementIterator_), INTENT( OUT ) :: Obj
+SUBROUTINE NewItCopyOther( obj, other )
+  CLASS(ftlListElementIterator_), INTENT( OUT ) :: obj
   CLASS(ftlListElementIterator_), INTENT( IN ) :: other
 
-  Obj%node => other%node
-  SELECT TYPE( node => Obj%node )
+  obj%node => other%node
+  SELECT TYPE( node => obj%node )
     TYPE IS( DataNode_ )
-    Obj%value => node%data
+    obj%value => node%data
   END SELECT
 END SUBROUTINE
 
@@ -876,21 +876,21 @@ END SUBROUTINE
 ! todo
 ! check the bounds
 ! if bounds are crossed raise error
-RECURSIVE SUBROUTINE Inc(Obj, n)
-  CLASS( ftlListElementIterator_ ), INTENT(INOUT) :: Obj
+RECURSIVE SUBROUTINE Inc(obj, n)
+  CLASS( ftlListElementIterator_ ), INTENT(INOUT) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
 
   ! Define internal variables
   INTEGER( I4B ) :: i
   IF( PRESENT( n ) ) THEN
     DO i = 1, n
-      CALL Inc( Obj )
+      CALL Inc( obj )
     END DO
   ELSE
-    Obj%node => Obj%node%next
-    SELECT TYPE( node => Obj%node )
+    obj%node => obj%node%next
+    SELECT TYPE( node => obj%node )
       TYPE IS( DataNode_ )
-      Obj%value => node%data
+      obj%value => node%data
     END SELECT
   END IF
 END SUBROUTINE
@@ -903,8 +903,8 @@ END SUBROUTINE
 ! todo
 ! check the bounds
 ! if bounds are crossed raise error
-RECURSIVE SUBROUTINE Dec(Obj, n)
-  CLASS( ftlListElementIterator_ ), INTENT(INOUT) :: Obj
+RECURSIVE SUBROUTINE Dec(obj, n)
+  CLASS( ftlListElementIterator_ ), INTENT(INOUT) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
 
   ! Define internal variable
@@ -912,13 +912,13 @@ RECURSIVE SUBROUTINE Dec(Obj, n)
 
   IF( PRESENT( n ) ) THEN
     DO i = 1, n
-      CALL Dec( Obj )
+      CALL Dec( obj )
     END DO
   ELSE
-    Obj%node => Obj%node%prev
-    SELECT TYPE( node => Obj%node )
+    obj%node => obj%node%prev
+    SELECT TYPE( node => obj%node )
       TYPE IS( DataNode_ )
-      Obj%value => node%data
+      obj%value => node%data
     END SELECT
   END IF
 END SUBROUTINE
@@ -927,34 +927,34 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-PURE FUNCTION EqualOther( Obj, other ) RESULT( Ans )
-  CLASS(ftlListElementIterator_), INTENT(in) :: Obj
+PURE FUNCTION EqualOther( obj, other ) RESULT( ans )
+  CLASS(ftlListElementIterator_), INTENT(in) :: obj
   CLASS(ftlListElementIterator_), INTENT(in) :: other
-  LOGICAL( LGT ) :: Ans
-  Ans = ASSOCIATED( Obj%node,other%node )
+  LOGICAL( LGT ) :: ans
+  ans = ASSOCIATED( obj%node,other%node )
 END FUNCTION
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PURE FUNCTION UnequalOther( Obj, other ) RESULT( Ans )
-  CLASS( ftlListElementIterator_ ), INTENT( IN ) :: Obj
+PURE FUNCTION UnequalOther( obj, other ) RESULT( ans )
+  CLASS( ftlListElementIterator_ ), INTENT( IN ) :: obj
   CLASS( ftlListElementIterator_ ), INTENT( IN ) :: other
-  LOGICAL( LGT ) :: Ans
-  Ans = .NOT. ASSOCIATED( Obj%node,other%node )
+  LOGICAL( LGT ) :: ans
+  ans = .NOT. ASSOCIATED( obj%node,other%node )
 END FUNCTION
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE  Display_Iterator( Obj, Msg, UnitNo )
-  CLASS( ftlListElementIterator_ ), INTENT( IN ) :: Obj
+SUBROUTINE  Display_Iterator( obj, Msg, UnitNo )
+  CLASS( ftlListElementIterator_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
-  IF( ASSOCIATED( Obj%value ) ) THEN
-    CALL Display( Obj%value, Msg, UnitNo )
+  IF( ASSOCIATED( obj%value ) ) THEN
+    CALL Display( obj%value, Msg, UnitNo )
   END IF
 END SUBROUTINE
 
@@ -962,8 +962,8 @@ END SUBROUTINE
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE  Display_Obj( Obj, Msg, UnitNo )
-  CLASS( ftlListElement_ ), INTENT( IN ) :: Obj
+SUBROUTINE  Display_obj( obj, Msg, UnitNo )
+  CLASS( ftlListElement_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
 
@@ -976,13 +976,13 @@ SUBROUTINE  Display_Obj( Obj, Msg, UnitNo )
     WRITE( i, "(A)" ) "#" // TRIM( Msg )
   END IF
 
-  IF( Obj%isEmpty() ) THEN
+  IF( obj%isEmpty() ) THEN
     WRITE( i, "(A)" ) "List is Empty"
     RETURN
   END IF
 
-  it = Obj%Begin()
-  last = Obj%End()
+  it = obj%Begin()
+  last = obj%End()
   ii = 0
   DO WHILE( it .NE. last )
     ii = ii + 1

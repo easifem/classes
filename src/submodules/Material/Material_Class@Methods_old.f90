@@ -10,8 +10,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mat_initiate
-  IF( ALLOCATED( Obj % Props ) ) DEALLOCATE( Obj % Props )
-  ALLOCATE( Obj % Props( tprop ) )
+  IF( ALLOCATED( obj % Props ) ) DEALLOCATE( obj % Props )
+  ALLOCATE( obj % Props( tprop ) )
 END PROCEDURE mat_initiate
 
 !----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ END PROCEDURE mat_initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mat_append
-  CALL Append( Obj % Props, KeyValObj )
+  CALL Append( obj % Props, KeyValobj )
 END PROCEDURE mat_append
 
 !----------------------------------------------------------------------------
@@ -27,10 +27,10 @@ END PROCEDURE mat_append
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mat_size
-  IF( ALLOCATED( Obj % Props ) ) THEN
-    Ans = SIZE( Obj % Props )
+  IF( ALLOCATED( obj % Props ) ) THEN
+    ans = SIZE( obj % Props )
   ELSE
-    Ans = 0
+    ans = 0
   END IF
 END PROCEDURE mat_size
 
@@ -42,12 +42,12 @@ MODULE PROCEDURE mat_get_prop
 
   INTEGER( I4B ) :: i
 
-  i = Obj % Props .INDEX. key
+  i = obj % Props .INDEX. key
 
   IF( i .NE. 0 ) THEN
-    Ans = Obj % Props( i )
+    ans = obj % Props( i )
   ELSE
-    Ans = KeyValue( 'NONE', 0 )
+    ans = KeyValue( 'NONE', 0 )
   END IF
 
 END PROCEDURE mat_get_prop
@@ -57,7 +57,7 @@ END PROCEDURE mat_get_prop
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mat_deallocate
-  IF( ALLOCATED( Obj % Props ) ) DEALLOCATE( Obj % Props )
+  IF( ALLOCATED( obj % Props ) ) DEALLOCATE( obj % Props )
 END PROCEDURE mat_deallocate
 
 !----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ MODULE PROCEDURE mat_display
   i =stdout
   IF ( PRESENT( unitno ) ) i = unitno
   IF( LEN_TRIM( msg ) .NE. 0  ) WRITE( I, "(A)" ) TRIM( msg )
-  CALL Display( Obj % Props, "", i )
+  CALL Display( obj % Props, "", i )
   CALL Dashline( Unitno = i )
 END PROCEDURE mat_display
 
@@ -82,10 +82,10 @@ MODULE PROCEDURE mat_display_vec
   i =stdout
   IF ( PRESENT( unitno ) ) i = unitno
   IF( LEN_TRIM( msg ) .NE. 0  ) WRITE( I, "(A)" ) TRIM( msg )
-  WRITE( I, "(A, I4)" ) "Total Materials :: ", SIZE( Obj )
+  WRITE( I, "(A, I4)" ) "Total Materials :: ", SIZE( obj )
 
-  DO j = 1, SIZE( Obj )
-    CALL Display( Obj( j ) % Props, "", i )
+  DO j = 1, SIZE( obj )
+    CALL Display( obj( j ) % Props, "", i )
   END DO
 END PROCEDURE mat_display_vec
 

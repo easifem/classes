@@ -25,8 +25,8 @@ CONTAINS
 
 
 MODULE PROCEDURE addSurrogate
-  Obj%surrogate => Obj2
-  IF(ASSOCIATED(Obj2%surrogate)) Obj%surrogate => Obj2%surrogate
+  obj%surrogate => obj2
+  IF(ASSOCIATED(obj2%surrogate)) obj%surrogate => obj2%surrogate
 END PROCEDURE addSurrogate
 
 !----------------------------------------------------------------------------
@@ -38,18 +38,18 @@ MODULE PROCEDURE setCounter_All
   INTEGER( I4B ) :: lcounter(EXCEPTION_SIZE)
   lcounter=counter
   WHERE(counter < 0) lcounter=0
-  IF(ASSOCIATED(Obj%surrogate)) THEN
-    Obj%surrogate%nInfo=lcounter(EXCEPTION_INFORMATION)
-    Obj%surrogate%nWarn=lcounter(EXCEPTION_WARNING)
-    Obj%surrogate%nError=lcounter(EXCEPTION_ERROR)
-    Obj%surrogate%nFatal=lcounter(EXCEPTION_FATAL_ERROR)
-    Obj%surrogate%nDebug=lcounter(EXCEPTION_DEBUG)
+  IF(ASSOCIATED(obj%surrogate)) THEN
+    obj%surrogate%nInfo=lcounter(EXCEPTION_INFORMATION)
+    obj%surrogate%nWarn=lcounter(EXCEPTION_WARNING)
+    obj%surrogate%nError=lcounter(EXCEPTION_ERROR)
+    obj%surrogate%nFatal=lcounter(EXCEPTION_FATAL_ERROR)
+    obj%surrogate%nDebug=lcounter(EXCEPTION_DEBUG)
   ELSE
-    Obj%nInfo=lcounter(EXCEPTION_INFORMATION)
-    Obj%nWarn=lcounter(EXCEPTION_WARNING)
-    Obj%nError=lcounter(EXCEPTION_ERROR)
-    Obj%nFatal=lcounter(EXCEPTION_FATAL_ERROR)
-    Obj%nDebug=lcounter(EXCEPTION_DEBUG)
+    obj%nInfo=lcounter(EXCEPTION_INFORMATION)
+    obj%nWarn=lcounter(EXCEPTION_WARNING)
+    obj%nError=lcounter(EXCEPTION_ERROR)
+    obj%nFatal=lcounter(EXCEPTION_FATAL_ERROR)
+    obj%nDebug=lcounter(EXCEPTION_DEBUG)
   ENDIF
 END PROCEDURE setCounter_All
 
@@ -61,31 +61,31 @@ MODULE PROCEDURE setCounter_eCode
   INTEGER( I4B ) :: lcount
   lcount=0
   IF(count > 0) lcount=count
-  IF(ASSOCIATED(Obj%surrogate)) THEN
+  IF(ASSOCIATED(obj%surrogate)) THEN
     SELECTCASE(i)
     CASE(EXCEPTION_INFORMATION)
-      Obj%surrogate%nInfo=lcount
+      obj%surrogate%nInfo=lcount
     CASE(EXCEPTION_WARNING)
-      Obj%surrogate%nWarn=lcount
+      obj%surrogate%nWarn=lcount
     CASE(EXCEPTION_DEBUG)
-      Obj%surrogate%nDebug=lcount
+      obj%surrogate%nDebug=lcount
     CASE(EXCEPTION_ERROR)
-      Obj%surrogate%nError=lcount
+      obj%surrogate%nError=lcount
     CASE(EXCEPTION_FATAL_ERROR)
-      Obj%surrogate%nFatal=lcount
+      obj%surrogate%nFatal=lcount
     ENDSELECT
   ELSE
     SELECTCASE(i)
     CASE(EXCEPTION_INFORMATION)
-      Obj%nInfo=lcount
+      obj%nInfo=lcount
     CASE(EXCEPTION_WARNING)
-      Obj%nWarn=lcount
+      obj%nWarn=lcount
     CASE(EXCEPTION_DEBUG)
-      Obj%nDebug=lcount
+      obj%nDebug=lcount
     CASE(EXCEPTION_ERROR)
-      Obj%nError=lcount
+      obj%nError=lcount
     CASE(EXCEPTION_FATAL_ERROR)
-      Obj%nFatal=lcount
+      obj%nFatal=lcount
     ENDSELECT
   ENDIF
 END PROCEDURE setCounter_eCode
@@ -95,8 +95,8 @@ END PROCEDURE setCounter_eCode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setQuietMode_all
-  IF(ASSOCIATED(Obj%surrogate)) CALL copyFromSurrogate(Obj)
-  Obj%quiet=Ans
+  IF(ASSOCIATED(obj%surrogate)) CALL copyFromSurrogate(obj)
+  obj%quiet=ans
 END PROCEDURE setQuietMode_all
 
 !----------------------------------------------------------------------------
@@ -104,9 +104,9 @@ END PROCEDURE setQuietMode_all
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setQuietMode_eCode
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
   IF( EXCEPTION_OK < eCode .AND. eCode < EXCEPTION_SIZE) &
-    Obj%quiet( eCode ) = Ans
+    obj%quiet( eCode ) = ans
 END PROCEDURE setQuietMode_eCode
 
 !----------------------------------------------------------------------------
@@ -115,9 +115,9 @@ END PROCEDURE setQuietMode_eCode
 
 MODULE PROCEDURE setQuietMode_array
   INTEGER( I4B ) :: n
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
-  n = MIN( EXCEPTION_SIZE-1, SIZE( Ans ) )
-  Obj%quiet( 1:n ) = Ans( 1:n )
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
+  n = MIN( EXCEPTION_SIZE-1, SIZE( ans ) )
+  obj%quiet( 1:n ) = ans( 1:n )
 END PROCEDURE setQuietMode_array
 
 !----------------------------------------------------------------------------
@@ -125,8 +125,8 @@ END PROCEDURE setQuietMode_array
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setVerboseMode_all
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
-  Obj%verbose=Ans
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
+  obj%verbose=ans
 END PROCEDURE setVerboseMode_all
 
 !----------------------------------------------------------------------------
@@ -134,9 +134,9 @@ END PROCEDURE setVerboseMode_all
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setVerboseMode_eCode
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
   IF( EXCEPTION_OK < eCode .AND. eCode < EXCEPTION_SIZE ) &
-    Obj%verbose(eCode)=Ans
+    obj%verbose(eCode)=ans
 END PROCEDURE setVerboseMode_eCode
 
 !----------------------------------------------------------------------------
@@ -145,9 +145,9 @@ END PROCEDURE setVerboseMode_eCode
 
 MODULE PROCEDURE setVerboseMode_array
   INTEGER( I4B ) :: n
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
-  n = MIN( EXCEPTION_SIZE-1, SIZE( Ans ) )
-  Obj%verbose( 1:n ) = Ans( 1:n )
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
+  n = MIN( EXCEPTION_SIZE-1, SIZE( ans ) )
+  obj%verbose( 1:n ) = ans( 1:n )
 END PROCEDURE setVerboseMode_array
 
 !----------------------------------------------------------------------------
@@ -156,19 +156,19 @@ END PROCEDURE setVerboseMode_array
 
 MODULE PROCEDURE setLogFileUnit
   LOGICAL( LGT ) :: tmpQuiet
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
 
   !Try to set the log file unit number. Check that it is a valid
   !value. If not display a warning.
   IF( unit /= stdout .AND. unit /= stderr .AND. unit > 0 ) THEN
-    Obj%logFileUnit=unit
+    obj%logFileUnit=unit
   ELSE
-    Obj%lastMesg="Illegal unit number for log file. " // &
+    obj%lastMesg="Illegal unit number for log file. " // &
       & "Log file unit not set."
     tmpQuiet=.FALSE.
-    Obj%nWarn=Obj%nWarn+1
+    obj%nWarn=obj%nWarn+1
     CALL exceptionMessage( EXCEPTION_WARNING, tmpQuiet, .FALSE., &
-      & stderr, Obj%lastMesg )
+      & stderr, obj%lastMesg )
   END IF
 END PROCEDURE setLogFileUnit
 
@@ -177,12 +177,12 @@ END PROCEDURE setLogFileUnit
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setLogActive
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
   IF( isactive ) THEN
-    CALL Obj%checkLogFileOK()
-    Obj%logFileActive=.TRUE.
+    CALL obj%checkLogFileOK()
+    obj%logFileActive=.TRUE.
   ELSE
-    Obj%logFileActive=.FALSE.
+    obj%logFileActive=.FALSE.
   END IF
 END PROCEDURE setLogActive
 
@@ -191,8 +191,8 @@ END PROCEDURE setLogActive
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setStopOnError
-  IF( ASSOCIATED( Obj%surrogate ) ) CALL copyFromSurrogate( Obj )
-  Obj%stopOnError=Ans
+  IF( ASSOCIATED( obj%surrogate ) ) CALL copyFromSurrogate( obj )
+  obj%stopOnError=ans
 END PROCEDURE setStopOnError
 
 

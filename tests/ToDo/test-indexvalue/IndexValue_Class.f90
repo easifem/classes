@@ -20,44 +20,44 @@ MODULE IndexValue_Class
 
 	CONTAINS
 
-		PURE FUNCTION Constructor1( Indx, Val ) RESULT( Obj )
+		PURE FUNCTION Constructor1( Indx, Val ) RESULT( obj )
 			INTEGER( I4B ), INTENT( IN ) :: Indx
 			REAL( DFP ), INTENT( IN ) :: Val
-			TYPE(IndexValue_) :: Obj
+			TYPE(IndexValue_) :: obj
 
-			Obj % Indx = Indx
-			Obj % Val = Val
+			obj % Indx = Indx
+			obj % Val = Val
 
 		END FUNCTION Constructor1
 
-		PURE FUNCTION Constructor2( Indx, Val ) RESULT( Obj )
+		PURE FUNCTION Constructor2( Indx, Val ) RESULT( obj )
 			INTEGER( I4B ), INTENT( IN ) :: Indx( : )
 			REAL( DFP ), INTENT( IN ) :: Val( : )
-			TYPE(IndexValue_), ALLOCATABLE :: Obj( : )
+			TYPE(IndexValue_), ALLOCATABLE :: obj( : )
 
 			INTEGER( I4B ) :: n, i
 
 			n = SIZE( Indx )
-			ALLOCATE( Obj( n ) )
+			ALLOCATE( obj( n ) )
 			DO i = 1, n
-				Obj( i ) % Indx = Indx( i )
-				Obj( i ) % Val = Val( i )
+				obj( i ) % Indx = Indx( i )
+				obj( i ) % Val = Val( i )
 			END DO
 
 		END FUNCTION Constructor2
 
-		PURE FUNCTION Constructor3( Indx, Val ) RESULT( Obj )
+		PURE FUNCTION Constructor3( Indx, Val ) RESULT( obj )
 			INTEGER( I4B ), INTENT( IN ) :: Indx( : )
 			REAL( DFP ), INTENT( IN ) :: Val
-			TYPE(IndexValue_), ALLOCATABLE :: Obj( : )
+			TYPE(IndexValue_), ALLOCATABLE :: obj( : )
 
 			INTEGER( I4B ) :: n, i
 
 			n = SIZE( Indx )
-			ALLOCATE( Obj( n ) )
+			ALLOCATE( obj( n ) )
 			DO i = 1, n
-				Obj( i ) % Indx = Indx( i )
-				Obj( i ) % Val = Val
+				obj( i ) % Indx = Indx( i )
+				obj( i ) % Val = Val
 			END DO
 
 		END FUNCTION Constructor3

@@ -25,10 +25,10 @@ contains
 !----------------------------------------------------------------------------
 
 subroutine test1
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 call note( "test-1: testing Initiate() and Delete()")
-call Obj%Initiate()
-call Obj%DeallocateData()
+call obj%Initiate()
+call obj%DeallocateData()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -36,13 +36,13 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test2
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 integer( i4b ) :: n
 integer( i4b ) :: val
 call note( "test-2: testing Initiate(n,val)")
 n = 5; val = 1
-call Obj%Initiate( n=n, val=val )
-call Obj%Delete()
+call obj%Initiate( n=n, val=val )
+call obj%Delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -50,15 +50,15 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test3
-type( IntList_ ) :: Obj1, Obj2
+type( IntList_ ) :: obj1, obj2
 integer( i4b ) :: n
 integer( i4b ) :: val
-call note( "test-3: testing Initiate(Obj1, Obj2)")
+call note( "test-3: testing Initiate(obj1, obj2)")
 n = 5; val = 1
-call Obj1%Initiate( n=n, val=val )
-call Obj2%Initiate( Obj1 )
-call Obj1%Delete()
-call Obj2%Delete()
+call obj1%Initiate( n=n, val=val )
+call obj2%Initiate( obj1 )
+call obj1%Delete()
+call obj2%Delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -66,15 +66,15 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test4
-type( IntList_ ) :: Obj1, Obj2
+type( IntList_ ) :: obj1, obj2
 integer( i4b ) :: n
 integer( i4b ) :: val
-call note( "test-4: testing Obj1=Obj2")
+call note( "test-4: testing obj1=obj2")
 n = 5; val = 1
-call Obj1%Initiate( n=n, val=val )
-Obj2=Obj1
-call Obj1%Delete()
-call Obj2%Delete()
+call obj1%Initiate( n=n, val=val )
+obj2=obj1
+call obj1%Delete()
+call obj2%Delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -82,11 +82,11 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test5
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 integer( i4b ) :: val( 4 ) = [1,2,3,4]
-call note( "test-5: testing Obj%initiate(val)")
-call Obj%Initiate( val )
-call Obj%Delete()
+call note( "test-5: testing obj%initiate(val)")
+call obj%Initiate( val )
+call obj%Delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -94,11 +94,11 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test6
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 integer( i4b ) :: val( 4 ) = [1,2,3,4]
-call note( "test-6: testing Obj=val")
-Obj=val
-call Obj%Delete()
+call note( "test-6: testing obj=val")
+obj=val
+call obj%Delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -106,14 +106,14 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test7
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 integer( i4b ) :: val( 4 ) = [1,2,3,4]
-call note( "test-7: testing Obj%isEmpty(), Obj%SIZE()")
-call ok( Obj%isEmpty(), "Obj%isEmpty")
-Obj=val
-call ok( .NOT. Obj%isEmpty(), "Obj%isEmpty")
-call ok( Obj%SIZE() == SIZE(val), "Obj%SIZE()")
-call Obj%Delete()
+call note( "test-7: testing obj%isEmpty(), obj%SIZE()")
+call ok( obj%isEmpty(), "obj%isEmpty")
+obj=val
+call ok( .NOT. obj%isEmpty(), "obj%isEmpty")
+call ok( obj%SIZE() == SIZE(val), "obj%SIZE()")
+call obj%Delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -121,18 +121,18 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test8
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 integer( i4b ) :: val( 5 ), i
-call note( "test-8: testing Obj=val")
+call note( "test-8: testing obj=val")
 val = [1,2,3,4,5]
 call obj%initiate()
 do i = 1, size( val )
-  call Obj%PushBack(val(i))
+  call obj%PushBack(val(i))
 end do
 do i = 1, size( val )
-  call Obj%PushFront(val(i))
+  call obj%PushFront(val(i))
 end do
-call Obj%delete()
+call obj%delete()
 end subroutine
 
 !----------------------------------------------------------------------------
@@ -140,21 +140,21 @@ end subroutine
 !----------------------------------------------------------------------------
 
 subroutine test9
-type( IntList_ ) :: Obj
+type( IntList_ ) :: obj
 type( IntListIterator_ ) :: iter
 integer( i4b ) :: i
-call note( "test-9: testing Obj=val")
+call note( "test-9: testing obj=val")
 call obj%initiate()
 call obj%pushback( 1 )
 call obj%pushback( 2 )
 call obj%pushback( 4 )
 call display( obj, "[1,2,4]" )
-iter = Obj%Begin()
+iter = obj%Begin()
 call iter%inc(2)
 call display( iter, "Entry should be 4: ")
 ! call obj%insert( iter, [3] )
 ! call display( obj, "It should be [1,2,3,4]: " )
-call Obj%delete()
+call obj%delete()
 end subroutine
 
 end module

@@ -3,11 +3,11 @@ program main
   use basemethod
   use StringiFor
   use mshType
-  
+
   type( mshPhysicalNames_ ) :: obj
   type( File_ ) :: aFile
   logical( LGT ) :: ierr
-  
+
   call openFileToRead( aFile, "./", "mesh", ".msh" )
   call obj % ReadFromFile( aFile, ierr )
   ! call display( obj, "obj" )
@@ -18,22 +18,22 @@ program main
   !   write( *, * ) "test:: totalphysicalCurve ", TotalPhysicalCurves( obj )
   !   write( *, * ) "test:: totalphysicalSurface ", TotalPhysicalSurfaces( obj )
   !   write( *, * ) "test:: totalphysicalVolume ", TotalPhysicalVolumes( obj )
-  
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "bottom")
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "right")
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "top")
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "left")
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "dbc")
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "domain")
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, "volume")
-  
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, &
+
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "bottom")
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "right")
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "top")
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "left")
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "dbc")
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "domain")
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, "volume")
+
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, &
   !     & [String("bottom"), String("right"), String("volume")])
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, [1,0])
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, [1,2])
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, 1 )
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, 2 )
-  !   write( *, * ) "test:: getindex() ", getIndex( Obj, 3 )
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, [1,0])
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, [1,2])
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, 1 )
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, 2 )
+  !   write( *, * ) "test:: getindex() ", getIndex( obj, 3 )
   ! end block
 
   ! block

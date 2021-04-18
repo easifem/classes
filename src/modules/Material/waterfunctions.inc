@@ -3,10 +3,10 @@
 !                                                       ThermalConductivity
 !----------------------------------------------------------------------------
 
-PURE FUNCTION thermCond_water( Temp, Pressure ) RESULT( Ans )
+PURE FUNCTION thermCond_water( Temp, Pressure ) RESULT( ans )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Temp
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   !! internal variables
   CHARACTER( LEN = 2 ) :: thermCondCase
@@ -25,13 +25,13 @@ PURE FUNCTION thermCond_water( Temp, Pressure ) RESULT( Ans )
 
   SELECT CASE( thermCondCase )
   CASE( 'TP' )
-    Ans = thermCond_water_Temp_Pressure( Temp, Pressure )
+    ans = thermCond_water_Temp_Pressure( Temp, Pressure )
   CASE( 'Tp' )
-    Ans = thermCond_water_Temp( Temp )
+    ans = thermCond_water_Temp( Temp )
   CASE( 'tP' )
-    Ans = thermCond_water_Pressure( Pressure )
+    ans = thermCond_water_Pressure( Pressure )
   CASE( 'tp' )
-    Ans = Water%thermCond
+    ans = Water%thermCond
   END SELECT
 
 END FUNCTION thermCond_water
@@ -40,12 +40,12 @@ END FUNCTION thermCond_water
 !                                              thermCond_water_Temp_Pressure
 !----------------------------------------------------------------------------
 
-PURE FUNCTION thermCond_water_Temp_Pressure(Temp, Pressure) RESULT( Ans )
+PURE FUNCTION thermCond_water_Temp_Pressure(Temp, Pressure) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Temp
   REAL( DFP ), INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
-  Ans = 0.6065 * ( -1.48445 + 4.12292 * ( Temp / 298.15_DFP ) - 1.63866 * &
+  ans = 0.6065 * ( -1.48445 + 4.12292 * ( Temp / 298.15_DFP ) - 1.63866 * &
     & ( Temp / 298.15_DFP ) ** 2 )
 
 END FUNCTION thermCond_water_Temp_Pressure
@@ -54,11 +54,11 @@ END FUNCTION thermCond_water_Temp_Pressure
 !                                                      thermCond_water_Temp
 !----------------------------------------------------------------------------
 
-PURE FUNCTION thermCond_water_Temp(Temp) RESULT( Ans )
+PURE FUNCTION thermCond_water_Temp(Temp) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Temp
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
-  Ans = 0.6065 * ( -1.48445 + 4.12292 * ( Temp / 298.15_DFP ) - 1.63866 * &
+  ans = 0.6065 * ( -1.48445 + 4.12292 * ( Temp / 298.15_DFP ) - 1.63866 * &
     & ( Temp / 298.15_DFP ) ** 2 )
 
 END FUNCTION thermCond_water_Temp
@@ -67,21 +67,21 @@ END FUNCTION thermCond_water_Temp
 !                                                  thermCond_water_Pressure
 !----------------------------------------------------------------------------
 
-PURE FUNCTION thermCond_water_pressure(Pressure) RESULT( Ans )
+PURE FUNCTION thermCond_water_pressure(Pressure) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
-  Ans = Water%thermCond
+  ans = Water%thermCond
 END FUNCTION thermCond_water_pressure
 
 !----------------------------------------------------------------------------
 !                                                       SpecificHeatCapacity
 !----------------------------------------------------------------------------
 
-PURE FUNCTION specificHeatCap_water( Temp, Pressure ) RESULT( Ans )
+PURE FUNCTION specificHeatCap_water( Temp, Pressure ) RESULT( ans )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Temp
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   !! internal variables
   CHARACTER( LEN = 2 ) :: specificHeatCapCase
@@ -100,13 +100,13 @@ PURE FUNCTION specificHeatCap_water( Temp, Pressure ) RESULT( Ans )
 
   SELECT CASE( specificHeatCapCase )
   CASE( 'TP' )
-    Ans = specificHeatCap_water_Temp_Pressure( Temp, Pressure )
+    ans = specificHeatCap_water_Temp_Pressure( Temp, Pressure )
   CASE( 'Tp' )
-    Ans = specificHeatCap_water_Temp( Temp )
+    ans = specificHeatCap_water_Temp( Temp )
   CASE( 'tP' )
-    Ans = specificHeatCap_water_Pressure( Pressure )
+    ans = specificHeatCap_water_Pressure( Pressure )
   CASE( 'tp' )
-    Ans = Water%specificHeatCap
+    ans = Water%specificHeatCap
   END SELECT
 
 END FUNCTION specificHeatCap_water
@@ -117,15 +117,15 @@ END FUNCTION specificHeatCap_water
 !----------------------------------------------------------------------------
 
 PURE FUNCTION specificHeatCap_water_Temp_Pressure(Temp, Pressure) &
-  & RESULT( Ans )
+  & RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Temp
   REAL( DFP ), INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   IF( Temp .LE. 373.15_DFP ) THEN
-    Ans = Water%SpecificHeatCap
+    ans = Water%SpecificHeatCap
   ELSE IF( Temp .GT. 373.15_DFP ) THEN
-    Ans = 0.0196_DFP * Temp**2 - 13.785_DFP * Temp + 6638.6_DFP
+    ans = 0.0196_DFP * Temp**2 - 13.785_DFP * Temp + 6638.6_DFP
   END IF
 
 END FUNCTION specificHeatCap_water_Temp_Pressure
@@ -134,14 +134,14 @@ END FUNCTION specificHeatCap_water_Temp_Pressure
 !                                                specificHeatCap_water_Temp
 !----------------------------------------------------------------------------
 
-PURE FUNCTION specificHeatCap_water_Temp(Temp) RESULT( Ans )
+PURE FUNCTION specificHeatCap_water_Temp(Temp) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Temp
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   IF( Temp .LE. 373.15_DFP ) THEN
-    Ans = Water%SpecificHeatCap
+    ans = Water%SpecificHeatCap
   ELSE IF( Temp .GT. 373.15_DFP ) THEN
-    Ans = 0.0196_DFP * Temp**2 - 13.785_DFP * Temp + 6638.6_DFP
+    ans = 0.0196_DFP * Temp**2 - 13.785_DFP * Temp + 6638.6_DFP
   END IF
 
 END FUNCTION specificHeatCap_water_Temp
@@ -150,20 +150,20 @@ END FUNCTION specificHeatCap_water_Temp
 !                                             specificHeatCap_water_Pressure
 !----------------------------------------------------------------------------
 
-PURE FUNCTION specificHeatCap_water_pressure(Pressure) RESULT( Ans )
+PURE FUNCTION specificHeatCap_water_pressure(Pressure) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
-  Ans = Water%specificHeatCap
+  REAL( DFP ) :: ans
+  ans = Water%specificHeatCap
 END FUNCTION specificHeatCap_water_pressure
 
 !----------------------------------------------------------------------------
 !                                                             density_water
 !----------------------------------------------------------------------------
 
-PURE FUNCTION density_water( Temp, Pressure ) RESULT( Ans )
+PURE FUNCTION density_water( Temp, Pressure ) RESULT( ans )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Temp
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   !! internal variables
   CHARACTER( LEN = 2 ) :: densityCase
@@ -182,13 +182,13 @@ PURE FUNCTION density_water( Temp, Pressure ) RESULT( Ans )
 
   SELECT CASE( densityCase )
   CASE( 'TP ')
-    Ans = density_water_Temp_Pressure( Temp, Pressure )
+    ans = density_water_Temp_Pressure( Temp, Pressure )
   CASE( 'Tp ')
-    Ans = density_water_Temp( Temp )
+    ans = density_water_Temp( Temp )
   CASE( 'tP ')
-    Ans = density_water_Pressure( Pressure )
+    ans = density_water_Pressure( Pressure )
   CASE( 'tp ')
-    Ans = Water%density
+    ans = Water%density
   END SELECT
 
 END FUNCTION density_water
@@ -197,16 +197,16 @@ END FUNCTION density_water
 !                                                density_water_Temp_Pressure
 !----------------------------------------------------------------------------
 
-PURE FUNCTION density_water_Temp_Pressure( Temp, Pressure ) RESULT( Ans )
+PURE FUNCTION density_water_Temp_Pressure( Temp, Pressure ) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Temp
   REAL( DFP ), INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   IF( Temp .LE. 290.0_DFP ) THEN
-    Ans=Water%density
+    ans=Water%density
   ELSE
-    Ans=-0.0036*Temp**2 + 1.8817*Temp + 752.94
-    Ans = Ans / (1.0_DFP - (Pressure - 1.0E+5) / Water%bulkModulus )
+    ans=-0.0036*Temp**2 + 1.8817*Temp + 752.94
+    ans = ans / (1.0_DFP - (Pressure - 1.0E+5) / Water%bulkModulus )
   END IF
 
 END FUNCTION density_water_Temp_Pressure
@@ -215,14 +215,14 @@ END FUNCTION density_water_Temp_Pressure
 !                                                         density_water_Temp
 !----------------------------------------------------------------------------
 
-PURE FUNCTION density_water_temp( Temp ) RESULT( Ans )
+PURE FUNCTION density_water_temp( Temp ) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Temp
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   IF( Temp .LE. 290.0_DFP ) THEN
-    Ans=Water%density
+    ans=Water%density
   ELSE
-    Ans=-0.0036*Temp**2 + 1.8817*Temp + 752.94
+    ans=-0.0036*Temp**2 + 1.8817*Temp + 752.94
   END IF
 
 END FUNCTION density_water_temp
@@ -231,20 +231,20 @@ END FUNCTION density_water_temp
 !                                                     density_water_pressure
 !----------------------------------------------------------------------------
 
-PURE FUNCTION density_water_pressure( Pressure ) RESULT( Ans )
+PURE FUNCTION density_water_pressure( Pressure ) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
-  Ans = Water%density / (1.0_DFP - (Pressure - 1.0E+5) / Water%bulkModulus )
+  REAL( DFP ) :: ans
+  ans = Water%density / (1.0_DFP - (Pressure - 1.0E+5) / Water%bulkModulus )
 END FUNCTION density_water_pressure
 
 !----------------------------------------------------------------------------
 !                                                          volHeatCap_water
 !----------------------------------------------------------------------------
 
-PURE FUNCTION volHeatCap_water( Temp, Pressure ) RESULT( Ans )
+PURE FUNCTION volHeatCap_water( Temp, Pressure ) RESULT( ans )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Temp
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: Pressure
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 
   !! internal variables
   CHARACTER( LEN = 2 ) :: temp_press
@@ -263,16 +263,16 @@ PURE FUNCTION volHeatCap_water( Temp, Pressure ) RESULT( Ans )
 
   SELECT CASE( temp_press )
   CASE( 'TP ')
-    Ans = density_water_Temp_Pressure( Temp, Pressure ) * &
+    ans = density_water_Temp_Pressure( Temp, Pressure ) * &
       & specificHeatCap_water_Temp_Pressure( Temp, Pressure )
   CASE( 'Tp ')
-    Ans = density_water_Temp( Temp ) * &
+    ans = density_water_Temp( Temp ) * &
       & specificHeatCap_water_Temp( Temp )
   CASE( 'tP ')
-    Ans = density_water_Pressure( Pressure ) * &
+    ans = density_water_Pressure( Pressure ) * &
       & specificHeatCap_water_pressure( Pressure )
   CASE( 'tp ')
-    Ans = Water%density * Water%specificHeatCap
+    ans = Water%density * Water%specificHeatCap
   END SELECT
 END FUNCTION volHeatCap_water
 

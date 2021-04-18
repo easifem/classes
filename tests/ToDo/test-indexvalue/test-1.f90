@@ -4,14 +4,14 @@ program main
   use indexvalue_class
   implicit none
 
-  type( indexvalue_ ), allocatable :: Obj( : )
+  type( indexvalue_ ), allocatable :: obj( : )
   real( dfp ) :: x( 10 )
 
-  Obj = IndexValue( [1,2,3,4], 0.0_DFP )
+  obj = IndexValue( [1,2,3,4], 0.0_DFP )
 
   call RANDOM_NUMBER( x )
 
-  x( Obj % Indx ) = Obj % Val
+  x( obj % Indx ) = obj % Val
 
 
   call display_array( x, "x" )

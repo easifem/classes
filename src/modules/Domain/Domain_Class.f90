@@ -51,9 +51,9 @@ TYPE :: Domain_
     !! physical names of edge
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => Initiate_obj
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => Initiate_obj
       !! Constructor for domain
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => deallocate_obj
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => deallocate_obj
       !! Deallocate data store inside the domain
     PROCEDURE, PUBLIC, PASS( Dom ) :: ConnectFacetToCell => &
       & mc_connect_facet_cell
@@ -101,19 +101,19 @@ INTERFACE
 !> authors: Dr. Vikas Sharma
 !
 ! This routine allocate the memory for [[Domain_]] obj.
-! - allocate size of `Obj % Omega( 1:tOmega )`
-! - allocate `Obj % Boundary( 1:tBoundary )`,
-! - allocate `Obj % mdOmega( 1:tOmega )`
-! - allocate `Obj % mdBoundary( 1:tBoundary )`
+! - allocate size of `obj % Omega( 1:tOmega )`
+! - allocate `obj % Boundary( 1:tBoundary )`,
+! - allocate `obj % mdOmega( 1:tOmega )`
+! - allocate `obj % mdBoundary( 1:tBoundary )`
 !
 !### Usage
 !
 ! ```fortran
-!	call Obj % initiate( tOmega, tBoundary )
+!	call obj % initiate( tOmega, tBoundary )
 ! ```
 
-MODULE PURE SUBROUTINE Initiate_obj( Obj, tOmega, tBoundary, tEdge )
-  CLASS( Domain_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE Initiate_obj( obj, tOmega, tBoundary, tEdge )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
     !! Domain
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tOmega
     !! total number of $\Omega$ domains
@@ -143,8 +143,8 @@ INTERFACE
 !
 ! Deallocate data stored in [[Domain_]] object
 !
-MODULE PURE SUBROUTINE deallocate_obj( Obj )
-  CLASS( Domain_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE deallocate_obj( obj )
+  CLASS( Domain_ ), INTENT( INOUT) :: obj
     !! Domain object
 END SUBROUTINE deallocate_obj
 END INTERFACE

@@ -9,9 +9,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mc_deallocate_data
-  IF( ALLOCATED( Obj % CellFacet ) ) DEALLOCATE( Obj % CellFacet )
-  IF( ALLOCATED( Obj % CellCell ) ) DEALLOCATE( Obj % CellCell )
-  IF( ALLOCATED( Obj % NodeToNodes ) ) DEALLOCATE( Obj % NodeToNodes )
+  IF( ALLOCATED( obj % CellFacet ) ) DEALLOCATE( obj % CellFacet )
+  IF( ALLOCATED( obj % CellCell ) ) DEALLOCATE( obj % CellCell )
+  IF( ALLOCATED( obj % NodeToNodes ) ) DEALLOCATE( obj % NodeToNodes )
 END PROCEDURE mc_deallocate_data
 
 !----------------------------------------------------------------------------
@@ -35,11 +35,11 @@ MODULE PROCEDURE mc_init_cell_facet
   CALL CellMeshData % InitiateBoundaryData( CellMesh )
 
   !<--- allocate CellFacet size
-  CALL Reallocate( Obj % CellFacet, 2_I4B, FacetMesh % SIZE() )
+  CALL Reallocate( obj % CellFacet, 2_I4B, FacetMesh % SIZE() )
 
   Elem => NULL( ); FacetElem => NULL( )
 
-  DO ifacet = 1, SIZE( Obj % CellFacet, 2 )
+  DO ifacet = 1, SIZE( obj % CellFacet, 2 )
     found = .false.
 
     !<--- get facet element and its nptrs
@@ -63,7 +63,7 @@ MODULE PROCEDURE mc_init_cell_facet
 
       bndyData = CellMeshData % BoundaryElementData( elemNum )
       Elem => CellMesh % Elem( elemNum ) % Ptr
-      FM = FacetMatrix( Elem % RefElem )
+      FM = FacetMatrix( Elem % refelem )
       CellNptrs = .Nptrs. Elem
 
       DO i = 1, SIZE( bndyData )
@@ -80,8 +80,8 @@ MODULE PROCEDURE mc_init_cell_facet
         END DO
         IF( r .EQ. SIZE( FacetNptrs ) ) THEN
           Found = .TRUE.
-          Obj % CellFacet( 1, iFacet ) = elemNum
-          Obj % CellFacet( 2, iFacet ) = BndyData( i )
+          obj % CellFacet( 1, iFacet ) = elemNum
+          obj % CellFacet( 2, iFacet ) = BndyData( i )
           EXIT
         END IF
       END DO
@@ -104,7 +104,7 @@ END PROCEDURE mc_init_cell_facet
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mc_cell_of_facet
-  Ans = Obj % CellFacet( 1, FacetNum )
+  ans = obj % CellFacet( 1, FacetNum )
 END PROCEDURE mc_cell_of_facet
 
 !----------------------------------------------------------------------------
@@ -112,7 +112,7 @@ END PROCEDURE mc_cell_of_facet
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mc_cells_of_facets
-  Ans = Obj % CellFacet( 1, FacetNum )
+  ans = obj % CellFacet( 1, FacetNum )
 END PROCEDURE mc_cells_of_facets
 
 !----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ END PROCEDURE mc_cells_of_facets
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mc_facet_local_id_1
-  Ans = Obj % CellFacet( 2, FacetNum )
+  ans = obj % CellFacet( 2, FacetNum )
 END PROCEDURE mc_facet_local_id_1
 
 !----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ END PROCEDURE mc_facet_local_id_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mc_facet_local_id_2
-  Ans = Obj % CellFacet( 2, FacetNum )
+  ans = obj % CellFacet( 2, FacetNum )
 END PROCEDURE mc_facet_local_id_2
 
 !----------------------------------------------------------------------------
@@ -145,8 +145,8 @@ MODULE PROCEDURE mc_init_node_node
   REAL( DFP ) :: X( 3 )
 
   ! bounding box aroung the mesh
-  Box1 = BoundingBox( Obj = MeshData1, nodes = Node1 )
-  Box2 = BoundingBox( Obj = MeshData2, nodes = Node2 )
+  Box1 = BoundingBox( obj = MeshData1, nodes = Node1 )
+  Box2 = BoundingBox( obj = MeshData2, nodes = Node2 )
   Box = Box1 .Intersection. Box2
 
   nsd = SIZE( Node1, 1 )
@@ -170,13 +170,13 @@ MODULE PROCEDURE mc_init_node_node
     END DO
   END DO
 
-  CALL Reallocate( Obj % NodeToNodes, k, 2_I4B )
+  CALL Reallocate( obj % NodeToNodes, k, 2_I4B )
 
   k = 0
   DO i = 1, SIZE( Nptrs1 )
     IF( Mapping( 1, i ) .NE. 0 ) THEN
       k = k + 1
-      Obj % NodeToNodes( k, : ) = Mapping( :, i )
+      obj % NodeToNodes( k, : ) = Mapping( :, i )
     END IF
   END DO
 

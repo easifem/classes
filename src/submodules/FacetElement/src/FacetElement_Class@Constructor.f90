@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor1
-  CALL Obj%Initiate( Nptrs = Nptrs, Mat_Type = Mat_Type, RefElem = RefElem )
+  CALL ans%Initiate( param=param, refelem=refelem )
 END PROCEDURE Constructor1
 
 !----------------------------------------------------------------------------
@@ -33,26 +33,16 @@ END PROCEDURE Constructor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor2
-  Obj%Mat_Type = -1
-  Obj%Nptrs = [-1]
-  Obj%RefElem => NULL( )
+  CALL ans%Initiate( anotherobj )
 END PROCEDURE Constructor2
 
 !----------------------------------------------------------------------------
 !                                                               FacetElement
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Constructor3
-  CALL Obj%Initiate( AnotherObj )
-END PROCEDURE Constructor3
-
-!----------------------------------------------------------------------------
-!                                                               FacetElement
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE Constructor_1
-  ALLOCATE( Obj )
-  CALL Obj%Initiate( Nptrs=Nptrs, Mat_Type=Mat_Type, RefElem=RefElem)
+  ALLOCATE( FacetElement_::ans )
+  CALL ans%Initiate( param=param, refelem=refelem)
 END PROCEDURE Constructor_1
 
 !----------------------------------------------------------------------------
@@ -60,117 +50,123 @@ END PROCEDURE Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor_2
-  ALLOCATE( Obj )
-  Obj%Mat_Type = -1
-  Obj%Nptrs = [-1]
-  Obj%RefElem => NULL( )
+  ALLOCATE( FacetElement_::ans )
+  CALL ans%Initiate( anotherobj )
 END PROCEDURE Constructor_2
-
-!----------------------------------------------------------------------------
-!                                                               FacetElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Constructor_3
-  ALLOCATE( Obj )
-  CALL Obj%Initiate( AnotherObj )
-END PROCEDURE Constructor_3
 
 !----------------------------------------------------------------------------
 !                                                             DeallocateData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Deallocate_Data
-  IF( ALLOCATED( Obj%Nptrs ) ) DEALLOCATE( Obj%Nptrs )
-  Obj%MAT_Type = 0
-  Obj%RefElem => NULL( )
-  Obj%LocalId = 0
-  Obj%Cell => NULL( )
-  Obj%OuterCell => NULL( )
-END PROCEDURE Deallocate_Data
+MODULE PROCEDURE elem_deallocateData
+  CALL obj%DeallocateElement()
+  obj%LocalId = 0
+  obj%Cell => NULL( )
+  obj%OuterCell => NULL( )
+END PROCEDURE elem_deallocateData
+
+!----------------------------------------------------------------------------
+!                                                             Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE faceElem_deallocateData
+  CALL obj%DeallocateData()
+END PROCEDURE faceElem_deallocateData
 
 !----------------------------------------------------------------------------
 !                                                               getCellNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getCellNptrs
-  Ans = Obj%Cell%Nptrs
-END PROCEDURE getCellNptrs
+MODULE PROCEDURE faceElem_getCellNptrs
+  ans = obj%Cell%getNptrs()
+END PROCEDURE faceElem_getCellNptrs
 
 !----------------------------------------------------------------------------
-!                                                          SetPointerToCell
+!                                                               setCellNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE SetPointerToCell
-  Obj%Cell => CellObj
-END PROCEDURE SetPointerToCell
+MODULE PROCEDURE faceElem_setCellNptrs
+  call obj%Cell%setNptrs(nptrs)
+END PROCEDURE faceElem_setCellNptrs
 
 !----------------------------------------------------------------------------
 !                                                           getPointerToCell
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getPointerToCell
-  CellObj => Obj%Cell
-END PROCEDURE getPointerToCell
+MODULE PROCEDURE faceElem_getCellPointer
+  ans => obj%Cell
+END PROCEDURE faceElem_getCellPointer
+
+!----------------------------------------------------------------------------
+!                                                          SetPointerToCell
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE faceElem_setCellPointer
+  obj%Cell => cell
+END PROCEDURE faceElem_setCellPointer
 
 !----------------------------------------------------------------------------
 !                                                          FreePointerToCell
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE FreePointerToCell
-  Obj%Cell => NULL( )
-END PROCEDURE FreePointerToCell
+MODULE PROCEDURE faceElem_freeCellPointer
+  obj%Cell => NULL( )
+END PROCEDURE faceElem_freeCellPointer
 
 !----------------------------------------------------------------------------
 !                                                           getFacetLocalID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getFacetLocalID
-  Ans = Obj%LocalID
-END PROCEDURE getFacetLocalID
+MODULE PROCEDURE faceElem_getFacetLocalID
+  ans = obj%LocalID
+END PROCEDURE faceElem_getFacetLocalID
 
 !----------------------------------------------------------------------------
 !                                                            setFacetLocalID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setFacetLocalID
-  Obj%LocalID = Id
-END PROCEDURE setFacetLocalID
+MODULE PROCEDURE faceElem_setFacetLocalID
+  obj%LocalID = id
+END PROCEDURE faceElem_setFacetLocalID
 
 !----------------------------------------------------------------------------
 !                                                        getFacetLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getFacetLocalNptrs
+MODULE PROCEDURE faceElem_getFacetLocalNptrs
   ! Define internal variables
   INTEGER( I4B ) :: i, j, b
   INTEGER( I4B ), ALLOCATABLE :: FM( :, : ), CellNptrs(:), FacetNptrs(:), &
     & DummyNptrs( : )
+  CLASS( ReferenceElement_ ), POINTER :: RefCellElem
 
-  ASSOCIATE( RefCellElem => Obj%Cell%RefElem )
-    j = Obj%FacetLocalID( )
-    FM = FacetMatrix( RefCellElem )
-    b = FM( j, 3 ) + 3
-    Nptrs = FM( j, 4 : b )
-    CellNptrs = Obj%Cell%getNptrs( )
-    FacetNptrs = Obj%getNptrs( )
-    !! Not that these nptrs are such that area points outerward
-    !! however we need to fix the ordering so that
-    !! NptrsOfCell( LocalNptrs( 1 ) ) .eq. NptrsOfFacet( 1 )
-    IF( ANY( FacetNptrs .NE. CellNptrs( Nptrs ) ) ) THEN
-      b = SIZE( Nptrs ) ! tnodes in facet
-      DummyNptrs = Nptrs ! copy of facet nptrs
-      DO i = 1, b
-        DO j = 1, b
-          IF( FacetNptrs( i ) .EQ. CellNptrs( DummyNptrs( j ) )  ) THEN
-            Nptrs( i ) = DummyNptrs( j )
-          END IF
-        END DO
+  RefCellElem => obj%Cell%getRefElemPointer()
+  j = obj%getFacetLocalID( )
+  FM = FacetMatrix( RefCellElem )
+  b = FM( j, 3 ) + 3
+  Nptrs = FM( j, 4 : b )
+  CellNptrs = obj%Cell%getNptrs( )
+  FacetNptrs = obj%getNptrs( )
+  !! Not that these nptrs are such that area points outerward
+  !! however we need to fix the ordering so that
+  !! NptrsOfCell( LocalNptrs( 1 ) ) .eq. NptrsOfFacet( 1 )
+  IF( ANY( FacetNptrs .NE. CellNptrs( Nptrs ) ) ) THEN
+    b = SIZE( Nptrs ) ! tnodes in facet
+    DummyNptrs = Nptrs ! copy of facet nptrs
+    DO i = 1, b
+      DO j = 1, b
+        IF( FacetNptrs( i ) .EQ. CellNptrs( DummyNptrs( j ) )  ) THEN
+          Nptrs( i ) = DummyNptrs( j )
+        END IF
       END DO
-      DEALLOCATE( DummyNptrs )
-    END IF
-    DEALLOCATE( FM, CellNptrs, FacetNptrs )
-  END ASSOCIATE
+    END DO
+    DEALLOCATE( DummyNptrs )
+  END IF
+  DEALLOCATE( FM, CellNptrs, FacetNptrs )
+END PROCEDURE faceElem_getFacetLocalNptrs
 
-END PROCEDURE getFacetLocalNptrs
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE Constructor

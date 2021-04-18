@@ -1,7 +1,7 @@
 MODULE GenericList_Class
   USE GlobalData
   IMPLICIT NONE
-  
+
   INTEGER( I4B ), ALLOCATABLE :: GenericListData( : )
 
   PRIVATE
@@ -10,14 +10,14 @@ MODULE GenericList_Class
   !---------------------------------------------------------------------------
   !                                                          GenericList_
   !---------------------------------------------------------------------------
-  
+
   TYPE :: GenericList_
     PRIVATE
     INTEGER, POINTER :: DATA( : ) => NULL( )
     TYPE( GenericList_ ), POINTER :: Next => NULL( )
 
     CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate, DeallocateData, SetData, &
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate, DeallocateData, SetData, &
       & GetData, getNextNode, InsertNewNode
 
   END TYPE GenericList_
@@ -25,7 +25,7 @@ MODULE GenericList_Class
   INTERFACE getGenericListData
     MODULE PROCEDURE getData
   END INTERFACE getGenericListData
-  
+
   !---------------------------------------------------------------------------
   !                                                                  Contains
   !---------------------------------------------------------------------------
@@ -36,22 +36,22 @@ MODULE GenericList_Class
   !                                                                 Initiate
   !---------------------------------------------------------------------------
 
-  SUBROUTINE Initiate( Obj, Data )
+  SUBROUTINE Initiate( obj, Data )
 
     ! Define intent of dummy variables
-    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: Obj
+    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: obj
     INTEGER( I4B ), INTENT( IN ), OPTIONAL :: Data( : )
 
-    NULLIFY( Obj % Next )
+    NULLIFY( obj % Next )
 
     IF( PRESENT( Data ) ) THEN
 
-      ALLOCATE( Obj % Data( SIZE( Data ) ) )
-      Obj % Data = Data
+      ALLOCATE( obj % Data( SIZE( Data ) ) )
+      obj % Data = Data
 
     ELSE
 
-      NULLIFY( Obj % DATA )
+      NULLIFY( obj % DATA )
 
     END IF
 
@@ -61,22 +61,22 @@ MODULE GenericList_Class
   !                                                           DeallocateData
   !---------------------------------------------------------------------------
 
-  SUBROUTINE DeallocateData( Obj )
+  SUBROUTINE DeallocateData( obj )
 
     ! Define intent of dummy variables
-    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: Obj
+    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: obj
 
     ! Define internal variables
     CLASS( GenericList_ ), POINTER :: Current, Next
 
 
-    Current => Obj
+    Current => obj
 
     DO WHILE( ASSOCIATED( Current ) )
       Next => Current % Next
       IF( ASSOCIATED( Current % Data ) ) THEN
         DEALLOCATE( Current % Data )
-        NULLIFY( Obj % Data )
+        NULLIFY( obj % Data )
       END IF
 
       DEALLOCATE( Current )
@@ -90,19 +90,19 @@ MODULE GenericList_Class
   !                                                                 SetData
   !---------------------------------------------------------------------------
 
-  SUBROUTINE SetData( Obj, Data )
+  SUBROUTINE SetData( obj, Data )
 
     ! Define intent of dummy variables
-    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: Obj
+    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: obj
     INTEGER( I4B ), INTENT( IN ) :: Data( : )
 
-    IF( ASSOCIATED( Obj % Data ) ) THEN
-      DEALLOCATE( Obj % Data )
-      NULLIFY( Obj % Data )
+    IF( ASSOCIATED( obj % Data ) ) THEN
+      DEALLOCATE( obj % Data )
+      NULLIFY( obj % Data )
     END IF
 
-    ALLOCATE( Obj % Data( SIZE( Data ) ) )
-    Obj % Data = Data
+    ALLOCATE( obj % Data( SIZE( Data ) ) )
+    obj % Data = Data
 
   END SUBROUTINE SetData
 
@@ -110,13 +110,13 @@ MODULE GenericList_Class
   !                                                                   GetData
   !---------------------------------------------------------------------------
 
-  FUNCTION GetData( Obj ) RESULT( Data )
+  FUNCTION GetData( obj ) RESULT( Data )
 
     ! Define intent of dummy variables
-    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: Obj
+    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: obj
     INTEGER( I4B ), POINTER :: Data( : )
 
-    Data => Obj % Data
+    Data => obj % Data
 
   END FUNCTION GetData
 
@@ -124,12 +124,12 @@ MODULE GenericList_Class
   !                                                               getNextNode
   !---------------------------------------------------------------------------
 
-  FUNCTION getNextNode( Obj ) RESULT( Next )
+  FUNCTION getNextNode( obj ) RESULT( Next )
 
     ! Define intent of dummy variables
-    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: Obj
+    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: obj
     TYPE( GenericList_ ), POINTER :: Next
-    Next => Obj % Next
+    Next => obj % Next
   END FUNCTION getNextNode
 
 
@@ -137,10 +137,10 @@ MODULE GenericList_Class
   !                                                            InsertNewNode
   !---------------------------------------------------------------------------
 
-  SUBROUTINE InsertNewNode( Obj, Data )
+  SUBROUTINE InsertNewNode( obj, Data )
 
     ! Define intent of dummy variables
-    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: Obj
+    CLASS( GenericList_ ), INTENT( INOUT ), TARGET :: obj
     INTEGER( I4B ), INTENT( IN ), OPTIONAL :: Data( : )
 
     ! Define internal variables
@@ -155,8 +155,8 @@ MODULE GenericList_Class
       NULLIFY( Next % Data )
     END IF
 
-    Next % Next => Obj % Next
-    Obj % Next => Next
+    Next % Next => obj % Next
+    obj % Next => Next
 
   END SUBROUTINE InsertNewNode
 

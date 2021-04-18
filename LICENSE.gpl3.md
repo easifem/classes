@@ -106,7 +106,7 @@ menu, a prominent item in the list meets this criterion.
 ### 1. Source Code.
 
 The &ldquo;source code&rdquo; for a work means the preferred form of the work for
-making modifications to it. &ldquo;Object code&rdquo; means any non-source form of a
+making modifications to it. &ldquo;object code&rdquo; means any non-source form of a
 work.
 
 A &ldquo;Standard Interface&rdquo; means an interface that either is an official

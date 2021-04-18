@@ -49,29 +49,29 @@ TYPE :: Mesh_
   INTEGER( I4B ) :: maxElements = 0
     !! maximum size of the wrapper
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => Deallocate_Data
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => Deallocate_Data
       !! Deallocate data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => allocateMeshSize
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => allocateMeshSize
       !! Allocate size of a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SetTotalElements => set_total_elements
+    PROCEDURE, PUBLIC, PASS( obj ) :: SetTotalElements => set_total_elements
       !! Alias of SetSize
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Append => add_element
+    PROCEDURE, PUBLIC, PASS( obj ) :: Append => add_element
       !! Append an element to a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SetSize => set_total_elements
+    PROCEDURE, PUBLIC, PASS( obj ) :: SetSize => set_total_elements
       !! Set total elements in a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SetElement => Set_element
+    PROCEDURE, PUBLIC, PASS( obj ) :: SetElement => Set_element
       !! Set an element to a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ElementPointer => getElement_Pointer
+    PROCEDURE, PUBLIC, PASS( obj ) :: ElementPointer => getElement_Pointer
       !! Get Pointer to an element in mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: RemoveElement => remove_element
+    PROCEDURE, PUBLIC, PASS( obj ) :: RemoveElement => remove_element
       !! Remove an element from a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SIZE => total_elements
+    PROCEDURE, PUBLIC, PASS( obj ) :: SIZE => total_elements
       !! Returns the total elements in a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalElements => total_elements
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalElements => total_elements
       !! Alias of SIZE
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNptrs => get_nptrs
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNptrs => get_nptrs
       !! Get node numbers in a mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setMaterialType => setMaterialType_1
+    PROCEDURE, PUBLIC, PASS( obj ) :: setMaterialType => setMaterialType_1
       !! Set material type of a mesh
 END TYPE Mesh_
 
@@ -114,9 +114,9 @@ PUBLIC :: MeshPointer_
 !```end fortran
 
 INTERFACE
-MODULE PURE SUBROUTINE allocateMeshSize( Obj, NSD, tElements, factor )
+MODULE PURE SUBROUTINE allocateMeshSize( obj, NSD, tElements, factor )
   !! allocate the size of the mesh
-  CLASS( Mesh_ ), INTENT( INOUT) :: Obj
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
     !! mesh object
   INTEGER( I4B ), INTENT( IN ) :: tElements
     !! total number of elements in mesh
@@ -154,8 +154,8 @@ PUBLIC :: Initiate
 !```end fortran
 
 INTERFACE
-MODULE PURE FUNCTION Constructor1( NSD, tElements, factor ) RESULT( Ans )
-  TYPE( Mesh_ ) :: Ans
+MODULE PURE FUNCTION Constructor1( NSD, tElements, factor ) RESULT( ans )
+  TYPE( Mesh_ ) :: ans
     !! Mesh object
   INTEGER( I4B ), INTENT( IN ) :: tElements
     !! totat number of elements in mesh
@@ -189,8 +189,8 @@ PUBLIC :: Mesh
 !```end fortran
 
 INTERFACE
-MODULE FUNCTION Constructor_1( NSD, tElements, factor ) RESULT( Ans )
-  CLASS( Mesh_ ), POINTER :: Ans
+MODULE FUNCTION Constructor_1( NSD, tElements, factor ) RESULT( ans )
+  CLASS( Mesh_ ), POINTER :: ans
   INTEGER( I4B ), INTENT( IN ) :: tElements, NSD
   REAL( DFP ), INTENT( IN ), OPTIONAL :: factor
 END FUNCTION Constructor_1
@@ -221,12 +221,12 @@ PUBLIC :: Mesh_Pointer
 !### Usage
 !
 !```fortran
-!call deallocateData( Obj = Obj )
+!call deallocateData( obj = obj )
 !```end fortran
 
 INTERFACE
-MODULE SUBROUTINE Deallocate_Data( Obj )
-  CLASS( Mesh_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE Deallocate_Data( obj )
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
 END SUBROUTINE Deallocate_Data
 END INTERFACE
 
@@ -264,8 +264,8 @@ PUBLIC :: DeallocateData
 !```end fortran
 
 INTERFACE
-MODULE PURE SUBROUTINE set_total_elements( Obj )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE set_total_elements( obj )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! mesh object
 END SUBROUTINE set_total_elements
 END INTERFACE
@@ -289,8 +289,8 @@ END INTERFACE
 
 
 INTERFACE
-MODULE SUBROUTINE add_element( Obj, Elem )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE add_element( obj, Elem )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! mesh obj
   CLASS( Element_ ), TARGET, INTENT( INOUT ) :: Elem
     !! finite element to be added
@@ -316,8 +316,8 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE PURE SUBROUTINE Set_element( Obj, Elem, iel )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE Set_element( obj, Elem, iel )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! Mesh object
   CLASS( Element_ ), TARGET, INTENT( INOUT ) :: Elem
     !! Finite element to be put in mesh
@@ -331,14 +331,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-!! Return the pointer to an element `Obj % Elem(iel)`
+!! Return the pointer to an element `obj % Elem(iel)`
 
 !> authos: Dr Vikas Sharma
 !
-! Return the pointer to an element `Obj % Elem(iel)`
+! Return the pointer to an element `obj % Elem(iel)`
 !
 ! @warning
-! make sure `iel ` should be less that `Obj%telements`
+! make sure `iel ` should be less that `obj%telements`
 ! @endwarning
 !
 !### Usage
@@ -347,12 +347,12 @@ INTERFACE
 ! elem => obj % ElementPointer( iel )
 !```
 
-MODULE FUNCTION getElement_Pointer( Obj, iel ) RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: Obj
+MODULE FUNCTION getElement_Pointer( obj, iel ) RESULT( ans )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
     !! mesh object
   INTEGER( I4B ), INTENT( IN ) :: iel
     !! element number
-  CLASS( Element_ ), POINTER :: Ans
+  CLASS( Element_ ), POINTER :: ans
     !! pointer to finite element
 END FUNCTION getElement_Pointer
 END INTERFACE
@@ -368,10 +368,10 @@ INTERFACE
 !
 ! Remove an element from the mesh
 !
-! - extraOption = 1 then `Obj % elem( iel )` will be nullified and deallocated
-! - extraOption = 2 then `Obj % elem( iel )` will be nullified and elements in
+! - extraOption = 1 then `obj % elem( iel )` will be nullified and deallocated
+! - extraOption = 2 then `obj % elem( iel )` will be nullified and elements in
 ! mesh will be rearranged
-! - extraoption = 3 then `Obj % elem( iel )` will be nullified and deallocated
+! - extraoption = 3 then `obj % elem( iel )` will be nullified and deallocated
 !  and elements in the mesh will be rearranged
 !
 !### Usage
@@ -380,8 +380,8 @@ INTERFACE
 ! call obj % removeElement( iel = iel, extraoption = 2 )
 !```
 
-MODULE SUBROUTINE remove_element( Obj, iel, extraoption )
-  CLASS( Mesh_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE remove_element( obj, iel, extraoption )
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
     !! mesh object
   INTEGER( I4B ), INTENT( IN ) :: iel
     !! element number
@@ -403,13 +403,13 @@ INTERFACE
 !### Usage
 !
 !```fortran
-!	telem = Obj % SIZE( Obj )
+!	telem = obj % SIZE( obj )
 !```
 
-MODULE PURE FUNCTION total_elements( Obj ) RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION total_elements( obj ) RESULT( ans )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
     !! mesh object
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION total_elements
 END INTERFACE
 
@@ -430,8 +430,8 @@ INTERFACE
 !	call display( obj, 'mesh', stdout )
 !```
 
-MODULE SUBROUTINE display_mesh( Obj, Msg, UnitNo )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE display_mesh( obj, Msg, UnitNo )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! mesh object
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
     !! message on screen
@@ -465,8 +465,8 @@ INTERFACE
 !	call obj % getNptrs( Nptrs )
 !```
 
-MODULE PURE SUBROUTINE get_nptrs( Obj, Nptrs )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE get_nptrs( obj, Nptrs )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! mesh object
   INTEGER( I4B ), ALLOCATABLE, INTENT( INOUT ) :: Nptrs( : )
     !! node numbers
@@ -487,11 +487,11 @@ INTERFACE
 !### Usage
 !
 !```fortran
-!	call getNptrs( Obj, Nptrs )
+!	call getNptrs( obj, Nptrs )
 !```
 
-MODULE PURE SUBROUTINE mesh_pointer_get_nptrs( Obj, Nptrs )
-  TYPE( MeshPointer_ ), INTENT( INOUT ) :: Obj( : )
+MODULE PURE SUBROUTINE mesh_pointer_get_nptrs( obj, Nptrs )
+  TYPE( MeshPointer_ ), INTENT( INOUT ) :: obj( : )
     !! Collection of pointer to [[Mesh_]]
   INTEGER( I4B ), ALLOCATABLE, INTENT( INOUT ) :: Nptrs( : )
     !! Node present in the collection of mesh
@@ -526,11 +526,11 @@ INTERFACE
 !### Usage
 !
 !```fortran
-!	call Obj % setMaterialType( MatType = 1 )
+!	call obj % setMaterialType( MatType = 1 )
 !```
 
-MODULE PURE SUBROUTINE setMaterialType_1(  Obj, MatType )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE setMaterialType_1(  obj, MatType )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !!
   INTEGER( I4B ), INTENT( IN ) :: MatType
 END SUBROUTINE setMaterialType_1

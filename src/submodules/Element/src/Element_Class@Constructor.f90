@@ -29,35 +29,46 @@ CONTAINS
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE m_Initiate_obj
-  Obj%Nptrs = Nptrs
-  Obj%Mat_Type = Mat_Type
-  Obj%RefElem => RefElem
-END PROCEDURE m_Initiate_obj
+MODULE PROCEDURE elem_init_from_fpl
+  INTEGER( I4B ), allocatable :: s( : )
+  INTEGER( I4B ) :: ierr
+  CHARACTER( LEN=* ), PARAMETER :: myName="elem_init_from_fpl()"
 
+  IF( .NOT. param%ispresent(key="nptrs") ) THEN
+    CALL eElement%raiseError(modName//"::"//myName//" - "// &
+        "nptrs key should be present in param")
+  ELSE
+    ierr = param%getShape(key="nptrs", shape=s)
+    CALL Reallocate(obj%nptrs, s(1))
+    ierr = param%get(key="nptrs", value=obj%nptrs)
+  END IF
 
-MODULE PROCEDURE m_initiate_from_obj
-  Obj%Nptrs = AnotherObj%Nptrs
-  Obj%MAT_Type = AnotherObj%Mat_Type
-  Obj%RefElem => AnotherObj%RefElem
-END PROCEDURE m_initiate_from_obj
+  IF( .NOT. param%ispresent(key="mat_type") ) THEN
+    CALL eElement%raiseError(modName//"::"//myName//" - "// &
+        "mat_type should be present in param")
+  ELSE
+    ierr = param%get(key="mat_type", value=obj%mat_type)
+  END IF
+
+  obj%refelem => refelem
+END PROCEDURE elem_init_from_fpl
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
+!                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE s_Initiate_obj
-  Obj%Nptrs = Nptrs
-  Obj%Mat_Type = Mat_Type
-  Obj%RefElem => RefElem
-END PROCEDURE s_Initiate_obj
+MODULE PROCEDURE elem_init_from_elem
+  obj%nptrs = anotherobj%nptrs
+  obj%MAT_Type = anotherobj%Mat_Type
+  obj%refelem => anotherobj%refelem
+END PROCEDURE elem_init_from_elem
 
 !----------------------------------------------------------------------------
 !                                                                 Element
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor1
-  CALL Obj%Initiate( Nptrs = Nptrs, Mat_Type = Mat_Type, RefElem = RefElem )
+  CALL ans%Initiate( param=param, refelem = refelem )
 END PROCEDURE Constructor1
 
 !----------------------------------------------------------------------------
@@ -65,26 +76,16 @@ END PROCEDURE Constructor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor2
-  Obj%Mat_Type = -1
-  Obj%Nptrs = [-1]
-  Obj%RefElem => NULL( )
+  CALL ans%Initiate( anotherobj )
 END PROCEDURE Constructor2
-
-!----------------------------------------------------------------------------
-!                                                                 Element
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Constructor3
-  CALL Obj%Initiate( AnotherObj )
-END PROCEDURE Constructor3
 
 !----------------------------------------------------------------------------
 !                                                            Element_Pointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor_1
-  ALLOCATE( Obj )
-  CALL Obj%Initiate( Nptrs = Nptrs, Mat_Type = Mat_Type, RefElem = RefElem )
+  ALLOCATE( ans )
+  CALL ans%Initiate( param = param, refelem = refelem )
 END PROCEDURE Constructor_1
 
 !----------------------------------------------------------------------------
@@ -92,70 +93,95 @@ END PROCEDURE Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Constructor_2
-  ALLOCATE( Obj )
-  Obj%Mat_Type = -1
-  Obj%Nptrs = [-1]
-  Obj%RefElem => NULL( )
+  ALLOCATE( ans )
+  CALL ans%Initiate( anotherobj )
 END PROCEDURE Constructor_2
-
-!----------------------------------------------------------------------------
-!                                                            Element_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Constructor_3
-  ALLOCATE( Obj )
-  CALL Obj%Initiate( AnotherObj )
-END PROCEDURE Constructor_3
-
-!------------------------------------------------------------------------------
-!                                                               DeallocateData
-!------------------------------------------------------------------------------
-
-MODULE PROCEDURE Deallocate_Data
-  IF( ALLOCATED( Obj%Nptrs ) ) DEALLOCATE( Obj%Nptrs )
-  Obj%MAT_Type = 0
-  Obj%RefElem => NULL( )
-END PROCEDURE Deallocate_Data
-
-!----------------------------------------------------------------------------
-!                                                         isBoundaryElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE m_isBoundaryElement
-  IF( NSD .NE. Obj%RefElem%XiDimension ) THEN
-    Ans = .TRUE.
-  ELSE
-    Ans = .FALSE.
-  END IF
-END PROCEDURE m_isBoundaryElement
-
-!----------------------------------------------------------------------------
-!                                                                 getNptrs
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE m_getNptrs
-  IF( ALLOCATED( Obj%Nptrs ) ) THEN
-    Nptrs = Obj%Nptrs
-  ELSE
-    ALLOCATE( Nptrs( 0 ) )
-  END IF
-END PROCEDURE m_getNptrs
-
-!----------------------------------------------------------------------------
-!                                                                 setNptrs
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE m_setNptrs
-  Obj%Nptrs = Nptrs
-END PROCEDURE m_setNptrs
 
 !----------------------------------------------------------------------------
 !                                                            setMaterialType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setMaterialType_1
-  Obj%Mat_Type = MatType
-END PROCEDURE setMaterialType_1
+MODULE PROCEDURE elem_setMaterialType
+  obj%Mat_Type = MatType
+END PROCEDURE elem_setMaterialType
+
+!----------------------------------------------------------------------------
+!                                                           getMaterialType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_getMaterialType
+  ans = obj%Mat_Type
+END PROCEDURE elem_getMaterialType
+
+!----------------------------------------------------------------------------
+!                                                           DeallocatetDatat
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_deallocateData
+  IF( ALLOCATED( obj%nptrs ) ) DEALLOCATE( obj%nptrs )
+  obj%MAT_Type = 0
+  obj%refelem => NULL( )
+END PROCEDURE elem_deallocateData
+
+!----------------------------------------------------------------------------
+!                                                                 Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_final
+  CALL obj%DeallocateData()
+END PROCEDURE elem_final
+
+!----------------------------------------------------------------------------
+!                                                         isBoundaryElement
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_isBoundaryElement
+  IF( NSD .NE. obj%refelem%XiDimension ) THEN
+    ans = .TRUE.
+  ELSE
+    ans = .FALSE.
+  END IF
+END PROCEDURE elem_isBoundaryElement
+
+!----------------------------------------------------------------------------
+!                                                                 getNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_getNptrs
+  IF( ALLOCATED( obj%nptrs ) ) THEN
+    nptrs = obj%nptrs
+  ELSE
+    ALLOCATE( nptrs( 0 ) )
+  END IF
+END PROCEDURE elem_getNptrs
+
+!----------------------------------------------------------------------------
+!                                                                 setNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_setNptrs
+  obj%nptrs = nptrs
+END PROCEDURE elem_setNptrs
+
+!----------------------------------------------------------------------------
+!                                                     elem_getRefElemPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_getRefElemPointer
+  IF( ASSOCIATED(obj%refelem) ) THEN
+    ans => obj%refelem
+  ELSE
+    ans => NULL()
+  END IF
+END PROCEDURE elem_getRefElemPointer
+
+!----------------------------------------------------------------------------
+!                                                     elem_setRefElemPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE elem_setRefElemPointer
+  obj%refelem => refelem
+END PROCEDURE elem_setRefElemPointer
 
 !----------------------------------------------------------------------------
 !

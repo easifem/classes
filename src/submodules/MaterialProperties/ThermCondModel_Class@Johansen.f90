@@ -9,50 +9,50 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE JohansenThermCond_Pointer
-  ALLOCATE( Ans )
+  ALLOCATE( ans )
   IF( PRESENT( Lambda_Sat ) ) THEN
-    Ans%isLambda_sat_given=.TRUE.
+    ans%isLambda_sat_given=.TRUE.
   ELSE
-    Ans%isLambda_sat_given=.FALSE.
+    ans%isLambda_sat_given=.FALSE.
   END IF
 
   IF( PRESENT( Lambda_dry ) ) THEN
-    Ans%isLambda_dry_given=.TRUE.
+    ans%isLambda_dry_given=.TRUE.
   ELSE
-    Ans%isLambda_dry_given=.FALSE.
+    ans%isLambda_dry_given=.FALSE.
   END IF
 
   IF( PRESENT( Lambda_e ) ) THEN
-    Ans%isLambda_e_given=.TRUE.
+    ans%isLambda_e_given=.TRUE.
   ELSE
-    Ans%isLambda_e_given=.FALSE.
+    ans%isLambda_e_given=.FALSE.
   END IF
 
   IF( PRESENT( Gamma_d ) ) THEN
-    Ans%Gamma_d = Gamma_d
+    ans%Gamma_d = Gamma_d
   END IF
 
   IF( PRESENT( QuartzContent ) ) THEN
-    Ans%QuartzContent = QuartzContent
+    ans%QuartzContent = QuartzContent
   END IF
 
   IF( PRESENT( SoilType ) ) THEN
-    Ans%SoilType = SoilType
+    ans%SoilType = SoilType
   END IF
 
   IF( PRESENT( SoilState ) ) THEN
-    Ans%State=SoilState
+    ans%State=SoilState
   END IF
 
-  Ans % getValue => johansen_getval
+  ans % getValue => johansen_getval
 
-  IF( .NOT. Ans%isLambda_sat_given ) THEN
-    IF( Ans%QuartzContent .GT. 0.2_DFP ) THEN
-      Ans%Lambda_s = (7.7_DFP**Ans%QuartzContent) &
-        & * (2.0_DFP**(1.0_DFP-Ans%QuartzContent))
+  IF( .NOT. ans%isLambda_sat_given ) THEN
+    IF( ans%QuartzContent .GT. 0.2_DFP ) THEN
+      ans%Lambda_s = (7.7_DFP**ans%QuartzContent) &
+        & * (2.0_DFP**(1.0_DFP-ans%QuartzContent))
     ELSE
-      Ans%Lambda_s = (7.7_DFP**Ans%QuartzContent) &
-        & * (3.0_DFP**(1.0_DFP-Ans%QuartzContent))
+      ans%Lambda_s = (7.7_DFP**ans%QuartzContent) &
+        & * (3.0_DFP**(1.0_DFP-ans%QuartzContent))
     END IF
   END IF
 
@@ -66,11 +66,11 @@ MODULE PROCEDURE johansen_getval
   REAL( DFP ) :: Lam_w, Lam_i, Lam_sat, Lam_dry, Lam_e
 
   !
-  SELECT TYPE( Obj )
+  SELECT TYPE( obj )
   TYPE IS (JohansenThermCond_)
 
     ! compute Lambda_sat
-    SELECT CASE( Obj%SoilType )
+    SELECT CASE( obj%SoilType )
       ! Case for peaty soils
     CASE( SOIL_PEAT )
 
@@ -78,8 +78,8 @@ MODULE PROCEDURE johansen_getval
     CASE DEFAULT
 
       ! Calculate Lambda_sat
-      IF( Obj%isLambda_sat_given ) THEN
-        Lam_sat = Obj%Lambda_sat
+      IF( obj%isLambda_sat_given ) THEN
+        Lam_sat = obj%Lambda_sat
       ELSE
 
         IF( PRESENT( Temp ) ) THEN
@@ -88,9 +88,9 @@ MODULE PROCEDURE johansen_getval
           Lam_w = ThermCond_Water()
         END IF
 
-        IF( Obj%State .EQ. STATE_Unfrozen ) THEN
+        IF( obj%State .EQ. STATE_Unfrozen ) THEN
 
-          Lam_sat = (Obj%Lambda_s**volFrac_solid)&
+          Lam_sat = (obj%Lambda_s**volFrac_solid)&
             & *(Lam_w**volFrac_water)
 
         ELSE
@@ -102,28 +102,28 @@ MODULE PROCEDURE johansen_getval
             Lam_i = ThermCond_Ice()
           END IF
 
-          Lam_sat = ( Obj%Lambda_s**volFrac_solid ) &
+          Lam_sat = ( obj%Lambda_s**volFrac_solid ) &
             & * ( Lam_w**volFrac_water ) &
             & * ( Lam_i**volFrac_ice )
         END IF
       END IF
 
       ! Calculate Lambda_dry
-      IF( Obj%isLambda_dry_given ) THEN
-        Lam_dry = Obj%Lambda_dry
+      IF( obj%isLambda_dry_given ) THEN
+        Lam_dry = obj%Lambda_dry
       ELSE
-        Lam_dry = 1.2_DFP * ( 0.135 * Obj%Gamma_d + 64.7_DFP ) &
-          & / ( 2700.0_DFP - 0.947 * Obj%Gamma_d )
+        Lam_dry = 1.2_DFP * ( 0.135 * obj%Gamma_d + 64.7_DFP ) &
+          & / ( 2700.0_DFP - 0.947 * obj%Gamma_d )
       END IF
 
       ! Calculate Lambda_e
-      IF( Obj%isLambda_e_given ) THEN
-        Lam_e = Obj%Lambda_e
+      IF( obj%isLambda_e_given ) THEN
+        Lam_e = obj%Lambda_e
       ELSE
-        IF( Obj%State .EQ. STATE_Frozen ) THEN
+        IF( obj%State .EQ. STATE_Frozen ) THEN
           Lam_e = volFrac_water/(volFrac_ice+volFrac_air+volFrac_water)
         ELSE
-          IF( Obj%SoilType .EQ. SOIL_FINE_GRAINED) THEN
+          IF( obj%SoilType .EQ. SOIL_FINE_GRAINED) THEN
             Lam_e = 1.0_DFP + LOG10(volFrac_water / &
               & (volFrac_ice+volFrac_air+volFrac_water))
           ELSE
@@ -133,7 +133,7 @@ MODULE PROCEDURE johansen_getval
         END IF
       END IF
 
-      Ans = ( Lam_sat - Lam_dry ) * Lam_e + Lam_dry
+      ans = ( Lam_sat - Lam_dry ) * Lam_e + Lam_dry
 
     END SELECT
   END SELECT
