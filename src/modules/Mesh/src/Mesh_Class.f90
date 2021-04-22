@@ -24,10 +24,13 @@ MODULE Mesh_Class
 USE BaseType
 USE GlobalData
 USE FE
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
 
 PRIVATE
 REAL( DFP ), PARAMETER :: default_factor = 1.5_DFP
+TYPE( ExceptionHandler_ ), SAVE, PUBLIC :: eMesh
+!$OMP THREADPRIVATE(eMesh)
 
 !----------------------------------------------------------------------------
 !                                                                      Mesh_

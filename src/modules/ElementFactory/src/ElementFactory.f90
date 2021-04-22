@@ -15,39 +15,17 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
-! Change name to ElementFactory
-! Add display method
-
-! INTERFACE
-! MODULE SUBROUTINE elem_display_sub( obj, msg, UnitNo, FullDisp )
-!   TYPE( Element_ ), INTENT( IN ) :: obj
-!   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-!   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
-!   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
-! END SUBROUTINE elem_display_sub
-! END INTERFACE
-
-! INTERFACE Display
-!   MODULE PROCEDURE elem_display_sub
-! END INTERFACE Display
-
-! PUBLIC :: Display
-
-
 MODULE ElementFactory
 USE BaseType
 USE GlobalData
 USE FPL
 USE Element_Class
 USE FacetElement_Class
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: Element_, ElementPointer_, Element, Element_Pointer, TypeElement
 PUBLIC :: FacetElement_, FacetElementPointer_, FacetElement, FacetElement_Pointer, TypeFacetElement
 CHARACTER( LEN=* ), PARAMETER :: modName="FACETELEMENT_CLASS"
-TYPE( ExceptionHandler_ ), SAVE :: eElement
 
 !----------------------------------------------------------------------------
 !

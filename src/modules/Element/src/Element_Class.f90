@@ -27,7 +27,7 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER( LEN=* ), PARAMETER :: modName="ELEMENT_CLASS"
-TYPE( ExceptionHandler_ ), SAVE :: eElement
+TYPE( ExceptionHandler_ ), SAVE, PUBLIC :: eElement
 !$OMP THREADPRIVATE(eElement)
 
 !----------------------------------------------------------------------------

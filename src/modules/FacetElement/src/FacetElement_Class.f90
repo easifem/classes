@@ -24,14 +24,11 @@ MODULE FacetElement_Class
 USE GlobalData
 USE BaseType
 USE Element_Class
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER( LEN=* ), PARAMETER :: modName="FACETELEMENT_CLASS"
-TYPE( ExceptionHandler_ ), SAVE :: eElement
-!$OMP THREADPRIVATE(eElement)
 
 !----------------------------------------------------------------------------
 !                                                              FacetElement_
