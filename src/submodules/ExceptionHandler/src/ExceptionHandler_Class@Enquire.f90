@@ -24,10 +24,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE isQuietMode_all
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    Ans = ALL( Obj%surrogate%quiet )
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    ans = ALL( obj%surrogate%quiet )
   ELSE
-    Ans = ALL( Obj%quiet )
+    ans = ALL( obj%quiet )
   END IF
 END PROCEDURE isQuietMode_all
 
@@ -36,10 +36,10 @@ END PROCEDURE isQuietMode_all
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE isQuietMode_eCode
-  Ans=.FALSE.
+  ans=.FALSE.
   IF((EXCEPTION_OK < eCode) .AND. (eCode <= EXCEPTION_SIZE-1)) THEN
-    Ans=Obj%quiet(eCode)
-    IF(ASSOCIATED(Obj%surrogate)) Ans=Obj%surrogate%quiet(eCode)
+    ans=obj%quiet(eCode)
+    IF(ASSOCIATED(obj%surrogate)) ans=obj%surrogate%quiet(eCode)
   ENDIF
 END PROCEDURE isQuietMode_eCode
 
@@ -48,8 +48,8 @@ END PROCEDURE isQuietMode_eCode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE isVerboseMode_all
-  Ans = ALL( Obj%verbose )
-  IF( ASSOCIATED( Obj%surrogate ) ) Ans=ALL( Obj%surrogate%verbose )
+  ans = ALL( obj%verbose )
+  IF( ASSOCIATED( obj%surrogate ) ) ans=ALL( obj%surrogate%verbose )
 END PROCEDURE isVerboseMode_all
 
 !----------------------------------------------------------------------------
@@ -57,10 +57,10 @@ END PROCEDURE isVerboseMode_all
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE isVerboseMode_eCode
-  Ans = .FALSE.
+  ans = .FALSE.
   IF( ( EXCEPTION_OK < eCode ) .AND. ( eCode <= EXCEPTION_SIZE-1 ) ) THEN
-    Ans = Obj%verbose(eCode)
-    IF( ASSOCIATED( Obj%surrogate ) ) Ans = Obj%surrogate%verbose(eCode)
+    ans = obj%verbose(eCode)
+    IF( ASSOCIATED( obj%surrogate ) ) ans = obj%surrogate%verbose(eCode)
   ENDIF
 END PROCEDURE isVerboseMode_eCode
 
@@ -69,13 +69,13 @@ END PROCEDURE isVerboseMode_eCode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE isLogActive
-  Ans=.FALSE.
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    IF( Obj%surrogate%logFileActive ) CALL Obj%surrogate%checkLogFileOK()
-    Ans=Obj%surrogate%logFileActive
+  ans=.FALSE.
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    IF( obj%surrogate%logFileActive ) CALL obj%surrogate%checkLogFileOK()
+    ans=obj%surrogate%logFileActive
   ELSE
-    IF( Obj%logFileActive ) CALL Obj%checkLogFileOK()
-    Ans=Obj%logFileActive
+    IF( obj%logFileActive ) CALL obj%checkLogFileOK()
+    ans=obj%logFileActive
   ENDIF
 END PROCEDURE isLogActive
 
@@ -88,38 +88,38 @@ MODULE PROCEDURE checkLogFileOK
   INTEGER( I4B ) :: nDebugOld
   CHARACTER( LEN=10 ) :: fprop
 
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    CALL checkLogFileOK( Obj%surrogate )
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    CALL checkLogFileOK( obj%surrogate )
   ELSE
     !Since the state of the log file can change (e.g. closed) check it's
     !integrity
-    nDebugOld=Obj%nDebug
-    Obj%logFileActive=.FALSE.
+    nDebugOld=obj%nDebug
+    obj%logFileActive=.FALSE.
 
     !Test if the file is open
-    INQUIRE( UNIT = Obj%logFileUnit, OPENED=isOpen )
-    IF( .NOT. isOpen ) CALL raiseDebug( Obj, 'Log file is not open! '// &
+    INQUIRE( UNIT = obj%logFileUnit, OPENED=isOpen )
+    IF( .NOT. isOpen ) CALL raiseDebug( obj, 'Log file is not open! '// &
       & 'Log file status is inactive.' )
 
     !Test if the file is a formatted file
-    INQUIRE( UNIT = Obj%logFileUnit, FORM=fprop )
-    IF(TRIM(fprop) /= 'FORMATTED') CALL raiseDebug(Obj, &
+    INQUIRE( UNIT = obj%logFileUnit, FORM=fprop )
+    IF(TRIM(fprop) /= 'FORMATTED') CALL raiseDebug(obj, &
       & 'Log file is not a formatted file! Log file status is inactive.')
 
     !Test if the file is sequential
-    INQUIRE( UNIT = Obj%logFileUnit, ACCESS=fprop )
-    IF(TRIM(fprop) /= 'SEQUENTIAL') CALL raiseDebug(Obj, &
+    INQUIRE( UNIT = obj%logFileUnit, ACCESS=fprop )
+    IF(TRIM(fprop) /= 'SEQUENTIAL') CALL raiseDebug(obj, &
       & 'Log file is not a sequential file! Log file status is inactive.')
 
     !Test if the file has been opened for writing
-    INQUIRE( UNIT = Obj%logFileUnit, ACTION=fprop )
+    INQUIRE( UNIT = obj%logFileUnit, ACTION=fprop )
     IF( .NOT. ( TRIM(fprop) == 'WRITE' .OR. TRIM(fprop) == 'READWRITE' ) ) &
-      & CALL raiseDebug( Obj,'Log file is not open for writing! '// &
+      & CALL raiseDebug( obj,'Log file is not open for writing! '// &
       & 'Log file status is inactive.' )
 
     !If none of the checks produced a new warning then the log file check
     !passes the return value can be set to .TRUE. otherwise it is .FALSE.
-    IF(nDebugOld == Obj%nDebug) Obj%logFileActive=.TRUE.
+    IF(nDebugOld == obj%nDebug) obj%logFileActive=.TRUE.
   ENDIF
 END PROCEDURE checkLogFileOK
 
@@ -128,8 +128,8 @@ END PROCEDURE checkLogFileOK
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE isStopOnError
-  Ans=Obj%stopOnError
-  IF(ASSOCIATED(Obj%surrogate)) Ans=Obj%surrogate%stopOnError
+  ans=obj%stopOnError
+  IF(ASSOCIATED(obj%surrogate)) ans=obj%surrogate%stopOnError
 END PROCEDURE isStopOnError
 
 END SUBMODULE Enquire

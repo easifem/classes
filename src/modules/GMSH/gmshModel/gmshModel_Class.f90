@@ -71,33 +71,33 @@ TYPE :: gmshModel_
   TYPE( gmshModel_ ), POINTER :: next => NULL( )
   !! Pointer to the next model for linked list
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: add => model_add
-    ! PROCEDURE, PUBLIC, PASS( Obj ) :: remove => model_remove
-    ! PROCEDURE, PUBLIC, PASS( Obj ) :: list => model_list
-    ! PROCEDURE, PUBLIC, PASS( Obj ) :: getCurrent => model_getCurrent
-    ! PROCEDURE, PUBLIC, PASS( Obj ) :: setCurrent => model_setCurrent
-    PROCEDURE, PUBLIC, PASS( Obj ) :: write => model_write
+    PROCEDURE, PUBLIC, PASS( obj ) :: add => model_add
+    ! PROCEDURE, PUBLIC, PASS( obj ) :: remove => model_remove
+    ! PROCEDURE, PUBLIC, PASS( obj ) :: list => model_list
+    ! PROCEDURE, PUBLIC, PASS( obj ) :: getCurrent => model_getCurrent
+    ! PROCEDURE, PUBLIC, PASS( obj ) :: setCurrent => model_setCurrent
+    PROCEDURE, PUBLIC, PASS( obj ) :: write => model_write
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getEntities => model_getEntities
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setEntityName => model_setEntityName
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getEntityName => model_getEntityName
+    PROCEDURE, PUBLIC, PASS( obj ) :: getEntities => model_getEntities
+    PROCEDURE, PUBLIC, PASS( obj ) :: setEntityName => model_setEntityName
+    PROCEDURE, PUBLIC, PASS( obj ) :: getEntityName => model_getEntityName
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: addPhysicalGroup => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: addPhysicalGroup => &
       & model_addPhysicalGroup
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalGroups => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getPhysicalGroups => &
       & model_getPhysicalGroups
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getEntitiesForPhysicalGroup => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getEntitiesForPhysicalGroup => &
       & model_getEntitiesForPhysicalGroup
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalGroupsForEntity => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getPhysicalGroupsForEntity => &
       & model_getPhysicalGroupsForEntity
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setPhysicalName => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: setPhysicalName => &
       & model_setPhysicalName
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalName => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getPhysicalName => &
       & model_getPhysicalName
 
 END TYPE gmshModel_
@@ -110,40 +110,40 @@ PUBLIC :: gmshModel_
 
 CONTAINS
 
-FUNCTION model_write( Obj, UnitNo ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( INOUT ) :: Obj
+FUNCTION model_write( obj, UnitNo ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: UnitNo
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   ! internal variables
   INTEGER( I4B ) :: ii
-  Ans = 0
+  ans = 0
 
-  IF( .NOT. ASSOCIATED ( Obj % geo ) ) THEN
+  IF( .NOT. ASSOCIATED ( obj % geo ) ) THEN
     CALL Display( "ERROR:: gmshModel_Class.f90")
     CALL Display( "        Model_write()")
-    CALL Display( "          Obj % geo not allocated")
+    CALL Display( "          obj % geo not allocated")
     STOP
   END IF
 
   ! CALL Display( "gmsh%model:: calling gmsh%model%geo%write()" )
-  Ans = Obj % geo % write( UnitNo )
+  ans = obj % geo % write( UnitNo )
 
-  IF( ASSOCIATED( Obj % buffer ) ) THEN
+  IF( ASSOCIATED( obj % buffer ) ) THEN
     ! CALL Display( "gmsh%model:: writing gmsh%model%buffer()" )
-    DO ii = 1, Obj % Buffer % tLine
-      WRITE( UnitNo, "(DT)" ) Obj % Buffer % Line( ii ) % Ptr
+    DO ii = 1, obj % Buffer % tLine
+      WRITE( UnitNo, "(DT)" ) obj % Buffer % Line( ii ) % Ptr
     END DO
   END IF
 
-  IF( ASSOCIATED( Obj % geo % mesh ) ) THEN
+  IF( ASSOCIATED( obj % geo % mesh ) ) THEN
     ! CALL Display( "gmsh%model:: calling gmsh%model%geo%mesh%write()" )
-    Ans = Obj % geo % mesh % write( UnitNo )
+    ans = obj % geo % mesh % write( UnitNo )
   END IF
 
-  IF( ASSOCIATED( Obj % mesh ) ) THEN
+  IF( ASSOCIATED( obj % mesh ) ) THEN
     ! CALL Display( "gmsh%model:: calling gmsh%model%mesh%write()" )
-    Ans = Obj % mesh % write( UnitNo )
+    ans = obj % mesh % write( UnitNo )
   END IF
 
 END FUNCTION model_write
@@ -157,16 +157,16 @@ END FUNCTION model_write
 ! This function add the model
 ! Currently only one model can be added
 
-FUNCTION model_add( Obj, Name ) RESULT( Ans )
-  CLASS( gmshModel_  ), TARGET, INTENT( INOUT) :: Obj
+FUNCTION model_add( obj, Name ) RESULT( ans )
+  CLASS( gmshModel_  ), TARGET, INTENT( INOUT) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Name
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
 
   CALL Display( "gmsh%model:: Model " // trim( Name ) // " added" )
-  Ans = 0
+  ans = 0
   CALL Display( "gmsh%model:: setting name of Model" )
-  Obj % name = trim( name )
+  obj % name = trim( name )
 
   obj % next => NULL( )
 
@@ -202,18 +202,18 @@ END FUNCTION model_add
 ! the entities of the specified dimension (e.g. points if dim == 0).
 ! The entities are returned as a vector of (dim, tag) integer pairs.
 
-FUNCTION model_getEntities( Obj, dim ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( IN ) :: Obj
+FUNCTION model_getEntities( obj, dim ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ), ALLOCATABLE :: Ans( :, : )
+  INTEGER( I4B ), ALLOCATABLE :: ans( :, : )
 
   ! internal variables
   INTEGER( I4B ) :: ii, n, jj
 
-  IF( .NOT. ASSOCIATED( Obj % geo ) ) THEN
+  IF( .NOT. ASSOCIATED( obj % geo ) ) THEN
     CALL Display( "ERROR:: gmshModel_Class.f90")
     CALL Display( "        model_getEntities()")
-    CALL Display( "          Obj % geo not associated")
+    CALL Display( "          obj % geo not associated")
     STOP
   END IF
 
@@ -221,110 +221,110 @@ FUNCTION model_getEntities( Obj, dim ) RESULT( Ans )
 
   CASE( 3 )
 
-    IF( Obj % geo % tVolumes .NE. 0 ) THEN
-      n = Obj % geo % tVolumes
-      ALLOCATE( Ans( n, 2 ) )
-      Ans = 0
+    IF( obj % geo % tVolumes .NE. 0 ) THEN
+      n = obj % geo % tVolumes
+      ALLOCATE( ans( n, 2 ) )
+      ans = 0
       DO ii = 1, n
-        Ans( ii, 1 ) = dim
-        Ans( ii, 2 ) = Obj % geo % Volume( ii ) % Ptr % Uid
+        ans( ii, 1 ) = dim
+        ans( ii, 2 ) = obj % geo % Volume( ii ) % Ptr % Uid
       END DO
     ELSE
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getEntities()")
-      CALL Display( "          Obj % geo % Volume not associated")
+      CALL Display( "          obj % geo % Volume not associated")
       STOP
     END IF
 
   CASE( 2 )
 
-    IF( Obj % geo % tSurfaces .NE. 0 ) THEN
-      n = Obj % geo % tSurfaces
-      ALLOCATE( Ans( n, 2 ) )
-      Ans = 0
+    IF( obj % geo % tSurfaces .NE. 0 ) THEN
+      n = obj % geo % tSurfaces
+      ALLOCATE( ans( n, 2 ) )
+      ans = 0
       DO ii = 1, n
-        Ans( ii, 1 ) = dim
-        Ans( ii, 2 ) = Obj % geo % Surface( ii ) % Ptr % Uid
+        ans( ii, 1 ) = dim
+        ans( ii, 2 ) = obj % geo % Surface( ii ) % Ptr % Uid
       END DO
     ELSE
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getEntities()")
-      CALL Display( "          Obj % geo % Surface not associated")
+      CALL Display( "          obj % geo % Surface not associated")
       STOP
     END IF
 
   CASE( 1 )
 
-    IF( Obj % geo % tCurves .NE. 0 ) THEN
-      n = Obj % geo % tCurves
-      ALLOCATE( Ans( n, 2 ) )
-      Ans = 0
+    IF( obj % geo % tCurves .NE. 0 ) THEN
+      n = obj % geo % tCurves
+      ALLOCATE( ans( n, 2 ) )
+      ans = 0
       DO ii = 1, n
-        Ans( ii, 1 ) = dim
-        Ans( ii, 2 ) = Obj % geo % Curve( ii ) % Ptr % Uid
+        ans( ii, 1 ) = dim
+        ans( ii, 2 ) = obj % geo % Curve( ii ) % Ptr % Uid
       END DO
     ELSE
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getEntities()")
-      CALL Display( "          Obj % geo % Curve not associated")
+      CALL Display( "          obj % geo % Curve not associated")
       STOP
     END IF
 
   CASE( 0 )
 
-    IF( Obj % geo % tPoints .NE. 0 ) THEN
-      n = Obj % geo % tPoints
-      ALLOCATE( Ans( n, 2 ) )
-      Ans = 0
+    IF( obj % geo % tPoints .NE. 0 ) THEN
+      n = obj % geo % tPoints
+      ALLOCATE( ans( n, 2 ) )
+      ans = 0
       DO ii = 1, n
-        Ans( ii, 1 ) = dim
-        Ans( ii, 2 ) = Obj % geo % Point( ii ) % Ptr % Uid
+        ans( ii, 1 ) = dim
+        ans( ii, 2 ) = obj % geo % Point( ii ) % Ptr % Uid
       END DO
     ELSE
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getEntities()")
-      CALL Display( "          Obj % geo % Point not associated")
+      CALL Display( "          obj % geo % Point not associated")
       STOP
     END IF
 
   CASE DEFAULT
 
-    n = Obj % geo % tPoints + Obj % geo % tCurves &
-      & + Obj % geo % tSurfaces + Obj % geo % tVolumes
+    n = obj % geo % tPoints + obj % geo % tCurves &
+      & + obj % geo % tSurfaces + obj % geo % tVolumes
 
     IF( n .NE. 0 ) THEN
-      ALLOCATE( Ans( n, 2 ) )
+      ALLOCATE( ans( n, 2 ) )
     ELSE
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getEntities()")
-      CALL Display( "          Obj % geo seems empty")
+      CALL Display( "          obj % geo seems empty")
       STOP
     END IF
 
-    DO ii = 1, Obj % geo % tPoints
-      Ans( ii, 1 ) = 0
-      Ans( ii, 2 ) = Obj % geo % Point( ii ) % Ptr % Uid
+    DO ii = 1, obj % geo % tPoints
+      ans( ii, 1 ) = 0
+      ans( ii, 2 ) = obj % geo % Point( ii ) % Ptr % Uid
     END DO
 
-    DO ii = 1, Obj % geo % tCurves
-      jj = ii + Obj % geo % tPoints
-      Ans( jj, 1 ) = 1
-      Ans( jj, 2 ) = Obj % geo % Curve( ii ) % Ptr % Uid
+    DO ii = 1, obj % geo % tCurves
+      jj = ii + obj % geo % tPoints
+      ans( jj, 1 ) = 1
+      ans( jj, 2 ) = obj % geo % Curve( ii ) % Ptr % Uid
     END DO
 
-    DO ii = 1, Obj % geo % tSurfaces
-      jj = ii + Obj % geo % tPoints + Obj % geo % tCurves
-      Ans( jj, 1 ) = 2
-      Ans( jj, 2 ) = Obj % geo % Surface( ii ) % Ptr % Uid
+    DO ii = 1, obj % geo % tSurfaces
+      jj = ii + obj % geo % tPoints + obj % geo % tCurves
+      ans( jj, 1 ) = 2
+      ans( jj, 2 ) = obj % geo % Surface( ii ) % Ptr % Uid
     END DO
 
-    DO ii = 1, Obj % geo % tVolumes
+    DO ii = 1, obj % geo % tVolumes
 
-      jj = ii + Obj % geo % tPoints + Obj % geo % tCurves &
-        + Obj % geo % tSurfaces
+      jj = ii + obj % geo % tPoints + obj % geo % tCurves &
+        + obj % geo % tSurfaces
 
-      Ans( jj, 1 ) = 3
-      Ans( jj, 2 ) = Obj % geo % Volume( ii ) % Ptr % Uid
+      ans( jj, 1 ) = 3
+      ans( jj, 2 ) = obj % geo % Volume( ii ) % Ptr % Uid
 
     END DO
 
@@ -340,11 +340,11 @@ END FUNCTION model_getEntities
 !
 ! Set the name of the entity of dimension dim and tag tag
 
-FUNCTION model_setEntityName( Obj, dim, tag, name ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( INOUT) :: Obj
+FUNCTION model_setEntityName( obj, dim, tag, name ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim, tag
   CHARACTER( LEN = * ),  INTENT( IN ) ::  name
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   !internal variables
   INTEGER( I4B ) :: ii
@@ -395,10 +395,10 @@ END FUNCTION model_setEntityName
 !
 ! get the name of the entity of dimension dim and tag tag
 
-FUNCTION model_getEntityName( Obj, dim, tag ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( IN ) :: Obj
+FUNCTION model_getEntityName( obj, dim, tag ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim, tag
-  TYPE( String ) ::  Ans
+  TYPE( String ) ::  ans
 
   !internal variables
   INTEGER( I4B ) :: ii
@@ -409,7 +409,7 @@ FUNCTION model_getEntityName( Obj, dim, tag ) RESULT( Ans )
 
     DO ii = 1, obj % geo % tPoints
       IF( obj % geo % point( ii ) % ptr % uid .EQ. tag ) THEN
-        Ans = obj % EntityPointName( ii )
+        ans = obj % EntityPointName( ii )
       END IF
     END DO
 
@@ -417,7 +417,7 @@ FUNCTION model_getEntityName( Obj, dim, tag ) RESULT( Ans )
 
     DO ii = 1, obj % geo % tCurves
       IF( obj % geo % Curve( ii ) % ptr % uid .EQ. tag ) THEN
-        Ans = obj % EntityCurveName( ii )
+        ans = obj % EntityCurveName( ii )
       END IF
     END DO
 
@@ -425,7 +425,7 @@ FUNCTION model_getEntityName( Obj, dim, tag ) RESULT( Ans )
 
     DO ii = 1, obj % geo % tSurfaces
       IF( obj % geo % Surface( ii ) % ptr % uid .EQ. tag ) THEN
-        Ans = obj % EntitySurfaceName( ii )
+        ans = obj % EntitySurfaceName( ii )
       END IF
     END DO
 
@@ -433,7 +433,7 @@ FUNCTION model_getEntityName( Obj, dim, tag ) RESULT( Ans )
 
     DO ii = 1, obj % geo % tVolumes
       IF( obj % geo % Volume( ii ) % ptr % uid .EQ. tag ) THEN
-        Ans = obj % EntityVolumeName( ii )
+        ans = obj % EntityVolumeName( ii )
       END IF
     END DO
 
@@ -451,12 +451,12 @@ END FUNCTION model_getEntityName
 ! tags tags. Return the tag of the physical group, equal to tag if tag is
 ! positive, or a new tag if tag < 0.
 
-FUNCTION model_addPhysicalGroup( Obj, dim, tags, uid ) RESULT( Ans )
-  CLASS( gmshModel_  ), INTENT( INOUT) :: Obj
+FUNCTION model_addPhysicalGroup( obj, dim, tags, uid ) RESULT( ans )
+  CLASS( gmshModel_  ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
   INTEGER( I4B ), INTENT( IN ) :: tags( : )
   INTEGER( I4B ), INTENT( IN ) :: uid
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   ! internal variables
   INTEGER( I4B ) :: ii, n, te2p, tp2e, jj
@@ -512,10 +512,10 @@ END FUNCTION model_addPhysicalGroup
 ! if dim == 0). The entities are returned as a vector of (dim, tag)
 ! integer pairs.
 
-FUNCTION model_getPhysicalGroups( Obj, dim ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( IN ) :: Obj
+FUNCTION model_getPhysicalGroups( obj, dim ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ), ALLOCATABLE :: Ans( :,: )
+  INTEGER( I4B ), ALLOCATABLE :: ans( :,: )
 
 
   ! internal variables
@@ -525,99 +525,99 @@ FUNCTION model_getPhysicalGroups( Obj, dim ) RESULT( Ans )
 
   CASE( 3 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalVolumeUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalVolumeUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getPhysicalGroups()")
-      CALL Display( "          Obj % PhysicalVolumeUID not allocated")
+      CALL Display( "          obj % PhysicalVolumeUID not allocated")
       CALL Display( "          Seems no Physical Volume present")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalVolumeUID )
-    ALLOCATE( Ans( n, 2 ) )
-    Ans = 0
+    n = SIZE( obj % PhysicalVolumeUID )
+    ALLOCATE( ans( n, 2 ) )
+    ans = 0
     DO ii = 1, n
-      Ans( ii, 1 ) = dim
-      Ans( ii, 2 ) = Obj % PhysicalVolumeUID( ii )
+      ans( ii, 1 ) = dim
+      ans( ii, 2 ) = obj % PhysicalVolumeUID( ii )
     END DO
 
   CASE( 2 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalSurfaceUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalSurfaceUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getPhysicalGroups()")
-      CALL Display( "          Obj % PhysicalSurfaceUID not allocated")
+      CALL Display( "          obj % PhysicalSurfaceUID not allocated")
       CALL Display( "          Seems no Physical Surface present")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalSurfaceUID )
-    ALLOCATE( Ans( n, 2 ) )
-    Ans = 0
+    n = SIZE( obj % PhysicalSurfaceUID )
+    ALLOCATE( ans( n, 2 ) )
+    ans = 0
     DO ii = 1, n
-      Ans( ii, 1 ) = dim
-      Ans( ii, 2 ) = Obj % PhysicalSurfaceUID( ii )
+      ans( ii, 1 ) = dim
+      ans( ii, 2 ) = obj % PhysicalSurfaceUID( ii )
     END DO
 
   CASE( 1 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalCurveUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalCurveUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getPhysicalGroups()")
-      CALL Display( "          Obj % PhysicalCurveUID not allocated")
+      CALL Display( "          obj % PhysicalCurveUID not allocated")
       CALL Display( "          Seems no Physical Curve present")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalCurveUID )
-    ALLOCATE( Ans( n, 2 ) )
-    Ans = 0
+    n = SIZE( obj % PhysicalCurveUID )
+    ALLOCATE( ans( n, 2 ) )
+    ans = 0
     DO ii = 1, n
-      Ans( ii, 1 ) = dim
-      Ans( ii, 2 ) = Obj % PhysicalCurveUID( ii )
+      ans( ii, 1 ) = dim
+      ans( ii, 2 ) = obj % PhysicalCurveUID( ii )
     END DO
 
   CASE( 0 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalPointUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalPointUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getPhysicalGroups()")
-      CALL Display( "          Obj % PhysicalPointUID not allocated")
+      CALL Display( "          obj % PhysicalPointUID not allocated")
       CALL Display( "          Seems no Physical Point present")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalPointUID )
-    ALLOCATE( Ans( n, 2 ) )
-    Ans = 0
+    n = SIZE( obj % PhysicalPointUID )
+    ALLOCATE( ans( n, 2 ) )
+    ans = 0
     DO ii = 1, n
-      Ans( ii, 1 ) = dim
-      Ans( ii, 2 ) = Obj % PhysicalPointUID( ii )
+      ans( ii, 1 ) = dim
+      ans( ii, 2 ) = obj % PhysicalPointUID( ii )
     END DO
 
   CASE DEFAULT
 
     i = 0
-    IF( ALLOCATED( Obj % PhysicalPointUID ) ) THEN
-      i( 0 ) = SIZE( Obj % PhysicalPointUID )
+    IF( ALLOCATED( obj % PhysicalPointUID ) ) THEN
+      i( 0 ) = SIZE( obj % PhysicalPointUID )
     END IF
 
-    IF( ALLOCATED( Obj % PhysicalCurveUID ) ) THEN
-      i( 1 ) = SIZE( Obj % PhysicalCurveUID )
+    IF( ALLOCATED( obj % PhysicalCurveUID ) ) THEN
+      i( 1 ) = SIZE( obj % PhysicalCurveUID )
     END IF
 
-    IF( ALLOCATED( Obj % PhysicalSurfaceUID ) ) THEN
-      i( 2 ) = SIZE( Obj % PhysicalSurfaceUID )
+    IF( ALLOCATED( obj % PhysicalSurfaceUID ) ) THEN
+      i( 2 ) = SIZE( obj % PhysicalSurfaceUID )
     END IF
 
-    IF( ALLOCATED( Obj % PhysicalVolumeUID ) ) THEN
-      i( 3 ) = SIZE( Obj % PhysicalVolumeUID )
+    IF( ALLOCATED( obj % PhysicalVolumeUID ) ) THEN
+      i( 3 ) = SIZE( obj % PhysicalVolumeUID )
     END IF
 
     n = SUM( i )
 
     IF( n .NE. 0 ) THEN
-      ALLOCATE( Ans( n, 2 ) )
+      ALLOCATE( ans( n, 2 ) )
     ELSE
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "        model_getEntities()")
@@ -626,26 +626,26 @@ FUNCTION model_getPhysicalGroups( Obj, dim ) RESULT( Ans )
     END IF
 
     DO ii = 1, i( 0 )
-      Ans( ii, 1 ) = 0
-      Ans( ii, 2 ) = Obj % PhysicalPointUID( ii )
+      ans( ii, 1 ) = 0
+      ans( ii, 2 ) = obj % PhysicalPointUID( ii )
     END DO
 
     DO ii = 1, i( 1 )
       jj = ii + i( 0 )
-      Ans( jj, 1 ) = 1
-      Ans( jj, 2 ) = Obj % PhysicalCurveUID( ii )
+      ans( jj, 1 ) = 1
+      ans( jj, 2 ) = obj % PhysicalCurveUID( ii )
     END DO
 
     DO ii = 1, i( 2 )
       jj = ii + i( 0 ) + i( 1 )
-      Ans( jj, 1 ) = 2
-      Ans( jj, 2 ) = Obj % PhysicalSurfaceUID( ii )
+      ans( jj, 1 ) = 2
+      ans( jj, 2 ) = obj % PhysicalSurfaceUID( ii )
     END DO
 
     DO ii = 1, i( 3 )
       jj = ii + SUM( i( 0:2 ) )
-      Ans( jj, 1 ) = 3
-      Ans( jj, 2 ) = Obj % PhysicalVolumeUID( ii )
+      ans( jj, 1 ) = 3
+      ans( jj, 2 ) = obj % PhysicalVolumeUID( ii )
     END DO
 
   END SELECT
@@ -661,10 +661,10 @@ END FUNCTION model_getPhysicalGroups
 ! Get the tags of the model entities making up the physical group of
 ! dimension dim and tag tag.
 
-FUNCTION model_getEntitiesForPhysicalGroup( Obj, dim, tag ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( IN ) :: Obj
+FUNCTION model_getEntitiesForPhysicalGroup( obj, dim, tag ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim, tag
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
 
   ! define internal variables
   INTEGER( I4B ) :: ii, n
@@ -673,20 +673,20 @@ FUNCTION model_getEntitiesForPhysicalGroup( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 0 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalPointUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalPointUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getEntitiesForPhysicalGroup()")
       CALL Display( "          Physical points are not defined" )
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalPointUID )
+    n = SIZE( obj % PhysicalPointUID )
 
     DO ii = 1, n
 
-      IF( Obj % PhysicalPointUID( ii ) .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Point_PhysicalToEntity( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % PhysicalPointUID( ii ) .EQ. tag ) THEN
+        CALL Convert ( From = obj % Point_PhysicalToEntity( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -694,20 +694,20 @@ FUNCTION model_getEntitiesForPhysicalGroup( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 1 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalCurveUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalCurveUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getEntitiesForPhysicalGroup()")
       CALL Display( "          Physical Curves are not defined" )
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalCurveUID )
+    n = SIZE( obj % PhysicalCurveUID )
 
     DO ii = 1, n
 
-      IF( Obj % PhysicalCurveUID( ii ) .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Curve_PhysicalToEntity( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % PhysicalCurveUID( ii ) .EQ. tag ) THEN
+        CALL Convert ( From = obj % Curve_PhysicalToEntity( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -715,20 +715,20 @@ FUNCTION model_getEntitiesForPhysicalGroup( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 2 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalSurfaceUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalSurfaceUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getEntitiesForPhysicalGroup()")
       CALL Display( "          Physical Surfaces are not defined" )
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalSurfaceUID )
+    n = SIZE( obj % PhysicalSurfaceUID )
 
     DO ii = 1, n
 
-      IF( Obj % PhysicalSurfaceUID( ii ) .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Surface_PhysicalToEntity( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % PhysicalSurfaceUID( ii ) .EQ. tag ) THEN
+        CALL Convert ( From = obj % Surface_PhysicalToEntity( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -736,20 +736,20 @@ FUNCTION model_getEntitiesForPhysicalGroup( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 3 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalVolumeUID ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalVolumeUID ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getEntitiesForPhysicalGroup()")
       CALL Display( "          Physical Volumes are not defined" )
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalVolumeUID )
+    n = SIZE( obj % PhysicalVolumeUID )
 
     DO ii = 1, n
 
-      IF( Obj % PhysicalVolumeUID( ii ) .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Volume_PhysicalToEntity( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % PhysicalVolumeUID( ii ) .EQ. tag ) THEN
+        CALL Convert ( From = obj % Volume_PhysicalToEntity( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -767,10 +767,10 @@ END FUNCTION model_getEntitiesForPhysicalGroup
 ! Get the tags of the physical groups (if any) to which the model entity of
 ! dimension dim and tag tag belongs.
 
-FUNCTION model_getPhysicalGroupsForEntity( Obj, dim, tag ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( IN ) :: Obj
+FUNCTION model_getPhysicalGroupsForEntity( obj, dim, tag ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim, tag
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
 
   ! define internal variables
   INTEGER( I4B ) :: ii, n
@@ -779,20 +779,20 @@ FUNCTION model_getPhysicalGroupsForEntity( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 0 )
 
-    IF( .NOT. ALLOCATED( Obj % geo % Point ) ) THEN
+    IF( .NOT. ALLOCATED( obj % geo % Point ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getPhysicalGroupsForEntity()")
       CALL Display( "          Points are not added in geometry" )
       STOP
     END IF
 
-    n = Obj % geo % tPoints
+    n = obj % geo % tPoints
 
     DO ii = 1, n
 
-      IF( Obj % geo % Point( ii ) % ptr % uid .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Point_EntityToPhysical( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % geo % Point( ii ) % ptr % uid .EQ. tag ) THEN
+        CALL Convert ( From = obj % Point_EntityToPhysical( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -800,20 +800,20 @@ FUNCTION model_getPhysicalGroupsForEntity( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 1 )
 
-    IF( .NOT. ALLOCATED( Obj % geo % Curve ) ) THEN
+    IF( .NOT. ALLOCATED( obj % geo % Curve ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getPhysicalGroupsForEntity()")
       CALL Display( "          Curves are not added in geometry" )
       STOP
     END IF
 
-    n = Obj % geo % tCurves
+    n = obj % geo % tCurves
 
     DO ii = 1, n
 
-      IF( Obj % geo % Curve( ii ) % ptr % uid .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Curve_EntityToPhysical( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % geo % Curve( ii ) % ptr % uid .EQ. tag ) THEN
+        CALL Convert ( From = obj % Curve_EntityToPhysical( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -821,20 +821,20 @@ FUNCTION model_getPhysicalGroupsForEntity( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 2 )
 
-    IF( .NOT. ALLOCATED( Obj % geo % Surface ) ) THEN
+    IF( .NOT. ALLOCATED( obj % geo % Surface ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getPhysicalGroupsForEntity()")
       CALL Display( "          Surfaces are not added in geometry" )
       STOP
     END IF
 
-    n = Obj % geo % tSurfaces
+    n = obj % geo % tSurfaces
 
     DO ii = 1, n
 
-      IF( Obj % geo % Surface( ii ) % ptr % uid .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Surface_EntityToPhysical( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % geo % Surface( ii ) % ptr % uid .EQ. tag ) THEN
+        CALL Convert ( From = obj % Surface_EntityToPhysical( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -842,20 +842,20 @@ FUNCTION model_getPhysicalGroupsForEntity( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 3 )
 
-    IF( .NOT. ALLOCATED( Obj % geo % Volume ) ) THEN
+    IF( .NOT. ALLOCATED( obj % geo % Volume ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90")
       CALL Display( "          model_getPhysicalGroupsForEntity()")
       CALL Display( "          Volumes are not added in geometry" )
       STOP
     END IF
 
-    n = Obj % geo % tVolumes
+    n = obj % geo % tVolumes
 
     DO ii = 1, n
 
-      IF( Obj % geo % Volume( ii ) % ptr % uid .EQ. tag ) THEN
-        CALL Convert ( From = Obj % Volume_EntityToPhysical( ii ) % Ptr, &
-          & TO = Ans )
+      IF( obj % geo % Volume( ii ) % ptr % uid .EQ. tag ) THEN
+        CALL Convert ( From = obj % Volume_EntityToPhysical( ii ) % Ptr, &
+          & TO = ans )
         EXIT
       END IF
 
@@ -873,11 +873,11 @@ END FUNCTION model_getPhysicalGroupsForEntity
 !
 ! Set the name of the physical group of dimension dim and tag tag.
 
-FUNCTION model_setPhysicalName( Obj, dim, tag, name ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( INOUT) :: Obj
+FUNCTION model_setPhysicalName( obj, dim, tag, name ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim, tag
   CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   ! internal varialbles
   INTEGER( I4B ) :: ii, n
@@ -885,23 +885,23 @@ FUNCTION model_setPhysicalName( Obj, dim, tag, name ) RESULT( Ans )
   TYPE( String ) :: ss
   INTEGER( I4B ), ALLOCATABLE :: tags( : )
 
-  Ans = 0
+  ans = 0
 
   SELECT CASE( dim )
 
   CASE( 0 )
-    IF( .NOT. ALLOCATED( Obj % PhysicalPointName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalPointName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_setPhysicalName()" )
       CALL Display( "          Physical Points are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalPointName )
+    n = SIZE( obj % PhysicalPointName )
     DO ii = 1, n
-      IF( Obj % PhysicalPointUID( ii ) .EQ. tag ) THEN
-        Obj % PhysicalPointName( ii ) = trim( name )
-        CALL Convert(  From = Obj % Point_PhysicalToEntity( ii ) % ptr, &
+      IF( obj % PhysicalPointUID( ii ) .EQ. tag ) THEN
+        obj % PhysicalPointName( ii ) = trim( name )
+        CALL Convert(  From = obj % Point_PhysicalToEntity( ii ) % ptr, &
           & To = tags )
         EXIT
       END IF
@@ -935,23 +935,23 @@ FUNCTION model_setPhysicalName( Obj, dim, tag, name ) RESULT( Ans )
     DEALLOCATE( s, tags )
 
     ! CALL Display( "gmsh%model:: adding physical point to buffer")
-    CALL APPEND( Obj % geo % buffer, ss )
+    CALL APPEND( obj % geo % buffer, ss )
 
   CASE( 1 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalCurveName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalCurveName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_setPhysicalName()" )
       CALL Display( "          Physical Curves are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalCurveName )
+    n = SIZE( obj % PhysicalCurveName )
 
     DO ii = 1, n
-      IF( Obj % PhysicalCurveUID( ii ) .EQ. tag ) THEN
-        Obj % PhysicalCurveName( ii ) = trim( name )
-        CALL Convert(  From = Obj % Curve_PhysicalToEntity( ii ) % ptr, &
+      IF( obj % PhysicalCurveUID( ii ) .EQ. tag ) THEN
+        obj % PhysicalCurveName( ii ) = trim( name )
+        CALL Convert(  From = obj % Curve_PhysicalToEntity( ii ) % ptr, &
           & To = tags )
         EXIT
       END IF
@@ -983,22 +983,22 @@ FUNCTION model_setPhysicalName( Obj, dim, tag, name ) RESULT( Ans )
 
     DEALLOCATE( s, tags )
     ! CALL Display( "gmsh%model:: adding physical curve to buffer")
-    CALL APPEND( Obj % geo % buffer, ss )
+    CALL APPEND( obj % geo % buffer, ss )
 
   CASE( 2 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalSurfaceName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalSurfaceName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_setPhysicalName()" )
       CALL Display( "          Physical Surfaces are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalSurfaceName )
+    n = SIZE( obj % PhysicalSurfaceName )
     DO ii = 1, n
-      IF( Obj % PhysicalSurfaceUID( ii ) .EQ. tag ) THEN
-        Obj % PhysicalSurfaceName( ii ) = trim( name )
-        CALL Convert(  From = Obj % Surface_PhysicalToEntity( ii ) % ptr, &
+      IF( obj % PhysicalSurfaceUID( ii ) .EQ. tag ) THEN
+        obj % PhysicalSurfaceName( ii ) = trim( name )
+        CALL Convert(  From = obj % Surface_PhysicalToEntity( ii ) % ptr, &
           & To = tags )
         EXIT
       END IF
@@ -1031,22 +1031,22 @@ FUNCTION model_setPhysicalName( Obj, dim, tag, name ) RESULT( Ans )
 
     DEALLOCATE( s, tags )
     ! CALL Display( "gmsh%model:: adding physical surface to buffer")
-    CALL APPEND( Obj % geo % buffer, ss )
+    CALL APPEND( obj % geo % buffer, ss )
 
   CASE( 3 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalVolumeName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalVolumeName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_setPhysicalName()" )
       CALL Display( "          Physical Volumes are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalVolumeName )
+    n = SIZE( obj % PhysicalVolumeName )
     DO ii = 1, n
-      IF( Obj % PhysicalVolumeUID( ii ) .EQ. tag ) THEN
-        Obj % PhysicalVolumeName( ii ) = trim( name )
-        CALL Convert(  From = Obj % Volume_PhysicalToEntity( ii ) % ptr, &
+      IF( obj % PhysicalVolumeUID( ii ) .EQ. tag ) THEN
+        obj % PhysicalVolumeName( ii ) = trim( name )
+        CALL Convert(  From = obj % Volume_PhysicalToEntity( ii ) % ptr, &
           & To = tags )
         EXIT
       END IF
@@ -1080,7 +1080,7 @@ FUNCTION model_setPhysicalName( Obj, dim, tag, name ) RESULT( Ans )
     ! WRITE( obj % buffer % unitno, "(DT)" ) ss
 
     ! CALL Display( "gmsh%model:: adding physical volume to buffer")
-    CALL APPEND( Obj % geo % buffer, ss )
+    CALL APPEND( obj % geo % buffer, ss )
 
   END SELECT
 
@@ -1090,10 +1090,10 @@ END FUNCTION model_setPhysicalName
 !
 !----------------------------------------------------------------------------
 
-FUNCTION model_getPhysicalName( Obj, dim, tag ) RESULT( Ans )
-  CLASS( gmshModel_ ), INTENT( IN ) :: Obj
+FUNCTION model_getPhysicalName( obj, dim, tag ) RESULT( ans )
+  CLASS( gmshModel_ ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: dim, tag
-  TYPE( String ) :: Ans
+  TYPE( String ) :: ans
 
   INTEGER( I4B ) :: ii, n
 
@@ -1101,68 +1101,68 @@ FUNCTION model_getPhysicalName( Obj, dim, tag ) RESULT( Ans )
 
   CASE( 0 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalPointName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalPointName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_getPhysicalName()" )
       CALL Display( "          Physical Points are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalPointName )
+    n = SIZE( obj % PhysicalPointName )
     DO ii = 1, n
-      IF( Obj % PhysicalPointUID( ii ) .EQ. tag ) THEN
-        Ans = Obj % PhysicalPointName( ii )
+      IF( obj % PhysicalPointUID( ii ) .EQ. tag ) THEN
+        ans = obj % PhysicalPointName( ii )
         EXIT
       END IF
     END DO
 
   CASE( 1 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalCurveName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalCurveName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_getPhysicalName()" )
       CALL Display( "          Physical Curves are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalCurveName )
+    n = SIZE( obj % PhysicalCurveName )
     DO ii = 1, n
-      IF( Obj % PhysicalCurveUID( ii ) .EQ. tag ) THEN
-        Ans = Obj % PhysicalCurveName( ii )
+      IF( obj % PhysicalCurveUID( ii ) .EQ. tag ) THEN
+        ans = obj % PhysicalCurveName( ii )
         EXIT
       END IF
     END DO
 
   CASE( 2 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalSurfaceName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalSurfaceName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_getPhysicalName()" )
       CALL Display( "          Physical Surfaces are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalSurfaceName )
+    n = SIZE( obj % PhysicalSurfaceName )
     DO ii = 1, n
-      IF( Obj % PhysicalSurfaceUID( ii ) .EQ. tag ) THEN
-        Ans = Obj % PhysicalSurfaceName( ii )
+      IF( obj % PhysicalSurfaceUID( ii ) .EQ. tag ) THEN
+        ans = obj % PhysicalSurfaceName( ii )
         EXIT
       END IF
     END DO
 
   CASE( 3 )
 
-    IF( .NOT. ALLOCATED( Obj % PhysicalVolumeName ) ) THEN
+    IF( .NOT. ALLOCATED( obj % PhysicalVolumeName ) ) THEN
       CALL Display( "ERROR:: gmshModel_Class.f90" )
       CALL Display( "          model_getPhysicalName()" )
       CALL Display( "          Physical Volumes are not set")
       STOP
     END IF
 
-    n = SIZE( Obj % PhysicalVolumeName )
+    n = SIZE( obj % PhysicalVolumeName )
     DO ii = 1, n
-      IF( Obj % PhysicalVolumeUID( ii ) .EQ. tag ) THEN
-        Ans = Obj % PhysicalVolumeName( ii )
+      IF( obj % PhysicalVolumeUID( ii ) .EQ. tag ) THEN
+        ans = obj % PhysicalVolumeName( ii )
         EXIT
       END IF
     END DO

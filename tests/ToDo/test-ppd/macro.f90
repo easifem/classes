@@ -11,15 +11,15 @@
 
 MODULE PROCEDURE _AxB_(Set, _X_, NeumannBoundary)
 
-	IF( PRESENT( MeshObj ) ) THEN
-		Obj % _Ax_( _X_, NeumannBoundary ) => MeshObj
-		Obj % _AxB_( is, _X_, NeumannBoundary ) = .TRUE.
+	IF( PRESENT( Meshobj ) ) THEN
+		obj % _Ax_( _X_, NeumannBoundary ) => Meshobj
+		obj % _AxB_( is, _X_, NeumannBoundary ) = .TRUE.
 	ELSE IF( PRESENT( Tag ) ) THEN
-		ALLOCATE( Obj % _Ax_( _X_, NeumannBoundary ) )
-		CALL Obj % _Ax_( _X_, NeumannBoundary ) % Initiate( FacetElement( ) )
-		CALL Obj % mshFile % getElements( Obj % _Ax_( _X_, NeumannBoundary ), Tag )
-		CALL ConnectFacetToCell( Obj % Omega, Obj % _Ax_( _X_, NeumannBoundary ) )
-		Obj % _AxB_( is, _X_, NeumannBoundary ) = .TRUE.
+		ALLOCATE( obj % _Ax_( _X_, NeumannBoundary ) )
+		CALL obj % _Ax_( _X_, NeumannBoundary ) % Initiate( FacetElement( ) )
+		CALL obj % mshFile % getElements( obj % _Ax_( _X_, NeumannBoundary ), Tag )
+		CALL ConnectFacetToCell( obj % Omega, obj % _Ax_( _X_, NeumannBoundary ) )
+		obj % _AxB_( is, _X_, NeumannBoundary ) = .TRUE.
 	END IF
 
 END PROCEDURE _AxB_(Set, _X_, NeumannBoundary)

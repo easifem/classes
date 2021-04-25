@@ -7,13 +7,13 @@ program main
   type( indexvalue_ ), allocatable ::
   real( dfp ) :: x( 10 )
 
-  Obj = IndexValue( [1,2,3,4], 0.0_DFP )
+  obj = IndexValue( [1,2,3,4], 0.0_DFP )
 
-  Obj % Indx
+  obj % Indx
 
-  Obj % Val
+  obj % Val
 
-  X( Obj % Indx ) = Obj % Val
+  X( obj % Indx ) = obj % Val
 
 
 
@@ -24,7 +24,7 @@ program main
 
   call RANDOM_NUMBER( x )
 
-  x( Obj % Indx ) = Obj % Val
+  x( obj % Indx ) = obj % Val
 
 
   call display_array( x, "x" )

@@ -10,7 +10,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE gmsh_mesh_telements_1
-  Ans = Obj % Elements % numElements
+  ans = obj % Elements % numElements
 END PROCEDURE gmsh_mesh_telements_1
 
 !----------------------------------------------------------------------------
@@ -20,27 +20,27 @@ END PROCEDURE gmsh_mesh_telements_1
 MODULE PROCEDURE gmsh_mesh_telements_2
   ! Define internal variables
   INTEGER( I4B ) :: i
-  Ans = 0
+  ans = 0
   SELECT CASE( XiDim )
   CASE( 1 )
-    IF( ALLOCATED( Obj % CurveEntities ) &
-      & .AND. SIZE( Obj % CurveEntities ) .NE. 0 ) THEN
-      DO i = 1, SIZE( Obj % CurveEntities )
-        Ans = Ans + Obj % CurveEntities( i ) % TotalElements( )
+    IF( ALLOCATED( obj % CurveEntities ) &
+      & .AND. SIZE( obj % CurveEntities ) .NE. 0 ) THEN
+      DO i = 1, SIZE( obj % CurveEntities )
+        ans = ans + obj % CurveEntities( i ) % TotalElements( )
       END DO
     END IF
   CASE( 2 )
-    IF( ALLOCATED( Obj % SurfaceEntities ) &
-      & .AND. SIZE( Obj % SurfaceEntities ) .NE. 0 ) THEN
-      DO i = 1, SIZE( Obj % SurfaceEntities )
-        Ans = Ans + Obj % SurfaceEntities( i ) % TotalElements( )
+    IF( ALLOCATED( obj % SurfaceEntities ) &
+      & .AND. SIZE( obj % SurfaceEntities ) .NE. 0 ) THEN
+      DO i = 1, SIZE( obj % SurfaceEntities )
+        ans = ans + obj % SurfaceEntities( i ) % TotalElements( )
       END DO
     END IF
   CASE( 3 )
-    IF( ALLOCATED( Obj % VolumeEntities ) &
-      & .AND. SIZE( Obj % VolumeEntities ) .NE. 0 ) THEN
-      DO i = 1, SIZE( Obj % VolumeEntities )
-        Ans = Ans + Obj % VolumeEntities( i ) % TotalElements( )
+    IF( ALLOCATED( obj % VolumeEntities ) &
+      & .AND. SIZE( obj % VolumeEntities ) .NE. 0 ) THEN
+      DO i = 1, SIZE( obj % VolumeEntities )
+        ans = ans + obj % VolumeEntities( i ) % TotalElements( )
       END DO
     END IF
   END SELECT
@@ -55,78 +55,78 @@ MODULE PROCEDURE gmsh_mesh_telements_3
   INTEGER( I4B ), ALLOCATABLE :: Indices( : ), Entities( : )
   INTEGER( I4B ) :: tSize, i, j, k
   !
-  Ans = 0_I4B
+  ans = 0_I4B
   SELECT CASE( XiDim )
   CASE( 0 )
     !
-    Indices = Obj % PhysicalNames % IndexOfPhysicalPoint( Tag )
+    Indices = obj % PhysicalNames % IndexOfPhysicalPoint( Tag )
     ! Loop over indices
     IF( ALLOCATED( Indices ) .AND. SIZE( Indices ) .NE. 0 ) THEN
       DO i = 1, SIZE( Indices )
         j = Indices( i )
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         DO k = 1, tSize
           j = Entities( k )
-          Ans = Ans + Obj % PointEntities( j ) % TotalElements( )
+          ans = ans + obj % PointEntities( j ) % TotalElements( )
         END DO
       END DO
     END IF
   CASE( 1 )
     !
-    Indices = Obj % PhysicalNames % IndexOfPhysicalCurve( Tag )
+    Indices = obj % PhysicalNames % IndexOfPhysicalCurve( Tag )
     ! Loop over indices
     IF( ALLOCATED( Indices ) .AND. SIZE( Indices ) .NE. 0 ) THEN
       DO i = 1, SIZE( Indices )
         j = Indices( i )
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         DO k = 1, tSize
           j = Entities( k )
-          Ans = Ans + Obj % CurveEntities( j ) % TotalElements( )
+          ans = ans + obj % CurveEntities( j ) % TotalElements( )
         END DO
       END DO
     END IF
   CASE( 2 )
     !
-    Indices = Obj % PhysicalNames % IndexOfPhysicalSurface( Tag )
+    Indices = obj % PhysicalNames % IndexOfPhysicalSurface( Tag )
     ! Loop over indices
     IF( ALLOCATED( Indices ) .AND. SIZE( Indices ) .NE. 0 ) THEN
       DO i = 1, SIZE( Indices )
         j = Indices( i )
         ! Entities related to the physical tag
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         DO k = 1, tSize
           j = Entities( k )
-          Ans = Ans + Obj % SurfaceEntities( j ) % TotalElements( )
+          ans = ans + obj % SurfaceEntities( j ) % TotalElements( )
         END DO
       END DO
     END IF
   CASE( 3 )
     !
-    Indices = Obj % PhysicalNames % IndexOfPhysicalVolume( Tag )
+    Indices = obj % PhysicalNames % IndexOfPhysicalVolume( Tag )
     ! Loop over indices
     IF( ALLOCATED( Indices ) .AND. SIZE( Indices ) .NE. 0 ) THEN
       DO i = 1, SIZE( Indices )
         j = Indices( i )
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         DO k = 1, tSize
           j = Entities( k )
-          Ans = Ans + Obj % VolumeEntities( j ) % TotalElements( )
+          ans = ans + obj % VolumeEntities( j ) % TotalElements( )
         END DO
       END DO
     END IF
@@ -141,134 +141,134 @@ MODULE PROCEDURE gmsh_mesh_getelements_1
   ! Define internal variable
   INTEGER( I4B ) :: i, tElements, ElemType, EntityTag, iel, Order
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
-  CLASS( ReferenceElement_ ), POINTER :: RefElem_1, RefElem_2
+  CLASS( ReferenceElement_ ), POINTER :: refelem_1, refelem_2
   CLASS( Element_ ), POINTER :: Elem
 
-  RefElem_1 => NULL( ); RefElem_2 => NULL( ); Elem => NULL( )
-  tElements = Obj % TotalElements( )
+  refelem_1 => NULL( ); refelem_2 => NULL( ); Elem => NULL( )
+  tElements = obj % TotalElements( )
   !
   ! Initiate the mesh obj
-  CALL MeshObj % Initiate( NSD = Obj % NSD, tElements = tElements )
+  CALL Meshobj % Initiate( NSD = obj % NSD, tElements = tElements )
   !
   ! Curved Entities
-  IF( ALLOCATED( Obj % CurveEntities ) ) THEN
+  IF( ALLOCATED( obj % CurveEntities ) ) THEN
     !
-    IF( SIZE( Obj % CurveEntities ) .NE. 0 ) THEN
-      RefElem_1 => ReferenceLine_Pointer( NSD = Obj % NSD )
-      RefElem_2 => RefElem_1
-      DO i = 1, SIZE( Obj % CurveEntities )
-        ElemType = Obj % CurveEntities( i ) % ElemType
-        EntityTag = Obj % CurveEntities( i )  % Uid
-        tElements = Obj % CurveEntities( i ) % TotalElements( )
+    IF( SIZE( obj % CurveEntities ) .NE. 0 ) THEN
+      refelem_1 => ReferenceLine_Pointer( NSD = obj % NSD )
+      refelem_2 => refelem_1
+      DO i = 1, SIZE( obj % CurveEntities )
+        ElemType = obj % CurveEntities( i ) % ElemType
+        EntityTag = obj % CurveEntities( i )  % Uid
+        tElements = obj % CurveEntities( i ) % TotalElements( )
         ! get the order of element
         ! if element is not linear then make lagrange element
         Order = ElementOrder( ElemType )
         IF( Order .NE. 1 ) THEN
-          NULLIFY( RefElem_2 )
-          RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-          DEALLOCATE( RefElem_1 )
+          NULLIFY( refelem_2 )
+          refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+          DEALLOCATE( refelem_1 )
         END IF
         ! now loop over all elements
         DO iel = 1, tElements
-          Nptrs = Obj % CurveEntities( i ) % Nptrs( :, iel )
-          Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-          CALL MeshObj % Append( Elem )
+          Nptrs = obj % CurveEntities( i ) % Nptrs( :, iel )
+          Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+          CALL Meshobj % Append( Elem )
         END DO
       END DO
     END IF
   END IF
   ! Surface Entities
-  IF( ALLOCATED( Obj % SurfaceEntities ) ) THEN
+  IF( ALLOCATED( obj % SurfaceEntities ) ) THEN
     !
-    IF( SIZE( Obj % SurfaceEntities ) .NE. 0 ) THEN
-      DO i = 1, SIZE( Obj % SurfaceEntities )
-        ElemType = Obj % SurfaceEntities( i ) % ElemType
-        EntityTag = Obj % SurfaceEntities( i )  % Uid
-        tElements = Obj % SurfaceEntities( i ) % TotalElements( )
+    IF( SIZE( obj % SurfaceEntities ) .NE. 0 ) THEN
+      DO i = 1, SIZE( obj % SurfaceEntities )
+        ElemType = obj % SurfaceEntities( i ) % ElemType
+        EntityTag = obj % SurfaceEntities( i )  % Uid
+        tElements = obj % SurfaceEntities( i ) % TotalElements( )
         Order = ElementOrder( ElemType )
         !
         IF( isTriangle( ElemType ) ) THEN
-          RefElem_1 => ReferenceTriangle_Pointer( NSD = Obj % NSD )
+          refelem_1 => ReferenceTriangle_Pointer( NSD = obj % NSD )
           IF( Order .NE. 1 ) THEN
-            RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-            DEALLOCATE( RefElem_1 )
+            refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+            DEALLOCATE( refelem_1 )
           ELSE
-            RefElem_2 => RefElem_1
+            refelem_2 => refelem_1
           END IF
         ELSE IF( isQuadrangle( ElemType ) ) THEN
-          RefElem_1 => ReferenceQuadrangle_Pointer( NSD = Obj % NSD )
+          refelem_1 => ReferenceQuadrangle_Pointer( NSD = obj % NSD )
           IF( Order .NE. 1 ) THEN
-            RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-            DEALLOCATE( RefElem_1 )
+            refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+            DEALLOCATE( refelem_1 )
           ELSE
-            RefElem_2 => RefElem_1
+            refelem_2 => refelem_1
           END IF
         END IF
         !
         ! now loop over all elements
         DO iel = 1, tElements
-          Nptrs = Obj % SurfaceEntities( i ) % Nptrs( :, iel )
-          Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-          CALL MeshObj % Append( Elem = Elem )
+          Nptrs = obj % SurfaceEntities( i ) % Nptrs( :, iel )
+          Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+          CALL Meshobj % Append( Elem = Elem )
         END DO
       END DO
     END IF
   END IF
   ! Volume Entities
-  IF( ALLOCATED( Obj % VolumeEntities ) ) THEN
-    IF( SIZE( Obj % VolumeEntities ) .NE. 0 ) THEN
-      DO i = 1, SIZE( Obj % VolumeEntities )
-        ElemType = Obj % VolumeEntities( i ) % ElemType
-        EntityTag = Obj % VolumeEntities( i )  % Uid
-        tElements = Obj % VolumeEntities( i ) % TotalElements( )
+  IF( ALLOCATED( obj % VolumeEntities ) ) THEN
+    IF( SIZE( obj % VolumeEntities ) .NE. 0 ) THEN
+      DO i = 1, SIZE( obj % VolumeEntities )
+        ElemType = obj % VolumeEntities( i ) % ElemType
+        EntityTag = obj % VolumeEntities( i )  % Uid
+        tElements = obj % VolumeEntities( i ) % TotalElements( )
         Order = ElementOrder( ElemType )
         !
         IF( isTetrahedron( ElemType ) ) THEN
-          RefElem_1 => ReferenceTetrahedron_Pointer( NSD = Obj % NSD )
+          refelem_1 => ReferenceTetrahedron_Pointer( NSD = obj % NSD )
           IF( Order .NE. 1 ) THEN
-            RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-            DEALLOCATE( RefElem_1 )
+            refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+            DEALLOCATE( refelem_1 )
           ELSE
-            RefElem_2 => RefElem_1
+            refelem_2 => refelem_1
           END IF
         ELSE IF( isHexahedron( ElemType ) ) THEN
-          RefElem_1 => ReferenceHexahedron_Pointer( NSD = Obj % NSD )
+          refelem_1 => ReferenceHexahedron_Pointer( NSD = obj % NSD )
           IF( Order .NE. 1 ) THEN
-            RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-            DEALLOCATE( RefElem_1 )
+            refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+            DEALLOCATE( refelem_1 )
           ELSE
-            RefElem_2 => RefElem_1
+            refelem_2 => refelem_1
           END IF
         ELSE IF( isPrism( ElemType ) ) THEN
-          RefElem_1 => ReferencePrism_Pointer( NSD = Obj % NSD )
+          refelem_1 => ReferencePrism_Pointer( NSD = obj % NSD )
           IF( Order .NE. 1 ) THEN
-            RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-            DEALLOCATE( RefElem_1 )
+            refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+            DEALLOCATE( refelem_1 )
           ELSE
-            RefElem_2 => RefElem_1
+            refelem_2 => refelem_1
           END IF
         ELSE IF( isPyramid( ElemType ) ) THEN
-          RefElem_1 => ReferencePyramid_Pointer( NSD = Obj % NSD )
+          refelem_1 => ReferencePyramid_Pointer( NSD = obj % NSD )
           IF( Order .NE. 1 ) THEN
-            RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-            DEALLOCATE( RefElem_1 )
+            refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+            DEALLOCATE( refelem_1 )
           ELSE
-            RefElem_2 => RefElem_1
+            refelem_2 => refelem_1
           END IF
         END IF
 
         ! now loop over all elements
         DO iel = 1, tElements
-          Nptrs = Obj % VolumeEntities( i ) % Nptrs( :, iel )
-          Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-          CALL MeshObj % Append( Elem )
+          Nptrs = obj % VolumeEntities( i ) % Nptrs( :, iel )
+          Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+          CALL Meshobj % Append( Elem )
         END DO
       END DO
     END IF
   END IF
 
   IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
-  NULLIFY( Elem, RefElem_1, RefElem_2 )
+  NULLIFY( Elem, refelem_1, refelem_2 )
 
 END PROCEDURE gmsh_mesh_getelements_1
 
@@ -280,39 +280,39 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
   ! Define internal variable
   INTEGER( I4B ) :: i, j, tElements, tag, ElemType, EntityTag, iel, Order
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : ), Indices( : )
-  CLASS( ReferenceElement_ ), POINTER :: RefElem_1, RefElem_2
+  CLASS( ReferenceElement_ ), POINTER :: refelem_1, refelem_2
   CLASS( Element_ ), POINTER :: Elem
   !
-  RefElem_1 => NULL( ); RefElem_2 => NULL( ); Elem => NULL( )
+  refelem_1 => NULL( ); refelem_2 => NULL( ); Elem => NULL( )
   iel = 0
-  tElements = Obj % TotalElements( XiDim )
+  tElements = obj % TotalElements( XiDim )
   !
   IF( PRESENT( Offset ) ) THEN
     tag = 2
   ELSE
     ! Initiate the mesh obj
     tag = 1
-    CALL MeshObj % Initiate( NSD = Obj % NSD, tElements = tElements )
+    CALL Meshobj % Initiate( NSD = obj % NSD, tElements = tElements )
   END IF
   !
   SELECT CASE ( XiDim )
   CASE( 1 )
-    IF( ALLOCATED( Obj % CurveEntities ) ) THEN
-      IF( SIZE( Obj % CurveEntities ) .NE. 0 ) THEN
-      RefElem_1 => ReferenceLine_Pointer( NSD = Obj % NSD )
-      RefElem_2 => RefElem_1
-        DO i = 1, SIZE( Obj % CurveEntities )
-          ElemType = Obj % CurveEntities( i ) % ElemType
-          EntityTag = Obj % CurveEntities( i )  % Uid
-          tElements = Obj % CurveEntities( i ) % TotalElements( )
+    IF( ALLOCATED( obj % CurveEntities ) ) THEN
+      IF( SIZE( obj % CurveEntities ) .NE. 0 ) THEN
+      refelem_1 => ReferenceLine_Pointer( NSD = obj % NSD )
+      refelem_2 => refelem_1
+        DO i = 1, SIZE( obj % CurveEntities )
+          ElemType = obj % CurveEntities( i ) % ElemType
+          EntityTag = obj % CurveEntities( i )  % Uid
+          tElements = obj % CurveEntities( i ) % TotalElements( )
           ! get the order of element
           ! if element is not linear then make lagrange element
           Order = ElementOrder( ElemType )
           IF( Order .NE. 1 ) THEN
-            !SELECT TYPE( RefElem_1 )
+            !SELECT TYPE( refelem_1 )
               !TYPE IS ( ReferenceLine_ )
-                RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                DEALLOCATE( RefElem_1 )
+                refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                DEALLOCATE( refelem_1 )
             !END SELECT
           END IF
           ! now loop over all elements
@@ -320,16 +320,16 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
           CASE( 1 )
             DO j = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % CurveEntities( i ) % Nptrs( :, j )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % Append( Elem )
+              Nptrs = obj % CurveEntities( i ) % Nptrs( :, j )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % Append( Elem )
             END DO
           CASE( 2 )
             DO j = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % CurveEntities( i ) % Nptrs( :, j )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % SetElement( Elem = Elem, iel = iel + offset )
+              Nptrs = obj % CurveEntities( i ) % Nptrs( :, j )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % SetElement( Elem = Elem, iel = iel + offset )
             END DO
           END SELECT
         END DO
@@ -337,35 +337,35 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
     END IF
   CASE( 2 )
     ! Surface Entities
-    IF( ALLOCATED( Obj % SurfaceEntities ) ) THEN
-      IF( SIZE( Obj % SurfaceEntities ) .NE. 0 ) THEN
-        DO i = 1, SIZE( Obj % SurfaceEntities )
-          ElemType = Obj % SurfaceEntities( i ) % ElemType
-          EntityTag = Obj % SurfaceEntities( i )  % Uid
-          tElements = Obj % SurfaceEntities( i ) % TotalElements( )
+    IF( ALLOCATED( obj % SurfaceEntities ) ) THEN
+      IF( SIZE( obj % SurfaceEntities ) .NE. 0 ) THEN
+        DO i = 1, SIZE( obj % SurfaceEntities )
+          ElemType = obj % SurfaceEntities( i ) % ElemType
+          EntityTag = obj % SurfaceEntities( i )  % Uid
+          tElements = obj % SurfaceEntities( i ) % TotalElements( )
           Order = ElementOrder( ElemType )
           !
           IF( isTriangle( ElemType ) ) THEN
-            RefElem_1 => ReferenceTriangle_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceTriangle_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              !SELECT TYPE( RefElem_1 )
+              !SELECT TYPE( refelem_1 )
                 !TYPE IS ( ReferenceTriangle_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               !END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isQuadrangle( ElemType ) ) THEN
-            RefElem_1 => ReferenceQuadrangle_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceQuadrangle_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              !SELECT TYPE( RefElem_1 )
+              !SELECT TYPE( refelem_1 )
                 !TYPE IS ( ReferenceQuadrangle_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               !END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           END IF
           ! now loop over all elements
@@ -373,16 +373,16 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
           CASE( 1 )
             DO j = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % SurfaceEntities( i ) % Nptrs( :, j )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % Append( Elem = Elem )
+              Nptrs = obj % SurfaceEntities( i ) % Nptrs( :, j )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % Append( Elem = Elem )
             END DO
           CASE( 2 )
             DO j = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % SurfaceEntities( i ) % Nptrs( :, j )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % SetElement( Elem = Elem, iel = iel + offset )
+              Nptrs = obj % SurfaceEntities( i ) % Nptrs( :, j )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % SetElement( Elem = Elem, iel = iel + offset )
             END DO
           END SELECT
         END DO
@@ -390,57 +390,57 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
     END IF
   CASE( 3 )
     ! Volume Entities
-    IF( ALLOCATED( Obj % VolumeEntities ) ) THEN
-      IF( SIZE( Obj % VolumeEntities ) .NE. 0 ) THEN
-        DO i = 1, SIZE( Obj % VolumeEntities )
-          ElemType = Obj % VolumeEntities( i ) % ElemType
-          EntityTag = Obj % VolumeEntities( i )  % Uid
-          tElements = Obj % VolumeEntities( i ) % TotalElements( )
+    IF( ALLOCATED( obj % VolumeEntities ) ) THEN
+      IF( SIZE( obj % VolumeEntities ) .NE. 0 ) THEN
+        DO i = 1, SIZE( obj % VolumeEntities )
+          ElemType = obj % VolumeEntities( i ) % ElemType
+          EntityTag = obj % VolumeEntities( i )  % Uid
+          tElements = obj % VolumeEntities( i ) % TotalElements( )
           Order = ElementOrder( ElemType )
           !
           IF( isTetrahedron( ElemType ) ) THEN
-            RefElem_1 => ReferenceTetrahedron_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceTetrahedron_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              !SELECT TYPE( RefElem_1 )
+              !SELECT TYPE( refelem_1 )
               !  TYPE IS ( ReferenceTetrahedron_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               !END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isHexahedron( ElemType ) ) THEN
-            RefElem_1 => ReferenceHexahedron_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceHexahedron_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              !SELECT TYPE( RefElem_1 )
+              !SELECT TYPE( refelem_1 )
               !  TYPE IS ( ReferenceHexahedron_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               !END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isPrism( ElemType ) ) THEN
-            RefElem_1 => ReferencePrism_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferencePrism_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              !SELECT TYPE( RefElem_1 )
+              !SELECT TYPE( refelem_1 )
               !  TYPE IS ( ReferencePrism_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               !END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isPyramid( ElemType ) ) THEN
-            RefElem_1 => ReferencePyramid_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferencePyramid_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              !SELECT TYPE( RefElem_1 )
+              !SELECT TYPE( refelem_1 )
               !  TYPE IS ( ReferencePyramid_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-              !    DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+              !    DEALLOCATE( refelem_1 )
               !END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           END IF
           ! now loop over all elements
@@ -448,16 +448,16 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
           CASE( 1 )
             DO j = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % VolumeEntities( i ) % Nptrs( :, j )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % Append( Elem )
+              Nptrs = obj % VolumeEntities( i ) % Nptrs( :, j )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % Append( Elem )
             END DO
           CASE( 2 )
             DO j = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % VolumeEntities( i ) % Nptrs( :, j )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % SetElement( Elem = Elem, iel = iel + offset )
+              Nptrs = obj % VolumeEntities( i ) % Nptrs( :, j )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % SetElement( Elem = Elem, iel = iel + offset )
             END DO
           END SELECT
         END DO
@@ -467,7 +467,7 @@ MODULE PROCEDURE gmsh_mesh_getelements_2
 
   IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
   IF( ALLOCATED( Indices ) ) DEALLOCATE( Indices )
-  NULLIFY( Elem, RefElem_1, RefElem_2 )
+  NULLIFY( Elem, refelem_1, refelem_2 )
 
 END PROCEDURE gmsh_mesh_getelements_2
 
@@ -477,7 +477,7 @@ END PROCEDURE gmsh_mesh_getelements_2
 
 MODULE PROCEDURE gmsh_mesh_getelements_2c
 
-  IF( XiDim .EQ. Obj % nsd ) THEN
+  IF( XiDim .EQ. obj % nsd ) THEN
 
     IF( .NOT. ALLOCATED( Dom % Omega ) ) THEN
       CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
@@ -509,21 +509,21 @@ MODULE PROCEDURE gmsh_mesh_getelements_2c
     ALLOCATE( Dom % Omega( Indx ) % Ptr )
 
     IF( PRESENT( Offset ) ) THEN
-      CALL Obj % getElements( &
-      & MeshObj = Dom % Omega( Indx ) % Ptr, &
+      CALL obj % getElements( &
+      & Meshobj = Dom % Omega( Indx ) % Ptr, &
       & XiDim = XiDim, &
-      & FEObj = FEObj, &
+      & FEobj = FEobj, &
       & Offset = Offset )
     ELSE
-      CALL Obj % getElements( &
-      & MeshObj = Dom % Omega( Indx ) % Ptr, &
+      CALL obj % getElements( &
+      & Meshobj = Dom % Omega( Indx ) % Ptr, &
       & XiDim = XiDim, &
-      & FEObj = FEObj )
+      & FEobj = FEobj )
     END IF
 
   END IF
 
-  IF( XiDim .EQ. Obj % nsd - 1 ) THEN
+  IF( XiDim .EQ. obj % nsd - 1 ) THEN
 
     IF( .NOT. ALLOCATED( Dom % Boundary ) ) THEN
       CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
@@ -555,20 +555,20 @@ MODULE PROCEDURE gmsh_mesh_getelements_2c
     ALLOCATE( Dom % Boundary( Indx ) % Ptr )
 
     IF( PRESENT( Offset ) ) THEN
-      CALL Obj % getElements( &
-        & MeshObj = Dom % Boundary( Indx ) % Ptr, &
+      CALL obj % getElements( &
+        & Meshobj = Dom % Boundary( Indx ) % Ptr, &
         & XiDim = XiDim, &
-        & FEObj = FEObj, &
+        & FEobj = FEobj, &
         & Offset = Offset )
     ELSE
-      CALL Obj % getElements( &
-        & MeshObj = Dom % Boundary( Indx ) % Ptr, &
+      CALL obj % getElements( &
+        & Meshobj = Dom % Boundary( Indx ) % Ptr, &
         & XiDim = XiDim, &
-        & FEObj = FEObj )
+        & FEobj = FEobj )
     END IF
   END IF
 
-  IF( XiDim .LE. Obj % nsd - 2 ) THEN
+  IF( XiDim .LE. obj % nsd - 2 ) THEN
     CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
     CALL Display( "         gmsh_mesh_getelements_2c()" )
     CALL Display( "            currently does not support xidim = nsd-2" )
@@ -586,55 +586,55 @@ MODULE PROCEDURE gmsh_mesh_getelements_3
   INTEGER( I4B ) :: i, j, k, l, tSize, tElements, AlgoTag, ElemType, &
     & EntityTag, iel, Order
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : ), Indices( : ), Entities( : )
-  CLASS( ReferenceElement_ ), POINTER :: RefElem_1, RefElem_2
+  CLASS( ReferenceElement_ ), POINTER :: refelem_1, refelem_2
   CLASS( Element_ ), POINTER :: Elem
   !
-  RefElem_1 => NULL( ); RefElem_2 => NULL( ); Elem => NULL( )
+  refelem_1 => NULL( ); refelem_2 => NULL( ); Elem => NULL( )
   iel = 0
-  tElements = Obj % TotalElements( XiDim, Tag )
+  tElements = obj % TotalElements( XiDim, Tag )
   IF( PRESENT( Offset ) ) THEN
     AlgoTag = 2
   ELSE
     ! Initiate the mesh obj
     AlgoTag = 1
-    CALL MeshObj % Initiate( NSD = Obj % NSD, tElements = tElements )
+    CALL Meshobj % Initiate( NSD = obj % NSD, tElements = tElements )
   END IF
   !
   SELECT CASE( XiDim )
   CASE( 1 )
-    IF( ALLOCATED( Obj % CurveEntities ) &
-      & .AND. SIZE( Obj % CurveEntities ) .NE. 0 ) THEN
+    IF( ALLOCATED( obj % CurveEntities ) &
+      & .AND. SIZE( obj % CurveEntities ) .NE. 0 ) THEN
       !
       ! get the indices
-      Indices = Obj % PhysicalNames % IndexOfPhysicalCurve( Tag )
+      Indices = obj % PhysicalNames % IndexOfPhysicalCurve( Tag )
       !
       DO i = 1, SIZE( Indices )
         IF( Indices( i ) .EQ. 0 ) CYCLE
         j = Indices( i )
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         !
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         !
-        RefElem_1 => ReferenceLine_Pointer( NSD = Obj % NSD )
-        RefElem_2 => RefElem_1
+        refelem_1 => ReferenceLine_Pointer( NSD = obj % NSD )
+        refelem_2 => refelem_1
         !
         DO k = 1, tSize
           j = Entities( k )
-          ElemType = Obj % CurveEntities( j ) % ElemType
-          EntityTag = Obj % CurveEntities( j ) % UiD
-          tElements = Obj % CurveEntities( j ) % TotalElements( )
+          ElemType = obj % CurveEntities( j ) % ElemType
+          EntityTag = obj % CurveEntities( j ) % UiD
+          tElements = obj % CurveEntities( j ) % TotalElements( )
           ! get the order of element
           ! if element is not linear then make lagrange element
           Order = ElementOrder( ElemType )
           IF( Order .NE. 1 ) THEN
-            ! SELECT TYPE( RefElem_1 )
+            ! SELECT TYPE( refelem_1 )
               ! TYPE IS ( ReferenceLine_ )
-                NULLIFY( RefElem_2 )
-                RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                DEALLOCATE( RefElem_1 )
+                NULLIFY( refelem_2 )
+                refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                DEALLOCATE( refelem_1 )
             ! END SELECT
           END IF
           !
@@ -642,69 +642,69 @@ MODULE PROCEDURE gmsh_mesh_getelements_3
           CASE( 1 )
             DO l = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % CurveEntities( j ) % Nptrs( :, l )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % Append( Elem )
+              Nptrs = obj % CurveEntities( j ) % Nptrs( :, l )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % Append( Elem )
             END DO
           CASE( 2 )
             DO l = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % CurveEntities( j ) % Nptrs( :, l )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % SetElement( Elem = Elem, iel = offset + iel )
+              Nptrs = obj % CurveEntities( j ) % Nptrs( :, l )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % SetElement( Elem = Elem, iel = offset + iel )
             END DO
           END SELECT
         END DO
       END DO
     END IF
   CASE( 2 )
-    IF( ALLOCATED( Obj % SurfaceEntities ) &
-      & .AND. SIZE( Obj % SurfaceEntities ) .NE. 0 ) THEN
+    IF( ALLOCATED( obj % SurfaceEntities ) &
+      & .AND. SIZE( obj % SurfaceEntities ) .NE. 0 ) THEN
       !
-      RefElem_1 => ReferenceLine_Pointer( NSD = Obj % NSD )
-      RefElem_2 => RefElem_1
+      refelem_1 => ReferenceLine_Pointer( NSD = obj % NSD )
+      refelem_2 => refelem_1
       ! get the indices
-      Indices = Obj % PhysicalNames % IndexOfPhysicalSurface( Tag )
+      Indices = obj % PhysicalNames % IndexOfPhysicalSurface( Tag )
       !
       DO i = 1, SIZE( Indices )
         IF( Indices( i ) .EQ. 0 ) CYCLE
         j = Indices( i )
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         !
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         !
         DO k = 1, tSize
           j = Entities( k )
-          ElemType = Obj % SurfaceEntities( j ) % ElemType
-          EntityTag = Obj % SurfaceEntities( j ) % UiD
-          tElements = Obj % SurfaceEntities( j ) % TotalElements( )
+          ElemType = obj % SurfaceEntities( j ) % ElemType
+          EntityTag = obj % SurfaceEntities( j ) % UiD
+          tElements = obj % SurfaceEntities( j ) % TotalElements( )
           ! get the order of element
           Order = ElementOrder( ElemType )
           ! if element is not linear then make lagrange element
           IF( isTriangle( ElemType ) ) THEN
-            RefElem_1 => ReferenceTriangle_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceTriangle_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              ! SELECT TYPE( RefElem_1 )
+              ! SELECT TYPE( refelem_1 )
                 ! TYPE IS ( ReferenceTriangle_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               ! END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isQuadrangle( ElemType ) ) THEN
-            RefElem_1 => ReferenceQuadrangle_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceQuadrangle_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              ! SELECT TYPE( RefElem_1 )
+              ! SELECT TYPE( refelem_1 )
                 ! TYPE IS ( ReferenceQuadrangle_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               ! END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           END IF
           !
@@ -712,92 +712,92 @@ MODULE PROCEDURE gmsh_mesh_getelements_3
           CASE( 1 )
             DO l = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % SurfaceEntities( j ) % Nptrs( :, l )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % Append( Elem )
+              Nptrs = obj % SurfaceEntities( j ) % Nptrs( :, l )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % Append( Elem )
             END DO
           CASE( 2 )
             DO l = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % SurfaceEntities( j ) % Nptrs( :, l )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % SetElement( Elem = Elem, iel = iel + offset )
+              Nptrs = obj % SurfaceEntities( j ) % Nptrs( :, l )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % SetElement( Elem = Elem, iel = iel + offset )
             END DO
           END SELECT
         END DO
       END DO
     END IF
   CASE( 3 )
-    IF( ALLOCATED( Obj % VolumeEntities ) &
-      & .AND. SIZE( Obj % VolumeEntities ) .NE. 0 ) THEN
+    IF( ALLOCATED( obj % VolumeEntities ) &
+      & .AND. SIZE( obj % VolumeEntities ) .NE. 0 ) THEN
       !
-      RefElem_1 => ReferenceLine_Pointer( NSD = Obj % NSD )
-      RefElem_2 => RefElem_1
+      refelem_1 => ReferenceLine_Pointer( NSD = obj % NSD )
+      refelem_2 => refelem_1
       ! get the indices
-      Indices = Obj % PhysicalNames % IndexOfPhysicalVolume( Tag )
+      Indices = obj % PhysicalNames % IndexOfPhysicalVolume( Tag )
       !
       DO i = 1, SIZE( Indices )
         IF( Indices( i ) .EQ. 0 ) CYCLE
         j = Indices( i )
-        tSize = SIZE( Obj % PhysicalNames % Entities( j ) )
+        tSize = SIZE( obj % PhysicalNames % Entities( j ) )
         !
         IF( tSize .NE. 0 ) THEN
-          Entities = ArrayValues( Obj % PhysicalNames % Entities( j ), &
+          Entities = ArrayValues( obj % PhysicalNames % Entities( j ), &
             & TypeIntI4B )
         END IF
         !
         DO k = 1, tSize
           j = Entities( k )
-          ElemType = Obj % VolumeEntities( j ) % ElemType
-          EntityTag = Obj % VolumeEntities( j ) % UiD
-          tElements = Obj % VolumeEntities( j ) % TotalElements( )
+          ElemType = obj % VolumeEntities( j ) % ElemType
+          EntityTag = obj % VolumeEntities( j ) % UiD
+          tElements = obj % VolumeEntities( j ) % TotalElements( )
           ! get the order of element
           Order = ElementOrder( ElemType )
           ! if element is not linear then make lagrange element
           !
           IF( isTetrahedron( ElemType ) ) THEN
-            RefElem_1 => ReferenceTetrahedron_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceTetrahedron_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              ! SELECT TYPE( RefElem_1 )
+              ! SELECT TYPE( refelem_1 )
                 ! TYPE IS ( ReferenceTetrahedron_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               ! END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isHexahedron( ElemType ) ) THEN
-            RefElem_1 => ReferenceHexahedron_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferenceHexahedron_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              ! SELECT TYPE( RefElem_1 )
+              ! SELECT TYPE( refelem_1 )
                 ! TYPE IS ( ReferenceHexahedron_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               ! END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isPrism( ElemType ) ) THEN
-            RefElem_1 => ReferencePrism_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferencePrism_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              ! SELECT TYPE( RefElem_1 )
+              ! SELECT TYPE( refelem_1 )
                 ! TYPE IS ( ReferencePrism_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               ! END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           ELSE IF( isPyramid( ElemType ) ) THEN
-            RefElem_1 => ReferencePyramid_Pointer( NSD = Obj % NSD )
+            refelem_1 => ReferencePyramid_Pointer( NSD = obj % NSD )
             IF( Order .NE. 1 ) THEN
-              ! SELECT TYPE( RefElem_1 )
+              ! SELECT TYPE( refelem_1 )
                 ! TYPE IS ( ReferencePyramid_ )
-                  RefElem_2 => RefElem_1 % LagrangeElement( Order = Order )
-                  DEALLOCATE( RefElem_1 )
+                  refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+                  DEALLOCATE( refelem_1 )
               ! END SELECT
             ELSE
-              RefElem_2 => RefElem_1
+              refelem_2 => refelem_1
             END IF
           END IF
           !
@@ -805,16 +805,16 @@ MODULE PROCEDURE gmsh_mesh_getelements_3
           CASE( 1 )
             DO l = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % VolumeEntities( j ) % Nptrs( :, l )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % Append( Elem )
+              Nptrs = obj % VolumeEntities( j ) % Nptrs( :, l )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % Append( Elem )
             END DO
           CASE( 2 )
             DO l = 1, tElements
               iel = iel + 1
-              Nptrs = Obj % VolumeEntities( j ) % Nptrs( :, l )
-              Elem => getFEPointer( FEObj, Nptrs, EntityTag, RefElem_2 )
-              CALL MeshObj % SetElement( Elem = Elem, iel = iel + offset )
+              Nptrs = obj % VolumeEntities( j ) % Nptrs( :, l )
+              Elem => getFEPointer( FEobj, Nptrs, EntityTag, refelem_2 )
+              CALL Meshobj % SetElement( Elem = Elem, iel = iel + offset )
             END DO
           END SELECT
         END DO
@@ -825,7 +825,7 @@ MODULE PROCEDURE gmsh_mesh_getelements_3
   IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
   IF( ALLOCATED( Indices ) ) DEALLOCATE( Indices )
   IF( ALLOCATED( Entities ) ) DEALLOCATE( Entities )
-  NULLIFY( RefElem_2, RefElem_1, Elem )
+  NULLIFY( refelem_2, refelem_1, Elem )
 
 END PROCEDURE gmsh_mesh_getelements_3
 
@@ -835,7 +835,7 @@ END PROCEDURE gmsh_mesh_getelements_3
 
 MODULE PROCEDURE gmsh_mesh_getelements_3c
 
-  IF( XiDim .EQ. Obj % nsd ) THEN
+  IF( XiDim .EQ. obj % nsd ) THEN
 
     IF( .NOT. ALLOCATED( Dom % Omega ) ) THEN
       CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
@@ -867,24 +867,24 @@ MODULE PROCEDURE gmsh_mesh_getelements_3c
     ALLOCATE( Dom % Omega( Indx ) % Ptr )
 
     IF( PRESENT( Offset ) ) THEN
-      CALL Obj % getElements( &
-      & MeshObj = Dom % Omega( Indx ) % Ptr, &
+      CALL obj % getElements( &
+      & Meshobj = Dom % Omega( Indx ) % Ptr, &
       & XiDim = XiDim, &
       & Tag = Tag, &
-      & FEObj = FEObj, &
+      & FEobj = FEobj, &
       & Offset = Offset )
     ELSE
-      CALL Obj % getElements( &
-      & MeshObj = Dom % Omega( Indx ) % Ptr, &
+      CALL obj % getElements( &
+      & Meshobj = Dom % Omega( Indx ) % Ptr, &
       & XiDim = XiDim, &
       & Tag = Tag, &
-      & FEObj = FEObj )
+      & FEobj = FEobj )
     END IF
 
   END IF
 
 
-  IF( XiDim .EQ. Obj % nsd - 1 ) THEN
+  IF( XiDim .EQ. obj % nsd - 1 ) THEN
 
     IF( .NOT. ALLOCATED( Dom % Boundary ) ) THEN
       CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
@@ -916,22 +916,22 @@ MODULE PROCEDURE gmsh_mesh_getelements_3c
     ALLOCATE( Dom % Boundary( Indx ) % Ptr )
 
     IF( PRESENT( Offset ) ) THEN
-      CALL Obj % getElements( &
-        & MeshObj = Dom % Boundary( Indx ) % Ptr, &
+      CALL obj % getElements( &
+        & Meshobj = Dom % Boundary( Indx ) % Ptr, &
         & XiDim = XiDim, &
         & Tag = Tag, &
-        & FEObj = FEObj, &
+        & FEobj = FEobj, &
         & Offset = Offset )
     ELSE
-      CALL Obj % getElements( &
-        & MeshObj = Dom % Boundary( Indx ) % Ptr, &
+      CALL obj % getElements( &
+        & Meshobj = Dom % Boundary( Indx ) % Ptr, &
         & XiDim = XiDim, &
         & Tag = Tag, &
-        & FEObj = FEObj )
+        & FEobj = FEobj )
     END IF
   END IF
 
-  IF( XiDim .LE. Obj % nsd - 2 ) THEN
+  IF( XiDim .LE. obj % nsd - 2 ) THEN
     CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
     CALL Display( "         gmsh_mesh_getelements_3c()" )
     CALL Display( "            currently does not support xidim = nsd-2" )
@@ -948,15 +948,15 @@ MODULE PROCEDURE gmsh_mesh_getelements_4
   ! Define internal variables
   INTEGER( I4B ), ALLOCATABLE :: Tag( : ), Indices( : )
   !
-  Indices = Obj % PhysicalNames % getIndex( TagNames )
-  Tag = Obj % PhysicalNames % Tag( Indices )
+  Indices = obj % PhysicalNames % getIndex( TagNames )
+  Tag = obj % PhysicalNames % Tag( Indices )
   !
   IF( PRESENT( Offset ) ) THEN
-    CALL Obj % getElements( MeshObj = MeshObj, XiDim = XiDim, &
-      & FEObj = FEObj, Offset = Offset, Tag = Tag )
+    CALL obj % getElements( Meshobj = Meshobj, XiDim = XiDim, &
+      & FEobj = FEobj, Offset = Offset, Tag = Tag )
   ELSE
-    CALL Obj % getElements( MeshObj = MeshObj, XiDim = XiDim, &
-      & FEObj = FEObj, Tag = Tag )
+    CALL obj % getElements( Meshobj = Meshobj, XiDim = XiDim, &
+      & FEobj = FEobj, Tag = Tag )
   END IF
   IF( ALLOCATED( Tag ) ) DEALLOCATE( Tag )
   IF( ALLOCATED( Indices ) ) DEALLOCATE( Indices )
@@ -968,7 +968,7 @@ END PROCEDURE gmsh_mesh_getelements_4
 
 MODULE PROCEDURE gmsh_mesh_getelements_4c
 
-  IF( XiDim .EQ. Obj % nsd ) THEN
+  IF( XiDim .EQ. obj % nsd ) THEN
 
     IF( .NOT. ALLOCATED( Dom % Omega ) ) THEN
       CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
@@ -1000,24 +1000,24 @@ MODULE PROCEDURE gmsh_mesh_getelements_4c
     ALLOCATE( Dom % Omega( Indx ) % Ptr )
 
     IF( PRESENT( Offset ) ) THEN
-      CALL Obj % getElements( &
-      & MeshObj = Dom % Omega( Indx ) % Ptr, &
+      CALL obj % getElements( &
+      & Meshobj = Dom % Omega( Indx ) % Ptr, &
       & XiDim = XiDim, &
       & TagNames = TagNames, &
-      & FEObj = FEObj, &
+      & FEobj = FEobj, &
       & Offset = Offset )
     ELSE
-      CALL Obj % getElements( &
-      & MeshObj = Dom % Omega( Indx ) % Ptr, &
+      CALL obj % getElements( &
+      & Meshobj = Dom % Omega( Indx ) % Ptr, &
       & XiDim = XiDim, &
       & TagNames = TagNames, &
-      & FEObj = FEObj )
+      & FEobj = FEobj )
     END IF
 
   END IF
 
 
-  IF( XiDim .EQ. Obj % nsd - 1 ) THEN
+  IF( XiDim .EQ. obj % nsd - 1 ) THEN
 
     IF( .NOT. ALLOCATED( Dom % Boundary ) ) THEN
       CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
@@ -1049,22 +1049,22 @@ MODULE PROCEDURE gmsh_mesh_getelements_4c
     ALLOCATE( Dom % Boundary( Indx ) % Ptr )
 
     IF( PRESENT( Offset ) ) THEN
-      CALL Obj % getElements( &
-        & MeshObj = Dom % Boundary( Indx ) % Ptr, &
+      CALL obj % getElements( &
+        & Meshobj = Dom % Boundary( Indx ) % Ptr, &
         & XiDim = XiDim, &
         & TagNames = TagNames, &
-        & FEObj = FEObj, &
+        & FEobj = FEobj, &
         & Offset = Offset )
     ELSE
-      CALL Obj % getElements( &
-        & MeshObj = Dom % Boundary( Indx ) % Ptr, &
+      CALL obj % getElements( &
+        & Meshobj = Dom % Boundary( Indx ) % Ptr, &
         & XiDim = XiDim, &
         & TagNames = TagNames, &
-        & FEObj = FEObj )
+        & FEobj = FEobj )
     END IF
   END IF
 
-  IF( XiDim .LE. Obj % nsd - 2 ) THEN
+  IF( XiDim .LE. obj % nsd - 2 ) THEN
     CALL Display( "ERROR :: gmsh_mesh_Class@Methods.f90" )
     CALL Display( "         gmsh_mesh_getelements_4c()" )
     CALL Display( "            currently does not support xidim = nsd-2" )
@@ -1167,7 +1167,7 @@ MODULE PROCEDURE dom_init_from_gmshMesh
 
       CALL mshobj % getelements( Dom = obj, Indx = ii, &
         & xiDim = nsd, TagNames = [ omega_name( ii ) ], &
-        & FEObj = TypeElement )
+        & FEobj = TypeElement )
 
       CALL display( ii, "    Setting material properties to :: " )
 
@@ -1192,7 +1192,7 @@ MODULE PROCEDURE dom_init_from_gmshMesh
 
         CALL mshobj % getelements( Dom = obj, Indx = ii, &
           & xiDim = nsd-1, TagNames = [ boundary_name( ii ) ], &
-          & FEObj = TypeElement )
+          & FEobj = TypeElement )
 
         CALL display( ii, "    Setting material properties to :: " )
 
@@ -1246,7 +1246,7 @@ MODULE PROCEDURE dom_init_from_gmshMesh
           CALL display("    Facetmesh, "//trim(boundary_name( ii ))//" found")
           CALL mshobj % getelements( Dom = obj, Indx = ii, &
             & xiDim = nsd-1, TagNames = [ boundary_name( ii ) ], &
-            & FEObj = TypeFacetElement )
+            & FEobj = TypeFacetElement )
 
           IF( .NOT. ASSOCIATED( obj % mdboundary( ii ) % ptr ) ) THEN
             ALLOCATE( obj % mdboundary( ii ) % ptr )
@@ -1279,7 +1279,7 @@ MODULE PROCEDURE dom_init_from_gmshMesh
 
           CALL mshobj % getelements( Dom = obj, Indx = ii, &
             & xiDim = nsd-1, TagNames = [ boundary_name( ii ) ], &
-            & FEObj = TypeElement )
+            & FEobj = TypeElement )
 
           IF( .NOT. ASSOCIATED( obj % mdboundary( ii ) % ptr ) ) THEN
             ALLOCATE( obj % mdboundary( ii ) % ptr )
@@ -1303,7 +1303,7 @@ MODULE PROCEDURE dom_init_from_gmshMesh
 
       CALL mshobj % getelements( Dom = obj, Indx = ii, &
         & xiDim = nsd-2, TagNames = [ edge_name( ii ) ], &
-        & FEObj = TypeElement )
+        & FEobj = TypeElement )
 
       IF( .NOT. ASSOCIATED( obj % mdedge( ii ) % ptr ) ) THEN
         ALLOCATE( obj % mdedge( ii ) % ptr )

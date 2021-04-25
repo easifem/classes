@@ -12,56 +12,56 @@ CONTAINS
 MODULE PROCEDURE Initiate_obj
 
   IF( PRESENT( tOmega ) ) THEN
-    IF( ALLOCATED( Obj % Omega ) ) THEN
-      DEALLOCATE( Obj % Omega )
+    IF( ALLOCATED( obj % Omega ) ) THEN
+      DEALLOCATE( obj % Omega )
     END IF
 
     IF( tOmega .NE. 0 ) THEN
-      ALLOCATE( Obj % Omega( tOmega ) )
+      ALLOCATE( obj % Omega( tOmega ) )
     END IF
 
-    IF( ALLOCATED( Obj % mdOmega ) ) THEN
-      DEALLOCATE( Obj % mdOmega )
+    IF( ALLOCATED( obj % mdOmega ) ) THEN
+      DEALLOCATE( obj % mdOmega )
     END IF
 
     IF( tOmega .NE. 0 ) THEN
-      ALLOCATE( Obj % mdOmega( tOmega ) )
+      ALLOCATE( obj % mdOmega( tOmega ) )
     END IF
   END IF
 
   IF( PRESENT( tBoundary ) ) THEN
-    IF( ALLOCATED( Obj % Boundary ) ) THEN
-      DEALLOCATE( Obj % Boundary )
+    IF( ALLOCATED( obj % Boundary ) ) THEN
+      DEALLOCATE( obj % Boundary )
     END IF
 
     IF( tBoundary .NE. 0 ) THEN
-      ALLOCATE( Obj % Boundary( tBoundary ) )
+      ALLOCATE( obj % Boundary( tBoundary ) )
     END IF
 
-    IF( ALLOCATED( Obj % mdBoundary ) ) THEN
-      DEALLOCATE( Obj % mdBoundary )
+    IF( ALLOCATED( obj % mdBoundary ) ) THEN
+      DEALLOCATE( obj % mdBoundary )
     END IF
 
     IF( tBoundary .NE. 0 ) THEN
-      ALLOCATE( Obj % mdBoundary( tBoundary ) )
+      ALLOCATE( obj % mdBoundary( tBoundary ) )
     END IF
   END IF
 
   IF( PRESENT( tEdge ) ) THEN
-    IF( ALLOCATED( Obj % Edge ) ) THEN
-      DEALLOCATE( Obj % Edge )
+    IF( ALLOCATED( obj % Edge ) ) THEN
+      DEALLOCATE( obj % Edge )
     END IF
 
     IF( tEdge .NE. 0 ) THEN
-      ALLOCATE( Obj % Edge( tEdge ) )
+      ALLOCATE( obj % Edge( tEdge ) )
     END IF
 
-    IF( ALLOCATED( Obj % mdEdge ) ) THEN
-      DEALLOCATE( Obj % mdEdge )
+    IF( ALLOCATED( obj % mdEdge ) ) THEN
+      DEALLOCATE( obj % mdEdge )
     END IF
 
     IF( tEdge .NE. 0 ) THEN
-      ALLOCATE( Obj % mdEdge( tEdge ) )
+      ALLOCATE( obj % mdEdge( tEdge ) )
     END IF
   END IF
 
@@ -72,18 +72,18 @@ END PROCEDURE Initiate_obj
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE deallocate_obj
-  IF( ALLOCATED( Obj % Omega ) ) DEALLOCATE( Obj % Omega )
-  IF( ALLOCATED( Obj % Boundary ) ) DEALLOCATE( Obj % Boundary )
-  IF( ALLOCATED( Obj % Edge ) ) DEALLOCATE( Obj % Edge )
-  IF( ALLOCATED( Obj % mdOmega ) ) DEALLOCATE( Obj % mdOmega )
-  IF( ALLOCATED( Obj % mdBoundary ) ) DEALLOCATE( Obj % mdBoundary )
-  IF( ALLOCATED( Obj % mdEdge ) ) DEALLOCATE( Obj % mdEdge )
-  IF( ALLOCATED( Obj % omega_name ) ) DEALLOCATE( Obj % omega_name )
-  IF( ALLOCATED( Obj % boundary_name ) ) DEALLOCATE( Obj % boundary_name )
-  IF( ALLOCATED( Obj % edge_name ) ) DEALLOCATE( Obj % edge_name )
+  IF( ALLOCATED( obj % Omega ) ) DEALLOCATE( obj % Omega )
+  IF( ALLOCATED( obj % Boundary ) ) DEALLOCATE( obj % Boundary )
+  IF( ALLOCATED( obj % Edge ) ) DEALLOCATE( obj % Edge )
+  IF( ALLOCATED( obj % mdOmega ) ) DEALLOCATE( obj % mdOmega )
+  IF( ALLOCATED( obj % mdBoundary ) ) DEALLOCATE( obj % mdBoundary )
+  IF( ALLOCATED( obj % mdEdge ) ) DEALLOCATE( obj % mdEdge )
+  IF( ALLOCATED( obj % omega_name ) ) DEALLOCATE( obj % omega_name )
+  IF( ALLOCATED( obj % boundary_name ) ) DEALLOCATE( obj % boundary_name )
+  IF( ALLOCATED( obj % edge_name ) ) DEALLOCATE( obj % edge_name )
 
   IF( obj % allocateNodes ) THEN
-    IF( ASSOCIATED( Obj % Nodes ) ) THEN
+    IF( ASSOCIATED( obj % Nodes ) ) THEN
       DEALLOCATE( obj % Nodes )
     END IF
     obj % nodes => NULL( )
@@ -92,11 +92,11 @@ MODULE PROCEDURE deallocate_obj
     obj % nodes => NULL( )
   END IF
 
-  IF( ALLOCATED( Obj % NodalVelocity ) ) THEN
+  IF( ALLOCATED( obj % NodalVelocity ) ) THEN
     DEALLOCATE( obj % NodalVelocity )
   END IF
 
-  IF( ALLOCATED( Obj % NodalAcceleration ) ) THEN
+  IF( ALLOCATED( obj % NodalAcceleration ) ) THEN
     DEALLOCATE( obj % NodalAcceleration )
   END IF
 

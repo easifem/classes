@@ -10,27 +10,27 @@ CONTAINS
 
 MODULE PROCEDURE skit_initiate
 
-  Obj % SolverName = SolverName
-  Obj % ierr = 0
-  Obj % ipar = 0
-  Obj % fpar = 0.0
+  obj % SolverName = SolverName
+  obj % ierr = 0
+  obj % ipar = 0
+  obj % fpar = 0.0
   !
-  Obj % ipar( 1 ) = 0
+  obj % ipar( 1 ) = 0
 
-  Obj % ipar( 5 ) = 20
+  obj % ipar( 5 ) = 20
   SELECT CASE( SolverName )
   CASE( lis_gmres, lis_fgmres, lis_dqgmres, lis_fom )
     IF( PRESENT( ipar ) ) THEN
-      Obj % ipar( 5 ) = ipar( 1 )
+      obj % ipar( 5 ) = ipar( 1 )
     END IF
   END SELECT
 
-  Obj % ipar( 6 ) = MaxIter
-  CALL reallocate( Obj % Res, MaxIter + 1 )
-  Obj % ipar( 13 ) = 10
-  Obj % ipar( 3 )  = 1
-  Obj % fpar( 1 ) = Tol
-  Obj % fpar( 2 ) = 0.0
+  obj % ipar( 6 ) = MaxIter
+  CALL reallocate( obj % Res, MaxIter + 1 )
+  obj % ipar( 13 ) = 10
+  obj % ipar( 3 )  = 1
+  obj % fpar( 1 ) = Tol
+  obj % fpar( 2 ) = 0.0
 
 END PROCEDURE skit_initiate
 
@@ -40,26 +40,26 @@ END PROCEDURE skit_initiate
 
 MODULE PROCEDURE skit_setprecond
   !
-  Obj % precondType = precondType
+  obj % precondType = precondType
   ! always left precond
-  Obj % ipar( 2 ) = 1
-  Obj % lfil = 10
-  Obj % mbloc = 0
-  Obj % droptol = 1.0E-4
-  Obj % permtol = 0.5
-  Obj % alpha = 1.0
+  obj % ipar( 2 ) = 1
+  obj % lfil = 10
+  obj % mbloc = 0
+  obj % droptol = 1.0E-4
+  obj % permtol = 0.5
+  obj % alpha = 1.0
 
   SELECT CASE( precondType )
   CASE( p_none )
-    Obj % ipar( 2 ) = 0
+    obj % ipar( 2 ) = 0
   CASE( p_ilut )
     ! extra options are drop-tol and lfil
     IF( PRESENT( fpar ) ) THEN
-      Obj % droptol = fpar( 1 )
+      obj % droptol = fpar( 1 )
     END IF
 
     IF( PRESENT( ipar ) ) THEN
-      Obj % lfil = ipar( 1 )
+      obj % lfil = ipar( 1 )
     END IF
 
   CASE( p_ilutp )
@@ -69,31 +69,31 @@ MODULE PROCEDURE skit_setprecond
     ! fpar( 1 ) = droptol
     ! fpar( 2 ) = permtol
     IF( PRESENT( ipar ) ) THEN
-      Obj % lfil = ipar( 1 )
-      Obj % mbloc = ipar( 2 )
+      obj % lfil = ipar( 1 )
+      obj % mbloc = ipar( 2 )
     END IF
 
     IF( PRESENT( fpar ) ) THEN
-      Obj % droptol = fpar( 1 )
-      Obj % permtol = fpar( 2 )
+      obj % droptol = fpar( 1 )
+      obj % permtol = fpar( 2 )
     END IF
 
   CASE( p_ilud )
     ! fpar( 1 ) = droptol
     ! fpar( 2 ) = alpha
     IF( PRESENT( fpar ) ) THEN
-      Obj % droptol = fpar( 1 )
-      Obj % alpha = fpar( 2 )
+      obj % droptol = fpar( 1 )
+      obj % alpha = fpar( 2 )
     END IF
 
   CASE( p_iludp )
     IF( PRESENT( ipar ) ) THEN
-      Obj % mbloc = ipar( 1 )
+      obj % mbloc = ipar( 1 )
     END IF
     IF( PRESENT( fpar ) ) THEN
-      Obj % droptol = fpar( 1 )
-      Obj % alpha = fpar( 2 )
-      Obj % permtol = fpar( 3 )
+      obj % droptol = fpar( 1 )
+      obj % alpha = fpar( 2 )
+      obj % permtol = fpar( 3 )
     END IF
 
   END SELECT
@@ -183,7 +183,7 @@ MODULE PROCEDURE skit_setdbc_1
   INTEGER( i4b ) :: count0
   INTEGER( I4B ), ALLOCATABLE :: RowSize( : ), ColSize( : )
 
-  nrow = SIZE( Obj % IA ) - 1
+  nrow = SIZE( obj % IA ) - 1
   n = size( nptrs )
   m = size( dofs )
   tdbnptrs = m * n
@@ -207,10 +207,10 @@ MODULE PROCEDURE skit_setdbc_1
   END SELECT
   !
   DO i = 1, nrow
-    a = Obj%IA( i )
-    b = Obj%IA( i + 1 ) - 1
+    a = obj%IA( i )
+    b = obj%IA( i + 1 ) - 1
     DO j = a, b
-      ColSize( Obj%JA ( j ) ) = ColSize( Obj%JA ( j ) ) + 1
+      ColSize( obj%JA ( j ) ) = ColSize( obj%JA ( j ) ) + 1
     END DO
   END DO
   !
@@ -222,15 +222,15 @@ MODULE PROCEDURE skit_setdbc_1
   DO i = 1, nrow
     IF( dbcmask( i ) ) THEN
       count0 = count0 + 1;
-      Obj % dbcnptrs( count0 ) = i
+      obj % dbcnptrs( count0 ) = i
       RowSize( i ) = count0
     END IF
   END DO
   !
   b = 0;
   DO i = 1, nrow
-    DO j = Obj % IA( i ), Obj % IA( i + 1 ) - 1
-      a = Obj % JA( j )
+    DO j = obj % IA( i ), obj % IA( i + 1 ) - 1
+      a = obj % JA( j )
       IF( dbcmask( a ) ) THEN
         b = b + 1
         call append( Intvec( RowSize( a ) ), [j, i] )
@@ -264,7 +264,7 @@ MODULE PROCEDURE skit_setdbc_2
   INTEGER( i4b ) :: count0
   INTEGER( I4B ), ALLOCATABLE :: RowSize( : ), ColSize( : )
 
-  nrow = SIZE( Obj % IA ) - 1
+  nrow = SIZE( obj % IA ) - 1
   m = size( dofs ); tdbnptrs = 0
   DO i = 1, m
     tdbnptrs = tdbnptrs + SIZE( Nptrs( i ) )
@@ -301,10 +301,10 @@ MODULE PROCEDURE skit_setdbc_2
 
   !
   DO i = 1, nrow
-    a = Obj % IA( i )
-    b = Obj % IA( i + 1 ) - 1
+    a = obj % IA( i )
+    b = obj % IA( i + 1 ) - 1
     DO j = a, b
-      ColSize( Obj % JA ( j ) ) = ColSize( Obj % JA ( j ) ) + 1
+      ColSize( obj % JA ( j ) ) = ColSize( obj % JA ( j ) ) + 1
     END DO
   END DO
   !
@@ -316,15 +316,15 @@ MODULE PROCEDURE skit_setdbc_2
   DO i = 1, nrow
     IF( dbcmask( i ) ) THEN
       count0 = count0 + 1;
-      Obj % dbcnptrs( count0 ) = i
+      obj % dbcnptrs( count0 ) = i
       RowSize( i ) = count0
     END IF
   END DO
   !
   b = 0;
   DO i = 1, nrow
-    DO j = Obj % IA( i ), Obj % IA( i + 1 ) - 1
-      a = Obj % JA( j )
+    DO j = obj % IA( i ), obj % IA( i + 1 ) - 1
+      a = obj % JA( j )
       IF( dbcmask( a ) ) THEN
         b = b + 1
         call append( Intvec( RowSize( a ) ), [j, i] )
@@ -366,85 +366,85 @@ MODULE PROCEDURE skit_solve
 
   ! applying dbc
   !
-  IF( ALLOCATED( Obj % dbcnptrs ) ) THEN
-    n = SIZE( Obj % dbcnptrs )
+  IF( ALLOCATED( obj % dbcnptrs ) ) THEN
+    n = SIZE( obj % dbcnptrs )
     DO j = 1, n
-      val = sol( Obj % dbcnptrs( j ) )
+      val = sol( obj % dbcnptrs( j ) )
 
-      DO i = Obj % dbcindx( j ), Obj % dbcindx( j + 1 ) - 1
-        rhs( Obj % dbcIA( i ) ) = rhs( Obj % dbcIA( i ) ) &
-          & - Obj % A( Obj % dbcJA( i ) ) * val
-        IF( Obj % dbcnptrs( j ) .EQ. Obj % dbcIA( i ) ) THEN
-          Obj % A( Obj % dbcJA( i ) ) = 1.0_DFP
+      DO i = obj % dbcindx( j ), obj % dbcindx( j + 1 ) - 1
+        rhs( obj % dbcIA( i ) ) = rhs( obj % dbcIA( i ) ) &
+          & - obj % A( obj % dbcJA( i ) ) * val
+        IF( obj % dbcnptrs( j ) .EQ. obj % dbcIA( i ) ) THEN
+          obj % A( obj % dbcJA( i ) ) = 1.0_DFP
         ELSE
-          Obj % A( Obj % dbcJA( i ) ) = 0.0_DFP
+          obj % A( obj % dbcJA( i ) ) = 0.0_DFP
         END IF
       END DO
     END DO
     !
     DO i = 1, n
-      rhs( Obj % dbcnptrs( i ) ) = sol( Obj % dbcnptrs( i ) )
+      rhs( obj % dbcnptrs( i ) ) = sol( obj % dbcnptrs( i ) )
     END DO
     !
     DO i = 1, n
-      a = Obj % IA( Obj % dbcnptrs( i ) )
-      b = Obj % IA( Obj % dbcnptrs( i ) + 1 ) - 1
+      a = obj % IA( obj % dbcnptrs( i ) )
+      b = obj % IA( obj % dbcnptrs( i ) + 1 ) - 1
       DO j = a, b
-        IF( Obj % JA( j ) .EQ. Obj % dbcnptrs( i ) ) THEN
-          Obj % A( j ) = 1.0_DFP
+        IF( obj % JA( j ) .EQ. obj % dbcnptrs( i ) ) THEN
+          obj % A( j ) = 1.0_DFP
         ELSE
-          Obj % A( j ) = 0.0_DFP
+          obj % A( j ) = 0.0_DFP
         END IF
       END DO
     END DO
   END IF
 
   n = size( rhs )
-  Obj % ipar( 1 ) = 0
+  obj % ipar( 1 ) = 0
   a = 0 !its
-  b = SIZE( Obj % A ) !nnz
+  b = SIZE( obj % A ) !nnz
   fac = 3
-  Obj % ierr = 0
+  obj % ierr = 0
 
   ! make preconditioning
-  IF( Obj % ipar( 2 ) .NE. 0 ) THEN
-100  IF( Obj % ierr .EQ.  -2 .OR. Obj % ierr .EQ. -3 ) THEN
-        CALL reallocate( Obj % ALU, fac * b, Obj % JLU, fac * b )
+  IF( obj % ipar( 2 ) .NE. 0 ) THEN
+100  IF( obj % ierr .EQ.  -2 .OR. obj % ierr .EQ. -3 ) THEN
+        CALL reallocate( obj % ALU, fac * b, obj % JLU, fac * b )
       END IF
 
-    SELECT CASE( Obj % precondType )
+    SELECT CASE( obj % precondType )
     CASE( p_ilut )
-      CALL ILUT( n, Obj % A, Obj % JA, Obj % IA, &
-        & Obj % lfil, Obj % droptol, &
-        & Obj % alu, Obj % jlu, Obj % ju, &
-        & SIZE( Obj % alu ), Obj % w, Obj % jw, Obj % ierr )
+      CALL ILUT( n, obj % A, obj % JA, obj % IA, &
+        & obj % lfil, obj % droptol, &
+        & obj % alu, obj % jlu, obj % ju, &
+        & SIZE( obj % alu ), obj % w, obj % jw, obj % ierr )
 
     CASE( p_ilutp )
-      CALL ILUTP( n, Obj % A, Obj % JA, Obj % IA, &
-        & Obj % lfil, Obj % droptol, Obj % permtol, Obj % mbloc, &
-        & Obj % alu, Obj % jlu, Obj % ju, &
-        & SIZE( Obj % alu ), Obj % w, Obj % jw, Obj % iperm, Obj % ierr )
+      CALL ILUTP( n, obj % A, obj % JA, obj % IA, &
+        & obj % lfil, obj % droptol, obj % permtol, obj % mbloc, &
+        & obj % alu, obj % jlu, obj % ju, &
+        & SIZE( obj % alu ), obj % w, obj % jw, obj % iperm, obj % ierr )
 
     CASE( p_ilud )
-      CALL ILUD( n, Obj % A, Obj % JA, Obj % IA, &
-        & Obj % alpha, Obj % droptol, Obj % alu, Obj % jlu, Obj % ju, &
-        & SIZE( Obj % alu ), Obj % w, Obj % jw, Obj % ierr )
+      CALL ILUD( n, obj % A, obj % JA, obj % IA, &
+        & obj % alpha, obj % droptol, obj % alu, obj % jlu, obj % ju, &
+        & SIZE( obj % alu ), obj % w, obj % jw, obj % ierr )
 
     CASE( p_iludp )
-      CALL ILUDP( n, Obj % A, Obj % JA, Obj % IA, &
-        & Obj % alpha, Obj % droptol, Obj % permtol, Obj % mbloc, &
-        & Obj % alu, Obj % jlu, Obj % ju, &
-        & SIZE( Obj % alu ), Obj % w, Obj % jw, Obj % iperm, Obj % ierr )
+      CALL ILUDP( n, obj % A, obj % JA, obj % IA, &
+        & obj % alpha, obj % droptol, obj % permtol, obj % mbloc, &
+        & obj % alu, obj % jlu, obj % ju, &
+        & SIZE( obj % alu ), obj % w, obj % jw, obj % iperm, obj % ierr )
 
     END SELECT
 
-    IF( Obj % ierr .EQ.  -2 .OR. Obj % ierr .EQ. -3 ) THEN
+    IF( obj % ierr .EQ.  -2 .OR. obj % ierr .EQ. -3 ) THEN
       fac = 2*fac
       goto 100
     END IF
   END IF
 
-10   SELECT CASE( Obj % SolverName )
+10   SELECT CASE( obj % SolverName )
   CASE( lis_cg )
     CALL CG( n, rhs, sol, obj % ipar, obj % fpar, obj % wk )
   CASE( lis_cgnr )
@@ -468,12 +468,12 @@ MODULE PROCEDURE skit_solve
   END SELECT
 
   !<--- reading inside residue history
-  IF( Obj % ipar( 7 ) - a .GT. 0 ) THEN
-    a = Obj % ipar( 7 )
-    Obj % Res( a ) = obj % fpar( 6 )
+  IF( obj % ipar( 7 ) - a .GT. 0 ) THEN
+    a = obj % ipar( 7 )
+    obj % Res( a ) = obj % fpar( 6 )
   END IF
 
-  Obj % ierr = Obj % ipar( 1 )
+  obj % ierr = obj % ipar( 1 )
 
   SELECT CASE( obj % ipar( 1 ) )
   CASE( 1  )
@@ -494,23 +494,23 @@ MODULE PROCEDURE skit_solve
       & obj % wk( obj % ipar( 9 ) ), obj % alu, obj % jlu, obj % ju )
     goto 10
   CASE( 0 )
-    Obj % Res( 1 ) = Obj % fpar( 3 )
-    ! CALL Display( Obj, '', stdout )
+    obj % Res( 1 ) = obj % fpar( 3 )
+    ! CALL Display( obj, '', stdout )
     ! CALL EQUALLINE( UnitNo = stdout )
     ! WRITE( stdout, "(A)" ) "ITERATIVE SOLVER HAS SATISFIED CONVERGENCE TEST"
     ! CALL EQUALLINE( UnitNo = stdout )
   CASE DEFAULT
-    Obj % Res( 1 ) = Obj % fpar( 3 )
+    obj % Res( 1 ) = obj % fpar( 3 )
     IF ( obj % ipar(1) .eq. -1 ) THEN
 
-      CALL Display( Obj, '', stdout )
+      CALL Display( obj, '', stdout )
       CALL EQUALLINE( UnitNo = stdout )
       WRITE( stdout, "(A)" ) 'ERROR:: TOO MANY ITERATION'
       CALL EQUALLINE( UnitNo = stdout )
 
     ELSE IF ( obj % ipar(1) .eq. -2 ) THEN
 
-      CALL Display( Obj, '', stdout )
+      CALL Display( obj, '', stdout )
       CALL EQUALLINE( UnitNo = stdout )
       print *, 'ERROR :: NOT ENOUGH WORK SPACE'
       print *, '         The work space should at least have ', &
@@ -519,13 +519,13 @@ MODULE PROCEDURE skit_solve
 
     ELSE IF ( obj % ipar( 1 ) .eq. -3 ) THEN
 
-      CALL Display( Obj, '', stdout )
+      CALL Display( obj, '', stdout )
       CALL EQUALLINE( UnitNo = stdout )
       print *, 'ERROR :: BREAK-DOWN OF SOLVER'
       CALL EQUALLINE( UnitNo = stdout )
 
     ELSE
-      CALL Display( Obj, '', stdout )
+      CALL Display( obj, '', stdout )
       CALL EQUALLINE( UnitNo = stdout )
       print *, 'ERROR :: ITERATIVE SOLVER TERMINATED. CODE =', obj % ipar(1)
       CALL EQUALLINE( UnitNo = stdout )
@@ -553,7 +553,7 @@ MODULE PROCEDURE skit_display
   CALL DASHLINE( UnitNo = I )
   WRITE( I, "(A)" ) "LIBRARY :: SPARSEKIT BY SAAD"
   CALL DASHLINE( UnitNo = I )
-  SELECT CASE( Obj % SolverName )
+  SELECT CASE( obj % SolverName )
   CASE( lis_cg )
     WRITE( I, "(A)" ) "SOLVER NAME :: CG"
   CASE( lis_cgnr )
@@ -576,9 +576,9 @@ MODULE PROCEDURE skit_display
     WRITE( I, "(A)" ) "SOLVER NAME :: DQGMRES"
   END SELECT
 
-  WRITE( I, "(A, I6)" ) "SIZE OF PROBLEM :: ", SIZE( Obj % IA ) - 1
+  WRITE( I, "(A, I6)" ) "SIZE OF PROBLEM :: ", SIZE( obj % IA ) - 1
 
-  SELECT CASE( Obj % ipar( 2 ) )
+  SELECT CASE( obj % ipar( 2 ) )
   CASE( 0 )
     WRITE( I, "(A)" ) "PRECONDITIONING STATUS :: NO PRECONDITION"
   CASE( 1 )
@@ -588,20 +588,20 @@ MODULE PROCEDURE skit_display
     WRITE( I, "(A)" ) "PRECONDITIONING STATUS :: RIGHT PRECONDITION"
   END SELECT
 
-  IF( Obj % ipar( 2 ) .NE. 0 ) THEN
-    WRITE( I, "(A, I4)" ) "PRECONDITIONING TYPE :: ", Obj % precondType
+  IF( obj % ipar( 2 ) .NE. 0 ) THEN
+    WRITE( I, "(A, I4)" ) "PRECONDITIONING TYPE :: ", obj % precondType
     WRITE( I, "(A)" ) "----------------------------------------------"
-    WRITE( I, "(A, I4)" )    "LFIL :: ", Obj % lfil
-    WRITE( I, "(A, I4)" )    "MBLOC :: ", Obj % mbloc
-    WRITE( I, "(A, G14.6)" ) "DROPTOL :: ", Obj % droptol
-    WRITE( I, "(A, G14.6)" ) "PERMTOL :: ", Obj % permtol
-    WRITE( I, "(A, G14.6)" ) "ALPHA :: ", Obj % alpha
+    WRITE( I, "(A, I4)" )    "LFIL :: ", obj % lfil
+    WRITE( I, "(A, I4)" )    "MBLOC :: ", obj % mbloc
+    WRITE( I, "(A, G14.6)" ) "DROPTOL :: ", obj % droptol
+    WRITE( I, "(A, G14.6)" ) "PERMTOL :: ", obj % permtol
+    WRITE( I, "(A, G14.6)" ) "ALPHA :: ", obj % alpha
     WRITE( I, "(A)" ) "----------------------------------------------"
   END IF
 
   CALL Blanklines( nol = 1, unitno = I )
 
-  SELECT CASE( Obj % ipar( 3 ) )
+  SELECT CASE( obj % ipar( 3 ) )
   CASE( -2 )
     WRITE( I, "(A)" ) &
       & "CONVERG :: || dx(i) || <= rtol * || rhs || + atol"
@@ -623,32 +623,32 @@ MODULE PROCEDURE skit_display
   END SELECT
 
   WRITE( I, "(A)" ) "----------------------------------------------"
-  WRITE( I, "(A, G14.6)") "RELATIVE TOL :: ", Obj % fpar( 1 )
-  WRITE( I, "(A, G14.6)") "ABSOLUTE TOL :: ", Obj % fpar( 2 )
-  WRITE( I, "(A, I4)") "KRYLOV SIZE :: ", Obj % ipar( 5 )
-  WRITE( I, "(A, I4)") "MAX ITER :: ", Obj % ipar( 6 )
-  WRITE( I, "(A, I4)") "ITER :: ", Obj % ipar( 7 )
-  WRITE( I, "(A, I4)") "TOTAL INIT PERFORMED :: ", Obj % ipar( 13 )
-  WRITE( I, "(A, G14.6)") "INITIAL RES/ERROR0 :: ", Obj % fpar( 3 )
-  WRITE( I, "(A, G14.6)") "TARGET RES/ERROR :: ", Obj % fpar( 4 )
-  WRITE( I, "(A, G14.6)") "CURRENT RES/ERROR :: ", Obj % fpar( 6 )
-  WRITE( I, "(A, G14.6)") "CONV RATE :: ", Obj % fpar( 7 )
+  WRITE( I, "(A, G14.6)") "RELATIVE TOL :: ", obj % fpar( 1 )
+  WRITE( I, "(A, G14.6)") "ABSOLUTE TOL :: ", obj % fpar( 2 )
+  WRITE( I, "(A, I4)") "KRYLOV SIZE :: ", obj % ipar( 5 )
+  WRITE( I, "(A, I4)") "MAX ITER :: ", obj % ipar( 6 )
+  WRITE( I, "(A, I4)") "ITER :: ", obj % ipar( 7 )
+  WRITE( I, "(A, I4)") "TOTAL INIT PERFORMED :: ", obj % ipar( 13 )
+  WRITE( I, "(A, G14.6)") "INITIAL RES/ERROR0 :: ", obj % fpar( 3 )
+  WRITE( I, "(A, G14.6)") "TARGET RES/ERROR :: ", obj % fpar( 4 )
+  WRITE( I, "(A, G14.6)") "CURRENT RES/ERROR :: ", obj % fpar( 6 )
+  WRITE( I, "(A, G14.6)") "CONV RATE :: ", obj % fpar( 7 )
   WRITE( I, "(A)" ) "----------------------------------------------"
 
   CALL Blanklines( nol = 1, unitno = I )
-  IF( ASSOCIATED( Obj % JA ) ) WRITE( I, "(A)" ) "JA :: ASSOCIATED"
-  IF( ASSOCIATED( Obj % IA ) ) WRITE( I, "(A)" ) "IA :: ASSOCIATED"
-  IF( ALLOCATED( Obj % JLU ) ) WRITE( I, "(A)" ) "JLU :: ALLOCATED"
-  IF( ALLOCATED( Obj % JU ) ) WRITE( I, "(A)" ) "JU :: ALLOCATED"
-  IF( ALLOCATED( Obj % IPERM ) ) WRITE( I, "(A)" ) "IPERM :: ALLOCATED"
-  IF( ALLOCATED( Obj % JW ) ) WRITE( I, "(A)" ) "JW :: ALLOCATED"
-  IF( ASSOCIATED( Obj % A ) ) WRITE( I, "(A)" ) "A :: ASSOCIATED"
-  IF( ALLOCATED( Obj % ALU ) ) WRITE( I, "(A)" ) "ALU :: ALLOCATED"
-  IF( ALLOCATED( Obj % WK ) ) WRITE( I, "(A)" ) "WK :: ALLOCATED"
-  IF( ALLOCATED( Obj % W ) ) WRITE( I, "(A)" ) "W :: ALLOCATED"
+  IF( ASSOCIATED( obj % JA ) ) WRITE( I, "(A)" ) "JA :: ASSOCIATED"
+  IF( ASSOCIATED( obj % IA ) ) WRITE( I, "(A)" ) "IA :: ASSOCIATED"
+  IF( ALLOCATED( obj % JLU ) ) WRITE( I, "(A)" ) "JLU :: ALLOCATED"
+  IF( ALLOCATED( obj % JU ) ) WRITE( I, "(A)" ) "JU :: ALLOCATED"
+  IF( ALLOCATED( obj % IPERM ) ) WRITE( I, "(A)" ) "IPERM :: ALLOCATED"
+  IF( ALLOCATED( obj % JW ) ) WRITE( I, "(A)" ) "JW :: ALLOCATED"
+  IF( ASSOCIATED( obj % A ) ) WRITE( I, "(A)" ) "A :: ASSOCIATED"
+  IF( ALLOCATED( obj % ALU ) ) WRITE( I, "(A)" ) "ALU :: ALLOCATED"
+  IF( ALLOCATED( obj % WK ) ) WRITE( I, "(A)" ) "WK :: ALLOCATED"
+  IF( ALLOCATED( obj % W ) ) WRITE( I, "(A)" ) "W :: ALLOCATED"
 
   CALL Blanklines( nol = 1, unitno = I )
-  WRITE( I, "(A, I4)") "ERROR CODE :: ", Obj % ierr
+  WRITE( I, "(A, I4)") "ERROR CODE :: ", obj % ierr
   CALL Blanklines( nol = 1, unitno = I )
 
 END PROCEDURE skit_display
@@ -663,8 +663,8 @@ MODULE PROCEDURE skit_write_res_his
   INTEGER( I4B ) :: iter0, is, ie
   CHARACTER( LEN = 5 ) :: ext
 
-  ie = INT( MINVAL( LOG10( Obj % Res( 1 : Obj % ipar( 7 ) ) ) ) ) - 1
-  is = INT( MAXVAL( LOG10( Obj % Res( 1 : Obj % ipar( 7 ) ) ) ) ) + 1
+  ie = INT( MINVAL( LOG10( obj % Res( 1 : obj % ipar( 7 ) ) ) ) ) - 1
+  is = INT( MAXVAL( LOG10( obj % Res( 1 : obj % ipar( 7 ) ) ) ) ) + 1
 
   IF( PRESENT( iter ) ) THEN
     iter0 = iter
@@ -680,11 +680,11 @@ MODULE PROCEDURE skit_write_res_his
 
   filename = TRIM( prefix ) // '_res_' // TRIM( INT2STR( iter0 ) )
 
-  CALL OpenFileToWrite( Obj = aFile, Path = Path, FileName = TRIM( filename ), &
+  CALL OpenFileToWrite( obj = aFile, Path = Path, FileName = TRIM( filename ), &
     & Extension = TRIM( ext ) )
 
-  DO iter0 = 1, Obj % ipar( 7 )
-    WRITE( aFile % UnitNo, '(I6, 4X, G16.6)' ) iter0, Obj % Res( iter0 )
+  DO iter0 = 1, obj % ipar( 7 )
+    WRITE( aFile % UnitNo, '(I6, 4X, G16.6)' ) iter0, obj % Res( iter0 )
   END DO
 
   CALL CloseFile( aFile )
@@ -712,7 +712,7 @@ MODULE PROCEDURE skit_write_res_his
     & "set title 'its = "//TRIM( INT2STR( iter0 ) )// "'"
 
   WRITE( aFile % UnitNo, '(A)' ) &
-    & 'set xrange[1:'//TRIM( INT2STR( Obj % ipar( 7 ) + 5 ) )//"]"
+    & 'set xrange[1:'//TRIM( INT2STR( obj % ipar( 7 ) + 5 ) )//"]"
 
   WRITE( aFile % UnitNo, '(A)' ) &
     & 'set yrange[' // '1.0E'// TRIM( INT2STR( ie ) ) // " : 1.0E" // &
@@ -731,23 +731,23 @@ END PROCEDURE skit_write_res_his
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE skit_deallocatedata
-  IF( ALLOCATED( Obj % dbcnptrs ) ) DEALLOCATE( Obj % dbcnptrs )
-  IF( ALLOCATED( Obj % dbcIndx ) ) DEALLOCATE( Obj % dbcIndx )
-  IF( ALLOCATED( Obj % dbcJA ) ) DEALLOCATE( Obj % dbcJA )
-  IF( ALLOCATED( Obj % dbcIA ) ) DEALLOCATE( Obj % dbcIA )
-  Obj % IA => NULL( )
-  Obj % JA => NULL( )
-  IF( ALLOCATED( Obj % JLU ) ) DEALLOCATE( Obj % JLU )
-  IF( ALLOCATED( Obj % JU ) ) DEALLOCATE( Obj % JU )
-  IF( ALLOCATED( Obj % IPERM ) ) DEALLOCATE( Obj % IPERM )
-  IF( ALLOCATED( Obj % JW ) ) DEALLOCATE( Obj % JW )
-  Obj % A => NULL( )
-  IF( ALLOCATED( Obj % ALU ) ) DEALLOCATE( Obj % ALU )
-  IF( ALLOCATED( Obj % WK ) ) DEALLOCATE( Obj % WK )
-  IF( ALLOCATED( Obj % W ) ) DEALLOCATE( Obj % W )
-  Obj % ipar = 0
-  Obj % fpar = 0
-  Obj % ierr = 0
+  IF( ALLOCATED( obj % dbcnptrs ) ) DEALLOCATE( obj % dbcnptrs )
+  IF( ALLOCATED( obj % dbcIndx ) ) DEALLOCATE( obj % dbcIndx )
+  IF( ALLOCATED( obj % dbcJA ) ) DEALLOCATE( obj % dbcJA )
+  IF( ALLOCATED( obj % dbcIA ) ) DEALLOCATE( obj % dbcIA )
+  obj % IA => NULL( )
+  obj % JA => NULL( )
+  IF( ALLOCATED( obj % JLU ) ) DEALLOCATE( obj % JLU )
+  IF( ALLOCATED( obj % JU ) ) DEALLOCATE( obj % JU )
+  IF( ALLOCATED( obj % IPERM ) ) DEALLOCATE( obj % IPERM )
+  IF( ALLOCATED( obj % JW ) ) DEALLOCATE( obj % JW )
+  obj % A => NULL( )
+  IF( ALLOCATED( obj % ALU ) ) DEALLOCATE( obj % ALU )
+  IF( ALLOCATED( obj % WK ) ) DEALLOCATE( obj % WK )
+  IF( ALLOCATED( obj % W ) ) DEALLOCATE( obj % W )
+  obj % ipar = 0
+  obj % fpar = 0
+  obj % ierr = 0
 END PROCEDURE skit_deallocatedata
 
 END SUBMODULE Sparsekit

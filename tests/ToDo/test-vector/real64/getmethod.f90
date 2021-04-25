@@ -5,29 +5,29 @@ program main
   use Real64vector_class
   implicit none
 
-  type( int8vector_ ) :: IntObj
+  type( int8vector_ ) :: Intobj
   type( real64vector_ ) :: obj, obj2
   integer( i4b ) :: m, n
   integer( int8 ), allocatable :: z( : )
   real( real64 ), allocatable :: x( : )
 
-  IntObj = Int8Vector( INT( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], int8 ) )
+  Intobj = Int8Vector( INT( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], int8 ) )
 
-  Obj = Real64Vector( REAL( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], Real64 ) )
-  call Obj % display( )
+  obj = Real64Vector( REAL( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], Real64 ) )
+  call obj % display( )
 
-  z = ArrayValues( IntObj, TypeInt )
-  IntObj = Int8Vector( z )
-  call IntObj % display( )
+  z = ArrayValues( Intobj, TypeInt )
+  Intobj = Int8Vector( z )
+  call Intobj % display( )
 
   obj2 = ArrayValues( obj, TypeReal64Vector )
   call obj2 % display( )
 
-  ! z = ArrayValues( IntObj, [1,2], TypeInt )
-  ! IntObj = Int8Vector( z )
-  ! call IntObj % display( )
+  ! z = ArrayValues( Intobj, [1,2], TypeInt )
+  ! Intobj = Int8Vector( z )
+  ! call Intobj % display( )
 
-  ! obj2 = ArrayValues( IntObj, [1,2], TypeInt8Vector )
+  ! obj2 = ArrayValues( Intobj, [1,2], TypeInt8Vector )
   ! call obj2 % display( )
 
 

@@ -23,9 +23,9 @@ call vtu % initiate( &
 
 ! step-2
 ! call vtu % startWriteGeometry( )
-! call vtu % writeGeometry( MeshObj = obj % omega( 1 ) % ptr, &
+! call vtu % writeGeometry( Meshobj = obj % omega( 1 ) % ptr, &
 !     & nodes = obj % nodes )
-call vtu % writeGeometry( MeshObj = obj % omega( 1 ) % ptr, &
+call vtu % writeGeometry( Meshobj = obj % omega( 1 ) % ptr, &
     & mdobj = obj % mdomega( 1 ) % ptr, &
     & nodes = obj % nodes )
 

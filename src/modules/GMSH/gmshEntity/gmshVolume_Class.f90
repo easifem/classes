@@ -16,7 +16,7 @@ PRIVATE
 TYPE, EXTENDS( gmshEntity_ ) :: gmshVolume_
   INTEGER( I4B ), ALLOCATABLE :: shellTags( : )
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => Volume_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => Volume_encode
 END TYPE gmshVolume_
 
 TYPE :: gmshVolumePointer_
@@ -44,19 +44,19 @@ CONTAINS
 ! loop define holes. If tag is positive, set the tag explicitly; otherwise a
 !  new tag is selected automatically. Return the tag of the volume.
 
-FUNCTION gmshVolume_Pointer ( shellTags, uid ) RESULT( Ans )
+FUNCTION gmshVolume_Pointer ( shellTags, uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: shellTags( : )
   INTEGER( I4B ), INTENT( IN ) :: uid
-  CLASS( gmshVolume_  ), POINTER :: Ans
+  CLASS( gmshVolume_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % shellTags = shellTags
-  Ans % uid = uid
-  Ans % dim = 3
+  ALLOCATE( ans )
+  ans % shellTags = shellTags
+  ans % uid = uid
+  ans % dim = 3
 
 END FUNCTION gmshVolume_Pointer
 
-FUNCTION Volume_encode( Obj ) RESULT( Ans )
+FUNCTION Volume_encode( obj ) RESULT( ans )
   CLASS( gmshVolume_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 

@@ -20,24 +20,24 @@ MODULE PROCEDURE Soil_display
     WRITE( I, "(A)" ) TRIM( msg )
   END IF
 
-  CALL Display( STATE_NAME(Obj%State), "State :: ", UnitNo = I )
-  CALL Display( SOILTYPE_NAME(Obj%SoilType), "SoilType :: ", UnitNo = I )
-  CALL Display( Obj%Gravel, "Gravel :: ", UnitNo = I )
-  CALL Display( Obj%Sand, "Sand :: ", UnitNo = I )
-  CALL Display( Obj%Silt, "Silt :: ", UnitNo = I )
-  CALL Display( Obj%Clay, "Clay :: ", UnitNo = I )
-  CALL Display( Obj%OrganicMatter, "OrganicMatter :: ", UnitNo = I )
-  CALL Display( Obj%SpecificGravity, "SpecificGravity :: ", UnitNo = I )
-  CALL Display( Obj%DryDensity, "DryDensity :: ", UnitNo = I )
-  CALL Display( Obj%Gravimetric_Moisture, "Gravimetric_Moisture :: ", &
+  CALL Display( STATE_NAME(obj%State), "State :: ", UnitNo = I )
+  CALL Display( SOILTYPE_NAME(obj%SoilType), "SoilType :: ", UnitNo = I )
+  CALL Display( obj%Gravel, "Gravel :: ", UnitNo = I )
+  CALL Display( obj%Sand, "Sand :: ", UnitNo = I )
+  CALL Display( obj%Silt, "Silt :: ", UnitNo = I )
+  CALL Display( obj%Clay, "Clay :: ", UnitNo = I )
+  CALL Display( obj%OrganicMatter, "OrganicMatter :: ", UnitNo = I )
+  CALL Display( obj%SpecificGravity, "SpecificGravity :: ", UnitNo = I )
+  CALL Display( obj%DryDensity, "DryDensity :: ", UnitNo = I )
+  CALL Display( obj%Gravimetric_Moisture, "Gravimetric_Moisture :: ", &
     & UnitNo = I )
-  CALL Display( Obj%Porosity, "Porosity :: ", UnitNo = I )
+  CALL Display( obj%Porosity, "Porosity :: ", UnitNo = I )
   CALL Display( MINERAL_NAME(MINERAL_QUARTZ), "Quartz :: ", UnitNo = I )
-  CALL Display( THERMCONDMODEL_NAME(Obj%ThermCond_Model), &
+  CALL Display( THERMCONDMODEL_NAME(obj%ThermCond_Model), &
     & "ThermCondModel :: ", UnitNo = I )
-  CALL Display( VOLHEATCAPMODEL_NAME(Obj%volHeatCap_Model), &
+  CALL Display( VOLHEATCAPMODEL_NAME(obj%volHeatCap_Model), &
     & "volHeatCapModel :: ", UnitNo = I )
-  CALL Display( SFCCMODEL_NAME(Obj%SFCC_Model), &
+  CALL Display( SFCCMODEL_NAME(obj%SFCC_Model), &
     & "SFCC Model :: ", UnitNo = I )
 END PROCEDURE Soil_display
 
@@ -49,104 +49,104 @@ MODULE PROCEDURE Soil_Constructor
   CHARACTER( LEN = 3 ) :: JohansenCase
 
   IF( PRESENT( State ) ) THEN
-    Ans%State= State
+    ans%State= State
   ELSE
-    Ans%State= TypeSoil%State
+    ans%State= TypeSoil%State
   END IF
 
   IF( PRESENT( SoilType ) ) THEN
-    Ans%SoilType = SoilType
+    ans%SoilType = SoilType
   ELSE
-    Ans%SoilType = TypeSoil%SoilType
+    ans%SoilType = TypeSoil%SoilType
   END IF
 
   IF( PRESENT( Gravel ) ) THEN
-    Ans%Gravel = Gravel
+    ans%Gravel = Gravel
   ELSE
-    Ans%Gravel = TypeSoil%Gravel
+    ans%Gravel = TypeSoil%Gravel
   END IF
 
   IF( PRESENT( Sand ) ) THEN
-    Ans%Sand = Sand
+    ans%Sand = Sand
   ELSE
-    Ans%Sand = TypeSoil%Sand
+    ans%Sand = TypeSoil%Sand
   END IF
 
   IF( PRESENT( Silt ) ) THEN
-    Ans%Silt = Silt
+    ans%Silt = Silt
   ELSE
-    Ans%Silt = TypeSoil%Silt
+    ans%Silt = TypeSoil%Silt
   END IF
 
   IF( PRESENT( Clay ) ) THEN
-    Ans%Clay = Clay
+    ans%Clay = Clay
   ELSE
-    Ans%Clay = TypeSoil%Clay
+    ans%Clay = TypeSoil%Clay
   END IF
 
   IF( PRESENT( OrganicMatter ) ) THEN
-    Ans%OrganicMatter = OrganicMatter
+    ans%OrganicMatter = OrganicMatter
   ELSE
-    Ans%OrganicMatter = TypeSoil%OrganicMatter
+    ans%OrganicMatter = TypeSoil%OrganicMatter
   END IF
 
   IF( PRESENT( SpecificGravity ) ) THEN
-    Ans%SpecificGravity = SpecificGravity
+    ans%SpecificGravity = SpecificGravity
   ELSE
-    Ans%SpecificGravity = TypeSoil%SpecificGravity
+    ans%SpecificGravity = TypeSoil%SpecificGravity
   END IF
 
   IF( PRESENT( DryDensity ) ) THEN
-    Ans%DryDensity = DryDensity
+    ans%DryDensity = DryDensity
   ELSE
-    Ans%DryDensity = TypeSoil%DryDensity
+    ans%DryDensity = TypeSoil%DryDensity
   END IF
 
   IF( PRESENT( Gravimetric_Moisture ) ) THEN
-    Ans%Gravimetric_Moisture = Gravimetric_Moisture
+    ans%Gravimetric_Moisture = Gravimetric_Moisture
   ELSE
-    Ans%Gravimetric_Moisture = TypeSoil%Gravimetric_Moisture
+    ans%Gravimetric_Moisture = TypeSoil%Gravimetric_Moisture
   END IF
 
   IF( PRESENT( Porosity ) ) THEN
-    Ans%Porosity = Porosity
-    Ans%voidRatio = Porosity/(1-Porosity)
+    ans%Porosity = Porosity
+    ans%voidRatio = Porosity/(1-Porosity)
   ELSE
-    Ans%Porosity = TypeSoil%Porosity
+    ans%Porosity = TypeSoil%Porosity
   END IF
 
   IF( PRESENT( voidRatio ) ) THEN
-    Ans%voidRatio = voidRatio
-    Ans%Porosity = voidRatio/(1 + voidRatio)
+    ans%voidRatio = voidRatio
+    ans%Porosity = voidRatio/(1 + voidRatio)
   ELSE
-    Ans%voidRatio = TypeSoil%voidRatio
+    ans%voidRatio = TypeSoil%voidRatio
   END IF
 
   IF( PRESENT( volFrac_solid ) ) THEN
-    Ans%volFrac_solid = volFrac_solid
+    ans%volFrac_solid = volFrac_solid
   END IF
 
   IF( PRESENT( volFrac_water ) ) THEN
-    Ans%volFrac_water = volFrac_water
+    ans%volFrac_water = volFrac_water
   END IF
 
   IF( PRESENT( volFrac_ice ) ) THEN
-    Ans%volFrac_ice = volFrac_ice
+    ans%volFrac_ice = volFrac_ice
   END IF
 
   IF( PRESENT( volFrac_air ) ) THEN
-    Ans%volFrac_air = volFrac_air
+    ans%volFrac_air = volFrac_air
   END IF
 
   IF( PRESENT( Minerals ) ) THEN
-    Ans%Minerals( 1:SIZE(Minerals) ) = Minerals
+    ans%Minerals( 1:SIZE(Minerals) ) = Minerals
   ELSE
-    Ans%Minerals = TypeSoil%Minerals
+    ans%Minerals = TypeSoil%Minerals
   END IF
 
   !! Setting thermal properties
   IF( PRESENT( ThermCondModel ) ) THEN
-    Ans%ThermCond_Model = ThermCondModel
+    ans%ThermCond_Model = ThermCondModel
 
     !! Select thermal conductivity models
     SELECT CASE( ThermCondModel )
@@ -161,8 +161,8 @@ MODULE PROCEDURE Soil_Constructor
         STOP
       END IF
 
-      Ans%ThermCondModel => UserThermCond_Pointer()
-      Ans%ThermCondModel%getValue => UserThermCond
+      ans%ThermCondModel => UserThermCond_Pointer()
+      ans%ThermCondModel%getValue => UserThermCond
 
     !! Johansen thermal conductivity model
     CASE( Johansen_ThermCond )
@@ -187,51 +187,51 @@ MODULE PROCEDURE Soil_Constructor
 
       SELECT CASE( JohansenCase )
       CASE( 'SDE' )
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
           & Lambda_Sat = Lambda_Sat, Lambda_Dry = Lambda_Dry, &
-          & Lambda_e = Lambda_e, Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+          & Lambda_e = Lambda_e, Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'SDe')
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
           & Lambda_Sat = Lambda_Sat, Lambda_Dry = Lambda_Dry,&
-          & Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+          & Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'SdE')
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
           & Lambda_Sat = Lambda_Sat, &
-          & Lambda_e = Lambda_e, Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+          & Lambda_e = Lambda_e, Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'Sde')
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
           & Lambda_Sat = Lambda_Sat, &
-          & Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+          & Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'sDE' )
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
           & Lambda_Dry = Lambda_Dry, &
-          & Lambda_e = Lambda_e, Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+          & Lambda_e = Lambda_e, Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'sDe')
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
           & Lambda_Dry = Lambda_Dry, &
-          & Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+          & Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'sdE')
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
-          & Lambda_e = Lambda_e, Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
+          & Lambda_e = Lambda_e, Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       CASE( 'sde')
-        Ans%ThermCondModel => JohansenThermCond_Pointer( &
-          & Gamma_d=Ans%DryDensity, &
-          & QuartzContent = Ans%Minerals(Ans%Quartz), &
-          & SoilState = Ans%State, SoilType = Ans%SoilType )
+        ans%ThermCondModel => JohansenThermCond_Pointer( &
+          & Gamma_d=ans%DryDensity, &
+          & QuartzContent = ans%Minerals(ans%Quartz), &
+          & SoilState = ans%State, SoilType = ans%SoilType )
       END SELECT
 
     !! Constant thermal conductivity model
@@ -244,13 +244,13 @@ MODULE PROCEDURE Soil_Constructor
         STOP
       END IF
 
-      Ans%ThermCondModel => UserThermCond_Pointer()
-      Ans%ThermCondModel%ConstThermCondVal= ThermCondVal
+      ans%ThermCondModel => UserThermCond_Pointer()
+      ans%ThermCondModel%ConstThermCondVal= ThermCondVal
     END SELECT
   END IF
 
   IF( PRESENT( volHeatCapModel ) ) THEN
-    Ans%volHeatCap_Model = volHeatCapModel
+    ans%volHeatCap_Model = volHeatCapModel
 
     SELECT CASE( volHeatCapModel )
     CASE( CONSTANT_VOLHEATCAP )
@@ -263,10 +263,10 @@ MODULE PROCEDURE Soil_Constructor
         STOP
       END IF
 
-      Ans%volHeatCapModel => UserVolHeatCap_Pointer()
-      Ans%volHeatCapModel%ConstVolHeatCapVal= volHeatCapVal
+      ans%volHeatCapModel => UserVolHeatCap_Pointer()
+      ans%volHeatCapModel%ConstVolHeatCapVal= volHeatCapVal
       IF( PRESENT( volHeatCap_solid ) ) THEN
-        Ans%VolHeatCapModel%volHeatCap_solid = volHeatCap_solid
+        ans%VolHeatCapModel%volHeatCap_solid = volHeatCap_solid
       END IF
 
     CASE( USER_VOLHEATCAP )
@@ -279,19 +279,19 @@ MODULE PROCEDURE Soil_Constructor
         STOP
       END IF
 
-      Ans%VolHeatCapModel => UserVolHeatCap_Pointer()
-      Ans%VolHeatCapModel%getValue => UserVolHeatCap
+      ans%VolHeatCapModel => UserVolHeatCap_Pointer()
+      ans%VolHeatCapModel%getValue => UserVolHeatCap
       IF( PRESENT( volHeatCap_solid ) ) THEN
-        Ans%VolHeatCapModel%volHeatCap_solid = volHeatCap_solid
+        ans%VolHeatCapModel%volHeatCap_solid = volHeatCap_solid
       END IF
 
     CASE( MIX_VOLHEATCAP )
 
       IF( PRESENT( volHeatCap_solid ) ) THEN
-        Ans%volHeatCapModel => MixVolHeatCap_Pointer( &
-          & volHeatCap_solid = volHeatCap_solid, SoilState = Ans%State )
+        ans%volHeatCapModel => MixVolHeatCap_Pointer( &
+          & volHeatCap_solid = volHeatCap_solid, SoilState = ans%State )
       ELSE
-        Ans%volHeatCapModel => MixVolHeatCap_Pointer( SoilState = Ans%State )
+        ans%volHeatCapModel => MixVolHeatCap_Pointer( SoilState = ans%State )
       END IF
 
     END SELECT
@@ -299,7 +299,7 @@ MODULE PROCEDURE Soil_Constructor
 
 
   IF( PRESENT( SFCCModel ) ) THEN
-    Ans%SFCC_Model = SFCCModel
+    ans%SFCC_Model = SFCCModel
 
     SELECT CASE( SFCCModel )
     CASE( User_SFCC )
@@ -320,9 +320,9 @@ MODULE PROCEDURE Soil_Constructor
         STOP
       END IF
 
-      Ans%SFCCModel => UserSFCC_Pointer()
-      Ans%SFCCModel%getValue => UserSFCC_Value
-      Ans%SFCCModel%getSlope => UserSFCC_Slope
+      ans%SFCCModel => UserSFCC_Pointer()
+      ans%SFCCModel%getValue => UserSFCC_Value
+      ans%SFCCModel%getSlope => UserSFCC_Slope
 
     CASE( EXP_SFCC )
       IF( .NOT. PRESENT( volFrac_water ) ) THEN
@@ -358,14 +358,14 @@ MODULE PROCEDURE Soil_Constructor
       END IF
 
       IF( PRESENT( SFCC_Coeff ) ) THEN
-        Ans%SFCCModel => ExpSFCC_Pointer(&
+        ans%SFCCModel => ExpSFCC_Pointer(&
           & Theta_r = SFCC_Theta_r, &
           & Theta_w = volFrac_water, &
           & Temp_l = SFCC_Temp_l, &
           & Temp_s = SFCC_Temp_s, &
           & Coeff = SFCC_Coeff )
       ELSE
-        Ans%SFCCModel => ExpSFCC_Pointer(&
+        ans%SFCCModel => ExpSFCC_Pointer(&
           & Theta_r = SFCC_Theta_r, &
           & Theta_w = volFrac_water, &
           & Temp_l = SFCC_Temp_l, &

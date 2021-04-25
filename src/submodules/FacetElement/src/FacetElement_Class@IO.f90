@@ -24,65 +24,56 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-
-MODULE PROCEDURE s_display_Obj
+MODULE PROCEDURE faceElem_display
   INTEGER( I4B ) :: I
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
+  CLASS( ReferenceElement_ ), POINTER :: refelem
 
   I = INPUT( Option = UnitNo, Default = stdout )
   IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
     WRITE( I, "(A)" ) "#" // TRIM( Msg )
   END IF
-  CALL Blanklines( NOL = 1, UnitNo = I )
-  WRITE( I, "(A)" ) "  TYPE : FACETELEMENT_"
-  WRITE( I, "(A, I4)" ) "  MAT-TYPE : ", Obj % Mat_Type
-  CALL Display( Obj % Nptrs, "  NPTRS : ")
-
-  IF( ASSOCIATED( Obj % Cell ) ) THEN
-    WRITE( I, "(A)" ) "  INNER CELL : ASSOCIATED"
-  ELSE
-    WRITE( I, "(A)" ) "  INNER CELL : NOT ASSOCIATED"
+  WRITE( I, "(A)" ) "# TYPE : FACETELEMENT_"
+  WRITE( I, "(A, I4)" ) "# MAT-TYPE : ", obj%getMaterialType()
+  nptrs = obj%getNptrs()
+  IF( SIZE(nptrs) .NE. 0 ) THEN
+    CALL Display( nptrs, "# NPTRS : ")
   END IF
-
-  IF( ASSOCIATED( Obj % OuterCell ) ) THEN
-    WRITE( I, "(A)" ) "  OUTER CELL : ASSOCIATED"
+  IF( ASSOCIATED( obj%Cell ) ) THEN
+    WRITE( I, "(A)" ) "# INNER CELL : ASSOCIATED"
   ELSE
-    WRITE( I, "(A)" ) "  OUTER CELL : NOT ASSOCIATED"
+    WRITE( I, "(A)" ) "# INNER CELL : NOT ASSOCIATED"
   END IF
-
+  IF( ASSOCIATED( obj%OuterCell ) ) THEN
+    WRITE( I, "(A)" ) "# OUTER CELL : ASSOCIATED"
+  ELSE
+    WRITE( I, "(A)" ) "# OUTER CELL : NOT ASSOCIATED"
+  END IF
   CALL Blanklines( NOL = 1, UnitNo = I )
-  !
   IF( PRESENT( FullDisp ) ) THEN
     IF( FullDisp ) THEN
-      IF( ASSOCIATED( Obj % RefElem ) ) THEN
-        CALL Display( Obj % RefElem, "Reference Element", I )
+      refelem => obj%getRefElemPointer()
+      IF( ASSOCIATED( refelem ) ) THEN
+        CALL Display( refelem, "Reference Element", I )
       END IF
       !
       CALL Blanklines( NOL = 1, UnitNo = I )
-      IF( ASSOCIATED( Obj % Cell ) ) THEN
-        CALL Display( Obj % Cell, "Inner Cell", I )
+      IF( ASSOCIATED( obj%Cell ) ) THEN
+        CALL obj%Cell%Display( msg="Inner Cell", unitNo=I )
       END IF
       !
       CALL Blanklines( NOL = 1, UnitNo = I )
-      IF( ASSOCIATED( Obj % OuterCell ) ) THEN
-        CALL Display( Obj % OuterCell, "Outer Cell", I )
+      IF( ASSOCIATED( obj%OuterCell ) ) THEN
+        CALL obj%OuterCell%Display( msg="Outer Cell", unitNo=I )
       END IF
     END IF
   END IF
-END PROCEDURE s_display_Obj
-
-!----------------------------------------------------------------------------
-!                                                                 Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE m_display_obj
-  INTEGER( I4B ) :: i
-  LOGICAL :: full
-
-  SELECT TYPE( Obj )
-  TYPE IS ( FacetElement_ )
-    CALL Display( Obj = Obj, Msg = Msg, UnitNo = UnitNo, FullDisp = FullDisp)
-  END SELECT
-END PROCEDURE m_display_obj
+  NULLIFY( refelem )
+  IF( ALLOCATED( nptrs ) ) DEALLOCATE( nptrs )
+END PROCEDURE faceElem_display
 
 END SUBMODULE IO

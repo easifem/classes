@@ -41,7 +41,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getSurrogate
-  Obj2 => Obj%surrogate
+  obj2 => obj%surrogate
 END PROCEDURE getSurrogate
 
 !----------------------------------------------------------------------------
@@ -49,18 +49,18 @@ END PROCEDURE getSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getCounterAll
-  IF(ASSOCIATED(Obj%surrogate)) THEN
-    Ans(EXCEPTION_INFORMATION)=Obj%surrogate%nInfo
-    Ans(EXCEPTION_WARNING)=Obj%surrogate%nWarn
-    Ans(EXCEPTION_DEBUG)=Obj%surrogate%nDebug
-    Ans(EXCEPTION_ERROR)=Obj%surrogate%nError
-    Ans(EXCEPTION_FATAL_ERROR)=Obj%surrogate%nFatal
+  IF(ASSOCIATED(obj%surrogate)) THEN
+    ans(EXCEPTION_INFORMATION)=obj%surrogate%nInfo
+    ans(EXCEPTION_WARNING)=obj%surrogate%nWarn
+    ans(EXCEPTION_DEBUG)=obj%surrogate%nDebug
+    ans(EXCEPTION_ERROR)=obj%surrogate%nError
+    ans(EXCEPTION_FATAL_ERROR)=obj%surrogate%nFatal
   ELSE
-    Ans(EXCEPTION_INFORMATION)=Obj%nInfo
-    Ans(EXCEPTION_WARNING)=Obj%nWarn
-    Ans(EXCEPTION_DEBUG)=Obj%nDebug
-    Ans(EXCEPTION_ERROR)=Obj%nError
-    Ans(EXCEPTION_FATAL_ERROR)=Obj%nFatal
+    ans(EXCEPTION_INFORMATION)=obj%nInfo
+    ans(EXCEPTION_WARNING)=obj%nWarn
+    ans(EXCEPTION_DEBUG)=obj%nDebug
+    ans(EXCEPTION_ERROR)=obj%nError
+    ans(EXCEPTION_FATAL_ERROR)=obj%nFatal
   ENDIF
 END PROCEDURE getCounterAll
 
@@ -69,32 +69,32 @@ END PROCEDURE getCounterAll
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getCounter
-  Ans=-1
-  IF(ASSOCIATED(Obj%surrogate)) THEN
+  ans=-1
+  IF(ASSOCIATED(obj%surrogate)) THEN
     SELECTCASE(i)
     CASE(EXCEPTION_INFORMATION)
-      Ans=Obj%surrogate%nInfo
+      ans=obj%surrogate%nInfo
     CASE(EXCEPTION_WARNING)
-      Ans=Obj%surrogate%nWarn
+      ans=obj%surrogate%nWarn
     CASE(EXCEPTION_DEBUG)
-      Ans=Obj%surrogate%nDebug
+      ans=obj%surrogate%nDebug
     CASE(EXCEPTION_ERROR)
-      Ans=Obj%surrogate%nError
+      ans=obj%surrogate%nError
     CASE(EXCEPTION_FATAL_ERROR)
-      Ans=Obj%surrogate%nFatal
+      ans=obj%surrogate%nFatal
     ENDSELECT
   ELSE
     SELECTCASE(i)
     CASE(EXCEPTION_INFORMATION)
-      Ans=Obj%nInfo
+      ans=obj%nInfo
     CASE(EXCEPTION_WARNING)
-      Ans=Obj%nWarn
+      ans=obj%nWarn
     CASE(EXCEPTION_DEBUG)
-      Ans=Obj%nDebug
+      ans=obj%nDebug
     CASE(EXCEPTION_ERROR)
-      Ans=Obj%nError
+      ans=obj%nError
     CASE(EXCEPTION_FATAL_ERROR)
-      Ans=Obj%nFatal
+      ans=obj%nFatal
     ENDSELECT
   ENDIF
 END PROCEDURE getCounter
@@ -104,8 +104,8 @@ END PROCEDURE getCounter
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getLastMessage
-  Ans=Obj%lastMesg
-  IF(ASSOCIATED(Obj%surrogate)) Ans=Obj%surrogate%lastMesg
+  ans=obj%lastMesg
+  IF(ASSOCIATED(obj%surrogate)) ans=obj%surrogate%lastMesg
 END PROCEDURE getLastMessage
 
 !----------------------------------------------------------------------------
@@ -113,8 +113,8 @@ END PROCEDURE getLastMessage
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getLogFileUnit
-  Ans=Obj%logFileUnit
-  IF(ASSOCIATED(Obj%surrogate)) Ans=Obj%surrogate%logFileUnit
+  ans=obj%logFileUnit
+  IF(ASSOCIATED(obj%surrogate)) ans=obj%surrogate%logFileUnit
 END PROCEDURE getLogFileUnit
 
 END SUBMODULE getMethod

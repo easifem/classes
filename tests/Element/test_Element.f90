@@ -17,7 +17,7 @@
 
 module test_Element
 use easifemBase
-use easifemClasses
+use Element_Class
 implicit none
 contains
 
@@ -26,12 +26,130 @@ contains
 !----------------------------------------------------------------------------
 
 subroutine test1
-CLASS( ReferenceElement_ ), POINTER :: RefElem
-TYPE( Element_ ) :: Obj
-RefElem => ReferenceLine_Pointer( NSD = 1 )
-CALL Obj%Initiate( nptrs = [1,2,3], Mat_Type = 1, RefElem = RefElem )
-CALL Obj%Display( "Obj = " )
+class( ReferenceElement_ ), pointer :: refelem
+type( Element_ ) :: obj, anotherobj
+type( ParameterList_ ) :: param
+integer( I4B ), ALLOCATABLE :: nptrs(:)
+integer( I4B ) :: ierr
+refelem => ReferenceLine_Pointer( NSD = 1 )
+call FPL_INIT()
+call param%init()
+nptrs = [1,2]
+ierr = param%set(key='nptrs', value=nptrs)
+ierr = param%set(key="mat_type", value=1)
+call obj%initiate( param=param, refelem = refelem )
+call obj%display( "test-1: obj = " )
+call pass( 'elem_init_from_fpl()' )
+call anotherobj%initiate(obj)
+call anotherobj%display("test-1: anotherobj = ")
+call pass( 'elem_init_from_elem' )
 end
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test2
+class( ReferenceElement_ ), pointer :: refelem
+class( Element_ ), pointer :: obj, anotherobj
+type( ParameterList_ ) :: param
+integer( I4B ), ALLOCATABLE :: nptrs(:)
+integer( I4B ) :: ierr
+refelem => ReferenceLine_Pointer( NSD = 1 )
+call FPL_INIT()
+call param%init()
+nptrs = [1,2]
+ierr = param%set(key='nptrs', value=nptrs)
+ierr = param%set(key="mat_type", value=1)
+allocate( Element_::obj )
+call obj%initiate( param=param, refelem = refelem )
+call obj%display( "test-2:" )
+call pass('elem_init_from_fpl()')
+allocate( Element_::anotherobj )
+call anotherobj%initiate(obj)
+call anotherobj%display("test-2:")
+call pass( "elem_init_from_elem()" )
+end
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test3
+class( ReferenceElement_ ), pointer :: refelem
+class( Element_ ), pointer :: obj, anotherobj
+type( ParameterList_ ) :: param
+integer( I4B ), ALLOCATABLE :: nptrs(:)
+integer( I4B ) :: ierr
+refelem => ReferenceLine_Pointer( NSD = 1 )
+call FPL_INIT()
+call param%init()
+nptrs = [1,2]
+ierr = param%set(key='nptrs', value=nptrs)
+ierr = param%set(key="mat_type", value=1)
+allocate( Element_::obj )
+obj = Element( param=param, refelem = refelem )
+call obj%display( "test-3:" )
+call pass('elem_init_from_fpl()')
+allocate( Element_::anotherobj )
+anotherobj = Element(obj)
+call anotherobj%display("test-3")
+call pass( "elem_init_from_elem()" )
+end
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test4
+class( ReferenceElement_ ), pointer :: refelem
+class( Element_ ), pointer :: obj, anotherobj
+type( ParameterList_ ) :: param
+integer( I4B ), ALLOCATABLE :: nptrs(:)
+integer( I4B ) :: ierr
+refelem => ReferenceLine_Pointer( NSD = 1 )
+call FPL_INIT()
+call param%init()
+nptrs = [1,2]
+ierr = param%set(key='nptrs', value=nptrs)
+ierr = param%set(key="mat_type", value=1)
+obj => Element_Pointer( param=param, refelem = refelem )
+call obj%display( "test-4:" )
+call pass('elem_init_from_fpl()')
+allocate( Element_::anotherobj )
+anotherobj => Element_Pointer(obj)
+call anotherobj%display("test-4")
+call pass( "elem_init_from_elem()" )
+end
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test5
+class( ReferenceElement_ ), pointer :: refelem
+class( Element_ ), pointer :: obj
+type( ParameterList_ ) :: param
+integer( I4B ), ALLOCATABLE :: nptrs(:)
+integer( I4B ) :: ierr
+refelem => ReferenceLine_Pointer( NSD = 1 )
+call FPL_INIT()
+call param%init()
+nptrs = [1,2]
+ierr = param%set(key='nptrs', value=nptrs)
+ierr = param%set(key="mat_type", value=1)
+obj => Element_Pointer( param=param, refelem = refelem )
+call obj%setMaterialType(2)
+call obj%setNptrs([3,4])
+call ok( ALL(obj%getNptrs() == [3,4]), 'getNptrs')
+call ok( obj%getMaterialType() == 2 , 'getNptrs')
+call obj%display( "test-5:" )
+end
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 end module
 
 !----------------------------------------------------------------------------
@@ -41,5 +159,11 @@ end module
 program main
 use test_Element
 implicit none
+call plan(23)
 call test1
+call test2
+call test3
+call test4
+call test5
+call done_testing()
 end program main

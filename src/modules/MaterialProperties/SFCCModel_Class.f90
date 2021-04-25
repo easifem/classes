@@ -14,9 +14,9 @@ PRIVATE
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: SFCCModel_
-  PROCEDURE( ExpSFCC_get_val ), POINTER, PASS( Obj ) :: getValue => NULL()
-  PROCEDURE( ExpSFCC_get_slope ), POINTER, PASS( Obj ) :: getSlope => NULL()
-  PROCEDURE( ExpSFCC_PhaseInfo ), POINTER, PASS( Obj ) :: PhaseInfo => NULL()
+  PROCEDURE( ExpSFCC_get_val ), POINTER, PASS( obj ) :: getValue => NULL()
+  PROCEDURE( ExpSFCC_get_slope ), POINTER, PASS( obj ) :: getSlope => NULL()
+  PROCEDURE( ExpSFCC_PhaseInfo ), POINTER, PASS( obj ) :: PhaseInfo => NULL()
 END TYPE SFCCModel_
 
 PUBLIC :: SFCCModel_
@@ -62,8 +62,8 @@ TYPE( UserSFCC_ ), PUBLIC, PARAMETER :: TypeUserSFCC = UserSFCC_()
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION UserSFCC_Pointer(  ) RESULT( Ans )
-  CLASS( UserSFCC_ ), POINTER :: Ans
+MODULE FUNCTION UserSFCC_Pointer(  ) RESULT( ans )
+  CLASS( UserSFCC_ ), POINTER :: ans
 END FUNCTION UserSFCC_Pointer
 END INTERFACE
 
@@ -75,8 +75,8 @@ PUBLIC :: UserSFCC_Pointer
 
 INTERFACE
 MODULE FUNCTION ExpSFCC_Pointer( Theta_r, Theta_w, Temp_l, Temp_s, &
-  &  Coeff ) RESULT( Ans )
-  CLASS( ExpSFCC_ ), POINTER :: Ans
+  &  Coeff ) RESULT( ans )
+  CLASS( ExpSFCC_ ), POINTER :: ans
   REAL( DFP ), INTENT( IN ) :: Theta_r
   REAL( DFP ), INTENT( IN ) :: Theta_w
   REAL( DFP ), INTENT( IN ) :: Temp_l
@@ -92,10 +92,10 @@ PUBLIC :: ExpSFCC_Pointer
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION ExpSFCC_get_val( Obj, Temp ) RESULT( Ans )
-  CLASS( SFCCModel_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION ExpSFCC_get_val( obj, Temp ) RESULT( ans )
+  CLASS( SFCCModel_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: Temp
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 END FUNCTION ExpSFCC_get_val
 END INTERFACE
 
@@ -104,10 +104,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION ExpSFCC_get_slope( Obj, Temp ) RESULT( Ans )
-  CLASS( SFCCModel_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION ExpSFCC_get_slope( obj, Temp ) RESULT( ans )
+  CLASS( SFCCModel_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: Temp
-  REAL( DFP ) :: Ans
+  REAL( DFP ) :: ans
 END FUNCTION ExpSFCC_get_slope
 END INTERFACE
 
@@ -116,10 +116,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION ExpSFCC_PhaseInfo( Obj, Temp ) RESULT( Ans )
-  CLASS( SFCCModel_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION ExpSFCC_PhaseInfo( obj, Temp ) RESULT( ans )
+  CLASS( SFCCModel_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: Temp
-  CHARACTER( LEN = 1 ) :: Ans
+  CHARACTER( LEN = 1 ) :: ans
 END FUNCTION ExpSFCC_PhaseInfo
 END INTERFACE
 

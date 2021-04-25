@@ -23,7 +23,7 @@ TYPE, EXTENDS( gmshEntity_ ) :: gmshPoint_
   REAL( DFP ) :: z = 0.0
   REAL( DFP ) :: lc = 0.0
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => point_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => point_encode
 END TYPE gmshPoint_
 
 PUBLIC :: gmshPoint_
@@ -58,18 +58,18 @@ CONTAINS
 !
 ! This function [[gmshpoint_pointer]] returns pointer to [[gmshPoint_]]
 
-FUNCTION constructor_1 ( x, y, z, lc, uid ) RESULT( Ans )
+FUNCTION constructor_1 ( x, y, z, lc, uid ) RESULT( ans )
   REAL( DFP ), INTENT( IN ) :: x, y ,z, lc
   INTEGER( I4B ), INTENT( IN ) :: uid
-  CLASS( gmshPoint_  ), POINTER :: Ans
+  CLASS( gmshPoint_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % x = x
-  Ans % y = y
-  Ans % z = z
-  Ans % lc = lc
-  Ans % uid = uid
-  Ans % dim = 0
+  ALLOCATE( ans )
+  ans % x = x
+  ans % y = y
+  ans % z = z
+  ans % lc = lc
+  ans % uid = uid
+  ans % dim = 0
 END FUNCTION constructor_1
 
 !----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ END FUNCTION constructor_1
 ! This function encode the information stored in [[gmshPoint_]] in a string
 ! data type and return it for printing
 
-FUNCTION point_encode( Obj ) RESULT( Ans )
+FUNCTION point_encode( obj ) RESULT( ans )
   CLASS( gmshPoint_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 

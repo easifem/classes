@@ -25,26 +25,26 @@ TYPE :: MeshConnectivity_
     !! Node to nodes connectivity data
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => mc_deallocate_data
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => mc_deallocate_data
       !! Deallocate data stored in the object
-    PROCEDURE, PUBLIC, PASS( Obj ) :: InitiateFacetToCellData => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateFacetToCellData => &
       & mc_init_cell_facet
       !! Initiate facet to cell connectivity data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: mc_cell_of_facet
+    PROCEDURE, PUBLIC, PASS( obj ) :: mc_cell_of_facet
       !! Return the cell number of a given facet
-    PROCEDURE, PUBLIC, PASS( Obj ) :: mc_cells_of_facets
+    PROCEDURE, PUBLIC, PASS( obj ) :: mc_cells_of_facets
       !! Return the cell numbers of given facet elements
     GENERIC, PUBLIC :: CellNumber => mc_cell_of_facet, &
       & mc_cells_of_facets
       !! Return the cell numbers of given facet elements
-    PROCEDURE, PUBLIC, PASS( Obj ) :: mc_facet_local_id_1
+    PROCEDURE, PUBLIC, PASS( obj ) :: mc_facet_local_id_1
       !! Return the facet local id in cell element
-    PROCEDURE, PUBLIC, PASS( Obj ) :: mc_facet_local_id_2
+    PROCEDURE, PUBLIC, PASS( obj ) :: mc_facet_local_id_2
       !! Return the facet local id in cell element
     GENERIC, PUBLIC :: FacetLocalID => mc_facet_local_id_1, &
       & mc_facet_local_id_2
       !! Return the facet local id in cell element
-    PROCEDURE, PUBLIC, PASS( Obj ) :: InitiateNodeToNodeData => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateNodeToNodeData => &
       & mc_init_node_node
       !! Initiate the node to node connectivity between two meshes
 END TYPE
@@ -86,11 +86,11 @@ INTERFACE
 !### Usage
 !
 ! ```fortran
-!	call DeallocateData( Obj )
+!	call DeallocateData( obj )
 ! ```
 
-MODULE PURE SUBROUTINE mc_deallocate_data( Obj )
-  CLASS( MeshConnectivity_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE mc_deallocate_data( obj )
+  CLASS( MeshConnectivity_ ), INTENT( INOUT) :: obj
     !! Mesh connectivity object
 END SUBROUTINE mc_deallocate_data
 END INTERFACE
@@ -110,28 +110,28 @@ INTERFACE
 
 !> authors: Dr. Vikas Sharma
 !
-! This subroutine generate the connectivity matrix called Obj % CellFacet
+! This subroutine generate the connectivity matrix called obj % CellFacet
 ! between cell and facet mesh.
 !
 !  - The output result will be an integer array with 2 rows
 !  - First row contains the element number of `CellMesh`
 !  - Second row contains the local facet number of cell element which
 !  connects to the facet mesh element.
-!  - Each column of `Obj % CellFacet` corresponds to an Element of
+!  - Each column of `obj % CellFacet` corresponds to an Element of
 !  `FacetMesh`; total number of columns are same as total number of elem
 !  in the `FacetMesh`
 !  - if an element of `FacetMesh` is orphan then its corresponding entry
-!  is set to zero in `Obj % CellFacet` matrix
+!  is set to zero in `obj % CellFacet` matrix
 !
 !### Usage
 !
 ! ```fortran
-!	call Obj % initiateFacetToCellData( Obj, CellMesh, FacetMesh, CellMeshData)
+!	call obj % initiateFacetToCellData( obj, CellMesh, FacetMesh, CellMeshData)
 ! ```
 
-MODULE PURE SUBROUTINE mc_init_cell_facet( Obj, CellMesh, FacetMesh, &
+MODULE PURE SUBROUTINE mc_init_cell_facet( obj, CellMesh, FacetMesh, &
   & CellMeshData )
-  CLASS( MeshConnectivity_ ), INTENT( INOUT) :: Obj
+  CLASS( MeshConnectivity_ ), INTENT( INOUT) :: obj
     !! Mesh connectivity data
   CLASS( Mesh_ ), INTENT( INOUT ) :: CellMesh
     !! Mesh of cell elements
@@ -160,12 +160,12 @@ INTERFACE
 !	id = obj % CellNumber( facetNum )
 ! ```
 
-MODULE PURE FUNCTION mc_cell_of_facet( Obj,  FacetNum ) RESULT( Ans )
-  CLASS( MeshConnectivity_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION mc_cell_of_facet( obj,  FacetNum ) RESULT( ans )
+  CLASS( MeshConnectivity_ ), INTENT( IN ) :: obj
     !! Mesh connectivity data
   INTEGER( I4B ), INTENT( IN ) :: FacetNum
     !! Facet element number
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
     !! Cell number
 END FUNCTION mc_cell_of_facet
 END INTERFACE
@@ -184,12 +184,12 @@ INTERFACE
 !	id = obj % CellNumber( facetNum )
 ! ```
 
-MODULE PURE FUNCTION mc_cells_of_facets( Obj, FacetNum ) RESULT( Ans )
-  CLASS( MeshConnectivity_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION mc_cells_of_facets( obj, FacetNum ) RESULT( ans )
+  CLASS( MeshConnectivity_ ), INTENT( IN ) :: obj
     !! Mesh connectivity data
   INTEGER( I4B ), INTENT( IN ) :: FacetNum( : )
     !! List of facet element numbers
-  INTEGER( I4B ) :: Ans( SIZE( FacetNum ) )
+  INTEGER( I4B ) :: ans( SIZE( FacetNum ) )
     !! List of cell element numbers
 END FUNCTION mc_cells_of_facets
 END INTERFACE
@@ -209,15 +209,15 @@ INTERFACE
 !### Usage
 !
 ! ```fortran
-!	id = Obj % FacetLocalID( FacetNum )
+!	id = obj % FacetLocalID( FacetNum )
 ! ```
 
-MODULE PURE FUNCTION mc_facet_local_id_1( Obj, FacetNum ) RESULT( Ans )
-  CLASS( MeshConnectivity_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION mc_facet_local_id_1( obj, FacetNum ) RESULT( ans )
+  CLASS( MeshConnectivity_ ), INTENT( IN ) :: obj
     !! Mesh connectivity object
   INTEGER( I4B ), INTENT( IN ) :: FacetNum
     !! Facet element number
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
     !! Local facet ID
 END FUNCTION mc_facet_local_id_1
 END INTERFACE
@@ -233,15 +233,15 @@ INTERFACE
 !### Usage
 !
 ! ```fortran
-!	id = Obj % FacetLocalID( FacetNum )
+!	id = obj % FacetLocalID( FacetNum )
 ! ```
 
-MODULE PURE FUNCTION mc_facet_local_id_2( Obj, FacetNum ) RESULT( Ans )
-  CLASS( MeshConnectivity_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION mc_facet_local_id_2( obj, FacetNum ) RESULT( ans )
+  CLASS( MeshConnectivity_ ), INTENT( IN ) :: obj
     !! Mesh connectivity data
   INTEGER( I4B ), INTENT( IN ) :: FacetNum( : )
     !! List of facet element numbers
-  INTEGER( I4B ) :: Ans( SIZE( FacetNum ) )
+  INTEGER( I4B ) :: ans( SIZE( FacetNum ) )
     !! List of local facet IDs
 END FUNCTION mc_facet_local_id_2
 END INTERFACE
@@ -261,9 +261,9 @@ INTERFACE
 !       - second column: contains the node number of Mesh2 which is
 !       - directly connected to the node 1
 
-MODULE PURE SUBROUTINE mc_init_node_node( Obj, Mesh1, Mesh2, &
+MODULE PURE SUBROUTINE mc_init_node_node( obj, Mesh1, Mesh2, &
   & Node1, Node2, MeshData1, MeshData2 )
-  CLASS( MeshConnectivity_ ), INTENT( INOUT ) :: Obj
+  CLASS( MeshConnectivity_ ), INTENT( INOUT ) :: obj
     !! mesh connectivity object
   CLASS( Mesh_ ), INTENT( IN ) :: Mesh1
     !! Mesh object

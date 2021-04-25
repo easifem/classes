@@ -11,10 +11,10 @@ program main
   integer( i4b ), allocatable :: tNodes( : )
   real( dfp ) :: dotp, t1, t2, final_dp
 
-  
+
   write( *, * ) "tThreads :: "
   read( *, * ) tThreads
-  
+
   tNodes = [100000000]
   call obj1 % initiate( tNodes, [String("U"), String("V")], [2], [2] )
   call obj2 % initiate( obj1 )
@@ -26,15 +26,15 @@ program main
   call omp_set_num_threads( tThreads )
   t1 = omp_get_wtime( )
   !$omp parallel
-  CALL Obj1 % getDotProduct( Obj2, dotp )
+  CALL obj1 % getDotProduct( obj2, dotp )
   !$omp end parallel
   t2 = omp_get_wtime( )
   write( *, * ) "Parallel region ended"
 
   final_dp = dotp
-  
+
   write( *, * ) "N :: ", tNodes
   write( *, * ) "cpu :: ", t2 - t1
   write( *, * ) "dotp :: ", final_dp
-  
+
 end program main

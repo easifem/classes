@@ -7,7 +7,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserSFCC_Pointer
-  ALLOCATE( Ans )
+  ALLOCATE( ans )
 END PROCEDURE UserSFCC_Pointer
 
 END SUBMODULE User

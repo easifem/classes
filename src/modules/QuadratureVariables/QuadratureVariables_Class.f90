@@ -36,7 +36,7 @@ PRIVATE
 ! call obj % initiate( tprop = 3, tpoint = 1, telem=100, names=names )
 ! call obj %  setValue( ipoint, elemnum, Val, is, ie )
 ! Val = obj % Value( ColIndx = 1 )
-! call deallocateData( Obj )
+! call deallocateData( obj )
 ! ```
 !
 ! @note
@@ -57,15 +57,15 @@ TYPE :: QuadratureVariables_
 
   CONTAINS
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => elem_var_initiate
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => elem_var_initiate
       !! Subroutine that Initiates the object
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => elem_var_deallocate_data
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => elem_var_deallocate_data
       !! deallocate data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setValue => elem_var_set_value
+    PROCEDURE, PUBLIC, PASS( obj ) :: setValue => elem_var_set_value
       !! Subroutine that Sets values/change values
-    PROCEDURE, PUBLIC, PASS( Obj ) :: AddContribution => elem_var_add_val
+    PROCEDURE, PUBLIC, PASS( obj ) :: AddContribution => elem_var_add_val
       !! Subroutine that Adds contribution to the existing values
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ArrayValues => elem_var_get_value
+    PROCEDURE, PUBLIC, PASS( obj ) :: ArrayValues => elem_var_get_value
       !! Subroutine that gets element variables
 END TYPE QuadratureVariables_
 
@@ -90,8 +90,8 @@ INTERFACE
 ! - If names are present then `size( names ) == tprop`
 ! - If `names` are not present then variables will be named as `V1, V2,...`
 
-MODULE PURE SUBROUTINE elem_var_initiate( Obj, tprop, tpoint, telem, names )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE elem_var_initiate( obj, tprop, tpoint, telem, names )
+  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
     !! Instance
   INTEGER( I4B ), INTENT( IN ) :: tprop
     !! Total number of properties
@@ -120,11 +120,11 @@ INTERFACE
 
 !> authors: Dr. Vikas Sharma
 !
-! This subroutine set values of `Obj % Val( :, ipoint, icol )`
-! - `Obj % Val( i_s:i_e, ipoint, icol) = Val( : )`
+! This subroutine set values of `obj % Val( :, ipoint, icol )`
+! - `obj % Val( i_s:i_e, ipoint, icol) = Val( : )`
 
-MODULE PURE SUBROUTINE elem_var_set_value( Obj, ipoint, elemnum, Val, is, ie )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE elem_var_set_value( obj, ipoint, elemnum, Val, is, ie )
+  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
     !! Instance of [[quadraturevariables_]]
   INTEGER( I4B ), INTENT( IN ) :: ipoint
     !! Quadrature point number
@@ -148,11 +148,11 @@ INTERFACE
 
 !> authors: Dr. Vikas Sharma
 !
-! This subroutine adds values of `Obj % Val( :, ipoint, icol )`
+! This subroutine adds values of `obj % Val( :, ipoint, icol )`
 
-MODULE PURE SUBROUTINE elem_var_add_val( Obj, ipoint, elemnum, Scale, Val, &
+MODULE PURE SUBROUTINE elem_var_add_val( obj, ipoint, elemnum, Scale, Val, &
   & is, ie )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: Obj
+  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
     !! Instance of [[quadraturevariables_]]
   INTEGER( I4B ), INTENT( IN ) :: elemnum
     !! It represents id of element or material depending on storage type
@@ -178,13 +178,13 @@ INTERFACE
 
 !> authors: Dr. Vikas Sharma
 !
-! This subroutine returns `Obj % Val(:,:,elemnum) `
+! This subroutine returns `obj % Val(:,:,elemnum) `
 
-MODULE PURE FUNCTION elem_var_get_value( Obj, elemnum ) RESULT( Ans )
-  CLASS( QuadratureVariables_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION elem_var_get_value( obj, elemnum ) RESULT( ans )
+  CLASS( QuadratureVariables_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: elemnum
     !! Element number or material number
-  REAL( DFP ), ALLOCATABLE :: Ans( :, : )
+  REAL( DFP ), ALLOCATABLE :: ans( :, : )
 END FUNCTION elem_var_get_value
 END INTERFACE
 
@@ -195,8 +195,8 @@ END INTERFACE
 INTERFACE
 !! Display the content of [[quadraturevariables_]]
 
-MODULE SUBROUTINE elem_var_disp( Obj, msg, unitno )
-  CLASS( QuadratureVariables_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE elem_var_disp( obj, msg, unitno )
+  CLASS( QuadratureVariables_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE elem_var_disp
@@ -216,8 +216,8 @@ PUBLIC :: Display
 INTERFACE
 !! Deallocat data stored inside [[quadraturevariables_]] object
 
-MODULE PURE SUBROUTINE elem_var_deallocate_data( Obj )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE elem_var_deallocate_data( obj )
+  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
 END SUBROUTINE elem_var_deallocate_data
 END INTERFACE
 

@@ -1,15 +1,15 @@
 !! check
-IF( Obj % geo % tPoints .EQ. 0 ) THEN
+IF( obj % geo % tPoints .EQ. 0 ) THEN
   CALL Display( "ERROR:: gmshModel_Class.f90")
   CALL Display( "        model_addPhysicalGroup( )")
   CALL Display( "          Points should be added first")
   STOP
 END IF
 
-IF( ALLOCATED( Obj % PhysicalPointUID ) ) THEN
+IF( ALLOCATED( obj % PhysicalPointUID ) ) THEN
 
   !! check
-  IF( ANY( Obj % PhysicalPointUID .EQ. uid ) ) THEN
+  IF( ANY( obj % PhysicalPointUID .EQ. uid ) ) THEN
     CALL Display( "ERROR:: gmshModel_Class.f90")
     CALL Display( "        model_addPhysicalGroup( )")
     CALL Display( "          Physical Point (" //  trim( int2str( uid ) ) // &
@@ -17,37 +17,37 @@ IF( ALLOCATED( Obj % PhysicalPointUID ) ) THEN
     STOP
   END IF
 
-  CALL Append( Obj % PhysicalPointUID, uid )
-  n = SIZE( Obj % PhysicalPointUID )
+  CALL Append( obj % PhysicalPointUID, uid )
+  n = SIZE( obj % PhysicalPointUID )
 
   ALLOCATE( s( n - 1 ) )
   DO ii = 1, n-1
-    s( ii ) = Obj % PhysicalPointName( ii )
+    s( ii ) = obj % PhysicalPointName( ii )
   END DO
-  DEALLOCATE( Obj % PhysicalPointName )
-  ALLOCATE( Obj % PhysicalPointName( n ) )
+  DEALLOCATE( obj % PhysicalPointName )
+  ALLOCATE( obj % PhysicalPointName( n ) )
   DO ii = 1, n-1
-    Obj % PhysicalPointName( ii ) = s( ii )
+    obj % PhysicalPointName( ii ) = s( ii )
   END DO
   DEALLOCATE( s )
 
 ELSE
 
-  Obj % PhysicalPointUID = [uid]
+  obj % PhysicalPointUID = [uid]
   n = 1
 
-  ALLOCATE( Obj % PhysicalPointName( 1 ) )
+  ALLOCATE( obj % PhysicalPointName( 1 ) )
 
 END IF
 
 
 
 !! If it is the first call then
-IF( .NOT. ALLOCATED( Obj % Point_PhysicalToEntity ) ) THEN
-  ALLOCATE( Obj % Point_PhysicalToEntity( def_point_phy2ent ) )
+IF( .NOT. ALLOCATED( obj % Point_PhysicalToEntity ) ) THEN
+  ALLOCATE( obj % Point_PhysicalToEntity( def_point_phy2ent ) )
 END IF
 
-tp2e = SIZE( Obj % Point_PhysicalToEntity )
+tp2e = SIZE( obj % Point_PhysicalToEntity )
 
 ! not enough space, do memory expansion
 IF( tp2e .LT. n ) THEN
@@ -56,47 +56,47 @@ IF( tp2e .LT. n ) THEN
     TYPE( IntVectorPointer_ ) :: temp( tp2e )
 
     DO ii = 1, tp2e
-      temp( ii ) % ptr => Obj % Point_PhysicalToEntity( ii ) % ptr
-      Obj % Point_PhysicalToEntity( ii ) % ptr => NULL( )
+      temp( ii ) % ptr => obj % Point_PhysicalToEntity( ii ) % ptr
+      obj % Point_PhysicalToEntity( ii ) % ptr => NULL( )
     END DO
 
-    DEALLOCATE( Obj % Point_PhysicalToEntity )
-    ALLOCATE( Obj % Point_PhysicalToEntity( 2 * n ) )
+    DEALLOCATE( obj % Point_PhysicalToEntity )
+    ALLOCATE( obj % Point_PhysicalToEntity( 2 * n ) )
 
     DO ii = 1, tp2e
-      Obj % Point_PhysicalToEntity( ii ) % ptr => temp( ii ) % ptr
+      obj % Point_PhysicalToEntity( ii ) % ptr => temp( ii ) % ptr
       temp( ii ) % ptr => NULL( )
     END DO
   END BLOCK
 
 END IF
 
-! ALLOCATE( Obj % Point_PhysicalToEntity( n ) % ptr )
-Obj % Point_PhysicalToEntity( n ) % ptr => IntVector_Pointer( tags )
+! ALLOCATE( obj % Point_PhysicalToEntity( n ) % ptr )
+obj % Point_PhysicalToEntity( n ) % ptr => IntVector_Pointer( tags )
 
 ! now we create entityToPhysical map
 
-IF( .NOT. ALLOCATED( Obj % Point_EntityToPhysical ) ) THEN
-  ALLOCATE( Obj % Point_EntityToPhysical( def_point_ent2phy ) )
+IF( .NOT. ALLOCATED( obj % Point_EntityToPhysical ) ) THEN
+  ALLOCATE( obj % Point_EntityToPhysical( def_point_ent2phy ) )
 END IF
 
 ! check size of geo % point with size of Point_EntityToPhysical
-te2p = SIZE( Obj % Point_EntityToPhysical )
+te2p = SIZE( obj % Point_EntityToPhysical )
 
-IF( te2p .LT. Obj % geo % tPoints ) THEN
+IF( te2p .LT. obj % geo % tPoints ) THEN
   BLOCK
   TYPE( IntVectorPointer_ ) :: temp( te2p )
 
     DO ii = 1, te2p
-      temp( ii ) % ptr => Obj % Point_EntityToPhysical( ii ) % ptr
-      Obj % Point_EntityToPhysical( ii ) % ptr => NULL( )
+      temp( ii ) % ptr => obj % Point_EntityToPhysical( ii ) % ptr
+      obj % Point_EntityToPhysical( ii ) % ptr => NULL( )
     END DO
 
-    DEALLOCATE( Obj % Point_EntityToPhysical )
-    ALLOCATE( Obj % Point_EntityToPhysical( 2*Obj % geo % tPoints ) )
+    DEALLOCATE( obj % Point_EntityToPhysical )
+    ALLOCATE( obj % Point_EntityToPhysical( 2*obj % geo % tPoints ) )
 
     DO ii = 1, te2p
-      Obj % Point_EntityToPhysical( ii ) % ptr => temp( ii ) % ptr
+      obj % Point_EntityToPhysical( ii ) % ptr => temp( ii ) % ptr
       temp( ii ) % ptr => NULL( )
     END DO
   END BLOCK
@@ -108,16 +108,16 @@ n = SIZE( tags )
 
 DO ii = 1, SIZE( tags )
 
-  DO jj = 1, Obj % geo % tPoints
+  DO jj = 1, obj % geo % tPoints
 
-    IF( tags( ii ) .EQ. Obj % geo % Point( jj ) % ptr % uid ) THEN
+    IF( tags( ii ) .EQ. obj % geo % Point( jj ) % ptr % uid ) THEN
 
-      IF( .NOT. ASSOCIATED( Obj % Point_EntityToPhysical( jj ) % ptr ) ) THEN
-        ALLOCATE( Obj % Point_EntityToPhysical( jj ) % ptr )
+      IF( .NOT. ASSOCIATED( obj % Point_EntityToPhysical( jj ) % ptr ) ) THEN
+        ALLOCATE( obj % Point_EntityToPhysical( jj ) % ptr )
       END IF
 
-      CALL APPEND( Obj % Point_EntityToPhysical( jj ) % ptr, [uid] )
-      CALL RemoveDuplicates( Obj % Point_EntityToPhysical( jj ) % ptr )
+      CALL APPEND( obj % Point_EntityToPhysical( jj ) % ptr, [uid] )
+      CALL RemoveDuplicates( obj % Point_EntityToPhysical( jj ) % ptr )
 
     END IF
 

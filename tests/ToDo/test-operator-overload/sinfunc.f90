@@ -17,7 +17,7 @@ module sinfunc
     function sinfunction( obj ) result( ans )
       type( mytype ), intent( in ) :: obj
       real :: ans
-      ans = SIN( Obj % x )
+      ans = SIN( obj % x )
     end function sinfunction
 
     function powerfunction( obj, expo ) result( ans )

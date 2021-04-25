@@ -15,21 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Element_Class ) ShapeData
-USE BaseMethod
-IMPLICIT NONE
+#define FTL_TEMPLATE_TYPE ElementPointer_
+#define FTL_TEMPLATE_TYPE_IS_DERIVED
+#define FTL_TEMPLATE_TYPE_NAME Element
+#define FTL_INSTANTIATE_TEMPLATE
+#define FTL_TEMPLATE_TYPE_MODULE ElementFactory
 
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                 H1Lagrange
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE get_elemsd_H1_Lagrange
-  CALL initiate( Obj = ElemSD, Quad = Quad, &
-    & RefElem = Obj%RefElem, &
-    & ContinuityType= typeH1, &
-    & InterpolType = TypeLagrangeInterpolation )
-  CALL setValue( Obj = ElemSD, Val = XiJ, N =ElemSD%N, dNdXi=ElemSD%dNdXi )
-END PROCEDURE get_elemsd_H1_Lagrange
-END SUBMODULE ShapeData
+MODULE ElementPointerVector_Class
+#include "../../ftlMacros/ftlPointerVector.inc"

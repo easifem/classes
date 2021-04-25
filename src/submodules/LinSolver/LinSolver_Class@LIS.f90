@@ -13,26 +13,26 @@ CONTAINS
 MODULE PROCEDURE lis_initiate
   CHARACTER( LEN = 100 ) :: opt
 
-  Obj % SolverName = SolverName
-  Obj % ierr = 0
+  obj % SolverName = SolverName
+  obj % ierr = 0
 
-  call lis_vector_create( Obj % comm, Obj % lis_res, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_vector_create( obj % comm, obj % lis_res, obj % ierr )
+  call chkerr( obj % ierr )
 
-  call lis_vector_create( Obj % comm, Obj % lis_rhs, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_vector_create( obj % comm, obj % lis_rhs, obj % ierr )
+  call chkerr( obj % ierr )
 
-  call lis_vector_create( Obj % comm, Obj % lis_sol, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_vector_create( obj % comm, obj % lis_sol, obj % ierr )
+  call chkerr( obj % ierr )
 
-  call lis_matrix_create( Obj % comm, Obj % lis_mat, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_matrix_create( obj % comm, obj % lis_mat, obj % ierr )
+  call chkerr( obj % ierr )
 
-  call lis_solver_create( Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_create( obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
-  call lis_precon_create( Obj % lis_solver, obj % lis_precon, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_precon_create( obj % lis_solver, obj % lis_precon, obj % ierr )
+  call chkerr( obj % ierr )
 
   SELECT CASE( SolverName )
   CASE( lis_bicgstabl )
@@ -45,11 +45,11 @@ MODULE PROCEDURE lis_initiate
 
   CASE( lis_orthomin, lis_gmres, lis_fgmres )
     IF( PRESENT( ipar ) ) THEN
-    opt = '-i ' // TRIM( INT2STR( Obj % SolverName ) ) &
+    opt = '-i ' // TRIM( INT2STR( obj % SolverName ) ) &
       & // ' -restart ' &
       & // TRIM( str( n = ipar( 1 ), no_sign = .true.) )
     ELSE
-      opt = '-i ' // TRIM( INT2STR( Obj % SolverName ) )
+      opt = '-i ' // TRIM( INT2STR( obj % SolverName ) )
     END IF
 
   CASE ( lis_idrs )
@@ -68,25 +68,25 @@ MODULE PROCEDURE lis_initiate
     END IF
 
   CASE DEFAULT
-    opt = '-i '// TRIM( INT2STR( Obj % SolverName ) )
+    opt = '-i '// TRIM( INT2STR( obj % SolverName ) )
   END SELECT
 
   !<--- setting up solver name
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
   !<--- max iteration
   opt = '-maxiter '//TRIM( INT2STR( MaxIter ) )
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
   !<--- print residual detials on terminal
   opt = '-print 3'
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
   !<--- Diagonal  scaling
   IF( PRESENT( DiagScale ) ) THEN
@@ -97,26 +97,26 @@ MODULE PROCEDURE lis_initiate
 
   !<--- diagonal scaling
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
   !<--- setting up tolerance
   opt = '-tol '// TRIM( str( n = Tol, no_sign = .true., compact=.true. ) )
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
   !<-- behavior of initial guess
   opt = '-initx_zeros false'
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
   !<--- convergence criteria
   opt = '-conv_cond nrm2_r'
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
 END PROCEDURE lis_initiate
 
@@ -127,9 +127,9 @@ END PROCEDURE lis_initiate
 MODULE PROCEDURE lis_setprecond
   CHARACTER( LEN = 100 ) :: opt
 
-  Obj % precondtype = precondtype
+  obj % precondtype = precondtype
 
-  SELECT CASE( Obj % precondtype )
+  SELECT CASE( obj % precondtype )
   CASE( p_none )
     opt = '-p none'
   CASE( p_jacobi )
@@ -229,8 +229,8 @@ MODULE PROCEDURE lis_setprecond
   END SELECT
 
   call display( opt )
-  call lis_solver_set_option( TRIM( opt ), Obj % lis_solver, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_solver_set_option( TRIM( opt ), obj % lis_solver, obj % ierr )
+  call chkerr( obj % ierr )
 
 END PROCEDURE lis_setprecond
 
@@ -285,14 +285,14 @@ MODULE PROCEDURE lis_setdbc_1
   INTEGER( i4b ) :: count0
   INTEGER( I4B ), ALLOCATABLE :: RowSize( : ), ColSize( : )
 
-  nrow = SIZE( Obj % IA ) - 1
+  nrow = SIZE( obj % IA ) - 1
   n = size( nptrs )
   m = size( dofs )
   tdbnptrs = m * n
   !
   ! CALL reallocate( obj % dbcnptrs,  tdbnptrs, ColSize, nrow, Rowsize, nrow )
-  IF( ALLOCATED( Obj % dbcnptrs ) ) DEALLOCATE( Obj % dbcnptrs )
-  ALLOCATE( Obj % dbcnptrs( 0 : tdbnptrs -1 ) )
+  IF( ALLOCATED( obj % dbcnptrs ) ) DEALLOCATE( obj % dbcnptrs )
+  ALLOCATE( obj % dbcnptrs( 0 : tdbnptrs -1 ) )
 
   ALLOCATE( ColSize( 0:nrow - 1 ), RowSize( 0 : nrow - 1 ) )
   !
@@ -308,10 +308,10 @@ MODULE PROCEDURE lis_setdbc_1
   END DO
   !
   DO i = 0, nrow-1
-    a = Obj % IA( i )
-    b = Obj % IA( i + 1 ) - 1
+    a = obj % IA( i )
+    b = obj % IA( i + 1 ) - 1
     DO j = a, b
-      ColSize( Obj % JA ( j ) ) = ColSize( Obj % JA ( j ) ) + 1
+      ColSize( obj % JA ( j ) ) = ColSize( obj % JA ( j ) ) + 1
     END DO
   END DO
   !
@@ -323,7 +323,7 @@ MODULE PROCEDURE lis_setdbc_1
   !
   DO i = 0, nrow-1
     IF( dbcmask( i ) ) THEN
-      Obj % dbcnptrs( count0 ) = i
+      obj % dbcnptrs( count0 ) = i
       RowSize( i ) = count0
       count0 = count0 + 1;
     END IF
@@ -332,8 +332,8 @@ MODULE PROCEDURE lis_setdbc_1
   allocate( intvec( 0 : tdbnptrs-1 )  )
   a = 0; b = 0;
   DO i = 0, nrow-1
-    DO j = Obj % IA( i ), Obj % IA( i + 1 ) - 1
-      a = Obj % JA( j )
+    DO j = obj % IA( i ), obj % IA( i + 1 ) - 1
+      a = obj % JA( j )
       IF( dbcmask( a ) ) THEN
         call append( Intvec( RowSize( a ) ), [j, i] )
         b = b + 1
@@ -379,7 +379,7 @@ MODULE PROCEDURE lis_setdbc_2
   INTEGER( i4b ) :: count0
   INTEGER( I4B ), ALLOCATABLE :: RowSize( : ), ColSize( : )
 
-  nrow = SIZE( Obj % IA ) - 1
+  nrow = SIZE( obj % IA ) - 1
   m = size( dofs )
   tdbnptrs = 0
   DO i = 1, m
@@ -387,8 +387,8 @@ MODULE PROCEDURE lis_setdbc_2
   END DO
   !
   ! CALL reallocate( obj % dbcnptrs,  tdbnptrs, ColSize, nrow, Rowsize, nrow )
-  IF( ALLOCATED( Obj % dbcnptrs ) ) DEALLOCATE( Obj % dbcnptrs )
-  ALLOCATE( Obj % dbcnptrs( 0 : tdbnptrs -1 ) )
+  IF( ALLOCATED( obj % dbcnptrs ) ) DEALLOCATE( obj % dbcnptrs )
+  ALLOCATE( obj % dbcnptrs( 0 : tdbnptrs -1 ) )
 
   ALLOCATE( ColSize( 0:nrow - 1 ), RowSize( 0 : nrow - 1 ) )
   !
@@ -405,10 +405,10 @@ MODULE PROCEDURE lis_setdbc_2
   END DO
   !
   DO i = 0, nrow-1
-    a = Obj % IA( i )
-    b = Obj % IA( i + 1 ) - 1
+    a = obj % IA( i )
+    b = obj % IA( i + 1 ) - 1
     DO j = a, b
-      ColSize( Obj % JA ( j ) ) = ColSize( Obj % JA ( j ) ) + 1
+      ColSize( obj % JA ( j ) ) = ColSize( obj % JA ( j ) ) + 1
     END DO
   END DO
   !
@@ -420,7 +420,7 @@ MODULE PROCEDURE lis_setdbc_2
   !
   DO i = 0, nrow-1
     IF( dbcmask( i ) ) THEN
-      Obj % dbcnptrs( count0 ) = i
+      obj % dbcnptrs( count0 ) = i
       RowSize( i ) = count0
       count0 = count0 + 1;
     END IF
@@ -429,8 +429,8 @@ MODULE PROCEDURE lis_setdbc_2
   allocate( intvec( 0 : tdbnptrs-1 )  )
   a = 0; b = 0;
   DO i = 0, nrow-1
-    DO j = Obj % IA( i ), Obj % IA( i + 1 ) - 1
-      a = Obj % JA( j )
+    DO j = obj % IA( i ), obj % IA( i + 1 ) - 1
+      a = obj % JA( j )
       IF( dbcmask( a ) ) THEN
         call append( Intvec( RowSize( a ) ), [j, i] )
         b = b + 1
@@ -485,21 +485,21 @@ MODULE PROCEDURE lis_solve_1
   REAL( DFP ) :: val
 
   ! applying dbc
-  IF( ALLOCATED( Obj % dbcnptrs ) ) THEN
-    tdbnptrs = SIZE( Obj % dbcnptrs )
+  IF( ALLOCATED( obj % dbcnptrs ) ) THEN
+    tdbnptrs = SIZE( obj % dbcnptrs )
     DO j = 0, tdbnptrs-1
-      val = sol( Obj % dbcnptrs( j ) + 1 )
+      val = sol( obj % dbcnptrs( j ) + 1 )
 
-      DO i = Obj % dbcindx( j ), Obj % dbcindx( j + 1 ) - 1
+      DO i = obj % dbcindx( j ), obj % dbcindx( j + 1 ) - 1
 
-        rhs( Obj % dbcIA( i ) + 1 ) = &
-          & rhs( Obj % dbcIA( i ) + 1 ) &
-          & - Obj % A( Obj % dbcJA( i ) ) * val
+        rhs( obj % dbcIA( i ) + 1 ) = &
+          & rhs( obj % dbcIA( i ) + 1 ) &
+          & - obj % A( obj % dbcJA( i ) ) * val
 
-        IF( Obj % dbcnptrs( j ) .EQ. Obj % dbcIA( i ) ) THEN
-          Obj % A( Obj % dbcJA( i ) ) = 1.0_DFP
+        IF( obj % dbcnptrs( j ) .EQ. obj % dbcIA( i ) ) THEN
+          obj % A( obj % dbcJA( i ) ) = 1.0_DFP
         ELSE
-          Obj % A( Obj % dbcJA( i ) ) = 0.0_DFP
+          obj % A( obj % dbcJA( i ) ) = 0.0_DFP
         END IF
 
       END DO
@@ -507,17 +507,17 @@ MODULE PROCEDURE lis_solve_1
     END DO
 
     DO i = 0, tdbnptrs - 1
-      rhs( Obj % dbcnptrs( i ) + 1 ) = sol( Obj % dbcnptrs( i ) + 1 )
+      rhs( obj % dbcnptrs( i ) + 1 ) = sol( obj % dbcnptrs( i ) + 1 )
     END DO
 
     DO i = 0, tdbnptrs-1
-      a = Obj % IA( Obj % dbcnptrs( i ) )
-      b = Obj % IA( Obj % dbcnptrs( i ) + 1 ) - 1
+      a = obj % IA( obj % dbcnptrs( i ) )
+      b = obj % IA( obj % dbcnptrs( i ) + 1 ) - 1
       DO j = a, b
-        IF( Obj % JA( j ) .EQ. Obj % dbcnptrs( i ) ) THEN
-          Obj % A( j ) = 1.0_DFP
+        IF( obj % JA( j ) .EQ. obj % dbcnptrs( i ) ) THEN
+          obj % A( j ) = 1.0_DFP
         ELSE
-          Obj % A( j ) = 0.0_DFP
+          obj % A( j ) = 0.0_DFP
         END IF
       END DO
     END DO
@@ -527,27 +527,27 @@ MODULE PROCEDURE lis_solve_1
   tdbnptrs = SIZE( rhs )
   DO i = 1, tdbnptrs
 
-    call lis_vector_set_value( LIS_INS_VALUE, i, rhs( i ), Obj % lis_rhs, &
-      & Obj % ierr )
-    call chkerr( Obj % ierr )
+    call lis_vector_set_value( LIS_INS_VALUE, i, rhs( i ), obj % lis_rhs, &
+      & obj % ierr )
+    call chkerr( obj % ierr )
 
-    call lis_vector_set_value( LIS_INS_VALUE, i, sol( i ), Obj % lis_sol, &
-      & Obj % ierr )
-    call chkerr( Obj % ierr )
+    call lis_vector_set_value( LIS_INS_VALUE, i, sol( i ), obj % lis_sol, &
+      & obj % ierr )
+    call chkerr( obj % ierr )
 
   END DO
 
-  call lis_solve( Obj % lis_mat, Obj % lis_rhs, Obj % lis_sol, &
-    & Obj % lis_solver, Obj % ierr )
+  call lis_solve( obj % lis_mat, obj % lis_rhs, obj % lis_sol, &
+    & obj % lis_solver, obj % ierr )
 
   ! call lis_solve_kernel( &
-  !   & Obj % lis_mat, Obj % lis_rhs, Obj % lis_sol, Obj % lis_solver, &
-  !   & Obj % lis_precon, Obj % ierr )
+  !   & obj % lis_mat, obj % lis_rhs, obj % lis_sol, obj % lis_solver, &
+  !   & obj % lis_precon, obj % ierr )
 
-  call chkerr( Obj % ierr )
+  call chkerr( obj % ierr )
 
-  call lis_vector_get_values( Obj % lis_sol, 1_I4B, tdbnptrs, sol, Obj % ierr )
-  call chkerr( Obj % ierr )
+  call lis_vector_get_values( obj % lis_sol, 1_I4B, tdbnptrs, sol, obj % ierr )
+  call chkerr( obj % ierr )
 
 END PROCEDURE lis_solve_1
 

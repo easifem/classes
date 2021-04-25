@@ -43,9 +43,9 @@ TYPE :: vtk_
   PROCEDURE, PUBLIC, PASS( obj ) :: vtk_write_mesh_data_2
   PROCEDURE, PUBLIC, PASS( obj ) :: vtk_write_mesh_data_3
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: openNodeData &
+  PROCEDURE, PUBLIC, PASS( obj ) :: openNodeData &
     & => vtk_start_write_node_data
-  PROCEDURE, PUBLIC, PASS( Obj ) :: closeNodeData &
+  PROCEDURE, PUBLIC, PASS( obj ) :: closeNodeData &
     & => vtk_stop_write_node_data
 
   GENERIC, PUBLIC :: WriteNodeData => &
@@ -54,16 +54,16 @@ TYPE :: vtk_
   PROCEDURE, PUBLIC, PASS( obj ) :: vtk_write_node_data_1
   PROCEDURE, PUBLIC, PASS( obj ) :: vtk_write_node_data_2
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: openElementData &
+  PROCEDURE, PUBLIC, PASS( obj ) :: openElementData &
     & => vtk_start_write_elem_data
-  PROCEDURE, PUBLIC, PASS( Obj ) :: closeElementData &
+  PROCEDURE, PUBLIC, PASS( obj ) :: closeElementData &
     & => vtk_stop_write_elem_data
 
   GENERIC, PUBLIC :: WriteQuadratureData => &
     & vtk_write_cell_data_1, &
     & vtk_write_cell_data_2
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: vtk_write_cell_data_1, &
+  PROCEDURE, PUBLIC, PASS( obj ) :: vtk_write_cell_data_1, &
     & vtk_write_cell_data_2
 
 END TYPE vtk_
@@ -173,7 +173,7 @@ INTERFACE
 ! in the `<piece>` tag
 !
 ! - This subroutine indicates that we are going to write the mesh information
-MODULE SUBROUTINE vtk_start_write_geo( Obj )
+MODULE SUBROUTINE vtk_start_write_geo( obj )
   CLASS( vtk_ ), INTENT( INOUT) ::  obj
 END SUBROUTINE vtk_start_write_geo
 END INTERFACE
@@ -192,7 +192,7 @@ INTERFACE
 !
 ! This subroutine will write `</piece>` tag
 !
-MODULE SUBROUTINE vtk_stop_write_geo( Obj )
+MODULE SUBROUTINE vtk_stop_write_geo( obj )
   CLASS( vtk_ ), INTENT( INOUT) ::  obj
 END SUBROUTINE vtk_stop_write_geo
 END INTERFACE
@@ -214,7 +214,7 @@ INTERFACE
 ! - Note that `nodes` can represent a super set of nodes; nodes present in
 ! mesh are subset of `nodes`
 
-MODULE SUBROUTINE vtk_write_mesh_data_1( obj, meshobj, mdObj, nodes )
+MODULE SUBROUTINE vtk_write_mesh_data_1( obj, meshobj, mdobj, nodes )
   CLASS( vtk_ ), INTENT( INOUT) :: obj
     !! [[vtk_]] file
   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: meshobj

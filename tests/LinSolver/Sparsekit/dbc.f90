@@ -39,7 +39,7 @@ program main
   !   & , 'gnuplot', .false. )
   call display( mat, 'mat' )
 
-  CALL initiate( Obj  = Iterdata, &
+  CALL initiate( obj  = Iterdata, &
       & Tolerance = 1.0d-6, &
       & ConvergenceType = RelativeConvergence, &
       & ConvergenceIn = ConvergenceInRes, &

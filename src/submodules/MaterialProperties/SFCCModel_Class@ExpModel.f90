@@ -7,15 +7,15 @@ SUBMODULE( SFCCModel_Class ) ExpModel
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExpSFCC_Pointer
-  ALLOCATE( Ans )
-  Ans%Theta_r = Theta_r
-  Ans%Theta_w = Theta_w
-  Ans%Temp_l = Temp_l
-  Ans%Temp_s = Temp_s
-  IF( PRESENT( Coeff ) ) Ans%Coeff=Coeff
-  Ans%getValue => ExpSFCC_get_val
-  Ans%getSlope => ExpSFCC_get_slope
-  Ans%PhaseInfo => ExpSFCC_PhaseInfo
+  ALLOCATE( ans )
+  ans%Theta_r = Theta_r
+  ans%Theta_w = Theta_w
+  ans%Temp_l = Temp_l
+  ans%Temp_s = Temp_s
+  IF( PRESENT( Coeff ) ) ans%Coeff=Coeff
+  ans%getValue => ExpSFCC_get_val
+  ans%getSlope => ExpSFCC_get_slope
+  ans%PhaseInfo => ExpSFCC_PhaseInfo
 END PROCEDURE ExpSFCC_Pointer
 
 !----------------------------------------------------------------------------
@@ -24,20 +24,20 @@ END PROCEDURE ExpSFCC_Pointer
 
 MODULE PROCEDURE ExpSFCC_get_val
   REAL( DFP ) :: c
-  SELECT TYPE( Obj )
+  SELECT TYPE( obj )
   CLASS IS( ExpSFCC_ )
-    IF( Temp .GE. Obj%Temp_l ) THEN
-      Ans=Obj%Theta_w
+    IF( Temp .GE. obj%Temp_l ) THEN
+      ans=obj%Theta_w
       RETURN
     END IF
 
-    IF( Temp .LE. Obj%Temp_s ) THEN
-      Ans = Obj%Theta_r
+    IF( Temp .LE. obj%Temp_s ) THEN
+      ans = obj%Theta_r
       RETURN
     END IF
 
-    c = -Obj%Coeff*((Temp-Obj%Temp_l)/(Obj%Temp_s-Obj%Temp_l))**2
-    Ans = Obj%Theta_r + (Obj%Theta_w-Obj%Theta_r)*EXP(c)
+    c = -obj%Coeff*((Temp-obj%Temp_l)/(obj%Temp_s-obj%Temp_l))**2
+    ans = obj%Theta_r + (obj%Theta_w-obj%Theta_r)*EXP(c)
   END SELECT
 END PROCEDURE ExpSFCC_get_val
 
@@ -48,24 +48,24 @@ END PROCEDURE ExpSFCC_get_val
 MODULE PROCEDURE ExpSFCC_get_slope
   REAL( DFP ) :: c, b
 
-  SELECT TYPE( Obj )
+  SELECT TYPE( obj )
   CLASS IS( ExpSFCC_ )
-    IF( Temp .GE. Obj%Temp_l ) THEN
-      Ans=0.0_DFP
+    IF( Temp .GE. obj%Temp_l ) THEN
+      ans=0.0_DFP
       RETURN
     END IF
 
-    IF( Temp .LE. Obj%Temp_s ) THEN
-      Ans = 0.0_DFP
+    IF( Temp .LE. obj%Temp_s ) THEN
+      ans = 0.0_DFP
       RETURN
     END IF
 
-    b = -2.0*Obj%Coeff * (Temp-Obj%Temp_l)*(Obj%Theta_w - Obj%Theta_r) &
-      & / (Obj%Temp_s-Obj%Temp_l)**2
+    b = -2.0*obj%Coeff * (Temp-obj%Temp_l)*(obj%Theta_w - obj%Theta_r) &
+      & / (obj%Temp_s-obj%Temp_l)**2
 
-    c = -Obj%Coeff*((Temp-Obj%Temp_l)/(Obj%Temp_s-Obj%Temp_l))**2
+    c = -obj%Coeff*((Temp-obj%Temp_l)/(obj%Temp_s-obj%Temp_l))**2
 
-    Ans = b*EXP(c)
+    ans = b*EXP(c)
   END SELECT
 END PROCEDURE ExpSFCC_get_slope
 
@@ -74,19 +74,19 @@ END PROCEDURE ExpSFCC_get_slope
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExpSFCC_PhaseInfo
-  SELECT TYPE( Obj )
+  SELECT TYPE( obj )
   CLASS IS( ExpSFCC_ )
-    IF( ABS(Temp - Obj%Temp_l) .LE. 1.0E-10 .OR. Temp .GE. Obj%Temp_l ) THEN
-      Ans = 'L'
+    IF( ABS(Temp - obj%Temp_l) .LE. 1.0E-10 .OR. Temp .GE. obj%Temp_l ) THEN
+      ans = 'L'
       RETURN
     END IF
 
-    IF( ABS(Temp - Obj%Temp_s) .LE. 1.0E-10 .OR. Temp .LE. Obj%Temp_s ) THEN
-      Ans = 'S'
+    IF( ABS(Temp - obj%Temp_s) .LE. 1.0E-10 .OR. Temp .LE. obj%Temp_s ) THEN
+      ans = 'S'
       RETURN
     END IF
 
-    Ans = 'M'
+    ans = 'M'
   END SELECT
 END PROCEDURE ExpSFCC_PhaseInfo
 

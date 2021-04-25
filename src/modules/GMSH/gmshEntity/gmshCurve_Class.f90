@@ -30,7 +30,7 @@ PUBLIC :: gmshCurvePointer_
 TYPE, EXTENDS( gmshCurve_ ) :: gmshLine_
   INTEGER( I4B ) :: startTag, endTag
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => line_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => line_encode
 END TYPE gmshLine_
 
 TYPE :: gmshLinePointer_
@@ -49,7 +49,7 @@ TYPE, EXTENDS( gmshCurve_ ) :: gmshCircle_
   INTEGER( I4B ) :: startTag, endTag, centerTag
   REAL( DFP ) :: nx, ny, nz
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => circle_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => circle_encode
 END TYPE gmshCircle_
 
 TYPE :: gmshCirclePointer_
@@ -68,7 +68,7 @@ TYPE, EXTENDS( gmshCurve_ ) :: gmshEllipse_
   INTEGER( I4B ) :: startTag, endTag, majorTag, centerTag
   REAL( DFP ) :: nx, ny, nz
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => Ellipse_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => Ellipse_encode
 END TYPE gmshEllipse_
 
 TYPE :: gmshEllipsePointer_
@@ -86,7 +86,7 @@ PUBLIC :: gmshEllipse_Pointer
 TYPE, EXTENDS( gmshCurve_ ) :: gmshSpline_
   INTEGER( I4B ), ALLOCATABLE :: pointTags( : )
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => Spline_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => Spline_encode
 END TYPE gmshSpline_
 
 TYPE :: gmshSplinePointer_
@@ -105,7 +105,7 @@ TYPE, EXTENDS( gmshCurve_ ) :: gmshCompoundSpline_
   INTEGER( I4B ), ALLOCATABLE :: curveTags( : )
   INTEGER( I4B ) :: numIntervals
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => CompoundSpline_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => CompoundSpline_encode
 END TYPE gmshCompoundSpline_
 
 TYPE :: gmshCompoundSplinePointer_
@@ -124,7 +124,7 @@ TYPE, EXTENDS( gmshCurve_ ) :: gmshCompoundBSpline_
   INTEGER( I4B ), ALLOCATABLE :: curveTags( : )
   INTEGER( I4B ) :: numIntervals
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => CompoundBSpline_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => CompoundBSpline_encode
 END TYPE gmshCompoundBSpline_
 
 TYPE :: gmshCompoundBSplinePointer_
@@ -142,7 +142,7 @@ PUBLIC :: gmshCompoundBSpline_Pointer
 TYPE, EXTENDS( gmshCurve_ ) :: gmshBSpline_
   INTEGER( I4B ), ALLOCATABLE :: pointTags( : )
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => BSpline_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => BSpline_encode
 END TYPE gmshBSpline_
 
 TYPE :: gmshBSplinePointer_
@@ -160,7 +160,7 @@ PUBLIC :: gmshBSpline_Pointer
 TYPE, EXTENDS( gmshCurve_ ) :: gmshBezier_
   INTEGER( I4B ), ALLOCATABLE :: pointTags( : )
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => Bezier_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => Bezier_encode
 END TYPE gmshBezier_
 
 TYPE :: gmshBezierPointer_
@@ -179,7 +179,7 @@ PUBLIC :: gmshBezier_Pointer
 TYPE, EXTENDS( gmshCurve_ ) :: gmshCurveLoop_
   INTEGER( I4B ), ALLOCATABLE :: curveTags( : )
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: encodedStr => CurveLoop_encode
+  PROCEDURE, PUBLIC, PASS( obj ) :: encodedStr => CurveLoop_encode
 END TYPE gmshCurveLoop_
 
 TYPE :: gmshCurveLoopPointer_
@@ -200,18 +200,18 @@ CONTAINS
 !                                                gmsLine_Pointer@LineMethods
 !----------------------------------------------------------------------------
 
-FUNCTION gmshLine_Pointer ( startTag, endTag, uid ) RESULT( Ans )
+FUNCTION gmshLine_Pointer ( startTag, endTag, uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, uid
-  CLASS( gmshLine_  ), POINTER :: Ans
+  CLASS( gmshLine_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % startTag = startTag
-  Ans % endTag = endTag
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % startTag = startTag
+  ans % endTag = endTag
+  ans % uid = uid
+  ans % dim = 1
 END FUNCTION gmshLine_Pointer
 
-FUNCTION line_encode( Obj ) RESULT( Ans )
+FUNCTION line_encode( obj ) RESULT( ans )
   CLASS( gmshLine_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -231,24 +231,24 @@ END FUNCTION line_encode
 !----------------------------------------------------------------------------
 
 FUNCTION gmshCircle_Pointer ( startTag, centerTag, endTag, uid, nx, ny, nz ) &
-  & RESULT( Ans )
+  & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, centerTag, uid
   REAL( DFP ), INTENT( IN ) :: nx,ny, nz
-  CLASS( gmshCircle_  ), POINTER :: Ans
+  CLASS( gmshCircle_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % startTag = startTag
-  Ans % endTag = endTag
-  Ans % centerTag = centerTag
-  Ans % nx = nx
-  Ans % ny = ny
-  Ans % nz = nz
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % startTag = startTag
+  ans % endTag = endTag
+  ans % centerTag = centerTag
+  ans % nx = nx
+  ans % ny = ny
+  ans % nz = nz
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshCircle_Pointer
 
-FUNCTION Circle_encode( Obj ) RESULT( Ans )
+FUNCTION Circle_encode( obj ) RESULT( ans )
   CLASS( gmshCircle_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -270,25 +270,25 @@ END FUNCTION Circle_encode
 !----------------------------------------------------------------------------
 
 FUNCTION gmshEllipse_Pointer ( startTag, centerTag, majorTag, endTag, uid, &
-  & nx, ny, nz ) RESULT( Ans )
+  & nx, ny, nz ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, centerTag, majorTag, uid
   REAL( DFP ), INTENT( IN ) :: nx,ny, nz
-  CLASS( gmshEllipse_  ), POINTER :: Ans
+  CLASS( gmshEllipse_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % startTag = startTag
-  Ans % endTag = endTag
-  Ans % majorTag = majorTag
-  Ans % centerTag = centerTag
-  Ans % nx = nx
-  Ans % ny = ny
-  Ans % nz = nz
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % startTag = startTag
+  ans % endTag = endTag
+  ans % majorTag = majorTag
+  ans % centerTag = centerTag
+  ans % nx = nx
+  ans % ny = ny
+  ans % nz = nz
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshEllipse_Pointer
 
-FUNCTION Ellipse_encode( Obj ) RESULT( Ans )
+FUNCTION Ellipse_encode( obj ) RESULT( ans )
   CLASS( gmshEllipse_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -311,18 +311,18 @@ END FUNCTION Ellipse_encode
 !                                           gmshSpline_Pointer@SplineMethods
 !----------------------------------------------------------------------------
 
-FUNCTION gmshSpline_Pointer ( pointTags,  uid ) RESULT( Ans )
+FUNCTION gmshSpline_Pointer ( pointTags,  uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: uid, pointTags( : )
-  CLASS( gmshSpline_  ), POINTER :: Ans
+  CLASS( gmshSpline_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % pointTags = pointTags
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % pointTags = pointTags
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshSpline_Pointer
 
-FUNCTION Spline_encode( Obj ) RESULT( Ans )
+FUNCTION Spline_encode( obj ) RESULT( ans )
   CLASS( gmshSpline_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -352,19 +352,19 @@ END FUNCTION Spline_encode
 !----------------------------------------------------------------------------
 
 FUNCTION gmshCompoundSpline_Pointer ( curveTags, uid, numIntervals ) &
-  & RESULT( Ans )
+  & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: uid, curveTags( : ), numIntervals
-  CLASS( gmshCompoundSpline_  ), POINTER :: Ans
+  CLASS( gmshCompoundSpline_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % curveTags = curveTags
-  Ans % numIntervals = numIntervals
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % curveTags = curveTags
+  ans % numIntervals = numIntervals
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshCompoundSpline_Pointer
 
-FUNCTION CompoundSpline_encode( Obj ) RESULT( Ans )
+FUNCTION CompoundSpline_encode( obj ) RESULT( ans )
   CLASS( gmshCompoundSpline_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -396,19 +396,19 @@ END FUNCTION CompoundSpline_encode
 !----------------------------------------------------------------------------
 
 FUNCTION gmshCompoundBSpline_Pointer ( curveTags, uid, numIntervals ) &
-  & RESULT( Ans )
+  & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: uid, curveTags( : ), numIntervals
-  CLASS( gmshCompoundBSpline_  ), POINTER :: Ans
+  CLASS( gmshCompoundBSpline_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % curveTags = curveTags
-  Ans % numIntervals = numIntervals
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % curveTags = curveTags
+  ans % numIntervals = numIntervals
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshCompoundBSpline_Pointer
 
-FUNCTION CompoundBSpline_encode( Obj ) RESULT( Ans )
+FUNCTION CompoundBSpline_encode( obj ) RESULT( ans )
   CLASS( gmshCompoundBSpline_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -439,18 +439,18 @@ END FUNCTION CompoundBSpline_encode
 !                                         gmshBSpline_Pointer@BSplineMethods
 !----------------------------------------------------------------------------
 
-FUNCTION gmshBSpline_Pointer ( pointTags,  uid ) RESULT( Ans )
+FUNCTION gmshBSpline_Pointer ( pointTags,  uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: uid, pointTags( : )
-  CLASS( gmshBSpline_  ), POINTER :: Ans
+  CLASS( gmshBSpline_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % pointTags = pointTags
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % pointTags = pointTags
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshBSpline_Pointer
 
-FUNCTION BSpline_encode( Obj ) RESULT( Ans )
+FUNCTION BSpline_encode( obj ) RESULT( ans )
   CLASS( gmshBSpline_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -479,18 +479,18 @@ END FUNCTION BSpline_encode
 !                                           gmshBezier_Pointer@BezierMethods
 !----------------------------------------------------------------------------
 
-FUNCTION gmshBezier_Pointer ( pointTags,  uid ) RESULT( Ans )
+FUNCTION gmshBezier_Pointer ( pointTags,  uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: uid, pointTags( : )
-  CLASS( gmshBezier_  ), POINTER :: Ans
+  CLASS( gmshBezier_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % pointTags = pointTags
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % pointTags = pointTags
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshBezier_Pointer
 
-FUNCTION Bezier_encode( Obj ) RESULT( Ans )
+FUNCTION Bezier_encode( obj ) RESULT( ans )
   CLASS( gmshBezier_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 
@@ -518,18 +518,18 @@ END FUNCTION Bezier_encode
 !                                     gmshCurveLoop_Pointer@CurveLoopMethods
 !----------------------------------------------------------------------------
 
-FUNCTION gmshCurveLoop_Pointer ( curveTags,  uid ) RESULT( Ans )
+FUNCTION gmshCurveLoop_Pointer ( curveTags,  uid ) RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: uid, curveTags( : )
-  CLASS( gmshCurveLoop_  ), POINTER :: Ans
+  CLASS( gmshCurveLoop_  ), POINTER :: ans
 
-  ALLOCATE( Ans )
-  Ans % curveTags = curveTags
-  Ans % uid = uid
-  Ans % dim = 1
+  ALLOCATE( ans )
+  ans % curveTags = curveTags
+  ans % uid = uid
+  ans % dim = 1
 
 END FUNCTION gmshCurveLoop_Pointer
 
-FUNCTION CurveLoop_encode( Obj ) RESULT( Ans )
+FUNCTION CurveLoop_encode( obj ) RESULT( ans )
   CLASS( gmshCurveLoop_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 

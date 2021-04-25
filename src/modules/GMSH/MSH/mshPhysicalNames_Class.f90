@@ -28,23 +28,23 @@ TYPE :: mshPhysicalNames_
     !! Physical name of each physical group
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => pn_deallocatedata
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => pn_deallocatedata
       !! To deallocate data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: GotoTag => pn_goto
+    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => pn_goto
       !! Search tag for physical group in mesh file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadFromFile => pn_read_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadFromFile => pn_read_file
       !! Read contents from mesh file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: WriteToFile => pn_write_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => pn_write_file
       !! Write contents to a mesh file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SIZE => pn_get_size
+    PROCEDURE, PUBLIC, PASS( obj ) :: SIZE => pn_get_size
       !! Returns total number of physical groups
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalPhysicalPoints => pn_size_point
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalPhysicalPoints => pn_size_point
       !! Returns total number of physical points in mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalPhysicalCurves => pn_size_Curve
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalPhysicalCurves => pn_size_Curve
       !! Returns total number of physical curves
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalPhysicalSurfaces => pn_size_Surface
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalPhysicalSurfaces => pn_size_Surface
       !! Returns total number of physical surface
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalPhysicalVolumes => pn_size_Volume
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalPhysicalVolumes => pn_size_Volume
       !! Returns total number of physical volumes
     GENERIC, PUBLIC :: &
       & getIndex => &
@@ -52,63 +52,63 @@ TYPE :: mshPhysicalNames_
       & pn_index_b, &
       & pn_index_c, &
       & pn_index_d
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_a
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_a
       !! Returns the index of a physical group
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_b
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_b
       !! Returns the index of a physical group
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_c
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_c
       !! Returns the index of a physical group
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_d
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_d
       !! Returns the index of a physical group
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalPointNames => pn_point_names
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalPointNames => pn_point_names
       !! Returns the names of physical points
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalCurveNames => pn_Curve_names
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalCurveNames => pn_Curve_names
       !! Returns names of a physical curves
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalSurfaceNames => pn_Surface_names
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalSurfaceNames => pn_Surface_names
       !! Returns names of Physical surface
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalVolumeNames => pn_Volume_names
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalVolumeNames => pn_Volume_names
       !! Returns names of physical volumes
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalPointTags => pn_Point_tags
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalPointTags => pn_Point_tags
       !! Returns tags of physical points
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalCurveTags => pn_Curve_tags
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalCurveTags => pn_Curve_tags
       !! Returns tags of physical points
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalSurfaceTags => pn_Surface_tags
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalSurfaceTags => pn_Surface_tags
       !! Returns tags of physical surfaces
-    PROCEDURE, PUBLIC, PASS( Obj ) :: PhysicalVolumeTags => pn_Volume_tags
+    PROCEDURE, PUBLIC, PASS( obj ) :: PhysicalVolumeTags => pn_Volume_tags
       !! Returns tags of physical volumes
-    PROCEDURE, PUBLIC, PASS( Obj ) :: WhoAmI => pn_who_am_i
+    PROCEDURE, PUBLIC, PASS( obj ) :: WhoAmI => pn_who_am_i
       !! Enquire about "volume, surface, curve, point'
 
     GENERIC, PUBLIC :: IndexOfPhysicalPoint => pn_index_point, &
       & pn_index_point_2
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_point
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_point
       !! Return index of physical points
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_point_2
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_point_2
       !! Return index of physical points
 
     GENERIC, PUBLIC :: IndexOfPhysicalCurve => &
       & pn_index_Curve, &
       & pn_index_Curve_2
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_Curve
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_Curve
       !! Return index of physical curve
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_Curve_2
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_Curve_2
       !! Return index of physical curve
 
     GENERIC, PUBLIC :: IndexOfPhysicalSurface => &
       & pn_index_Surface, &
       & pn_index_Surface_2
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_Surface
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_Surface
       !! Return index of physical surface
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_Surface_2
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_Surface_2
       !! Return index of physical surface
 
     GENERIC, PUBLIC :: IndexOfPhysicalVolume => pn_index_Volume, &
       & pn_index_Volume_2
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_Volume
-    PROCEDURE, PRIVATE, PASS( Obj ) :: pn_index_Volume_2
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_Volume
+    PROCEDURE, PRIVATE, PASS( obj ) :: pn_index_Volume_2
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: OutputFileName => pn_output_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: OutputFileName => pn_output_file
 END TYPE mshPhysicalNames_
 
 !----------------------------------------------------------------------------
@@ -148,8 +148,8 @@ INTERFACE
 !
 ! This suboutine find the tag for Physical groups in mesh
 
-MODULE SUBROUTINE pn_goto( Obj, mshFile, ierr )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE pn_goto( obj, mshFile, ierr )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
 END SUBROUTINE pn_goto
@@ -166,8 +166,8 @@ INTERFACE
 !
 ! This subroutine reads physical groupds info from mesh file
 
-MODULE SUBROUTINE pn_read_file( Obj, mshFile, ierr )
-  CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE pn_read_file( obj, mshFile, ierr )
+  CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
 END SUBROUTINE pn_read_file
@@ -184,8 +184,8 @@ INTERFACE
 !
 ! This subroutine writes physical groupds info in mesh file
 
-MODULE SUBROUTINE pn_write_file( Obj, mshFile, Str, EndStr )
-  CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE pn_write_file( obj, mshFile, Str, EndStr )
+  CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: Str, EndStr
 END SUBROUTINE pn_write_file
@@ -202,8 +202,8 @@ INTERFACE
 !
 ! This subroutine displays the content of [[mshphysicalnames_]]
 
-MODULE SUBROUTINE pn_display( Obj, Msg, UnitNo )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE pn_display( obj, Msg, UnitNo )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
 END SUBROUTINE pn_display
@@ -226,9 +226,9 @@ INTERFACE
 !
 ! This function returns total number of physical entities
 
-MODULE PURE FUNCTION pn_get_size( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ):: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION pn_get_size( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_get_size
 END INTERFACE
 
@@ -243,9 +243,9 @@ INTERFACE
 !
 ! This function returns total number of physical points
 
-MODULE PURE FUNCTION pn_size_point( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ):: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION pn_size_point( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_size_point
 END INTERFACE
 
@@ -260,9 +260,9 @@ INTERFACE
 !
 ! This function returns total number of physical curves
 
-MODULE PURE FUNCTION pn_size_Curve( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ):: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION pn_size_Curve( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_size_Curve
 END INTERFACE
 
@@ -277,9 +277,9 @@ INTERFACE
 !
 ! This function returns total number of physical surfaces
 
-MODULE PURE FUNCTION pn_size_Surface( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ):: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION pn_size_Surface( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_size_Surface
 END INTERFACE
 
@@ -294,9 +294,9 @@ INTERFACE
 !
 ! This function returns total number of physical volumes
 
-MODULE PURE FUNCTION pn_size_Volume( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ):: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION pn_size_Volume( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_size_Volume
 END INTERFACE
 
@@ -311,10 +311,10 @@ INTERFACE
 !
 ! This function returns index of a given physical name
 
-MODULE PURE FUNCTION pn_index_a( Obj, Name ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_a( obj, Name ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Name
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_index_a
 END INTERFACE
 
@@ -323,10 +323,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION pn_index_b( Obj, Name ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_b( obj, Name ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   TYPE( String ), INTENT( IN ) :: Name( : )
-  INTEGER( I4B ) :: Ans( SIZE( Name ) )
+  INTEGER( I4B ) :: ans( SIZE( Name ) )
 END FUNCTION pn_index_b
 END INTERFACE
 
@@ -348,10 +348,10 @@ INTERFACE
 !     - 3 => volume
 ! - `XiDimTag( 2 )` denotes the Physical Tag of physical entity
 
-MODULE PURE FUNCTION pn_index_c( Obj, XiDimTag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_c( obj, XiDimTag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: XiDimTag( 2 )
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_index_c
 END INTERFACE
 
@@ -372,10 +372,10 @@ INTERFACE
 ! - `XiDim` = 2 => returns indices of surfaces
 ! - `XiDim` = 3 => returns indices of volumes
 
-MODULE PURE FUNCTION pn_index_d( Obj, XiDimTag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_d( obj, XiDimTag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: XiDimTag
-  INTEGER( I4B ), ALLOCATABLE  :: Ans( : )
+  INTEGER( I4B ), ALLOCATABLE  :: ans( : )
 END FUNCTION pn_index_d
 END INTERFACE
 
@@ -390,9 +390,9 @@ INTERFACE
 !
 ! This subroutine returns the names of physical points
 
-MODULE PURE FUNCTION pn_point_names( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  TYPE( String ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_point_names( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_point_names
 END INTERFACE
 
@@ -407,9 +407,9 @@ INTERFACE
 !
 ! This subroutine returns the names of physical curves
 
-MODULE PURE FUNCTION pn_Curve_names( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  TYPE( String ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Curve_names( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Curve_names
 END INTERFACE
 
@@ -424,9 +424,9 @@ INTERFACE
 !
 ! This subroutine returns the names of physical surfaces
 
-MODULE PURE FUNCTION pn_Surface_names( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  TYPE( String ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Surface_names( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Surface_names
 END INTERFACE
 
@@ -441,9 +441,9 @@ INTERFACE
 !
 ! This subroutine returns the names of physical volumes
 
-MODULE PURE FUNCTION pn_Volume_names( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  TYPE( String ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Volume_names( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Volume_names
 END INTERFACE
 
@@ -458,9 +458,9 @@ INTERFACE
 !
 ! This function returns the physical tags of all physical points
 
-MODULE PURE FUNCTION pn_Point_tags( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Point_tags( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Point_tags
 END INTERFACE
 
@@ -475,9 +475,9 @@ INTERFACE
 !
 ! This function returns the physical tags of all physical curves
 
-MODULE PURE FUNCTION pn_Curve_tags( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Curve_tags( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Curve_tags
 END INTERFACE
 
@@ -492,9 +492,9 @@ INTERFACE
 !
 ! This function returns the physical tags of all physical surfaces
 
-MODULE PURE FUNCTION pn_Surface_tags( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Surface_tags( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Surface_tags
 END INTERFACE
 
@@ -509,9 +509,9 @@ INTERFACE
 !
 ! This function returns the physical tags of all physical volumes
 
-MODULE PURE FUNCTION pn_Volume_tags( Obj ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+MODULE PURE FUNCTION pn_Volume_tags( obj ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION pn_Volume_tags
 END INTERFACE
 
@@ -520,10 +520,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION pn_who_am_i( Obj, I ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_who_am_i( obj, I ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: I
-  TYPE( String ) :: Ans
+  TYPE( String ) :: ans
 END FUNCTION pn_who_am_i
 END INTERFACE
 
@@ -534,18 +534,18 @@ END INTERFACE
 ! return the index of physical point from its physical id
 
 INTERFACE
-MODULE PURE FUNCTION pn_index_point( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_point( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_index_point
 END INTERFACE
 
 INTERFACE
-MODULE PURE FUNCTION pn_index_point_2( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_point_2( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag( : )
-  INTEGER( I4B ) :: Ans( SIZE( Tag ) )
+  INTEGER( I4B ) :: ans( SIZE( Tag ) )
 END FUNCTION pn_index_point_2
 END INTERFACE
 
@@ -560,10 +560,10 @@ INTERFACE
 !
 ! This function returns the index of physical Curve from its physical id
 
-MODULE PURE FUNCTION pn_index_Curve( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_Curve( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_index_Curve
 END INTERFACE
 
@@ -578,10 +578,10 @@ INTERFACE
 !
 ! This function returns the index of physical Curve from its physical id
 
-MODULE PURE FUNCTION pn_index_Curve_2( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_Curve_2( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag( : )
-  INTEGER( I4B ) :: Ans( SIZE( Tag ) )
+  INTEGER( I4B ) :: ans( SIZE( Tag ) )
 END FUNCTION pn_index_Curve_2
 END INTERFACE
 
@@ -596,10 +596,10 @@ INTERFACE
 !
 ! This function returns the index of physical Surface from its physical id
 
-MODULE PURE FUNCTION pn_index_Surface( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_Surface( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_index_Surface
 END INTERFACE
 
@@ -608,10 +608,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION pn_index_Surface_2( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_Surface_2( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag( : )
-  INTEGER( I4B ) :: Ans( SIZE( Tag ) )
+  INTEGER( I4B ) :: ans( SIZE( Tag ) )
 END FUNCTION pn_index_Surface_2
 END INTERFACE
 
@@ -626,10 +626,10 @@ INTERFACE
 !
 ! This function returns the index of physical Volume from its physical id
 
-MODULE PURE FUNCTION pn_index_Volume( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_Volume( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION pn_index_Volume
 END INTERFACE
 
@@ -644,10 +644,10 @@ INTERFACE
 !
 ! This function returns the index of physical Volume from its physical id
 
-MODULE PURE FUNCTION pn_index_Volume_2( Obj, Tag ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_index_Volume_2( obj, Tag ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Tag( : )
-  INTEGER( I4B ) :: Ans( SIZE( Tag ) )
+  INTEGER( I4B ) :: ans( SIZE( Tag ) )
 END FUNCTION pn_index_Volume_2
 END INTERFACE
 
@@ -658,11 +658,11 @@ END INTERFACE
 INTERFACE
 !! This function retunrns the name of output file
 
-MODULE PURE FUNCTION pn_output_file( Obj, mshFile, indx ) RESULT( Ans )
-  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION pn_output_file( obj, mshFile, indx ) RESULT( ans )
+  CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
   TYPE( File_ ), INTENT( IN ) :: mshFile
   INTEGER( I4B ), INTENT( IN ) :: indx
-  TYPE( String ) :: Ans
+  TYPE( String ) :: ans
 END FUNCTION pn_output_file
 END INTERFACE
 
@@ -677,8 +677,8 @@ INTERFACE
 !
 ! This subroutine deallocates the data stored in [[mshPhysicalNames_]]
 
-MODULE SUBROUTINE pn_deallocatedata( Obj )
-  CLASS( mshPhysicalNames_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE pn_deallocatedata( obj )
+  CLASS( mshPhysicalNames_ ), INTENT( INOUT) :: obj
 END SUBROUTINE pn_deallocatedata
 END INTERFACE
 

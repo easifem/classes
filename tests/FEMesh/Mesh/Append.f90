@@ -34,9 +34,9 @@ PROGRAM MAIN
   call Append( obj, elem )
   call display( obj, "mesh" )
   !
-  write( *, * ) "tElements = ", Obj % tElements
-  write( *, * ) "maxElements = ", Obj %  maxElements
+  write( *, * ) "tElements = ", obj % tElements
+  write( *, * ) "maxElements = ", obj %  maxElements
   !
-  elem => ElementPointer( Obj = Obj, iel = 1 )
+  elem => ElementPointer( obj = obj, iel = 1 )
   call display( elem, "elem(1)" )
 END PROGRAM MAIN

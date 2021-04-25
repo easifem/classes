@@ -8,9 +8,9 @@ WRC="windres"
 PRJTK="sfprjtk"
 RM=rm -f
 
-IDIR=-I/Applications/SimplyFortran/SimplyFortran.app/Contents/Resources/gcc/include/ -I/usr/local/include -I/Users/vikassharma/Dropbox/easifem-classes/include -I/Users/vikassharma/Dropbox/easifem-base/include -I/Users/vikassharma/Dropbox/easifem-extpkgs/include -I/Users/vikassharma/include 
+IDIR=-I/Applications/SimplyFortran/SimplyFortran.app/Contents/Resources/gcc/include/ -I/usr/local/include -I/Users/vikassharma/Dropbox/easifem-classes/include -I/Users/vikassharma/Dropbox/easifem-base/include -I/Users/vikassharma/Dropbox/easifem-extpkgs/include -I/Users/vikassharma/include
 
-LDIR=-L/Applications/SimplyFortran/SimplyFortran.app/Contents/Resources/gcc/lib/ 
+LDIR=-L/Applications/SimplyFortran/SimplyFortran.app/Contents/Resources/gcc/lib/
 
 
 OPTFLAGS= -g
@@ -25,7 +25,7 @@ PRJ_CFLAGS=
 
 PRJ_LFLAGS= -lsfopenblas
 
-FFLAGS=$(SPECIALFLAGS) $(OPTFLAGS) $(PRJ_FFLAGS) -J../../include 
+FFLAGS=$(SPECIALFLAGS) $(OPTFLAGS) $(PRJ_FFLAGS) -J../../include
 
 CFLAGS=$(SPECIALFLAGS) $(OPTFLAGS) $(PRJ_CFLAGS)
 

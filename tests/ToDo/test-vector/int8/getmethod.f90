@@ -51,57 +51,57 @@ program main
 	! END BLOCK
 
 	! BLOCK
-	! 	TYPE(int8vector_) :: Obj( 3 )
+	! 	TYPE(int8vector_) :: obj( 3 )
 	! 	INTEGER( Int8 ), ALLOCATABLE :: z( : )
-	! 	Obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-	! 	Obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-	! 	Obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-	! 	z = ArrayValues( Obj, TypeInt8 )
+	! 	obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+	! 	obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+	! 	obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+	! 	z = ArrayValues( obj, TypeInt8 )
 	! 	write( *, * ) z
 	! END BLOCK
 
 	! BLOCK
-	! 	TYPE(int8vector_) :: Obj( 3 )
+	! 	TYPE(int8vector_) :: obj( 3 )
 	! 	INTEGER( Int8 ), ALLOCATABLE :: z( : )
-	! 	Obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-	! 	Obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-	! 	Obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-	! 	z = ArrayValues( Obj, [1,2,3], TypeInt8 )
+	! 	obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+	! 	obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+	! 	obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+	! 	z = ArrayValues( obj, [1,2,3], TypeInt8 )
 	! 	write( *, * ) z
 	! END BLOCK
 
 	BLOCK
-		TYPE(int8vector_) :: Obj( 3 )
+		TYPE(int8vector_) :: obj( 3 )
 		INTEGER( Int8 ), ALLOCATABLE :: z( : )
-		Obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		z = ArrayValues( Obj, 1, 10, 2, TypeInt8 )
+		obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		z = ArrayValues( obj, 1, 10, 2, TypeInt8 )
 		write( *, * ) z
 	END BLOCK
 
 	call equalline( )
 
 	BLOCK
-		TYPE(int8vector_) :: Obj( 3 ), Obj2
-		Obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj2 = ArrayValues( Obj, TypeInt8Vector )
-		CALL Obj2 % Display( )
+		TYPE(int8vector_) :: obj( 3 ), obj2
+		obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj2 = ArrayValues( obj, TypeInt8Vector )
+		CALL obj2 % Display( )
 	END BLOCK
 
 	call equalline( )
 
 	BLOCK
 
-		TYPE(int8vector_) :: Obj( 4 ), Obj2
-		Obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj( 4 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
-		Obj2 = ArrayValues( Obj( 1:4:2 ), TypeInt8Vector )
-		CALL Obj2 % Display( )
+		TYPE(int8vector_) :: obj( 4 ), obj2
+		obj( 1 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 2 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 3 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj( 4 ) = Int8Vector( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] )
+		obj2 = ArrayValues( obj( 1:4:2 ), TypeInt8Vector )
+		CALL obj2 % Display( )
 	END BLOCK
 
 end program main

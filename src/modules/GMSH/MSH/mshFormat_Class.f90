@@ -21,13 +21,13 @@ TYPE :: mshFormat_
   CHARACTER( LEN = 100 ) :: MeshFormat = ""
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadFromFile => fmt_read_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadFromFile => fmt_read_file
       !! Read format from a file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: WriteToFile => fmt_write_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => fmt_write_file
       !! Write content to a file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: GotoTag => fmt_goto
+    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => fmt_goto
       !! Goto a tag
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => fmt_deallocatedata
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => fmt_deallocatedata
       !! Finalize
 END TYPE mshFormat_
 
@@ -55,8 +55,8 @@ INTERFACE
 !
 ! This subroutine reads mesh format from .mshfile
 
-MODULE SUBROUTINE fmt_read_file( Obj, mshFile, ierr )
-  CLASS( mshFormat_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE fmt_read_file( obj, mshFile, ierr )
+  CLASS( mshFormat_ ), INTENT( INOUT) :: obj
   TYPE( File_ ), INTENT( INOUT) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
 END SUBROUTINE fmt_read_file
@@ -73,8 +73,8 @@ INTERFACE
 !
 ! This subroutine writes mesh format to a .msh file
 
-MODULE SUBROUTINE fmt_write_file( Obj, mshFile, Str, EndStr )
-  CLASS( mshFormat_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE fmt_write_file( obj, mshFile, Str, EndStr )
+  CLASS( mshFormat_ ), INTENT( INOUT ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
 END SUBROUTINE fmt_write_file
@@ -87,8 +87,8 @@ END INTERFACE
 INTERFACE
 !! This subroutine display the content of [[mshFormat_]]
 
-MODULE SUBROUTINE fmt_display( Obj, Msg, UnitNo )
-  CLASS( mshFormat_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE fmt_display( obj, Msg, UnitNo )
+  CLASS( mshFormat_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
 END SUBROUTINE fmt_display
@@ -111,8 +111,8 @@ INTERFACE
 !
 ! This subroutine search the mesh format tag in the mesh file
 
-MODULE SUBROUTINE fmt_goto( Obj, mshFile, ierr )
-  CLASS( mshFormat_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE fmt_goto( obj, mshFile, ierr )
+  CLASS( mshFormat_ ), INTENT( IN ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
 END SUBROUTINE fmt_goto
@@ -129,8 +129,8 @@ INTERFACE
 !
 ! This subroutine clears the content of [[mshFormat_]]
 
-MODULE SUBROUTINE fmt_deallocatedata( Obj )
-  CLASS( mshFormat_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE fmt_deallocatedata( obj )
+  CLASS( mshFormat_ ), INTENT( INOUT) :: obj
 END SUBROUTINE fmt_deallocatedata
 END INTERFACE
 

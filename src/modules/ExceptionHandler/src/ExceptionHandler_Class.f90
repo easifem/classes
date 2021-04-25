@@ -108,37 +108,37 @@ TYPE :: ExceptionHandler_
     GENERIC, PUBLIC :: isQuietMode => isQuietMode_all,isQuietMode_eCode
     GENERIC, PUBLIC :: isVerboseMode => isVerboseMode_all,isVerboseMode_eCode
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: addSurrogate
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getSurrogate
-    PROCEDURE, PUBLIC, PASS( Obj ) :: initCounter
-    PROCEDURE, PUBLIC, PASS( Obj ) :: reset
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getCounterAll
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getCounter
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setCounter_All
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setCounter_eCode
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getLastMessage
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setQuietMode_all
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setQuietMode_eCode
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setQuietMode_array
-    PROCEDURE, PRIVATE, PASS( Obj ) :: isQuietMode_all
-    PROCEDURE, PRIVATE, PASS( Obj ) :: isQuietMode_eCode
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setVerboseMode_all
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setVerboseMode_eCode
-    PROCEDURE, PRIVATE, PASS( Obj ) :: setVerboseMode_array
-    PROCEDURE, PRIVATE, PASS( Obj ) :: isVerboseMode_all
-    PROCEDURE, PRIVATE, PASS( Obj ) :: isVerboseMode_eCode
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setLogFileUnit
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getLogFileUnit
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setLogActive
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isLogActive
-    PROCEDURE, PUBLIC, PASS( Obj ) :: checkLogFileOK
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setStopOnError
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isStopOnError
-    PROCEDURE, PUBLIC, PASS( Obj ) :: raiseInformation
-    PROCEDURE, PUBLIC, PASS( Obj ) :: raiseWarning
-    PROCEDURE, PUBLIC, PASS( Obj ) :: raiseDebug
-    PROCEDURE, PUBLIC, PASS( Obj ) :: raiseError
-    PROCEDURE, PUBLIC, PASS( Obj ) :: raiseFatalError
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate
+    PROCEDURE, PUBLIC, PASS( obj ) :: getSurrogate
+    PROCEDURE, PUBLIC, PASS( obj ) :: initCounter
+    PROCEDURE, PUBLIC, PASS( obj ) :: reset
+    PROCEDURE, PUBLIC, PASS( obj ) :: getCounterAll
+    PROCEDURE, PUBLIC, PASS( obj ) :: getCounter
+    PROCEDURE, PRIVATE, PASS( obj ) :: setCounter_All
+    PROCEDURE, PRIVATE, PASS( obj ) :: setCounter_eCode
+    PROCEDURE, PUBLIC, PASS( obj ) :: getLastMessage
+    PROCEDURE, PRIVATE, PASS( obj ) :: setQuietMode_all
+    PROCEDURE, PRIVATE, PASS( obj ) :: setQuietMode_eCode
+    PROCEDURE, PRIVATE, PASS( obj ) :: setQuietMode_array
+    PROCEDURE, PRIVATE, PASS( obj ) :: isQuietMode_all
+    PROCEDURE, PRIVATE, PASS( obj ) :: isQuietMode_eCode
+    PROCEDURE, PRIVATE, PASS( obj ) :: setVerboseMode_all
+    PROCEDURE, PRIVATE, PASS( obj ) :: setVerboseMode_eCode
+    PROCEDURE, PRIVATE, PASS( obj ) :: setVerboseMode_array
+    PROCEDURE, PRIVATE, PASS( obj ) :: isVerboseMode_all
+    PROCEDURE, PRIVATE, PASS( obj ) :: isVerboseMode_eCode
+    PROCEDURE, PUBLIC, PASS( obj ) :: setLogFileUnit
+    PROCEDURE, PUBLIC, PASS( obj ) :: getLogFileUnit
+    PROCEDURE, PUBLIC, PASS( obj ) :: setLogActive
+    PROCEDURE, PUBLIC, PASS( obj ) :: isLogActive
+    PROCEDURE, PUBLIC, PASS( obj ) :: checkLogFileOK
+    PROCEDURE, PUBLIC, PASS( obj ) :: setStopOnError
+    PROCEDURE, PUBLIC, PASS( obj ) :: isStopOnError
+    PROCEDURE, PUBLIC, PASS( obj ) :: raiseInformation
+    PROCEDURE, PUBLIC, PASS( obj ) :: raiseWarning
+    PROCEDURE, PUBLIC, PASS( obj ) :: raiseDebug
+    PROCEDURE, PUBLIC, PASS( obj ) :: raiseError
+    PROCEDURE, PUBLIC, PASS( obj ) :: raiseFatalError
 END TYPE ExceptionHandler_
 
 PUBLIC :: ExceptionHandler_
@@ -194,8 +194,8 @@ PUBLIC :: exceptionMessage
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE copyFromSurrogate( Obj )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE copyFromSurrogate( obj )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE copyFromSurrogate
 END INTERFACE
 
@@ -210,9 +210,9 @@ PUBLIC :: copyFromSurrogate
 ! summary: 	copy a [[ExceptionHandler_]] instance into another instance
 
 INTERFACE
-MODULE SUBROUTINE obj_assign_obj(Obj1, Obj2)
-  TYPE( ExceptionHandler_ ), INTENT( INOUT ) :: Obj1
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: Obj2
+MODULE SUBROUTINE obj_assign_obj(obj1, obj2)
+  TYPE( ExceptionHandler_ ), INTENT( INOUT ) :: obj1
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: obj2
 END SUBROUTINE
 END INTERFACE
 
@@ -225,9 +225,9 @@ END INTERFACE
 ! summary: 	add Surrogate to [[ExceptionHandler_]]
 
 INTERFACE
-MODULE SUBROUTINE addSurrogate( Obj, Obj2 )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
-  TYPE( ExceptionHandler_ ), TARGET, INTENT( IN ) :: Obj2
+MODULE SUBROUTINE addSurrogate( obj, obj2 )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), TARGET, INTENT( IN ) :: obj2
 END SUBROUTINE
 END INTERFACE
 
@@ -240,9 +240,9 @@ END INTERFACE
 ! summary: 	Returns a pointer to an exception handler's surrogate
 
 INTERFACE
-MODULE SUBROUTINE getSurrogate( Obj, Obj2 )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  CLASS( ExceptionHandler_ ), POINTER, INTENT( INOUT ) :: Obj2
+MODULE SUBROUTINE getSurrogate( obj, obj2 )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  CLASS( ExceptionHandler_ ), POINTER, INTENT( INOUT ) :: obj2
 END SUBROUTINE getSurrogate
 END INTERFACE
 
@@ -255,8 +255,8 @@ END INTERFACE
 ! summary: 	Initialize the exception counters for an exception object.
 
 INTERFACE
-MODULE PURE SUBROUTINE initCounter( Obj )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE initCounter( obj )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT) :: obj
 END SUBROUTINE initCounter
 END INTERFACE
 
@@ -269,8 +269,8 @@ END INTERFACE
 ! summary: 	Resets an exception handler to its default state.
 
 INTERFACE
-MODULE PURE SUBROUTINE reset( Obj )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT) :: Obj
+MODULE PURE SUBROUTINE reset( obj )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT) :: obj
 END SUBROUTINE reset
 END INTERFACE
 
@@ -283,9 +283,9 @@ END INTERFACE
 ! summary: Get the counters for the exception object.
 
 INTERFACE
-MODULE PURE FUNCTION getCounterAll( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans( EXCEPTION_SIZE )
+MODULE PURE FUNCTION getCounterAll( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans( EXCEPTION_SIZE )
 END FUNCTION getCounterAll
 END INTERFACE
 
@@ -298,10 +298,10 @@ END INTERFACE
 ! summary: Get a count of one exception type for the exception
 
 INTERFACE
-MODULE PURE FUNCTION getCounter( Obj, i ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION getCounter( obj, i ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: i
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION getCounter
 END INTERFACE
 
@@ -314,8 +314,8 @@ END INTERFACE
 ! summary: 	Set the counters for the exception object.
 
 INTERFACE
-MODULE SUBROUTINE setCounter_All( Obj, counter )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE setCounter_All( obj, counter )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: counter( EXCEPTION_SIZE )
 END SUBROUTINE setCounter_All
 END INTERFACE
@@ -330,8 +330,8 @@ END INTERFACE
 ! summary: 	Set a count of one exception type for the exception object.
 
 INTERFACE
-MODULE SUBROUTINE setCounter_eCode( Obj, i, count )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE setCounter_eCode( obj, i, count )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: i
   INTEGER( I4B ), INTENT( IN ) :: count
 END SUBROUTINE setCounter_eCode
@@ -346,9 +346,9 @@ END INTERFACE
 ! summary: 	Gets the last exception message.
 
 INTERFACE
-MODULE PURE FUNCTION getLastMessage( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH) :: Ans
+MODULE PURE FUNCTION getLastMessage( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH) :: ans
 END FUNCTION getLastMessage
 END INTERFACE
 
@@ -361,9 +361,9 @@ END INTERFACE
 ! summary: Suppress/Unsupress exception reporting to standard error.
 
 INTERFACE
-MODULE PURE SUBROUTINE setQuietMode_all( Obj, Ans )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
-  LOGICAL( LGT ),INTENT( IN ) :: Ans
+MODULE PURE SUBROUTINE setQuietMode_all( obj, ans )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ),INTENT( IN ) :: ans
 END SUBROUTINE setQuietMode_all
 END INTERFACE
 
@@ -376,10 +376,10 @@ END INTERFACE
 ! summary: Suppress/Unsupress which exceptions will be reported to standard
 
 INTERFACE
-MODULE PURE SUBROUTINE setQuietMode_eCode( Obj, eCode, Ans)
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE setQuietMode_eCode( obj, eCode, ans)
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: eCode
-  LOGICAL( LGT ), INTENT( IN ) :: Ans
+  LOGICAL( LGT ), INTENT( IN ) :: ans
 END SUBROUTINE setQuietMode_eCode
 END INTERFACE
 
@@ -392,9 +392,9 @@ END INTERFACE
 ! summary: Get the status of the quiet mode. Whether or not exception reporting
 
 INTERFACE
-MODULE PURE SUBROUTINE setQuietMode_array( Obj, Ans )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
-  LOGICAL( LGT ), INTENT( IN ) :: Ans(:)
+MODULE PURE SUBROUTINE setQuietMode_array( obj, ans )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: ans(:)
 END SUBROUTINE setQuietMode_array
 END INTERFACE
 
@@ -403,9 +403,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION isQuietMode_all( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  LOGICAL( LGT ) :: Ans
+MODULE PURE FUNCTION isQuietMode_all( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
 END FUNCTION isQuietMode_all
 END INTERFACE
 
@@ -414,10 +414,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION isQuietMode_eCode( Obj, eCode ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION isQuietMode_eCode( obj, eCode ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: eCode
-  LOGICAL( LGT ) :: Ans
+  LOGICAL( LGT ) :: ans
 END FUNCTION isQuietMode_eCode
 END INTERFACE
 
@@ -426,9 +426,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE setVerboseMode_all( Obj, Ans )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
-  LOGICAL( LGT ), INTENT( IN ) :: Ans
+MODULE PURE SUBROUTINE setVerboseMode_all( obj, ans )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: ans
 END SUBROUTINE setVerboseMode_all
 END INTERFACE
 
@@ -437,10 +437,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE setVerboseMode_eCode( Obj, eCode, Ans )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE PURE SUBROUTINE setVerboseMode_eCode( obj, eCode, ans )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: eCode
-  LOGICAL( LGT ), INTENT( IN ) :: Ans
+  LOGICAL( LGT ), INTENT( IN ) :: ans
 END SUBROUTINE setVerboseMode_eCode
 END INTERFACE
 
@@ -449,9 +449,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE setVerboseMode_array( Obj, Ans )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
-  LOGICAL( LGT ), INTENT( IN ) :: Ans(:)
+MODULE PURE SUBROUTINE setVerboseMode_array( obj, ans )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: ans(:)
 END SUBROUTINE setVerboseMode_array
 END INTERFACE
 
@@ -460,9 +460,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION isVerboseMode_all( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  LOGICAL( LGT ) :: Ans
+MODULE PURE FUNCTION isVerboseMode_all( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
 END FUNCTION isVerboseMode_all
 END INTERFACE
 
@@ -471,10 +471,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION isVerboseMode_eCode( Obj, eCode ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
+MODULE PURE FUNCTION isVerboseMode_eCode( obj, eCode ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: eCode
-  LOGICAL( LGT ) :: Ans
+  LOGICAL( LGT ) :: ans
 END FUNCTION isVerboseMode_eCode
 END INTERFACE
 
@@ -483,8 +483,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE setLogFileUnit( Obj, unit )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE RECURSIVE SUBROUTINE setLogFileUnit( obj, unit )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: unit
 END SUBROUTINE setLogFileUnit
 END INTERFACE
@@ -494,9 +494,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION getLogFileUnit( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION getLogFileUnit( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION getLogFileUnit
 END INTERFACE
 
@@ -505,8 +505,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE setLogActive( Obj, isactive )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE RECURSIVE SUBROUTINE setLogActive( obj, isactive )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), INTENT( IN ) :: isactive
 END SUBROUTINE setLogActive
 END INTERFACE
@@ -516,9 +516,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION isLogActive( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ) :: Obj
-  LOGICAL( LGT ) :: Ans
+MODULE FUNCTION isLogActive( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ) :: obj
+  LOGICAL( LGT ) :: ans
 END FUNCTION isLogActive
 END INTERFACE
 
@@ -527,8 +527,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE checkLogFileOK( Obj )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE RECURSIVE SUBROUTINE checkLogFileOK( obj )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE checkLogFileOK
 END INTERFACE
 
@@ -537,9 +537,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE setStopOnError( Obj, Ans )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
-  LOGICAL( LGT ), INTENT( IN ) :: Ans
+MODULE PURE SUBROUTINE setStopOnError( obj, ans )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: ans
 END SUBROUTINE setStopOnError
 END INTERFACE
 
@@ -548,9 +548,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION isStopOnError( Obj ) RESULT( Ans )
-  CLASS( ExceptionHandler_ ), INTENT( IN ) :: Obj
-  LOGICAL( LGT ) :: Ans
+MODULE PURE FUNCTION isStopOnError( obj ) RESULT( ans )
+  CLASS( ExceptionHandler_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
 END FUNCTION isStopOnError
 END INTERFACE
 
@@ -559,8 +559,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE raiseInformation( Obj, mesg )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE raiseInformation( obj, mesg )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN=* ),INTENT( IN ) :: mesg
 END SUBROUTINE raiseInformation
 END INTERFACE
@@ -570,8 +570,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE raiseWarning( Obj, mesg )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE raiseWarning( obj, mesg )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN=* ),INTENT( IN ) :: mesg
 END SUBROUTINE raiseWarning
 END INTERFACE
@@ -581,8 +581,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE raiseDebug( Obj, mesg )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE raiseDebug( obj, mesg )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN=* ),INTENT( IN ) :: mesg
 END SUBROUTINE raiseDebug
 END INTERFACE
@@ -592,8 +592,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE raiseError( Obj, mesg )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE raiseError( obj, mesg )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN=* ),INTENT( IN ) :: mesg
 END SUBROUTINE raiseError
 END INTERFACE
@@ -603,8 +603,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE raiseFatalError( Obj, mesg )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE raiseFatalError( obj, mesg )
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN=* ),INTENT( IN ) :: mesg
 END SUBROUTINE raiseFatalError
 END INTERFACE

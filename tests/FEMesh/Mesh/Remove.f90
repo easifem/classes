@@ -1,7 +1,7 @@
 ! This example shows how to remove an element to mesh.
 ! extraoptions  | comments
 ! 0 | nullify only
-! 1 | nullify 
+! 1 | nullify
 PROGRAM MAIN
   use basetype
   use basemethod
@@ -16,7 +16,7 @@ PROGRAM MAIN
   !
   telements = 4
   call initiate( obj, 2, telements )
-  
+
   !elem-1
   refelem => referenceLine_pointer( nsd = 2 )
   allocate( elem )
@@ -44,5 +44,5 @@ PROGRAM MAIN
 
   call getNptrs( obj, nptrs )
   call display( nptrs, "nptrs" )
-  
+
 END PROGRAM MAIN

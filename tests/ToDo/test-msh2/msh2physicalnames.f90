@@ -10,7 +10,7 @@ program main
   type( File_ ) :: aFile
   integer :: i
   integer, allocatable :: nptrs( : )
-  logical( lgt ) :: ierr 
+  logical( lgt ) :: ierr
 
   call aFile % OpenFileToRead( "./", "mesh", ".msh" )
   call obj % readFromFile( aFile, ierr )
@@ -19,7 +19,7 @@ program main
 
   ! nptrs = obj .index. [ String( "Dirichlet" ), String( "Nitsche" ) ]
   ! write( *, * ) nptrs
-  
+
   ! call obj % readFromFile( aFile )
 
   ! nptrs = obj .index. [ String( "Dirichlet" ), String( "Nitsche" ) ]

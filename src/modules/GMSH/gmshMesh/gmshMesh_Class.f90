@@ -47,31 +47,31 @@ TYPE :: gmshMesh_
   TYPE( mshElements_ ) :: Elements
     !! elements
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: generate => mesh_generate
-    PROCEDURE, PUBLIC, PASS( Obj ) :: write => mesh_write
+    PROCEDURE, PUBLIC, PASS( obj ) :: generate => mesh_generate
+    PROCEDURE, PUBLIC, PASS( obj ) :: write => mesh_write
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => gmsh_mesh_deallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => gmsh_mesh_deallocateData
       !! deallocate the data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => gmsh_mesh_initiate
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => gmsh_mesh_initiate
       !! initiate the object
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalNodes => gmsh_mesh_totalnodes
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalNodes => gmsh_mesh_totalnodes
       !! returns total nodes in mesh
 
     GENERIC, PUBLIC :: getNodes => gmsh_mesh_getnodes_array, &
       & gmsh_mesh_getnodes_file
-    PROCEDURE, PRIVATE, PASS( Obj ) :: gmsh_mesh_getnodes_array
+    PROCEDURE, PRIVATE, PASS( obj ) :: gmsh_mesh_getnodes_array
       !! returns nodes in an array
-    PROCEDURE, PRIVATE, PASS( Obj ) :: gmsh_mesh_getnodes_file
+    PROCEDURE, PRIVATE, PASS( obj ) :: gmsh_mesh_getnodes_file
       !! writes notes to a file
 
     GENERIC, PUBLIC :: TotalElements => gmsh_mesh_telements_1, &
       & gmsh_mesh_telements_2, &
       & gmsh_mesh_telements_3
-    PROCEDURE, PRIVATE, PASS( Obj ) :: gmsh_mesh_telements_1
+    PROCEDURE, PRIVATE, PASS( obj ) :: gmsh_mesh_telements_1
       !! returns total elements in mesh
-    PROCEDURE, PRIVATE, PASS( Obj ) :: gmsh_mesh_telements_2
+    PROCEDURE, PRIVATE, PASS( obj ) :: gmsh_mesh_telements_2
       !! returns total elements in mesh
-    PROCEDURE, PRIVATE, PASS( Obj ) :: gmsh_mesh_telements_3
+    PROCEDURE, PRIVATE, PASS( obj ) :: gmsh_mesh_telements_3
       !! returns total elements in mesh
 
     GENERIC, PUBLIC :: getElements => &
@@ -84,22 +84,22 @@ TYPE :: gmshMesh_
       & gmsh_mesh_getelements_4c, &
       & dom_init_from_gmshMesh
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_1
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_1
       !! return finite element mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_2
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_2c
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_3
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_3c
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_4
-    PROCEDURE, PUBLIC, PASS( Obj ) :: gmsh_mesh_getelements_4c
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_2
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_2c
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_3
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_3c
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_4
+    PROCEDURE, PUBLIC, PASS( obj ) :: gmsh_mesh_getelements_4c
     PROCEDURE, PUBLIC, PASS( mshobj ) :: dom_init_from_gmshMesh
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: WriteMesh => gmsh_mesh_write_mesh
+    PROCEDURE, PUBLIC, PASS( obj ) :: WriteMesh => gmsh_mesh_write_mesh
     GENERIC, PUBLIC :: WriteNodeData => &
       & gmsh_mesh_write_nodedata_1, &
       & gmsh_mesh_write_nodedata_2
-    PROCEDURE, PUBLIC, PASS( Obj ) ::  gmsh_mesh_write_nodedata_1
-    PROCEDURE, PUBLIC, PASS( Obj ) ::  gmsh_mesh_write_nodedata_2
+    PROCEDURE, PUBLIC, PASS( obj ) ::  gmsh_mesh_write_nodedata_1
+    PROCEDURE, PUBLIC, PASS( obj ) ::  gmsh_mesh_write_nodedata_2
 
 END TYPE gmshMesh_
 
@@ -137,10 +137,10 @@ INTERFACE
 !
 ! This will add mesh generation command to .geo file
 
-MODULE FUNCTION mesh_generate( Obj, dim ) RESULT( Ans )
-  CLASS( gmshMesh_ ), INTENT( INOUT) :: Obj
+MODULE FUNCTION mesh_generate( obj, dim ) RESULT( ans )
+  CLASS( gmshMesh_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION mesh_generate
 END INTERFACE
 
@@ -155,10 +155,10 @@ INTERFACE
 !
 ! This function will dump the buffer content in to a file
 
-MODULE FUNCTION mesh_write( Obj, UnitNo ) RESULT( Ans )
-  CLASS( gmshMesh_ ), INTENT( INOUT) :: Obj
+MODULE FUNCTION mesh_write( obj, UnitNo ) RESULT( ans )
+  CLASS( gmshMesh_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: UnitNo
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION mesh_write
 END INTERFACE
 
@@ -219,8 +219,8 @@ INTERFACE
 !
 ! This function will create the [[gmshMesh_]] object
 
-MODULE FUNCTION gmsh_mesh_constuctor1(Path,FileName,Extension,NSD) RESULT(Ans)
-  TYPE( gmshMesh_ ) :: Ans
+MODULE FUNCTION gmsh_mesh_constuctor1(Path,FileName,Extension,NSD) RESULT(ans)
+  TYPE( gmshMesh_ ) :: ans
   CHARACTER( LEN = * ), INTENT( IN ) :: FileName, Extension, Path
   INTEGER( I4B ), INTENT( IN ) :: NSD
 END FUNCTION gmsh_mesh_constuctor1
@@ -267,9 +267,9 @@ INTERFACE
 !
 ! This function will return the total number of nodes in mesh
 
-MODULE PURE FUNCTION gmsh_mesh_totalnodes( obj ) RESULT( Ans )
+MODULE PURE FUNCTION gmsh_mesh_totalnodes( obj ) RESULT( ans )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION gmsh_mesh_totalnodes
 END INTERFACE
 
@@ -317,9 +317,9 @@ INTERFACE
 !
 ! This function returns the total element in the mesh
 
-MODULE PURE FUNCTION gmsh_mesh_telements_1( obj ) RESULT( Ans )
+MODULE PURE FUNCTION gmsh_mesh_telements_1( obj ) RESULT( ans )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION gmsh_mesh_telements_1
 END INTERFACE
 
@@ -339,10 +339,10 @@ INTERFACE
 ! Xidim=2 => Surface
 ! Xidim=3 => Volume
 
-MODULE PURE FUNCTION gmsh_mesh_telements_2( obj, XiDim ) RESULT( Ans )
+MODULE PURE FUNCTION gmsh_mesh_telements_2( obj, XiDim ) RESULT( ans )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: XiDim
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION gmsh_mesh_telements_2
 END INTERFACE
 
@@ -358,11 +358,11 @@ INTERFACE
 ! This function returns the total element in the mesh
 ! We can filter elements based on `Xidim` and `tag`
 
-MODULE PURE FUNCTION gmsh_mesh_telements_3( obj, XiDim, Tag ) RESULT( Ans )
+MODULE PURE FUNCTION gmsh_mesh_telements_3( obj, XiDim, Tag ) RESULT( ans )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: XiDim
   INTEGER( I4B ), INTENT( IN ) :: Tag( : )
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION gmsh_mesh_telements_3
 END INTERFACE
 
@@ -377,10 +377,10 @@ INTERFACE
 !
 ! This subroutine returns a single [[mesh_]] object containing all elements
 
-MODULE SUBROUTINE gmsh_mesh_getelements_1( obj, MeshObj, FEObj )
+MODULE SUBROUTINE gmsh_mesh_getelements_1( obj, Meshobj, FEobj )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
-  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: MeshObj
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
 END SUBROUTINE gmsh_mesh_getelements_1
 END INTERFACE
 
@@ -399,17 +399,17 @@ INTERFACE
 ! - For `Xidim=nsd-3` it returns all the point elements
 !
 ! @note
-! If `offset` is present then `MeshObj` should be allocated, in that case
-! first element will be placed at `MeshObj % elem( offset + 1 )`. Therefore,
-! there should be sufficient space in `MeshObj` to accomodate all new
+! If `offset` is present then `Meshobj` should be allocated, in that case
+! first element will be placed at `Meshobj % elem( offset + 1 )`. Therefore,
+! there should be sufficient space in `Meshobj` to accomodate all new
 ! coming elements
 ! @endnote
 
-MODULE SUBROUTINE gmsh_mesh_getelements_2( obj,MeshObj, XiDim, FEObj, Offset )
+MODULE SUBROUTINE gmsh_mesh_getelements_2( obj,Meshobj, XiDim, FEobj, Offset )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
-  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: MeshObj
+  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
   INTEGER( I4B ), INTENT( IN ) :: XiDim
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 END SUBROUTINE gmsh_mesh_getelements_2
 END INTERFACE
@@ -428,20 +428,20 @@ INTERFACE
 ! - For `Xidim=nsd-2` it returns all line elements
 ! - For `Xidim=nsd-3` it returns all the point elements
 !
-! If `offset` is present then `MeshObj` should be allocated, in that case
-! first element will be placed at `MeshObj % elem( offset + 1 )`. Therefore,
-! there should be sufficient space in `MeshObj` to accomodate all new
+! If `offset` is present then `Meshobj` should be allocated, in that case
+! first element will be placed at `Meshobj % elem( offset + 1 )`. Therefore,
+! there should be sufficient space in `Meshobj` to accomodate all new
 ! coming elements
 !
 ! Note that this is just a wrapper for a method defined in
 ! [[gmshMesh_::getelements]]
 
-MODULE SUBROUTINE gmsh_mesh_getelements_2c( Obj, Dom,indx,XiDim,FEObj,Offset )
-  CLASS( gmshMesh_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE gmsh_mesh_getelements_2c( obj, Dom,indx,XiDim,FEobj,Offset )
+  CLASS( gmshMesh_ ), INTENT( IN ) :: obj
   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
   INTEGER( I4B ), INTENT( IN ) :: indx
   INTEGER( I4B ), INTENT( IN ) :: XiDim
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 END SUBROUTINE gmsh_mesh_getelements_2c
 END INTERFACE
@@ -464,18 +464,18 @@ INTERFACE
 ! - For `Xidim=nsd-3` it returns all the point elements
 !
 ! @note
-! If `offset` is present then `MeshObj` should be allocated, in that case
-! first element will be placed at `MeshObj % elem( offset + 1 )`. Therefore,
-! there should be sufficient space in `MeshObj` to accomodate all new
+! If `offset` is present then `Meshobj` should be allocated, in that case
+! first element will be placed at `Meshobj % elem( offset + 1 )`. Therefore,
+! there should be sufficient space in `Meshobj` to accomodate all new
 ! coming elements
 ! @endnote
 
-MODULE SUBROUTINE gmsh_mesh_getelements_3( obj, MeshObj, XiDim, Tag, FEObj,&
+MODULE SUBROUTINE gmsh_mesh_getelements_3( obj, Meshobj, XiDim, Tag, FEobj,&
   & Offset )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
-  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: MeshObj
+  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
   INTEGER( I4B ), INTENT( IN ) :: XiDim, Tag( : )
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 END SUBROUTINE gmsh_mesh_getelements_3
 END INTERFACE
@@ -499,22 +499,22 @@ INTERFACE
 ! - For `Xidim=nsd-3` it returns all the point elements
 !
 ! @note
-! If `offset` is present then `MeshObj` should be allocated, in that case
-! first element will be placed at `MeshObj % elem( offset + 1 )`. Therefore,
-! there should be sufficient space in `MeshObj` to accomodate all new
+! If `offset` is present then `Meshobj` should be allocated, in that case
+! first element will be placed at `Meshobj % elem( offset + 1 )`. Therefore,
+! there should be sufficient space in `Meshobj` to accomodate all new
 ! coming elements
 ! @endnote
 !
 ! Note that this is just a wrapper for a method defined in
 ! [[gmshMesh_::getelements]]
 
-MODULE SUBROUTINE gmsh_mesh_getelements_3c( Obj, Dom, Indx, XiDim, Tag, &
-  & FEObj, Offset )
-  CLASS( gmshMesh_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE gmsh_mesh_getelements_3c( obj, Dom, Indx, XiDim, Tag, &
+  & FEobj, Offset )
+  CLASS( gmshMesh_ ), INTENT( IN ) :: obj
   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
   INTEGER( I4B ), INTENT( IN ) :: Indx
   INTEGER( I4B ), INTENT( IN ) :: XiDim, Tag( : )
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 END SUBROUTINE gmsh_mesh_getelements_3c
 END INTERFACE
@@ -537,19 +537,19 @@ INTERFACE
 ! - For `Xidim=nsd-3` it returns all the point elements
 !
 ! @note
-! If `offset` is present then `MeshObj` should be allocated, in that case
-! first element will be placed at `MeshObj % elem( offset + 1 )`. Therefore,
-! there should be sufficient space in `MeshObj` to accomodate all new
+! If `offset` is present then `Meshobj` should be allocated, in that case
+! first element will be placed at `Meshobj % elem( offset + 1 )`. Therefore,
+! there should be sufficient space in `Meshobj` to accomodate all new
 ! coming elements
 ! @endnote
 
-MODULE SUBROUTINE gmsh_mesh_getelements_4( obj, MeshObj, XiDim, TagNames, &
-  & FEObj, Offset )
+MODULE SUBROUTINE gmsh_mesh_getelements_4( obj, Meshobj, XiDim, TagNames, &
+  & FEobj, Offset )
   CLASS( gmshMesh_ ), INTENT( IN ) :: obj
-  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: MeshObj
+  CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
   INTEGER( I4B ), INTENT( IN ) :: XiDim
   TYPE( String ), INTENT( IN ) :: TagNames( : )
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 END SUBROUTINE gmsh_mesh_getelements_4
 END INTERFACE
@@ -572,23 +572,23 @@ INTERFACE
 ! - For `Xidim=nsd-3` it returns all the point elements
 !
 ! @note
-! If `offset` is present then `MeshObj` should be allocated, in that case
-! first element will be placed at `MeshObj % elem( offset + 1 )`. Therefore,
-! there should be sufficient space in `MeshObj` to accomodate all new
+! If `offset` is present then `Meshobj` should be allocated, in that case
+! first element will be placed at `Meshobj % elem( offset + 1 )`. Therefore,
+! there should be sufficient space in `Meshobj` to accomodate all new
 ! coming elements
 ! @endnote
 !
 ! Note that this is just a wrapper for a method defined in
 ! [[gmshMesh_::getelements]]
 
-MODULE SUBROUTINE gmsh_mesh_getelements_4c( Obj, Dom, Indx, XiDim, TagNames, &
-  & FEObj, Offset )
-  CLASS( gmshMesh_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE gmsh_mesh_getelements_4c( obj, Dom, Indx, XiDim, TagNames, &
+  & FEobj, Offset )
+  CLASS( gmshMesh_ ), INTENT( IN ) :: obj
   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
   INTEGER( I4B ), INTENT( IN ) :: Indx
   INTEGER( I4B ), INTENT( IN ) :: XiDim
   TYPE( String ), INTENT( IN ) :: TagNames( : )
-  CLASS( Element_ ), INTENT( IN ) :: FEObj
+  CLASS( Element_ ), INTENT( IN ) :: FEobj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 END SUBROUTINE gmsh_mesh_getelements_4c
 END INTERFACE
@@ -703,15 +703,15 @@ CONTAINS
 !                                                      gmsh_mesh_constructor_1
 !-----------------------------------------------------------------------------
 
-FUNCTION gmsh_mesh_constructor_1( Path, FileName, Extension, NSD) RESULT(Obj)
+FUNCTION gmsh_mesh_constructor_1( Path, FileName, Extension, NSD) RESULT(obj)
     ! Define intent of dummy variables
-    CLASS( gmshMesh_ ), POINTER :: Obj
+    CLASS( gmshMesh_ ), POINTER :: obj
     CHARACTER( LEN = * ), INTENT( IN ) :: FileName
     CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Extension, Path
     INTEGER( I4B ), INTENT( IN ) :: NSD
 
-    ALLOCATE( Obj )
-    CALL Obj % Initiate( Path, FileName, Extension, NSD )
+    ALLOCATE( obj )
+    CALL obj % Initiate( Path, FileName, Extension, NSD )
 
 END FUNCTION gmsh_mesh_constructor_1
 

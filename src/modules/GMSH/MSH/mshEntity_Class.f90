@@ -53,25 +53,25 @@ TYPE :: mshEntity_
     !! nodal coordinates in xiJ format
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Finalize => ent_deallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => ent_deallocateData
       !! To deallocate data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: GotoTag => ent_goto
+    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => ent_goto
       !! To find tag
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadPointEntity => ent_read_point
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadPointEntity => ent_read_point
       !! Read the entry from file for point
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadCurveEntity => ent_Read_Curve
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadCurveEntity => ent_Read_Curve
       !! Read the entry from file for curve
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadSurfaceEntity => ent_Read_Surface
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadSurfaceEntity => ent_Read_Surface
       !! Read the entry from file for surface
-    PROCEDURE, PUBLIC, PASS( Obj ) :: ReadVolumeEntity => ent_Read_Volume
+    PROCEDURE, PUBLIC, PASS( obj ) :: ReadVolumeEntity => ent_Read_Volume
       !! Read the entry from file for volume
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalPhysicalTags => ent_tphysicaltag
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalPhysicalTags => ent_tphysicaltag
       !! Return total physical tags associated
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalBoundingTags => ent_tboundingtag
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalBoundingTags => ent_tboundingtag
       !! Returns the total bounding tags
-    PROCEDURE, PUBLIC, PASS( Obj ) :: TotalElements => ent_telements
+    PROCEDURE, PUBLIC, PASS( obj ) :: TotalElements => ent_telements
       !! Returns the total elements
-    PROCEDURE, PUBLIC, PASS( Obj ) :: WriteToFile => ent_write_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => ent_write_file
       !! Write data to a file
 END TYPE mshEntity_
 
@@ -108,8 +108,8 @@ PUBLIC :: mshEntityPointer_
 INTERFACE
 !! This subroutine finds the tag in the mesh file
 
-MODULE SUBROUTINE ent_goto( Obj, mshFile, ierr )
-  CLASS( mshEntity_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE ent_goto( obj, mshFile, ierr )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
   TYPE( File_ ), INTENT( INOUT ) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT ) :: ierr
 END SUBROUTINE ent_goto
@@ -126,8 +126,8 @@ INTERFACE
 !
 ! This subroutine reads the entry for point entity
 
-MODULE SUBROUTINE ent_read_point( Obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE ent_read_point( obj, mshFile, readTag, ierr )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
   TYPE( File_ ), INTENT( INOUT) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT) :: ierr
   LOGICAL( LGT ), INTENT( IN ) :: readTag
@@ -145,8 +145,8 @@ INTERFACE
 !
 ! This subroutine reads the entry for curve entity
 
-MODULE SUBROUTINE ent_read_Curve( Obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE ent_read_Curve( obj, mshFile, readTag, ierr )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
   TYPE( File_ ), INTENT( INOUT) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT) :: ierr
   LOGICAL( LGT ), INTENT( IN ) :: readTag
@@ -164,8 +164,8 @@ INTERFACE
 !
 ! This subroutine reads the entry for surface entity
 
-MODULE SUBROUTINE ent_read_Surface( Obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE ent_read_Surface( obj, mshFile, readTag, ierr )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
   TYPE( File_ ), INTENT( INOUT) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT) :: ierr
   LOGICAL( LGT ), INTENT( IN ) :: readTag
@@ -183,8 +183,8 @@ INTERFACE
 !
 ! This subroutine reads the entry for volume entity
 
-MODULE SUBROUTINE ent_read_Volume( Obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE ent_read_Volume( obj, mshFile, readTag, ierr )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
   TYPE( File_ ), INTENT( INOUT) :: mshFile
   LOGICAL( LGT ), INTENT( INOUT) :: ierr
   LOGICAL( LGT ), INTENT( IN ) :: readTag
@@ -202,8 +202,8 @@ INTERFACE
 !
 ! This subroutine write the data to a file
 
-MODULE SUBROUTINE ent_write_file( Obj, mshFile, Str, EndStr )
-  CLASS( mshEntity_ ), INTENT( INOUT ) :: Obj
+MODULE SUBROUTINE ent_write_file( obj, mshFile, Str, EndStr )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
   TYPE( File_ ), INTENT( INOUT) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
 END SUBROUTINE ent_write_file
@@ -220,8 +220,8 @@ INTERFACE
 !
 ! This subroutine writes the content of [[mshEntity_]]
 
-MODULE SUBROUTINE ent_display( Obj, Msg, UnitNo )
-  CLASS( mshEntity_ ), INTENT( IN ) :: Obj
+MODULE SUBROUTINE ent_display( obj, Msg, UnitNo )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
 END SUBROUTINE ent_display
@@ -244,10 +244,10 @@ INTERFACE
 !
 ! This function finds the index of a tag/uid in the list of entities
 
-MODULE PURE FUNCTION ent_getIndex_a( mshEntities, Uid ) RESULT( Ans )
+MODULE PURE FUNCTION ent_getIndex_a( mshEntities, Uid ) RESULT( ans )
   TYPE( mshEntity_ ), INTENT( IN ) :: mshEntities( : )
   INTEGER( I4B ), INTENT( IN ) :: Uid
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 END FUNCTION ent_getIndex_a
 END INTERFACE
 
@@ -268,9 +268,9 @@ INTERFACE
 !
 ! This function returns the total number of physical tags in entity
 
-MODULE PURE FUNCTION ent_tphysicaltag( Obj ) RESULT( Ans )
-  CLASS( mshEntity_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION ent_tphysicaltag( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION ent_tphysicaltag
 END INTERFACE
 
@@ -285,9 +285,9 @@ INTERFACE
 !
 ! This function returns the total number of bounding tags in entity
 
-MODULE PURE FUNCTION ent_tBoundingtag( Obj ) RESULT( Ans )
-  CLASS( mshEntity_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION ent_tBoundingtag( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION ent_tBoundingtag
 END INTERFACE
 
@@ -302,9 +302,9 @@ INTERFACE
 !
 ! This function returns the total number of elements in entity
 
-MODULE PURE FUNCTION ent_telements( Obj ) RESULT( Ans )
-  CLASS( mshEntity_ ), INTENT( IN ) :: Obj
-  INTEGER( I4B ) :: Ans
+MODULE PURE FUNCTION ent_telements( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
 END FUNCTION ent_telements
 END INTERFACE
 
@@ -319,8 +319,8 @@ INTERFACE
 !
 ! This subroutine deallocate the data from [[mshentity_]]
 
-MODULE SUBROUTINE ent_deallocatedata( Obj )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: Obj
+MODULE SUBROUTINE ent_deallocatedata( obj )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
 END SUBROUTINE ent_deallocatedata
 END INTERFACE
 

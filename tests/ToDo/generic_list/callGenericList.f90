@@ -18,12 +18,12 @@ program main
   allocate( ptr % ptr )
   ptr % ptr % x = 2.0
 
-  call obj % initiate( transfer( ptr, genericlistdata ) ) 
+  call obj % initiate( transfer( ptr, genericlistdata ) )
   write( *, * ) "ptr % ptr :: ", ptr % ptr
 
   allocate( ptr % ptr )
   ptr % ptr % x = 3.0
-  call obj % InsertNewNode( transfer( ptr, genericlistdata ) ) 
+  call obj % InsertNewNode( transfer( ptr, genericlistdata ) )
 
   ptr = transfer( getGenericListData( obj % getNextNode( ) ), ptr )
   write( *, * ) ptr%ptr%x

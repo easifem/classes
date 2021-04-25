@@ -17,12 +17,13 @@
 
 MODULE easifemClasses
 USE ExceptionHandler_Class
+USE ElementFactory
 !FTL Containers
 USE IntList_Class
 USE RealList_Class
 USE StringList_Class
 USE ElementList_Class
-USE FE
+USE ElementPointerVector_Class
   ! USE Mesh_Class
   ! USE MeshData_Class
   ! USE MeshConnectivity_Class

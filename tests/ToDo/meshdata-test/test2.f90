@@ -7,7 +7,7 @@ PROGRAM MAIN
 
   TYPE( MSH2_ ) :: mshFile
   TYPE( Mesh_ ) :: Omega
-  TYPE( MeshData_ ) :: Obj
+  TYPE( MeshData_ ) :: obj
   INTEGER( I4B )  ::  NSD,  iNode,  tElements,  tNodes, iel, &
     & DummyInt
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
@@ -16,8 +16,8 @@ PROGRAM MAIN
   CALL mshFile % Initiate( FileName="test2", Extension=".msh", Path="./test2/", NSD=NSD )
   CALL Omega % Initiate( Element( ) )
   CALL mshFile % getElements( Omega, "Omega1")
-  CALL Obj % Initiate( Omega )
-  CALL Obj % InitiateInternalBoundaryData(  )
-  CALL Obj % DisplayInternalBoundaryData(  )
+  CALL obj % Initiate( Omega )
+  CALL obj % InitiateInternalBoundaryData(  )
+  CALL obj % DisplayInternalBoundaryData(  )
 
 END PROGRAM MAIN

@@ -15,13 +15,13 @@ PROGRAM MAIN
   NSD = 3
   MSH = Gmsh_MSH( "mesh1", ".msh", "./mesh1/", NSD )
 
-  Omega = Mesh( ElementObj = Element( ) )
+  Omega = Mesh( Elementobj = Element( ) )
   Omega = PhysicalTag
   CALL MSH % getVolumeElements( Omega )
 
   ElasticMesh1 = Mesh( Element( ) )
   CALL MSH % getSurfaceElements( ElasticMesh1, [String( "Top" )] )
-  
+
   CALL MeshDataOmega % Initiate( ElasticMesh1 )
   CALL MeshDataOmega % InitiateNodeToNodes( ElasticMesh1 )
   CALL MeshDataOmega % InitiateNodeToElements( ElasticMesh1 )
@@ -43,7 +43,7 @@ PROGRAM MAIN
   tElements = .tElements. MeshDataOmega
 
   DO iel = 1, tElements
-    DummyInt = MeshDataOmega .GlobalNptrs. iNode 
+    DummyInt = MeshDataOmega .GlobalNptrs. iNode
     CALL BlankLines( )
     WRITE( *, "(I4, A)", ADVANCE="NO" ) iel, " "
     CALL MeshDataOmega % ElementToElements( iel ) % Display( )
@@ -55,7 +55,7 @@ PROGRAM MAIN
   tNodes = .tNodes. MeshDataOmega
 
   DO iNode = 1, tNodes
-    DummyInt = MeshDataOmega .GlobalNptrs. iNode 
+    DummyInt = MeshDataOmega .GlobalNptrs. iNode
     CALL BlankLines( )
     WRITE( *, "(2I4, A)", ADVANCE="NO" ) iNode, DummyInt, " "
     ! CALL MeshDataOmega % NodeToNodes( iNode ) % Display( )

@@ -52,42 +52,42 @@ TYPE :: gmshGeo_
   ! TYPE( gmshVolumePointer_ ), ALLOCATABLE :: volume( : )
 
   CONTAINS
-  PROCEDURE, PUBLIC, PASS( Obj ) :: write => geo_write
+  PROCEDURE, PUBLIC, PASS( obj ) :: write => geo_write
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addPoint => geo_add_point
+  PROCEDURE, PUBLIC, PASS( obj ) :: addPoint => geo_add_point
     !! Add a point entitiy to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addLine => geo_add_line
+  PROCEDURE, PUBLIC, PASS( obj ) :: addLine => geo_add_line
     !! Add a line entity to geometry
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addCircleArc => geo_add_circle
+  PROCEDURE, PUBLIC, PASS( obj ) :: addCircleArc => geo_add_circle
     !! Add a Circular arc entity to geometry
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addEllipseArc => geo_add_Ellipse
+  PROCEDURE, PUBLIC, PASS( obj ) :: addEllipseArc => geo_add_Ellipse
     !! Add a Ellipse entity to geometry
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addSpline => geo_add_Spline
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSpline => geo_add_Spline
     !! Add a Spline entity to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addCompoundSpline => &
+  PROCEDURE, PUBLIC, PASS( obj ) :: addCompoundSpline => &
     & geo_add_CompoundSpline
     !! Add a compound Spline entity to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addBSpline => geo_add_BSpline
+  PROCEDURE, PUBLIC, PASS( obj ) :: addBSpline => geo_add_BSpline
     !! Add a BSpline entity to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addCompoundBSpline => &
+  PROCEDURE, PUBLIC, PASS( obj ) :: addCompoundBSpline => &
     & geo_add_CompoundBSpline
     !! Add a compound BSpline entity to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addBezier => geo_add_Bezier
+  PROCEDURE, PUBLIC, PASS( obj ) :: addBezier => geo_add_Bezier
     !! Add a Bezier entity to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addCurveLoop => geo_add_CurveLoop
+  PROCEDURE, PUBLIC, PASS( obj ) :: addCurveLoop => geo_add_CurveLoop
     !! Add a Curveloop to geometry
 
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addSurfaceFilling =>geo_add_SurfaceFilling
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurfaceFilling =>geo_add_SurfaceFilling
     !! Add surfaceFilled
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addPlaneSurface => geo_add_PlaneSurface
+  PROCEDURE, PUBLIC, PASS( obj ) :: addPlaneSurface => geo_add_PlaneSurface
     !! Add a plane surface entity to geometry
-  PROCEDURE, PUBLIC, PASS( Obj ) :: addSurfaceLoop => geo_add_SurfaceLoop
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurfaceLoop => geo_add_SurfaceLoop
 
 END TYPE gmshGeo_
 
@@ -110,33 +110,33 @@ CONTAINS
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-FUNCTION geo_write( Obj, UnitNo ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT) ::  Obj
+FUNCTION geo_write( obj, UnitNo ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT) ::  obj
   INTEGER( I4B ), INTENT( IN ) :: UnitNo
-  INTEGER( I4B ) :: Ans
+  INTEGER( I4B ) :: ans
 
   ! Internal variables
   INTEGER( I4B ) :: ii
 
-  IF( .NOT. ASSOCIATED( Obj % buffer ) ) THEN
+  IF( .NOT. ASSOCIATED( obj % buffer ) ) THEN
     CALL Display( "ERROR:: gmshGeo_Class.f90")
     CALL Display( "        geo_write()")
-    CALL Display( "        Obj % buffer is not associated ")
+    CALL Display( "        obj % buffer is not associated ")
     STOP
   END IF
 
-  IF( Obj % buffer % tLine .EQ. 0 ) THEN
+  IF( obj % buffer % tLine .EQ. 0 ) THEN
     CALL Display( "ERROR:: gmshGeo_Class.f90")
     CALL Display( "        geo_write()")
-    CALL Display( "        Obj % buffer is empty")
+    CALL Display( "        obj % buffer is empty")
     STOP
   END IF
 
-  DO ii = 1, Obj % buffer % tLine
-    IF( ASSOCIATED( Obj % buffer % Line( ii ) % ptr ) ) THEN
+  DO ii = 1, obj % buffer % tLine
+    IF( ASSOCIATED( obj % buffer % Line( ii ) % ptr ) ) THEN
       ! CALL Display( "gmsh%model%geo:: writing gmsh%model%geo%buffer(" &
       !   & // trim( str( ii ) ) // " )" )
-      WRITE( UnitNo, "(DT)" ) Obj % buffer % Line( ii ) % ptr
+      WRITE( UnitNo, "(DT)" ) obj % buffer % Line( ii ) % ptr
     END IF
   END DO
 
@@ -148,8 +148,8 @@ END FUNCTION geo_write
 !                                                                   addPoint
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_point( Obj, x, y, z, lc, uid ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT) :: Obj
+FUNCTION geo_add_point( obj, x, y, z, lc, uid ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT) :: obj
   REAL( DFP ), INTENT( IN ) :: x, y, z, lc
   INTEGER( I4B ), INTENT( IN ) :: uid
   INTEGER( I4B ) :: ans
@@ -205,10 +205,10 @@ FUNCTION geo_add_point( Obj, x, y, z, lc, uid ) RESULT( Ans )
 
   IF( uid .GT. 0 ) THEN
     obj  % point( ip ) % ptr => gmshPoint_Pointer( x, y, z, lc, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % point( ip ) % ptr => gmshPoint_Pointer( x, y, z, lc, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -222,8 +222,8 @@ END FUNCTION geo_add_point
 !                                                                   addLine
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_line( Obj, startTag, endTag, uid ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_line( obj, startTag, endTag, uid ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, uid
   INTEGER( I4B ) :: ans
 
@@ -242,10 +242,10 @@ FUNCTION geo_add_line( Obj, startTag, endTag, uid ) RESULT( Ans )
 
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshLine_Pointer( startTag, endTag, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshLine_Pointer( startTag, endTag, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -259,9 +259,9 @@ END FUNCTION geo_add_line
 !                                                               addCircleArc
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_circle( Obj, startTag, centerTag, endTag, uid, &
-  & nx, ny, nz ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_circle( obj, startTag, centerTag, endTag, uid, &
+  & nx, ny, nz ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, centerTag, uid
   REAL( DFP ), OPTIONAL :: nx, ny, nz
   INTEGER( I4B ) :: ans
@@ -288,11 +288,11 @@ FUNCTION geo_add_circle( Obj, startTag, centerTag, endTag, uid, &
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshCircle_Pointer( startTag, &
       & centerTag, endTag, uid, rval( 1 ), rval( 2 ), rval( 3 ) )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshCircle_Pointer( startTag, &
       & centerTag, endTag, ip, rval( 1 ), rval( 2 ), rval( 3 ) )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -305,9 +305,9 @@ END FUNCTION geo_add_circle
 !                                                              addEllipseArc
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_Ellipse( Obj, startTag, centerTag, majorTag, endTag, uid, &
-  & nx, ny, nz ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_Ellipse( obj, startTag, centerTag, majorTag, endTag, uid, &
+  & nx, ny, nz ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, centerTag, majorTag, uid
   REAL( DFP ), OPTIONAL :: nx, ny, nz
   INTEGER( I4B ) :: ans
@@ -334,11 +334,11 @@ FUNCTION geo_add_Ellipse( Obj, startTag, centerTag, majorTag, endTag, uid, &
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshEllipse_Pointer( startTag, &
       & centerTag, majorTag, endTag, uid, rval( 1 ), rval( 2 ), rval( 3 ) )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshEllipse_Pointer( startTag, &
       & centerTag, majorTag, endTag, ip, rval( 1 ), rval( 2 ), rval( 3 ) )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -351,8 +351,8 @@ END FUNCTION geo_add_Ellipse
 !                                                                  addSpline
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_Spline( Obj, pointTags, uid ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_Spline( obj, pointTags, uid ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -371,10 +371,10 @@ FUNCTION geo_add_Spline( Obj, pointTags, uid ) RESULT( Ans )
 
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshSpline_Pointer( pointTags, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshSpline_Pointer( pointTags, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -388,9 +388,9 @@ END FUNCTION geo_add_Spline
 !                                                          addCompoundSpline
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_CompoundSpline( Obj, curveTags, uid, numIntervals ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_CompoundSpline( obj, curveTags, uid, numIntervals ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: curveTags( : ), uid
   INTEGER( I4B ), OPTIONAL :: numIntervals
   INTEGER( I4B ) :: ans
@@ -417,11 +417,11 @@ FUNCTION geo_add_CompoundSpline( Obj, curveTags, uid, numIntervals ) &
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshCompoundSpline_Pointer( curveTags, &
       & uid, nI )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshCompoundSpline_Pointer( curveTags, &
       & ip, nI)
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -435,8 +435,8 @@ END FUNCTION geo_add_CompoundSpline
 !                                                                  addBSpline
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_BSpline( Obj, pointTags, uid ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_BSpline( obj, pointTags, uid ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -455,10 +455,10 @@ FUNCTION geo_add_BSpline( Obj, pointTags, uid ) RESULT( Ans )
 
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshBSpline_Pointer( pointTags, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshBSpline_Pointer( pointTags, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -472,9 +472,9 @@ END FUNCTION geo_add_BSpline
 !                                                          addCompoundBSpline
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_CompoundBSpline( Obj, curveTags, uid, numIntervals ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_CompoundBSpline( obj, curveTags, uid, numIntervals ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: curveTags( : ), uid
   INTEGER( I4B ), OPTIONAL :: numIntervals
   INTEGER( I4B ) :: ans
@@ -501,11 +501,11 @@ FUNCTION geo_add_CompoundBSpline( Obj, curveTags, uid, numIntervals ) &
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshCompoundBSpline_Pointer( curveTags, &
       & uid, nI )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshCompoundBSpline_Pointer( curveTags, &
       & ip, nI)
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -519,8 +519,8 @@ END FUNCTION geo_add_CompoundBSpline
 !                                                                  addBezier
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_Bezier( Obj, pointTags, uid ) RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_Bezier( obj, pointTags, uid ) RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -539,10 +539,10 @@ FUNCTION geo_add_Bezier( Obj, pointTags, uid ) RESULT( Ans )
 
   IF( uid .GT. 0 ) THEN
     obj  % curve( ip ) % ptr => gmshBezier_Pointer( pointTags, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curve( ip ) % ptr => gmshBezier_Pointer( pointTags, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -556,9 +556,9 @@ END FUNCTION geo_add_Bezier
 !                                                               addCurveLoop
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_CurveLoop( Obj, curveTags, uid ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_CurveLoop( obj, curveTags, uid ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: curveTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -585,10 +585,10 @@ FUNCTION geo_add_CurveLoop( Obj, curveTags, uid ) &
 
   IF( uid .GT. 0 ) THEN
     obj  % curveloop( ip ) % ptr => gmshCurveLoop_Pointer( curveTags, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % curveloop( ip ) % ptr => gmshCurveLoop_Pointer( curveTags, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -609,9 +609,9 @@ END FUNCTION geo_add_CurveLoop
 ! composed by 3 or 4 curves only. If tag is positive, set the tag explicitly;
 ! otherwise a new tag is selected automatically. Return the tag of the surface.
 
-FUNCTION geo_add_SurfaceFilling( Obj, wireTags, uid, sphereCenterTag ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_SurfaceFilling( obj, wireTags, uid, sphereCenterTag ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: wireTags( : ), uid
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: sphereCenterTag
   INTEGER( I4B ) :: ans
@@ -653,10 +653,10 @@ FUNCTION geo_add_SurfaceFilling( Obj, wireTags, uid, sphereCenterTag ) &
 
   IF( uid .GT. 0 ) THEN
     obj  % surface( ip ) % ptr => gmshSurface_Pointer( wireTags, uid,sct )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % surface( ip ) % ptr => gmshSurface_Pointer( wireTags, ip, sct )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -670,9 +670,9 @@ END FUNCTION geo_add_SurfaceFilling
 !                                                            addPlaneSurface
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_PlaneSurface( Obj, wireTags, uid ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_PlaneSurface( obj, wireTags, uid ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: wireTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -707,10 +707,10 @@ FUNCTION geo_add_PlaneSurface( Obj, wireTags, uid ) &
 
   IF( uid .GT. 0 ) THEN
     obj  % surface( ip ) % ptr => gmshPlaneSurface_Pointer( wireTags, uid )
-    Ans = 0
+    ans = 0
   ELSE
     obj  % surface( ip ) % ptr => gmshPlaneSurface_Pointer( wireTags, ip )
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -724,9 +724,9 @@ END FUNCTION geo_add_PlaneSurface
 !                                                            addSurfaceLoop
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_SurfaceLoop( Obj, surfaceTags, uid ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_SurfaceLoop( obj, surfaceTags, uid ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: surfaceTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -761,10 +761,10 @@ FUNCTION geo_add_SurfaceLoop( Obj, surfaceTags, uid ) &
 
   IF( uid .GT. 0 ) THEN
     obj % Surfaceloop( ip ) % ptr => gmshSurfaceLoop_Pointer(surfaceTags,uid)
-    Ans = 0
+    ans = 0
   ELSE
     obj % Surfaceloop( ip ) % ptr => gmshSurfaceLoop_Pointer(surfaceTags,ip)
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer
@@ -778,9 +778,9 @@ END FUNCTION geo_add_SurfaceLoop
 !                                                                 addVolume
 !----------------------------------------------------------------------------
 
-FUNCTION geo_add_Volume( Obj, shellTags, uid ) &
-  & RESULT( Ans )
-  CLASS( gmshGeo_ ), INTENT( INOUT ) :: Obj
+FUNCTION geo_add_Volume( obj, shellTags, uid ) &
+  & RESULT( ans )
+  CLASS( gmshGeo_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: shellTags( : ), uid
   INTEGER( I4B ) :: ans
 
@@ -823,10 +823,10 @@ FUNCTION geo_add_Volume( Obj, shellTags, uid ) &
 
   IF( uid .GT. 0 ) THEN
     obj % Volume( ip ) % ptr => gmshVolume_Pointer(shellTags,uid)
-    Ans = 0
+    ans = 0
   ELSE
     obj % Volume( ip ) % ptr => gmshVolume_Pointer(shellTags,ip)
-    Ans = ip
+    ans = ip
   END IF
 
   ! append to buffer

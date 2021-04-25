@@ -7,8 +7,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserThermCond_Pointer
-  ALLOCATE( Ans )
-  Ans%getValue => UserThermCond_getval
+  ALLOCATE( ans )
+  ans%getValue => UserThermCond_getval
 END PROCEDURE UserThermCond_Pointer
 
 !----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ END PROCEDURE UserThermCond_Pointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserThermCond_getval
-  Ans = Obj%ConstThermCondVal
+  ans = obj%ConstThermCondVal
 END PROCEDURE UserThermCond_getval
 
 END SUBMODULE User

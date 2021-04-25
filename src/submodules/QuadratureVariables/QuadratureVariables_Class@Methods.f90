@@ -11,23 +11,23 @@ CONTAINS
 MODULE PROCEDURE elem_var_initiate
   INTEGER( I4B ) :: i
 
-  Obj % tprop = tprop
-  IF( ALLOCATED( Obj % Names ) ) DEALLOCATE( Obj % Names )
-  ALLOCATE( Obj % Names( tprop ) )
+  obj % tprop = tprop
+  IF( ALLOCATED( obj % Names ) ) DEALLOCATE( obj % Names )
+  ALLOCATE( obj % Names( tprop ) )
 
   IF( PRESENT( Names ) ) THEN
-    DO i = 1, Obj % tprop
-      Obj % Names( i ) = TRIM( Names( i ) % chars() )
+    DO i = 1, obj % tprop
+      obj % Names( i ) = TRIM( Names( i ) % chars() )
     END DO
   ELSE
-    DO i = 1, Obj % tprop
-      Obj % Names( i ) = "V"//TRIM( INT2STR( i ) )
+    DO i = 1, obj % tprop
+      obj % Names( i ) = "V"//TRIM( INT2STR( i ) )
     END DO
   END IF
 
-  Obj % tpoint = tpoint
+  obj % tpoint = tpoint
 
-  CALL Reallocate( Obj % Val, Obj % tprop, Obj % tpoint, telem )
+  CALL Reallocate( obj % Val, obj % tprop, obj % tpoint, telem )
 END PROCEDURE elem_var_initiate
 
 !----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ END PROCEDURE elem_var_initiate
 MODULE PROCEDURE elem_var_set_value
   INTEGER( I4B ) :: ip, i_s, i_e
 
-  ip = MIN( SIZE( Obj % Val, 2 ), ipoint )
+  ip = MIN( SIZE( obj % Val, 2 ), ipoint )
 
   IF( PRESENT( is ) ) THEN
     i_s = is
@@ -51,7 +51,7 @@ MODULE PROCEDURE elem_var_set_value
     i_e = size( Val )
   END IF
 
-  Obj % Val( i_s:i_e, ip, elemnum ) = Val( : )
+  obj % Val( i_s:i_e, ip, elemnum ) = Val( : )
 
 END PROCEDURE elem_var_set_value
 
@@ -62,7 +62,7 @@ END PROCEDURE elem_var_set_value
 MODULE PROCEDURE elem_var_add_val
   INTEGER( I4B ) :: ip, i_s, i_e
 
-  ip = MIN( SIZE( Obj % Val, 2 ), ipoint )
+  ip = MIN( SIZE( obj % Val, 2 ), ipoint )
 
   IF( PRESENT( is ) ) THEN
     i_s = is
@@ -76,8 +76,8 @@ MODULE PROCEDURE elem_var_add_val
     i_e = size( Val )
   END IF
 
-  Obj % Val( i_s:i_e, ip, elemnum ) &
-    & = Obj % Val( i_s:i_e, ip, elemnum )  &
+  obj % Val( i_s:i_e, ip, elemnum ) &
+    & = obj % Val( i_s:i_e, ip, elemnum )  &
     & + Scale * Val( : )
 
 END PROCEDURE elem_var_add_val
@@ -87,7 +87,7 @@ END PROCEDURE elem_var_add_val
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE elem_var_get_value
-  Ans = Obj % Val( :, :, elemnum )
+  ans = obj % Val( :, :, elemnum )
 END PROCEDURE elem_var_get_value
 
 !----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ MODULE PROCEDURE elem_var_disp
   ELSE
     i = stdout
   END IF
-  CALL Display( Obj % Val, msg, i )
+  CALL Display( obj % Val, msg, i )
 
 END PROCEDURE elem_var_disp
 
@@ -111,8 +111,8 @@ END PROCEDURE elem_var_disp
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE elem_var_deallocate_data
-  IF( ALLOCATED( Obj % Val ) ) DEALLOCATE( Obj % Val )
-  IF( ALLOCATED( Obj % Names ) ) DEALLOCATE( Obj % Names )
+  IF( ALLOCATED( obj % Val ) ) DEALLOCATE( obj % Val )
+  IF( ALLOCATED( obj % Names ) ) DEALLOCATE( obj % Names )
   obj%tprop=0
   obj%tpoint=0
 END PROCEDURE elem_var_deallocate_data

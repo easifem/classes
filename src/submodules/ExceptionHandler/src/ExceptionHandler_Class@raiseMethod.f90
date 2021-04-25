@@ -26,27 +26,27 @@ CONTAINS
 
 MODULE PROCEDURE raiseInformation
   LOGICAL( LGT ) :: toLog
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    Obj%surrogate%nInfo=Obj%surrogate%nInfo+1
-    Obj%surrogate%lastMesg=mesg
-    toLog=(Obj%surrogate%logFileActive .AND. &
-      & Obj%surrogate%verbose(EXCEPTION_INFORMATION))
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    obj%surrogate%nInfo=obj%surrogate%nInfo+1
+    obj%surrogate%lastMesg=mesg
+    toLog=(obj%surrogate%logFileActive .AND. &
+      & obj%surrogate%verbose(EXCEPTION_INFORMATION))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_INFORMATION, &
-      & isQuiet = Obj%surrogate%quiet(EXCEPTION_INFORMATION), &
+      & isQuiet = obj%surrogate%quiet(EXCEPTION_INFORMATION), &
       & isLogActive = toLog, &
-      & logUnit = Obj%surrogate%logFileUnit, &
-      & mesg = Obj%surrogate%lastMesg )
+      & logUnit = obj%surrogate%logFileUnit, &
+      & mesg = obj%surrogate%lastMesg )
   ELSE
-    Obj%nInfo = Obj%nInfo+1
-    Obj%lastMesg = mesg
-    toLog=( Obj%logFileActive .AND. Obj%verbose(EXCEPTION_INFORMATION))
+    obj%nInfo = obj%nInfo+1
+    obj%lastMesg = mesg
+    toLog=( obj%logFileActive .AND. obj%verbose(EXCEPTION_INFORMATION))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_INFORMATION, &
-      & isQuiet = Obj%quiet(EXCEPTION_INFORMATION), &
+      & isQuiet = obj%quiet(EXCEPTION_INFORMATION), &
       & isLogActive = toLog, &
-      & logUnit = Obj%logFileUnit, &
-      & mesg = Obj%lastMesg )
+      & logUnit = obj%logFileUnit, &
+      & mesg = obj%lastMesg )
   ENDIF
 END PROCEDURE raiseInformation
 
@@ -57,27 +57,27 @@ END PROCEDURE raiseInformation
 
 MODULE PROCEDURE raiseWarning
   LOGICAL( LGT ) :: toLog
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    Obj%surrogate%nWarn=Obj%surrogate%nWarn+1
-    Obj%surrogate%lastMesg=mesg
-    toLog=(Obj%surrogate%logFileActive .AND. &
-      & Obj%surrogate%verbose(EXCEPTION_WARNING))
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    obj%surrogate%nWarn=obj%surrogate%nWarn+1
+    obj%surrogate%lastMesg=mesg
+    toLog=(obj%surrogate%logFileActive .AND. &
+      & obj%surrogate%verbose(EXCEPTION_WARNING))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_WARNING, &
-      & isQuiet = Obj%surrogate%quiet(EXCEPTION_WARNING), &
+      & isQuiet = obj%surrogate%quiet(EXCEPTION_WARNING), &
       & isLogActive = toLog, &
-      & logUnit = Obj%surrogate%logFileUnit, &
-      & mesg = Obj%surrogate%lastMesg )
+      & logUnit = obj%surrogate%logFileUnit, &
+      & mesg = obj%surrogate%lastMesg )
   ELSE
-    Obj%nWarn = Obj%nWarn+1
-    Obj%lastMesg = mesg
-    toLog=( Obj%logFileActive .AND. Obj%verbose(EXCEPTION_WARNING))
+    obj%nWarn = obj%nWarn+1
+    obj%lastMesg = mesg
+    toLog=( obj%logFileActive .AND. obj%verbose(EXCEPTION_WARNING))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_WARNING, &
-      & isQuiet = Obj%quiet(EXCEPTION_WARNING), &
+      & isQuiet = obj%quiet(EXCEPTION_WARNING), &
       & isLogActive = toLog, &
-      & logUnit = Obj%logFileUnit, &
-      & mesg = Obj%lastMesg )
+      & logUnit = obj%logFileUnit, &
+      & mesg = obj%lastMesg )
   ENDIF
 END PROCEDURE raiseWarning
 
@@ -88,27 +88,27 @@ END PROCEDURE raiseWarning
 
 MODULE PROCEDURE raiseDebug
   LOGICAL( LGT ) :: toLog
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    Obj%surrogate%nDebug=Obj%surrogate%nDebug+1
-    Obj%surrogate%lastMesg=mesg
-    toLog=(Obj%surrogate%logFileActive .AND. &
-      & Obj%surrogate%verbose(EXCEPTION_DEBUG))
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    obj%surrogate%nDebug=obj%surrogate%nDebug+1
+    obj%surrogate%lastMesg=mesg
+    toLog=(obj%surrogate%logFileActive .AND. &
+      & obj%surrogate%verbose(EXCEPTION_DEBUG))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_DEBUG, &
-      & isQuiet = Obj%surrogate%quiet(EXCEPTION_DEBUG), &
+      & isQuiet = obj%surrogate%quiet(EXCEPTION_DEBUG), &
       & isLogActive = toLog, &
-      & logUnit = Obj%surrogate%logFileUnit, &
-      & mesg = Obj%surrogate%lastMesg )
+      & logUnit = obj%surrogate%logFileUnit, &
+      & mesg = obj%surrogate%lastMesg )
   ELSE
-    Obj%nDebug = Obj%nDebug+1
-    Obj%lastMesg = mesg
-    toLog=( Obj%logFileActive .AND. Obj%verbose(EXCEPTION_DEBUG))
+    obj%nDebug = obj%nDebug+1
+    obj%lastMesg = mesg
+    toLog=( obj%logFileActive .AND. obj%verbose(EXCEPTION_DEBUG))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_DEBUG, &
-      & isQuiet = Obj%quiet(EXCEPTION_DEBUG), &
+      & isQuiet = obj%quiet(EXCEPTION_DEBUG), &
       & isLogActive = toLog, &
-      & logUnit = Obj%logFileUnit, &
-      & mesg = Obj%lastMesg )
+      & logUnit = obj%logFileUnit, &
+      & mesg = obj%lastMesg )
   ENDIF
 END PROCEDURE raiseDebug
 
@@ -119,29 +119,29 @@ END PROCEDURE raiseDebug
 
 MODULE PROCEDURE raiseError
   LOGICAL( LGT ) :: toLog
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    Obj%surrogate%nError=Obj%surrogate%nError+1
-    Obj%surrogate%lastMesg=mesg
-    toLog=(Obj%surrogate%logFileActive .AND. &
-      & Obj%surrogate%verbose(EXCEPTION_ERROR))
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    obj%surrogate%nError=obj%surrogate%nError+1
+    obj%surrogate%lastMesg=mesg
+    toLog=(obj%surrogate%logFileActive .AND. &
+      & obj%surrogate%verbose(EXCEPTION_ERROR))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_ERROR, &
-      & isQuiet = Obj%surrogate%quiet(EXCEPTION_ERROR), &
+      & isQuiet = obj%surrogate%quiet(EXCEPTION_ERROR), &
       & isLogActive = toLog, &
-      & logUnit = Obj%surrogate%logFileUnit, &
-      & mesg = Obj%surrogate%lastMesg )
-    CALL exceptionStop(Obj%surrogate%stopOnError)
+      & logUnit = obj%surrogate%logFileUnit, &
+      & mesg = obj%surrogate%lastMesg )
+    CALL exceptionStop(obj%surrogate%stopOnError)
   ELSE
-    Obj%nError = Obj%nError+1
-    Obj%lastMesg = mesg
-    toLog=( Obj%logFileActive .AND. Obj%verbose(EXCEPTION_ERROR))
+    obj%nError = obj%nError+1
+    obj%lastMesg = mesg
+    toLog=( obj%logFileActive .AND. obj%verbose(EXCEPTION_ERROR))
     CALL exceptionMessage( &
       & eCode = EXCEPTION_ERROR, &
-      & isQuiet = Obj%quiet(EXCEPTION_ERROR), &
+      & isQuiet = obj%quiet(EXCEPTION_ERROR), &
       & isLogActive = toLog, &
-      & logUnit = Obj%logFileUnit, &
-      & mesg = Obj%lastMesg )
-    CALL exceptionStop(Obj%stopOnError)
+      & logUnit = obj%logFileUnit, &
+      & mesg = obj%lastMesg )
+    CALL exceptionStop(obj%stopOnError)
   ENDIF
 END PROCEDURE raiseError
 
@@ -153,24 +153,24 @@ MODULE PROCEDURE raiseFatalError
   LOGICAL( LGT ) :: tmpQuiet
   tmpQuiet=.FALSE.
 
-  IF( ASSOCIATED( Obj%surrogate ) ) THEN
-    Obj%surrogate%nFatal=Obj%surrogate%nFatal+1
-    Obj%surrogate%lastMesg=mesg
+  IF( ASSOCIATED( obj%surrogate ) ) THEN
+    obj%surrogate%nFatal=obj%surrogate%nFatal+1
+    obj%surrogate%lastMesg=mesg
     CALL exceptionMessage( &
       & eCode = EXCEPTION_FATAL_ERROR, &
       & isQuiet = tmpQuiet, &
-      & isLogActive = Obj%surrogate%logFileActive, &
-      & logUnit = Obj%surrogate%logFileUnit, &
-      & mesg = Obj%surrogate%lastMesg )
+      & isLogActive = obj%surrogate%logFileActive, &
+      & logUnit = obj%surrogate%logFileUnit, &
+      & mesg = obj%surrogate%lastMesg )
   ELSE
-    Obj%nFatal = Obj%nFatal+1
-    Obj%lastMesg = mesg
+    obj%nFatal = obj%nFatal+1
+    obj%lastMesg = mesg
     CALL exceptionMessage( &
       & eCode = EXCEPTION_FATAL_ERROR, &
       & isQuiet = tmpQuiet, &
-      & isLogActive = Obj%logFileActive, &
-      & logUnit = Obj%logFileUnit, &
-      & mesg = Obj%lastMesg )
+      & isLogActive = obj%logFileActive, &
+      & logUnit = obj%logFileUnit, &
+      & mesg = obj%lastMesg )
   ENDIF
   CALL exceptionStop(.TRUE.)
 END PROCEDURE raiseFatalError

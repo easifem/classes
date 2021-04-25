@@ -7,8 +7,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE userVolHeatCap_Pointer
-  ALLOCATE( Ans )
-  Ans%getValue => userVolHeatCap_getval
+  ALLOCATE( ans )
+  ans%getValue => userVolHeatCap_getval
 END PROCEDURE userVolHeatCap_Pointer
 
 !----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ END PROCEDURE userVolHeatCap_Pointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE userVolHeatCap_getval
-  Ans = Obj%ConstVolHeatCapVal
+  ans = obj%ConstVolHeatCapVal
 END PROCEDURE userVolHeatCap_getval
 
 !----------------------------------------------------------------------------
