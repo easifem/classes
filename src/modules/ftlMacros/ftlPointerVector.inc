@@ -82,7 +82,6 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)
   PROCEDURE, PUBLIC :: ShrinkToFit => T_ShrinkToFit
   PROCEDURE, PUBLIC :: Resize => T_Resize
   PROCEDURE, PUBLIC :: Pushback => T_Pushback
-  PROCEDURE, PUBLIC :: Add => T_Pushback
   PROCEDURE, PUBLIC :: Popback => T_Popback
 
   GENERIC, PUBLIC :: Insert => T_InsertSingle, T_InsertFill, T_InsertArray, &
