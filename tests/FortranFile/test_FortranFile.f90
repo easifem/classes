@@ -15,8 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-module test_mod
+module test_m
 use easifemBase
+use FortranFile_Class
 implicit none
 contains
 
@@ -24,31 +25,25 @@ contains
 !
 !----------------------------------------------------------------------------
 
-subroutine test2
-  type( string ) :: s
-  character( len = : ), pointer :: b
-  s = "hello world"
-  allocate( b, source = s%chars() )
-  write( *, * ) b
-end subroutine
+subroutine test0
+  type(FortranFile_) :: obj
+  call obj%initiate(file="./hello/world.txt", status='REPLACE', &
+    & action='WRITE')
+  call display(obj%getFilePath(), "Path")
+  call display(obj%getFileExt(), "Ext")
+  call display(obj%getFileName(), "FileName")
+  call obj%open()
+  call obj%close()
+end subroutine test0
+
+end module test_m
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-subroutine test1
-  type( string ) :: s1, s2, s3
-  s1 = "hello"
-  s2 = "world"
-  s3 = s1 // "+" // s2
-  call display(s3, "s3=")
-end subroutine
-
-
-end
-
 program main
-use test_mod
+use test_m
 implicit none
-call test1
+call test0
 end program main
