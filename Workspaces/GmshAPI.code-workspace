@@ -2,6 +2,15 @@
 	"folders": [
 		{
 			"path": "../src/modules/GmshAPI"
+		},
+		{
+			"path": "../tests/GmshAPI"
+		},
+		{
+			"path": "../src/modules/MSH"
+		},
+		{
+			"path": "../src/submodules/MSH"
 		}
 	]
 }
