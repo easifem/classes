@@ -1,5 +1,7 @@
 #ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
+#File
+include(${CMAKE_CURRENT_LIST_DIR}/File/CMakeLists.txt)
 #Element
 include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
 #FacetElement
@@ -16,9 +18,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
 #ElementPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
-#Mesh
-include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
+#GmshAPI
+include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
+# Mesh
+# include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 #easifemClasses
 include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
+
 
 

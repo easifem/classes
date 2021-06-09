@@ -15,35 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE easifemClasses
-USE ExceptionHandler_Class
-USE FortranFile_Class
-USE InputFile_Class
-USE HDF5File_Class
-USE ElementFactory
-!FTL Containers
-USE IntList_Class
-USE RealList_Class
-USE StringList_Class
-USE ElementList_Class
-USE ElementPointerVector_Class
-  ! USE Mesh_Class
-  ! USE MeshData_Class
-  ! USE MeshConnectivity_Class
-  ! USE Domain_Class
-  ! USE QuadratureVariables_Class
-  ! USE gmsh_class
-  ! USE gmshMesh_Class
-  ! USE vtkType
-  ! USE LinSolver_Class
+! /* Draw all the OpenGL scenes. */
+! GMSH_API void gmshGraphicsDraw(int *ierr);
 
-  ! USE Material_Class
-  ! USE stdMaterials
-  ! USE ThermCondModel_Class
-  ! USE VolHeatCapModel_Class
-  ! USE SFCCModel_Class
+INTERFACE
+SUBROUTINE gmshGraphicsDraw(ierr) &
+  & BIND( C, NAME="gmshGraphicsDraw" )
+  IMPORT
+  _I_OUT_ :: ierr
+END SUBROUTINE gmshGraphicsDraw
+END INTERFACE
 
-  ! USE mod_functional
-  ! USE ogpf
-
-END MODULE easifemClasses
+PUBLIC :: gmshGraphicsDraw
