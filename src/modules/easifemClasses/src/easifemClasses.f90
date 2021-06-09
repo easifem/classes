@@ -19,6 +19,7 @@ MODULE easifemClasses
 USE ExceptionHandler_Class
 USE FortranFile_Class
 USE InputFile_Class
+USE HDF5File_Class
 USE ElementFactory
 !FTL Containers
 USE IntList_Class

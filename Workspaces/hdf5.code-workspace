@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/File"
+		},
+		{
+			"path": "../src/submodules/File"
+		},
+		{
+			"path": "../tests/HDF5File"
+		}
+	],
+	"settings": {}
+}
