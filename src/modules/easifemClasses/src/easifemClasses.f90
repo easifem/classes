@@ -32,7 +32,7 @@ USE ElementPointerVector_Class
   ! USE MeshConnectivity_Class
   ! USE Domain_Class
   ! USE QuadratureVariables_Class
-  ! USE gmsh_class
+USE Gmsh_Class
   ! USE gmshMesh_Class
   ! USE vtkType
   ! USE LinSolver_Class

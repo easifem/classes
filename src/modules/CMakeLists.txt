@@ -20,6 +20,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
 #GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
+#MSH
+include(${CMAKE_CURRENT_LIST_DIR}/MSH/CMakeLists.txt)
 # Mesh
 # include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 #easifemClasses
