@@ -141,7 +141,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE getFileParts_file( obj, path, fileName, ext )
+MODULE PURE SUBROUTINE getFileParts_file( obj, path, fileName, ext )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   TYPE( String ), INTENT( OUT ) :: path
   TYPE( String ), INTENT( OUT ) :: fileName

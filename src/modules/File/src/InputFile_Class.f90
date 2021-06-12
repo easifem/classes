@@ -96,7 +96,7 @@ PUBLIC :: InputFilePointer_
 
 INTERFACE
 MODULE SUBROUTINE inp_initiate(obj,file,unit,status,access,form, &
-  & position,action,pad,recl)
+  & position,action,pad,recl, comment, separator, delimiter)
   CLASS( InputFile_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: file
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unit
@@ -107,6 +107,9 @@ MODULE SUBROUTINE inp_initiate(obj,file,unit,status,access,form, &
   CHARACTER( LEN=* ), OPTIONAL, INTENT( IN ) :: action
   CHARACTER( LEN=* ), OPTIONAL, INTENT( IN ) :: pad
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: recl
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: comment
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: separator
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: delimiter
 END SUBROUTINE inp_initiate
 END INTERFACE
 

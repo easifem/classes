@@ -202,6 +202,8 @@ MODULE PROCEDURE ff_initiate
         CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value ('//position//') for optional input argument POSITION!')
       ENDSELECT
+    ELSE
+      obj%posopt = 'ASIS'
     ENDIF
 
     !ACTION clause for OPEN statement
@@ -245,6 +247,18 @@ MODULE PROCEDURE ff_initiate
         obj%reclval=recl
       ENDIF
     ENDIF
+
+    IF( PRESENT( comment ) ) THEN
+      obj%comment = comment
+    END IF
+
+    IF( PRESENT( separator ) ) THEN
+      obj%separator = separator
+    END IF
+
+    IF( PRESENT( delimiter ) ) THEN
+      obj%delimiter = delimiter
+    END IF
 
     IF(TRIM(statusval) /= 'OLD') THEN
       obj%newstat=.TRUE.
@@ -323,7 +337,9 @@ MODULE PROCEDURE ff_clear
   obj%reclval=-1
   obj%padstat=.FALSE.
   obj%posopt='ASIS  '
-
+  obj%comment = hash
+  obj%separator = comma
+  obj%delimiter = '\n'
   !Set BaseFileType attributes to default
   CALL obj%DeallocateBaseData()
 END PROCEDURE ff_clear

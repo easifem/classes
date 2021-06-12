@@ -33,9 +33,13 @@
 MODULE mshFormat_Class
 USE BaseType
 USE GlobalData
-USE FortranFile_Class
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
+
+CHARACTER( LEN = * ), PARAMETER :: modName = "mshFormat_Class"
+INTEGER( I4B ) :: ierr
+!$OMP THREADPRIVATE(ierr)
 
 !----------------------------------------------------------------------------
 !                                                                 mshFormat_
@@ -47,10 +51,10 @@ PRIVATE
 
 TYPE :: mshFormat_
   PRIVATE
-  REAL( DFP ) :: Version = 0.0_DFP
-  INTEGER( I4B ) :: MajorVersion = 4_I4B
-  INTEGER( I4B ) :: MinorVersion = 1_I4B
-  INTEGER( I4B ) :: FileType = 0, DataSize = 0
+  REAL( DFP ) :: version = 0.0_DFP
+  INTEGER( I4B ) :: majorVersion = 4_I4B
+  INTEGER( I4B ) :: minorVersion = 1_I4B
+  INTEGER( I4B ) :: fileType = 0, dataSize = 0
   LOGICAL( LGT ) :: isASCII = .FALSE.
   CHARACTER( LEN = 10 ) :: MeshFormat = ""
   CONTAINS
@@ -69,13 +73,13 @@ TYPE :: mshFormat_
       !! Returns the Datasize
     PROCEDURE, PUBLIC, PASS( Obj ) :: getMeshFormat => fmt_getMeshFormat
       !! Return the Mesh format
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadFromFile => fmt_ReadFromFile
+    PROCEDURE, PUBLIC, PASS( obj ) :: Read => fmt_Read
       !! Read format from a file
-    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => fmt_WriteToFile
+    PROCEDURE, PUBLIC, PASS( obj ) :: Write => fmt_Write
       !! Write content to a file
     PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => fmt_GotoTag
       !! Goto a tag
-    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => fmt_Finalize
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => fmt_Finalize
       !! Finalize
 END TYPE mshFormat_
 
@@ -170,7 +174,7 @@ END INTERFACE
 INTERFACE
 MODULE PURE FUNCTION fmt_getFileType( obj ) RESULT( Ans )
   CLASS( mshFormat_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = 6 ) :: Ans
+  INTEGER( I4B ) :: Ans
 END FUNCTION fmt_getFileType
 END INTERFACE
 
@@ -213,11 +217,11 @@ END INTERFACE
 ! summary: 	Routine for reading mesh format from the msh file
 
 INTERFACE
-MODULE SUBROUTINE fmt_ReadFromFile( obj, mshFile, ierr )
+MODULE SUBROUTINE fmt_Read( obj, mshFile, error )
   CLASS( mshFormat_ ), INTENT( INOUT) :: obj
-  TYPE( FortranFile_ ), INTENT( INOUT) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT ) :: ierr
-END SUBROUTINE fmt_ReadFromFile
+  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+END SUBROUTINE fmt_Read
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -229,11 +233,11 @@ END INTERFACE
 ! summary: This subroutine writes mesh format to a .msh file
 
 INTERFACE
-MODULE SUBROUTINE fmt_WriteToFile( obj, mshFile, Str, EndStr )
+MODULE SUBROUTINE fmt_Write( obj, mshFile, Str, EndStr )
   CLASS( mshFormat_ ), INTENT( INOUT ) :: obj
-  TYPE( FortranFile_ ), INTENT( INOUT ) :: mshFile
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
-END SUBROUTINE fmt_WriteToFile
+END SUBROUTINE fmt_Write
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -245,10 +249,10 @@ END INTERFACE
 ! summary: This subroutine search the mesh format tag in the mesh file
 
 INTERFACE
-MODULE SUBROUTINE fmt_GotoTag( obj, mshFile, ierr )
+MODULE SUBROUTINE fmt_GotoTag( obj, mshFile, error )
   CLASS( mshFormat_ ), INTENT( IN ) :: obj
-  TYPE( FortranFile_ ), INTENT( INOUT ) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT ) :: ierr
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE fmt_GotoTag
 END INTERFACE
 

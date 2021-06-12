@@ -1,22 +1,44 @@
-MODULE mshElements_Class
-  !! This module defines a class to handle elements in mesh file
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: 	This module defines a class to handle elements in mesh file
+
+MODULE mshElements_Class
 USE BaseType
 USE GlobalData
 USE mshFormat_Class
-
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
+
+CHARACTER( LEN = * ), PARAMETER :: modName = "MSHELEMENT_CLASS"
 
 !----------------------------------------------------------------------------
 !                                                              mshElements_
 !----------------------------------------------------------------------------
 
-!> authors: Dr. Vikas Sharma
-!
-! This class handles the elements present in the mesh file
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 June 2021
+! summary: This class handles the elements present in the mesh file
 
 TYPE :: mshElements_
+  PRIVATE
   INTEGER( I4B ) :: numElements = 0
   INTEGER( I4B ) :: numEntityBlocks = 0
   INTEGER( I4B ) :: minElementTag = 0
@@ -24,18 +46,23 @@ TYPE :: mshElements_
   LOGICAL( LGT ) :: isSparse = .FALSE.
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => el_DeallocateData
+    PRIVATE
+    FINAL :: el_Final
+      !! Finalizer
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => el_DeallocateData
       !! deallocate data
-    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => el_goto
+    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => el_GotoTag
       !! go to the tag
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadFromFile => el_read_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: Read => el_Read
       !! Read data form file
-    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => el_write_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: Write => el_Write
       !! Write data to file
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadElementLine => el_read_elem_line
-      !! Read element line
-    PROCEDURE, PUBLIC, PASS( obj ) :: TotalElements => el_telements_1
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNumElements => el_getNumElements
       !! total elements
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNumEntityBlocks => el_getNumEntityBlocks
+      !! Returns the number of entity blocks
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMinElementTag => el_getMinElementTag
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMaxElementTag => el_getMaxElementTag
 END TYPE mshElements_
 
 !----------------------------------------------------------------------------
@@ -55,72 +82,96 @@ END TYPE mshElementsPointer_
 PUBLIC :: mshElementsPointer_
 
 !----------------------------------------------------------------------------
-!                                                         GotoTag@mshElement
+!                                                                 Final
 !----------------------------------------------------------------------------
 
 INTERFACE
-!! This subroutine go the location of element in mesh file
+MODULE SUBROUTINE el_Final( obj )
+  TYPE( mshElements_ ), INTENT( INOUT ) ::  obj
+END SUBROUTINE el_Final
+END INTERFACE
 
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine go the location of element in mesh file
 
-MODULE SUBROUTINE el_goto( obj, mshFile, ierr )
+
+!----------------------------------------------------------------------------
+!                                                            DeallocateData
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: This subroutine deallocates the data from obj
+
+INTERFACE
+MODULE SUBROUTINE el_DeallocateData( obj )
+  CLASS( mshElements_ ), INTENT( INOUT) :: obj
+END SUBROUTINE el_DeallocateData
+END INTERFACE
+
+INTERFACE DeallocateData
+  MODULE PROCEDURE el_DeallocateData
+END INTERFACE DeallocateData
+
+PUBLIC :: DeallocateData
+
+!----------------------------------------------------------------------------
+!                                                                   GotoTag
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: This subroutine go the location of element in mesh file
+
+INTERFACE
+MODULE SUBROUTINE el_GotoTag( obj, mshFile, error )
   CLASS( mshElements_ ), INTENT( IN ) :: obj
-  TYPE( File_ ), INTENT( INOUT ) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT ) :: ierr
-END SUBROUTINE el_goto
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+END SUBROUTINE el_GotoTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    ReadFromFile@mshElement
+!                                                                      Read
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: 	This subroutine reads data from a file
+
 INTERFACE
-! This subroutine reads data from a file
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine reads data from a file
-
-MODULE SUBROUTINE el_read_file( obj, mshFile, mshFormat, ierr )
+MODULE SUBROUTINE el_Read( obj, mshFile, mshFormat, error )
   CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-  TYPE( File_ ), INTENT( INOUT ) :: mshFile
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
   TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
-  LOGICAL( LGT ), INTENT( INOUT ) :: ierr
-END SUBROUTINE el_read_file
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+END SUBROUTINE el_Read
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      WriteToFile@mshElement
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 June 2021
+! summary: This subroutine writes the data to a file
+
 INTERFACE
-! This subroutine writes the data to a file
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine writes the data to a file
-
-MODULE SUBROUTINE el_write_file( obj, mshFile, mshFormat, Str, EndStr )
+MODULE SUBROUTINE el_Write( obj, mshFile, mshFormat, Str, EndStr )
   CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-  TYPE( File_ ), INTENT( INOUT ) :: mshFile
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
   TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
-END SUBROUTINE el_write_file
+END SUBROUTINE el_Write
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                        Display@mshElements
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: 	This data displays the content of [[mshElements_]]
+
 INTERFACE
-! This data displays the content of [[mshElements_]]
-
-!> authors: Dr. Vikas Sharma
-!
-! This data displays the content of [[mshElements_]]
-
 MODULE SUBROUTINE el_display( obj, Msg, UnitNo )
   CLASS( mshElements_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: Msg
@@ -135,58 +186,67 @@ END INTERFACE Display
 PUBLIC :: Display
 
 !----------------------------------------------------------------------------
-!                                                ReadElementLine@mshElements
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE el_read_elem_line( obj, ElemNum, ElemType, PhysicalId, &
-  & GeometryId, MeshPartitionTags, Nptrs, mshFile  )
-  CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( INOUT ), OPTIONAL :: ElemNum, ElemType, &
-    & PhysicalId, GeometryId
-  INTEGER( I4B ), ALLOCATABLE, INTENT( INOUT ), OPTIONAL :: &
-    & MeshPartitionTags(:), Nptrs(:)
-  TYPE( File_ ), INTENT( INOUT ) :: mshFile
-END SUBROUTINE el_read_elem_line
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                  TotalElements@mshElements
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: 	 This function returns total number of elements
+
 INTERFACE
-! This function returns total number of elements
-
-!> authors: Dr. Vikas Sharma
-!
-! This function returns total number of elements
-
-MODULE PURE FUNCTION el_telements_1( obj ) RESULT( ans )
+MODULE PURE FUNCTION el_getNumElements( obj ) RESULT( ans )
   CLASS( mshElements_ ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: ans
-END FUNCTION el_telements_1
+END FUNCTION el_getNumElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@mshElements
+!                                                         getNumEntityBlocks
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: 	This function returns the number of entities blocks
 
 INTERFACE
-! This subroutine deallocates the data from obj
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine deallocates the data from obj
-
-MODULE SUBROUTINE el_deallocatedata( obj )
-  CLASS( mshElements_ ), INTENT( INOUT) :: obj
-END SUBROUTINE el_deallocatedata
+MODULE PURE FUNCTION el_getNumEntityBlocks( obj ) RESULT( Ans )
+  CLASS( mshElements_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION el_getNumEntityBlocks
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE el_deallocatedata
-END INTERFACE DeallocateData
+!----------------------------------------------------------------------------
+!                                                          getMinElementTag
+!----------------------------------------------------------------------------
 
-PUBLIC :: DeallocateData
+!> authors: Vikas Sharma, Ph. D.
+! date: 	12 June 2021
+! summary: This routine returns the minimum element tag
+
+INTERFACE
+MODULE PURE FUNCTION el_getMinElementTag( obj ) RESULT( Ans )
+  CLASS( mshElements_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION el_getMinElementTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getMaxElementTag
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	12 June 2021
+! summary: This routine returns the Maximum element tag
+
+INTERFACE
+MODULE PURE FUNCTION el_getMaxElementTag( obj ) RESULT( Ans )
+  CLASS( mshElements_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION el_getMaxElementTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE mshElements_Class

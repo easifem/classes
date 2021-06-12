@@ -34,7 +34,7 @@ USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(LEN=*),PARAMETER :: modName='FORTRANFILE_CLASS'
+CHARACTER(LEN=*),PARAMETER :: modName='FORTRANFILE_CLASS', hash="#", comma=","
 INTEGER(I4B), PARAMETER :: maxStrLen=256
 
 !----------------------------------------------------------------------------
@@ -60,6 +60,10 @@ TYPE, EXTENDS(AbstractFile_) :: FortranFile_
   LOGICAL(LGT) :: padstat = .FALSE.
     !! Whether or not the file is being padded
   CHARACTER( LEN = 6 ) :: posopt='ASIS  '
+  CHARACTER( LEN = 1 ) :: comment = hash
+  CHARACTER( LEN = 1 ) :: separator = comma
+  CHARACTER( LEN = 2 ) :: delimiter = "\n"
+
   !
   CONTAINS
   PRIVATE
@@ -114,17 +118,34 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ff_initiate(obj,file,unit,status,access,form, &
-  & position,action,pad,recl)
-  CLASS(FortranFile_),INTENT(INOUT) :: obj
-  CHARACTER( LEN = * ),INTENT(IN) :: file
-  INTEGER(I4B),OPTIONAL,INTENT(IN) :: unit
-  CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: status
-  CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: access
-  CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: form
-  CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: position
-  CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: action
-  CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: pad
-  INTEGER(I4B),OPTIONAL,INTENT(IN) :: recl
+  & position,action,pad,recl, comment, separator, delimiter)
+  CLASS( FortranFile_ ), INTENT( INOUT ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: file
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unit
+    !! User specified unit number, it should  not be equal to `stdout, stdin, stderr`
+  CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: status
+    !! OLD, NEW, SCRATCH, REPLACE, UNKNOWN
+    !! If UNKNOWN then we use REPLACE
+    !! Default is REPLACE
+  CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: access
+    !! DIRECT, SEQUENTIAL, STREAM
+    !! Default is SEQUENTIAL
+  CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: form
+    !! FORMATTED, UNFORMATTED
+    !! Default is FORMATTED
+  CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: position
+    !! REWIND, APPEND, ASIS
+    !! Default is ASIS
+  CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: action
+    !! READ, WRITE, READWRITE
+    !! Default is READWRITE
+  CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: pad
+    !! YES, NO
+    !! Default is YES
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: recl
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: comment
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: separator
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: delimiter
 END SUBROUTINE ff_initiate
 END INTERFACE
 

@@ -33,10 +33,17 @@ MODULE PROCEDURE mesh_initiate
   INTEGER( I4B ) :: ierr, psize
 
   IF( .NOT. param%ispresent(key="nsd") ) THEN
-    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
       & "nsd key should be present in param")
   ELSE
     ierr = param%get(key="nsd", value=obj%nsd)
+  END IF
+
+  IF( .NOT. param%ispresent(key="size") ) THEN
+    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+      & "size key should be present in param")
+  ELSE
+    ierr = param%get(key="nsd", value=psize)
   END IF
 
   CALL obj%list%Initiate()
