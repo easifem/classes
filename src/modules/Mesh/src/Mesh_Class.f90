@@ -13,26 +13,22 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
-!
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 March 2021
-! summary: 	 `Mesh_Class` module contains three data user defined data types related to finite element meshes: [[Mesh_]], [[MeshData_]], and [[MeshConnectivity_]].
+! summary: `Mesh_Class` module contains data type for handling the mesh.
 
 MODULE Mesh_Class
 USE BaseType
 USE GlobalData
 USE ElementFactory
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class
 USE ElementPointerVector_Class, ONLY: ElementPointerVector_, &
   & ElementPointerIterator_
 USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
 REAL( DFP ), PARAMETER :: default_factor = 1.5_DFP
-TYPE( ExceptionHandler_ ), SAVE, PUBLIC :: eMesh
-!$OMP THREADPRIVATE(eMesh)
 CHARACTER( LEN = * ), PARAMETER :: modName = "MESH_CLASS"
 
 !----------------------------------------------------------------------------
@@ -49,8 +45,34 @@ TYPE :: Mesh_
   PRIVATE
   TYPE( ElementPointerVector_ ), PUBLIC :: list
     !! A dynamic vector of element pointer
-  INTEGER( I4B ) :: NSD = 0
+  INTEGER( I4B ) :: nsd = 0
     !! spatial dimension
+  INTEGER( I4B ) :: xiDim = 0
+    !! Xidimension of elements in the mesh
+  INTEGER( I4B ) :: ElemType = 0
+    !! Type of elements in the mesh
+  REAL( DFP ) :: minX = 0.0
+    !! Minimum value of x for bounding box
+  REAL( DFP ) :: minY = 0.0
+    !! Minimum value of y for bounding box
+  REAL( DFP ) :: minZ = 0.0
+    !! Minimum value of z for bounding box
+  REAL( DFP ) :: maxX = 0.0
+    !! Maximum value of x for bounding box
+  REAL( DFP ) :: maxY = 0.0
+    !! Maximum value of y for bounding box
+  REAL( DFP ) :: maxZ = 0.0
+    !! Maximum value of z for bounding box
+  REAL( DFP ) :: X = 0.0
+    !! X coordinate of centroid
+  REAL( DFP ) :: Y = 0.0
+    !! Y coordinate of the centroid
+  REAL( DFP ) :: Z = 0.0
+    !! Z coordinate of the centroid
+
+
+  TYPE( ExceptionHandler_ ), PUBLIC :: e
+    !! Exception handler for mesh
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mesh_initiate
       !! Allocate size of a mesh
@@ -113,7 +135,7 @@ PUBLIC :: MeshPointer_
 !### Usage
 !
 !```fortran
-! call obj % initiate( NSD = 2, tELements = 10 )
+! call obj % initiate( NSD = 2, tElements = 10 )
 !```end fortran
 
 INTERFACE
@@ -121,6 +143,7 @@ MODULE SUBROUTINE mesh_initiate( obj, param )
   CLASS( Mesh_ ), INTENT( INOUT) :: obj
     !! mesh object
   TYPE( ParameterList_ ), INTENT( IN ) :: param
+    !! Parameter list which contains `nsd` and `size`
 END SUBROUTINE mesh_initiate
 END INTERFACE
 

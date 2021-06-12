@@ -20,38 +20,40 @@
 ! summary: 	This Module contains data-structure and methods to deal with MSH4 format of Gmsh.
 
 MODULE mshEntity_Class
-  !! This module contains a class to handle entities in mesh file
 USE BaseType
 USE GlobalData
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
+
+CHARACTER( LEN = * ), PARAMETER :: modName = "MSHENTITY_CLASS"
 
 !----------------------------------------------------------------------------
 !                                                                 mshEntity_
 !----------------------------------------------------------------------------
 
-!> authors: Dr. Vikas Sharma
-!
-! This class handles the mesh entities defined in msh file
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This class handles the mesh entities defined in msh file
 
 TYPE :: mshEntity_
+  PRIVATE
   INTEGER( I4B ) :: uid = 0
     !! unique id of entity
-  INTEGER( I4B ) :: XiDim = 0
+  INTEGER( I4B ) :: xiDim = 0
     !! for point=0, curve=1, surface = 2, volume = 3
-  INTEGER( I4B ) :: ElemType = 0
+  INTEGER( I4B ) :: elemType = 0
     !! element type in meshing
-  INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
+  INTEGER( I4B ), ALLOCATABLE :: physicalTag( : )
     !! Physical tags associated
-  INTEGER( I4B ), ALLOCATABLE :: NodeNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: nodeNumber( : )
     !! node numbers in mesh
-  INTEGER( I4B ), ALLOCATABLE :: ElemNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: elemNumber( : )
     !! element numbers in mesh
-  INTEGER( I4B ), ALLOCATABLE :: Nptrs( :, : )
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( :, : )
     !! connectivity
-  INTEGER( I4B ), ALLOCATABLE :: BoundingEntity( : )
+  INTEGER( I4B ), ALLOCATABLE :: boundingEntity( : )
     !! tag of bounding entity
-
   REAL( DFP ) :: minX = 0.0_DFP
     !! bounding box of entity
   REAL( DFP ) :: minY = 0.0_DFP
@@ -64,36 +66,62 @@ TYPE :: mshEntity_
     !! bounding box of entity
   REAL( DFP ) :: maxZ = 0.0_DFP
     !! bounding box of entity
-  REAL( DFP ) :: X = 0.0_DFP
+  REAL( DFP ) :: x = 0.0_DFP
     !! used only for point entity
-  REAL( DFP ) :: Y = 0.0_DFP
+  REAL( DFP ) :: y = 0.0_DFP
     !! used only for point entity
-  REAL( DFP ) :: Z = 0.0_DFP
+  REAL( DFP ) :: z = 0.0_DFP
     !! used only for point entity
-  REAL( DFP ), ALLOCATABLE :: NodeCoord( :, : )
+  REAL( DFP ), ALLOCATABLE :: nodeCoord( :, : )
     !! nodal coordinates in xiJ format
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => ent_deallocateData
+    PRIVATE
+    FINAL :: ent_Final
+      !! Finalizer
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => ent_deallocateData
       !! To deallocate data
-    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => ent_goto
+    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => ent_GotoTag
       !! To find tag
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadPointEntity => ent_read_point
-      !! Read the entry from file for point
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadCurveEntity => ent_Read_Curve
-      !! Read the entry from file for curve
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadSurfaceEntity => ent_Read_Surface
-      !! Read the entry from file for surface
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadVolumeEntity => ent_Read_Volume
-      !! Read the entry from file for volume
-    PROCEDURE, PUBLIC, PASS( obj ) :: TotalPhysicalTags => ent_tphysicaltag
-      !! Return total physical tags associated
-    PROCEDURE, PUBLIC, PASS( obj ) :: TotalBoundingTags => ent_tboundingtag
-      !! Returns the total bounding tags
-    PROCEDURE, PUBLIC, PASS( obj ) :: TotalElements => ent_telements
-      !! Returns the total elements
-    PROCEDURE, PUBLIC, PASS( obj ) :: WriteToFile => ent_write_file
+    PROCEDURE, PUBLIC, PASS( obj ) :: Write => ent_Write
       !! Write data to a file
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Display => ent_Display
+      !! Display the content
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Read => ent_Read
+      !! Read Point, Curve, Surface, and Volume Entity
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalTags => ent_getTotalPhysicalTags
+      !! Return total physical tags associated
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundingTags => ent_getTotalBoundingTags
+      !! Returns the total bounding tags
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalElements => ent_getTotalElements
+      !! Returns the total elements
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalTag => ent_getPhysicalTag
+      !! Returns the physical tags
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setNodeNumber => ent_setNodeNumber
+      !! Set Node number
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setNodeCoord => ent_setNodeCoord
+      !! Set Node coord
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setElemType => ent_setElemType
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setElemNumber => ent_setElemNumber
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setNptrs => ent_setNptrs
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getUid => ent_getUid
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getXiDim => ent_getXiDim
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getElemType => ent_getElemType
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMinX => ent_getMinX
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMinY => ent_getMinY
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMinZ => ent_getMinZ
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMaxX => ent_getMaxX
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMaxY => ent_getMaxY
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getMaxZ => ent_getMaxZ
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getX => ent_getX
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getY => ent_getY
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getZ => ent_getZ
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getNodeCoord => ent_getNodeCoord
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getNodeNumber => ent_getNodeNumber
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getElemNumber => ent_getElemNumber
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundingEntity => ent_getBoundingEntity
+    PROCEDURE, PASS( Obj ) :: ent_getNptrs_a, ent_getNptrs_b
+    GENERIC, PUBLIC :: getNptrs => ent_getNptrs_a, ent_getNptrs_b
 END TYPE mshEntity_
 
 !----------------------------------------------------------------------------
@@ -123,223 +151,24 @@ END TYPE mshEntityPointer_
 PUBLIC :: mshEntityPointer_
 
 !----------------------------------------------------------------------------
-!                                                         GotoTag@mshEntity
+!                                                                      Final
 !----------------------------------------------------------------------------
 
 INTERFACE
-!! This subroutine finds the tag in the mesh file
-
-MODULE SUBROUTINE ent_goto( obj, mshFile, ierr )
-  CLASS( mshEntity_ ), INTENT( IN ) :: obj
-  TYPE( File_ ), INTENT( INOUT ) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT ) :: ierr
-END SUBROUTINE ent_goto
+MODULE SUBROUTINE ent_Final( obj )
+  TYPE( mshEntity_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE ent_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  ReadPointEntity@mshEntity
+!                                                    DeallocateData
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This subroutine deallocate the data from [[mshentity_]]
 
 INTERFACE
-!! This subroutine reads the entry for point entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine reads the entry for point entity
-
-MODULE SUBROUTINE ent_read_point( obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  TYPE( File_ ), INTENT( INOUT) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT) :: ierr
-  LOGICAL( LGT ), INTENT( IN ) :: readTag
-END SUBROUTINE ent_read_point
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  ReadCurveEntity@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This subroutine reads the entry for curve entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine reads the entry for curve entity
-
-MODULE SUBROUTINE ent_read_Curve( obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  TYPE( File_ ), INTENT( INOUT) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT) :: ierr
-  LOGICAL( LGT ), INTENT( IN ) :: readTag
-END SUBROUTINE ent_read_Curve
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               ReadSurfaceEntity@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This subroutine reads the entry for surface entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine reads the entry for surface entity
-
-MODULE SUBROUTINE ent_read_Surface( obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  TYPE( File_ ), INTENT( INOUT) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT) :: ierr
-  LOGICAL( LGT ), INTENT( IN ) :: readTag
-END SUBROUTINE ent_read_Surface
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                ReadVolumeEntity@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This subroutine reads the entry for volume entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine reads the entry for volume entity
-
-MODULE SUBROUTINE ent_read_Volume( obj, mshFile, readTag, ierr )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  TYPE( File_ ), INTENT( INOUT) :: mshFile
-  LOGICAL( LGT ), INTENT( INOUT) :: ierr
-  LOGICAL( LGT ), INTENT( IN ) :: readTag
-END SUBROUTINE ent_read_Volume
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      WriteToFile@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This subroutine write the data to a file
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine write the data to a file
-
-MODULE SUBROUTINE ent_write_file( obj, mshFile, Str, EndStr )
-  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
-  TYPE( File_ ), INTENT( INOUT) :: mshFile
-  CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
-END SUBROUTINE ent_write_file
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Display@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-! This subroutine writes the content of [[mshEntity_]]
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine writes the content of [[mshEntity_]]
-
-MODULE SUBROUTINE ent_display( obj, Msg, UnitNo )
-  CLASS( mshEntity_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
-END SUBROUTINE ent_display
-END INTERFACE
-
-INTERFACE Display
-  MODULE PROCEDURE ent_display
-END INTERFACE Display
-
-PUBLIC :: Display
-
-!----------------------------------------------------------------------------
-!                                                         getIndex@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This function finds the index of a tag/uid in list of entities
-
-!> authors: Dr. Vikas Sharma
-!
-! This function finds the index of a tag/uid in the list of entities
-
-MODULE PURE FUNCTION ent_getIndex_a( mshEntities, Uid ) RESULT( ans )
-  TYPE( mshEntity_ ), INTENT( IN ) :: mshEntities( : )
-  INTEGER( I4B ), INTENT( IN ) :: Uid
-  INTEGER( I4B ) :: ans
-END FUNCTION ent_getIndex_a
-END INTERFACE
-
-INTERFACE getIndex
-  MODULE PROCEDURE ent_getIndex_a
-END INTERFACE getIndex
-
-PUBLIC :: getIndex
-
-!----------------------------------------------------------------------------
-!                                                TotalPhysicalTags@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This function returns the total number of physical tags in entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This function returns the total number of physical tags in entity
-
-MODULE PURE FUNCTION ent_tphysicaltag( obj ) RESULT( ans )
-  CLASS( mshEntity_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION ent_tphysicaltag
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                TotalBoundingTags@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This function returns the total number of bounding tags in entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This function returns the total number of bounding tags in entity
-
-MODULE PURE FUNCTION ent_tBoundingtag( obj ) RESULT( ans )
-  CLASS( mshEntity_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION ent_tBoundingtag
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    TotalElements@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This function returns the total number of elements in entity
-
-!> authors: Dr. Vikas Sharma
-!
-! This function returns the total number of elements in entity
-
-MODULE PURE FUNCTION ent_telements( obj ) RESULT( ans )
-  CLASS( mshEntity_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION ent_telements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    DeallocateData@mshEntity
-!----------------------------------------------------------------------------
-
-INTERFACE
-!! This subroutine deallocate the data from [[mshentity_]]
-
-!> authors: Dr. Vikas Sharma
-!
-! This subroutine deallocate the data from [[mshentity_]]
-
 MODULE SUBROUTINE ent_deallocatedata( obj )
   CLASS( mshEntity_ ), INTENT( INOUT) :: obj
 END SUBROUTINE ent_deallocatedata
@@ -350,6 +179,479 @@ INTERFACE DeallocateData
 END INTERFACE DeallocateData
 
 PUBLIC :: DeallocateData
+
+!----------------------------------------------------------------------------
+!                                                         GotoTag
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This subroutine finds the tag in the mesh file
+
+INTERFACE
+MODULE SUBROUTINE ent_GotoTag( obj, mshFile, error )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+END SUBROUTINE ent_GotoTag
+END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                                      Write
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This subroutine write the data to a file
+
+INTERFACE
+MODULE SUBROUTINE ent_Write( obj, mshFile, StartStr, EndStr )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: StartStr, EndStr
+END SUBROUTINE ent_Write
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	This subroutine writes the content of [[mshEntity_]]
+
+INTERFACE
+MODULE SUBROUTINE ent_Display( obj, Msg, UnitNo )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
+END SUBROUTINE ent_Display
+END INTERFACE
+
+INTERFACE Display
+  MODULE PROCEDURE ent_Display
+END INTERFACE Display
+
+PUBLIC :: Display
+
+!----------------------------------------------------------------------------
+!                                                                 Read
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 10 June 2021
+! summary: Read Entities from msh file
+
+INTERFACE
+MODULE SUBROUTINE ent_Read( obj, mshFile, dim, readTag, error )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  LOGICAL( LGT ), INTENT( IN ) :: readTag
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+END SUBROUTINE ent_Read
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ReadPointEntity
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This subroutine reads the entry for point entity
+
+INTERFACE
+MODULE SUBROUTINE ReadPointEntity( obj, mshFile, readTag, error )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+  LOGICAL( LGT ), INTENT( IN ) :: readTag
+END SUBROUTINE ReadPointEntity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ReadCurveEntity
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	This subroutine reads the entry for curve entity
+
+INTERFACE
+MODULE SUBROUTINE ReadCurveEntity( obj, mshFile, readTag, error )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+  LOGICAL( LGT ), INTENT( IN ) :: readTag
+END SUBROUTINE ReadCurveEntity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ReadSurfaceEntity
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	This subroutine reads the entry for surface entity
+
+INTERFACE
+MODULE SUBROUTINE ReadSurfaceEntity( obj, mshFile, readTag, error )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+  LOGICAL( LGT ), INTENT( IN ) :: readTag
+END SUBROUTINE ReadSurfaceEntity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                ReadVolumeEntity
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	This subroutine reads the entry for volume entity
+
+INTERFACE
+MODULE SUBROUTINE ReadVolumeEntity( obj, mshFile, readTag, error )
+  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
+  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  INTEGER( I4B ), INTENT( INOUT ) :: error
+  LOGICAL( LGT ), INTENT( IN ) :: readTag
+END SUBROUTINE ReadVolumeEntity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         getIndex
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function finds the index of a tag/uid in list of entities
+
+INTERFACE
+MODULE PURE FUNCTION ent_getIndex( mshEntities, Uid ) RESULT( ans )
+  TYPE( mshEntity_ ), INTENT( IN ) :: mshEntities( : )
+  INTEGER( I4B ), INTENT( IN ) :: Uid
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getIndex
+END INTERFACE
+
+INTERFACE getIndex
+  MODULE PROCEDURE ent_getIndex
+END INTERFACE getIndex
+
+PUBLIC :: getIndex
+
+!----------------------------------------------------------------------------
+!                                                getTotalPhysicalTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns the total number of physical tags in entity
+
+INTERFACE
+MODULE PURE FUNCTION ent_getTotalPhysicalTags( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getTotalPhysicalTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getTotalBoundingTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the total number of bounding tags in entity
+
+INTERFACE
+MODULE PURE FUNCTION ent_getTotalBoundingTags( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getTotalBoundingTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    TotalElements
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the total number of elements in entity
+
+INTERFACE
+MODULE PURE FUNCTION ent_getTotalElements( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getTotalElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           getPhysicalTag
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getPhysicalTag( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+END FUNCTION ent_getPhysicalTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            setNodeNumber
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE ent_setNodeNumber( obj, NodeNumber )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: NodeNumber( : )
+END SUBROUTINE ent_setNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             setNodeCoord
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE ent_setNodeCoord( obj, NodeCoord )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( IN ) :: NodeCoord( :, : )
+END SUBROUTINE ent_setNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                setElemType
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE ent_setElemType( obj, ElemType )
+  CLASS( mshEntity_ ), INTENT( INOUT ) ::  obj
+  INTEGER( I4B ), INTENT( IN ) :: ElemType
+END SUBROUTINE ent_setElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             setElemNumber
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE ent_setElemNumber( obj, ElemNumber )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: ElemNumber( : )
+END SUBROUTINE ent_setElemNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 setNptrs
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE ent_setNptrs( obj, Nptrs )
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: Nptrs( :, : )
+END SUBROUTINE ent_setNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getUid
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getUid( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getUid
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getXiDim
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getXidim( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getXidim
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getElemType
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getElemType( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getElemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getMinX
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getMinX( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getMinX
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getMinY
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getMinY( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getMinY
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getMinZ
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getMinZ( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getMinZ
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getMaxX
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getMaxX( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getMaxX
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getMaxY
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getMaxY( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getMaxY
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getMaxZ
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getMaxZ( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getMaxZ
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getX
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getX( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getX
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getY
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getY( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getY
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   getZ
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getZ( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getZ
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getNodeCoord
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getNodeCoord( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  REAL( DFP ), ALLOCATABLE :: Ans( :, : )
+END FUNCTION ent_getNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getNodeNumber
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getNodeNumber( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+END FUNCTION ent_getNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getElemNumber
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getElemNumber( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+END FUNCTION ent_getElemNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         getBoundingEntity
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getBoundingEntity( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+END FUNCTION ent_getBoundingEntity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getNptrs
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getNptrs_a( obj, elemNum ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: elemNum
+  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+END FUNCTION ent_getNptrs_a
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getNptrs
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION ent_getNptrs_b( obj ) RESULT( Ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: Ans( :, : )
+END FUNCTION ent_getNptrs_b
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

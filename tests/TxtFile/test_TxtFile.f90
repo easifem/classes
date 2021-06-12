@@ -25,28 +25,33 @@ contains
 !
 !----------------------------------------------------------------------------
 
-subroutine test0
-  type(FortranFile_) :: obj
-  call obj%initiate(file="./example.txt", status='REPLACE', &
-    & action='WRITE')
-  call obj%open()
-  call obj%close()
-end subroutine
+SUBROUTINE test0
+  TYPE( TxtFile_ ) :: obj
+  TYPE( string ) :: line
+  INTEGER( I4B ) :: ii
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+  CALL obj%initiate(file="./example.txt", status='OLD', &
+    & action='READ')
+  CALL obj%open()
 
-subroutine test1
-  type(FortranFile_) :: obj
-  call obj%initiate(file="./hello/world.txt", status='REPLACE', &
-    & action='WRITE')
-  call display(obj%getFilePath(), "Path")
-  call display(obj%getFileExt(), "Ext")
-  call display(obj%getFileName(), "FileName")
-  call obj%open()
+  ii = 0
+  DO
+    CALL obj%readLine(line)
+    IF( obj%isEOF() ) EXIT
+    ii = ii + 1
+    CALL display(line, "line " // str( ii, no_sign=.TRUE.) // "=" )
+  END DO
+  CALL obj%rewind()
+  ii = 0
+  DO
+    CALL obj%readLine(line)
+    IF( obj%isEOF() ) EXIT
+    ii = ii + 1
+    CALL display(line, "line " // str( ii, no_sign=.TRUE.) // "=" )
+  END DO
   call obj%close()
-end subroutine
+END SUBROUTINE
+
 
 end module test_m
 

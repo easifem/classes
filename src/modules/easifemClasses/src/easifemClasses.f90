@@ -18,6 +18,7 @@
 MODULE easifemClasses
 USE ExceptionHandler_Class
 USE FortranFile_Class
+USE TxtFile_Class
 USE InputFile_Class
 USE HDF5File_Class
 USE ElementFactory
@@ -33,6 +34,7 @@ USE ElementPointerVector_Class
   ! USE Domain_Class
   ! USE QuadratureVariables_Class
 USE Gmsh_Class
+USE MSH_Class
   ! USE gmshMesh_Class
   ! USE vtkType
   ! USE LinSolver_Class

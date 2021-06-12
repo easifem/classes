@@ -5,6 +5,15 @@
 		},
 		{
 			"path": "../src/submodules/File"
+		},
+		{
+			"path": "../src/modules/MSH"
+		},
+		{
+			"path": "../src/submodules/MSH"
+		},
+		{
+			"path": "../tests/MSH"
 		}
 	]
 }

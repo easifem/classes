@@ -3,6 +3,7 @@ TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/AbstractFile_Class@Methods.f90
   ${src_path}/FortranFile_Class@Methods.f90
+  ${src_path}/TxtFile_Class@Methods.f90
   ${src_path}/InputFile_Class@Methods.f90
   ${src_path}/HDF5File_Class@Methods.f90
   ${src_path}/HDF5File_Class@WriteReal64.f90

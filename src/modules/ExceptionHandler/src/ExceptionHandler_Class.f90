@@ -48,7 +48,7 @@
 ! is assumed, so a log file is not active by default also.
 
 MODULE ExceptionHandler_Class
-USE GlobalData
+USE GlobalData !, ONLY: stdout, stdin, stderr, I4B, DFP, LGT
 IMPLICIT NONE
 PRIVATE
 
