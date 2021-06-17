@@ -96,6 +96,19 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)
   PROCEDURE :: T_InsertIteratorPair
   PROCEDURE :: T_InsertIteratorPairAtIndex
 
+  GENERIC, PUBLIC :: Set => T_SetSingle, T_SetFill, T_SetArray, &
+    & T_SetIteratorPair, T_SetSingleAtIndex, T_SetFillAtIndex, &
+    & T_SetArrayAtIndex, T_SetIteratorPairAtIndex
+
+  PROCEDURE, PASS( obj ) :: T_SetSingle
+  PROCEDURE, PASS( obj ) :: T_SetSingleAtIndex
+  PROCEDURE, PASS( obj ) :: T_SetFill
+  PROCEDURE, PASS( obj ) :: T_SetFillAtIndex
+  PROCEDURE, PASS( obj ) :: T_SetArray
+  PROCEDURE, PASS( obj ) :: T_SetArrayAtIndex
+  PROCEDURE, PASS( obj ) :: T_SetIteratorPair
+  PROCEDURE, PASS( obj ) :: T_SetIteratorPairAtIndex
+
   GENERIC  , PUBLIC :: Erase => T_EraseSingle, T_EraseSingleIndex, T_EraseIndexPair, T_EraseIteratorPair
   PROCEDURE :: T_EraseSingle
   PROCEDURE :: T_EraseSingleIndex
@@ -490,6 +503,30 @@ END SUBROUTINE T_InsertSingleAtIndex
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_SetSingleAtIndex(obj, pos, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+
+  ! Internal variables
+  CHARACTER( LEN = * ), PARAMETER :: myName = "T_SetSingleAtIndex(obj, pos, val)"
+
+  IF( pos .GT. obj%psize ) THEN
+    CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+      & "While setting the value pos is greater than the length of list")
+  ELSE
+    IF( ASSOCIATED( obj%storage(pos)%ptr ) ) THEN
+      DEALLOCATE( obj%storage(pos)%ptr )
+    END IF
+    obj%storage(pos)%ptr => val%ptr
+  END IF
+  CALL obj%FixValuePtrs()
+END SUBROUTINE T_SetSingleAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE T_InsertSingle(obj, pos, val)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
@@ -501,19 +538,29 @@ END SUBROUTINE T_InsertSingle
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_SetSingle(obj, pos, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+  CALL obj%Set(pos%index, val)
+END SUBROUTINE T_SetSingle
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE T_InsertFillAtIndex(obj, pos, n, val)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pos
   INTEGER( I4B ), INTENT( IN ) :: n
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+
   ! Internal variables
   INTEGER( I4B ) :: ii
   IF( n .LE. 0 ) Return
-  CALL obj%ShiftByN(pos,n)
   DO ii = 1, n
     obj%storage(pos-1+ii)%ptr => val%ptr
   END DO
-  obj%psize = obj%psize+n
   CALL obj%FixValuePtrs()
 END SUBROUTINE T_InsertFillAtIndex
 
@@ -521,6 +568,36 @@ END SUBROUTINE T_InsertFillAtIndex
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_SetFillAtIndex(obj, pos, n, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  INTEGER( I4B ), INTENT( IN ) :: n
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+
+  ! Internal variables
+  INTEGER( I4B ) :: ii, pos0
+  CHARACTER( LEN = * ), PARAMETER :: myName = "T_InsertFillAtIndex"
+
+  IF( n .LE. 0 ) Return
+
+  DO ii = 1, n
+    pos0 = pos-1+ii
+    IF( pos0 .GT. obj%psize ) THEN
+      CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+        & "While setting the value pos0 is greater than the length of list")
+    ELSE
+      IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
+        DEALLOCATE( obj%storage(pos0)%ptr )
+      END IF
+      obj%storage(pos0)%ptr => val%ptr
+    END IF
+  END DO
+  CALL obj%FixValuePtrs()
+END SUBROUTINE T_SetFillAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 SUBROUTINE T_InsertFill(obj, pos, n, val)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
@@ -529,6 +606,18 @@ SUBROUTINE T_InsertFill(obj, pos, n, val)
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
   CALL obj%Insert(pos%index, n, val)
 END SUBROUTINE T_InsertFill
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetFill(obj, pos, n, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  INTEGER( I4B ), INTENT( IN ) :: n
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+  CALL obj%Set(pos%index, n, val)
+END SUBROUTINE T_SetFill
 
 !----------------------------------------------------------------------------
 !
@@ -554,12 +643,53 @@ END SUBROUTINE T_InsertArrayAtIndex
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_SetArrayAtIndex( obj, pos, array )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) ::  array( : )
+
+  ! Internal varaiables
+  INTEGER( I4B ) :: ii, pos0, n
+  CHARACTER( LEN = * ), PARAMETER :: myName = "T_InsertFillAtIndex"
+
+  n = SIZE( array )
+  IF( n .EQ. 0 ) RETURN
+  DO ii = 1, n
+    pos0 = pos-1+ii
+    IF( pos0 .GT. obj%psize ) THEN
+      CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+        & "While setting the value pos0 is greater than the length of list")
+    ELSE
+      IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
+        DEALLOCATE( obj%storage(pos0)%ptr )
+      END IF
+      obj%storage(pos0)%ptr => array(ii)%ptr
+    END IF
+  END DO
+  CALL obj%FixValuePtrs()
+END SUBROUTINE T_SetArrayAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE T_InsertArray( obj, pos, array )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: array(:)
   CALL obj%Insert( pos%index, array )
 END SUBROUTINE T_InsertArray
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetArray( obj, pos, array )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: array(:)
+  CALL obj%Set( pos%index, array )
+END SUBROUTINE T_SetArray
 
 !----------------------------------------------------------------------------
 !
@@ -577,6 +707,18 @@ END SUBROUTINE T_InsertIteratorPair
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_SetIteratorPair( obj, pos, first, last )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
+  CALL obj%Set( pos%index, first%dynArray%data(first%index:last%index-1) )
+END SUBROUTINE T_SetIteratorPair
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE T_InsertIteratorPairAtIndex( obj, pos, first, last )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pos
@@ -589,6 +731,18 @@ END SUBROUTINE T_InsertIteratorPairAtIndex
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_SetIteratorPairAtIndex( obj, pos, first, last )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
+  CALL obj%Set( pos, first%dynArray%data(first%index:last%index-1) )
+END SUBROUTINE T_SetIteratorPairAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE T_EraseIndexPair( obj, first, last, freeMem )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: first
@@ -596,11 +750,18 @@ SUBROUTINE T_EraseIndexPair( obj, first, last, freeMem )
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
   ! Internal variable
   INTEGER( I4B ) :: i, numerased
+  FTL_TEMPLATE_TYPE_WRAP :: dummy
 
   IF( last .GT. first ) THEN
     numerased = last - first
     DO i = first, obj%psize - numerased
+      IF( ASSOCIATED( obj%storage( i )%ptr ) ) THEN
+        dummy%ptr => obj%storage( i )%ptr
+      ELSE
+        dummy%ptr => NULL()
+      END IF
       obj%storage( i )%ptr => obj%storage( i+numerased )%ptr
+      obj%storage( i+numerased )%ptr => dummy%ptr
       CALL TriggerFinalizer( obj%storage(i+numerased), freeMem )
     END DO
     obj%psize = obj%psize - numerased

@@ -201,11 +201,14 @@ SUBROUTINE ExportMeshEntity( obj, hdf5, dsetname )
   CALL hdf5%write( TRIM(dsetname) // "/y", obj%getY() )
   CALL hdf5%write( TRIM(dsetname) // "/z", obj%getZ() )
 
+  CALL hdf5%write( TRIM(dsetname) // "/tElements", obj%getTotalElements() )
+  CALL hdf5%write( TRIM(dsetname) // "/tIntNodes", obj%getTotalIntNodes() )
+
   CALL hdf5%write( TRIM(dsetname) // "/nodeCoord", obj%getNodeCoord() )
   CALL hdf5%write( TRIM(dsetname) // "/physicalTag", obj%getPhysicalTag() )
-  CALL hdf5%write( TRIM(dsetname) // "/nodeNumber", obj%getNodeNumber() )
+  CALL hdf5%write( TRIM(dsetname) // "/intNodeNumber", obj%getIntNodeNumber() )
   CALL hdf5%write( TRIM(dsetname) // "/elemNumber", obj%getElemNumber() )
-  CALL hdf5%write( TRIM(dsetname) // "/nptrs", obj%getNptrs() )
+  CALL hdf5%write( TRIM(dsetname) // "/connectivity", obj%getConnectivity() )
 
   intvec = obj%getBoundingEntity()
   IF( SIZE( intvec ) .NE. 0 ) THEN

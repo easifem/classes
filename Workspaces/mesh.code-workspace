@@ -23,6 +23,9 @@
 		{
 			"name": "Mesh",
 			"path": "../src/submodules/Mesh"
+		},
+		{
+			"path": "../tests/testMesh"
 		}
 	]
 }

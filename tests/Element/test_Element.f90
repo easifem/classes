@@ -43,6 +43,7 @@ call pass( 'elem_init_from_fpl()' )
 call anotherobj%initiate(obj)
 call anotherobj%display("test-1: anotherobj = ")
 call pass( 'elem_init_from_elem' )
+call FPL_Finalize()
 end
 
 !----------------------------------------------------------------------------

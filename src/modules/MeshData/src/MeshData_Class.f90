@@ -68,10 +68,9 @@ TYPE :: MeshData_
     !! To do
 
   CONTAINS
-
-    PROCEDURE, PUBLIC, PASS( obj ) :: Finalize => Deallocate_meshdata
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => meshData_DeallocateData
       !! Deallocate mesh data
-    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => init_meshdata_1
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => meshData_Initiate
       !! Initiate mesh data
     PROCEDURE, PUBLIC, PASS( obj ) :: TotalNodes => get_total_nodes
       !! Returns total number of nodes in mesh
@@ -142,7 +141,7 @@ TYPE :: MeshData_
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateInternalNptrs => init_int_nptrs
       !! construct details about the internal boundary
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateInternalBoundaryData => &
-                                      & init_int_bndydata
+      & init_int_bndydata
       !! construct details about the internal boundary
     PROCEDURE, PUBLIC, PASS( obj ) :: NodeToElements => node_elements
       !! return node to element connectivity data for `GlobalIndx`
@@ -171,7 +170,6 @@ TYPE :: MeshData_
     PROCEDURE, PUBLIC, PASS( obj ) :: MeshQuality => md_quality
       !! return mesh quality
     PROCEDURE, PUBLIC, PASS( obj ) :: FindElement => md_findElement
-
 END TYPE MeshData_
 
 !----------------------------------------------------------------------------
@@ -225,12 +223,12 @@ INTERFACE
 !	call obj % initiate( meshobj )
 ! ```
 
-MODULE PURE SUBROUTINE init_meshdata_1( obj, Meshobj )
+MODULE PURE SUBROUTINE meshData_Initiate( obj, Meshobj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data container
   CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
-END SUBROUTINE init_meshdata_1
+END SUBROUTINE meshData_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -238,7 +236,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE Initiate
-  MODULE PROCEDURE init_meshdata_1
+  MODULE PROCEDURE meshData_Initiate
 END INTERFACE Initiate
 
 PUBLIC :: Initiate
@@ -305,16 +303,16 @@ INTERFACE
 !	call deallocateData( obj )
 ! ```
 
-MODULE SUBROUTINE Deallocate_meshdata( obj )
+MODULE SUBROUTINE meshData_DeallocateData( obj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data object
-END SUBROUTINE Deallocate_meshdata
+END SUBROUTINE meshData_DeallocateData
 END INTERFACE
 
 !>
 ! Generic subroutine to deallocate data stored inside [[MeshData_]]
 INTERFACE DeallocateData
-  MODULE PROCEDURE Deallocate_meshdata
+  MODULE PROCEDURE meshData_DeallocateData
 END INTERFACE DeallocateData
 
 PUBLIC :: DeallocateData
