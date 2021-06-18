@@ -17,6 +17,9 @@
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 March 2021
 ! summary: `Mesh_Class` module contains data type for handling the mesh.
+!
+!{!pages/MeshData.md}
+!{!pages/Mesh.md}
 
 MODULE Mesh_Class
 USE BaseType
@@ -39,9 +42,11 @@ CHARACTER( LEN = * ), PARAMETER :: modName = "MESH_CLASS"
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	13 June 2021
 ! summary: 	This datatype contains the meta data of a mesh
+!
+!{!pages/MeshData.md}
 
 TYPE :: MeshData_
-  ! PRIVATE
+  PRIVATE
   INTEGER( I4B ) :: uid = 0
     !! Unique id of the mesh
   INTEGER( I4B ) :: xidim = 0
@@ -54,6 +59,10 @@ TYPE :: MeshData_
     !! largest node number present inside the mesh
   INTEGER( I4B ) :: minNptrs = 0
     !! minimum node number present inside the mesh
+  INTEGER( I4B ) :: maxElemNum = 0
+    !! largest element number present inside the mesh
+  INTEGER( I4B ) :: minElemNum = 0
+    !! minimum element number present inside the mesh
   INTEGER( I4B ) :: tNodes = 0
     !! total number of nodes present iside the mesh
   INTEGER( I4B ) :: tIntNodes = 0
@@ -88,6 +97,10 @@ TYPE :: MeshData_
     !! Local element number
   REAL( DFP ), ALLOCATABLE :: nodeCoord( :, : )
     !! Nodal coordinates
+  REAL( DFP ), ALLOCATABLE :: nodeVelocity( :, : )
+    !! Nodal velocity of nodes
+  REAL( DFP ), ALLOCATABLE :: nodeAcc( :, : )
+    !! NodalAcceleration
   INTEGER( I4B ), ALLOCATABLE :: physicalTag( : )
     !! physical entities associated with the entity
   INTEGER( I4B ), ALLOCATABLE :: elemNumber( : )
@@ -104,21 +117,26 @@ TYPE :: MeshData_
     !! index of `iel` in `BoundaryData()`.
 
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( :, : )
-    !! Node number of mesh `Nptrs( 1 : maxNptrs, 2 )`
+    !! Node number of mesh `Nptrs( 1 : tNodes, 2 )`
     !! The first column contains the global node number
     !! The second column contains the indicator, >0 or -1
     !! If >zero then it is an internal node, and it contains the
     !! information of local node number
     !! if <zero, then it is an boundary node, and it contains the
     !! information of local node number
+    !! The local node number information converts a given global node into
+    !! local-node which can be used for accessing data inside `NodeToElem,
+    !! NodeToNode`
+
+  INTEGER( I4B ), ALLOCATABLE :: Local_Nptrs( : )
+    !! Returns local node number from a global node number
+    !! Its length is from 1 to maxNptrs
+    !! Helpul in finding if a global node is present inside the mesh or not
 
   INTEGER( I4B ), ALLOCATABLE :: BoundaryNptrs( : )
     !! Node number of boundary of mesh
   INTEGER( I4B ), ALLOCATABLE :: InternalNptrs( : )
     !! Node number of internal nodes
-  INTEGER( I4B ), ALLOCATABLE :: Local_Nptrs( : )
-    !! This converts a given global node into local-node which can be
-    !! used for accessing data inside `NodeToElem, NodeToNode`
   TYPE( IntVector_ ), ALLOCATABLE :: NodeToElem( : )
     !! `NodeToElem( iLocalNode )` denotes indx of elems in mesh which are
     !! directly connected to node `GlobalNptrs( iLocalNode )`
@@ -143,6 +161,65 @@ TYPE :: MeshData_
     PRIVATE
     PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => meshData_DeallocateData
     Final :: meshData_Final
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateLocalNptrs => meshData_InitiateLocalNptrs
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateLocalElementNumbers => &
+      & meshData_InitiateLocalElementNumbers
+      !! returns `.true.` if `InternalBoundaryData` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateNodeToElements => &
+      & meshData_InitiateNodeToElements
+      !! Initiate node to node data
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateNodeToNodes => &
+      & meshData_InitiateNodetoNodes
+      !! Initiate Node to nodes mapping
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateElementToElements => &
+      & meshData_InitiateElementToElements
+      !! Initiate element to elements mapping
+    PROCEDURE, PUBLIC, PASS( Obj ) :: InitiateBoundaryData => &
+      & meshData_InitiateBoundaryData
+      !! Initiate boundary data
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateInternalNptrs => &
+      & meshData_InitiateInternalNptrs
+      !! Initiate internal node numbers
+
+    PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryNode => &
+      & meshData_isBoundaryNode
+      !! Returns true if a given global node number is a boundary node
+    PROCEDURE, PUBLIC, PASS( Obj ) :: isLocalElementNumbersInitiated => &
+      & meshData_isLocalElementNumbersInitiated
+      !! Returns true if vector related to local element num is initiated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
+      & meshData_isNodePresent
+      !! Returns true if a node number is present
+    PROCEDURE, PUBLIC, PASS( obj ) :: isNodeToNodesInitiated => &
+      & meshData_isNodeToNodesInitiated
+      !! returns `.true.` if `NToN` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isNodeToElementsInitiated => &
+      & meshData_isNodeToElementsInitiated
+      !! returns `.true.` if `NodeToElem` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isElementToElementsInitiated => &
+      & meshData_isElementToElementsInitiated
+      !! returns `.true.` if `ElemToElem` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isConnectivityInitiated => &
+      & meshData_isConnectivityInitiated
+      !! returns `.true.` if `Connectivity` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryDataInitiated => &
+      & meshData_isBoundaryDataInitiated
+      !! returns `.true.` if `BoundaryData` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isInternalNptrsInitiated => &
+      & meshData_isInternalNptrsInitiated
+      !! returns `.true.` if `InternalNptrs` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNptrsInitiated => &
+      & meshData_isBoundaryNptrsInitiated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isLocalNptrsInitiated => &
+      & meshData_isLocalNptrsInitiated
+      !! returns `.true.` if `Local_Nptrs` array is allocated
+    PROCEDURE, PUBLIC, PASS( obj ) :: isInternalBoundaryDataInitiated => &
+      & meshData_isInternalBoundaryDataInitiated
+    PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryElement => &
+      & meshData_isBoundaryElement
+      !! Returns true, if an element is a boundary element
+
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalNodes => meshData_getTotalInternalNodes
       !! Returns the total number of internal nodes
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalNodes => meshData_getTotalNodes
@@ -179,57 +256,22 @@ TYPE :: MeshData_
     GENERIC, PUBLIC :: getLocalElemNumber => &
       & meshData_getLocalElemNumber_1, meshData_getLocalElemNumber_2
       !! Returns the local element number of a global element number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isLocalElementNumbersInitiated => &
-      & meshData_isLocalElementNumbersInitiated
-      !! Returns true if LocalElements initiated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => meshData_isNodePresent
-      !! Returns true if a node number is present
-    PROCEDURE, PUBLIC, PASS( obj ) :: isNodeToNodesInitiated => &
-      & meshData_isNodeToNodesInitiated
-      !! returns `.true.` if `NToN` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isNodeToElementsInitiated => &
-      & meshData_isNodeToElementsInitiated
-      !! returns `.true.` if `NodeToElem` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isElementToElementsInitiated => &
-      & meshData_isElementToElementsInitiated
-      !! returns `.true.` if `ElemToElem` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isConnectivityInitiated => &
-      & meshData_isConnectivityInitiated
-      !! returns `.true.` if `Connectivity` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryDataInitiated => &
-      & meshData_isBoundaryDataInitiated
-      !! returns `.true.` if `BoundaryData` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isInternalNptrsInitiated => &
-      & meshData_isInternalNptrsInitiated
-      !! returns `.true.` if `InternalNptrs` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNptrsInitiated => &
-      & meshData_isBoundaryNptrsInitiated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isLocalNptrsInitiated => &
-      & meshData_isLocalNptrsInitiated
-      !! returns `.true.` if `Local_Nptrs` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: isInternalBoundaryDataInitiated => &
-      & meshData_isInternalBoundaryDataInitiated
-    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateLocalNptrs => meshData_InitiateLocalNptrs
-    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateNptrs => meshData_InitiateNptrs
-    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateLocalElementNumbers => &
-      & meshData_InitiateLocalElementNumbers
-      !! returns `.true.` if `InternalBoundaryData` array is allocated
-    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateNodeToElements => &
-      & meshData_InitiateNodeToElements
-      !! Initiate node to node data
+
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeToElements => &
       & meshData_getNodeToElements
       !! Returns the element attached to a given global node number
-    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateNodeToNodes => &
-      & meshData_InitiateNodetoNodes
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeToNodes => &
       & meshData_getNodeToNodes
-    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateElementToElements => &
-      & meshData_InitiateElementToElements
+      !! Returns nodes connected to a given node number
     PROCEDURE, PUBLIC, PASS( Obj ) :: getElementToElements => &
       & meshData_getElementToElements
-    PROCEDURE, PUBLIC, PASS( Obj ) :: InitiateBoundaryData => &
-      & meshData_InitiateBoundaryData
+      !! Returns local element number connected to a given local
+      !! element number, it also gives information about the local
+      !! facet number
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundaryElementData => &
+      & meshData_getBoundaryElementData
+      !! Returns boundary element data
+
 END TYPE MeshData_
 
 !----------------------------------------------------------------------------
@@ -304,6 +346,43 @@ PUBLIC :: MeshPointer_
 !----------------------------------------------------------------------------
 !                                                          Read@MeshMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	18 June 2021
+! summary: This routine reads the mesh from a meshFile which is an hdf5
+! file
+!
+!### Introduction
+! The xidimension denotes the topology of the mesh element
+!
+! - xidim = 0, implies mesh is made of point elements
+! - xidim = 1, implies mesh is made of line elements
+! - xidim = 2, implies mesh is made of surface elements
+! - xidim = 3, implies mesh is made of volume elements
+!
+! `id` is the unique id of the mesh
+!
+! This routine reads the following
+! - meshdata%uid
+! - meshdata%xidim
+! - meshData%elemType
+! - meshData%minX
+! - meshData%minY
+! - meshData%minZ
+! - meshData%maxX
+! - meshData%maxY
+! - meshData%maxZ
+! - meshData%X
+! - meshData%Y
+! - meshData%Z
+! - meshData%tElements
+! - meshData%tIntNodes
+! - meshData%nodeCoord
+! - meshData%physicalTag
+! - meshData%InternalNptrs
+! - meshData%elemNumber
+! - meshData%connectivity
+! - meshData%boundingEntity
 
 INTERFACE
 MODULE SUBROUTINE mesh_Read( obj, meshFile, xidim, id )
@@ -756,13 +835,265 @@ END SUBROUTINE meshData_InitiateLocalNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              InitiateNptrs@MeshDataMethods
+!                               InitiateLocalElementNumbers@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Initiate local element numbers
+
+INTERFACE
+MODULE SUBROUTINE meshData_InitiateLocalElementNumbers( obj )
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE meshData_InitiateLocalElementNumbers
+END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                      initiateNodeToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	generate Elements surrounding a node mapping
+!
+!### Introduction
+!
+! This subroutine generate Elements surrounding a node mapping
+! - The mapping is stored in the array called `NodeToElem`
+! - `NodeToElem` is a vector of type [[IntVector_]]
+! - The size of `NodeToElem` vector is same as `obj%Nptrs`, that is total number of nodes in the mesh
+! - In `NodeToElem(i)`, i denotes the local node number, and it will give the local element number surrounding the local node `i`
+! - Always use method called `getNodeToElements()` to access this information
+!
+! @warning
+! Always use the mapping between global node number and local node number to
+! avoid segmentation fault
+! @endwarning
+!
+!### Usage
+!
+! ```fortran
+!	call obj%initiateNodeToElements()
+! ```
+
+INTERFACE
+MODULE SUBROUTINE meshData_InitiateNodeToElements( obj )
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE meshData_InitiateNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        InitiateNodeToNode@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate node to node connectivity data
+
+INTERFACE
+MODULE SUBROUTINE meshData_InitiateNodetoNodes( obj )
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE meshData_InitiateNodetoNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 InitiateElementToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate boundary data
+
+INTERFACE
+MODULE SUBROUTINE meshData_InitiateElementToElements( obj )
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE meshData_InitiateElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 InitiateBoundaryData@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate boundary data
+
+INTERFACE
+MODULE SUBROUTINE meshData_InitiateBoundaryData( obj )
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE meshData_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 InitiateInternalNptrs@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate internal node numbers
+
+INTERFACE
+MODULE SUBROUTINE meshData_InitiateInternalNptrs( obj )
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE meshData_InitiateInternalNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 isBoundaryNode@MeshData
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 June 2021
+! summary: This function returns true if given global node is boundary node
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isBoundaryNode( obj, GlobalNode ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: GlobalNode
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isBoundaryNode
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                             isLocalElementNumbersInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns true if LocalElementNumbers data initiated
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isLocalElementNumbersInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isLocalElementNumbersInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             isNodePresent@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 June 2021
+! summary: Returns  true if given global node number is present
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isNodePresent( obj, GlobalNode ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: GlobalNode
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isNodePresent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    isNodeToNodesInitiated@MeshDataMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE meshData_InitiateNptrs( obj )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE meshData_InitiateNptrs
+MODULE PURE FUNCTION meshData_isNodeToNodesInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isNodeToNodesInitiated
+END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                 isNodeToElementsInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isNodeToElementsInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isNodeToElementsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 isElementToElementsInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isElementToElementsInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isElementToElementsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   isConnectivityInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isConnectivityInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isConnectivityInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 isBoundaryDataInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isBoundaryDataInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isBoundaryDataInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 isInternalNptrsInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isInternalNptrsInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isInternalNptrsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 isLocalNptrsInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isLocalNptrsInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isLocalNptrsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                            isInternalBoundaryDataInitiated@MeshDataMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isInternalBoundaryDataInitiated( obj ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isInternalBoundaryDataInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 June 2021
+! summary: Returns true if an element is boundary element
+
+INTERFACE
+MODULE PURE FUNCTION meshData_isBoundaryElement( obj, iel ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iel
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshData_isBoundaryElement
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -969,103 +1300,6 @@ END FUNCTION meshData_getLocalElemNumber_2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                             isLocalElementNumbersInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: Returns true if LocalElementNumbers data initiated
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isLocalElementNumbersInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isLocalElementNumbersInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             isNodePresent@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 June 2021
-! summary: Returns  true if given global node number is present
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isNodePresent( obj, GlobalNode ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: GlobalNode
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isNodePresent
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    isNodeToNodesInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isNodeToNodesInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isNodeToNodesInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 isNodeToElementsInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isNodeToElementsInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isNodeToElementsInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 isElementToElementsInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isElementToElementsInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isElementToElementsInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   isConnectivityInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isConnectivityInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isConnectivityInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 isBoundaryDataInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isBoundaryDataInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isBoundaryDataInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 isInternalNptrsInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isInternalNptrsInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isInternalNptrsInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                 isBoundaryNptrsInitiated@MeshDataMethods
 !----------------------------------------------------------------------------
 
@@ -1076,76 +1310,6 @@ MODULE PURE FUNCTION meshData_isBoundaryNptrsInitiated( obj ) RESULT( Ans )
 END FUNCTION meshData_isBoundaryNptrsInitiated
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                 isLocalNptrsInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isLocalNptrsInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isLocalNptrsInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                            isInternalBoundaryDataInitiated@MeshDataMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION meshData_isInternalBoundaryDataInitiated( obj ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION meshData_isInternalBoundaryDataInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                               InitiateLocalElementNumbers@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: Initiate local element numbers
-
-INTERFACE
-MODULE SUBROUTINE meshData_InitiateLocalElementNumbers( obj )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE meshData_InitiateLocalElementNumbers
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      initiateNodeToElements@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	generate Elements surrounding a node mapping
-!
-!### Introduction
-!
-! This subroutine generate Elements surrounding a node mapping
-! - The mapping is stored in the array called `NodeToElem`
-! - `NodeToElem` is a vector of type [[IntVector_]]
-! - The size of `NodeToElem` vector is same as `obj%Nptrs`, that is total number of nodes in the mesh
-! - In `NodeToElem(i)`, i denotes the local node number, and it will give the local element number surrounding the local node `i`
-! - Always use method called `getNodeToElements()` to access this information
-!
-! @warning
-! Always use the mapping between global node number and local node number to
-! avoid segmentation fault
-! @endwarning
-!
-!### Usage
-!
-! ```fortran
-!	call obj%initiateNodeToElements()
-! ```
-
-INTERFACE
-MODULE SUBROUTINE meshData_InitiateNodeToElements( obj )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE meshData_InitiateNodeToElements
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                         getNodeToElements@MeshDataMethods
@@ -1155,10 +1319,17 @@ END INTERFACE
 ! date: 	15 June 2021
 ! summary: Returns the element numbers which are connected to the a global node
 !
+!### Introduction
+! This function returns the elements containing the global node number `GlobalNode`
+!
+!@note
+! 	If the node number `GlobalNode` is not present inside the mesh then
+! the returned vector of integer has size 0
+!@endnote
 
 INTERFACE
-MODULE FUNCTION meshData_getNodeToElements( obj, GlobalNode ) RESULT( ans )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+MODULE PURE FUNCTION meshData_getNodeToElements( obj, GlobalNode ) RESULT( ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
     !! mesh data
   INTEGER( I4B ), INTENT( IN ) :: GlobalNode
     !! global node number
@@ -1168,52 +1339,32 @@ END FUNCTION meshData_getNodeToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        InitiateNodeToNode@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	Initiate node to node connectivity data
-
-INTERFACE
-MODULE SUBROUTINE meshData_InitiateNodetoNodes( obj )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE meshData_InitiateNodetoNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                           getNodeToNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 June 2021
 ! summary: 	Returns the node surrounding a node
+!
+!### Introduction
+! This fucntion returns the vector of node numbers which surrounds a given
+! node number `GlobalNode`.
+! - If `IncludeSelf` is true then, in the returned vector of integer, node number GlobalNode is also present
+!- If `IncludeSelf` is false then, in the returned vector of integer, node number `GlobalNode` is not present
+!
+!@note
+! 	If the node number `GlobalNode` is not present in the mesh then the
+! returned vector of integer has zero length
+!@endnote
 
 INTERFACE
-MODULE FUNCTION meshData_getNodeToNodes( obj, GlobalNode, IncludeSelf ) RESULT( Ans )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+MODULE PURE FUNCTION meshData_getNodeToNodes( obj, GlobalNode, IncludeSelf ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: GlobalNode
   LOGICAL( LGT ), INTENT( IN ) :: IncludeSelf
   INTEGER( I4B ), ALLOCATABLE :: Ans( : )
 END FUNCTION meshData_getNodeToNodes
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 InitiateElementToElements@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	Initiate boundary data
-
-INTERFACE
-MODULE SUBROUTINE meshData_InitiateElementToElements( obj )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE meshData_InitiateElementToElements
-END INTERFACE
-
 
 !----------------------------------------------------------------------------
 !                                      getElementToElements@MeshDataMethods
@@ -1253,22 +1404,15 @@ END FUNCTION meshData_getElementToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 InitiateBoundaryData@MeshDataMethods
+!                                                  getBoundaryElementData
 !----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	Initiate boundary data
 
 INTERFACE
-MODULE SUBROUTINE meshData_InitiateBoundaryData( obj )
-  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE meshData_InitiateBoundaryData
+MODULE PURE FUNCTION meshData_getBoundaryElementData( obj, iel ) RESULT( Ans )
+  CLASS( MeshData_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iel
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION meshData_getBoundaryElementData
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
 
 END MODULE Mesh_Class

@@ -27,6 +27,65 @@ contains
 
 subroutine test0
   type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, iel
+  type( HDF5File_ ) :: meshfile
+
+  call display( "testing Generate MeshData")
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+  obj%meshData%refelem => ReferenceTriangle_Pointer( nsd=2 )
+  call obj%GenerateMeshData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test8
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, iel
+  type( HDF5File_ ) :: meshfile
+
+  call display( "testing Boundary Data")
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+  call obj%GenerateMeshData()
+  obj%meshData%refelem => ReferenceTriangle_Pointer( nsd=2 )
+
+  call obj%meshData%InitiateBoundaryData()
+
+  call display( obj%meshData%isBoundaryDataInitiated(), "isBoundaryDataInitiated=")
+
+  iel = obj%meshData%getLocalElemNumber( 207 )
+  call display( iel, "local element number = " )
+  call display( obj%meshData%getConnectivity(iel), "connectivity = ")
+  call display( obj%meshData%isBoundaryElement( iel ), "T=" )
+  call display( obj%meshData%getBoundaryElementData( iel ), "boundary data = " )
+
+  iel = obj%meshData%getLocalElemNumber( 65 )
+  call display( iel, "local element number = " )
+  call display( obj%meshData%getConnectivity(iel), "connectivity = ")
+  call display( obj%meshData%isBoundaryElement( iel ), "T=" )
+  call display( obj%meshData%getBoundaryElementData( iel ), "boundary data = " )
+
+  iel = obj%meshData%getLocalElemNumber( 151 )
+  call display( obj%meshData%isBoundaryElement( iel ), "F=" )
+
+
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test7
+  type( mesh_ ) :: obj
   integer( I4B ) :: ierr
   type( HDF5File_ ) :: meshfile
 

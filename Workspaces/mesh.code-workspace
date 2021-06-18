@@ -5,8 +5,16 @@
 			"path": "../src/modules/Domain"
 		},
 		{
+			"name": "Domain",
+			"path": "../src/submodules/Domain"
+		},
+		{
 			"name": "Mesh",
 			"path": "../src/modules/Mesh"
+		},
+		{
+			"name": "Mesh",
+			"path": "../src/submodules/Mesh"
 		},
 		{
 			"name": "MeshData",
@@ -17,15 +25,16 @@
 			"path": "../src/modules/MeshConnectivity"
 		},
 		{
-			"name": "Domain",
-			"path": "../src/submodules/Domain"
-		},
-		{
-			"name": "Mesh",
-			"path": "../src/submodules/Mesh"
-		},
-		{
+			"name": "testMesh",
 			"path": "../tests/testMesh"
+		},
+		{
+			"name": "testMSH",
+			"path": "../tests/testMSH"
+		},
+		{
+			"name": "testMeshPointerVector",
+			"path": "../tests/testMeshPointerVector"
 		}
 	]
 }

@@ -32,7 +32,6 @@ MODULE PROCEDURE mesh_Read
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_Read"
   TYPE( String ) :: dsetname
 
-
   SELECT CASE( xidim )
   CASE( 0 )
     dsetname = "pointEntities_"//TRIM(str(id, .true.) )
@@ -64,6 +63,7 @@ MODULE PROCEDURE mesh_Read
       & TRIM(dsetname) // ' path does not exists' )
   END IF
 
+  !> read Uid
   IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/uid") ) THEN
     CALL obj%e%raiseError(modName//'::'//myName// &
       & TRIM(dsetname) // "/uid" // ' path does not exists' )
@@ -71,6 +71,7 @@ MODULE PROCEDURE mesh_Read
     CALL meshFile%read( TRIM(dsetname) // "/uid", obj%meshData%Uid )
   END IF
 
+  !> read xidim
   IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/xidim") ) THEN
     CALL obj%e%raiseError(modName//'::'//myName// &
       & TRIM(dsetname) // "/xidim" // ' path does not exists' )
@@ -148,6 +149,22 @@ MODULE PROCEDURE mesh_Read
     CALL meshFile%read( TRIM(dsetname) // "/z", obj%meshData%z )
   END IF
 
+  IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/tElements") ) THEN
+    CALL obj%e%raiseError(modName//'::'//myName// &
+      & TRIM(dsetname) // "/tElements" // ' path does not exists' )
+  ELSE
+    CALL meshFile%read( TRIM(dsetname) // "/tElements", &
+      & obj%meshData%tElements )
+  END IF
+
+  IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/tIntNodes") ) THEN
+    CALL obj%e%raiseError(modName//'::'//myName// &
+      & TRIM(dsetname) // "/tIntNodes" // ' path does not exists' )
+  ELSE
+    CALL meshFile%read( TRIM(dsetname) // "/tIntNodes", &
+      & obj%meshData%tIntNodes )
+  END IF
+
   IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/nodeCoord") ) THEN
     CALL obj%e%raiseError(modName//'::'//myName// &
       & TRIM(dsetname) // "/nodeCoord" // ' path does not exists' )
@@ -193,21 +210,6 @@ MODULE PROCEDURE mesh_Read
       & obj%meshData%boundingEntity )
   END IF
 
-  IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/tElements") ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
-      & TRIM(dsetname) // "/tElements" // ' path does not exists' )
-  ELSE
-    CALL meshFile%read( TRIM(dsetname) // "/tElements", &
-      & obj%meshData%tElements )
-  END IF
-
-  IF( .NOT. meshFile%pathExists(TRIM(dsetname) // "/tIntNodes") ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
-      & TRIM(dsetname) // "/tIntNodes" // ' path does not exists' )
-  ELSE
-    CALL meshFile%read( TRIM(dsetname) // "/tIntNodes", &
-      & obj%meshData%tIntNodes )
-  END IF
 END PROCEDURE mesh_Read
 
 !----------------------------------------------------------------------------
@@ -392,78 +394,6 @@ END PROCEDURE mesh_RemoveElement
 !   NULLIFY( Elem )
 ! END PROCEDURE mesh_getNptrs
 
-! !----------------------------------------------------------------------------
-! !                                                                   getNptrs
-! !----------------------------------------------------------------------------
-
-! MODULE PROCEDURE meshPointer_getNptrs
-!   ! ! Define internal variables
-!   ! INTEGER( I4B ) :: iel, Dummy, MaxNptrs, imesh
-!   ! INTEGER( I4B ), ALLOCATABLE :: Nptrs0( : ), DummyNptrs( : )
-!   ! CLASS( Element_ ), POINTER :: Elem
-
-
-!   ! IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
-!   ! MaxNptrs = 0
-!   ! Elem => NULL( )
-!   ! !
-!   ! ! Find the largest nptrs
-!   ! DO imesh = 1, SIZE( obj )
-!   !   IF( ASSOCIATED( obj( imesh )%Ptr ) ) THEN
-!   !     DO iel = 1, obj( imesh )%Ptr%tElements
-!   !       Elem => obj( imesh )%Ptr%Elem( iel  )%Ptr
-!   !       IF( .NOT. ASSOCIATED( Elem ) ) EXIT
-!   !       Nptrs0 = .Nptrs. Elem
-!   !       Dummy = MAXVAL( Nptrs0 )
-!   !       IF( Dummy .GE. MaxNptrs ) MaxNptrs = Dummy
-!   !     END DO
-!   !   END IF
-!   ! END DO
-!   ! !
-!   ! ALLOCATE( DummyNptrs( MaxNptrs ) )
-!   ! DummyNptrs = 0
-!   ! !
-!   ! DO imesh = 1, SIZE( obj )
-!   !   IF( ASSOCIATED( obj( imesh )%Ptr ) ) THEN
-!   !     DO iel = 1, obj( imesh )%Ptr%tElements
-!   !       Elem => obj( imesh )%Ptr%Elem( iel  )%Ptr
-!   !       IF( .NOT. ASSOCIATED( Elem ) ) EXIT
-!   !       Nptrs0 = .Nptrs. Elem
-!   !       DummyNptrs( Nptrs0 ) = Nptrs0
-!   !     END DO
-!   !   END IF
-!   ! END DO
-!   ! !
-!   ! Dummy = COUNT( DummyNptrs .NE. 0 )
-!   ! ALLOCATE( Nptrs( Dummy ) )
-!   ! !
-!   ! Dummy = 0
-!   ! DO iel = 1, MaxNptrs
-!   !   IF( DummyNptrs( iel ) .EQ. 0 ) CYCLE
-!   !   Dummy = Dummy + 1
-!   !   Nptrs( Dummy ) = DummyNptrs( iel )
-!   ! END DO
-!   ! !
-!   ! DEALLOCATE( Nptrs0, DummyNptrs )
-!   ! NULLIFY( Elem )
-! END PROCEDURE meshPointer_getNptrs
-
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-
-! MODULE PROCEDURE mesh_setMaterialType
-!   ! INTEGER( I4B ) :: iel
-!   ! CLASS( Element_ ), POINTER :: Elem
-
-!   ! Elem => NULL( )
-!   ! DO iel = 1, obj%tElements
-!   !   Elem => obj%Elem( iel )%Ptr
-!   !   IF( .NOT. ASSOCIATED( Elem ) ) EXIT
-!   !   CALL Elem%setMaterialType( MatType )
-!   ! END DO
-! END PROCEDURE mesh_setMaterialType
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -488,7 +418,10 @@ SUBROUTINE GenerateMeshDataForReadFromFile(obj)
   obj%meshData%isInitiated = .TRUE.
   CALL obj%meshData%InitiateLocalNptrs()
   CALL obj%meshData%InitiateLocalElementNumbers()
+  CALL obj%meshData%InitiateNodeToElements()
+  CALL obj%meshData%InitiateNodeToNodes()
+  CALL obj%meshData%InitiateElementToElements()
+  CALL obj%meshData%InitiateBoundaryData()
 END SUBROUTINE GenerateMeshDataForReadFromFile
-
 
 END SUBMODULE MeshMethods

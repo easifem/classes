@@ -15,39 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE easifemClasses
-USE ExceptionHandler_Class
-USE FortranFile_Class
-USE TxtFile_Class
-USE InputFile_Class
-USE HDF5File_Class
-USE ElementFactory
-!FTL Containers
-USE IntList_Class
-USE RealList_Class
-USE StringList_Class
-USE ElementList_Class
-USE ElementPointerVector_Class
-USE MeshPointerVector_Class
-! Mesh container
-USE Mesh_Class
-! USE MeshConnectivity_Class
-USE Domain_Class
-! USE QuadratureVariables_Class
+#define FTL_TEMPLATE_TYPE MeshPointer_
+#define FTL_TEMPLATE_TYPE_IS_DERIVED
+#define FTL_TEMPLATE_TYPE_NAME Mesh
+#define FTL_INSTANTIATE_TEMPLATE
+#define FTL_TEMPLATE_TYPE_MODULE Mesh_Class
 
-USE Gmsh_Class
-USE MSH_Class
-  ! USE gmshMesh_Class
-  ! USE vtkType
-  ! USE LinSolver_Class
-
-  ! USE Material_Class
-  ! USE stdMaterials
-  ! USE ThermCondModel_Class
-  ! USE VolHeatCapModel_Class
-  ! USE SFCCModel_Class
-
-  ! USE mod_functional
-  ! USE ogpf
-
-END MODULE easifemClasses
+MODULE MeshPointerVector_Class
+#include "../../ftlMacros/ftlPointerVector.inc"
