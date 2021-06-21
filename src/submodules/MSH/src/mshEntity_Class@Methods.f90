@@ -47,9 +47,9 @@ MODULE PROCEDURE ent_deallocatedata
   obj%y = 0.0
   obj%z = 0.0
   IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-  IF( ALLOCATED( obj%nodeNumber ) ) DEALLOCATE( obj%nodeNumber )
+  IF( ALLOCATED( obj%IntNodeNumber ) ) DEALLOCATE( obj%IntNodeNumber )
   IF( ALLOCATED( obj%ElemNumber ) ) DEALLOCATE( obj%ElemNumber )
-  IF( ALLOCATED( obj%Nptrs ) ) DEALLOCATE( obj%Nptrs )
+  IF( ALLOCATED( obj%Connectivity ) ) DEALLOCATE( obj%Connectivity )
   IF( ALLOCATED( obj%BoundingEntity ) ) DEALLOCATE( obj%BoundingEntity )
   IF( ALLOCATED( obj%NodeCoord ) ) DEALLOCATE( obj%NodeCoord )
 END PROCEDURE ent_deallocatedata
@@ -156,22 +156,22 @@ MODULE PROCEDURE ent_display
       & "| Physical Tag |", obj%physicalTag, " | "
   END IF
   ! Nodes
-  IF( ALLOCATED( obj%nodeNumber ) ) THEN
-    WRITE( I, "(A, I4)" ) "| Total Nodes |", SIZE( obj%nodeNumber )
+  IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
+    WRITE( I, "(A, I4)" ) "| Total Nodes |", SIZE( obj%IntNodeNumber )
     WRITE( I, "(A)" ) "| Node Number | Coordinates |"
-    DO j = 1, SIZE( obj%nodeNumber )
+    DO j = 1, SIZE( obj%IntNodeNumber )
       WRITE( I, "(A, I4, A, 3(G13.6, ','), A)" ) &
-      & "| ", obj%nodeNumber( j ), " | ", obj%NodeCoord( 1:3, j), " |"
+      & "| ", obj%IntNodeNumber( j ), " | ", obj%NodeCoord( 1:3, j), " |"
     END DO
   END IF
   ! Elements
   IF( ALLOCATED( obj%ElemNumber ) ) THEN
     WRITE( I, "(A, I4)" ) "| Total Elements |", SIZE( obj%ElemNumber )
     WRITE( I, "(A)" ) "| Element Number | Connectivity |"
-    Str1 = String( Str( SIZE( obj%Nptrs, 1 ), .true. ) )
+    Str1 = String( Str( SIZE( obj%Connectivity, 1 ), .true. ) )
     DO j = 1, SIZE( obj%ElemNumber )
       WRITE( I, "(A, I4, A, "//TRIM(Str1)//"(G13.6, ','), A)" ) &
-      & "| ", obj%ElemNumber( j ), " | ", obj%Nptrs( 1:, j), " |"
+      & "| ", obj%ElemNumber( j ), " | ", obj%Connectivity( 1:, j), " |"
     END DO
   END IF
 END PROCEDURE ent_display
@@ -446,6 +446,18 @@ MODULE PROCEDURE ent_getTotalElements
 END PROCEDURE ent_getTotalElements
 
 !----------------------------------------------------------------------------
+!                                                           getTotalNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ent_getTotalIntNodes
+  IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
+    ans = SIZE( obj%IntNodeNumber )
+  ELSE
+    ans = 0
+  END IF
+END PROCEDURE ent_getTotalIntNodes
+
+!----------------------------------------------------------------------------
 !                                                           getPhysicalTag
 !----------------------------------------------------------------------------
 
@@ -458,12 +470,12 @@ MODULE PROCEDURE ent_getPhysicalTag
 END PROCEDURE ent_getPhysicalTag
 
 !----------------------------------------------------------------------------
-!                                                            setNodeNumber
+!                                                            setIntNodeNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ent_setNodeNumber
-  obj%nodeNumber = NodeNumber
-END PROCEDURE ent_setNodeNumber
+MODULE PROCEDURE ent_setIntNodeNumber
+  obj%IntNodeNumber = IntNodeNumber
+END PROCEDURE ent_setIntNodeNumber
 
 !----------------------------------------------------------------------------
 !                                                              setNodeCoord
@@ -490,12 +502,12 @@ MODULE PROCEDURE ent_setElemNumber
 END PROCEDURE ent_setElemNumber
 
 !----------------------------------------------------------------------------
-!                                                                 setNptrs
+!                                                                 setConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ent_setNptrs
-  obj%Nptrs = Nptrs
-END PROCEDURE ent_setNptrs
+MODULE PROCEDURE ent_setConnectivity
+  obj%Connectivity = Connectivity
+END PROCEDURE ent_setConnectivity
 
 !----------------------------------------------------------------------------
 !                                                                 getUid
@@ -514,7 +526,7 @@ MODULE PROCEDURE ent_getXiDim
 END PROCEDURE ent_getXiDim
 
 !----------------------------------------------------------------------------
-!                                                                 getElemType
+!                                                               getElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getElemType
@@ -606,16 +618,16 @@ MODULE PROCEDURE ent_getNodeCoord
 END PROCEDURE ent_getNodeCoord
 
 !----------------------------------------------------------------------------
-!                                                            getNodeNumber
+!                                                          getIntNodeNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ent_getNodeNumber
-  IF( ALLOCATED( obj%NodeNumber ) ) THEN
-    ans = Obj%NodeNumber
+MODULE PROCEDURE ent_getIntNodeNumber
+  IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
+    ans = Obj%IntNodeNumber
   ELSE
     ALLOCATE( ans(0) )
   END IF
-END PROCEDURE ent_getNodeNumber
+END PROCEDURE ent_getIntNodeNumber
 
 !----------------------------------------------------------------------------
 !                                                            getElemNumber
@@ -630,7 +642,7 @@ MODULE PROCEDURE ent_getElemNumber
 END PROCEDURE ent_getElemNumber
 
 !----------------------------------------------------------------------------
-!                                                            getBoundingEntity
+!                                                         getBoundingEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getBoundingEntity
@@ -642,23 +654,23 @@ MODULE PROCEDURE ent_getBoundingEntity
 END PROCEDURE ent_getBoundingEntity
 
 !----------------------------------------------------------------------------
-!                                                                 getNptrs
+!                                                           getConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ent_getNptrs_a
-  Ans = obj%Nptrs( :, elemNum )
-END PROCEDURE ent_getNptrs_a
+MODULE PROCEDURE ent_getConnectivity_a
+  Ans = obj%Connectivity( :, elemNum )
+END PROCEDURE ent_getConnectivity_a
 
 !----------------------------------------------------------------------------
-!                                                                 getNptrs
+!                                                           getConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ent_getNptrs_b
-  IF( ALLOCATED( obj%Nptrs ) ) THEN
-    ans = Obj%Nptrs
+MODULE PROCEDURE ent_getConnectivity_b
+  IF( ALLOCATED( obj%Connectivity ) ) THEN
+    ans = Obj%Connectivity
   ELSE
     ALLOCATE( ans(0,0) )
   END IF
-END PROCEDURE ent_getNptrs_b
+END PROCEDURE ent_getConnectivity_b
 
 END SUBMODULE Methods

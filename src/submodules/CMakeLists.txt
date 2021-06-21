@@ -9,4 +9,6 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
 # MSH
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MSH/CMakeLists.txt)
 # Mesh
-# include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
+# Domain
+include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)

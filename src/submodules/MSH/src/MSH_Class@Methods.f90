@@ -55,8 +55,15 @@ MODULE PROCEDURE msh_initiate
   INTEGER( I4B ) :: error, unitNo
   CHARACTER( LEN = * ), PARAMETER :: myName = "msh_Initiate"
 
-  CALL obj%e%setQuietMode(.FALSE.)
-  CALL obj%e%setStopOnError(.TRUE.)
+  CALL eMSH%setQuietMode( .TRUE. )
+  CALL eMSH%setLogFileUnit( eUnitNo )
+  CALL eMSH%setLogActive( .TRUE. )
+  IF( .NOT. eMSH%isLogActive() ) THEN
+    OPEN( Unit=eUnitNo, FILE=eLogFile, &
+      & ACCESS='SEQUENTIAL',FORM='FORMATTED',STATUS='REPLACE' )
+  END IF
+  CALL obj%e%addSurrogate(eMSH)
+  CALL obj%e%setLogActive( .TRUE. )
 
   CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
     & 'READING GMSH FILE!')
@@ -268,19 +275,19 @@ MODULE PROCEDURE msh_initiate
       SELECT CASE( entityDim )
         CASE( 0 )
           j = getIndex( obj%PointEntities, entityTag )
-          CALL obj%PointEntities( j )%setNodeNumber( NodeNumber )
+          CALL obj%PointEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%PointEntities( j )%setNodeCoord( NodeCoord )
         CASE( 1 )
           j = getIndex( obj%PointEntities, entityTag )
-          CALL obj%CurveEntities( j )%setNodeNumber( NodeNumber )
+          CALL obj%CurveEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%CurveEntities( j )%setNodeCoord( NodeCoord )
         CASE( 2 )
           j = getIndex( obj%PointEntities, entityTag )
-          CALL obj%SurfaceEntities( j )%setNodeNumber( NodeNumber )
+          CALL obj%SurfaceEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%SurfaceEntities( j )%setNodeCoord( NodeCoord )
         CASE( 3 )
           j = getIndex( obj%PointEntities, entityTag )
-          CALL obj%VolumeEntities( j )%setNodeNumber( NodeNumber )
+          CALL obj%VolumeEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%VolumeEntities( j )%setNodeCoord( NodeCoord )
       END SELECT
     END DO
@@ -322,7 +329,7 @@ MODULE PROCEDURE msh_initiate
           ! set the element type
           CALL obj%PointEntities( j )%setElemType(ElemType)
           CALL obj%PointEntities( j )%setElemNumber(ElemNumber)
-          CALL obj%PointEntities( j )%setNptrs(Nptrs)
+          CALL obj%PointEntities( j )%setConnectivity(Nptrs)
           ! counting nodes in each physical group
           tpt = obj%PointEntities( j )%getTotalPhysicalTags( )
           IF( tpt .NE. 0 ) THEN
@@ -338,7 +345,7 @@ MODULE PROCEDURE msh_initiate
           ! set the element type
           CALL obj%CurveEntities( j )%setElemType(ElemType)
           CALL obj%CurveEntities( j )%setElemNumber(ElemNumber)
-          CALL obj%CurveEntities( j )%setNptrs(Nptrs)
+          CALL obj%CurveEntities( j )%setConnectivity(Nptrs)
           ! counting nodes in each physical group
           tpt = obj%CurveEntities( j )%getTotalPhysicalTags( )
           IF( tpt .NE. 0 ) THEN
@@ -354,7 +361,7 @@ MODULE PROCEDURE msh_initiate
           ! set the element type
           CALL obj%SurfaceEntities( j )%setElemType(ElemType)
           CALL obj%SurfaceEntities( j )%setElemNumber(ElemNumber)
-          CALL obj%SurfaceEntities( j )%setNptrs(Nptrs)
+          CALL obj%SurfaceEntities( j )%setConnectivity(Nptrs)
           ! counting nodes in each physical group
           tpt = obj%SurfaceEntities( j )%getTotalPhysicalTags()
           IF( tpt .NE. 0 ) THEN
@@ -370,7 +377,7 @@ MODULE PROCEDURE msh_initiate
           ! set the element type
           CALL obj%VolumeEntities( j )%setElemType(ElemType)
           CALL obj%VolumeEntities( j )%setElemNumber(ElemNumber)
-          CALL obj%VolumeEntities( j )%setNptrs(Nptrs)
+          CALL obj%VolumeEntities( j )%setConnectivity(Nptrs)
           ! counting nodes in each physical group
           tpt = obj%VolumeEntities( j )%getTotalPhysicalTags()
           IF( tpt .NE. 0 ) THEN
@@ -426,7 +433,7 @@ MODULE PROCEDURE msh_initiate
         DO j = 1, SIZE( entIndx )
           tElements = obj%CurveEntities( entIndx( j ) )%getTotalElements( )
           DO k = 1, tElements
-            dummyNptrs = obj%CurveEntities( entIndx( j ) )%getNptrs( k )
+            dummyNptrs = obj%CurveEntities( entIndx( j ) )%getConnectivity( k )
             Nptrs( dummyNptrs ) = dummyNptrs
           END DO
         END DO
@@ -446,7 +453,7 @@ MODULE PROCEDURE msh_initiate
         DO j = 1, SIZE( entIndx )
           tElements = obj%SurfaceEntities( entIndx( j ) )%getTotalElements( )
           DO k = 1, tElements
-            dummyNptrs = obj%SurfaceEntities( entIndx( j ) )%getNptrs( k )
+            dummyNptrs = obj%SurfaceEntities( entIndx( j ) )%getConnectivity( k )
             Nptrs( dummyNptrs ) = dummyNptrs
           END DO
         END DO
@@ -466,7 +473,7 @@ MODULE PROCEDURE msh_initiate
         DO j = 1, SIZE( entIndx )
           tElements = obj%VolumeEntities( entIndx( j ) )%getTotalElements()
           DO k = 1, tElements
-            dummyNptrs = obj%VolumeEntities( entIndx( j ) )%getNptrs( k )
+            dummyNptrs = obj%VolumeEntities( entIndx( j ) )%getConnectivity( k )
             Nptrs( dummyNptrs ) = dummyNptrs
           END DO
         END DO

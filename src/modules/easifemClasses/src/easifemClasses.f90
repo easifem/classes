@@ -28,11 +28,12 @@ USE RealList_Class
 USE StringList_Class
 USE ElementList_Class
 USE ElementPointerVector_Class
-  ! USE Mesh_Class
-  ! USE MeshData_Class
-  ! USE MeshConnectivity_Class
-  ! USE Domain_Class
-  ! USE QuadratureVariables_Class
+USE Mesh_Class
+! USE MeshConnectivity_Class
+USE MeshPointerVector_Class
+USE Domain_Class
+! USE QuadratureVariables_Class
+
 USE Gmsh_Class
 USE MSH_Class
   ! USE gmshMesh_Class

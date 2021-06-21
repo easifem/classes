@@ -154,10 +154,10 @@ SUBROUTINE ExportMeshNodeInfo( obj, hdf5 )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
 
-  CALL hdf5%write(dsetname="/numNodes", vals=obj%Nodes%getNumNodes())
-  CALL hdf5%write(dsetname="/numEntityBlocks_Nodes", vals=obj%Nodes%getnumEntityBlocks())
-  CALL hdf5%write(dsetname="/minNodeTag", vals=obj%Nodes%getMinNodeTag())
-  CALL hdf5%write(dsetname="/maxNodeTag", vals=obj%Nodes%getMaxNodeTag())
+  CALL hdf5%write(dsetname="/tNodes", vals=obj%Nodes%getNumNodes())
+  CALL hdf5%write(dsetname="/tEntitiesForNodes", vals=obj%Nodes%getnumEntityBlocks())
+  CALL hdf5%write(dsetname="/minNptrs", vals=obj%Nodes%getMinNodeTag())
+  CALL hdf5%write(dsetname="/maxNptrs", vals=obj%Nodes%getMaxNodeTag())
 END SUBROUTINE ExportMeshNodeInfo
 
 !----------------------------------------------------------------------------
@@ -168,12 +168,12 @@ SUBROUTINE ExportMeshElementInfo( obj, hdf5 )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
 
-  CALL hdf5%write(dsetname="/numElements",vals=obj%Elements%getNumElements())
-  CALL hdf5%write(dsetname="/numEntityBlocks_Elements", &
+  CALL hdf5%write(dsetname="/tElements",vals=obj%Elements%getNumElements())
+  CALL hdf5%write(dsetname="/tEntitiesForElements", &
     & vals=obj%Elements%getnumEntityBlocks())
-  CALL hdf5%write(dsetname="/minElementTag", &
+  CALL hdf5%write(dsetname="/minElemNum", &
     & vals=obj%Elements%getMinElementTag())
-  CALL hdf5%write(dsetname="/maxElementTag", &
+  CALL hdf5%write(dsetname="/maxElemNum", &
     & vals=obj%Elements%getMaxElementTag())
 END SUBROUTINE ExportMeshElementInfo
 
@@ -201,11 +201,14 @@ SUBROUTINE ExportMeshEntity( obj, hdf5, dsetname )
   CALL hdf5%write( TRIM(dsetname) // "/y", obj%getY() )
   CALL hdf5%write( TRIM(dsetname) // "/z", obj%getZ() )
 
+  CALL hdf5%write( TRIM(dsetname) // "/tElements", obj%getTotalElements() )
+  CALL hdf5%write( TRIM(dsetname) // "/tIntNodes", obj%getTotalIntNodes() )
+
   CALL hdf5%write( TRIM(dsetname) // "/nodeCoord", obj%getNodeCoord() )
   CALL hdf5%write( TRIM(dsetname) // "/physicalTag", obj%getPhysicalTag() )
-  CALL hdf5%write( TRIM(dsetname) // "/nodeNumber", obj%getNodeNumber() )
+  CALL hdf5%write( TRIM(dsetname) // "/intNodeNumber", obj%getIntNodeNumber() )
   CALL hdf5%write( TRIM(dsetname) // "/elemNumber", obj%getElemNumber() )
-  CALL hdf5%write( TRIM(dsetname) // "/nptrs", obj%getNptrs() )
+  CALL hdf5%write( TRIM(dsetname) // "/connectivity", obj%getConnectivity() )
 
   intvec = obj%getBoundingEntity()
   IF( SIZE( intvec ) .NE. 0 ) THEN

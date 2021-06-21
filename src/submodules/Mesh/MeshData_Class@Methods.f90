@@ -8,106 +8,106 @@ CONTAINS
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE init_meshdata_1
+MODULE PROCEDURE meshData_Initiate
   ! Define internal variables
   INTEGER( I4B ) :: iel, Dummy
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
   CLASS( Element_ ), POINTER :: Elem
   !
-  obj % MaxNptrs = 0_I4B
-  obj % isInitiated = .TRUE.
+  obj%MaxNptrs = 0_I4B
+  obj%isInitiated = .TRUE.
 
   ! find out max and min nptrs
-  IF( .NOT. ALLOCATED( obj % ElemToNode ) ) THEN
-    ALLOCATE( obj % ElemToNode( Meshobj % tElements ) )
+  IF( .NOT. ALLOCATED( obj%ElemToNode ) ) THEN
+    ALLOCATE( obj%ElemToNode( Meshobj%tElements ) )
   END IF
 
   Elem => Meshobj%Elem(1)%ptr
   obj% refelem => elem%refelem
   Elem => NULL( )
 
-  DO iel = 1, Meshobj % tElements
-    Elem => Meshobj % Elem( iel ) % Ptr
+  DO iel = 1, Meshobj%tElements
+    Elem => Meshobj%Elem( iel )%Ptr
     IF( .NOT. ASSOCIATED( Elem ) ) EXIT ! this is redundate
     Nptrs = .Nptrs. Elem
-    obj % ElemToNode( iel ) % Val = Nptrs
+    obj%ElemToNode( iel )%Val = Nptrs
     Dummy = MAXVAL( Nptrs )
-    IF( Dummy .GE. obj % MaxNptrs ) obj % MaxNptrs = Dummy
+    IF( Dummy .GE. obj%MaxNptrs ) obj%MaxNptrs = Dummy
     Dummy = MINVAL( Nptrs )
-    IF( iel .eq. 1 ) obj % MinNptrs = Dummy
-    IF( Dummy .LE. obj % MinNptrs ) obj % MinNptrs = Dummy
+    IF( iel .eq. 1 ) obj%MinNptrs = Dummy
+    IF( Dummy .LE. obj%MinNptrs ) obj%MinNptrs = Dummy
   END DO
   !
-  IF( ALLOCATED( obj % Local_Nptrs ) ) DEALLOCATE( obj % Local_Nptrs )
-  ALLOCATE( obj % Local_Nptrs( obj % MaxNptrs ) )
-  obj % Local_Nptrs = 0
+  IF( ALLOCATED( obj%Local_Nptrs ) ) DEALLOCATE( obj%Local_Nptrs )
+  ALLOCATE( obj%Local_Nptrs( obj%MaxNptrs ) )
+  obj%Local_Nptrs = 0
   !
-  DO iel =1, Meshobj % tElements
-    Elem => Meshobj % Elem( iel ) % Ptr
+  DO iel =1, Meshobj%tElements
+    Elem => Meshobj%Elem( iel )%Ptr
     IF( ASSOCIATED( Elem ) ) THEN
       Nptrs = .Nptrs. Elem
-      obj % Local_Nptrs( Nptrs ) = Nptrs
+      obj%Local_Nptrs( Nptrs ) = Nptrs
     END IF
   END DO
   !
-  Dummy = COUNT( obj % Local_Nptrs .NE. 0 )
-  IF( ALLOCATED( obj % Nptrs ) ) DEALLOCATE( obj % Nptrs )
-  ALLOCATE( obj % Nptrs( Dummy ) )
+  Dummy = COUNT( obj%Local_Nptrs .NE. 0 )
+  IF( ALLOCATED( obj%Nptrs ) ) DEALLOCATE( obj%Nptrs )
+  ALLOCATE( obj%Nptrs( Dummy ) )
   !
   Dummy = 0
-  DO iel = 1, obj % MaxNptrs
-    IF( obj % Local_Nptrs( iel ) .EQ. 0 ) CYCLE
+  DO iel = 1, obj%MaxNptrs
+    IF( obj%Local_Nptrs( iel ) .EQ. 0 ) CYCLE
     Dummy = Dummy + 1
-    obj % Nptrs( Dummy ) = obj % Local_Nptrs( iel )
-    obj % Local_Nptrs( iel ) = Dummy
+    obj%Nptrs( Dummy ) = obj%Local_Nptrs( iel )
+    obj%Local_Nptrs( iel ) = Dummy
   END DO
   !
-  obj % tNodes = SIZE( obj % Nptrs )
+  obj%tNodes = SIZE( obj%Nptrs )
   DEALLOCATE( Nptrs )
   NULLIFY( Elem )
-END PROCEDURE init_meshdata_1
+END PROCEDURE meshData_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                 MeshData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshdata_1
-  CALL ans % Initiate( Meshobj )
+  CALL ans%Initiate( Meshobj )
 END PROCEDURE meshdata_1
 
 !----------------------------------------------------------------------------
 !                                                             DeallocateData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Deallocate_MeshData
-  IF( ALLOCATED( obj % NodeToElem ) ) DEALLOCATE( obj % NodeToElem )
-  IF( ALLOCATED( obj % ElemToElem ) ) DEALLOCATE( obj % ElemToElem )
-  IF( ALLOCATED( obj % NTN ) ) DEALLOCATE( obj % NTN )
-  IF( ALLOCATED( obj % ElemToNode ) ) DEALLOCATE( obj % ElemToNode )
-  IF( ALLOCATED( obj % BoundaryData ) ) DEALLOCATE( obj % BoundaryData )
-  IF( ALLOCATED( obj % InternalBndyElemNum ) ) &
-    & DEALLOCATE( obj % InternalBndyElemNum )
-  IF( ALLOCATED( obj % InternalBoundaryData ) ) &
-    & DEALLOCATE( obj % InternalBoundaryData )
-  IF( ALLOCATED( obj % LBndyIndex ) ) DEALLOCATE( obj % LBndyIndex )
-  IF( ALLOCATED( obj % Nptrs ) ) DEALLOCATE( obj % Nptrs )
-  IF( ALLOCATED( obj % BoundaryNptrs ) ) DEALLOCATE( obj % BoundaryNptrs )
-  IF( ALLOCATED( obj % InternalNptrs ) ) DEALLOCATE( obj % InternalNptrs )
-  IF( ALLOCATED( obj % Local_Nptrs ) ) DEALLOCATE( obj % Local_Nptrs )
+MODULE PROCEDURE meshData_DeallocateData
+  IF( ALLOCATED( obj%NodeToElem ) ) DEALLOCATE( obj%NodeToElem )
+  IF( ALLOCATED( obj%ElemToElem ) ) DEALLOCATE( obj%ElemToElem )
+  IF( ALLOCATED( obj%NTN ) ) DEALLOCATE( obj%NTN )
+  IF( ALLOCATED( obj%ElemToNode ) ) DEALLOCATE( obj%ElemToNode )
+  IF( ALLOCATED( obj%BoundaryData ) ) DEALLOCATE( obj%BoundaryData )
+  IF( ALLOCATED( obj%InternalBndyElemNum ) ) &
+    & DEALLOCATE( obj%InternalBndyElemNum )
+  IF( ALLOCATED( obj%InternalBoundaryData ) ) &
+    & DEALLOCATE( obj%InternalBoundaryData )
+  IF( ALLOCATED( obj%LBndyIndex ) ) DEALLOCATE( obj%LBndyIndex )
+  IF( ALLOCATED( obj%Nptrs ) ) DEALLOCATE( obj%Nptrs )
+  IF( ALLOCATED( obj%BoundaryNptrs ) ) DEALLOCATE( obj%BoundaryNptrs )
+  IF( ALLOCATED( obj%InternalNptrs ) ) DEALLOCATE( obj%InternalNptrs )
+  IF( ALLOCATED( obj%Local_Nptrs ) ) DEALLOCATE( obj%Local_Nptrs )
   !
   obj%refelem => NULL()
-  obj % isInitiated = .FALSE.
-  obj % tNodes = 0_I4B
-  obj % MaxNptrs = 0_I4B
-  obj % MinNptrs = 0_I4B
-END PROCEDURE Deallocate_MeshData
+  obj%isInitiated = .FALSE.
+  obj%tNodes = 0_I4B
+  obj%MaxNptrs = 0_I4B
+  obj%MinNptrs = 0_I4B
+END PROCEDURE meshData_DeallocateData
 
 !----------------------------------------------------------------------------
 !                                                            getTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE get_total_nodes
-    ans = obj % tNodes
+    ans = obj%tNodes
 END PROCEDURE get_total_nodes
 
 !----------------------------------------------------------------------------
@@ -115,8 +115,8 @@ END PROCEDURE get_total_nodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE get_tbndy_nodes
-  IF( ALLOCATED( obj % BoundaryNptrs )  ) THEN
-    ans = SIZE( obj % BoundaryNptrs )
+  IF( ALLOCATED( obj%BoundaryNptrs )  ) THEN
+    ans = SIZE( obj%BoundaryNptrs )
   ELSE
     ans = 0
   END IF
@@ -127,8 +127,8 @@ END PROCEDURE get_tbndy_nodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE get_tint_nodes
-  IF( ALLOCATED( obj % InternalNptrs )  ) THEN
-    ans = SIZE( obj % InternalNptrs )
+  IF( ALLOCATED( obj%InternalNptrs )  ) THEN
+    ans = SIZE( obj%InternalNptrs )
   ELSE
     ans = 0
   END IF
@@ -139,8 +139,8 @@ END PROCEDURE get_tint_nodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE get_tbndy_elems
-  IF( ALLOCATED( obj % BoundaryData ) ) THEN
-    ans = SIZE( obj % BoundaryData )
+  IF( ALLOCATED( obj%BoundaryData ) ) THEN
+    ans = SIZE( obj%BoundaryData )
   ELSE
     ans = 0
   END IF
@@ -160,29 +160,29 @@ MODULE PROCEDURE get_Bbox
   SELECT CASE( nsd )
   CASE( 1 )
 
-    DO ii = 1, obj % tNodes
-      lim( 1 ) = MIN( lim( 1 ), nodes( 1, obj % Nptrs( ii  ) ) )
-      lim( 2 ) = MAX( lim( 2 ), nodes( 1, obj % Nptrs( ii  ) ) )
+    DO ii = 1, obj%tNodes
+      lim( 1 ) = MIN( lim( 1 ), nodes( 1, obj%Nptrs( ii  ) ) )
+      lim( 2 ) = MAX( lim( 2 ), nodes( 1, obj%Nptrs( ii  ) ) )
     END DO
 
   CASE( 2 )
 
-    DO ii = 1, obj % tNodes
-      lim( 1 ) = MIN( lim( 1 ), nodes( 1, obj % Nptrs( ii  ) ) )
-      lim( 2 ) = MAX( lim( 2 ), nodes( 1, obj % Nptrs( ii  ) ) )
-      lim( 3 ) = MIN( lim( 3 ), nodes( 2, obj % Nptrs( ii  ) ) )
-      lim( 4 ) = MAX( lim( 4 ), nodes( 2, obj % Nptrs( ii  ) ) )
+    DO ii = 1, obj%tNodes
+      lim( 1 ) = MIN( lim( 1 ), nodes( 1, obj%Nptrs( ii  ) ) )
+      lim( 2 ) = MAX( lim( 2 ), nodes( 1, obj%Nptrs( ii  ) ) )
+      lim( 3 ) = MIN( lim( 3 ), nodes( 2, obj%Nptrs( ii  ) ) )
+      lim( 4 ) = MAX( lim( 4 ), nodes( 2, obj%Nptrs( ii  ) ) )
     END DO
 
   CASE( 3 )
 
-    DO ii = 1, obj % tNodes
-      lim( 1 ) = MIN( lim( 1 ), nodes( 1, obj % Nptrs( ii  ) ) )
-      lim( 2 ) = MAX( lim( 2 ), nodes( 1, obj % Nptrs( ii  ) ) )
-      lim( 3 ) = MIN( lim( 3 ), nodes( 2, obj % Nptrs( ii  ) ) )
-      lim( 4 ) = MAX( lim( 4 ), nodes( 2, obj % Nptrs( ii  ) ) )
-      lim( 5 ) = MIN( lim( 5 ), nodes( 3, obj % Nptrs( ii  ) ) )
-      lim( 6 ) = MAX( lim( 6 ), nodes( 3, obj % Nptrs( ii  ) ) )
+    DO ii = 1, obj%tNodes
+      lim( 1 ) = MIN( lim( 1 ), nodes( 1, obj%Nptrs( ii  ) ) )
+      lim( 2 ) = MAX( lim( 2 ), nodes( 1, obj%Nptrs( ii  ) ) )
+      lim( 3 ) = MIN( lim( 3 ), nodes( 2, obj%Nptrs( ii  ) ) )
+      lim( 4 ) = MAX( lim( 4 ), nodes( 2, obj%Nptrs( ii  ) ) )
+      lim( 5 ) = MIN( lim( 5 ), nodes( 3, obj%Nptrs( ii  ) ) )
+      lim( 6 ) = MAX( lim( 6 ), nodes( 3, obj%Nptrs( ii  ) ) )
     END DO
 
   END SELECT
@@ -202,11 +202,11 @@ MODULE PROCEDURE local_from_global
   n = SIZE( GlobalIndx )
   ALLOCATE( ans( n ) )
   DO i =1, n
-    IF( GlobalIndx( i ) .LT. obj  % MinNptrs &
-        & .OR. GlobalIndx( i ) .GT. obj % MaxNptrs ) THEN
+    IF( GlobalIndx( i ) .LT. obj %MinNptrs &
+        & .OR. GlobalIndx( i ) .GT. obj%MaxNptrs ) THEN
       ans( i ) = 0
     ELSE
-      ans( i ) = obj % Local_Nptrs( GlobalIndx( i ) )
+      ans( i ) = obj%Local_Nptrs( GlobalIndx( i ) )
     END IF
   END DO
 
@@ -217,10 +217,10 @@ END PROCEDURE local_from_global
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE local_from_global_scalar
-  IF( GlobalIndx .LT. obj  % MinNptrs .OR. GlobalIndx .GT. obj % MaxNptrs ) THEN
+  IF( GlobalIndx .LT. obj %MinNptrs .OR. GlobalIndx .GT. obj%MaxNptrs ) THEN
     ans = 0
   ELSE
-    ans = obj % Local_Nptrs( GlobalIndx )
+    ans = obj%Local_Nptrs( GlobalIndx )
   END IF
 END PROCEDURE local_from_global_scalar
 
@@ -236,10 +236,10 @@ MODULE PROCEDURE global_from_local
   ALLOCATE( ans( n ) ); ans = 0
 
   DO i = 1, n
-    IF( LocalIndx( i ) .GT. obj % tNodes ) THEN
+    IF( LocalIndx( i ) .GT. obj%tNodes ) THEN
       ans( i ) = 0
     ELSE
-      ans( i ) = obj % Nptrs( LocalIndx( i ) )
+      ans( i ) = obj%Nptrs( LocalIndx( i ) )
     END IF
   END DO
 
@@ -250,8 +250,8 @@ END PROCEDURE global_from_local
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE global_from_local_scalar
-  IF( LocalIndx .LE. obj % tNodes ) THEN
-    ans = obj % Nptrs( LocalIndx )
+  IF( LocalIndx .LE. obj%tNodes ) THEN
+    ans = obj%Nptrs( LocalIndx )
   ELSE
     ans = 0
   END IF
@@ -262,9 +262,9 @@ END PROCEDURE global_from_local_scalar
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_node_present
-  IF( Nptrs .GT. obj % MaxNptrs &
-    & .OR. Nptrs .LT. obj % MinNptrs &
-    & .OR. obj % Local_Nptrs( Nptrs ) .EQ. 0 ) THEN
+  IF( Nptrs .GT. obj%MaxNptrs &
+    & .OR. Nptrs .LT. obj%MinNptrs &
+    & .OR. obj%Local_Nptrs( Nptrs ) .EQ. 0 ) THEN
     ans = .FALSE.
   ELSE
     ans = .TRUE.
@@ -276,7 +276,7 @@ END PROCEDURE is_node_present
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_node_nodes_initiated
-  IF( ALLOCATED( obj % NTN ) ) THEN
+  IF( ALLOCATED( obj%NTN ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -288,7 +288,7 @@ END PROCEDURE is_node_nodes_initiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_node_elements_initiated
-  IF( ALLOCATED( obj % NodeToElem ) ) THEN
+  IF( ALLOCATED( obj%NodeToElem ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -300,7 +300,7 @@ END PROCEDURE is_node_elements_initiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_element_elements_initiated
-  IF( ALLOCATED( obj % ElemToElem ) ) THEN
+  IF( ALLOCATED( obj%ElemToElem ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -313,7 +313,7 @@ END PROCEDURE is_element_elements_initiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_element_nodes_initiated
-  IF( ALLOCATED( obj % ElemToNode ) ) THEN
+  IF( ALLOCATED( obj%ElemToNode ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -325,7 +325,7 @@ END PROCEDURE is_element_nodes_initiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_boundarydata
-  IF( ALLOCATED( obj % BoundaryData ) ) THEN
+  IF( ALLOCATED( obj%BoundaryData ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -337,7 +337,7 @@ END PROCEDURE is_boundarydata
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_internalnptrs
-  IF( ALLOCATED( obj % InternalNptrs ) ) THEN
+  IF( ALLOCATED( obj%InternalNptrs ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -349,7 +349,7 @@ END PROCEDURE is_internalnptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_bndy_nptrs
-  IF( ALLOCATED( obj % BoundaryNptrs ) ) THEN
+  IF( ALLOCATED( obj%BoundaryNptrs ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -361,7 +361,7 @@ END PROCEDURE is_bndy_nptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_local_nptrs
-  IF( ALLOCATED( obj % Local_Nptrs ) ) THEN
+  IF( ALLOCATED( obj%Local_Nptrs ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -373,7 +373,7 @@ END PROCEDURE is_local_nptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_int_bndy_data
-  IF( ALLOCATED( obj %  InternalBoundaryData) ) THEN
+  IF( ALLOCATED( obj% InternalBoundaryData) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -392,14 +392,14 @@ MODULE PROCEDURE init_node_elements
 
   Elem => NULL( )
 
-  IF( .NOT. ALLOCATED( obj % NodeToElem )  ) THEN
-    ALLOCATE( obj % NodeToElem( obj % tNodes ) )
-    DO iel = 1, Meshobj % tElements
-      Elem => Meshobj % Elem( iel ) % Ptr
+  IF( .NOT. ALLOCATED( obj%NodeToElem )  ) THEN
+    ALLOCATE( obj%NodeToElem( obj%tNodes ) )
+    DO iel = 1, Meshobj%tElements
+      Elem => Meshobj%Elem( iel )%Ptr
       IF( .NOT. ASSOCIATED( Elem ) ) CYCLE
-      local_nptrs = obj % LocalNptrs( .Nptrs. Elem )
+      local_nptrs = obj%LocalNptrs( .Nptrs. Elem )
       DO iNode = 1, SIZE( local_nptrs )
-        CALL Append( obj % NodeToElem ( local_nptrs( iNode ) ), iel )
+        CALL Append( obj%NodeToElem ( local_nptrs( iNode ) ), iel )
       END DO
     END DO
     DEALLOCATE( local_nptrs )
@@ -412,7 +412,7 @@ END PROCEDURE init_node_elements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE node_elements
-  ans = obj % NodeToElem( obj % LocalNptrs( GlobalIndx = GlobalPt ) ) % Val
+  ans = obj%NodeToElem( obj%LocalNptrs( GlobalIndx = GlobalPt ) )%Val
 END PROCEDURE node_elements
 
 !----------------------------------------------------------------------------
@@ -426,21 +426,21 @@ MODULE PROCEDURE init_node_nodes
   CLASS( Element_ ), POINTER :: Elem
 
   Elem => NULL( )
-  IF( .NOT. ALLOCATED( obj % NTN ) ) THEN
-    ALLOCATE( obj % NTN( obj % tNodes ) )
-    CALL obj % InitiateNodeToElements( Meshobj )
-    DO iLocalNode = 1, obj % tNodes
-      tSize = SIZE ( obj % NodeToElem( iLocalNode ) )
+  IF( .NOT. ALLOCATED( obj%NTN ) ) THEN
+    ALLOCATE( obj%NTN( obj%tNodes ) )
+    CALL obj%InitiateNodeToElements( Meshobj )
+    DO iLocalNode = 1, obj%tNodes
+      tSize = SIZE ( obj%NodeToElem( iLocalNode ) )
       IF( tSize .EQ. 0  ) CYCLE
-      iGlobalNode = obj % GlobalNptrs( LocalIndx = iLocalNode )
-      NearElements = obj % NodeToElements( GlobalPt = iGlobalNode )
+      iGlobalNode = obj%GlobalNptrs( LocalIndx = iLocalNode )
+      NearElements = obj%NodeToElements( GlobalPt = iGlobalNode )
       DO iel = 1, SIZE( NearElements )
-        Elem => Meshobj % Elem( NearElements( iel ) ) % Ptr
+        Elem => Meshobj%Elem( NearElements( iel ) )%Ptr
         global_nptrs = .Nptrs. Elem
         global_nptrs = PACK( global_nptrs, global_nptrs .NE. iGlobalNode )
-        CALL Append( obj % NTN( iLocalNode ), global_nptrs )
+        CALL Append( obj%NTN( iLocalNode ), global_nptrs )
       END DO
-      CALL RemoveDuplicates( obj % NTN( iLocalNode ) )
+      CALL RemoveDuplicates( obj%NTN( iLocalNode ) )
     END DO
     IF( ALLOCATED( global_nptrs ) ) DEALLOCATE( global_nptrs )
     IF( ALLOCATED( NearElements ) ) DEALLOCATE( NearElements )
@@ -458,16 +458,16 @@ MODULE PROCEDURE get_node_nodes
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
   INTEGER( I4B ) :: i
 
-  i = obj % LocalNptrs( GlobalIndx = GlobalNode )
+  i = obj%LocalNptrs( GlobalIndx = GlobalNode )
   IF( IncludeSelf ) THEN
-    Nptrs = obj % NTN( i ) % Val
+    Nptrs = obj%NTN( i )%Val
     i = SIZE( Nptrs )
     ALLOCATE( ans( i + 1 ) )
     ans( 1 ) = GlobalNode
     ans( 2 : ) = Nptrs
     DEALLOCATE( Nptrs )
   ELSE
-    ans = obj % NTN( i ) % Val
+    ans = obj%NTN( i )%Val
   END IF
 END PROCEDURE get_node_nodes
 
@@ -488,13 +488,13 @@ MODULE PROCEDURE init_element_elements
   Elem => NULL( )
   Elem2 => NULL( )
 
-  IF( .NOT. ALLOCATED( obj % ElemToElem ) ) THEN
-    CALL obj % InitiateNodeToElements( Meshobj )
-    ALLOCATE( obj % ElemToElem( Meshobj % tElements ) )
-    DO iel1 = 1, Meshobj % tElements
-      Elem => Meshobj % Elem( iel1 ) % Ptr
+  IF( .NOT. ALLOCATED( obj%ElemToElem ) ) THEN
+    CALL obj%InitiateNodeToElements( Meshobj )
+    ALLOCATE( obj%ElemToElem( Meshobj%tElements ) )
+    DO iel1 = 1, Meshobj%tElements
+      Elem => Meshobj%Elem( iel1 )%Ptr
       global_nptrs1 = .Nptrs. Elem ! get nptrs
-      FM1 = FacetMatrix( Elem % refelem ) ! get facet matrix
+      FM1 = FacetMatrix( Elem%refelem ) ! get facet matrix
       tFace1 = SIZE( FM1, 1 ) ! total number of faces
 
       DO iFace1 = 1, tFace1
@@ -510,13 +510,13 @@ MODULE PROCEDURE init_element_elements
         pt1 = global_nptrsFace1( 1 )
 
         !<--- get element connected to this
-        n2e1 = obj % NodeToElements( GlobalPt = pt1 )
+        n2e1 = obj%NodeToElements( GlobalPt = pt1 )
         DO iel2 = 1, SIZE( n2e1 )
           IF( iel1 .EQ. n2e1( iel2 ) ) CYCLE
 
-          Elem2 => Meshobj % Elem( n2e1( iel2 ) ) % Ptr
+          Elem2 => Meshobj%Elem( n2e1( iel2 ) )%Ptr
           global_nptrs2 = .Nptrs. Elem2
-          FM2 = FacetMatrix( Elem2 % refelem )
+          FM2 = FacetMatrix( Elem2%refelem )
           tFace2 = SIZE( FM2, 1 )
           DO iFace2 = 1, tFace2
             !<--- getting total number of nodes in iFace2
@@ -532,7 +532,7 @@ MODULE PROCEDURE init_element_elements
               END DO
             END DO
             IF( r .EQ. NNS1 ) THEN
-              CALL APPEND( obj % ElemToElem( iel1 ), &
+              CALL APPEND( obj%ElemToElem( iel1 ), &
                 & [n2e1(iel2), iFace1, iFace2])
               FOUND = .TRUE.
               EXIT
@@ -559,7 +559,7 @@ MODULE PROCEDURE get_elem_elems_1
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
   INTEGER( I4B ) :: tSize
 
-  Nptrs = obj % ElemToElem( iel ) % Val
+  Nptrs = obj%ElemToElem( iel )%Val
   tSize = SIZE( Nptrs ) / 3
   ans = TRansPOSE( RESHAPE( Nptrs, [3, tSize] ) )
   DEALLOCATE( Nptrs )
@@ -575,9 +575,9 @@ MODULE PROCEDURE get_elem_elems_2
 
   SELECT CASE( iel( 2 ) )
     CASE( 0 )
-      ans = obj % ElementToElements( iel = iel( 1 ) )
+      ans = obj%ElementToElements( iel = iel( 1 ) )
     CASE DEFAULT
-      Nptrs = obj % ElemToElem( iel( 1 ) ) % Val
+      Nptrs = obj%ElemToElem( iel( 1 ) )%Val
       ALLOCATE( ans( SIZE( Nptrs )/3, 1 ) )
       ans( :, 1 ) = Nptrs( 1::3 )
       DEALLOCATE( Nptrs )
@@ -593,15 +593,14 @@ MODULE PROCEDURE init_elem_nodes
   INTEGER( I4B ) :: iel
   CLASS( Element_ ), POINTER :: Elem
   !
-  IF( .NOT. ALLOCATED( obj % ElemToNode ) ) THEN
-    ALLOCATE( obj % ElemToNode( Meshobj % tElements ) )
-    DO iel = 1, Meshobj % tElements
-      Elem => Meshobj % Elem( iel ) % Ptr
-      obj % ElemToNode( iel ) % Val = .Nptrs. Elem
+  IF( .NOT. ALLOCATED( obj%ElemToNode ) ) THEN
+    ALLOCATE( obj%ElemToNode( Meshobj%tElements ) )
+    DO iel = 1, Meshobj%tElements
+      Elem => Meshobj%Elem( iel )%Ptr
+      obj%ElemToNode( iel )%Val = .Nptrs. Elem
     END DO
     NULLIFY( Elem )
   END IF
-  !
 END PROCEDURE init_elem_nodes
 
 !----------------------------------------------------------------------------
@@ -609,7 +608,7 @@ END PROCEDURE init_elem_nodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE get_elem_nodes
-  ans = obj % ElemToNode( iel ) % Val
+  ans = obj%ElemToNode( iel )%Val
 END PROCEDURE get_elem_nodes
 
 !----------------------------------------------------------------------------
@@ -624,63 +623,63 @@ MODULE PROCEDURE init_bndy_data
     & DummyNptrs( : ), local_nptrs( : ), global_nptrs( : )
   CLASS( Element_ ), POINTER :: Elem
 
-  IF( .NOT. ALLOCATED( obj % BoundaryData ) ) THEN
-    tElements = Meshobj % tElements
-    CALL Reallocate( obj % LBndyIndex,  tElements )
-    obj % LBndyIndex = 0_I4B
-    IF( ALLOCATED( obj % BoundaryNptrs ) ) DEALLOCATE( obj % BoundaryNptrs )
+  IF( .NOT. ALLOCATED( obj%BoundaryData ) ) THEN
+    tElements = Meshobj%tElements
+    CALL Reallocate( obj%LBndyIndex,  tElements )
+    obj%LBndyIndex = 0_I4B
+    IF( ALLOCATED( obj%BoundaryNptrs ) ) DEALLOCATE( obj%BoundaryNptrs )
     SELECT CASE( tElements )
     CASE( 1 )
-      ALLOCATE( obj % BoundaryData( 1 ) )
-      obj % LBndyIndex( 1 ) = 1
-      Elem => Meshobj % Elem( 1 ) % Ptr
-      obj % BoundaryNptrs = .Nptrs. Elem
-      FM = FacetMatrix( Elem % refelem )
+      ALLOCATE( obj%BoundaryData( 1 ) )
+      obj%LBndyIndex( 1 ) = 1
+      Elem => Meshobj%Elem( 1 )%Ptr
+      obj%BoundaryNptrs = .Nptrs. Elem
+      FM = FacetMatrix( Elem%refelem )
       tFace = SIZE( FM, 1 )
-      CALL Initiate( obj % BoundaryData( 1 ), tFace + 1 )
-      obj % BoundaryData( 1 ) % Val( 1 ) = 1
-      obj % BoundaryData( 1 ) % Val( 2: ) = [(i, i=1, tFace)]
+      CALL Initiate( obj%BoundaryData( 1 ), tFace + 1 )
+      obj%BoundaryData( 1 )%Val( 1 ) = 1
+      obj%BoundaryData( 1 )%Val( 2: ) = [(i, i=1, tFace)]
     CASE DEFAULT
-      CALL obj % InitiateElementToElements( Meshobj = Meshobj )
+      CALL obj%InitiateElementToElements( Meshobj = Meshobj )
       DO iel = 1, tElements
-        dummy = SIZE( obj % ElemToElem( iel ) )
+        dummy = SIZE( obj%ElemToElem( iel ) )
         IF( dummy .EQ. 0 ) CYCLE
-        e2eData = obj % ElemToElem( iel ) % Val
+        e2eData = obj%ElemToElem( iel )%Val
         te2e = SIZE( e2eData ) / 3
-        Elem => Meshobj % Elem( iel ) % Ptr
-        FM = FacetMatrix( Elem % refelem )
+        Elem => Meshobj%Elem( iel )%Ptr
+        FM = FacetMatrix( Elem%refelem )
         tFace = SIZE( FM, 1 )
         IF( tFace .NE. te2e ) THEN
-          obj % LBndyIndex( iel ) = 1
+          obj%LBndyIndex( iel ) = 1
         END IF
       END DO
-      tBndyElem = COUNT( obj % LBndyIndex .NE. 0 )
-      ALLOCATE( obj % BoundaryData( tBndyElem ) )
-      ALLOCATE( DummyNptrs( obj % MaxNptrs ) )
+      tBndyElem = COUNT( obj%LBndyIndex .NE. 0 )
+      ALLOCATE( obj%BoundaryData( tBndyElem ) )
+      ALLOCATE( DummyNptrs( obj%MaxNptrs ) )
       DummyNptrs = 0; k = 0
       DO iel = 1, tElements
-        IF( obj % LBndyIndex( iel ) .EQ. 0 ) CYCLE
+        IF( obj%LBndyIndex( iel ) .EQ. 0 ) CYCLE
         k = k + 1
-        obj % LBndyIndex( iel ) = k
-        e2eData = obj % ElemToElem( iel ) % Val
+        obj%LBndyIndex( iel ) = k
+        e2eData = obj%ElemToElem( iel )%Val
         te2e = SIZE( e2eData ) / 3
         IF( ALLOCATED( FaceVec ) ) DEALLOCATE( FaceVec )
         ALLOCATE( FaceVec( te2e ) )
         DO i = 1, te2e
           FaceVec( i ) = e2eData( 3*(i-1) + 2 )
         END DO
-        Elem => Meshobj % Elem( iel ) % Ptr
-        FM = FacetMatrix( Elem % refelem )
+        Elem => Meshobj%Elem( iel )%Ptr
+        FM = FacetMatrix( Elem%refelem )
         tFace = SIZE( FM, 1 )
         tBndyFace = tFace - te2e
-        CALL Initiate( obj % BoundaryData( k ), tBndyFace + 1 )
-        obj % BoundaryData( k ) % Val( 1 ) = iel
+        CALL Initiate( obj%BoundaryData( k ), tBndyFace + 1 )
+        obj%BoundaryData( k )%Val( 1 ) = iel
         global_nptrs = .Nptrs. Elem
         j = 0
         DO i = 1, tFace
           IF( ANY( i .EQ. FaceVec ) ) CYCLE
           j = j + 1
-          obj % BoundaryData( k ) % Val( 1 + j ) = i
+          obj%BoundaryData( k )%Val( 1 + j ) = i
           ! get local_nptrs of the face
           b = 3 + FM( i, 3 )
           local_nptrs = FM( i, 4 : b )
@@ -689,12 +688,12 @@ MODULE PROCEDURE init_bndy_data
         END DO
       END DO
       b = COUNT( DummyNptrs .NE. 0 )
-      ALLOCATE( obj % BoundaryNptrs( b ) )
+      ALLOCATE( obj%BoundaryNptrs( b ) )
       k = 0
-      DO i = 1, obj % MaxNptrs
+      DO i = 1, obj%MaxNptrs
         IF( DummyNptrs( i ) .EQ. 0 ) CYCLE
         k = k + 1
-        obj % BoundaryNptrs( k ) = DummyNptrs( i )
+        obj%BoundaryNptrs( k ) = DummyNptrs( i )
       END DO
     END SELECT
     NULLIFY( Elem )
@@ -712,7 +711,7 @@ END PROCEDURE init_bndy_data
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE is_bndy_elem
-  IF( obj % LBndyIndex( iel ) .NE. 0 ) THEN
+  IF( obj%LBndyIndex( iel ) .NE. 0 ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -727,9 +726,9 @@ MODULE PROCEDURE get_bndy_elem
   ! Define internal variables
   INTEGER( I4B ) :: LocalIndx
 
-  LocalIndx = obj % LBndyIndex( iel )
+  LocalIndx = obj%LBndyIndex( iel )
   IF( LocalIndx .NE. 0 ) THEN
-    ans = obj % BoundaryData( LocalIndx ) % Val( 2: )
+    ans = obj%BoundaryData( LocalIndx )%Val( 2: )
   ELSE
     ans = [0]
   END IF
@@ -744,28 +743,28 @@ MODULE PROCEDURE init_int_nptrs
   INTEGER( I4B ) :: iel, tElements, tNodes, iNode
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : ), DummyNptrs( : )
 
-  IF( .NOT.  ALLOCATED( obj % InternalNptrs ) ) THEN
-    CALL obj % InitiateBoundaryData( Meshobj = Meshobj )
-    CALL obj % InitiateElementToNodes( Meshobj = Meshobj )
-    tElements = Meshobj % tElements
-    tNodes = obj % maxNptrs
+  IF( .NOT.  ALLOCATED( obj%InternalNptrs ) ) THEN
+    CALL obj%InitiateBoundaryData( Meshobj = Meshobj )
+    CALL obj%InitiateElementToNodes( Meshobj = Meshobj )
+    tElements = Meshobj%tElements
+    tNodes = obj%maxNptrs
     ALLOCATE( DummyNptrs( tNodes ) )
     DummyNptrs = 0
 
     DO iel = 1, tElements
-      IF( obj % isBoundaryElement( iel = iel ) ) CYCLE
-      Nptrs = obj % ElemToNode( iel ) % Val
+      IF( obj%isBoundaryElement( iel = iel ) ) CYCLE
+      Nptrs = obj%ElemToNode( iel )%Val
       DummyNptrs( Nptrs ) = Nptrs
     END DO
 
     iNode = COUNT( DummyNptrs .NE. 0 )
-    ALLOCATE( obj % InternalNptrs( iNode ) )
+    ALLOCATE( obj%InternalNptrs( iNode ) )
 
     iel = 0
     DO iNode = 1, tNodes
         IF( DummyNptrs( iNode ) .EQ. 0 ) CYCLE
         iel = iel + 1
-        obj % InternalNptrs( iel ) = DummyNptrs( iNode )
+        obj%InternalNptrs( iel ) = DummyNptrs( iNode )
     END DO
 
     DEALLOCATE( DummyNptrs, Nptrs )
@@ -790,28 +789,28 @@ MODULE PROCEDURE setSparsity_1
   INTEGER( I4B ), allocatable :: n2n( : )
 
   IF( PRESENT( map ) ) THEN
-    IF( .NOT. obj % isInitiated ) THEN
-      CALL obj % Initiate( Meshobj = Meshobj )
+    IF( .NOT. obj%isInitiated ) THEN
+      CALL obj%Initiate( Meshobj = Meshobj )
     END IF
-    CALL obj % InitiateNodeToNodes( Meshobj = Meshobj )
-    DO i = 1, obj % tNodes
-      j = obj % GlobalNptrs( LocalIndx = i )
+    CALL obj%InitiateNodeToNodes( Meshobj = Meshobj )
+    DO i = 1, obj%tNodes
+      j = obj%GlobalNptrs( LocalIndx = i )
       IF( map( j ) .EQ. 0 ) CYCLE
-      n2n = map( obj % NodeToNodes( GlobalNode = j, IncludeSelf =.true. ) )
+      n2n = map( obj%NodeToNodes( GlobalNode = j, IncludeSelf =.true. ) )
       CALL setSparsity( obj = Mat, Row = map(j), Col = n2n )
     END DO
     IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
 
   ELSE
 
-    IF( .NOT. obj % isInitiated ) THEN
-      CALL obj % Initiate( Meshobj = Meshobj )
+    IF( .NOT. obj%isInitiated ) THEN
+      CALL obj%Initiate( Meshobj = Meshobj )
     END IF
-    CALL obj % InitiateNodeToNodes( Meshobj = Meshobj )
-    DO i = 1, obj % tNodes
-      j = obj % GlobalNptrs( LocalIndx = i )
+    CALL obj%InitiateNodeToNodes( Meshobj = Meshobj )
+    DO i = 1, obj%tNodes
+      j = obj%GlobalNptrs( LocalIndx = i )
       ! IF( j .eq. 0 ) CYCLE !<--- by construction this will never happen
-      n2n = obj % NodeToNodes( GlobalNode = j, IncludeSelf =.true. )
+      n2n = obj%NodeToNodes( GlobalNode = j, IncludeSelf =.true. )
       CALL setSparsity( obj = Mat, Row = j, Col = n2n )
     END DO
     IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
@@ -834,41 +833,41 @@ MODULE PROCEDURE mc_connect_facet_cell
 
   !<--- main program
   !<--- if cell mesh data not initiated then initiate it
-  IF( .NOT. CellMeshData % isInitiated ) THEN
-    CALL CellMeshData % Initiate( CellMesh )
+  IF( .NOT. CellMeshData%isInitiated ) THEN
+    CALL CellMeshData%Initiate( CellMesh )
   END IF
 
   !<--- generate node to elements and boundary data
-  CALL CellMeshData % InitiateNodeToElements( CellMesh )
-  CALL CellMeshData % InitiateBoundaryData( CellMesh )
+  CALL CellMeshData%InitiateNodeToElements( CellMesh )
+  CALL CellMeshData%InitiateBoundaryData( CellMesh )
 
   Elem => NULL( ); FacetElem => NULL( )
 
-  DO ifacet = 1, FacetMesh % SIZE()
+  DO ifacet = 1, FacetMesh%SIZE()
     found = .false.
 
     !<--- get facet element and its nptrs
-    FacetElem => FacetMesh % Elem( ifacet ) % Ptr
+    FacetElem => FacetMesh%Elem( ifacet )%Ptr
     FacetNptrs = .Nptrs. FacetElem
 
     !<--- select an arbitrary node in FacetNptr; if this is not
     !<--- present inside the CellMesh then this means this iFacet is
     !<--- orphan and we go back to the next Facet Element
-    IF( .NOT. CellMeshData % isNodePresent( FacetNptrs( 1 ) ) ) CYCLE
+    IF( .NOT. CellMeshData%isNodePresent( FacetNptrs( 1 ) ) ) CYCLE
 
     !<--- Now we have ensured that iFacet can be a facet element
     !<--- so we get the element in Cell mesh surrouding this node
-    pt2elem = CellMeshData % NodetoElements( FacetNptrs( 1 ) )
+    pt2elem = CellMeshData%NodetoElements( FacetNptrs( 1 ) )
 
     DO icell = 1, SIZE( pt2elem )
       elemNum = pt2elem( icell )
 
       !<--- if this element is not a boundary element then discard it
-      IF( .NOT. CellMeshData % isBoundaryElement( elemNum ) ) CYCLE
+      IF( .NOT. CellMeshData%isBoundaryElement( elemNum ) ) CYCLE
 
-      bndyData = CellMeshData % BoundaryElementData( elemNum )
-      Elem => CellMesh % Elem( elemNum ) % Ptr
-      FM = FacetMatrix( Elem % refelem )
+      bndyData = CellMeshData%BoundaryElementData( elemNum )
+      Elem => CellMesh%Elem( elemNum )%Ptr
+      FM = FacetMatrix( Elem%refelem )
       CellNptrs = .Nptrs. Elem
 
       DO i = 1, SIZE( bndyData )
@@ -886,9 +885,9 @@ MODULE PROCEDURE mc_connect_facet_cell
 
         IF( r .EQ. SIZE( FacetNptrs ) ) THEN
           Found = .TRUE.
-          CALL FacetElem % setPointerToCell( Cellobj = Elem )
-          CALL FacetElem % setFacetLocalID( BndyData( i ) )
-          CALL FacetElem % setMaterialType( Elem % Mat_Type )
+          CALL FacetElem%setPointerToCell( Cellobj = Elem )
+          CALL FacetElem%setFacetLocalID( BndyData( i ) )
+          CALL FacetElem%setMaterialType( Elem%Mat_Type )
           EXIT
         END IF
       END DO
@@ -930,36 +929,36 @@ MODULE PROCEDURE get_facet_elements
   refelem_2 => NULL()
 
   ! Init mesh data
-  IF( .not. mdobj % isInitiated ) THEN
-    CALL mdobj % initiate( meshobj = obj )
+  IF( .not. mdobj%isInitiated ) THEN
+    CALL mdobj%initiate( meshobj = obj )
   END IF
 
   ! init boundary data
-  CALL mdobj % initiateBoundaryData( meshobj = obj )
+  CALL mdobj%initiateBoundaryData( meshobj = obj )
 
   ! total boundary elements
-  tbe = mdobj % totalBoundaryElements( )
+  tbe = mdobj%totalBoundaryElements( )
 
   ! return if tbe if zero
   IF( tbe .EQ. 0 ) RETURN
 
   ! allocate memory for the facet mesh
-  CALL facetMesh % initiate( nsd = obj % nsd, tElements = tbe )
+  CALL facetMesh%initiate( nsd = obj%nsd, tElements = tbe )
 
   ! Now we need to make mesh of surface elements
-  DO iel = 1, obj % tElements
+  DO iel = 1, obj%tElements
 
     ! If parent element is not boundary element then cycle
-    IF( .NOT. mdobj % isBoundaryElement( iel )  ) CYCLE
+    IF( .NOT. mdobj%isBoundaryElement( iel )  ) CYCLE
 
     ! Found boundary parent element
     ! gets its boundary data
-    bData = mdobj % boundaryElementData( iel )
+    bData = mdobj%boundaryElementData( iel )
     tface = SIZE( bData )
 
     ! Generate facet matrix
-    pElem => obj % Elem( iel ) % Ptr
-    FM = FacetMatrix( pElem % refelem )
+    pElem => obj%Elem( iel )%Ptr
+    FM = FacetMatrix( pElem%refelem )
     pNptrs = .Nptrs. pElem
 
     DO iface = 1, tface
@@ -976,25 +975,25 @@ MODULE PROCEDURE get_facet_elements
 
       !--- this is require one time only just to get refelem
       IF( isTriangle( elemType ) ) THEN
-        refelem_1 => ReferenceTriangle_Pointer( NSD = obj % NSD )
+        refelem_1 => ReferenceTriangle_Pointer( NSD = obj%NSD )
         IF( Order .NE. 1 ) THEN
-          refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+          refelem_2 => refelem_1%LagrangeElement( Order = Order )
           DEALLOCATE( refelem_1 )
         ELSE
           refelem_2 => refelem_1
         END IF
       ELSE IF( isQuadrangle( elemType ) ) THEN
-        refelem_1 => ReferenceQuadrangle_Pointer( NSD = obj % NSD )
+        refelem_1 => ReferenceQuadrangle_Pointer( NSD = obj%NSD )
         IF( Order .NE. 1 ) THEN
-          refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+          refelem_2 => refelem_1%LagrangeElement( Order = Order )
           DEALLOCATE( refelem_1 )
         ELSE
           refelem_2 => refelem_1
         END IF
       ELSE IF( isLine( elemType ) ) THEN
-        refelem_1 => ReferenceLine_Pointer( NSD = obj % NSD )
+        refelem_1 => ReferenceLine_Pointer( NSD = obj%NSD )
         IF( Order .NE. 1 ) THEN
-          refelem_2 => refelem_1 % LagrangeElement( Order = Order )
+          refelem_2 => refelem_1%LagrangeElement( Order = Order )
           DEALLOCATE( refelem_1 )
         ELSE
           refelem_2 => refelem_1
@@ -1003,10 +1002,10 @@ MODULE PROCEDURE get_facet_elements
       !--------------------------------
 
       fElem => getFEPointer( obj = FEobj, Nptrs = fNptrs, &
-        & Mat_Type = pElem % Mat_Type, refelem = refelem_2 )
-      CALL fElem % setPointerToCell( pElem )
+        & Mat_Type = pElem%Mat_Type, refelem = refelem_2 )
+      CALL fElem%setPointerToCell( pElem )
 
-      CALL facetMesh % Append( Elem = fElem )
+      CALL facetMesh%Append( Elem = fElem )
     END DO
 
   END DO

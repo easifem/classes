@@ -63,50 +63,69 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)
   FTL_TEMPLATE_TYPE_WRAP, POINTER, PUBLIC :: back => NULL()
   CONTAINS
   PRIVATE
-  GENERIC, PUBLIC :: Initiate => T_NewDefault, T_NewCopyOther, T_NewFill, T_NewFromArray
+  GENERIC, PUBLIC :: Initiate => &
+    & T_NewDefault, T_NewCopyOther, T_NewFill, T_NewFromArray
   GENERIC, PUBLIC :: ASSIGNMENT( = ) => T_NewFromArray, T_NewCopyOther
-  PROCEDURE :: T_NewDefault
-  PROCEDURE :: T_NewCopyOther
-  PROCEDURE :: T_NewFill
-  PROCEDURE :: T_NewFromArray
-  PROCEDURE, PUBLIC :: DeallocateData => T_DeallocateData
-  PROCEDURE, PUBLIC :: Delete => T_DeallocateData
+
+  PROCEDURE, PASS( obj ) :: T_NewDefault
+  PROCEDURE, PASS( obj ) :: T_NewCopyOther
+  PROCEDURE, PASS( obj ) :: T_NewFill
+  PROCEDURE, PASS( obj ) :: T_NewFromArray
+  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => T_DeallocateData
+  PROCEDURE, PASS( obj ) :: Delete => T_DeallocateData
   FINAL :: T_Finalizer
 
-  PROCEDURE, PUBLIC :: Begin => T_Begin
-  PROCEDURE, PUBLIC :: End => T_End
-  PROCEDURE, PUBLIC :: Size => T_Size
-  PROCEDURE, PUBLIC :: Capacity => T_Capacity
-  PROCEDURE, PUBLIC :: isEmpty => T_isEmpty
-  PROCEDURE, PUBLIC :: Reserve => T_Reserve
-  PROCEDURE, PUBLIC :: ShrinkToFit => T_ShrinkToFit
-  PROCEDURE, PUBLIC :: Resize => T_Resize
-  PROCEDURE, PUBLIC :: Pushback => T_Pushback
-  PROCEDURE, PUBLIC :: Popback => T_Popback
+  PROCEDURE, PUBLIC, PASS( obj ) :: Begin => T_Begin
+  PROCEDURE, PUBLIC, PASS( obj ) :: End => T_End
+  PROCEDURE, PUBLIC, PASS( obj ) :: Size => T_Size
+  PROCEDURE, PUBLIC, PASS( obj ) :: Capacity => T_Capacity
+  PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => T_isEmpty
+  PROCEDURE, PUBLIC, PASS( obj ) :: Reserve => T_Reserve
+  PROCEDURE, PUBLIC, PASS( obj ) :: ShrinkToFit => T_ShrinkToFit
+  PROCEDURE, PUBLIC, PASS( obj ) :: Resize => T_Resize
+  PROCEDURE, PUBLIC, PASS( obj ) :: Pushback => T_Pushback
+  PROCEDURE, PUBLIC, PASS( obj ) :: Popback => T_Popback
 
-  GENERIC, PUBLIC :: Insert => T_InsertSingle, T_InsertFill, T_InsertArray, &
+  GENERIC, PUBLIC :: Insert => &
+    & T_InsertSingle, T_InsertFill, T_InsertArray, &
     & T_InsertIteratorPair, T_InsertSingleAtIndex, T_InsertFillAtIndex, &
     & T_InsertArrayAtIndex, T_InsertIteratorPairAtIndex
-  PROCEDURE :: T_InsertSingle
-  PROCEDURE :: T_InsertSingleAtIndex
-  PROCEDURE :: T_InsertFill
-  PROCEDURE :: T_InsertFillAtIndex
-  PROCEDURE :: T_InsertArray
-  PROCEDURE :: T_InsertArrayAtIndex
-  PROCEDURE :: T_InsertIteratorPair
-  PROCEDURE :: T_InsertIteratorPairAtIndex
+  PROCEDURE, PASS( obj ) :: T_InsertSingle
+  PROCEDURE, PASS( obj ) :: T_InsertSingleAtIndex
+  PROCEDURE, PASS( obj ) :: T_InsertFill
+  PROCEDURE, PASS( obj ) :: T_InsertFillAtIndex
+  PROCEDURE, PASS( obj ) :: T_InsertArray
+  PROCEDURE, PASS( obj ) :: T_InsertArrayAtIndex
+  PROCEDURE, PASS( obj ) :: T_InsertIteratorPair
+  PROCEDURE, PASS( obj ) :: T_InsertIteratorPairAtIndex
 
-  GENERIC  , PUBLIC :: Erase => T_EraseSingle, T_EraseSingleIndex, T_EraseIndexPair, T_EraseIteratorPair
-  PROCEDURE :: T_EraseSingle
-  PROCEDURE :: T_EraseSingleIndex
-  PROCEDURE :: T_EraseIndexPair
-  PROCEDURE :: T_EraseIteratorPair
+  GENERIC, PUBLIC :: Set => &
+    & T_SetSingle, T_SetFill, T_SetArray, &
+    & T_SetIteratorPair, T_SetSingleAtIndex, T_SetFillAtIndex, &
+    & T_SetArrayAtIndex, T_SetIteratorPairAtIndex
 
-  PROCEDURE, PUBLIC :: Clear => T_Clear
-  PROCEDURE :: FixValuePtrs => T_FixValuePtrs
-  PROCEDURE :: ShiftByN => T_ShiftByN
-  PROCEDURE :: ChangeCapacity => T_ChangeCapacity
-  PROCEDURE :: IncreaseCapacity => T_IncreaseCapacity
+  PROCEDURE, PASS( obj ) :: T_SetSingle
+  PROCEDURE, PASS( obj ) :: T_SetSingleAtIndex
+  PROCEDURE, PASS( obj ) :: T_SetFill
+  PROCEDURE, PASS( obj ) :: T_SetFillAtIndex
+  PROCEDURE, PASS( obj ) :: T_SetArray
+  PROCEDURE, PASS( obj ) :: T_SetArrayAtIndex
+  PROCEDURE, PASS( obj ) :: T_SetIteratorPair
+  PROCEDURE, PASS( obj ) :: T_SetIteratorPairAtIndex
+
+  GENERIC  , PUBLIC :: Erase => &
+    & T_EraseSingle, T_EraseSingleIndex, &
+    & T_EraseIndexPair, T_EraseIteratorPair
+  PROCEDURE, PASS( obj ) :: T_EraseSingle
+  PROCEDURE, PASS( obj ) :: T_EraseSingleIndex
+  PROCEDURE, PASS( obj ) :: T_EraseIndexPair
+  PROCEDURE, PASS( obj ) :: T_EraseIteratorPair
+
+  PROCEDURE, PUBLIC, PASS( obj ) :: Clear => T_Clear
+  PROCEDURE, PASS( obj ) :: FixValuePtrs => T_FixValuePtrs
+  PROCEDURE, PASS( obj ) :: ShiftByN => T_ShiftByN
+  PROCEDURE, PASS( obj ) :: ChangeCapacity => T_ChangeCapacity
+  PROCEDURE, PASS( obj ) :: IncreaseCapacity => T_IncreaseCapacity
   PROCEDURE, PUBLIC :: Display => T_Display
 END TYPE
 
@@ -241,7 +260,7 @@ SUBROUTINE T_NewCopyOther(obj, anotherObj)
   DO ii = 1, n
     obj%storage(ii)%ptr => anotherObj%storage(ii)%ptr
   END DO
-  obj%psize = anotherObj%psize
+  obj%psize = n
   CALL obj%FixValuePtrs()
 END SUBROUTINE T_NewCopyOther
 
@@ -295,7 +314,9 @@ SUBROUTINE T_DeallocateData( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT) :: obj
   ! CALL obj%clear(freeMem=.TRUE.)
   obj%psize = 0
-  IF(ALLOCATED(obj%storage)) DEALLOCATE(obj%storage)
+  IF(ALLOCATED(obj%storage)) THEN
+    CALL obj%clear(freeMem=.TRUE.)
+  END IF
   NULLIFY(obj%data)
   NULLIFY(obj%front)
   NULLIFY(obj%back)
@@ -447,7 +468,7 @@ SUBROUTINE T_Pushback( obj, val )
     CALL obj%FixValuePtrs()
   ELSE
     CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
-        "val%ptr should be associated.")
+      & "val%ptr should be associated.")
   END IF
 END SUBROUTINE T_Pushback
 
@@ -506,21 +527,22 @@ SUBROUTINE T_InsertFillAtIndex(obj, pos, n, val)
   INTEGER( I4B ), INTENT( IN ) :: pos
   INTEGER( I4B ), INTENT( IN ) :: n
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+
   ! Internal variables
   INTEGER( I4B ) :: ii
   IF( n .LE. 0 ) Return
-  CALL obj%ShiftByN(pos,n)
+
+  CALL obj%ShiftByN( pos, n )
   DO ii = 1, n
     obj%storage(pos-1+ii)%ptr => val%ptr
   END DO
-  obj%psize = obj%psize+n
+  obj%psize = obj%psize + n
   CALL obj%FixValuePtrs()
 END SUBROUTINE T_InsertFillAtIndex
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
 
 SUBROUTINE T_InsertFill(obj, pos, n, val)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
@@ -554,12 +576,143 @@ END SUBROUTINE T_InsertArrayAtIndex
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE T_InsertIteratorPairAtIndex( obj, pos, first, last )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
+  CALL obj%Insert( pos, first%dynArray%data(first%index:last%index-1) )
+END SUBROUTINE T_InsertIteratorPairAtIndex
+
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetSingleAtIndex(obj, pos, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+  ! Internal variables
+  CHARACTER( LEN = * ), PARAMETER :: myName = "T_SetSingleAtIndex(obj, pos, val)"
+
+  IF( pos .GT. obj%psize ) THEN
+    CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+      & "While setting the value pos is greater than the length of list")
+  ELSE
+    IF( ASSOCIATED( obj%storage(pos)%ptr ) ) THEN
+      DEALLOCATE( obj%storage(pos)%ptr )
+    END IF
+    obj%storage(pos)%ptr => val%ptr
+  END IF
+  CALL obj%FixValuePtrs()
+END SUBROUTINE T_SetSingleAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetSingle(obj, pos, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+  CALL obj%Set(pos%index, val)
+END SUBROUTINE T_SetSingle
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetFillAtIndex(obj, pos, n, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  INTEGER( I4B ), INTENT( IN ) :: n
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+
+  ! Internal variables
+  INTEGER( I4B ) :: ii, pos0
+  CHARACTER( LEN = * ), PARAMETER :: myName = "T_InsertFillAtIndex"
+
+  IF( n .LE. 0 ) Return
+
+  DO ii = 1, n
+    pos0 = pos-1+ii
+    IF( pos0 .GT. obj%psize ) THEN
+      CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+        & "While setting the value pos0 is greater than the length of list")
+    ELSE
+      IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
+        DEALLOCATE( obj%storage(pos0)%ptr )
+      END IF
+      obj%storage(pos0)%ptr => val%ptr
+    END IF
+  END DO
+  CALL obj%FixValuePtrs()
+END SUBROUTINE T_SetFillAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetFill(obj, pos, n, val)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  INTEGER( I4B ), INTENT( IN ) :: n
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
+  CALL obj%Set(pos%index, n, val)
+END SUBROUTINE T_SetFill
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetArrayAtIndex( obj, pos, array )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) ::  array( : )
+
+  ! Internal varaiables
+  INTEGER( I4B ) :: ii, pos0, n
+  CHARACTER( LEN = * ), PARAMETER :: myName = "T_InsertFillAtIndex"
+
+  n = SIZE( array )
+  IF( n .EQ. 0 ) RETURN
+  DO ii = 1, n
+    pos0 = pos-1+ii
+    IF( pos0 .GT. obj%psize ) THEN
+      CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+        & "While setting the value pos0 is greater than the length of list")
+    ELSE
+      IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
+        DEALLOCATE( obj%storage(pos0)%ptr )
+      END IF
+      obj%storage(pos0)%ptr => array(ii)%ptr
+    END IF
+  END DO
+  CALL obj%FixValuePtrs()
+END SUBROUTINE T_SetArrayAtIndex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE T_InsertArray( obj, pos, array )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: array(:)
   CALL obj%Insert( pos%index, array )
 END SUBROUTINE T_InsertArray
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetArray( obj, pos, array )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: array(:)
+  CALL obj%Set( pos%index, array )
+END SUBROUTINE T_SetArray
 
 !----------------------------------------------------------------------------
 !
@@ -577,13 +730,25 @@ END SUBROUTINE T_InsertIteratorPair
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE T_InsertIteratorPairAtIndex( obj, pos, first, last )
+SUBROUTINE T_SetIteratorPair( obj, pos, first, last )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
+  CALL obj%Set( pos%index, first%dynArray%data(first%index:last%index-1) )
+END SUBROUTINE T_SetIteratorPair
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_SetIteratorPairAtIndex( obj, pos, first, last )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pos
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
-  CALL obj%Insert( pos, first%dynArray%data(first%index:last%index-1) )
-END SUBROUTINE T_InsertIteratorPairAtIndex
+  CALL obj%Set( pos, first%dynArray%data(first%index:last%index-1) )
+END SUBROUTINE T_SetIteratorPairAtIndex
 
 !----------------------------------------------------------------------------
 !
@@ -596,11 +761,18 @@ SUBROUTINE T_EraseIndexPair( obj, first, last, freeMem )
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
   ! Internal variable
   INTEGER( I4B ) :: i, numerased
+  FTL_TEMPLATE_TYPE_WRAP :: dummy
 
   IF( last .GT. first ) THEN
     numerased = last - first
     DO i = first, obj%psize - numerased
+      IF( ASSOCIATED( obj%storage( i )%ptr ) ) THEN
+        dummy%ptr => obj%storage( i )%ptr
+      ELSE
+        dummy%ptr => NULL()
+      END IF
       obj%storage( i )%ptr => obj%storage( i+numerased )%ptr
+      obj%storage( i+numerased )%ptr => dummy%ptr
       CALL TriggerFinalizer( obj%storage(i+numerased), freeMem )
     END DO
     obj%psize = obj%psize - numerased
@@ -667,7 +839,7 @@ SUBROUTINE T_FixValuePtrs(obj)
   ELSE
     NULLIFY(obj%data)
   ENDIF
-  IF( obj%psize == 0 ) THEN
+  IF( obj%psize .EQ. 0 ) THEN
     NULLIFY(obj%front, obj%back)
   ELSE
     obj%front => obj%storage(1)

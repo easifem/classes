@@ -1,20 +1,16 @@
 {
 	"folders": [
 		{
+			"name": "MSH",
+			"path": "../src/modules/MSH"
+		},
+		{
+			"name": "MSH",
+			"path": "../src/submodules/MSH"
+		},
+		{
 			"name": "Domain",
 			"path": "../src/modules/Domain"
-		},
-		{
-			"name": "Mesh",
-			"path": "../src/modules/Mesh"
-		},
-		{
-			"name": "MeshData",
-			"path": "../src/modules/MeshData"
-		},
-		{
-			"name": "MeshConnectivity",
-			"path": "../src/modules/MeshConnectivity"
 		},
 		{
 			"name": "Domain",
@@ -22,7 +18,26 @@
 		},
 		{
 			"name": "Mesh",
+			"path": "../src/modules/Mesh"
+		},
+		{
+			"name": "Mesh",
 			"path": "../src/submodules/Mesh"
+		},
+		{
+			"name": "testMesh",
+			"path": "../tests/testMesh"
+		},
+		{
+			"name": "testMSH",
+			"path": "../tests/testMSH"
+		},
+		{
+			"name": "testMeshPointerVector",
+			"path": "../tests/testMeshPointerVector"
+		},
+		{
+			"path": "../tests/testDomain"
 		}
 	]
 }

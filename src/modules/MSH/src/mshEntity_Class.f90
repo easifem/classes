@@ -46,11 +46,11 @@ TYPE :: mshEntity_
     !! element type in meshing
   INTEGER( I4B ), ALLOCATABLE :: physicalTag( : )
     !! Physical tags associated
-  INTEGER( I4B ), ALLOCATABLE :: nodeNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: intNodeNumber( : )
     !! node numbers in mesh
   INTEGER( I4B ), ALLOCATABLE :: elemNumber( : )
     !! element numbers in mesh
-  INTEGER( I4B ), ALLOCATABLE :: nptrs( :, : )
+  INTEGER( I4B ), ALLOCATABLE :: connectivity( :, : )
     !! connectivity
   INTEGER( I4B ), ALLOCATABLE :: boundingEntity( : )
     !! tag of bounding entity
@@ -95,15 +95,17 @@ TYPE :: mshEntity_
       !! Returns the total bounding tags
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalElements => ent_getTotalElements
       !! Returns the total elements
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalIntNodes => ent_getTotalIntNodes
+      !! Returns the total Nodes
     PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalTag => ent_getPhysicalTag
       !! Returns the physical tags
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setNodeNumber => ent_setNodeNumber
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setIntNodeNumber => ent_setIntNodeNumber
       !! Set Node number
     PROCEDURE, PUBLIC, PASS( Obj ) :: setNodeCoord => ent_setNodeCoord
       !! Set Node coord
     PROCEDURE, PUBLIC, PASS( Obj ) :: setElemType => ent_setElemType
     PROCEDURE, PUBLIC, PASS( Obj ) :: setElemNumber => ent_setElemNumber
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setNptrs => ent_setNptrs
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setConnectivity => ent_setConnectivity
     PROCEDURE, PUBLIC, PASS( Obj ) :: getUid => ent_getUid
     PROCEDURE, PUBLIC, PASS( Obj ) :: getXiDim => ent_getXiDim
     PROCEDURE, PUBLIC, PASS( Obj ) :: getElemType => ent_getElemType
@@ -117,11 +119,11 @@ TYPE :: mshEntity_
     PROCEDURE, PUBLIC, PASS( Obj ) :: getY => ent_getY
     PROCEDURE, PUBLIC, PASS( Obj ) :: getZ => ent_getZ
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNodeCoord => ent_getNodeCoord
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNodeNumber => ent_getNodeNumber
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getIntNodeNumber => ent_getIntNodeNumber
     PROCEDURE, PUBLIC, PASS( Obj ) :: getElemNumber => ent_getElemNumber
     PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundingEntity => ent_getBoundingEntity
-    PROCEDURE, PASS( Obj ) :: ent_getNptrs_a, ent_getNptrs_b
-    GENERIC, PUBLIC :: getNptrs => ent_getNptrs_a, ent_getNptrs_b
+    PROCEDURE, PASS( Obj ) :: ent_getConnectivity_a, ent_getConnectivity_b
+    GENERIC, PUBLIC :: getConnectivity => ent_getConnectivity_a, ent_getConnectivity_b
 END TYPE mshEntity_
 
 !----------------------------------------------------------------------------
@@ -134,9 +136,9 @@ TYPE( mshEntity_ ), PUBLIC, PARAMETER :: &
   & TypeMshEntity = &
   & mshEntity_( &
     & PhysicalTag = NULL( ), &
-    & NodeNumber = NULL( ), &
+    & IntNodeNumber = NULL( ), &
     & ElemNumber = NULL( ), &
-    & Nptrs = NULL( ), &
+    & Connectivity = NULL( ), &
     & NodeCoord = NULL( ), &
     & BoundingEntity = NULL( ) )
 
@@ -389,6 +391,21 @@ END FUNCTION ent_getTotalElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                    getTotalNodes
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the total number of nodes in entity
+
+INTERFACE
+MODULE PURE FUNCTION ent_getTotalIntNodes( obj ) RESULT( ans )
+  CLASS( mshEntity_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION ent_getTotalIntNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           getPhysicalTag
 !----------------------------------------------------------------------------
 
@@ -400,14 +417,14 @@ END FUNCTION ent_getPhysicalTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            setNodeNumber
+!                                                            setIntNodeNumber
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE ent_setNodeNumber( obj, NodeNumber )
+MODULE PURE SUBROUTINE ent_setIntNodeNumber( obj, IntNodeNumber )
   CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: NodeNumber( : )
-END SUBROUTINE ent_setNodeNumber
+  INTEGER( I4B ), INTENT( IN ) :: IntNodeNumber( : )
+END SUBROUTINE ent_setIntNodeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -444,14 +461,14 @@ END SUBROUTINE ent_setElemNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 setNptrs
+!                                                            setConnectivity
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE ent_setNptrs( obj, Nptrs )
+MODULE PURE SUBROUTINE ent_setConnectivity( obj, Connectivity )
   CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: Nptrs( :, : )
-END SUBROUTINE ent_setNptrs
+  INTEGER( I4B ), INTENT( IN ) :: Connectivity( :, : )
+END SUBROUTINE ent_setConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -598,14 +615,14 @@ END FUNCTION ent_getNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              getNodeNumber
+!                                                          getIntNodeNumber
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION ent_getNodeNumber( obj ) RESULT( Ans )
+MODULE PURE FUNCTION ent_getIntNodeNumber( obj ) RESULT( Ans )
   CLASS( mshEntity_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), ALLOCATABLE :: Ans( : )
-END FUNCTION ent_getNodeNumber
+END FUNCTION ent_getIntNodeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -631,26 +648,26 @@ END FUNCTION ent_getBoundingEntity
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getNptrs
+!                                                            getConnectivity
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION ent_getNptrs_a( obj, elemNum ) RESULT( Ans )
+MODULE PURE FUNCTION ent_getConnectivity_a( obj, elemNum ) RESULT( Ans )
   CLASS( mshEntity_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: elemNum
   INTEGER( I4B ), ALLOCATABLE :: Ans( : )
-END FUNCTION ent_getNptrs_a
+END FUNCTION ent_getConnectivity_a
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getNptrs
+!                                                            getConnectivity
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION ent_getNptrs_b( obj ) RESULT( Ans )
+MODULE PURE FUNCTION ent_getConnectivity_b( obj ) RESULT( Ans )
   CLASS( mshEntity_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), ALLOCATABLE :: Ans( :, : )
-END FUNCTION ent_getNptrs_b
+END FUNCTION ent_getConnectivity_b
 END INTERFACE
 
 !----------------------------------------------------------------------------

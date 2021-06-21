@@ -13,7 +13,7 @@
 			"path": "../src/submodules/MSH"
 		},
 		{
-			"path": "../tests/MSH"
+			"path": "../tests/testMSH"
 		}
 	]
 }

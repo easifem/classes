@@ -15,12 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define FTL_TEMPLATE_TYPE ElementPointer_
+#define FTL_TEMPLATE_TYPE MeshPointer_
 #define FTL_TEMPLATE_TYPE_IS_DERIVED
-#define FTL_TEMPLATE_TYPE_NAME Element
+#define FTL_TEMPLATE_TYPE_NAME Mesh
 #define FTL_INSTANTIATE_TEMPLATE
-! #define FTL_TEMPLATE_TYPE_MODULE ElementFactory
+! #define FTL_TEMPLATE_TYPE_MODULE Mesh_Class
 
-MODULE ElementPointerVector_Class
-USE ElementFactory
+MODULE MeshPointerVector_Class
+USE Mesh_Class
 #include "../../ftlMacros/ftlPointerVector.inc"

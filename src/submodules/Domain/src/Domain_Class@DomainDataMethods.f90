@@ -15,218 +15,25 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( mshPhysicalNames_Class ) Methods
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 June 2021
+! summary: This submodule contains methods for domain object
+
+SUBMODULE( Domain_Class ) DomainDataMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                      Final
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_final
-  CALL obj%DeallocateData()
-END PROCEDURE pn_final
-
-!----------------------------------------------------------------------------
-!                                                             DeallocateData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_deallocatedata
-  IF( ALLOCATED( obj%NSD ) ) DEALLOCATE( obj%NSD )
-  IF( ALLOCATED( obj%Tag ) ) DEALLOCATE( obj%Tag )
-  IF( ALLOCATED( obj%numElements ) ) DEALLOCATE( obj%numElements )
-  IF( ALLOCATED( obj%numNodes ) ) DEALLOCATE( obj%numNodes )
-  IF( ALLOCATED( obj%Entities ) ) DEALLOCATE( obj%Entities )
-  IF( ALLOCATED( obj%PhysicalName ) ) DEALLOCATE( obj%PhysicalName )
-END PROCEDURE pn_deallocatedata
-
-!----------------------------------------------------------------------------
-!                                                          GotoTag
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_GotoTag
-  ! Define internal variables
-  INTEGER( I4B ) :: IOSTAT, Reopen, unitNo
-  CHARACTER( LEN = 100 ) :: Dummy
-  CHARACTER( LEN = * ), PARAMETER :: myName = "pn_GotoTag"
-  !
-  ! Find $meshFormat
-
-  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
-      & 'mshFile is either not opened or does not have read access!')
-    error = -1
-  ELSE
-    Reopen = 0
-    error = 0
-    DO
-      unitNo = mshFile%getUnitNo()
-      READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( mshFile%isEOF() ) THEN
-        CALL mshFile%Rewind()
-        Reopen = Reopen + 1
-      END IF
-      IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
-        & 'Could not find $PhysicalNames!')
-        error = -2
-        EXIT
-      ELSE IF( TRIM( Dummy ) .EQ. '$PhysicalNames' ) THEN
-        EXIT
-      END IF
-    END DO
-  END IF
-END PROCEDURE pn_GotoTag
-
-!----------------------------------------------------------------------------
-!                                                               ReadFromFile
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_Read
-  ! Define internal variables
-  INTEGER( I4B ) :: IOSTAT, tp, k, unitNo
-  CHARACTER( LEN = maxStrLen ) :: dummystr
-  CHARACTER( LEN = * ), PARAMETER :: myName = "pn_Read"
-
-  ! Go to $PhysicalNames
-  CALL obj%GotoTag( mshFile, error )
-  !
-  IF( error .EQ. 0 ) THEN
-    CALL Obj%DeallocateData()
-    unitNo = mshFile%getUnitNo()
-    READ( UnitNo, * ) tp
-
-    ALLOCATE( &
-      & obj%numElements( tp ), &
-      & obj%numNodes( tp ), &
-      & obj%NSD( tp ), &
-      & obj%Tag( tp ), &
-      & obj%PhysicalName( tp ), &
-      & obj%Entities( tp ) )
-
-    obj%numElements = 0
-    obj%numNodes = 0
-
-    DO k = 1, tp
-      READ( UnitNo, *, IOSTAT = IOSTAT ) obj%NSD( k ), &
-        & obj%Tag( k ), dummystr
-      obj%PhysicalName( k ) = String( dummystr )
-      dummystr = ""
-    END DO
-  ELSE
-    CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not read PhysicalNames from mshFile !')
-  END IF
-END PROCEDURE pn_Read
-
-!----------------------------------------------------------------------------
-!                                                               WriteToFile
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_Write
-  ! Define internal variables
-  INTEGER( I4B ) :: k, tp
-  TYPE( TxtFile_ ) :: outFile
-  TYPE( String ) :: path, filename, ext
-  INTEGER( I4B ) :: unitNo
-
-  CALL mshFile%getFileParts(path, filename, ext)
-
-  CALL outFile%initiate(file = path // filename // "_PhysicalNames" // ext, action = "WRITE" )
-  CALL outFile%open()
-  unitNo = outFile%getUnitNo()
-  tp = SIZE( obj%NSD )
-
-  IF( PRESENT( StartStr ) ) THEN
-    WRITE( UnitNo, "(A)" ) TRIM( StartStr )
-  END IF
-
-  WRITE( UnitNo, "(I6)") tp
-
-  DO k = 1, tp
-    WRITE( UnitNo, "(A)" ) &
-      & TRIM(str(obj%NSD( k ), .TRUE. )) &
-      & // " " &
-      & // TRIM(str(obj%Tag( k ), .TRUE.)) &
-      & // ' "' &
-      & // TRIM(obj%PhysicalName( k )) // '"'
-  END DO
-
-  IF( PRESENT( EndStr )) THEN
-    WRITE( UnitNo, "(A)" ) TRIM( EndStr )
-  END IF
-  CALL outFile%close()
-  CALL outFile%DeallocateData()
-END PROCEDURE pn_Write
-
-!----------------------------------------------------------------------------
-!                                                                    Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_Display
-  ! Define internal variables
-  INTEGER( I4B ) :: I, tSize, j
-  TYPE( String ) :: Str1, Str2
-
-  ! set unit number
-  IF( PRESENT( UnitNo ) ) THEN
-    I = UnitNo
-  ELSE
-    I = stdout
-  END IF
-  ! print message
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( I, "(A)" ) TRIM( Msg )
-  END IF
-  ! get total size info
-  tSize = SIZE( obj%NSD )
-  IF( tSize .NE. 0 ) THEN
-    ! write header in markdown
-    CALL BlankLines( UnitNo = I, NOL = 1 )
-    WRITE( I, "(A)" ) "| Sr.No. |  NSD  | Physical Tag | Physical Name | &
-      & NumElem | NumNodes |"
-    WRITE( I, "(A)" ) "| :---   | :---: | :---:        | :---:          | &
-      & :---: | ---: |"
-    ! Write entries one by one
-    DO j = 1, tSize
-      Str2 = Str1%Join( [ &
-        & String( "| "// TRIM( Str( j, .true. ) ) ), &
-        & String( Str( obj%NSD( j ), .true. ) ), &
-        & String( Str( obj%Tag( j ), .true. ) ), &
-        & TRIM( obj%PhysicalName( j ) ), &
-        & String( Str( obj%numElements( j ), .true. ) ), &
-        & String( Str( obj%numNodes( j ), .true. ) ) ], " | " )
-      WRITE( I, "(A)") TRIM( Str2 ) // " | "
-    END DO
-    !
-    IF( ALLOCATED( obj%Entities ) ) THEN
-      CALL BlankLines( UnitNo = I, NOL = 1 )
-      WRITE( I, "(A)" ) "Physical Tag to Entities Tag"
-      WRITE( I, "(A)") "| Physical Tag | PhysicalName | Entities Tag |"
-      WRITE( I, "(A)") "| :--- | :---: | ---: |"
-      DO j = 1, SIZE( obj%Entities )
-        tSize = SIZE( obj%Entities( j ) )
-        WRITE( I, "( A, I4, A, " // TRIM( Str( tSize, .false. ) ) &
-          & // "(I4,',')"//", A )" ) &
-          & "| ", obj%Tag( j ), &
-          & "| "//TRIM( obj%PhysicalName( j ) )//" | ", &
-          & obj%Entities( j )%Val, " |"
-      END DO
-    END IF
-  END IF
-END PROCEDURE pn_Display
-
-!----------------------------------------------------------------------------
 !                                                                       Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getTotalPhysicalEntities
+MODULE PROCEDURE Domain_getTotalPhysicalEntities
   INTEGER( I4B ) :: ii
 
   IF( .NOT. PRESENT( dim ) ) THEN
-    IF( ALLOCATED( obj%NSD ) ) THEN
-      ans = SIZE( obj%NSD )
+    IF( ALLOCATED( obj%NSDVec ) ) THEN
+      ans = SIZE( obj%NSDVec )
     ELSE
       ans = 0
     END IF
@@ -245,15 +52,15 @@ MODULE PROCEDURE pn_getTotalPhysicalEntities
       END SELECT
     END DO
   END IF
-END PROCEDURE pn_getTotalPhysicalEntities
+END PROCEDURE Domain_getTotalPhysicalEntities
 
 !----------------------------------------------------------------------------
 !                                                    getTotalPhysicalPoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getTotalPhysicalPoints
-  IF( ALLOCATED( obj%NSD ) ) THEN
-    ans = COUNT( obj%NSD .EQ. 0 )
+  IF( ALLOCATED( obj%NSDVec ) ) THEN
+    ans = COUNT( obj%NSDVec .EQ. 0 )
   ELSE
     ans = 0
   END IF
@@ -264,8 +71,8 @@ END PROCEDURE getTotalPhysicalPoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getTotalPhysicalCurves
-  IF( ALLOCATED( obj%NSD ) ) THEN
-    ans = COUNT( obj%NSD .EQ. 1 )
+  IF( ALLOCATED( obj%NSDVec ) ) THEN
+    ans = COUNT( obj%NSDVec .EQ. 1 )
   ELSE
     ans = 0
   END IF
@@ -276,8 +83,8 @@ END PROCEDURE getTotalPhysicalCurves
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getTotalPhysicalSurfaces
-  IF( ALLOCATED( obj%NSD ) ) THEN
-    ans = COUNT( obj%NSD .EQ. 2 )
+  IF( ALLOCATED( obj%NSDVec ) ) THEN
+    ans = COUNT( obj%NSDVec .EQ. 2 )
   ELSE
     ans = 0
   END IF
@@ -288,8 +95,8 @@ END PROCEDURE getTotalPhysicalSurfaces
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getTotalPhysicalVolumes
-  IF( ALLOCATED( obj%NSD ) ) THEN
-    ans = COUNT( obj%NSD .EQ. 3 )
+  IF( ALLOCATED( obj%NSDVec ) ) THEN
+    ans = COUNT( obj%NSDVec .EQ. 3 )
   ELSE
     ans = 0
   END IF
@@ -299,13 +106,13 @@ END PROCEDURE getTotalPhysicalVolumes
 !                                                                 getIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getIndex_a
+MODULE PROCEDURE Domain_getIndex_a
   ! Define internal variables
   INTEGER( I4B ) :: j
 
   ans = 0
-  IF( ALLOCATED( obj%NSD ) ) THEN
-    DO j = 1, SIZE( obj%NSD )
+  IF( ALLOCATED( obj%NSDVec ) ) THEN
+    DO j = 1, SIZE( obj%NSDVec )
       IF( obj%PhysicalName( j ) .EQ. Name ) THEN
         ans = j
         EXIT
@@ -313,44 +120,45 @@ MODULE PROCEDURE pn_getIndex_a
     END DO
   END IF
 
-END PROCEDURE pn_getIndex_a
+END PROCEDURE Domain_getIndex_a
 
 !----------------------------------------------------------------------------
 !                                                                 getIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getIndex_b
+MODULE PROCEDURE Domain_getIndex_b
   ! Define internal variables
   INTEGER( I4B ) :: i
 
   ans = 0
-  IF( ALLOCATED( obj%NSD ) ) THEN
+  IF( ALLOCATED( obj%NSDVec ) ) THEN
     DO i = 1, SIZE( Name )
-      ans( i ) = pn_getIndex_a( obj, Name(i) )
+      ans( i ) = Domain_getIndex_a( obj, Name(i) )
     END DO
   END IF
-END PROCEDURE pn_getIndex_b
+END PROCEDURE Domain_getIndex_b
 
 !----------------------------------------------------------------------------
 !                                                                 getIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getIndex_c
+MODULE PROCEDURE Domain_getIndex_c
   ! Define internal variables
   INTEGER( I4B ) :: k
+
   ans = 0
-  DO k = 1, SIZE( obj%NSD )
-    IF( obj%NSD( k ) .EQ. dim .AND. obj%Tag( k ) .EQ. Tag ) THEN
+  DO k = 1, SIZE( obj%NSDVec )
+    IF( obj%NSDVec( k ) .EQ. dim .AND. obj%Tag( k ) .EQ. Tag ) THEN
       ans = k
     END IF
   END DO
-END PROCEDURE pn_getIndex_c
+END PROCEDURE Domain_getIndex_c
 
 !----------------------------------------------------------------------------
 !                                                                 getIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getIndex_d
+MODULE PROCEDURE Domain_getIndex_d
   ! Define internal variables
   INTEGER( I4B ) :: tPoints, k, i
 
@@ -359,8 +167,8 @@ MODULE PROCEDURE pn_getIndex_d
   IF( tPoints .NE. 0 ) THEN
     ALLOCATE( ans( tPoints ) )
     i = 0
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. dim ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. dim ) THEN
         i = i + 1
         ans( i ) = k
       END IF
@@ -368,25 +176,25 @@ MODULE PROCEDURE pn_getIndex_d
   ELSE
     ALLOCATE( ans(0) )
   END IF
-END PROCEDURE pn_getIndex_d
+END PROCEDURE Domain_getIndex_d
 
 !----------------------------------------------------------------------------
 !                                                                 getIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getIndex_e
+MODULE PROCEDURE Domain_getIndex_e
   INTEGER( I4B ) :: i
   ans = 0_I4B
   DO i = 1, SIZE( tag )
-    ans( i ) = pn_getIndex_c( obj=obj, dim = dim, tag=tag(i) )
+    ans( i ) = Domain_getIndex_c( obj=obj, dim = dim, tag=tag(i) )
   END DO
-END PROCEDURE pn_getIndex_e
+END PROCEDURE Domain_getIndex_e
 
 !----------------------------------------------------------------------------
 !                                                          getPhysicalNames
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getPhysicalNames
+MODULE PROCEDURE Domain_getPhysicalNames
   INTEGER( I4B ) :: ii
   IF( PRESENT( dim ) ) THEN
     SELECT CASE( dim )
@@ -405,7 +213,7 @@ MODULE PROCEDURE pn_getPhysicalNames
       ans( ii ) = TRIM( obj%physicalName( ii ) )
     END DO
   END IF
-END PROCEDURE pn_getPhysicalNames
+END PROCEDURE Domain_getPhysicalNames
 
 !----------------------------------------------------------------------------
 !                                                          PhysicalPointNames
@@ -419,8 +227,8 @@ MODULE PROCEDURE getPhysicalPointNames
   ALLOCATE( ans( tPoints ) )
   IF( tPoints .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. 0 ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. 0 ) THEN
         i = i + 1
         ans( i ) = TRIM(obj%PhysicalName( k ))
       END IF
@@ -440,8 +248,8 @@ MODULE PROCEDURE getPhysicalCurveNames
   ALLOCATE( ans( tLines ) )
   IF( tLines .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. 1 ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. 1 ) THEN
         i = i + 1
         ans( i ) = TRIM(obj%PhysicalName( k ))
       END IF
@@ -461,8 +269,8 @@ MODULE PROCEDURE getPhysicalSurfaceNames
   ALLOCATE( ans( tSurfaces ) )
   IF( tSurfaces .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. 2 ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. 2 ) THEN
         i = i + 1
         ans( i ) = TRIM(obj%PhysicalName( k ))
       END IF
@@ -483,8 +291,8 @@ MODULE PROCEDURE getPhysicalVolumeNames
 
   IF( tVolumes .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. 3 ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. 3 ) THEN
         i = i + 1
         ans( i ) = TRIM(obj%PhysicalName( k ))
       END IF
@@ -496,7 +304,7 @@ END PROCEDURE getPhysicalVolumeNames
 !                                                            getPhysicalTags
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getPhysicalTags
+MODULE PROCEDURE Domain_getPhysicalTags
   IF( PRESENT( dim ) ) THEN
     SELECT CASE( dim )
     CASE( 0 )
@@ -511,7 +319,7 @@ MODULE PROCEDURE pn_getPhysicalTags
   ELSE
     ans = obj%Tag
   END IF
-END PROCEDURE pn_getPhysicalTags
+END PROCEDURE Domain_getPhysicalTags
 
 !----------------------------------------------------------------------------
 !                                                      getPhysicalPointTags
@@ -527,8 +335,8 @@ MODULE PROCEDURE getPhysicalPointTags
 
   IF( tSize .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. dim ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. dim ) THEN
         i = i + 1
         ans( i ) = obj%Tag( k )
       END IF
@@ -550,8 +358,8 @@ MODULE PROCEDURE getPhysicalCurveTags
 
   IF( tSize .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. dim ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. dim ) THEN
         i = i + 1
         ans( i ) = obj%Tag( k )
       END IF
@@ -573,8 +381,8 @@ MODULE PROCEDURE getPhysicalSurfaceTags
 
   IF( tSize .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. dim ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. dim ) THEN
         i = i + 1
         ans( i ) = obj%Tag( k )
       END IF
@@ -596,8 +404,8 @@ MODULE PROCEDURE getPhysicalVolumeTags
 
   IF( tSize .NE. 0 ) THEN
     i = 0;
-    DO k = 1, SIZE( obj%NSD )
-      IF( obj%NSD( k ) .EQ. dim ) THEN
+    DO k = 1, SIZE( obj%NSDVec )
+      IF( obj%NSDVec( k ) .EQ. dim ) THEN
         i = i + 1
         ans( i ) = obj%Tag( k )
       END IF
@@ -609,10 +417,10 @@ END PROCEDURE getPhysicalVolumeTags
 !                                                                 WhoAmI
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_WhoAmI
+MODULE PROCEDURE Domain_WhoAmI
   ! Define internal variables
   INTEGER( I4B ) :: NSD
-  NSD = obj%NSD( I )
+  NSD = obj%NSDVec( I )
   SELECT CASE( NSD )
   CASE( 0 )
     ans = "PhysicalPoint"
@@ -623,99 +431,81 @@ MODULE PROCEDURE pn_WhoAmI
   CASE( 3 )
     ans = "PhysicalVolume"
   END SELECT
-END PROCEDURE pn_WhoAmI
-
-!----------------------------------------------------------------------------
-!                                                            OutputFileName
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE pn_OutputFileName
-  TYPE( String ) :: path, filename, ext
-
-  CALL mshFile%getFileParts( path, filename, ext )
-  ans = &
-    &    TRIM( path ) &
-    & // TRIM( filename ) &
-    & // "_" &
-    & // TRIM( obj%WhoAmI( indx ) ) &
-    & // "_" &
-    & // TRIM( obj%PhysicalName( indx ) ) &
-    & // TRIM( ext )
-END PROCEDURE pn_OutputFileName
+END PROCEDURE Domain_WhoAmI
 
 !----------------------------------------------------------------------------
 !                                                            AppendEntities
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_AppendEntities
+MODULE PROCEDURE Domain_AppendEntities
   CALL APPEND( obj%Entities( indx ), EntityTag )
-END PROCEDURE pn_AppendEntities
+END PROCEDURE Domain_AppendEntities
 
 !----------------------------------------------------------------------------
 !                                                           IncNumElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_IncNumElements
+MODULE PROCEDURE Domain_IncNumElements
   INTEGER( I4B ) :: incr0
 
   incr0 = input( option = incr, default = 1 )
   obj%numElements( indx ) = obj%numElements( indx ) + incr0
-END PROCEDURE pn_IncNumElements
+END PROCEDURE Domain_IncNumElements
 
 !----------------------------------------------------------------------------
 !                                                               getEntities
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getEntities
+MODULE PROCEDURE Domain_getEntities
   Ans = ArrayValues( obj%Entities( indx ), &
     & TypeIntI4B )
-END PROCEDURE pn_getEntities
+END PROCEDURE Domain_getEntities
 
 !----------------------------------------------------------------------------
 !                                                           IncNumNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_IncNumNodes
+MODULE PROCEDURE Domain_IncNumNodes
   INTEGER( I4B ) :: incr0
 
   incr0 = input( option = incr, default = 1 )
   obj%numNodes( indx ) = obj%numNodes( indx ) + incr0
-END PROCEDURE pn_IncNumNodes
+END PROCEDURE Domain_IncNumNodes
 
 !----------------------------------------------------------------------------
 !                                                                 getNSD
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getNSD
-  ans = obj%NSD
-END PROCEDURE pn_getNSD
+MODULE PROCEDURE Domain_getNSD
+  ans = obj%NSDVec
+END PROCEDURE Domain_getNSD
 
 !----------------------------------------------------------------------------
 !                                                            getNumElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getNumElements
+MODULE PROCEDURE Domain_getNumElements
   ans = obj%numElements
-END PROCEDURE pn_getNumElements
+END PROCEDURE Domain_getNumElements
 
 !----------------------------------------------------------------------------
 !                                                               getNumNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_getNumNodes
+MODULE PROCEDURE Domain_getNumNodes
   ans = obj%numNodes
-END PROCEDURE pn_getNumNodes
+END PROCEDURE Domain_getNumNodes
 
 !----------------------------------------------------------------------------
 !                                                               setNumNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_setNumNodes
+MODULE PROCEDURE Domain_setNumNodes
   obj%numNodes( indx ) = numNode
-END PROCEDURE pn_setNumNodes
+END PROCEDURE Domain_setNumNodes
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE Methods
+END SUBMODULE DomainDataMethods

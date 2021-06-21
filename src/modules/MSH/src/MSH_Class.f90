@@ -31,6 +31,9 @@ USE mshElements_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSH_CLASS"
+TYPE( ExceptionHandler_ ) :: eMSH
+INTEGER( I4B ), PARAMETER :: eUnitNo = 1002
+CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MSH_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                                       MSH_
@@ -595,7 +598,7 @@ END INTERFACE
 ! END INTERFACE
 
 ! !----------------------------------------------------------------------------
-! !                                                getElements@ElementsMethods
+! !                                             getElements@ElementsMethods
 ! !----------------------------------------------------------------------------
 
 ! INTERFACE
@@ -634,7 +637,7 @@ END INTERFACE
 ! END INTERFACE
 
 ! !----------------------------------------------------------------------------
-! !                                                getElements@ElementsMethods
+! !                                              getElements@ElementsMethods
 ! !----------------------------------------------------------------------------
 
 ! INTERFACE
