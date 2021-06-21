@@ -19,7 +19,8 @@
 #define FTL_TEMPLATE_TYPE_IS_DERIVED
 #define FTL_TEMPLATE_TYPE_NAME Mesh
 #define FTL_INSTANTIATE_TEMPLATE
-#define FTL_TEMPLATE_TYPE_MODULE Mesh_Class
+! #define FTL_TEMPLATE_TYPE_MODULE Mesh_Class
 
 MODULE MeshPointerVector_Class
+USE Mesh_Class
 #include "../../ftlMacros/ftlPointerVector.inc"

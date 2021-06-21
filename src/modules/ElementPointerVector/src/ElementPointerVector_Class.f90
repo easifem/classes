@@ -19,7 +19,8 @@
 #define FTL_TEMPLATE_TYPE_IS_DERIVED
 #define FTL_TEMPLATE_TYPE_NAME Element
 #define FTL_INSTANTIATE_TEMPLATE
-#define FTL_TEMPLATE_TYPE_MODULE ElementFactory
+! #define FTL_TEMPLATE_TYPE_MODULE ElementFactory
 
 MODULE ElementPointerVector_Class
+USE ElementFactory
 #include "../../ftlMacros/ftlPointerVector.inc"

@@ -468,7 +468,7 @@ SUBROUTINE T_Pushback( obj, val )
     CALL obj%FixValuePtrs()
   ELSE
     CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
-        "val%ptr should be associated.")
+      & "val%ptr should be associated.")
   END IF
 END SUBROUTINE T_Pushback
 

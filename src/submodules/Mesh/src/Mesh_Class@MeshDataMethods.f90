@@ -21,71 +21,16 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Final
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshData_Final
-  CALL obj%DeallocateData()
-END PROCEDURE MeshData_Final
-
-!----------------------------------------------------------------------------
-!                                                            DeallocateData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshData_DeallocateData
-  obj%uid = 0
-  obj%xidim = 0
-  obj%elemType = 0
-  obj%nsd = 0
-  obj%maxNptrs = 0
-  obj%minNptrs = 0
-  obj%maxElemNum = 0
-  obj%minElemNum = 0
-  obj%tNodes = 0
-  obj%tIntNodes = 0
-  obj%minX = 0.0_DFP
-  obj%maxX = 0.0_DFP
-  obj%minY = 0.0_DFP
-  obj%maxY = 0.0_DFP
-  obj%minZ = 0.0_DFP
-  obj%maxZ = 0.0_DFP
-  obj%X=0.0_DFP
-  obj%Y=0.0_DFP
-  obj%Z=0.0_DFP
-  obj%isInitiated = .FALSE.
-  IF( ALLOCATED( obj%nodeCoord ) ) DEALLOCATE( obj%nodeCoord )
-  IF( ALLOCATED( obj%nodeVelocity ) ) DEALLOCATE( obj%nodeVelocity )
-  IF( ALLOCATED( obj%nodeAcc ) ) DEALLOCATE( obj%nodeAcc )
-  IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-  IF( ALLOCATED( obj%elemNumber ) ) DEALLOCATE( obj%elemNumber )
-  IF( ALLOCATED( obj%local_elemNumber ) ) DEALLOCATE( obj%local_elemNumber )
-  IF( ALLOCATED( obj%boundingEntity ) ) DEALLOCATE( obj%boundingEntity )
-  IF( ALLOCATED( obj%connectivity ) ) DEALLOCATE( obj%connectivity )
-  IF( ALLOCATED( obj%LBndyIndex ) ) DEALLOCATE( obj%LBndyIndex )
-  IF( ALLOCATED( obj%Nptrs ) ) DEALLOCATE( obj%Nptrs )
-  IF( ALLOCATED( obj%BoundaryNptrs ) ) DEALLOCATE( obj%BoundaryNptrs )
-  IF( ALLOCATED( obj%InternalNptrs ) ) DEALLOCATE( obj%InternalNptrs )
-  IF( ALLOCATED( obj%Local_Nptrs ) ) DEALLOCATE( obj%Local_Nptrs )
-  obj%refelem => NULL()
-  IF( ALLOCATED( obj%NodeToElem ) ) DEALLOCATE( obj%NodeToElem )
-  IF( ALLOCATED( obj%ElemToElem ) ) DEALLOCATE( obj%ElemToElem )
-  IF( ALLOCATED( obj%NTN ) ) DEALLOCATE( obj%NTN )
-  IF( ALLOCATED( obj%BoundaryData ) ) DEALLOCATE( obj%BoundaryData )
-  IF( ALLOCATED( obj%InternalBndyElemNum ) ) DEALLOCATE( obj%InternalBndyElemNum )
-  IF( ALLOCATED( obj%InternalBoundaryData ) ) DEALLOCATE( obj%InternalBoundaryData )
-END PROCEDURE MeshData_DeallocateData
-
-!----------------------------------------------------------------------------
 !                                                         InitiateLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateLocalNptrs
+MODULE PROCEDURE mesh_InitiateLocalNptrs
   INTEGER( I4B ) :: ii, dummy
-  CHARACTER( LEN = * ), PARAMETER :: myName="meshData_InitiateLocalNptrs"
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_InitiateLocalNptrs"
 
   !> check
   IF( .NOT. ALLOCATED( obj%connectivity ) ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Connectivity matrix is not allocated.")
   END IF
 
@@ -94,7 +39,7 @@ MODULE PROCEDURE meshData_InitiateLocalNptrs
 
   !> check
   IF( obj%maxNptrs .EQ. 0 ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Largest node number (maxNptrs) cannot be zero.")
   END IF
 
@@ -118,25 +63,25 @@ MODULE PROCEDURE meshData_InitiateLocalNptrs
       obj%Local_Nptrs( ii ) = dummy
     END IF
   END DO
-END PROCEDURE meshData_InitiateLocalNptrs
+END PROCEDURE mesh_InitiateLocalNptrs
 
 !----------------------------------------------------------------------------
-!                                          InitiateLocalElementNumbers
+!                                               InitiateLocalElementNumbers
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateLocalElementNumbers
+MODULE PROCEDURE mesh_InitiateLocalElementNumbers
   INTEGER( I4B ) :: ii
-  CHARACTER( LEN = * ), PARAMETER :: myName = "meshData_InitiateLocalElementNumbers"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateLocalElementNumbers"
 
   !> check
   IF( .NOT. obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
 
   !> check
   IF( obj%isLocalElementNumbersInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Local element numbers are already initiated.")
   ELSE
     obj%maxElemNum = MAXVAL(obj%ElemNumber)
@@ -146,27 +91,27 @@ MODULE PROCEDURE meshData_InitiateLocalElementNumbers
       obj%local_elemNumber( obj%elemNumber( ii ) ) = ii
     END DO
   END IF
-END PROCEDURE meshData_InitiateLocalElementNumbers
+END PROCEDURE mesh_InitiateLocalElementNumbers
 
 !----------------------------------------------------------------------------
 !                                                    InitiateNodeToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateNodeToElements
+MODULE PROCEDURE mesh_InitiateNodeToElements
   ! Define internal  variables
   INTEGER( I4B ) :: ii, iNode
   INTEGER( I4B ), ALLOCATABLE :: local_nptrs( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName = "meshData_InitiateNodeToElements"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateNodeToElements"
 
   !> check
   IF( .NOT. obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
 
   !> check
   IF( obj%isNodeToElementsInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Node to Elements mapping is already initiated.")
   ELSE
     ALLOCATE( obj%NodeToElem( obj%tNodes ) )
@@ -179,27 +124,27 @@ MODULE PROCEDURE meshData_InitiateNodeToElements
   END IF
 
   IF( ALLOCATED( local_nptrs ) ) DEALLOCATE( local_nptrs )
-END PROCEDURE meshData_InitiateNodeToElements
+END PROCEDURE mesh_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
 !                                                   InitiateNodeToNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateNodetoNodes
+MODULE PROCEDURE mesh_InitiateNodetoNodes
   ! Define internal  variables
   INTEGER( I4B ) :: iel, iLocalNode, tSize, iGlobalNode
   INTEGER( I4B ), ALLOCATABLE ::  global_nptrs( : ), NearElements( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName = "meshData_InitiateNodetoNodes"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateNodetoNodes"
 
   !> check
   IF( .NOT. obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
 
   !> check
   IF( obj%isNodeToNodesInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Node to Nodes mapping is already initiated.")
   ELSE
     IF( .NOT. obj%isNodeToElementsInitiated() ) &
@@ -223,13 +168,13 @@ MODULE PROCEDURE meshData_InitiateNodetoNodes
 
   IF( ALLOCATED( global_nptrs ) ) DEALLOCATE( global_nptrs )
   IF( ALLOCATED( NearElements ) ) DEALLOCATE( NearElements )
-END PROCEDURE meshData_InitiateNodetoNodes
+END PROCEDURE mesh_InitiateNodetoNodes
 
 !----------------------------------------------------------------------------
 !                                                InitiateElementToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateElementToElements
+MODULE PROCEDURE mesh_InitiateElementToElements
   ! Define internal  variables
   INTEGER( I4B ) :: i, j, r,  iel1, tFace, iFace1, NNS1, pt1, &
     & iel2, iFace2, NNS2
@@ -237,15 +182,15 @@ MODULE PROCEDURE meshData_InitiateElementToElements
     & global_nptrsFace1( : ), n2e1( : ), global_nptrs2( : ), &
     & global_nptrsFace2( : )
   LOGICAL( LGT ) :: Found
-  CHARACTER( LEN = * ), PARAMETER :: myName = "meshData_InitiateElementToElements"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateElementToElements"
 
   IF( .NOT. obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
 
   IF( .NOT. ASSOCIATED( obj%refelem ) ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Unable to identify the Reference element of the mesh, may be it is not set" )
   END IF
 
@@ -257,7 +202,7 @@ MODULE PROCEDURE meshData_InitiateElementToElements
     !! Total number of facet elements
 
   IF( obj%isElementToElementsInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Element to Elements mapping is already initiated." )
   ELSE
 
@@ -319,34 +264,34 @@ MODULE PROCEDURE meshData_InitiateElementToElements
     IF( ALLOCATED( global_nptrsFace2 ) ) DEALLOCATE( global_nptrsFace2 )
     IF( ALLOCATED( n2e1 ) ) DEALLOCATE( n2e1 )
   END IF
-END PROCEDURE meshData_InitiateElementToElements
+END PROCEDURE mesh_InitiateElementToElements
 
 !----------------------------------------------------------------------------
 !                                                InitiateBoundaryData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateBoundaryData
+MODULE PROCEDURE mesh_InitiateBoundaryData
   ! Define internal variables
   INTEGER( I4B ) :: iel, tFace, i, j, k, DummyNptrs( obj%MaxNptrs )
   INTEGER( I4B ), ALLOCATABLE :: local_nptrs( : ), &
     & global_nptrs( : ), ElemToElem( :, : )
-  CHARACTER( LEN = * ), PARAMETER :: myName="meshData_InitiateBoundaryData"
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_InitiateBoundaryData"
 
   !> Check
   IF( .NOT. obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
 
   !> Check
   IF( obj%isBoundaryDataInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Boundary data is already initiated." )
   END IF
 
   !> Check
   IF( obj%isBoundaryNptrsInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Boundary Nptrs are already initiated." )
   END IF
 
@@ -429,7 +374,7 @@ MODULE PROCEDURE meshData_InitiateBoundaryData
     k = 0
     DO iel = 1, obj%tElements
       IF( obj%LBndyIndex( iel ) .EQ. 0 ) CYCLE
-      !! Contiue only if element iel is a boundary element
+      !! Continue only if element iel is a boundary element
 
       k = k + 1
       obj%LBndyIndex( iel ) = k
@@ -452,35 +397,35 @@ MODULE PROCEDURE meshData_InitiateBoundaryData
   IF( ALLOCATED( local_nptrs ) ) DEALLOCATE( local_nptrs )
   IF( ALLOCATED( global_nptrs ) ) DEALLOCATE( global_nptrs )
   IF( ALLOCATED( ElemToElem ) ) DEALLOCATE( ElemToElem )
-END PROCEDURE meshData_InitiateBoundaryData
+END PROCEDURE mesh_InitiateBoundaryData
 
 !----------------------------------------------------------------------------
 !                                                     InitiateInternalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_InitiateInternalNptrs
+MODULE PROCEDURE mesh_InitiateInternalNptrs
   ! Define internal variables
   INTEGER( I4B ) :: i, j
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : ), DummyNptrs( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName = "meshData_InitiateInternalNptrs"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateInternalNptrs"
 
   IF( .NOT. obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
 
   IF( .NOT. obj%isBoundaryDataInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Boundary data is not initiated." )
   END IF
 
   IF( .NOT. obj%isElementToElementsInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Element to Elements mapping not initiated, run obj%InitiateElementToElements()" )
   END IF
 
   IF( obj%isInternalNptrsInitiated() ) THEN
-    CALL obj%e%raiseError(modName//"::"//myName//" - "// &
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
       & "Internal nptrs are already initiated." )
   END IF
 
@@ -509,13 +454,13 @@ MODULE PROCEDURE meshData_InitiateInternalNptrs
 
   IF( ALLOCATED( DummyNptrs ) ) DEALLOCATE( DummyNptrs )
   IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
-END PROCEDURE meshData_InitiateInternalNptrs
+END PROCEDURE mesh_InitiateInternalNptrs
 
 !----------------------------------------------------------------------------
 !                                                      isBoundaryNode
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isBoundaryNode
+MODULE PROCEDURE mesh_isBoundaryNode
   INTEGER( I4B ) :: localnode
   localnode = obj%getLocalNptrs( GlobalNode )
 
@@ -524,25 +469,25 @@ MODULE PROCEDURE meshData_isBoundaryNode
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isBoundaryNode
+END PROCEDURE mesh_isBoundaryNode
 
 !----------------------------------------------------------------------------
 !                                            isLocalElementNumbersInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isLocalElementNumbersInitiated
+MODULE PROCEDURE mesh_isLocalElementNumbersInitiated
   IF( ALLOCATED( obj%local_elemNumber ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isLocalElementNumbersInitiated
+END PROCEDURE mesh_isLocalElementNumbersInitiated
 
 !----------------------------------------------------------------------------
 !                                                           isNodePresent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isNodePresent
+MODULE PROCEDURE mesh_isNodePresent
   IF( GlobalNode .GT. obj%MaxNptrs &
     & .OR. GlobalNode .LT. obj%MinNptrs &
     & .OR. obj%Local_Nptrs( GlobalNode ) .EQ. 0 ) THEN
@@ -550,158 +495,158 @@ MODULE PROCEDURE meshData_isNodePresent
   ELSE
     ans = .TRUE.
   END IF
-END PROCEDURE meshData_isNodePresent
+END PROCEDURE mesh_isNodePresent
 
 !----------------------------------------------------------------------------
 !                                                    isNodeToNodesInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isNodeToNodesInitiated
+MODULE PROCEDURE mesh_isNodeToNodesInitiated
   IF( ALLOCATED( obj%NTN ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isNodeToNodesInitiated
+END PROCEDURE mesh_isNodeToNodesInitiated
 
 !----------------------------------------------------------------------------
 !                                                  isNodeToElementsInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isNodeToElementsInitiated
+MODULE PROCEDURE mesh_isNodeToElementsInitiated
   IF( ALLOCATED( obj%NodeToElem ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isNodeToElementsInitiated
+END PROCEDURE mesh_isNodeToElementsInitiated
 
 
 !----------------------------------------------------------------------------
 !                                              isElementToElementsInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isElementToElementsInitiated
+MODULE PROCEDURE mesh_isElementToElementsInitiated
     IF( ALLOCATED( obj%ElemToElem ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isElementToElementsInitiated
+END PROCEDURE mesh_isElementToElementsInitiated
 
 !----------------------------------------------------------------------------
 !                                                   isConnectivityInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isConnectivityInitiated
+MODULE PROCEDURE mesh_isConnectivityInitiated
   IF( ALLOCATED( obj%connectivity ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isConnectivityInitiated
+END PROCEDURE mesh_isConnectivityInitiated
 
 !----------------------------------------------------------------------------
 !                                                   isBoundaryDataInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isBoundaryDataInitiated
+MODULE PROCEDURE mesh_isBoundaryDataInitiated
   IF( ALLOCATED( obj%BoundaryData ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isBoundaryDataInitiated
+END PROCEDURE mesh_isBoundaryDataInitiated
 
 !----------------------------------------------------------------------------
 !                                                  isInternalNptrsInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isInternalNptrsInitiated
+MODULE PROCEDURE mesh_isInternalNptrsInitiated
   IF( ALLOCATED( obj%InternalNptrs ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isInternalNptrsInitiated
+END PROCEDURE mesh_isInternalNptrsInitiated
 
 !----------------------------------------------------------------------------
 !                                                  isBoundaryNptrsInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isBoundaryNptrsInitiated
+MODULE PROCEDURE mesh_isBoundaryNptrsInitiated
   IF( ALLOCATED( obj%BoundaryNptrs ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isBoundaryNptrsInitiated
+END PROCEDURE mesh_isBoundaryNptrsInitiated
 
 !----------------------------------------------------------------------------
 !                                                     isLocalNptrsInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isLocalNptrsInitiated
+MODULE PROCEDURE mesh_isLocalNptrsInitiated
   IF( ALLOCATED( obj%Local_Nptrs ) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isLocalNptrsInitiated
+END PROCEDURE mesh_isLocalNptrsInitiated
 
 !----------------------------------------------------------------------------
 !                                            isInternalBoundaryDataInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isInternalBoundaryDataInitiated
+MODULE PROCEDURE mesh_isInternalBoundaryDataInitiated
   IF( ALLOCATED( obj% InternalBoundaryData) ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isInternalBoundaryDataInitiated
+END PROCEDURE mesh_isInternalBoundaryDataInitiated
 
 !----------------------------------------------------------------------------
 !                                                 getTotalInternalNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getTotalInternalNodes
+MODULE PROCEDURE mesh_getTotalInternalNodes
   ans = obj%tIntNodes
-END PROCEDURE meshData_getTotalInternalNodes
+END PROCEDURE mesh_getTotalInternalNodes
 
 !----------------------------------------------------------------------------
 !                                                       getTotalNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getTotalNodes
+MODULE PROCEDURE mesh_getTotalNodes
   ans = obj%tNodes
-END PROCEDURE meshData_getTotalNodes
+END PROCEDURE mesh_getTotalNodes
 
 !----------------------------------------------------------------------------
 !                                                   getTotalBoundaryNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getTotalBoundaryNodes
+MODULE PROCEDURE mesh_getTotalBoundaryNodes
   ans = obj%tNodes - obj%tIntNodes
-END PROCEDURE meshData_getTotalBoundaryNodes
+END PROCEDURE mesh_getTotalBoundaryNodes
 
 !----------------------------------------------------------------------------
 !                                                 getTotalBoundaryElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getTotalBoundaryElements
+MODULE PROCEDURE mesh_getTotalBoundaryElements
   IF( ALLOCATED( obj%BoundaryData ) ) THEN
     ans = SIZE( obj%BoundaryData )
   ELSE
     ans = 0
   END IF
-END PROCEDURE meshData_getTotalBoundaryElements
+END PROCEDURE mesh_getTotalBoundaryElements
 
 !----------------------------------------------------------------------------
 !                                                            getBoundingBox
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getBoundingBox
+MODULE PROCEDURE mesh_getBoundingBox
   REAL( DFP ) :: lim( 6 )
 
   lim(1) = obj%minX
@@ -714,134 +659,134 @@ MODULE PROCEDURE meshData_getBoundingBox
   lim(6) = obj%maxZ
 
   CALL Initiate( obj = ans, nsd = 3_I4B, lim = lim )
-END PROCEDURE meshData_getBoundingBox
+END PROCEDURE mesh_getBoundingBox
 
 !----------------------------------------------------------------------------
 !                                                        getConnectivity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getConnectivity
+MODULE PROCEDURE mesh_getConnectivity
   ans = obj%connectivity( :, iel )
-END PROCEDURE meshData_getConnectivity
+END PROCEDURE mesh_getConnectivity
 
 !----------------------------------------------------------------------------
 !                                                          getLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getLocalNptrs_1
+MODULE PROCEDURE mesh_getLocalNptrs_1
   INTEGER( I4B ) :: ii
   DO ii = 1, SIZE( GlobalNode )
-    ans( ii ) = meshData_getGlobalNptrs_2( obj, GlobalNode( ii ) )
+    ans( ii ) = mesh_getLocalNptrs_2( obj, GlobalNode( ii ) )
   END DO
-END PROCEDURE meshData_getLocalNptrs_1
+END PROCEDURE mesh_getLocalNptrs_1
 
 !----------------------------------------------------------------------------
 !                                                            getLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getLocalNptrs_2
+MODULE PROCEDURE mesh_getLocalNptrs_2
   IF(      GlobalNode .LT. obj %MinNptrs &
     & .OR. GlobalNode .GT. obj%maxNptrs ) THEN
     ans = 0
   ELSE
     ans = obj%Local_Nptrs( GlobalNode )
   END IF
-END PROCEDURE meshData_getLocalNptrs_2
+END PROCEDURE mesh_getLocalNptrs_2
 
 !----------------------------------------------------------------------------
 !                                                          getGlobalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getGlobalNptrs_1
+MODULE PROCEDURE mesh_getGlobalNptrs_1
   INTEGER( I4B ) :: ii
 
   DO ii = 1, SIZE( LocalNode )
-    ans( ii ) = meshData_getGlobalNptrs_2( obj, LocalNode( ii ) )
+    ans( ii ) = mesh_getGlobalNptrs_2( obj, LocalNode( ii ) )
   END DO
-END PROCEDURE meshData_getGlobalNptrs_1
+END PROCEDURE mesh_getGlobalNptrs_1
 
 !----------------------------------------------------------------------------
 !                                                            getGlobalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getGlobalNptrs_2
+MODULE PROCEDURE mesh_getGlobalNptrs_2
   IF( LocalNode .LE. obj%tNodes ) THEN
     ans = obj%Nptrs( LocalNode, 1 )
   ELSE
     ans = 0
   END IF
-END PROCEDURE meshData_getGlobalNptrs_2
+END PROCEDURE mesh_getGlobalNptrs_2
 
 !----------------------------------------------------------------------------
 !                                                       getGlobalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getGlobalElemNumber_1
+MODULE PROCEDURE mesh_getGlobalElemNumber_1
   INTEGER( I4B ) :: ii
 
   DO ii = 1, SIZE( LocalElem )
-    ans( ii ) = meshData_getGlobalElemNumber_2( obj, LocalElem( ii ) )
+    ans( ii ) = mesh_getGlobalElemNumber_2( obj, LocalElem( ii ) )
   END DO
-END PROCEDURE meshData_getGlobalElemNumber_1
+END PROCEDURE mesh_getGlobalElemNumber_1
 
 !----------------------------------------------------------------------------
 !                                                        getGlobalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getGlobalElemNumber_2
+MODULE PROCEDURE mesh_getGlobalElemNumber_2
   IF( LocalElem .LE. obj%tElements ) THEN
     ans = obj%ElemNumber( LocalElem )
   ELSE
     ans = 0
   END IF
-END PROCEDURE meshData_getGlobalElemNumber_2
+END PROCEDURE mesh_getGlobalElemNumber_2
 
 !----------------------------------------------------------------------------
 !                                                   getLocalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getLocalElemNumber_1
+MODULE PROCEDURE mesh_getLocalElemNumber_1
   INTEGER( I4B ) :: ii
   DO ii = 1, SIZE( GlobalElem )
-    ans( ii ) = meshData_getLocalElemNumber_2( obj, GlobalElem( ii ) )
+    ans( ii ) = mesh_getLocalElemNumber_2( obj, GlobalElem( ii ) )
   END DO
-END PROCEDURE meshData_getLocalElemNumber_1
+END PROCEDURE mesh_getLocalElemNumber_1
 
 !----------------------------------------------------------------------------
 !                                                   getLocalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getLocalElemNumber_2
+MODULE PROCEDURE mesh_getLocalElemNumber_2
   IF(      GlobalElem .LT. obj %MinElemNum &
     & .OR. GlobalElem .GT. obj%maxElemNum ) THEN
     ans = 0
   ELSE
     ans = obj%local_elemNumber( GlobalElem )
   END IF
-END PROCEDURE meshData_getLocalElemNumber_2
+END PROCEDURE mesh_getLocalElemNumber_2
 
 !----------------------------------------------------------------------------
 !                                                         getNodeToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getNodeToElements
-  CHARACTER( LEN = * ), PARAMETER :: myName="meshData_getNodeToElements"
+MODULE PROCEDURE mesh_getNodeToElements
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_getNodeToElements"
   IF( .NOT. obj%isNodePresent( GlobalNode ) ) THEN
     ALLOCATE( ans( 0 ) )
   ELSE
     ans = obj%NodeToElem( obj%getLocalNptrs( GlobalNode ) )
   END IF
-END PROCEDURE meshData_getNodeToElements
+END PROCEDURE mesh_getNodeToElements
 
 !----------------------------------------------------------------------------
 !                                                            getNodeToNodes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getNodeToNodes
+MODULE PROCEDURE mesh_getNodeToNodes
   ! Define internal variable
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
   INTEGER( I4B ) :: i
-  CHARACTER( LEN = * ), PARAMETER :: myName="meshData_getNodeToNodes"
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_getNodeToNodes"
 
   i = obj%getLocalNptrs( GlobalNode = GlobalNode )
   !> check
@@ -860,13 +805,13 @@ MODULE PROCEDURE meshData_getNodeToNodes
   END IF
 
   IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
-END PROCEDURE meshData_getNodeToNodes
+END PROCEDURE mesh_getNodeToNodes
 
 !----------------------------------------------------------------------------
 !                                                     getElementToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getElementToElements
+MODULE PROCEDURE mesh_getElementToElements
   LOGICAL( LGT ) :: onlyElem
   INTEGER( I4B ), ALLOCATABLE :: Nptrs( : )
   INTEGER( I4B ) :: tSize
@@ -882,25 +827,25 @@ MODULE PROCEDURE meshData_getElementToElements
     Nptrs = obj%ElemToElem( iel )
     ans = TRANSPOSE( RESHAPE( Nptrs, [3, SIZE( Nptrs ) / 3] ) )
   END IF
-END PROCEDURE meshData_getElementToElements
+END PROCEDURE mesh_getElementToElements
 
 !----------------------------------------------------------------------------
 !                                                         isBoundaryElement
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_isBoundaryElement
+MODULE PROCEDURE mesh_isBoundaryElement
   IF( obj%LBndyIndex( iel ) .NE. 0 ) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
   END IF
-END PROCEDURE meshData_isBoundaryElement
+END PROCEDURE mesh_isBoundaryElement
 
 !----------------------------------------------------------------------------
 !                                                    getBoundaryElementData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_getBoundaryElementData
+MODULE PROCEDURE mesh_getBoundaryElementData
   ! Define internal variables
   INTEGER( I4B ) :: LocalIndx, n
   LocalIndx = obj%LBndyIndex( iel )
@@ -911,7 +856,20 @@ MODULE PROCEDURE meshData_getBoundaryElementData
   ELSE
     ans = getValues( obj%BoundaryData( LocalIndx ), iStart=2, iEnd=n, Stride=1, DataType=TypeInt )
   END IF
-END PROCEDURE meshData_getBoundaryElementData
+END PROCEDURE mesh_getBoundaryElementData
+
+!----------------------------------------------------------------------------
+!                                                          getInternalNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getInternalNptrs
+  IF( obj%isInternalNptrsInitiated() ) THEN
+    ans = obj%InternalNptrs
+  ELSE
+    ALLOCATE( ans( 0 ) )
+  END IF
+END PROCEDURE mesh_getInternalNptrs
+
 
 !----------------------------------------------------------------------------
 !

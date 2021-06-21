@@ -338,7 +338,7 @@ END PROCEDURE pn_getIndex_b
 MODULE PROCEDURE pn_getIndex_c
   ! Define internal variables
   INTEGER( I4B ) :: k
-
+  ans = 0
   DO k = 1, SIZE( obj%NSD )
     IF( obj%NSD( k ) .EQ. dim .AND. obj%Tag( k ) .EQ. Tag ) THEN
       ans = k

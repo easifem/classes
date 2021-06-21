@@ -21,226 +21,228 @@ use easifemClasses
 implicit none
 contains
 
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test0
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr, iel
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing Generate MeshData")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   obj%refelem => ReferenceTriangle_Pointer( nsd=2 )
+!   call obj%GenerateMeshData()
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test8
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr, iel
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing Boundary Data")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   call obj%GenerateMeshData()
+!   obj%refelem => ReferenceTriangle_Pointer( nsd=2 )
+
+!   call obj%InitiateBoundaryData()
+
+!   call display( obj%isBoundaryDataInitiated(), "isBoundaryDataInitiated=")
+
+!   iel = obj%getLocalElemNumber( 207 )
+!   call display( iel, "local element number = " )
+!   call display( obj%getConnectivity(iel), "connectivity = ")
+!   call display( obj%isBoundaryElement( iel ), "T=" )
+!   call display( obj%getBoundaryElementData( iel ), "boundary data = " )
+
+!   iel = obj%getLocalElemNumber( 65 )
+!   call display( iel, "local element number = " )
+!   call display( obj%getConnectivity(iel), "connectivity = ")
+!   call display( obj%isBoundaryElement( iel ), "T=" )
+!   call display( obj%getBoundaryElementData( iel ), "boundary data = " )
+
+!   iel = obj%getLocalElemNumber( 151 )
+!   call display( obj%isBoundaryElement( iel ), "F=" )
+
+
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test7
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing Initiate Element to Elements Mapping")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   call obj%GenerateMeshData()
+!   obj%refelem => ReferenceTriangle_Pointer( nsd=2 )
+
+!   call obj%initiateElementToElements()
+
+!   call display( obj%isElementToElementsInitiated(), "isElementToElementsInitiated=")
+
+!   call display( obj%getElementToElements( obj%getLocalElemNumber( 33 ) ), "elements around 33 = " )
+
+!   call display( obj%getElementToElements( &
+!     & obj%getLocalElemNumber( 33 ), onlyElements=.TRUE. ), "elements around 33 = " )
+
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test6
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing Initiate Node to Nodes Mapping")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   call obj%GenerateMeshData()
+
+!   call obj%initiateNodeToNodes()
+!   call display( obj%isNodeToNodesInitiated(), "isNodeToNodesInitiated=")
+!   call display( obj%getNodeToNodes( globalNode=1, IncludeSelf=.TRUE. ), "Node 1 = " )
+!   call display( obj%getNodeToNodes( globalNode=33, IncludeSelf=.FALSE. ), "Node 33 = " )
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test5
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing Initiate Node Element Mapping")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   call obj%GenerateMeshData()
+
+!   call obj%initiateNodeToElements()
+!   call display( obj%isNodeToElementsInitiated(), "isNodeToElementsInitiated=")
+!   call display( obj%getGlobalElemNumber(obj%getNodeToElements(1)),"elem for node 1=" )
+!   call display( obj%getGlobalElemNumber(obj%getNodeToElements(96)),"elem for node 96=" )
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test4
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing query methods of meshdata")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   call obj%GenerateMeshData()
+!   call display( obj%isNodeToNodesInitiated(), "isNodeToNodesInitiated")
+
+!   call display( obj%isNodeToElementsInitiated(), "isNodeToElementsInitiated=")
+
+!   call display( obj%isElementToElementsInitiated(), "isElementToElementsInitiated=")
+
+!   call display( obj%isConnectivityInitiated(), "isConnectivityInitiated=")
+
+!   call display( obj%isBoundaryDataInitiated(), "isBoundaryDataInitiated=")
+
+!   call display( obj%isInternalNptrsInitiated(), "isInternalNptrsInitiated=")
+
+!   call display( obj%isBoundaryNptrsInitiated(), "isBoundaryNptrsInitiated=")
+
+!   call display( obj%isLocalNptrsInitiated(), "isLocalNptrsInitiated=")
+
+!   call display( obj%isInternalBoundaryDataInitiated(), "isInternalBoundaryDataInitiated=")
+
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+
+! subroutine test3
+!   type( mesh_ ) :: obj
+!   integer( I4B ) :: ierr
+!   type( HDF5File_ ) :: meshfile
+
+!   call display( "testing scalars of meshdata")
+!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+!   call meshfile%open()
+!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
+!   call obj%GenerateMeshData()
+!   call display( obj%uid, "uid = ")
+!   call display( obj%xidim, "xidim = ")
+!   call display( obj%elemType, "elemType = ")
+!   call display( obj%nsd, "nsd = ")
+!   call display( obj%maxNptrs, "maxNptrs = ")
+!   call display( obj%minNptrs, "minNptrs = ")
+!   call display( obj%tNodes, "tNodes = ")
+!   call display( obj%tIntNodes, "tIntNodes = ")
+!   call display( obj%tElements, "tElements = ")
+!   call display( obj%minX, "minX = ")
+!   call display( obj%minY, "minY = ")
+!   call display( obj%minZ, "minZ = ")
+!   call display( obj%maxX, "maxX = ")
+!   call display( obj%maxY, "maxY = ")
+!   call display( obj%maxZ, "maxZ = ")
+!   call display( obj%x, "x = ")
+!   call display( obj%y, "y = ")
+!   call display( obj%z, "z = ")
+!   call display( obj%isInitiated, "isInitiated = ")
+!   call meshfile%close()
+!   call meshfile%deallocateData()
+! end subroutine
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 subroutine test0
   type( mesh_ ) :: obj
-  integer( I4B ) :: ierr, iel
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing Generate MeshData")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  obj%meshData%refelem => ReferenceTriangle_Pointer( nsd=2 )
-  call obj%GenerateMeshData()
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test8
-  type( mesh_ ) :: obj
-  integer( I4B ) :: ierr, iel
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing Boundary Data")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
-  obj%meshData%refelem => ReferenceTriangle_Pointer( nsd=2 )
-
-  call obj%meshData%InitiateBoundaryData()
-
-  call display( obj%meshData%isBoundaryDataInitiated(), "isBoundaryDataInitiated=")
-
-  iel = obj%meshData%getLocalElemNumber( 207 )
-  call display( iel, "local element number = " )
-  call display( obj%meshData%getConnectivity(iel), "connectivity = ")
-  call display( obj%meshData%isBoundaryElement( iel ), "T=" )
-  call display( obj%meshData%getBoundaryElementData( iel ), "boundary data = " )
-
-  iel = obj%meshData%getLocalElemNumber( 65 )
-  call display( iel, "local element number = " )
-  call display( obj%meshData%getConnectivity(iel), "connectivity = ")
-  call display( obj%meshData%isBoundaryElement( iel ), "T=" )
-  call display( obj%meshData%getBoundaryElementData( iel ), "boundary data = " )
-
-  iel = obj%meshData%getLocalElemNumber( 151 )
-  call display( obj%meshData%isBoundaryElement( iel ), "F=" )
-
-
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test7
-  type( mesh_ ) :: obj
-  integer( I4B ) :: ierr
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing Initiate Element to Elements Mapping")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
-  obj%meshData%refelem => ReferenceTriangle_Pointer( nsd=2 )
-
-  call obj%meshData%initiateElementToElements()
-
-  call display( obj%meshData%isElementToElementsInitiated(), "isElementToElementsInitiated=")
-
-  call display( obj%meshData%getElementToElements( obj%meshData%getLocalElemNumber( 33 ) ), "elements around 33 = " )
-
-  call display( obj%meshData%getElementToElements( &
-    & obj%meshData%getLocalElemNumber( 33 ), onlyElements=.TRUE. ), "elements around 33 = " )
-
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test6
-  type( mesh_ ) :: obj
-  integer( I4B ) :: ierr
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing Initiate Node to Nodes Mapping")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
-
-  call obj%meshData%initiateNodeToNodes()
-  call display( obj%meshData%isNodeToNodesInitiated(), "isNodeToNodesInitiated=")
-  call display( obj%meshData%getNodeToNodes( globalNode=1, IncludeSelf=.TRUE. ), "Node 1 = " )
-  call display( obj%meshData%getNodeToNodes( globalNode=33, IncludeSelf=.FALSE. ), "Node 33 = " )
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test5
-  type( mesh_ ) :: obj
-  integer( I4B ) :: ierr
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing Initiate Node Element Mapping")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
-
-  call obj%meshData%initiateNodeToElements()
-  call display( obj%meshData%isNodeToElementsInitiated(), "isNodeToElementsInitiated=")
-  call display( obj%meshData%getGlobalElemNumber(obj%meshData%getNodeToElements(1)),"elem for node 1=" )
-  call display( obj%meshData%getGlobalElemNumber(obj%meshData%getNodeToElements(96)),"elem for node 96=" )
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test4
-  type( mesh_ ) :: obj
-  integer( I4B ) :: ierr
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing query methods of meshdata")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
-  call display( obj%meshData%isNodeToNodesInitiated(), "isNodeToNodesInitiated")
-
-  call display( obj%meshData%isNodeToElementsInitiated(), "isNodeToElementsInitiated=")
-
-  call display( obj%meshData%isElementToElementsInitiated(), "isElementToElementsInitiated=")
-
-  call display( obj%meshData%isConnectivityInitiated(), "isConnectivityInitiated=")
-
-  call display( obj%meshData%isBoundaryDataInitiated(), "isBoundaryDataInitiated=")
-
-  call display( obj%meshData%isInternalNptrsInitiated(), "isInternalNptrsInitiated=")
-
-  call display( obj%meshData%isBoundaryNptrsInitiated(), "isBoundaryNptrsInitiated=")
-
-  call display( obj%meshData%isLocalNptrsInitiated(), "isLocalNptrsInitiated=")
-
-  call display( obj%meshData%isInternalBoundaryDataInitiated(), "isInternalBoundaryDataInitiated=")
-
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test3
-  type( mesh_ ) :: obj
-  integer( I4B ) :: ierr
-  type( HDF5File_ ) :: meshfile
-
-  call display( "testing scalars of meshdata")
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
-  call display( obj%meshData%uid, "uid = ")
-  call display( obj%meshData%xidim, "xidim = ")
-  call display( obj%meshData%elemType, "elemType = ")
-  call display( obj%meshData%nsd, "nsd = ")
-  call display( obj%meshData%maxNptrs, "maxNptrs = ")
-  call display( obj%meshData%minNptrs, "minNptrs = ")
-  call display( obj%meshData%tNodes, "tNodes = ")
-  call display( obj%meshData%tIntNodes, "tIntNodes = ")
-  call display( obj%meshData%tElements, "tElements = ")
-  call display( obj%meshData%minX, "minX = ")
-  call display( obj%meshData%minY, "minY = ")
-  call display( obj%meshData%minZ, "minZ = ")
-  call display( obj%meshData%maxX, "maxX = ")
-  call display( obj%meshData%maxY, "maxY = ")
-  call display( obj%meshData%maxZ, "maxZ = ")
-  call display( obj%meshData%x, "x = ")
-  call display( obj%meshData%y, "y = ")
-  call display( obj%meshData%z, "z = ")
-  call display( obj%meshData%isInitiated, "isInitiated = ")
-  call meshfile%close()
-  call meshfile%deallocateData()
-end subroutine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test2
-  type( mesh_ ) :: obj
   integer( I4B ) :: ierr
   type( HDF5File_ ) :: meshfile
 
   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
   call meshfile%open()
   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%GenerateMeshData()
+  call obj%deallocateData()
+  call obj%initiate(meshfile=meshfile, xidim=1, id=1 )
+  call obj%deallocateData()
   call meshfile%close()
   call meshfile%deallocateData()
 end subroutine

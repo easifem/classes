@@ -21,7 +21,6 @@
 !
 !{!pages/Domain.md}
 
-
 MODULE Domain_Class
 USE BaseType
 USE GlobalData
@@ -29,31 +28,58 @@ USE Mesh_Class
 USE MeshPointerVector_Class
 USE ElementFactory
 USE ExceptionHandler_Class
+USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER( LEN = * ), PARAMETER :: modName = "DOMAIN_CLASS"
-TYPE( ExceptionHandler_ ), PUBLIC :: eDomain
+TYPE( ExceptionHandler_ ) :: eDomain
+INTEGER( I4B ), PARAMETER :: eUnitNo = 1001
+CHARACTER( LEN = * ), PARAMETER :: eLogFile="DOMAIN_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
-!                                                                DomainData_
+!                                                                   Domain_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 June 2021
-! summary: DomainData_ contains data of Domain_
+! summary: Domain_ contains data of Domain_
 !
 !{!pages/Domain.md}
 
-TYPE :: DomainData_
+TYPE :: Domain_
   PRIVATE
+  LOGICAL( LGT ) :: isInitiated = .FALSE.
+    !! flag
   TYPE( String ) :: engine
     !! Engine used for generating the meshes
   INTEGER( I4B ) :: majorVersion = 0
     !! Major version
   INTEGER( I4B ) :: minorVersion = 0
     !! Minor version
-  INTEGER( I4B ), ALLOCATABLE :: NSD( : )
+  REAL( DFP ) :: Version = 0.0_DFP
+    !! Version  MajorVersion.MinorVersion
+  INTEGER( I4B ) :: nsd = 0_I4B
+    !! number of spatial dimension
+  INTEGER( I4B ) :: maxNptrs = 0
+    !! Largest node number in the domain
+  INTEGER( I4B ) :: minNptrs = 0
+    !! Smallest node number in the domain
+  INTEGER( I4B ) :: tNodes = 0
+    !! Total number of nodes in the mesh
+  LOGICAL( I4B ) :: isNodeNumberSparse = .FALSE.
+    !! True if node numbers are not continuous
+  INTEGER( I4B ) :: maxElemNum = 0
+    !! Largest element number in the domain
+  INTEGER( I4B ) :: minElemNum = 0
+    !! Smallest element number in the domain
+  LOGICAL( LGT ) :: isElemNumberSparse = .FALSE.
+    !! True if element numbers are sparse
+  INTEGER( I4B ) :: tEntitiesForNodes = 0
+    !! Total number of entities required for reading nodes
+  INTEGER( I4B ) :: tEntitiesForElements = 0
+    !! Total number of entities required for reading elements
+  INTEGER( I4B ), ALLOCATABLE :: NSDVec( : )
     !! Spatial dimension of each physical entities
   INTEGER( I4B ), ALLOCATABLE :: tag( : )
     !! Unique ID of each physical entities
@@ -71,110 +97,120 @@ TYPE :: DomainData_
     !! tElements( 1 ) = total number of line elements
     !! tElements( 2 ) =  total number of surface elements
     !! tElements( 3 ) = total number of volume/cell elements
-  INTEGER( I4B ) :: maxNptrs = 0
-    !! Largest node number in the domain
-  INTEGER( I4B ) :: minNptrs = 0
-    !! Smallest node number in the domain
-  LOGICAL( I4B ) :: isNodeNumberSparse = .FALSE.
-    !! True if node numbers are not continuous
-  INTEGER( I4B ) :: maxElemNum = 0
-    !! Largest element number in the domain
-  INTEGER( I4B ) :: minElemNum = 0
-    !! Smallest element number in the domain
-  LOGICAL( LGT ) :: isElemNumberSparse = .FALSE.
-    !! True if element numbers are sparse
   INTEGER( I4B ) :: tEntities( 0:3 ) = [0,0,0,0]
     !! total number of entities inside the domain
     !! tEntities( 1 ) = total number of point entities, Points
     !! tEntities( 1 ) = total number of line entities, Edge
     !! tEntities( 2 ) = total number of surface entities, Boundary
     !! tEntities( 3 ) = total number of volume entities, Omega
-  INTEGER( I4B ) :: tEntitiesForNodes = 0
-    !! Total number of entities required for reading nodes
-  INTEGER( I4B ) :: tEntitiesForElements = 0
-    !! Total number of entities required for reading elements
-  TYPE( String ), ALLOCATABLE :: omega_name( : )
-    !! Physical names of cell mesh entity
-  TYPE( String ), ALLOCATABLE :: boundary_name( : )
-    !! Physical names of boundary mesh entity
-  TYPE( String ), ALLOCATABLE :: edge_name( : )
-    !! Physical names of edge mesh entity
-  CONTAINS
-    PRIVATE
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => DomainData_Initiate
-    PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => DomainData_DeallocateData
-    FINAL :: DomainData_Final
-END TYPE DomainData_
-
-!----------------------------------------------------------------------------
-!                                                                   Domain_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	18 June 2021
-! summary: 	`Domain_` contains the collection of meshes which represents specific parts of domain
-!
-!{!pages/Domain.md}
-
-TYPE :: Domain_
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
-  TYPE( DomainData_ ) :: domainData
-    !! Domain data
-  TYPE( MeshPointerVector_ ) :: meshList( 0:3 )
+  REAL( DFP ), ALLOCATABLE, PUBLIC :: nodeCoord( :, : )
+    !! Nodal coordinates in XiJ format
+  INTEGER( I4B ), ALLOCATABLE, PUBLIC :: local_nptrs( : )
+    !! local_nptrs are required to access the nodeCoord
+  TYPE( MeshPointerVector_ ), ALLOCATABLE :: meshList( : )
     !! meshList( 0 ) list of meshes of point entities
     !! meshList( 1 ) list of meshes of line entities
     !! meshList( 2 ) list of meshes of surface entities
     !! meshList( 3 ) list of meshes of volume entities
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => Domain_Initiate
-      !! Constructor for domain
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => Domain_DeallocateData
-      !! Deallocate data store inside the domain
+    PRIVATE
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => Domain_Initiate
+      !! Initiate domain data
+    PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => Domain_DeallocateData
+      !! Deallocate data stored inside the domain data
     FINAL :: Domain_Final
+    PROCEDURE, PASS( Obj ) :: Import => Domain_Import
+      !! Import entire domain data
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalEntities => &
+      & Domain_getTotalPhysicalEntities
+      !! Returns total number of physical entities, points, surface, volumes
+
+    GENERIC, PUBLIC :: getIndex => &
+      & Domain_getIndex_a, Domain_getIndex_b, &
+      & Domain_getIndex_c, Domain_getIndex_d, &
+      & Domain_getIndex_e
+    PROCEDURE, PASS( obj ) :: Domain_getIndex_a
+      !! Returns the index of a physical group
+    PROCEDURE, PASS( obj ) :: Domain_getIndex_b
+      !! Returns the index of a physical group
+    PROCEDURE, PASS( obj ) :: Domain_getIndex_c
+      !! Returns the index of a physical group
+    PROCEDURE, PASS( obj ) :: Domain_getIndex_d
+      !! Returns the index of a physical group
+    PROCEDURE, PASS( Obj ) :: Domain_getIndex_e
+
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalNames => &
+      & Domain_getPhysicalNames
+      !! Returns the physical names
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalTags => &
+      & Domain_getPhysicalTags
+      !! Returns tags of physical entities
+    PROCEDURE, PUBLIC, PASS( obj ) :: WhoAmI => Domain_WhoAmI
+      !! Enquire about "volume, surface, curve, point'
+    PROCEDURE, PUBLIC, PASS( Obj ) :: AppendEntities => &
+      & Domain_AppendEntities
+      !! Append entries to entities
+    PROCEDURE, PUBLIC, PASS( Obj ) :: IncNumElements => &
+      & Domain_IncNumElements
+    PROCEDURE, PUBLIC, PASS( Obj ) :: IncNumNodes => Domain_IncNumNodes
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getEntities => Domain_getEntities
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getNumElements => &
+      & Domain_getNumElements
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getNumNodes => Domain_getNumNodes
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setNumNodes => Domain_setNumNodes
 END TYPE Domain_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 PUBLIC :: Domain_
 
 !----------------------------------------------------------------------------
-!                                                             DomainPointer_
+!                                                             DomainPointer
 !----------------------------------------------------------------------------
 
 TYPE :: DomainPointer_
-  CLASS( Domain_ ), POINTER :: Ptr => NULL( )
+  CLASS( Domain_ ), POINTER :: ptr => NULL( )
 END TYPE DomainPointer_
 
 PUBLIC :: DomainPointer_
 
 !----------------------------------------------------------------------------
-!                                                   Initiate@DomainMethods
+!                                                     Initiate@DomainMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 June 2021
 ! summary: Initiate the instance of [[Domain_]] object
-!
-!### Introduction
-!
-! This routine allocate the memory for [[Domain_]] obj.
-! tOmega = total number of cell type meshes
-! tBoundary = total number of boundary type meshes
-! tEdge = total number of edge type meshes
 
 INTERFACE
-MODULE SUBROUTINE Domain_Initiate( obj, tOmega, tBoundary, tEdge )
+MODULE SUBROUTINE Domain_Initiate( obj, meshFile )
   CLASS( Domain_ ), INTENT( INOUT ) :: obj
-    !! Domain object
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tOmega
-    !! total number of $\Omega$ domains
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tBoundary
-    !! total number of $\Gamma$ domains
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tEdge
-    !! total number of line domains
+    !! DomainData object
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
 END SUBROUTINE Domain_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             DeallocateData@DomainMethods
+!                                                      Import@DomainMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	18 June 2021
+! summary: Import domain data
+
+INTERFACE
+MODULE SUBROUTINE Domain_Import( obj, meshFile )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
+END SUBROUTINE Domain_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               DeallocateData@DomainMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -194,10 +230,8 @@ INTERFACE DeallocateData
   MODULE PROCEDURE Domain_DeallocateData
 END INTERFACE DeallocateData
 
-PUBLIC :: DeallocateData
-
 !----------------------------------------------------------------------------
-!                                                     Final@DomainMethods
+!                                                        Final@DomainMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -211,53 +245,504 @@ END SUBROUTINE Domain_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                Initiate@DomainDataMethods
+!                                                       Domain@DomainMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
-! summary: Initiate the instance of [[DomainData_]] object
+! date: 19 June 2021
+! summary: Domain methods
 
 INTERFACE
-MODULE SUBROUTINE DomainData_Initiate( obj )
-  CLASS( DomainData_ ), INTENT( INOUT ) :: obj
-    !! DomainData object
-END SUBROUTINE DomainData_Initiate
+MODULE FUNCTION Domain_Constructor1( meshFile ) RESULT( Ans )
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
+  TYPE( Domain_ ) :: ans
+END FUNCTION Domain_Constructor1
+END INTERFACE
+
+INTERFACE Domain
+  MODULE PROCEDURE Domain_Constructor1
+END INTERFACE Domain
+
+PUBLIC :: Domain
+
+!----------------------------------------------------------------------------
+!                                               Domain_Pointer@DomainMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 June 2021
+! summary: Domain methods
+
+INTERFACE
+MODULE FUNCTION Domain_Constructor_1( meshFile ) RESULT( Ans )
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
+  CLASS( Domain_ ), POINTER :: ans
+END FUNCTION Domain_Constructor_1
+END INTERFACE
+
+INTERFACE Domain_Pointer
+  MODULE PROCEDURE Domain_Constructor_1
+END INTERFACE Domain_Pointer
+
+PUBLIC :: Domain_Pointer
+
+!----------------------------------------------------------------------------
+!                                                  getTotalPhysicalEntities
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns total number of physical entities
+!
+!### Introduction
+! 	Following usage
+!
+!### Usage
+!
+!```fortran
+!	m = getTotalPhysicalEntities()
+!	m = getTotalPhysicalEntities([0])
+!	m = getTotalPhysicalEntities([1])
+!	m = getTotalPhysicalEntities([2])
+!	m = getTotalPhysicalEntities([3])
+!	m = getTotalPhysicalEntities([0,1])
+!	m = getTotalPhysicalEntities([0,1,2])
+!	m = getTotalPhysicalEntities([0,1,3])
+!
+!```
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getTotalPhysicalEntities( obj, dim ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ):: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim(:)
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getTotalPhysicalEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@DomainDataMethods
+!                                                     getTotalPhysicalPoints
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	18 June 2021
-! summary: 	Deallocate data stored in Domain object
+! date: 	10 June 2021
+! summary: This function returns total number of physical points
 
 INTERFACE
-MODULE SUBROUTINE DomainData_DeallocateData( obj )
-  CLASS( DomainData_ ), INTENT( INOUT) :: obj
-    !! Domain object
-END SUBROUTINE DomainData_DeallocateData
+MODULE PURE FUNCTION getTotalPhysicalPoints( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION getTotalPhysicalPoints
 END INTERFACE
 
-!>
-! generic interface to deallocate data in [[Domain_]]
-INTERFACE DeallocateData
-  MODULE PROCEDURE DomainData_DeallocateData
-END INTERFACE DeallocateData
-
 !----------------------------------------------------------------------------
-!                                                   Final@DomainDataMethods
+!                                                     getTotalPhysicalCurves
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
-! summary: Finalizer
+! date: 	10 June 2021
+! summary: 	This function returns total number of physical curves
 
 INTERFACE
-MODULE SUBROUTINE DomainData_Final( obj )
-  TYPE( DomainData_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE DomainData_Final
+MODULE PURE FUNCTION getTotalPhysicalCurves( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION getTotalPhysicalCurves
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  getTotalPhysicalSurfaces
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns total number of physical surfaces
+
+INTERFACE
+MODULE PURE FUNCTION getTotalPhysicalSurfaces( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION getTotalPhysicalSurfaces
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   getTotalPhysicalVolumes
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	This function returns total number of physical volumes
+
+INTERFACE
+MODULE PURE FUNCTION getTotalPhysicalVolumes( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ):: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION getTotalPhysicalVolumes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getIndex@mshPhysicalNames
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns index of a given physical name
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getIndex_a( obj, Name ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( String ), INTENT( IN ) :: Name
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getIndex_a
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getIndex
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns index of a given physical name
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getIndex_b( obj, Name ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( String ), INTENT( IN ) :: Name( : )
+  INTEGER( I4B ) :: ans( SIZE( Name ) )
+END FUNCTION Domain_getIndex_b
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getIndex
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	20 June 2021
+! summary: 	 This function returns index of a given physical name
+!
+!### Introduction
+! This function returns index of a given physical name
+!
+! - `dim` denotes the XiDImension of physical entity
+!     - 0 => point
+!     - 1 => line
+!     - 2 => surface
+!     - 3 => volume
+! - `tag` denotes the Physical Tag of physical entity
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getIndex_c( obj, dim, tag ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim, tag
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getIndex_c
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getIndex
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	20 June 2021
+! summary: 	This function returns index of a given physical name
+!
+!### Introduction
+!
+! This function returns index of a given physical name
+!
+! - `dim` denotes the XiDImension of physical entity
+! - `dim` = 0 => returns indices of points
+! - `dim` = 1 => returns indices of lines
+! - `dim` = 2 => returns indices of surfaces
+! - `dim` = 3 => returns indices of volumes
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getIndex_d( obj, dim ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  INTEGER( I4B ), ALLOCATABLE  :: ans( : )
+END FUNCTION Domain_getIndex_d
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getIndex
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	20 June 2021
+! summary: 	 This function returns index of a given physical name
+!
+!### Introduction
+! This function returns index of a given physical name
+!
+! - `dim` denotes the XiDImension of physical entity
+!     - 0 => point
+!     - 1 => line
+!     - 2 => surface
+!     - 3 => volume
+! - `tag` denotes the Physical TagS of physical entity
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getIndex_e( obj, dim, tag ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim, tag( : )
+  INTEGER( I4B ) :: ans( SIZE( tag ) )
+END FUNCTION Domain_getIndex_e
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getPhysicalNames
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 10 June 2021
+! summary: This function returns the names of physical entities
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getPhysicalNames( obj, dim ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
+  TYPE( String ), ALLOCATABLE :: ans( : )
+END FUNCTION Domain_getPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getPhysicalPointNames
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the names of physical poins
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalPointNames( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalPointNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getPhysicalCurveNames
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the names of physical names
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalCurveNames( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalCurveNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    getPhysicalSurfaceNames
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the names of physical surface
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalSurfaceNames( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalSurfaceNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getPhysicalVolumeNames
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: This function returns the names of physical volume
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalVolumeNames( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalVolumeNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           getPhysicalTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	This routine returns the physical tags of a physical entities
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getPhysicalTags( obj, dim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION Domain_getPhysicalTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getPhysicalPointTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns the physical tags of all physical points
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalPointTags( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalPointTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getPhysicalCurveTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns the physical tags of all physical curves
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalCurveTags( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalCurveTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    getPhysicalSurfaceTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns the physical tags of all physical surfaces
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalSurfaceTags( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalSurfaceTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getPhysicalVolumeTags
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	10 June 2021
+! summary: 	 This function returns the physical tags of all physical volumes
+
+INTERFACE
+MODULE PURE FUNCTION getPhysicalVolumeTags( obj ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION getPhysicalVolumeTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                    WhoAmI
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION Domain_WhoAmI( obj, I ) RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: I
+  TYPE( String ) :: ans
+END FUNCTION Domain_WhoAmI
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           AppendEntities
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE Domain_AppendEntities( obj, indx, Entitytag )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: EntityTag( : ), indx
+END SUBROUTINE Domain_AppendEntities
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            IncNumElements
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE Domain_IncNumElements( obj, indx, incr )
+  CLASS( Domain_  ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: incr
+END SUBROUTINE Domain_IncNumElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                getEntities
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getEntities( obj, indx ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
+END FUNCTION Domain_getEntities
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            IncNumNodes
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE Domain_IncNumNodes( obj, indx, incr )
+  CLASS( Domain_  ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: incr
+END SUBROUTINE Domain_IncNumNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 getNSD
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getNSD( obj ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION Domain_getNSD
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            getNumElements
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getNumElements( obj ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION Domain_getNumElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               getNumNodes
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getNumNodes( obj ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION Domain_getNumNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               setNumNodes
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE Domain_setNumNodes( obj, indx, numNode )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), INTENT( IN ) :: numNode
+END SUBROUTINE Domain_setNumNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------

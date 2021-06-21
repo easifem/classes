@@ -1,0 +1,1180 @@
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Importing mesh
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - Making dsetname
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - dsetname = curveEntities_1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - uid = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - xidim = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - elemType = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minX = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxX = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - x = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - y = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - z = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tElements = 8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tIntNodes = 7
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading nodeCoord
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - nodal coordinates are given below =
+    x         y         z   
+--------   -------   -------
+0.125000   0.00000   0.00000
+0.250000   0.00000   0.00000
+0.375000   0.00000   0.00000
+0.500000   0.00000   0.00000
+0.625000   0.00000   0.00000
+0.750000   0.00000   0.00000
+0.875000   0.00000   0.00000
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading physicalTag
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+physicalTag = 1  5
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading InternalNptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+InternalNptrs = 5  6  7  8  9  10  11
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading elemNumber
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+elemNumber = 1  2  3  4  5  6  7  8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading connectivity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - connectivity(1:NNS, 1:tElements) is given below =
+Node-1   Node-2   
+------   ------   
+   1        5     
+   5        6     
+   6        7     
+   7        8     
+   8        9     
+   9       10     
+  10       11     
+  11        2     
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading boundingEntity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+boundingEntity = 1  -2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - adding reference element
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reference element = referenceLine
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - referenceLine element added
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Mesh imported
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Nptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Nptrs Initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Element Numbers
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Element Numbers initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to nodes mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to nodes mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating element to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Element to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating boundary data
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Boundary data initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Importing mesh
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - Making dsetname
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - dsetname = curveEntities_1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - uid = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - xidim = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - elemType = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minX = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxX = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - x = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - y = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - z = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tElements = 8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tIntNodes = 7
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading nodeCoord
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - nodal coordinates are given below =
+    x         y         z   
+--------   -------   -------
+0.125000   0.00000   0.00000
+0.250000   0.00000   0.00000
+0.375000   0.00000   0.00000
+0.500000   0.00000   0.00000
+0.625000   0.00000   0.00000
+0.750000   0.00000   0.00000
+0.875000   0.00000   0.00000
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading physicalTag
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+physicalTag = 1  5
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading InternalNptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+InternalNptrs = 5  6  7  8  9  10  11
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading elemNumber
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+elemNumber = 1  2  3  4  5  6  7  8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading connectivity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - connectivity(1:NNS, 1:tElements) is given below =
+Node-1   Node-2   
+------   ------   
+   1        5     
+   5        6     
+   6        7     
+   7        8     
+   8        9     
+   9       10     
+  10       11     
+  11        2     
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading boundingEntity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+boundingEntity = 1  -2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - adding reference element
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reference element = referenceLine
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - referenceLine element added
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Mesh imported
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Nptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Nptrs Initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Element Numbers
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Element Numbers initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to nodes mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to nodes mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating element to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Element to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating boundary data
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Boundary data initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Importing mesh
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - Making dsetname
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - dsetname = surfaceEntities_1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - uid = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - xidim = 2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - elemType = 2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minX = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxX = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxY = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - x = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - y = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - z = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tElements = 184
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tIntNodes = 77
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading nodeCoord
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - nodal coordinates are given below =
+    x          y         z   
+--------   --------   -------
+0.495898   0.491619   0.00000
+0.688080   0.678526   0.00000
+0.321474   0.688080   0.00000
+0.678526   0.311920   0.00000
+0.311920   0.321474   0.00000
+0.504020   0.787020   0.00000
+0.212980   0.504020   0.00000
+0.787020   0.495980   0.00000
+0.495980   0.212980   0.00000
+0.831932   0.829904   0.00000
+0.170096   0.831932   0.00000
+0.829904   0.168068   0.00000
+0.168068   0.170096   0.00000
+0.568190   0.643291   0.00000
+0.360119   0.568452   0.00000
+0.647734   0.436656   0.00000
+0.444007   0.372311   0.00000
+0.639235   0.846329   0.00000
+0.153671   0.639235   0.00000
+0.846329   0.360765   0.00000
+0.360765   0.153671   0.00000
+0.367283   0.848646   0.00000
+0.848646   0.632717   0.00000
+0.151354   0.367283   0.00000
+0.632717   0.151354   0.00000
+0.438632   0.670811   0.00000
+0.331834   0.440708   0.00000
+0.667229   0.563433   0.00000
+0.562222   0.334824   0.00000
+0.464695   0.900418   0.00000
+0.099582   0.464695   0.00000
+0.900418   0.535305   0.00000
+0.535305   0.099582   0.00000
+0.734711   0.900627   0.00000
+0.099373   0.734711   0.00000
+0.900627   0.265289   0.00000
+0.265289   0.099373   0.00000
+0.893803   0.736753   0.00000
+0.736753   0.106197   0.00000
+0.263247   0.893803   0.00000
+0.106197   0.263247   0.00000
+0.609591   0.745214   0.00000
+0.254963   0.609605   0.00000
+0.745446   0.390661   0.00000
+0.388621   0.255208   0.00000
+0.558639   0.913265   0.00000
+0.086735   0.558639   0.00000
+0.913265   0.441361   0.00000
+0.441361   0.086735   0.00000
+0.384830   0.747981   0.00000
+0.747981   0.615170   0.00000
+0.252019   0.384830   0.00000
+0.615170   0.252019   0.00000
+0.902885   0.902885   0.00000
+0.097115   0.902885   0.00000
+0.902885   0.097115   0.00000
+0.097115   0.097115   0.00000
+0.717313   0.786718   0.00000
+0.213312   0.717315   0.00000
+0.786756   0.282730   0.00000
+0.282390   0.213353   0.00000
+0.787959   0.713298   0.00000
+0.286707   0.787960   0.00000
+0.713304   0.212048   0.00000
+0.211991   0.286714   0.00000
+0.474683   0.569529   0.00000
+0.569558   0.529626   0.00000
+0.409962   0.493158   0.00000
+0.549843   0.424705   0.00000
+0.818906   0.926683   0.00000
+0.073317   0.818906   0.00000
+0.926683   0.181094   0.00000
+0.181094   0.073317   0.00000
+0.925724   0.818908   0.00000
+0.818908   0.074276   0.00000
+0.181092   0.925724   0.00000
+0.074276   0.181092   0.00000
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading physicalTag
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+physicalTag = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading InternalNptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+InternalNptrs = 33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading elemNumber
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+elemNumber = 33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144  145  146  147  148  149  150  151  152  153  154  155  156  157  158  159  160  161  162  163  164  165  166  167  168  169  170  171  172  173  174  175  176  177  178  179  180  181  182  183  184  185  186  187  188  189  190  191  192  193  194  195  196  197  198  199  200  201  202  203  204  205  206  207  208  209  210  211  212  213  214  215  216
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading connectivity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - connectivity(1:NNS, 1:tElements) is given below =
+Node-1   Node-2   Node-3   
+------   ------   ------   
+  34       46       60     
+  35       47       58     
+  36       48       61     
+  37       49       59     
+  21       50       66     
+  28       51       67     
+  56       30       73     
+  54       23       72     
+  57        9       71     
+  55       16       70     
+  14       52       68     
+   7       53       69     
+  38       50       78     
+  39       51       79     
+  40       52       80     
+  41       53       81     
+  16       55       64     
+   9       57       65     
+  23       54       62     
+  30       56       63     
+  34       60       83     
+  35       58       82     
+  36       61       85     
+  37       59       84     
+  46       38       58     
+  47       39       59     
+  48       40       60     
+  49       41       61     
+  30       31       73     
+  23       24       72     
+   9       10       71     
+  16       17       70     
+  20       21       66     
+  27       28       67     
+  13       14       68     
+   6        7       69     
+  49       33      100     
+  33       49      101     
+  50       21       78     
+  51       28       79     
+  52       14       80     
+  53        7       81     
+  38       46       74     
+  39       47       75     
+  40       48       76     
+  41       49       77     
+  46       34       74     
+  47       35       75     
+  48       36       76     
+  49       37       77     
+  54       38       62     
+  56       39       63     
+  55       40       64     
+  57       41       65     
+  38       54       82     
+  40       55       83     
+  39       56       84     
+  41       57       85     
+  50       38       74     
+  51       39       75     
+  52       40       76     
+  53       41       77     
+  62       38       78     
+  63       39       79     
+  64       40       80     
+  65       41       81     
+  50       74       90     
+  51       75       91     
+  52       76       92     
+  53       77       93     
+  74       34       90     
+  75       35       91     
+  76       36       92     
+  77       37       93     
+  22       23       62     
+  29       30       63     
+  15       16       64     
+   8        9       65     
+   3       19       86     
+   4       26       87     
+   2       12       88     
+   1        5       89     
+  11        2       88     
+  32        1       89     
+  18        3       86     
+  25        4       87     
+  98       47      100     
+  58       47       98     
+  48       99      101     
+  48       60       99     
+  59       49      100     
+  49       61      101     
+  58       38       82     
+  60       40       83     
+  59       39       84     
+  61       41       85     
+  21       22       78     
+  28       29       79     
+  14       15       80     
+   7        8       81     
+  33       98      100     
+  99       33      101     
+  46       58       98     
+  60       46       99     
+  47       59      100     
+  61       48      101     
+  24       25      108     
+  17       18      106     
+  31       32      109     
+  19       20      102     
+  26       27      103     
+  10       11      107     
+  12       13      104     
+   5        6      105     
+  22       62       78     
+  29       63       79     
+  15       64       80     
+   8       65       81     
+  66       50       90     
+  67       51       91     
+  68       52       92     
+  69       53       93     
+  70       42       94     
+  71       44       96     
+  72       43       95     
+  73       45       97     
+  34       83       94     
+  35       82       95     
+  83       55       94     
+  36       85       96     
+  82       54       95     
+  37       84       97     
+  85       57       96     
+  84       56       97     
+  42       90       94     
+  44       92       96     
+  43       91       95     
+  45       93       97     
+  66       42      102     
+  67       43      103     
+  68       44      104     
+  69       45      105     
+  42       70      106     
+  44       71      107     
+  43       72      108     
+  45       73      109     
+  42       66       90     
+  43       67       91     
+  44       68       92     
+  45       69       93     
+  20       66      102     
+  27       67      103     
+  13       68      104     
+   6       69      105     
+  70       17      106     
+  72       24      108     
+  71       10      107     
+  73       31      109     
+  55       70       94     
+  57       71       96     
+  54       72       95     
+  56       73       97     
+  42       86      102     
+  43       87      103     
+  44       88      104     
+  45       89      105     
+  86       42      106     
+  87       43      108     
+  88       44      107     
+  89       45      109     
+  90       34       94     
+  91       35       95     
+  92       36       96     
+  93       37       97     
+  86       19      102     
+  87       26      103     
+  88       12      104     
+  89        5      105     
+  18       86      106     
+  25       87      108     
+  11       88      107     
+  32       89      109     
+  98       33       99     
+  46       98       99     
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading boundingEntity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+boundingEntity = 1  2  3  4
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - adding reference element
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reference element = referenceTriangle
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - referenceTriangle element added
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Mesh imported
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Nptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Nptrs Initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Element Numbers
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Element Numbers initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to nodes mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to nodes mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating element to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Element to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating boundary data
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Boundary data initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Importing mesh
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - Making dsetname
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - dsetname = curveEntities_1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - uid = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - xidim = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - elemType = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minX = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxX = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - x = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - y = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - z = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tElements = 8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tIntNodes = 7
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading nodeCoord
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - nodal coordinates are given below =
+    x         y         z   
+--------   -------   -------
+0.125000   0.00000   0.00000
+0.250000   0.00000   0.00000
+0.375000   0.00000   0.00000
+0.500000   0.00000   0.00000
+0.625000   0.00000   0.00000
+0.750000   0.00000   0.00000
+0.875000   0.00000   0.00000
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading physicalTag
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+physicalTag = 1  5
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading InternalNptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+InternalNptrs = 5  6  7  8  9  10  11
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading elemNumber
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+elemNumber = 1  2  3  4  5  6  7  8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading connectivity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - connectivity(1:NNS, 1:tElements) is given below =
+Node-1   Node-2   
+------   ------   
+   1        5     
+   5        6     
+   6        7     
+   7        8     
+   8        9     
+   9       10     
+  10       11     
+  11        2     
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading boundingEntity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+boundingEntity = 1  -2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - adding reference element
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reference element = referenceLine
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - referenceLine element added
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Mesh imported
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Nptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Nptrs Initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Element Numbers
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Element Numbers initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to nodes mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to nodes mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating element to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Element to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating boundary data
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Importing mesh
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - Making dsetname
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - dsetname = surfaceEntities_1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - uid = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - xidim = 2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - elemType = 2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minX = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxX = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxY = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - x = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - y = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - z = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tElements = 184
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tIntNodes = 77
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading nodeCoord
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - nodal coordinates are given below =
+    x          y         z   
+--------   --------   -------
+0.495898   0.491619   0.00000
+0.688080   0.678526   0.00000
+0.321474   0.688080   0.00000
+0.678526   0.311920   0.00000
+0.311920   0.321474   0.00000
+0.504020   0.787020   0.00000
+0.212980   0.504020   0.00000
+0.787020   0.495980   0.00000
+0.495980   0.212980   0.00000
+0.831932   0.829904   0.00000
+0.170096   0.831932   0.00000
+0.829904   0.168068   0.00000
+0.168068   0.170096   0.00000
+0.568190   0.643291   0.00000
+0.360119   0.568452   0.00000
+0.647734   0.436656   0.00000
+0.444007   0.372311   0.00000
+0.639235   0.846329   0.00000
+0.153671   0.639235   0.00000
+0.846329   0.360765   0.00000
+0.360765   0.153671   0.00000
+0.367283   0.848646   0.00000
+0.848646   0.632717   0.00000
+0.151354   0.367283   0.00000
+0.632717   0.151354   0.00000
+0.438632   0.670811   0.00000
+0.331834   0.440708   0.00000
+0.667229   0.563433   0.00000
+0.562222   0.334824   0.00000
+0.464695   0.900418   0.00000
+0.099582   0.464695   0.00000
+0.900418   0.535305   0.00000
+0.535305   0.099582   0.00000
+0.734711   0.900627   0.00000
+0.099373   0.734711   0.00000
+0.900627   0.265289   0.00000
+0.265289   0.099373   0.00000
+0.893803   0.736753   0.00000
+0.736753   0.106197   0.00000
+0.263247   0.893803   0.00000
+0.106197   0.263247   0.00000
+0.609591   0.745214   0.00000
+0.254963   0.609605   0.00000
+0.745446   0.390661   0.00000
+0.388621   0.255208   0.00000
+0.558639   0.913265   0.00000
+0.086735   0.558639   0.00000
+0.913265   0.441361   0.00000
+0.441361   0.086735   0.00000
+0.384830   0.747981   0.00000
+0.747981   0.615170   0.00000
+0.252019   0.384830   0.00000
+0.615170   0.252019   0.00000
+0.902885   0.902885   0.00000
+0.097115   0.902885   0.00000
+0.902885   0.097115   0.00000
+0.097115   0.097115   0.00000
+0.717313   0.786718   0.00000
+0.213312   0.717315   0.00000
+0.786756   0.282730   0.00000
+0.282390   0.213353   0.00000
+0.787959   0.713298   0.00000
+0.286707   0.787960   0.00000
+0.713304   0.212048   0.00000
+0.211991   0.286714   0.00000
+0.474683   0.569529   0.00000
+0.569558   0.529626   0.00000
+0.409962   0.493158   0.00000
+0.549843   0.424705   0.00000
+0.818906   0.926683   0.00000
+0.073317   0.818906   0.00000
+0.926683   0.181094   0.00000
+0.181094   0.073317   0.00000
+0.925724   0.818908   0.00000
+0.818908   0.074276   0.00000
+0.181092   0.925724   0.00000
+0.074276   0.181092   0.00000
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading physicalTag
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+physicalTag = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading InternalNptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+InternalNptrs = 33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading elemNumber
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+elemNumber = 33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144  145  146  147  148  149  150  151  152  153  154  155  156  157  158  159  160  161  162  163  164  165  166  167  168  169  170  171  172  173  174  175  176  177  178  179  180  181  182  183  184  185  186  187  188  189  190  191  192  193  194  195  196  197  198  199  200  201  202  203  204  205  206  207  208  209  210  211  212  213  214  215  216
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading connectivity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - connectivity(1:NNS, 1:tElements) is given below =
+Node-1   Node-2   Node-3   
+------   ------   ------   
+  34       46       60     
+  35       47       58     
+  36       48       61     
+  37       49       59     
+  21       50       66     
+  28       51       67     
+  56       30       73     
+  54       23       72     
+  57        9       71     
+  55       16       70     
+  14       52       68     
+   7       53       69     
+  38       50       78     
+  39       51       79     
+  40       52       80     
+  41       53       81     
+  16       55       64     
+   9       57       65     
+  23       54       62     
+  30       56       63     
+  34       60       83     
+  35       58       82     
+  36       61       85     
+  37       59       84     
+  46       38       58     
+  47       39       59     
+  48       40       60     
+  49       41       61     
+  30       31       73     
+  23       24       72     
+   9       10       71     
+  16       17       70     
+  20       21       66     
+  27       28       67     
+  13       14       68     
+   6        7       69     
+  49       33      100     
+  33       49      101     
+  50       21       78     
+  51       28       79     
+  52       14       80     
+  53        7       81     
+  38       46       74     
+  39       47       75     
+  40       48       76     
+  41       49       77     
+  46       34       74     
+  47       35       75     
+  48       36       76     
+  49       37       77     
+  54       38       62     
+  56       39       63     
+  55       40       64     
+  57       41       65     
+  38       54       82     
+  40       55       83     
+  39       56       84     
+  41       57       85     
+  50       38       74     
+  51       39       75     
+  52       40       76     
+  53       41       77     
+  62       38       78     
+  63       39       79     
+  64       40       80     
+  65       41       81     
+  50       74       90     
+  51       75       91     
+  52       76       92     
+  53       77       93     
+  74       34       90     
+  75       35       91     
+  76       36       92     
+  77       37       93     
+  22       23       62     
+  29       30       63     
+  15       16       64     
+   8        9       65     
+   3       19       86     
+   4       26       87     
+   2       12       88     
+   1        5       89     
+  11        2       88     
+  32        1       89     
+  18        3       86     
+  25        4       87     
+  98       47      100     
+  58       47       98     
+  48       99      101     
+  48       60       99     
+  59       49      100     
+  49       61      101     
+  58       38       82     
+  60       40       83     
+  59       39       84     
+  61       41       85     
+  21       22       78     
+  28       29       79     
+  14       15       80     
+   7        8       81     
+  33       98      100     
+  99       33      101     
+  46       58       98     
+  60       46       99     
+  47       59      100     
+  61       48      101     
+  24       25      108     
+  17       18      106     
+  31       32      109     
+  19       20      102     
+  26       27      103     
+  10       11      107     
+  12       13      104     
+   5        6      105     
+  22       62       78     
+  29       63       79     
+  15       64       80     
+   8       65       81     
+  66       50       90     
+  67       51       91     
+  68       52       92     
+  69       53       93     
+  70       42       94     
+  71       44       96     
+  72       43       95     
+  73       45       97     
+  34       83       94     
+  35       82       95     
+  83       55       94     
+  36       85       96     
+  82       54       95     
+  37       84       97     
+  85       57       96     
+  84       56       97     
+  42       90       94     
+  44       92       96     
+  43       91       95     
+  45       93       97     
+  66       42      102     
+  67       43      103     
+  68       44      104     
+  69       45      105     
+  42       70      106     
+  44       71      107     
+  43       72      108     
+  45       73      109     
+  42       66       90     
+  43       67       91     
+  44       68       92     
+  45       69       93     
+  20       66      102     
+  27       67      103     
+  13       68      104     
+   6       69      105     
+  70       17      106     
+  72       24      108     
+  71       10      107     
+  73       31      109     
+  55       70       94     
+  57       71       96     
+  54       72       95     
+  56       73       97     
+  42       86      102     
+  43       87      103     
+  44       88      104     
+  45       89      105     
+  86       42      106     
+  87       43      108     
+  88       44      107     
+  89       45      109     
+  90       34       94     
+  91       35       95     
+  92       36       96     
+  93       37       97     
+  86       19      102     
+  87       26      103     
+  88       12      104     
+  89        5      105     
+  18       86      106     
+  25       87      108     
+  11       88      107     
+  32       89      109     
+  98       33       99     
+  46       98       99     
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading boundingEntity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+boundingEntity = 1  2  3  4
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - adding reference element
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reference element = referenceTriangle
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - referenceTriangle element added
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Mesh imported
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Nptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Nptrs Initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Element Numbers
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Element Numbers initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to nodes mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to nodes mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating element to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Element to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating boundary data
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Boundary data initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Importing mesh
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - Making dsetname
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - dsetname = curveEntities_1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - uid = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - xidim = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - elemType = 1
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minX = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - minZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxX = 0.100000000000000E+001
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxY = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - maxZ = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - x = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - y = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - z = 0.000000000000000E+000
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tElements = 8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - tIntNodes = 7
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading nodeCoord
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - nodal coordinates are given below =
+    x         y         z   
+--------   -------   -------
+0.125000   0.00000   0.00000
+0.250000   0.00000   0.00000
+0.375000   0.00000   0.00000
+0.500000   0.00000   0.00000
+0.625000   0.00000   0.00000
+0.750000   0.00000   0.00000
+0.875000   0.00000   0.00000
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading physicalTag
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+physicalTag = 1  5
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading InternalNptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+InternalNptrs = 5  6  7  8  9  10  11
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading elemNumber
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+elemNumber = 1  2  3  4  5  6  7  8
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading connectivity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - connectivity(1:NNS, 1:tElements) is given below =
+Node-1   Node-2   
+------   ------   
+   1        5     
+   5        6     
+   6        7     
+   7        8     
+   8        9     
+   9       10     
+  10       11     
+  11        2     
+
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reading boundingEntity
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import -
+boundingEntity = 1  -2
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - adding reference element
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - reference element = referenceLine
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_Import - referenceLine element added
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Mesh imported
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Nptrs
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Nptrs Initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating Local Element Numbers
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Local Element Numbers initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating node to nodes mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Node to nodes mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating element to elements mapping
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Element to elements mapping initiated
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Initiating boundary data
+
+      EXCEPTION_INFORMATION: MESH_CLASS::mesh_initiate - Boundary data initiated

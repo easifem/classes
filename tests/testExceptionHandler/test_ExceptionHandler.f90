@@ -24,6 +24,25 @@ use easifemBase
 use easifemClasses
 implicit none
 contains
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test0
+  TYPE( exceptionHandler_ ) :: obj
+  CALL obj%setQuietMode(.TRUE.)
+  CALL obj%setLogFileUnit(23)
+  OPEN(UNIT=obj%getLogFileUnit(),FILE='Exception.log', &
+      ACCESS='SEQUENTIAL',FORM='FORMATTED')
+  CALL obj%setLogActive(.TRUE.)
+  CALL display(obj%isLogActive(), "isLogActive=")
+  CALL obj%raiseInformation('Test information')
+  CALL obj%raiseWarning('Test warning')
+  CALL obj%raiseDebug('Test debug')
+  CALL obj%raiseError('Test error')
+end
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -350,8 +369,5 @@ end module
 program main
 use test_exceptionHandler
 implicit none
-call test1
-call test2
-call test3
-call test4
+call test0
 end program main

@@ -28,10 +28,9 @@ USE RealList_Class
 USE StringList_Class
 USE ElementList_Class
 USE ElementPointerVector_Class
-USE MeshPointerVector_Class
-! Mesh container
 USE Mesh_Class
 ! USE MeshConnectivity_Class
+USE MeshPointerVector_Class
 USE Domain_Class
 ! USE QuadratureVariables_Class
 

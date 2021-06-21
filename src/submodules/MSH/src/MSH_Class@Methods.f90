@@ -55,8 +55,15 @@ MODULE PROCEDURE msh_initiate
   INTEGER( I4B ) :: error, unitNo
   CHARACTER( LEN = * ), PARAMETER :: myName = "msh_Initiate"
 
-  CALL obj%e%setQuietMode(.FALSE.)
-  CALL obj%e%setStopOnError(.TRUE.)
+  CALL eMSH%setQuietMode( .TRUE. )
+  CALL eMSH%setLogFileUnit( eUnitNo )
+  CALL eMSH%setLogActive( .TRUE. )
+  IF( .NOT. eMSH%isLogActive() ) THEN
+    OPEN( Unit=eUnitNo, FILE=eLogFile, &
+      & ACCESS='SEQUENTIAL',FORM='FORMATTED',STATUS='REPLACE' )
+  END IF
+  CALL obj%e%addSurrogate(eMSH)
+  CALL obj%e%setLogActive( .TRUE. )
 
   CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
     & 'READING GMSH FILE!')
