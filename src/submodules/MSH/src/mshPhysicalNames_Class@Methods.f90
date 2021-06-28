@@ -667,8 +667,7 @@ END PROCEDURE pn_IncNumElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE pn_getEntities
-  Ans = ArrayValues( obj%Entities( indx ), &
-    & TypeIntI4B )
+  Ans = get( obj%Entities( indx ), TypeIntI4B )
 END PROCEDURE pn_getEntities
 
 !----------------------------------------------------------------------------

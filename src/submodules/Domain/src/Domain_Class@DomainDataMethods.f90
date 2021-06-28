@@ -457,8 +457,7 @@ END PROCEDURE Domain_IncNumElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getEntities
-  Ans = ArrayValues( obj%Entities( indx ), &
-    & TypeIntI4B )
+  Ans = get( obj%Entities( indx ), TypeIntI4B )
 END PROCEDURE Domain_getEntities
 
 !----------------------------------------------------------------------------

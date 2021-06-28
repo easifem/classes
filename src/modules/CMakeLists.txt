@@ -26,13 +26,19 @@ include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)
 # include(${CMAKE_CURRENT_LIST_DIR}/MeshConnectivity/CMakeLists.txt)
 #Domain
 include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
-
 #GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 #MSH
 include(${CMAKE_CURRENT_LIST_DIR}/MSH/CMakeLists.txt)
+
+#AbstractVector
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
+#Vector
+include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
+#AbstractField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
+
 #easifemClasses
 include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
-
 
 
