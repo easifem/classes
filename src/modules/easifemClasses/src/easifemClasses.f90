@@ -36,7 +36,9 @@ USE Domain_Class
 
 USE Gmsh_Class
 USE MSH_Class
-  ! USE gmshMesh_Class
+USE AbstractVector_Class
+USE Vector_Class
+USE AbstractField_Class
   ! USE vtkType
   ! USE LinSolver_Class
 

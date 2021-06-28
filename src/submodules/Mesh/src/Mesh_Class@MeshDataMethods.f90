@@ -381,7 +381,7 @@ MODULE PROCEDURE mesh_InitiateBoundaryData
 
       ElemToElem = obj%getElementToElements( iel=iel, OnlyElements=.FALSE. )
       CALL Initiate( obj%BoundaryData( k ), tFace - SIZE( ElemToElem, 1 ) + 1 )
-      CALL setValue( obj%BoundaryData( k ), Indx=1, value=iel )
+      CALL set( obj%BoundaryData( k ), Indx=1, value=iel )
 
       global_nptrs = obj%getConnectivity(iel)
       j = 0
@@ -389,7 +389,7 @@ MODULE PROCEDURE mesh_InitiateBoundaryData
       DO i = 1, tFace
         IF( ANY( i .EQ. ElemToElem( :, 2 ) ) ) CYCLE
         j = j + 1
-        CALL setValue( obj%BoundaryData( k ), Indx=1+j, value=i )
+        CALL set( obj%BoundaryData( k ), Indx=1+j, value=i )
       END DO
     END DO
   END IF
@@ -854,7 +854,7 @@ MODULE PROCEDURE mesh_getBoundaryElementData
   IF( n .EQ. 1 ) THEN
     ALLOCATE( ans( 0 ) )
   ELSE
-    ans = getValues( obj%BoundaryData( LocalIndx ), iStart=2, iEnd=n, Stride=1, DataType=TypeInt )
+    ans = get( obj%BoundaryData( LocalIndx ), iStart=2, iEnd=n, Stride=1, DataType=TypeInt )
   END IF
 END PROCEDURE mesh_getBoundaryElementData
 

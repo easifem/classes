@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/AbstractVector"
+		},
+		{
+			"path": "../src/modules/Vector"
+		},
+		{
+			"path": "../src/submodules/Vector"
+		},
+		{
+			"path": "../tests/testVector"
+		}
+	]
+}

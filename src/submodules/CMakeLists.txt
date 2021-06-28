@@ -12,3 +12,5 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MSH/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 # Domain
 include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
+# Vector
+include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
