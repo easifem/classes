@@ -443,7 +443,7 @@ SUBROUTINE FixNodeCoord(obj)
       iterator = obj%meshList( xidim )%Begin()
       DO imesh = 1, tMesh
         IF( .NOT. ASSOCIATED( iterator%value%ptr ) ) &
-          & CALL eDomain%raiseError(modName//'::'//myName// &
+          & CALL eDomain%raiseError(modName//'::'//myName//'-'// &
           & 'some of the meshes of point entities is not associated' )
         internalNptrs = iterator%value%ptr%getInternalNptrs()
         nodeCoord = iterator%value%ptr%getNodeCoord()

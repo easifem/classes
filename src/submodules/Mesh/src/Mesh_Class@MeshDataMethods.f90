@@ -673,49 +673,49 @@ END PROCEDURE mesh_getConnectivity
 !                                                          getLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getLocalNptrs_1
+MODULE PROCEDURE mesh_getLocalNodeNumber1
   INTEGER( I4B ) :: ii
   DO ii = 1, SIZE( GlobalNode )
-    ans( ii ) = mesh_getLocalNptrs_2( obj, GlobalNode( ii ) )
+    ans( ii ) = mesh_getLocalNodeNumber2( obj, GlobalNode( ii ) )
   END DO
-END PROCEDURE mesh_getLocalNptrs_1
+END PROCEDURE mesh_getLocalNodeNumber1
 
 !----------------------------------------------------------------------------
 !                                                            getLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getLocalNptrs_2
+MODULE PROCEDURE mesh_getLocalNodeNumber2
   IF(      GlobalNode .LT. obj %MinNptrs &
     & .OR. GlobalNode .GT. obj%maxNptrs ) THEN
     ans = 0
   ELSE
     ans = obj%Local_Nptrs( GlobalNode )
   END IF
-END PROCEDURE mesh_getLocalNptrs_2
+END PROCEDURE mesh_getLocalNodeNumber2
 
 !----------------------------------------------------------------------------
 !                                                          getGlobalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getGlobalNptrs_1
+MODULE PROCEDURE mesh_getGlobalNodeNumber1
   INTEGER( I4B ) :: ii
 
   DO ii = 1, SIZE( LocalNode )
-    ans( ii ) = mesh_getGlobalNptrs_2( obj, LocalNode( ii ) )
+    ans( ii ) = mesh_getGlobalNodeNumber2( obj, LocalNode( ii ) )
   END DO
-END PROCEDURE mesh_getGlobalNptrs_1
+END PROCEDURE mesh_getGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
 !                                                            getGlobalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getGlobalNptrs_2
+MODULE PROCEDURE mesh_getGlobalNodeNumber2
   IF( LocalNode .LE. obj%tNodes ) THEN
     ans = obj%Nptrs( LocalNode, 1 )
   ELSE
     ans = 0
   END IF
-END PROCEDURE mesh_getGlobalNptrs_2
+END PROCEDURE mesh_getGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
 !                                                       getGlobalElemNumber

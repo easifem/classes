@@ -139,6 +139,7 @@ TYPE :: Domain_
     PROCEDURE, PASS( obj ) :: Domain_getIndex_d
       !! Returns the index of a physical group
     PROCEDURE, PASS( Obj ) :: Domain_getIndex_e
+      !! Returns the index of a physical group
 
     PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalNames => &
       & Domain_getPhysicalNames
@@ -153,13 +154,26 @@ TYPE :: Domain_
       !! Append entries to entities
     PROCEDURE, PUBLIC, PASS( Obj ) :: IncNumElements => &
       & Domain_IncNumElements
+      !! Increase element number
     PROCEDURE, PUBLIC, PASS( Obj ) :: IncNumNodes => Domain_IncNumNodes
+      !! Increase node number
     PROCEDURE, PUBLIC, PASS( Obj ) :: getEntities => Domain_getEntities
+      !! Returns the geometric entities number of each physical entities
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
+      !! Returns the spatial dimension of each physical entities
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNumElements => &
       & Domain_getNumElements
+      !! Returns the number of elements in each physical entities/group
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNumNodes => Domain_getNumNodes
+      !! Returns the number of nodes in each physical entities/group
     PROCEDURE, PUBLIC, PASS( Obj ) :: setNumNodes => Domain_setNumNodes
+      !! Set the number of nodes in each physical entities/group
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalNodes => Domain_getTotalNodes
+      !! returns the total number of nodes in the mesh
+    PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber1
+    PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber2
+    GENERIC, PUBLIC :: getLocalNodeNumber => Domain_getLocalNodeNumber1, &
+      & Domain_getLocalNodeNumber2
 END TYPE Domain_
 
 !----------------------------------------------------------------------------
@@ -287,7 +301,7 @@ END INTERFACE Domain_Pointer
 PUBLIC :: Domain_Pointer
 
 !----------------------------------------------------------------------------
-!                                                  getTotalPhysicalEntities
+!                              getTotalPhysicalEntities@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -295,7 +309,7 @@ PUBLIC :: Domain_Pointer
 ! summary: This function returns total number of physical entities
 !
 !### Introduction
-! 	Following usage
+! This function returns the total number of physical entities of given dimension. We can club the dimensions. For example [0,1] will give total number of physical entities of points and curves
 !
 !### Usage
 !
@@ -320,7 +334,7 @@ END FUNCTION Domain_getTotalPhysicalEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getTotalPhysicalPoints
+!                               getTotalPhysicalPoints@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -335,7 +349,7 @@ END FUNCTION getTotalPhysicalPoints
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getTotalPhysicalCurves
+!                               getTotalPhysicalCurves@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -350,7 +364,7 @@ END FUNCTION getTotalPhysicalCurves
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  getTotalPhysicalSurfaces
+!                             getTotalPhysicalSurfaces@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -365,7 +379,7 @@ END FUNCTION getTotalPhysicalSurfaces
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   getTotalPhysicalVolumes
+!                              getTotalPhysicalVolumes@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -380,7 +394,7 @@ END FUNCTION getTotalPhysicalVolumes
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 getIndex@mshPhysicalNames
+!                                            getIndex@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -396,7 +410,7 @@ END FUNCTION Domain_getIndex_a
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getIndex
+!                                            getIndex@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -412,7 +426,7 @@ END FUNCTION Domain_getIndex_b
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getIndex
+!                                            getIndex@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -438,7 +452,7 @@ END FUNCTION Domain_getIndex_c
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getIndex
+!                                            getIndex@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -464,7 +478,7 @@ END FUNCTION Domain_getIndex_d
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getIndex
+!                                            getIndex@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -490,7 +504,7 @@ END FUNCTION Domain_getIndex_e
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getPhysicalNames
+!                                     getPhysicalNames@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -506,7 +520,7 @@ END FUNCTION Domain_getPhysicalNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getPhysicalPointNames
+!                                 getPhysicalPointNamesPhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -521,7 +535,7 @@ END FUNCTION getPhysicalPointNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getPhysicalCurveNames
+!                                 getPhysicalCurveNames@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -536,7 +550,7 @@ END FUNCTION getPhysicalCurveNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    getPhysicalSurfaceNames
+!                              getPhysicalSurfaceNames@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -551,7 +565,7 @@ END FUNCTION getPhysicalSurfaceNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getPhysicalVolumeNames
+!                               getPhysicalVolumeNames@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -566,7 +580,7 @@ END FUNCTION getPhysicalVolumeNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           getPhysicalTags
+!                                      getPhysicalTags@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -582,7 +596,7 @@ END FUNCTION Domain_getPhysicalTags
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getPhysicalPointTags
+!                                  getPhysicalPointTags@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -597,7 +611,7 @@ END FUNCTION getPhysicalPointTags
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getPhysicalCurveTags
+!                                 getPhysicalCurveTags@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -612,7 +626,7 @@ END FUNCTION getPhysicalCurveTags
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    getPhysicalSurfaceTags
+!                               getPhysicalSurfaceTags@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -627,7 +641,7 @@ END FUNCTION getPhysicalSurfaceTags
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getPhysicalVolumeTags
+!                                getPhysicalVolumeTags@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -642,7 +656,7 @@ END FUNCTION getPhysicalVolumeTags
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                    WhoAmI
+!                                               WhoAmI@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -654,7 +668,7 @@ END FUNCTION Domain_WhoAmI
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           AppendEntities
+!                                        AppendEntities@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -665,7 +679,7 @@ END SUBROUTINE Domain_AppendEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            IncNumElements
+!                                       IncNumElements@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -677,7 +691,7 @@ END SUBROUTINE Domain_IncNumElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                getEntities
+!                                          getEntities@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -689,7 +703,7 @@ END FUNCTION Domain_getEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            IncNumNodes
+!                                          IncNumNodes@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -701,7 +715,7 @@ END SUBROUTINE Domain_IncNumNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getNSD
+!                                                getNSD@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -712,7 +726,7 @@ END FUNCTION Domain_getNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            getNumElements
+!                                       getNumElements@PhysicalNamesMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -723,8 +737,18 @@ END FUNCTION Domain_getNumElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               getNumNodes
+!                                          getNumNodes@PhysicalNamesMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary:  Returns the number of nodes in each physical entities
+!
+!### Introduction
+! This function returns the number of nodes in each physical entities
+! Ans( 1 ) denotes the number of nodes in physical group 1
+! the name of this physical group would be obj%physicalName(1)
+! The dimension of this physical entities will be obj%nsdVec( 1 )
 
 INTERFACE
 MODULE PURE FUNCTION Domain_getNumNodes( obj ) RESULT( Ans )
@@ -734,8 +758,19 @@ END FUNCTION Domain_getNumNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               setNumNodes
+!                                           setNumNodes@PhysicalNamesMethods
 !----------------------------------------------------------------------------
+
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary:  set the number of nodes in each physical entities
+!
+!### Introduction
+! This routine sets the number of nodes in each physical entities.
+! For example, numNode( 1 ) denotes the number of nodes in physical group 1
+! the name of this physical group would be obj%physicalName(1)
+! The dimension of this physical entities will be obj%nsdVec( 1 )
 
 INTERFACE
 MODULE PURE SUBROUTINE Domain_setNumNodes( obj, indx, numNode )
@@ -743,6 +778,50 @@ MODULE PURE SUBROUTINE Domain_setNumNodes( obj, indx, numNode )
   INTEGER( I4B ), INTENT( IN ) :: indx
   INTEGER( I4B ), INTENT( IN ) :: numNode
 END SUBROUTINE Domain_setNumNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getTotalNodes@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+
+INTERFACE
+MODULE FUNCTION Domain_getTotalNodes( obj, physicalTag, physicalName, &
+  & entityNum, dim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: physicalTag
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: physicalName
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getTotalNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getLocalNodeNumber@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getLocalNodeNumber1( obj, globalNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getLocalNodeNumber@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getLocalNodeNumber2( obj, globalNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+  INTEGER( I4B ) :: ans( SIZE( globalNode ) )
+END FUNCTION Domain_getLocalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------

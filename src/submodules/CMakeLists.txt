@@ -14,3 +14,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
 # Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
+# ScalarField
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
+# VectorField
+include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)

@@ -15,10 +15,22 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 Jul 2021
+! summary: Abstract field is designed to handle fields over finite element meshes
+!
+!### Introduction
+! - In FEM, we use variables of different ranks. These varibles will be designated as the field. These fields can be defined at:
+!   - Spatial-temporal nodal points
+!   - Quadrature points inside the element
+! - In addition, global matrices can also be described as the field.
+! - In this way, Fields are high level objects in finite element modeling.
+!
+! [[AbstractField_]] defines an abstract class. This class will be extended to [[AbstractNodeField_]], [[AbstractElementField_]], [[AbstractMatrixField_]].
+
 MODULE AbstractField_Class
 USE GlobalData
 USE BaseType
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
 USE Domain_Class
 IMPLICIT NONE
@@ -33,17 +45,33 @@ INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 3
 !                                                           AbstractField_
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 Jul 2021
+! summary: Abstract field is designed to handle fields over finite element meshes
+!
+!### Introduction
+! - In FEM, we use variables of different ranks. These varibles will be designated as the field. These fields can be defined at:
+!   - Spatial-temporal nodal points
+!   - Quadrature points inside the element
+! - In addition, global matrices can also be described as the field.
+! - In this way, Fields are high level objects in finite element modeling.
+!
+! [[AbstractField_]] defines an abstract class. This class will be extended to [[AbstractNodeField_]], [[AbstractElementField_]], [[AbstractMatrixField_]].
+
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL( LGT ) :: isInitiated = .FALSE.
-  INTEGER( I4B ) :: tSize = 0
+    !! It is true if the object is initiated
   INTEGER( I4B ) :: fieldType = FIELD_TYPE_NORMAL
-  TYPE( RealVector_ ) :: realVec
-  TYPE( DOF_ ) :: dof
+    !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE( Domain_ ), POINTER :: domain => NULL()
+    !! Domain contains the information of the finite element meshes.
   CONTAINS
   PRIVATE
-    PROCEDURE(aField_Initiate), DEFERRED, PUBLIC, PASS( obj ) :: initiate
+    PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS( obj ) :: Initiate1
       !! Initiate the field
+    PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS( obj ) :: Initiate2
+      !! Initiate by copying other fields
+    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
     PROCEDURE(aField_DeallocateData), DEFERRED, PUBLIC, PASS( obj ) :: DeallocateData
       !! Deallocate the field
     PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
@@ -57,12 +85,28 @@ PUBLIC :: AbstractField_
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Initiate( obj, param, dom )
+SUBROUTINE aField_Initiate1( obj, param, dom )
   IMPORT :: AbstractField_, ParameterList_, Domain_
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE aField_Initiate
+END SUBROUTINE aField_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            InitiateByCopy
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE aField_Initiate2( obj, obj2, copyFull, copyStructure, &
+  & usePointer )
+  IMPORT :: AbstractField_, LGT
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
+END SUBROUTINE aField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------

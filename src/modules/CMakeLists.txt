@@ -35,9 +35,19 @@ include(${CMAKE_CURRENT_LIST_DIR}/MSH/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
 #Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
+
 #AbstractField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
-
+#AbstractNodeField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
+#AbstractElementField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
+#AbstractMatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
+#ScalarField
+include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
+#VectorField
+include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 #easifemClasses
 include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
 
