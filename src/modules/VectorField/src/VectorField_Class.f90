@@ -45,7 +45,6 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "VECTORFIELD_CLASS_EXCEPTION.txt"
 !{!pages/VectorField.md}
 
 TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
-  TYPE( String ) :: name
   INTEGER( I4B ) :: spaceCompo = 0_I4B
   CONTAINS
   PRIVATE

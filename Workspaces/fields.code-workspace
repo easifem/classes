@@ -35,6 +35,27 @@
 		{
 			"name": "VectorField",
 			"path": "../src/submodules/VectorField"
+		},
+		{
+			"path": "../src/modules/MatrixField"
+		},
+		{
+			"path": "../src/submodules/MatrixField"
+		},
+		{
+			"path": "../tests/testMatrixField"
+		},
+		{
+			"path": "../tests/testScalarField"
+		},
+		{
+			"path": "../tests/testSTScalarField"
+		},
+		{
+			"path": "../tests/testSTVectorField"
+		},
+		{
+			"path": "../tests/testVectorField"
 		}
 	]
 }

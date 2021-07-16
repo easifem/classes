@@ -44,7 +44,6 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "SCALARFIELD_CLASS_EXCEPTION.txt"
 !{!pages/ScalarField.md}
 
 TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
-  TYPE( String ) :: name
   CONTAINS
   PRIVATE
   PROCEDURE, PASS( obj ) :: checkEssentialParam => sField_checkEssentialParam

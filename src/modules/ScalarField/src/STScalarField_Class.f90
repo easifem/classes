@@ -45,7 +45,6 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "STSCALARFIELD_CLASS_EXCEPTION.txt
 !{!pages/STScalarField.md}
 
 TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
-  TYPE( String ) :: name
   INTEGER( I4B ) :: timeCompo = 0_I4B
   CONTAINS
   PRIVATE

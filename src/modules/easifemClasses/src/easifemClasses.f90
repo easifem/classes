@@ -17,6 +17,7 @@
 
 MODULE easifemClasses
 USE ExceptionHandler_Class
+USE FPL_Method
 USE FortranFile_Class
 USE TxtFile_Class
 USE InputFile_Class
@@ -46,6 +47,7 @@ USE ScalarField_Class
 USE STScalarField_Class
 USE VectorField_Class
 USE STVectorField_Class
+USE MatrixField_Class
   ! USE vtkType
   ! USE LinSolver_Class
 

@@ -2,6 +2,8 @@
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 #File
 include(${CMAKE_CURRENT_LIST_DIR}/File/CMakeLists.txt)
+#FPL
+include(${CMAKE_CURRENT_LIST_DIR}/FPL/CMakeLists.txt)
 #Element
 include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
 #FacetElement
@@ -48,6 +50,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 #VectorField
 include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
+#MatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 #easifemClasses
 include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
 

@@ -172,27 +172,27 @@ TYPE :: Mesh_
       !! Display the mesh
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => mesh_size
       !! Returns the size of the mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundingEntity => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getBoundingEntity => &
       & mesh_getBoundingEntity
-    PROCEDURE, PASS( Obj ) :: mesh_getNodeCoord_1
+    PROCEDURE, PASS( obj ) :: mesh_getNodeCoord_1
       !! Returns the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_getNodeCoord_2
+    PROCEDURE, PASS( obj ) :: mesh_getNodeCoord_2
       !! Returns the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_getNodeCoord_3
+    PROCEDURE, PASS( obj ) :: mesh_getNodeCoord_3
       !! Returns the nodal coordinates
     GENERIC, PUBLIC :: getNodeCoord => mesh_getNodeCoord_1, &
       & mesh_getNodeCoord_2, mesh_getNodeCoord_3
       !! Returns the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_setNodeCoord_1
+    PROCEDURE, PASS( obj ) :: mesh_setNodeCoord_1
       !! set the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_setNodeCoord_2
+    PROCEDURE, PASS( obj ) :: mesh_setNodeCoord_2
       !! set the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_setNodeCoord_3
+    PROCEDURE, PASS( obj ) :: mesh_setNodeCoord_3
       !! set the nodal coordinates
     GENERIC, PUBLIC :: setNodeCoord => &
       & mesh_setNodeCoord_1, mesh_setNodeCoord_2, &
       & mesh_setNodeCoord_3
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNptrs => mesh_getNptrs
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNptrs => mesh_getNptrs
       !! Returns the node number of mesh
 
     !> Mesh data related
@@ -209,17 +209,17 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateElementToElements => &
       & mesh_InitiateElementToElements
       !! Initiate element to elements mapping
-    PROCEDURE, PUBLIC, PASS( Obj ) :: InitiateBoundaryData => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateBoundaryData => &
       & mesh_InitiateBoundaryData
       !! Initiate boundary data
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateInternalNptrs => &
       & mesh_InitiateInternalNptrs
       !! Initiate internal node numbers
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryNode => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNode => &
       & mesh_isBoundaryNode
       !! Returns true if a given global node number is a boundary node
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isLocalElementNumbersInitiated => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: isLocalElementNumbersInitiated => &
       & mesh_isLocalElementNumbersInitiated
       !! Returns true if vector related to local element num is initiated
     PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
@@ -250,7 +250,7 @@ TYPE :: Mesh_
       !! returns `.true.` if `Local_Nptrs` array is allocated
     PROCEDURE, PUBLIC, PASS( obj ) :: isInternalBoundaryDataInitiated => &
       & mesh_isInternalBoundaryDataInitiated
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryElement => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryElement => &
       & mesh_isBoundaryElement
       !! Returns true, if an element is a boundary element
 
@@ -297,17 +297,20 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeToNodes => &
       & mesh_getNodeToNodes
       !! Returns nodes connected to a given node number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getElementToElements => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getElementToElements => &
       & mesh_getElementToElements
       !! Returns local element number connected to a given local
       !! element number, it also gives information about the local
       !! facet number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundaryElementData => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getBoundaryElementData => &
       & mesh_getBoundaryElementData
       !! Returns boundary element data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getInternalNptrs => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getInternalNptrs => &
       & mesh_getInternalNptrs
       !! Returns internal node number
+    PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity1 => mesh_setSparsity1
+    PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity2 => mesh_setSparsity2
+    GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2
 END TYPE Mesh_
 
 !----------------------------------------------------------------------------
@@ -1280,6 +1283,45 @@ MODULE PURE FUNCTION mesh_getInternalNptrs( obj ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION mesh_getInternalNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                setSparsity@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+MODULE SUBROUTINE mesh_setSparsity1( obj, mat, localNodeNumber, lbound, &
+  & ubound )
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+    !! Mesh_ class
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+    !! CSRMatrix object
+  INTEGER( I4B ), INTENT( IN ) :: lbound
+  INTEGER( I4B ), INTENT( IN ) :: ubound
+  INTEGER( I4B ), INTENT( IN ) :: LocalNodeNumber( lbound:ubound )
+    !! Global to local node number map
+END SUBROUTINE mesh_setSparsity1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                setSparsity@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+MODULE SUBROUTINE mesh_setSparsity2( obj, mat )
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+    !! Mesh_ class
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+    !! CSRMatrix object
+END SUBROUTINE mesh_setSparsity2
 END INTERFACE
 
 !----------------------------------------------------------------------------

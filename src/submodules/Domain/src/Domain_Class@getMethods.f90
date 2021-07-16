@@ -95,6 +95,49 @@ MODULE PROCEDURE Domain_getLocalNodeNumber2
 END PROCEDURE Domain_getLocalNodeNumber2
 
 !----------------------------------------------------------------------------
+!                                                              getTotalMesh
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getTotalMesh
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getTotalMesh"
+  IF( dim .LT. 0 .OR. dim .GT. 3 ) THEN
+    CALL eDomain%raiseError( modName//"::"//myName//" - "// &
+      & "dim should be in [0,1,2,3]" )
+  END IF
+
+  IF( obj%meshList( dim )%isEmpty() ) THEN
+    ans=0
+  ELSE
+    ans = obj%meshList( dim )%size()
+  END IF
+
+END PROCEDURE Domain_getTotalMesh
+
+!----------------------------------------------------------------------------
+!                                                           getMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getMeshPointer
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getMeshPointer"
+  INTEGER( I4B ) :: tsize, imesh
+  TYPE( MeshPointerIterator_ ) :: iterator
+
+  iterator%value%ptr => NULL()
+  tsize = obj%getTotalMesh( dim=dim )
+  IF( tag .GT. tsize ) THEN
+    CALL eDomain%raiseInformation( modName//"::"//myName//" - "// &
+      & "tag are out of bound" )
+  END IF
+  iterator = obj%meshList( dim )%Begin()
+  DO imesh = 2, tag
+    CALL iterator%Inc()
+  END DO
+
+  ans => iterator%value%ptr
+  CALL iterator%DeallocateData()
+END PROCEDURE Domain_getMeshPointer
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 END SUBMODULE getMethods

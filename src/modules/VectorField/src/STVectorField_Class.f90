@@ -46,7 +46,6 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "STVECTORFIELD_CLASS_EXCEPTION.txt
 !{!pages/STVectorField.md}
 
 TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
-  TYPE( String ) :: name
   INTEGER( I4B ) :: spaceCompo = 0_I4B
   INTEGER( I4B ) :: timeCompo = 0_I4B
   CONTAINS

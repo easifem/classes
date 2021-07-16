@@ -65,6 +65,7 @@ TYPE, ABSTRACT :: AbstractField_
     !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE( Domain_ ), POINTER :: domain => NULL()
     !! Domain contains the information of the finite element meshes.
+  TYPE( String ) :: name
   CONTAINS
   PRIVATE
     PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS( obj ) :: Initiate1

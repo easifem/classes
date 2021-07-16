@@ -174,6 +174,12 @@ TYPE :: Domain_
     PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber2
     GENERIC, PUBLIC :: getLocalNodeNumber => Domain_getLocalNodeNumber1, &
       & Domain_getLocalNodeNumber2
+
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMesh => Domain_getTotalMesh
+      !! This routine returns total number of meshes of given dimension
+    PROCEDURE, PUBLIC, PASS( obj ) :: getMeshPointer => Domain_getMeshPointer
+      !! This routine a pointer to [[Mesh_]] object
+    PROCEDURE, PUBLIC, PASS( obj ) :: setSparsity => Domain_setSparsity
 END TYPE Domain_
 
 !----------------------------------------------------------------------------
@@ -822,6 +828,42 @@ MODULE FUNCTION Domain_getLocalNodeNumber2( obj, globalNode ) RESULT( Ans )
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   INTEGER( I4B ) :: ans( SIZE( globalNode ) )
 END FUNCTION Domain_getLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getTotalMesh@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getTotalMesh( obj, dim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getTotalMesh
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getMeshPointer@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getMeshPointer( obj, dim, tag ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  INTEGER( I4B ), INTENT( IN ) :: tag
+  CLASS( Mesh_), POINTER :: ans
+END FUNCTION Domain_getMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     setSparsity@setMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE Domain_setSparsity( obj, mat )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+END SUBROUTINE Domain_setSparsity
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -870,6 +870,53 @@ MODULE PROCEDURE mesh_getInternalNptrs
   END IF
 END PROCEDURE mesh_getInternalNptrs
 
+!----------------------------------------------------------------------------
+!                                                                setSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setSparsity1
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity1"
+  INTEGER( I4B ) :: i, j, k
+  INTEGER( I4B ), allocatable :: n2n( : )
+
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+      & "Mesh data is not initiated, first initiate")
+  END IF
+  IF( .NOT. obj%isNodeToNodesInitiated() ) CALL obj%InitiateNodeToNodes( )
+  DO i = 1, obj%tNodes
+    j = obj%getGlobalNptrs( LocalNode = i )
+    k = localNodeNumber( j )
+    IF( k .NE. 0 ) THEN
+      n2n = localNodeNumber( &
+        & obj%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. ) )
+      CALL setSparsity( obj = Mat, Row = k, Col = n2n )
+    END IF
+  END DO
+  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
+END PROCEDURE mesh_setSparsity1
+
+!----------------------------------------------------------------------------
+!                                                                setSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setSparsity2
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity2"
+  INTEGER( I4B ) :: i, j, idof, k
+  INTEGER( I4B ), allocatable :: n2n( : )
+
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+      & "Mesh data is not initiated, first initiate")
+  END IF
+  IF( .NOT. obj%isNodeToNodesInitiated() ) CALL obj%InitiateNodeToNodes( )
+  DO i = 1, obj%tNodes
+    j = obj%getGlobalNptrs( LocalNode = i )
+    n2n = obj%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. )
+    CALL setSparsity( obj = Mat, Row = j, Col = n2n )
+  END DO
+  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
+END PROCEDURE mesh_setSparsity2
 
 !----------------------------------------------------------------------------
 !

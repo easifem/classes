@@ -30,7 +30,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "TENSORFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1006
+INTEGER( I4B ), PARAMETER :: eUnitNo = 1009 !< this is correct carry on
 CHARACTER( LEN = * ), PARAMETER :: eLogFile = "TENSORFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------

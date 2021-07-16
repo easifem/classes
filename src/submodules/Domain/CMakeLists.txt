@@ -4,4 +4,5 @@ TARGET_SOURCES(
   ${src_path}/Domain_Class@DomainMethods.f90
   ${src_path}/Domain_Class@PhysicalNamesMethods.f90
   ${src_path}/Domain_Class@getMethods.f90
+  ${src_path}/Domain_Class@setMethods.f90
   )

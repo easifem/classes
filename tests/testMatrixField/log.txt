@@ -1,0 +1,21 @@
+Testing Initiate and DeallocateData
+
+      EXCEPTION_INFORMATION: MATRIXFIELD_CLASS::mField_Initiate1 - Checking essential parameters
+
+      EXCEPTION_INFORMATION: MATRIXFIELD_CLASS::mField_Initiate1 - Found all required parameters
+
+      EXCEPTION_INFORMATION: MATRIXFIELD_CLASS::mField_Initiate1 - CSRMatrix has been initiated
+
+      EXCEPTION_INFORMATION: MATRIXFIELD_CLASS::mField_Initiate1 - Setting sparsity...
+ total mesh in dim =            1  total mesh            7
+ total nodes in mesh :            5
+ total nodes in mesh :            5
+ total nodes in mesh :            9
+ total nodes in mesh :            5
+ total nodes in mesh :            5
+ total nodes in mesh :            9
+ total nodes in mesh :            0
+ total mesh in dim =            2  total mesh            2
+ total nodes in mesh :           56
+ total nodes in mesh :           55
+ total mesh in dim =            3  total mesh            0
