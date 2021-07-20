@@ -1,152 +1,49 @@
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 July 2021
+! summary: This module defines a native linear solver, It uses sparsekitt library
+
 MODULE LinSolver_Class
-  !! This module defines an abstract class for a linear solver
 USE GlobalData
 USE BaseType
-
-#include "lisf.h"
-
+USE FPL, ONLY: ParameterList_
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE AbstractLinSolver_Class
 IMPLICIT NONE
-
 PRIVATE
 
-INTEGER( I4B ), PARAMETER, PUBLIC :: &
-  & lis_cg = 1, &
-  & lis_bcg=2,  lis_bicg = 2, &
-  & lis_cgs = 3, &
-  & lis_bcgstab=4, lis_bicgstab = 4, &
-  & lis_bcgstabl = 5, lis_bicgstabl = 5, &
-  & lis_gpbicg = 6, &
-  & lis_tfqmr=7, &
-  & lis_omn = 8, lis_fom=8, lis_orthomin = 8, &
-  & lis_gmres=9, lis_gmr = 9, &
-  & lis_jacobi = 10, &
-  & lis_gs = 11, &
-  & lis_sor = 12, &
-  & lis_bicgsafe = 13, &
-  & lis_cr = 14, &
-  & lis_bicr = 15, &
-  & lis_crs = 16, &
-  & lis_bicrstab = 17, &
-  & lis_gpbicr = 18, &
-  & lis_bicrsafe = 19, &
-  & lis_fgmres=20, &
-  & lis_idrs = 21, &
-  & lis_idr1 = 22, &
-  & lis_minres = 23, &
-  & lis_cocg = 24, &
-  & lis_cocr = 25, &
-  & lis_cgnr=26, lis_cgn = 26, &
-  & lis_dbcg=27, &
-  & lis_dqgmres=28
-
-INTEGER( I4B ), PARAMETER, PUBLIC :: &
-  & p_none = 0, &
-  & p_jacobi = 1, &
-  & p_iluk = 2, &
-  & p_ssor = 3, &
-  & p_hybrid = 4, &
-  & p_is = 5, &
-  & p_sainv = 6, &
-  & p_saamg = 7, &
-  & p_iluc = 8, &
-  & p_ilut = 9, &
-  & p_ilutp = 10, &
-  & p_ilud = 11, &
-  & p_iludp = 12, &
-  & p_ilu0 = 13
+CHARACTER( LEN = * ), PARAMETER :: modName="LINSOLVER_CLASS"
+TYPE( ExceptionHandler_ ) :: e
+INTEGER( I4B ), PARAMETER :: eUnitNo = 1011
+CHARACTER( LEN = * ), PARAMETER :: eLogFile = "LINSOLVER_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
-!                                                                 Linsolver_
+!                                                               LinSolver_
 !----------------------------------------------------------------------------
 
-!> authors: Dr. Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: Native linear solver
 !
-! [[linsolver_]] is an abstract class for solving system of linear equation
+!### Introduction
 !
-! @note
-! It is important to node that [[linsolver_]] is created to build an
-! interface between `EASIFEM` library and other existing open-source
-! and powerful linear solver libraries.
-! @endnote
-!
-!### Usage
-!
-! ```fortran
-!	CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
-!    & <, diagScale, ipar, fpar> )
-! CALL obj % setPrecondition( obj, precondtype <,ipar, fpar> )
-! CALL obj % setSparsity( From )
-! CALL obj % setDirichletBCNodes( Nptrs, dofs )
-! CALL obj % setMatrix( From )
-! CALL obj % solve( sol, rhs )
-! CALL obj % Display( msg <,unitno > )
-! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL obj % DeallocateData( )
-! ```
-
-TYPE, ABSTRACT :: LinSolver_
-  INTEGER( I4B ) :: solverName = 0
-    !! Solver name
-  INTEGER( I4B ) :: ierr = 0
-    !! error code returned by the solver
-  INTEGER( I4B ) :: tdof = 1
-    !! Total number of degrees of freedom per node; default is 1
-  INTEGER( I4B ), ALLOCATABLE :: tNodes( : )
-    !! Total number of spatial nodes in each dof, size(tNodes) = tdof
-  INTEGER( I4B ) :: storageFMT = Nodes_FMT
-    !! storageFMT, There are two types of storage format for nodal vectors
-    !! Nodes_FMT, DOF_FMT
-  INTEGER( I4B ) :: precondType = 0
-    !! Name of preconditioner
-  INTEGER( I4B ) :: myRank = 0
-    !! MPI Rank
-  INTEGER( I4B ) :: comm = 0
-    !! MPI COMM
-  INTEGER( I4B ) :: numproc = 0
-    !! Number of processor running
-  CHARACTER( LEN = 5 ) :: Matrixprop = "UNSYM"
-    !! Matrix Property
-  CONTAINS
-
-  PROCEDURE( ls_init ), PUBLIC, DEFERRED, PASS( obj ) :: Initiate
-    !! Initiate the object
-  PROCEDURE( ls_set_precon ), PUBLIC, DEFERRED, PASS( obj ) :: setPrecondition
-    !! Set preconditioner and its properties
-  PROCEDURE( ls_set_sparsity ), PUBLIC, DEFERRED, PASS( To ) :: setSparsity
-    !! Set sparsity pattern,
-    !! Sparsity is also related to the connectivity of the mesh
-  PROCEDURE( ls_set_dbc_1 ), PUBLIC, DEFERRED, PASS( obj ) :: set_dbcNodes_1
-    !! Set Dirichlet boundary condition information
-  PROCEDURE( ls_set_dbc_2 ), PUBLIC, DEFERRED, PASS( obj ) :: set_dbcNodes_2
-    !! Set Dirichlet boundary condition information
-  GENERIC, PUBLIC :: setDirichletBCNodes => set_dbcNodes_1, set_dbcNodes_2
-    !! Set Dirichlet boundary condition information
-  PROCEDURE( ls_set_matrix ), PUBLIC, DEFERRED, PASS( To ) :: setMatrix
-    !! Set the matrix
-  PROCEDURE( ls_solve ), PUBLIC, DEFERRED, PASS( obj ) :: Solve
-    !! Solve system of linear equation
-  PROCEDURE( ls_display ), PUBLIC, DEFERRED, PASS( obj ) :: Display
-    !! Display the content
-  PROCEDURE( ls_w_res ), PUBLIC, DEFERRED, PASS( obj ) :: writeResidueHistory
-    !! Write the residue history to a file
-  PROCEDURE( ls_deallocate ), PUBLIC, DEFERRED, PASS( obj ) :: DeallocateData
-    !! Deallocate Data
-END TYPE LinSolver_
-
-PUBLIC :: LinSolver_
-
-!> This data type contains pointer to [[linsolver_]]
-TYPE :: LinSolverPointer_
-  CLASS( LinSolver_ ), POINTER :: Ptr => NULL( )
-END TYPE LinSolverPointer_
-
-!----------------------------------------------------------------------------
-!                                                                 Sparsekit_
-!----------------------------------------------------------------------------
-
-!> authors: Dr. Vikas Sharma
-!
-! [[Sparsekit_]] data type is a container around Yusef Saad's SparseKit
+! [[LinSolver_]] data type is a container around Yusef Saad's SparseKit
 ! lib. It is used to solve the linear system with sparse matrices
 !
 ! - Reference : https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
@@ -179,7 +76,7 @@ END TYPE LinSolverPointer_
 ! - Implement `ilutp` ans `iludp` preconditioners
 !@endtodo
 
-TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
+TYPE, EXTENDS( AbstractLinSolver_ ) :: LinSolver_
   INTEGER( I4B ), ALLOCATABLE :: dbcNptrs ( : )
     !! IDs of nodal variables where Dirichlet boundary condition is imposed
   INTEGER( I4B ), ALLOCATABLE :: dbcIndx( : )
@@ -221,7 +118,6 @@ TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
   INTEGER( I4B ) :: mbloc = 0
 
   CONTAINS
-
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => skit_initiate
     !! Initiate object
   PROCEDURE, PUBLIC, PASS( obj ) :: setPrecondition => skit_setprecond
@@ -242,12 +138,12 @@ TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
     !! Output the residue history
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => skit_deallocatedata
     !! DeallocateData
-END TYPE Sparsekit_
+END TYPE LinSolver_
 
-PUBLIC :: Sparsekit_
+PUBLIC :: LinSolver_
 
-TYPE( Sparsekit_ ), PUBLIC, PARAMETER :: &
-  & TypeSparsekit = Sparsekit_( &
+TYPE( LinSolver_ ), PUBLIC, PARAMETER :: &
+  & TypeSparsekit = LinSolver_( &
   & dbcNptrs = NULL( ), &
   & dbcIndx = NULL( ), &
   & dbcJA =   NULL( ), &
@@ -262,7 +158,7 @@ TYPE( Sparsekit_ ), PUBLIC, PARAMETER :: &
   & RES = null( ) )
 
 TYPE :: SparsekitPointer_
-  CLASS( Sparsekit_ ), POINTER :: Ptr => NULL( )
+  CLASS( LinSolver_ ), POINTER :: Ptr => NULL( )
 END TYPE SparsekitPointer_
 
 PUBLIC :: SparsekitPointer_
@@ -475,7 +371,7 @@ INTERFACE
 
 MODULE SUBROUTINE skit_initiate( obj, SolverName, MaxIter, Tol, &
   & diagScale, ipar, fpar )
-  CLASS( Sparsekit_ ), INTENT( INOUT ) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: Tol
   INTEGER( I4B ), INTENT( IN ) :: MaxIter
   INTEGER( I4B ), INTENT( IN ) :: SolverName
@@ -521,7 +417,7 @@ INTERFACE
 !   - `fpar(3)` denotes permutation tolerance
 
 MODULE SUBROUTINE skit_setprecond( obj, precondtype, ipar, fpar )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -540,7 +436,7 @@ INTERFACE
 ! This subroutine set the sparsity pattern in [[sparsekit_]]
 
 MODULE SUBROUTINE skit_set_sparsity( From, To )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE skit_set_sparsity
 END INTERFACE
@@ -560,7 +456,7 @@ INTERFACE
 ! `storageFMT` can be `DOF_FMT` or `Nodes_FMT`
 
 MODULE SUBROUTINE skit_setDBC_1(  obj, Nptrs, dofs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_1
@@ -570,7 +466,7 @@ INTERFACE
 !! set Dirichlet boundary condition information
 
 MODULE SUBROUTINE skit_setDBC_2(  obj, Nptrs, dofs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_2
@@ -583,7 +479,7 @@ END INTERFACE
 INTERFACE
 !! set Matrix
 MODULE SUBROUTINE skit_setmatrix( From, To )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE skit_setmatrix
 END INTERFACE
@@ -595,7 +491,7 @@ END INTERFACE
 ! sol contains the initial guess
 INTERFACE
 MODULE SUBROUTINE skit_solve( obj, sol, rhs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   REAL( DFP ), INTENT( INOUT) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE skit_solve
@@ -607,7 +503,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE skit_display( obj, msg, unitno )
-  CLASS( Sparsekit_ ), INTENT( IN ) :: obj
+  CLASS( LinSolver_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Unitno
 END SUBROUTINE skit_display
@@ -625,7 +521,7 @@ PUBLIC :: Display
 
 INTERFACE
 MODULE SUBROUTINE skit_write_res_his( obj, path, prefix, fmt, iter )
-  CLASS( Sparsekit_ ), INTENT( IN ) :: obj
+  CLASS( LinSolver_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: path, prefix, fmt
   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: iter
 END SUBROUTINE skit_write_res_his
@@ -637,7 +533,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE skit_deallocatedata( obj )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
 END SUBROUTINE skit_deallocatedata
 END INTERFACE
 
@@ -785,4 +681,4 @@ INTERFACE DeallocateData
   MODULE PROCEDURE lis_deallocatedata
 END INTERFACE DeallocateData
 
-END MODULE LinSolver_Class
+END MODULE SparsekitLinSolver_Class

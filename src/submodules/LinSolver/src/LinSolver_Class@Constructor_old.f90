@@ -476,7 +476,7 @@ MODULE PROCEDURE skit_solve
   obj % ierr = obj % ipar( 1 )
 
   SELECT CASE( obj % ipar( 1 ) )
-  CASE( 1  )
+  CASE( 1 )
     ! matvec with A
     CALL AMUX( n, obj % wk( obj % ipar( 8 ) ), &
       & obj % wk( obj % ipar( 9 ) ), obj % A, obj % ja, obj % ia )

@@ -19,7 +19,7 @@
 ! date: 18 June 2021
 ! summary: This submodule contains methods for domain object
 
-SUBMODULE( Domain_Class ) DomainDataMethods
+SUBMODULE( Domain_Class ) PhysicalNamesMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -507,4 +507,4 @@ END PROCEDURE Domain_setNumNodes
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE DomainDataMethods
+END SUBMODULE PhysicalNamesMethods

@@ -17,6 +17,7 @@
 
 MODULE easifemClasses
 USE ExceptionHandler_Class
+USE FPL_Method
 USE FortranFile_Class
 USE TxtFile_Class
 USE InputFile_Class
@@ -39,8 +40,20 @@ USE MSH_Class
 USE AbstractVector_Class
 USE Vector_Class
 USE AbstractField_Class
+USE AbstractNodeField_Class
+USE AbstractElementField_Class
+USE AbstractMatrixField_Class
+USE ScalarField_Class
+USE STScalarField_Class
+USE VectorField_Class
+USE STVectorField_Class
+USE MatrixField_Class
+
+USE AbstractLinSolver_Class
+USE LinSolver_Class
+
   ! USE vtkType
-  ! USE LinSolver_Class
+
 
   ! USE Material_Class
   ! USE stdMaterials
@@ -48,7 +61,5 @@ USE AbstractField_Class
   ! USE VolHeatCapModel_Class
   ! USE SFCCModel_Class
 
-  ! USE mod_functional
   ! USE ogpf
-
 END MODULE easifemClasses

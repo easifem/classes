@@ -26,8 +26,6 @@ USE BaseType
 USE GlobalData
 USE ElementFactory
 USE ExceptionHandler_Class
-USE ElementPointerVector_Class, ONLY: ElementPointerVector_, &
-  & ElementPointerIterator_
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 IMPLICIT NONE
@@ -50,7 +48,6 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MESH_CLASS_EXCEPTION.txt"
 
 TYPE :: Mesh_
   PRIVATE
-  TYPE( ElementPointerVector_ ), PUBLIC :: list
     !! A dynamic vector of element pointer
   LOGICAL( LGT ) :: readFromFile = .TRUE.
     !! True if the mesh is read from a file
@@ -173,39 +170,29 @@ TYPE :: Mesh_
       !! Deallocate data
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => mesh_display
       !! Display the mesh
-    PROCEDURE, PUBLIC, PASS( obj ) :: Prune => mesh_PruneMesh
-      !! Check the mesh, clean the broken link
-    PROCEDURE, PUBLIC, PASS( obj ) :: Pushback => mesh_Pushback
-      !! Append an element to a mesh
-    PROCEDURE, PUBLIC, PASS( obj ) :: SetElement => mesh_SetElement
-      !! Set an element to a mesh
-    PROCEDURE, PUBLIC, PASS( obj ) :: getElementPointer => mesh_getElementPointer
-      !! Get Pointer to an element in mesh
-    PROCEDURE, PUBLIC, PASS( obj ) :: RemoveElement => mesh_RemoveElement
-      !! Remove an element from a mesh
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => mesh_size
       !! Returns the size of the mesh
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundingEntity => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getBoundingEntity => &
       & mesh_getBoundingEntity
-    PROCEDURE, PASS( Obj ) :: mesh_getNodeCoord_1
+    PROCEDURE, PASS( obj ) :: mesh_getNodeCoord_1
       !! Returns the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_getNodeCoord_2
+    PROCEDURE, PASS( obj ) :: mesh_getNodeCoord_2
       !! Returns the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_getNodeCoord_3
+    PROCEDURE, PASS( obj ) :: mesh_getNodeCoord_3
       !! Returns the nodal coordinates
     GENERIC, PUBLIC :: getNodeCoord => mesh_getNodeCoord_1, &
       & mesh_getNodeCoord_2, mesh_getNodeCoord_3
       !! Returns the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_setNodeCoord_1
+    PROCEDURE, PASS( obj ) :: mesh_setNodeCoord_1
       !! set the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_setNodeCoord_2
+    PROCEDURE, PASS( obj ) :: mesh_setNodeCoord_2
       !! set the nodal coordinates
-    PROCEDURE, PASS( Obj ) :: mesh_setNodeCoord_3
+    PROCEDURE, PASS( obj ) :: mesh_setNodeCoord_3
       !! set the nodal coordinates
     GENERIC, PUBLIC :: setNodeCoord => &
       & mesh_setNodeCoord_1, mesh_setNodeCoord_2, &
       & mesh_setNodeCoord_3
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNptrs => mesh_getNptrs
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNptrs => mesh_getNptrs
       !! Returns the node number of mesh
 
     !> Mesh data related
@@ -222,17 +209,17 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateElementToElements => &
       & mesh_InitiateElementToElements
       !! Initiate element to elements mapping
-    PROCEDURE, PUBLIC, PASS( Obj ) :: InitiateBoundaryData => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: InitiateBoundaryData => &
       & mesh_InitiateBoundaryData
       !! Initiate boundary data
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateInternalNptrs => &
       & mesh_InitiateInternalNptrs
       !! Initiate internal node numbers
 
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryNode => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNode => &
       & mesh_isBoundaryNode
       !! Returns true if a given global node number is a boundary node
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isLocalElementNumbersInitiated => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: isLocalElementNumbersInitiated => &
       & mesh_isLocalElementNumbersInitiated
       !! Returns true if vector related to local element num is initiated
     PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
@@ -263,7 +250,7 @@ TYPE :: Mesh_
       !! returns `.true.` if `Local_Nptrs` array is allocated
     PROCEDURE, PUBLIC, PASS( obj ) :: isInternalBoundaryDataInitiated => &
       & mesh_isInternalBoundaryDataInitiated
-    PROCEDURE, PUBLIC, PASS( Obj ) :: isBoundaryElement => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryElement => &
       & mesh_isBoundaryElement
       !! Returns true, if an element is a boundary element
 
@@ -280,19 +267,19 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: getConnectivity => &
       & mesh_getConnectivity
       !! Returns  node numbers in an element
-    PROCEDURE, PASS( obj ) :: mesh_getLocalNptrs_1
+    PROCEDURE, PASS( obj ) :: mesh_getLocalNodeNumber1
       !! Returns the local node number of a glocal node number
-    PROCEDURE, PASS( obj ) :: mesh_getLocalNptrs_2
+    PROCEDURE, PASS( obj ) :: mesh_getLocalNodeNumber2
       !! Returns the local node number of a global node number
-    GENERIC, PUBLIC :: getLocalNptrs => mesh_getLocalNptrs_1, &
-      & mesh_getLocalNptrs_2
+    GENERIC, PUBLIC :: getLocalNptrs => mesh_getLocalNodeNumber1, &
+      & mesh_getLocalNodeNumber2
       !! Returns the local node number of a global node number
-    PROCEDURE, PASS( obj ) :: mesh_getGlobalNptrs_1
+    PROCEDURE, PASS( obj ) :: mesh_getGlobalNodeNumber1
       !! Returns the global node number of a local node number
-    PROCEDURE, PASS( obj ) :: mesh_getGlobalNptrs_2
+    PROCEDURE, PASS( obj ) :: mesh_getGlobalNodeNumber2
       !! Returns the global node number of a local node number
-    GENERIC, PUBLIC :: getGlobalNptrs => mesh_getGlobalNptrs_1, &
-      & mesh_getGlobalNptrs_2
+    GENERIC, PUBLIC :: getGlobalNptrs => mesh_getGlobalNodeNumber1, &
+      & mesh_getGlobalNodeNumber2
     PROCEDURE, PASS( obj ) :: mesh_getGlobalElemNumber_1
     PROCEDURE, PASS( obj ) :: mesh_getGlobalElemNumber_2
     GENERIC, PUBLIC :: getGlobalElemNumber => &
@@ -310,17 +297,20 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeToNodes => &
       & mesh_getNodeToNodes
       !! Returns nodes connected to a given node number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getElementToElements => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getElementToElements => &
       & mesh_getElementToElements
       !! Returns local element number connected to a given local
       !! element number, it also gives information about the local
       !! facet number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getBoundaryElementData => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getBoundaryElementData => &
       & mesh_getBoundaryElementData
       !! Returns boundary element data
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getInternalNptrs => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: getInternalNptrs => &
       & mesh_getInternalNptrs
       !! Returns internal node number
+    PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity1 => mesh_setSparsity1
+    PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity2 => mesh_setSparsity2
+    GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2
 END TYPE Mesh_
 
 !----------------------------------------------------------------------------
@@ -543,156 +533,6 @@ INTERFACE Display
 END INTERFACE Display
 
 PUBLIC :: Display
-
-!----------------------------------------------------------------------------
-!                                                            Prune@Methods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	25 March 2021
-! summary: Prune mesh object
-!
-!### Introduction
-!
-! This subroutine prune the mesh, that is, removing any broken links.
-!
-!@note
-! This routine runs through the element array and counts element pointers
-! that are associated, and return the total number of associated elements.
-! Therefore, it should be called only after appending/removing an element
-! from the mesh. This routine also check for broken links and remove them.
-!@endnote
-!
-!### Usage
-!
-!```fortran
-!call obj%prune( )
-!```end fortran
-
-INTERFACE
-MODULE SUBROUTINE mesh_PruneMesh( obj )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh object which will be pruned
-END SUBROUTINE mesh_PruneMesh
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 AppendElement@MeshMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	25 March 2021
-! summary: Append an element to the mesh
-!
-!### Introduction
-!
-!  Append an element, and increase the total elements in mesh by one
-!
-!### Usage
-!```fortran
-! call obj%pushBack( Elem )
-!```
-
-
-INTERFACE
-MODULE SUBROUTINE mesh_Pushback( obj, Elem )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh obj
-  CLASS( Element_ ), TARGET, INTENT( INOUT ) :: Elem
-    !! finite element to be added
-END SUBROUTINE mesh_Pushback
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetElement@MeshMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	25 March 2021
-! summary: Set an element to a mesh
-!
-!### Introduction
-!
-! Seting element; total number of elements remain same
-! Size of mesh should be sufficient while using this.
-!
-!### Usage
-!
-!```fortran
-! call obj % setElement( Elem )
-!```
-
-INTERFACE
-MODULE SUBROUTINE mesh_SetElement( obj, Elem, iel )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! Mesh object which will be modified
-  CLASS( Element_ ), TARGET, INTENT( INOUT ) :: Elem
-    !! Finite element to be set inside the mesh
-  INTEGER( I4B ), INTENT( IN ) :: iel
-    !! element number
-END SUBROUTINE mesh_SetElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  ElementPointer@MeshMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	12 June 2021
-! summary: Return the pointer to an element `obj % Elem(iel)`
-!
-!### Introduction
-!
-! Return the pointer to an element `obj % Elem(iel)`
-!
-! @warning
-! make sure `iel` should be less that `obj%telements`
-! @endwarning
-!
-!### Usage
-!
-!```fortran
-! class( element_ ), pointer :: elem
-! elem => obj % ElementPointer( iel )
-!```
-
-INTERFACE
-MODULE FUNCTION mesh_getElementPointer( obj, iel ) RESULT( ans )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh object
-  INTEGER( I4B ), INTENT( IN ) :: iel
-    !! element number
-  CLASS( Element_ ), POINTER :: ans
-    !! pointer to finite element
-END FUNCTION mesh_getElementPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 RemoveElement@MeshMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 June 2021
-! summary: Remove an element from the mesh
-!
-!### Introduction
-! Remove an element from the mesh. If you want to free the memory occupied with the entry which is going to be removed then set `freeMem` to `.TRUE.`, otherwise set it to `.FALSE.`.
-!
-!### Usage
-!
-!```fortran
-! call obj % removeElement( iel = iel, freeMem= )
-!```
-
-INTERFACE
-MODULE SUBROUTINE mesh_RemoveElement( obj, iel, freeMem )
-  CLASS( Mesh_ ), INTENT( INOUT) :: obj
-    !! mesh object
-  INTEGER( I4B ), INTENT( IN ) :: iel
-    !! element number
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
-END SUBROUTINE mesh_RemoveElement
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              getTotalElements@MeshMethods
@@ -1199,11 +1039,11 @@ END INTERFACE
 ! This function returns the local node numbers from global node numbers.
 
 INTERFACE
-MODULE PURE FUNCTION mesh_getLocalNptrs_1( obj, GlobalNode ) RESULT( Ans )
+MODULE PURE FUNCTION mesh_getLocalNodeNumber1( obj, GlobalNode ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: GlobalNode( : )
   INTEGER( I4B ) :: Ans( SIZE( GlobalNode ) )
-END FUNCTION mesh_getLocalNptrs_1
+END FUNCTION mesh_getLocalNodeNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1215,11 +1055,11 @@ END INTERFACE
 ! summary: This routine returns the local node number from a global node number
 
 INTERFACE
-MODULE PURE FUNCTION mesh_getLocalNptrs_2( obj, GlobalNode ) RESULT( Ans )
+MODULE PURE FUNCTION mesh_getLocalNodeNumber2( obj, GlobalNode ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: GlobalNode
   INTEGER( I4B ) :: Ans
-END FUNCTION mesh_getLocalNptrs_2
+END FUNCTION mesh_getLocalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1231,11 +1071,11 @@ END INTERFACE
 ! summary: This function returns the Global node number from local node num
 
 INTERFACE
-MODULE PURE FUNCTION mesh_getGlobalNptrs_1( obj, LocalNode ) RESULT( Ans )
+MODULE PURE FUNCTION mesh_getGlobalNodeNumber1( obj, LocalNode ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: LocalNode( : )
   INTEGER( I4B ) :: Ans( SIZE( LocalNode ) )
-END FUNCTION mesh_getGlobalNptrs_1
+END FUNCTION mesh_getGlobalNodeNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1247,11 +1087,11 @@ END INTERFACE
 ! summary: This routine returns the Global node number from a local node number
 
 INTERFACE
-MODULE PURE FUNCTION mesh_getGlobalNptrs_2( obj, LocalNode ) RESULT( Ans )
+MODULE PURE FUNCTION mesh_getGlobalNodeNumber2( obj, LocalNode ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: LocalNode
   INTEGER( I4B ) :: Ans
-END FUNCTION mesh_getGlobalNptrs_2
+END FUNCTION mesh_getGlobalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1443,6 +1283,45 @@ MODULE PURE FUNCTION mesh_getInternalNptrs( obj ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION mesh_getInternalNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                setSparsity@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+MODULE SUBROUTINE mesh_setSparsity1( obj, mat, localNodeNumber, lbound, &
+  & ubound )
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+    !! Mesh_ class
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+    !! CSRMatrix object
+  INTEGER( I4B ), INTENT( IN ) :: lbound
+  INTEGER( I4B ), INTENT( IN ) :: ubound
+  INTEGER( I4B ), INTENT( IN ) :: LocalNodeNumber( lbound:ubound )
+    !! Global to local node number map
+END SUBROUTINE mesh_setSparsity1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                setSparsity@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+
+INTERFACE
+MODULE SUBROUTINE mesh_setSparsity2( obj, mat )
+  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+    !! Mesh_ class
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+    !! CSRMatrix object
+END SUBROUTINE mesh_setSparsity2
 END INTERFACE
 
 !----------------------------------------------------------------------------

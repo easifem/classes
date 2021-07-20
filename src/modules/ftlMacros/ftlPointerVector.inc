@@ -187,6 +187,8 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
   FTL_TEMPLATE_TYPE_WRAP, PUBLIC :: value
   CONTAINS
   PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => T_Iter_DeallocateData
+    FINAL :: T_Iter_Final
     PROCEDURE, PASS( obj ) :: T_Iter_NewItDefault
     PROCEDURE, PASS( obj ) :: T_Iter_NewItCopyOther
     GENERIC, PUBLIC :: Initiate => T_Iter_NewItDefault, T_Iter_NewItCopyOther
@@ -981,6 +983,26 @@ SUBROUTINE T_Display(obj, msg, unitno)
     END IF
   END DO
 END SUBROUTINE T_Display
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_Iter_DeallocateData(obj)
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( INOUT ) :: obj
+  obj%dynArray => NULL()
+  obj%index = 0
+  obj%value%ptr => NULL()
+END SUBROUTINE T_Iter_DeallocateData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE T_Iter_Final(obj)
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( INOUT ) :: obj
+  CALL obj%DeallocateData()
+END SUBROUTINE T_Iter_Final
 
 !----------------------------------------------------------------------------
 !

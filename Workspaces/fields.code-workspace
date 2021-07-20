@@ -1,0 +1,61 @@
+{
+	"folders": [
+		{
+			"name": "AbstractField",
+			"path": "../src/modules/AbstractField"
+		},
+		{
+			"name": "AbstractNodeField",
+			"path": "../src/modules/AbstractNodeField"
+		},
+		{
+			"name": "AbstractMatrixField",
+			"path": "../src/modules/AbstractMatrixField"
+		},
+		{
+			"name": "AbstractElementField",
+			"path": "../src/modules/AbstractElementField"
+		},
+		{
+			"name": "ScalarField",
+			"path": "../src/modules/ScalarField"
+		},
+		{
+			"name": "TensorField",
+			"path": "../src/modules/TensorField"
+		},
+		{
+			"name": "VectorField",
+			"path": "../src/modules/VectorField"
+		},
+		{
+			"name": "ScalarField",
+			"path": "../src/submodules/ScalarField"
+		},
+		{
+			"name": "VectorField",
+			"path": "../src/submodules/VectorField"
+		},
+		{
+			"path": "../src/modules/MatrixField"
+		},
+		{
+			"path": "../src/submodules/MatrixField"
+		},
+		{
+			"path": "../tests/testMatrixField"
+		},
+		{
+			"path": "../tests/testScalarField"
+		},
+		{
+			"path": "../tests/testSTScalarField"
+		},
+		{
+			"path": "../tests/testSTVectorField"
+		},
+		{
+			"path": "../tests/testVectorField"
+		}
+	]
+}

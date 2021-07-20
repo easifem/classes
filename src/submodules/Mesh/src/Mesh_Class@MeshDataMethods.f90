@@ -673,49 +673,49 @@ END PROCEDURE mesh_getConnectivity
 !                                                          getLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getLocalNptrs_1
+MODULE PROCEDURE mesh_getLocalNodeNumber1
   INTEGER( I4B ) :: ii
   DO ii = 1, SIZE( GlobalNode )
-    ans( ii ) = mesh_getLocalNptrs_2( obj, GlobalNode( ii ) )
+    ans( ii ) = mesh_getLocalNodeNumber2( obj, GlobalNode( ii ) )
   END DO
-END PROCEDURE mesh_getLocalNptrs_1
+END PROCEDURE mesh_getLocalNodeNumber1
 
 !----------------------------------------------------------------------------
 !                                                            getLocalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getLocalNptrs_2
+MODULE PROCEDURE mesh_getLocalNodeNumber2
   IF(      GlobalNode .LT. obj %MinNptrs &
     & .OR. GlobalNode .GT. obj%maxNptrs ) THEN
     ans = 0
   ELSE
     ans = obj%Local_Nptrs( GlobalNode )
   END IF
-END PROCEDURE mesh_getLocalNptrs_2
+END PROCEDURE mesh_getLocalNodeNumber2
 
 !----------------------------------------------------------------------------
 !                                                          getGlobalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getGlobalNptrs_1
+MODULE PROCEDURE mesh_getGlobalNodeNumber1
   INTEGER( I4B ) :: ii
 
   DO ii = 1, SIZE( LocalNode )
-    ans( ii ) = mesh_getGlobalNptrs_2( obj, LocalNode( ii ) )
+    ans( ii ) = mesh_getGlobalNodeNumber2( obj, LocalNode( ii ) )
   END DO
-END PROCEDURE mesh_getGlobalNptrs_1
+END PROCEDURE mesh_getGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
 !                                                            getGlobalNptrs
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getGlobalNptrs_2
+MODULE PROCEDURE mesh_getGlobalNodeNumber2
   IF( LocalNode .LE. obj%tNodes ) THEN
     ans = obj%Nptrs( LocalNode, 1 )
   ELSE
     ans = 0
   END IF
-END PROCEDURE mesh_getGlobalNptrs_2
+END PROCEDURE mesh_getGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
 !                                                       getGlobalElemNumber
@@ -870,6 +870,53 @@ MODULE PROCEDURE mesh_getInternalNptrs
   END IF
 END PROCEDURE mesh_getInternalNptrs
 
+!----------------------------------------------------------------------------
+!                                                                setSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setSparsity1
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity1"
+  INTEGER( I4B ) :: i, j, k
+  INTEGER( I4B ), allocatable :: n2n( : )
+
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+      & "Mesh data is not initiated, first initiate")
+  END IF
+  IF( .NOT. obj%isNodeToNodesInitiated() ) CALL obj%InitiateNodeToNodes( )
+  DO i = 1, obj%tNodes
+    j = obj%getGlobalNptrs( LocalNode = i )
+    k = localNodeNumber( j )
+    IF( k .NE. 0 ) THEN
+      n2n = localNodeNumber( &
+        & obj%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. ) )
+      CALL setSparsity( obj = Mat, Row = k, Col = n2n )
+    END IF
+  END DO
+  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
+END PROCEDURE mesh_setSparsity1
+
+!----------------------------------------------------------------------------
+!                                                                setSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setSparsity2
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity2"
+  INTEGER( I4B ) :: i, j, idof, k
+  INTEGER( I4B ), allocatable :: n2n( : )
+
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+      & "Mesh data is not initiated, first initiate")
+  END IF
+  IF( .NOT. obj%isNodeToNodesInitiated() ) CALL obj%InitiateNodeToNodes( )
+  DO i = 1, obj%tNodes
+    j = obj%getGlobalNptrs( LocalNode = i )
+    n2n = obj%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. )
+    CALL setSparsity( obj = Mat, Row = j, Col = n2n )
+  END DO
+  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
+END PROCEDURE mesh_setSparsity2
 
 !----------------------------------------------------------------------------
 !

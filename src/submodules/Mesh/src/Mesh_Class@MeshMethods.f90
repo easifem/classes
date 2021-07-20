@@ -567,19 +567,10 @@ MODULE PROCEDURE Mesh_Constructor_1
 END PROCEDURE Mesh_Constructor_1
 
 !----------------------------------------------------------------------------
-!                                                                    Final
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_final
-  CALL obj%DeallocateData()
-END PROCEDURE mesh_final
-
-!----------------------------------------------------------------------------
 !                                                            DeallocateData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_DeallocateData
-  CALL obj%list%deallocateData()
   obj%readFromFile = .FALSE.
   obj%uid = 0
   obj%xidim = 0
@@ -626,6 +617,14 @@ MODULE PROCEDURE mesh_DeallocateData
 END PROCEDURE mesh_DeallocateData
 
 !----------------------------------------------------------------------------
+!                                                                    Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_final
+  CALL obj%DeallocateData()
+END PROCEDURE mesh_final
+
+!----------------------------------------------------------------------------
 !                                                                    Display
 !----------------------------------------------------------------------------
 
@@ -636,82 +635,11 @@ MODULE PROCEDURE mesh_display
 END PROCEDURE mesh_display
 
 !----------------------------------------------------------------------------
-!                                                                    SetSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_PruneMesh
-  ! define internal variables
-  INTEGER( I4B ) :: tElements, iel
-  TYPE( ElementPointerIterator_ ) :: iterator
-  CHARACTER( LEN=* ), PARAMETER :: myName="mesh_PruneMesh"
-
-  IF( obj%list%isEmpty() ) THEN
-    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
-      & "mesh is empty")
-  ELSE
-    iterator = obj%list%Begin()
-    DO iel = 1, obj%list%size()
-      IF( .NOT. ASSOCIATED(iterator%value%ptr) ) THEN
-        CALL obj%list%Erase(pos=iterator)
-      END IF
-      CALL iterator%Inc()
-    END DO
-    CALL obj%list%ShrinkToFit()
-  END IF
-END PROCEDURE mesh_PruneMesh
-
-!----------------------------------------------------------------------------
-!                                                              AppendElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_Pushback
-  TYPE( ElementPointer_ ) :: val
-  val%ptr => Elem
-  CALL obj%list%pushback(val)
-END PROCEDURE mesh_Pushback
-
-!----------------------------------------------------------------------------
-!                                                                 SetElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_SetElement
-  TYPE( ElementPointer_ ) :: val
-  val%ptr => Elem
-  CALL obj%list%set( pos=iel, val=val )
-END PROCEDURE mesh_SetElement
-
-!----------------------------------------------------------------------------
-!                                                             ElementPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_getElementPointer
-  TYPE( ElementPointerIterator_ ) :: iterator
-  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_getElementPointer"
-
-  IF( iel .GT. obj%size() ) THEN
-    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
-      & "iel is greater thant the size of the mesh.")
-  ELSE
-    iterator = obj%list%begin()
-    iterator = iterator + (iel-1)
-    ans => iterator%value%ptr
-  END IF
-END PROCEDURE mesh_getElementPointer
-
-!----------------------------------------------------------------------------
-!                                                             RemoveElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_RemoveElement
-  CALL obj%list%Erase( pos=iel, freeMem=freeMem )
-END PROCEDURE mesh_RemoveElement
-
-!----------------------------------------------------------------------------
 !                                                                      SIZE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_size
-  ans = obj%list%size()
+  ans = obj%tElements
 END PROCEDURE mesh_size
 
 !----------------------------------------------------------------------------
