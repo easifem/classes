@@ -13,31 +13,38 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
-! summary: This module contains constructor method for [[MatrixField_]]
+! summary: This module contains matrix vector method for [[MatrixField_]]
 
-SUBMODULE( MatrixField_Class ) GetMethods
+SUBMODULE( MatrixField_Class ) MatVecMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                      SIZE
+!                                                                    Matvec
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Size
-  ans = SIZE( obj%mat, dim )
-END PROCEDURE mField_Size
+MODULE PROCEDURE mField_Matvec1
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_Matvec1"
+  INTEGER( I4B ) :: s( 2 )
+  s = obj%shape()
+  IF( SIZE( y ) .NE. s( 1 ) .OR. SIZE( x ) .NE. s(2) ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'There is some mismatch in dimension of matrix and vectors' )
+  CALL Matvec( obj=obj%mat, y=y, x=x, transp=transp )
+END PROCEDURE mField_Matvec1
 
 !----------------------------------------------------------------------------
-!                                                                     SHAPE
+!                                                                    Matvec
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Shape
-  ans = SHAPE( obj%mat )
-END PROCEDURE mField_Shape
+MODULE PROCEDURE mField_Matvec2
+  CHARACTER( LEN = * ), PARAMETER :: myName="amField_Matvec2"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented so far')
+END PROCEDURE mField_Matvec2
 
-END SUBMODULE GetMethods
+END SUBMODULE MatVecMethods

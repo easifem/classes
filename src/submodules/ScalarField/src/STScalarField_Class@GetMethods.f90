@@ -154,16 +154,16 @@ MODULE PROCEDURE stsField_get7
 END PROCEDURE stsField_get7
 
 !----------------------------------------------------------------------------
-!                                                                 getPointer
+!                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_getPointer1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_getPointer1"
+MODULE PROCEDURE stsField_getPointerOfComponent
+  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_getPointerOfComponent"
 
   IF( timeCompo .GT. obj%timeCompo ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'given timeCompo should be less than or equal to obj%timeCompo' )
   ans => getPointer( obj=obj%realVec, dofobj=obj%dof, dofno = timeCompo )
-END PROCEDURE stsField_getPointer1
+END PROCEDURE stsField_getPointerOfComponent
 
 END SUBMODULE GetMethods

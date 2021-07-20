@@ -166,17 +166,17 @@ MODULE PROCEDURE stvField_get8
 END PROCEDURE stvField_get8
 
 !----------------------------------------------------------------------------
-!                                                                 getPointer
+!                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_getPointer1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_getPointer1"
+MODULE PROCEDURE stvField_getPointerOfComponent
+  CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_getPointerOfComponent"
   INTEGER( I4B ) :: idof
   IF( spaceCompo .GT. obj%spaceCompo .OR. timeCompo .GT. obj%timeCompo ) &
     & CALL e%raiseError( modName//'::'//myName// " - "// &
     & 'given spaceCompo or timeCompo should be less than or equal to obj%spaceCompo or obj%timeCompo' )
   idof = ( timeCompo - 1 ) * obj%spaceCompo + spaceCompo
   ans => getPointer( obj=obj%realVec, dofobj=obj%dof, dofno = idof )
-END PROCEDURE stvField_getPointer1
+END PROCEDURE stvField_getPointerOfComponent
 
 END SUBMODULE GetMethods

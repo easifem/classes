@@ -17,22 +17,33 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
-! summary: This module solves system of linear equation
+! summary: This module defines a native linear solver, It uses sparsekitt library
 
-MODULE SparsekitLinSolver_Class
+MODULE LinSolver_Class
 USE GlobalData
 USE BaseType
+USE FPL, ONLY: ParameterList_
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE AbstractLinSolver_Class
 IMPLICIT NONE
 PRIVATE
 
+CHARACTER( LEN = * ), PARAMETER :: modName="LINSOLVER_CLASS"
+TYPE( ExceptionHandler_ ) :: e
+INTEGER( I4B ), PARAMETER :: eUnitNo = 1011
+CHARACTER( LEN = * ), PARAMETER :: eLogFile = "LINSOLVER_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
-!                                                               Sparsekit_
+!                                                               LinSolver_
 !----------------------------------------------------------------------------
 
-!> authors: Dr. Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: Native linear solver
 !
-! [[Sparsekit_]] data type is a container around Yusef Saad's SparseKit
+!### Introduction
+!
+! [[LinSolver_]] data type is a container around Yusef Saad's SparseKit
 ! lib. It is used to solve the linear system with sparse matrices
 !
 ! - Reference : https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
@@ -65,7 +76,7 @@ PRIVATE
 ! - Implement `ilutp` ans `iludp` preconditioners
 !@endtodo
 
-TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
+TYPE, EXTENDS( AbstractLinSolver_ ) :: LinSolver_
   INTEGER( I4B ), ALLOCATABLE :: dbcNptrs ( : )
     !! IDs of nodal variables where Dirichlet boundary condition is imposed
   INTEGER( I4B ), ALLOCATABLE :: dbcIndx( : )
@@ -107,7 +118,6 @@ TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
   INTEGER( I4B ) :: mbloc = 0
 
   CONTAINS
-
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => skit_initiate
     !! Initiate object
   PROCEDURE, PUBLIC, PASS( obj ) :: setPrecondition => skit_setprecond
@@ -128,12 +138,12 @@ TYPE, EXTENDS( LinSolver_ ) :: Sparsekit_
     !! Output the residue history
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => skit_deallocatedata
     !! DeallocateData
-END TYPE Sparsekit_
+END TYPE LinSolver_
 
-PUBLIC :: Sparsekit_
+PUBLIC :: LinSolver_
 
-TYPE( Sparsekit_ ), PUBLIC, PARAMETER :: &
-  & TypeSparsekit = Sparsekit_( &
+TYPE( LinSolver_ ), PUBLIC, PARAMETER :: &
+  & TypeSparsekit = LinSolver_( &
   & dbcNptrs = NULL( ), &
   & dbcIndx = NULL( ), &
   & dbcJA =   NULL( ), &
@@ -148,7 +158,7 @@ TYPE( Sparsekit_ ), PUBLIC, PARAMETER :: &
   & RES = null( ) )
 
 TYPE :: SparsekitPointer_
-  CLASS( Sparsekit_ ), POINTER :: Ptr => NULL( )
+  CLASS( LinSolver_ ), POINTER :: Ptr => NULL( )
 END TYPE SparsekitPointer_
 
 PUBLIC :: SparsekitPointer_
@@ -361,7 +371,7 @@ INTERFACE
 
 MODULE SUBROUTINE skit_initiate( obj, SolverName, MaxIter, Tol, &
   & diagScale, ipar, fpar )
-  CLASS( Sparsekit_ ), INTENT( INOUT ) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: Tol
   INTEGER( I4B ), INTENT( IN ) :: MaxIter
   INTEGER( I4B ), INTENT( IN ) :: SolverName
@@ -407,7 +417,7 @@ INTERFACE
 !   - `fpar(3)` denotes permutation tolerance
 
 MODULE SUBROUTINE skit_setprecond( obj, precondtype, ipar, fpar )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -426,7 +436,7 @@ INTERFACE
 ! This subroutine set the sparsity pattern in [[sparsekit_]]
 
 MODULE SUBROUTINE skit_set_sparsity( From, To )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE skit_set_sparsity
 END INTERFACE
@@ -446,7 +456,7 @@ INTERFACE
 ! `storageFMT` can be `DOF_FMT` or `Nodes_FMT`
 
 MODULE SUBROUTINE skit_setDBC_1(  obj, Nptrs, dofs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_1
@@ -456,7 +466,7 @@ INTERFACE
 !! set Dirichlet boundary condition information
 
 MODULE SUBROUTINE skit_setDBC_2(  obj, Nptrs, dofs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_2
@@ -469,7 +479,7 @@ END INTERFACE
 INTERFACE
 !! set Matrix
 MODULE SUBROUTINE skit_setmatrix( From, To )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE skit_setmatrix
 END INTERFACE
@@ -481,7 +491,7 @@ END INTERFACE
 ! sol contains the initial guess
 INTERFACE
 MODULE SUBROUTINE skit_solve( obj, sol, rhs )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   REAL( DFP ), INTENT( INOUT) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE skit_solve
@@ -493,7 +503,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE skit_display( obj, msg, unitno )
-  CLASS( Sparsekit_ ), INTENT( IN ) :: obj
+  CLASS( LinSolver_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Unitno
 END SUBROUTINE skit_display
@@ -511,7 +521,7 @@ PUBLIC :: Display
 
 INTERFACE
 MODULE SUBROUTINE skit_write_res_his( obj, path, prefix, fmt, iter )
-  CLASS( Sparsekit_ ), INTENT( IN ) :: obj
+  CLASS( LinSolver_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: path, prefix, fmt
   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: iter
 END SUBROUTINE skit_write_res_his
@@ -523,7 +533,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE skit_deallocatedata( obj )
-  CLASS( Sparsekit_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
 END SUBROUTINE skit_deallocatedata
 END INTERFACE
 

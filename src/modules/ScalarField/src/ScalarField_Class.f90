@@ -78,7 +78,6 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
     !! get selected values to given scalar
   GENERIC, PUBLIC :: get => get1, get2, get3, get4
     !! get the entries of scalar field
-  PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => sField_getPointer
 END TYPE ScalarField_
 
 PUBLIC :: ScalarField_
@@ -424,21 +423,6 @@ MODULE SUBROUTINE sField_get4( obj, value, istart, iend, stride )
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
 END SUBROUTINE sField_get4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     getPointer@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: get the pointer to the entries stored inside the
-
-INTERFACE
-MODULE FUNCTION sField_getPointer( obj ) RESULT( ans )
-  CLASS( ScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), POINTER :: ans( : )
-END FUNCTION sField_getPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

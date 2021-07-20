@@ -37,23 +37,23 @@ END PROCEDURE sField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Initiate1
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Initiate1"
+  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Initiate"
   INTEGER( I4B ) :: ierr, storageFMT
   INTEGER( I4B ) :: tNodes( 1 ), spaceCompo( 1 ), timeCompo( 1 )
   CHARACTER( LEN=: ), ALLOCATABLE :: char_var
   CHARACTER( LEN=1 ) :: names_char( 1 )
 
   !> main program
-  CALL obj%checkEssentialParam(param)
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar object is already initiated')
+
+  CALL obj%checkEssentialParam(param)
 
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
   ierr = param%get( key="name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
-
 
   IF( param%isPresent(key="fieldType") ) THEN
     ierr = param%get( key="fieldType", value=obj%fieldType )
@@ -84,13 +84,13 @@ MODULE PROCEDURE sField_Initiate1
 END PROCEDURE sField_Initiate1
 
 !----------------------------------------------------------------------------
-!                                                           Initiate
+!                                                                 Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Initiate2
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_Initiate2"
   CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This method has not been implemented so far')
+    & 'This routine has not been initiated so far!')
 END PROCEDURE sField_Initiate2
 
 !----------------------------------------------------------------------------

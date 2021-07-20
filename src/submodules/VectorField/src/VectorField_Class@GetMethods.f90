@@ -154,16 +154,16 @@ MODULE PROCEDURE vField_get7
 END PROCEDURE vField_get7
 
 !----------------------------------------------------------------------------
-!                                                                 getPointer
+!                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_getPointer1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "vField_getPointer1"
+MODULE PROCEDURE vField_getPointerOfComponent
+  CHARACTER( LEN = * ), PARAMETER :: myName = "vField_getPointerOfComponent"
 
   IF( spaceCompo .GT. obj%spaceCompo ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'given spaceCompo should be less than or equal to obj%spaceCompo' )
   ans => getPointer( obj=obj%realVec, dofobj=obj%dof, dofno = spaceCompo )
-END PROCEDURE vField_getPointer1
+END PROCEDURE vField_getPointerOfComponent
 
 END SUBMODULE GetMethods

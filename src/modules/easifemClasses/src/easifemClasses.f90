@@ -48,8 +48,12 @@ USE STScalarField_Class
 USE VectorField_Class
 USE STVectorField_Class
 USE MatrixField_Class
+
+USE AbstractLinSolver_Class
+USE LinSolver_Class
+
   ! USE vtkType
-  ! USE LinSolver_Class
+
 
   ! USE Material_Class
   ! USE stdMaterials

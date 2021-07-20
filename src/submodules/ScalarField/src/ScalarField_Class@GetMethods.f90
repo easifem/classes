@@ -106,12 +106,4 @@ MODULE PROCEDURE sField_get4
   END IF
 END PROCEDURE sField_get4
 
-!----------------------------------------------------------------------------
-!                                                                 getPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE sField_getPointer
-  ans => getPointer( obj=obj%realVec, dofobj=obj%dof, dofno=1_I4B )
-END PROCEDURE sField_getPointer
-
 END SUBMODULE GetMethods

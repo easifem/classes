@@ -197,42 +197,12 @@ contains
 !   call FPL_FINALIZE()
 ! end subroutine
 
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-
-! subroutine test2
-!   type( domain_ ) :: dom
-!   type( MatrixField_ ) :: obj
-!   type( HDF5File_ ) :: meshfile
-!   type( ParameterList_ ) :: param
-!   integer( i4b ) :: ierr
-
-!   call display( "Testing Initiate and DeallocateData for normal data" )
-!   CALL FPL_INIT()
-!   CALL param%initiate()
-!   ierr = param%set(key="name", value="U" )
-!   ierr = param%set(key="fieldType", value=FIELD_TYPE_NORMAL)
-!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-!   call meshfile%open()
-!   call dom%initiate( meshfile )
-
-!   call obj%initiate( param, dom )
-!   call obj%display( "scalar field = ")
-!   call obj%deallocateData()
-
-!   call dom%deallocateData()
-!   call meshfile%close()
-!   call meshfile%deallocateData()
-!   call param%deallocateData()
-!   call FPL_FINALIZE()
-! end subroutine
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-subroutine test0
+subroutine test1
   type( domain_ ) :: dom
   type( MatrixField_ ) :: obj
   type( HDF5File_ ) :: meshfile
@@ -255,6 +225,43 @@ subroutine test0
   call obj%initiate( param, dom )
   call obj%display( "Matrix field = ", unitNo=8 )
   call obj%deallocateData()
+  call dom%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+  call param%deallocateData()
+  call FPL_FINALIZE()
+end subroutine
+
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test0
+  type( domain_ ) :: dom
+  type( MatrixField_ ) :: obj, obj2
+  type( HDF5File_ ) :: meshfile
+  type( ParameterList_ ) :: param
+  type( DOF_ ) :: dofobj
+  integer( i4b ) :: ierr, tnodes
+
+  call display( "Testing Initiate and DeallocateData" )
+  CALL FPL_INIT()
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call dom%initiate( meshfile )
+  tnodes = dom%getTotalNodes()
+  CALL initiate( obj=dofobj, names=['K'], spaceCompo=[2], timeCompo=[2], storageFMT=DOF_FMT, tNodes=[tNodes] )
+  CALL param%initiate()
+  ierr = param%set(key="name", value="K" )
+  ierr = param%set(key="fieldType", value=FIELD_TYPE_CONSTANT)
+  ierr = param%set(key="matrixProp", value="UNSYM" )
+  call set( param, "dof", dofobj )
+  call obj%initiate( param, dom )
+  call obj2%initiate( obj )
+  call obj2%display( "Matrix field = ", unitNo=8 )
+  call obj%deallocateData()
+  call obj2%deallocateData()
   call dom%deallocateData()
   call meshfile%close()
   call meshfile%deallocateData()

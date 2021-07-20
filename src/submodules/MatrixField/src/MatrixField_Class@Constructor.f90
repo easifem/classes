@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
@@ -66,8 +65,6 @@ MODULE PROCEDURE mField_Initiate1
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Matrix field object is already initiated')
-  CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Checking essential parameters')
   CALL obj%checkEssentialParam(param)
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
   ierr = param%get( key="name", value=char_var )
@@ -81,8 +78,6 @@ MODULE PROCEDURE mField_Initiate1
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="matrixProp" ) ) :: char_var )
   ierr = param%get( key="matrixProp", value=char_var )
   CALL getValue( obj=param, key="dof", value=dofobj )
-  CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Found all required parameters')
   nrow = .tNodes. dofobj
   ncol = nrow
   obj%domain => dom
@@ -102,6 +97,17 @@ END PROCEDURE mField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Initiate2
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_Initiate2"
+  SELECT TYPE (obj2)
+  CLASS IS (MatrixField_)
+    IF( .NOT. obj2%isInitiated .OR. obj%isInitiated ) &
+      & CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'Either obj is already initiated or obj2 is not initiated!')
+    obj%isInitiated = .TRUE.
+    obj%name = obj2%name
+    obj%fieldType = obj2%fieldType
+    obj%mat = obj2%mat
+  END SELECT
 END PROCEDURE mField_Initiate2
 
 !----------------------------------------------------------------------------

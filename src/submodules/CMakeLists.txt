@@ -20,3 +20,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 # MatrixField
 include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
+
+#LinSolver
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)

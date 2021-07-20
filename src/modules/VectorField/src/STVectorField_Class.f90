@@ -94,7 +94,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7, get8
     !! get the entries of STVector field
 
-  PROCEDURE, PASS( obj ) :: getPointer => stvField_getPointer1
+  PROCEDURE, PASS( obj ) :: getPointerOfComponent => stvField_getPointerOfComponent
 END TYPE STVectorField_
 
 PUBLIC :: STVectorField_
@@ -718,7 +718,7 @@ END SUBROUTINE stvField_get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetPointer@GetMethods
+!                                         getPointerOfComponent@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -726,13 +726,13 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-MODULE FUNCTION stvField_getPointer1( obj, spaceCompo, timeCompo ) &
+MODULE FUNCTION stvField_getPointerOfComponent( obj, spaceCompo, timeCompo ) &
   & RESULT( ans )
   CLASS( STVectorField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
   REAL( DFP ), POINTER :: ans ( : )
-END FUNCTION stvField_getPointer1
+END FUNCTION stvField_getPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------

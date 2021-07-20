@@ -91,7 +91,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
     !! get the entries of Vector field
 
-  PROCEDURE, PASS( obj ) :: getPointer => vField_getPointer1
+  PROCEDURE, PASS( obj ) :: getPointerOfComponent => vField_getPointerOfComponent
 END TYPE VectorField_
 
 PUBLIC :: VectorField_
@@ -761,7 +761,7 @@ END SUBROUTINE vField_get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetPointer@GetMethods
+!                                          getPointerOfComponent@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -769,11 +769,11 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-MODULE FUNCTION vField_getPointer1( obj, spaceCompo ) RESULT( ans )
+MODULE FUNCTION vField_getPointerOfComponent( obj, spaceCompo ) RESULT( ans )
   CLASS( VectorField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   REAL( DFP ), POINTER :: ans ( : )
-END FUNCTION vField_getPointer1
+END FUNCTION vField_getPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------

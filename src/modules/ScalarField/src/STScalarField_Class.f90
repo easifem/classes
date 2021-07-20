@@ -91,7 +91,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
     !! get the entries of STScalar field
 
-  PROCEDURE, PASS( obj ) :: getPointer => stsField_getPointer1
+  PROCEDURE, PASS( obj ) :: getPointerOfComponent => stsField_getPointerOfComponent
 END TYPE STScalarField_
 
 PUBLIC :: STScalarField_
@@ -769,11 +769,11 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-MODULE FUNCTION stsField_getPointer1( obj, timeCompo ) RESULT( ans )
+MODULE FUNCTION stsField_getPointerOfComponent( obj, timeCompo ) RESULT( ans )
   CLASS( STScalarField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
   REAL( DFP ), POINTER :: ans ( : )
-END FUNCTION stsField_getPointer1
+END FUNCTION stsField_getPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------

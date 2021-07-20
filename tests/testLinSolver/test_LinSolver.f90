@@ -1,3 +1,4 @@
+
 ! This program is a part of EASIFEM library
 ! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
 !
@@ -15,50 +16,56 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE AbstractNodeField_Class
-USE GlobalData
-USE BaseType
-USE RealVector_Method, ONLY : getPointer
-USE AbstractField_Class
-IMPLICIT NONE
-PRIVATE
-
-!----------------------------------------------------------------------------
-!                                                         AbstractNodeField_
-!----------------------------------------------------------------------------
-
-TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
-  INTEGER( I4B ) :: tSize = 0
-    !! Total length of the nodal field = tdof * tNodes
-  TYPE( RealVector_ ) :: realVec
-    !! Vector of reals to contains the nodes
-  TYPE( DOF_ ) :: dof
-    !! Degree of freedom object, which contains the information about how the different components are stored inside the realVec
-  CONTAINS
-    PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => anf_getPointer
-END TYPE AbstractNodeField_
-
-PUBLIC :: AbstractNodeField_
-
-
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                getPointer
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 20 Jul 2021
-! summary: This routine returns the pointer to a fortran real vector stored inside realVec
-
-FUNCTION anf_getPointer( obj ) RESULT( ans )
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( IN ) :: obj
-  REAL( DFP ), POINTER :: ans( : )
-  ans => getPointer( obj%realVec )
-END FUNCTION anf_getPointer
+module test_m
+use easifemBase
+use easifemClasses
+implicit none
+contains
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END MODULE AbstractNodeField_Class
+subroutine test0
+  type( MatrixField_ ) :: Amat, Pmat
+  type( ParameterList_ ) :: param
+  type( LinSolver_ ) :: obj
+  integer( i4b ) :: ierr, tnodes
+
+  call display( "Testing Initiate and DeallocateData" )
+  CALL FPL_INIT()
+  CALL param%initiate()
+  CALL setLinSolverParam( param=param, solverName=LIS_CG,&
+    & preconditionOption=LEFT_PRECONDITION, convergenceIn=convergenceInRes, &
+    & convergenceType=relativeConvergence, maxIter=100,relativeToRHS=.TRUE., &
+    & KrylovSubspaceSize=20,rtol=1.0D-10,atol=1.0D-10 )
+  CALL obj%initiate(param)
+  CALL obj%Display("LinSolver : ")
+  CALL obj%DeallocateData()
+  call param%deallocateData()
+  call FPL_FINALIZE()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine exportMesh
+  TYPE( MSH_ ) :: mshFile
+  CALL mshFile%initiate( file="./mesh.msh", NSD=2 )
+  CALL mshFile%ExportMesh( file="./mesh.h5" )
+  CALL mshFile%DeallocateData()
+end
+
+end module test_m
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+program main
+use test_m
+implicit none
+! call exportMesh
+call test0
+end program main
