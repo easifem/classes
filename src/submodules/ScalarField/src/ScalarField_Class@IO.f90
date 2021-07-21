@@ -49,4 +49,25 @@ MODULE PROCEDURE sField_Display
   CALL Display( obj%realVec, obj%dof,  "# realVec : ", I )
 END PROCEDURE sField_Display
 
+!----------------------------------------------------------------------------
+!                                                                 Import
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Import"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented')
+END PROCEDURE sField_Import
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Export"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented')
+END PROCEDURE sField_Export
+
+
 END SUBMODULE IO

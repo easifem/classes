@@ -56,32 +56,40 @@ MODULE PROCEDURE stvField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'STVector field object is already initiated')
   CALL obj%checkEssentialParam(param)
+  !-----------------------------------------------------------------------!
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
   ierr = param%get( key="name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
+  !-----------------------------------------------------------------------!
   ierr = param%get( key="spaceCompo", value=obj%spaceCompo )
   ierr = param%get( key="timeCompo", value=obj%timeCompo )
+  !-----------------------------------------------------------------------!
   IF( param%isPresent(key="fieldType") ) THEN
     ierr = param%get( key="fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
+  !-----------------------------------------------------------------------!
   spaceCompo = obj%spaceCompo
   timeCompo = obj%timeCompo
   storageFMT = FMT_NODES
-  obj%domain => dom
+  !-----------------------------------------------------------------------!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'A constant space time vector field is not allowed' )
+    & 'A constant space time vector field is not allowed' )
   ELSE
-    tNodes = obj%domain%getTotalNodes()
+    tNodes = dom%getTotalNodes()
     obj%tSize = tNodes( 1 ) * obj%spaceCompo * obj%timeCompo
   END IF
+  !-----------------------------------------------------------------------!
   CALL initiate( obj=obj%dof, tNodes=tNodes, names=names_char, &
-    & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
+  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
+  !-----------------------------------------------------------------------!
   CALL initiate( obj%realVec, obj%dof )
+  !-----------------------------------------------------------------------!
   obj%isInitiated = .TRUE.
+  obj%domain => dom
   IF( ALLOCATED( char_var ) ) DEALLOCATE( char_var )
 END PROCEDURE stvField_Initiate1
 

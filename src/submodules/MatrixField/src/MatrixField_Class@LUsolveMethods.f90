@@ -35,7 +35,7 @@ MODULE PROCEDURE mField_LUSOLVE1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'MatrixField_ object is not initiated.')
 
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) &
+  IF( .NOT. obj%isPmatInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'obj%Pmat is not associted/ allocated. LUSOLVE needs LU &
     & decomposition, but it is not found, you can call &
@@ -76,7 +76,7 @@ MODULE PROCEDURE mField_LUTSOLVE1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'MatrixField_ object is not initiated.')
   !
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) &
+  IF( .NOT. obj%isPmatInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'obj%Pmat is not associted/ allocated.LUTSOLVE needs LU &
     & decomposition, but it is not found, you can call &

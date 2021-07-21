@@ -36,6 +36,10 @@ MODULE PROCEDURE mField_setPrecondition
     & CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'MatrixField_ is not initiated')
   !
+  IF( obj%isPmatInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'Precondition matrix is already initiated')
+  !
   IF( param%isPresent(key="preconditionName") ) THEN
     ierr = param%get( key="preconditionName", value=obj%Pmat%PmatName )
   ELSE
@@ -94,7 +98,7 @@ SUBROUTINE mField_getILUT( obj, param )
     & 'lfil should be present in param')
   END IF
   !
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) ALLOCATE( obj%Pmat )
+  obj%isPmatInitiated = .TRUE.
   CALL getILUT(obj=obj%mat, lfil=obj%Pmat%lfil, droptol=obj%Pmat%droptol, &
     & ALU=obj%Pmat%A, JLU=obj%Pmat%JA, JU=obj%Pmat%JU )
 END SUBROUTINE mField_getILUT
@@ -139,7 +143,7 @@ SUBROUTINE mField_getILUTP( obj, param )
     & 'mbloc should be present in param')
   END IF
   !
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) ALLOCATE( obj%Pmat )
+  obj%isPmatInitiated = .TRUE.
   CALL getILUTP( &
     & obj=obj%mat, lfil=obj%Pmat%lfil, droptol=obj%Pmat%droptol, &
     & permtol=obj%Pmat%permtol, mbloc=obj%Pmat%mbloc, &
@@ -173,7 +177,7 @@ SUBROUTINE mField_getILUD( obj, param )
     & 'alpha should be present in param')
   END IF
   !
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) ALLOCATE( obj%Pmat )
+  obj%isPmatInitiated = .TRUE.
   CALL getILUD( &
     & obj=obj%mat, alpha=obj%Pmat%alpha, droptol=obj%Pmat%droptol, &
     & ALU=obj%Pmat%A, JLU=obj%Pmat%JA, JU=obj%Pmat%JU )
@@ -219,7 +223,7 @@ SUBROUTINE mField_getILUDP( obj, param )
     & 'mbloc should be present in param')
   END IF
   !
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) ALLOCATE( obj%Pmat )
+  obj%isPmatInitiated = .TRUE.
   CALL getILUDP( &
     & obj=obj%mat, alpha=obj%Pmat%alpha, droptol=obj%Pmat%droptol, &
     & permtol=obj%Pmat%permtol, mbloc=obj%Pmat%mbloc, &
@@ -247,7 +251,7 @@ SUBROUTINE mField_getILUK( obj, param )
     & 'lfil should be present in param')
   END IF
   !
-  IF( .NOT. ASSOCIATED( obj%Pmat ) ) ALLOCATE( obj%Pmat )
+  obj%isPmatInitiated = .TRUE.
   CALL getILUK( &
     & obj=obj%mat, lfil=obj%Pmat%lfil, LEVS=obj%Pmat%LEVS, &
     & ALU=obj%Pmat%A, JLU=obj%Pmat%JA, JU=obj%Pmat%JU )

@@ -37,6 +37,16 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MESH_CLASS_EXCEPTION.txt"
   !! Exception handler
 
 !----------------------------------------------------------------------------
+!                                                                 NodeData_
+!----------------------------------------------------------------------------
+
+TYPE :: NodeData_
+  INTEGER( I4B ) :: globalNode = 0
+  INTEGER( I4B ) :: localNode = 0
+  INTEGER( I4B ), ALLOCATABLE :: nodeToNodes
+END TYPE NodeData_
+
+!----------------------------------------------------------------------------
 !                                                                 Mesh_
 !----------------------------------------------------------------------------
 
@@ -162,7 +172,9 @@ TYPE :: Mesh_
   CONTAINS
     PRIVATE
     PROCEDURE, PASS( obj ) :: Import => mesh_Import
-      !! Read mesh from mesh file
+      !! Read mesh from hdf5 file
+    PROCEDURE, PUBLIC, PASS( obj ) :: Export => mesh_Export
+      !! Export mesh to an hdf5 file
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mesh_initiate
       !! Allocate size of a mesh
     FINAL :: mesh_final
