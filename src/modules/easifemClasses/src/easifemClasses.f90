@@ -22,6 +22,7 @@ USE FortranFile_Class
 USE TxtFile_Class
 USE InputFile_Class
 USE HDF5File_Class
+USE HDF5File_Method
 USE ElementFactory
 !FTL Containers
 USE IntList_Class

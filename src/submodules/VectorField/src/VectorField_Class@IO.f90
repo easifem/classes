@@ -50,4 +50,24 @@ MODULE PROCEDURE vField_Display
   CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=I )
 END PROCEDURE vField_Display
 
+!----------------------------------------------------------------------------
+!                                                                 Import
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="vField_Import"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented')
+END PROCEDURE vField_Import
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="vField_Export"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented')
+END PROCEDURE vField_Export
+
 END SUBMODULE IO

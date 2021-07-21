@@ -50,4 +50,24 @@ MODULE PROCEDURE stsField_Display
   CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=I )
 END PROCEDURE stsField_Display
 
+!----------------------------------------------------------------------------
+!                                                                 Import
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_Import"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented')
+END PROCEDURE stsField_Import
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_Export"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented')
+END PROCEDURE stsField_Export
+
 END SUBMODULE IO

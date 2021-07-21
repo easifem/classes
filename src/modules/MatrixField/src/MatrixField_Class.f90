@@ -23,6 +23,7 @@ USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
 USE FPL_Method
+USE HDF5File_Class
 USE ExceptionHandler_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
@@ -68,12 +69,6 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 
 TYPE :: MatrixFieldPrecondition_
   INTEGER( I4B ) :: PmatName = 0
-  REAL( DFP ), ALLOCATABLE :: A( : )
-  INTEGER( I4B ), ALLOCATABLE :: JA( : )
-  INTEGER( I4B ), ALLOCATABLE :: IA( : )
-  INTEGER( I4B ), ALLOCATABLE :: JU( : )
-  INTEGER( I4B ), ALLOCATABLE :: IPERM( : )
-  INTEGER( I4B ), ALLOCATABLE :: LEVS( : )
   INTEGER( I4B ) :: nnz = 0
   INTEGER( I4B ) :: ncol = 0
   INTEGER( I4B ) :: nrow = 0
@@ -83,6 +78,12 @@ TYPE :: MatrixFieldPrecondition_
   REAL( DFP ) :: alpha = 0.0_DFP
   REAL( DFP ) :: droptol = 0.0_DFP
   REAL( DFP ) :: permtol = 0.0_DFP
+  REAL( DFP ), ALLOCATABLE :: A( : )
+  INTEGER( I4B ), ALLOCATABLE :: JA( : )
+  INTEGER( I4B ), ALLOCATABLE :: IA( : )
+  INTEGER( I4B ), ALLOCATABLE :: JU( : )
+  INTEGER( I4B ), ALLOCATABLE :: IPERM( : )
+  INTEGER( I4B ), ALLOCATABLE :: LEVS( : )
 END TYPE MatrixFieldPrecondition_
 
 !----------------------------------------------------------------------------
@@ -100,7 +101,7 @@ END TYPE MatrixFieldPrecondition_
 
 TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
   TYPE( CSRMatrix_ ) :: mat
-  TYPE( MatrixFieldPrecondition_ ), POINTER :: Pmat => NULL()
+  TYPE( MatrixFieldPrecondition_ ) :: Pmat
   LOGICAL( LGT ) :: isPmatInitiated = .FALSE.
   CONTAINS
   PRIVATE
@@ -134,9 +135,49 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
     PROCEDURE, PUBLIC, PASS( obj ) :: getPrecondition => mField_getPrecondition
       !! Get the precondition matrix
     PROCEDURE, PUBLIC, PASS( obj ) :: reversePermutation => mField_reversePermutation
+    PROCEDURE, PUBLIC, PASS( obj ) :: Import => mField_Import
+    PROCEDURE, PUBLIC, PASS( obj ) :: Export => mField_Export
 END TYPE MatrixField_
 
 PUBLIC :: MatrixField_
+
+!----------------------------------------------------------------------------
+!                                            setMatrixFieldParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2021
+! summary: This routine sets the parameter for creating MatrixField_
+
+INTERFACE
+MODULE SUBROUTINE setMatrixFieldParam( param, name, matrixProp, spaceCompo, &
+  & timeCompo, fieldType )
+  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  CHARACTER( LEN = * ), INTENT( IN ) :: matrixProp
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: spaceCompo
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: timeCompo
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+END SUBROUTINE setMatrixFieldParam
+END INTERFACE
+
+PUBLIC :: setMatrixFieldParam
+
+!----------------------------------------------------------------------------
+!                                                 DeallocateData@Constructor
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE Pmat_DeallocateData( obj )
+  TYPE( MatrixFieldPrecondition_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Pmat_DeallocateData
+END INTERFACE
+
+INTERFACE DeallocateData
+  MODULE PROCEDURE Pmat_DeallocateData
+END INTERFACE DeallocateData
+
+PUBLIC :: DeallocateData
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -172,8 +213,46 @@ PUBLIC :: mField_checkEssentialParam
 ! - Param contains both essential and optional parameters which are used in constructing the matrix field
 ! - dom is a pointer to a domain, where we are interested in constructing the matrix
 !
-! Details of essential parameters are given below
-! Details of optional parameters are given below
+! ESSENTIAL PARAMETERS
+!
+! - `name` This is name of field (char)
+! - `matrixProp`, UNSYM, SYM (char)
+!
+! OPTIONAL PARAMETERS
+!
+! - `spaceCompo`, INT, default is 1
+! - `timeCompo`, INT, default is 1
+! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
+!
+!### Usage
+!
+!```fortran
+  ! type( domain_ ) :: dom
+  ! type( MatrixField_ ) :: obj
+  ! type( HDF5File_ ) :: meshfile, hdf5
+  ! type( ParameterList_ ) :: param
+  ! integer( i4b ) :: ierr, tnodes
+  ! call display( "TESTING INITIATE AND DEALLOCATEDATA" )
+  ! CALL FPL_INIT()
+  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  ! call meshfile%open()
+  ! call dom%initiate( meshfile )
+  ! call meshfile%close()
+  ! call meshfile%deallocateData()
+  ! tnodes = dom%getTotalNodes()
+  ! call param%initiate()
+  ! call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
+  ! call obj%initiate( param, dom )
+  ! CALL hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
+  ! CALL hdf5%open()
+  ! CALL obj%export(hdf5=hdf5,group='')
+  ! CALL hdf5%close()
+  ! CALL hdf5%deallocateData()
+  ! call obj%deallocateData()
+  ! call dom%deallocateData()
+  ! call param%deallocateData()
+  ! call FPL_FINALIZE()
+!```
 
 INTERFACE
 MODULE SUBROUTINE mField_Initiate1( obj, param, dom )
@@ -192,13 +271,16 @@ END INTERFACE
 ! summary: This routine initiates the Matrix Field
 !
 !### Introduction
-! This routine initiates the the matrix field by copying other field. In this way we try to minimize the computation effort.
+! This routine initiates the `obj` by copying contents from `obj2`. In this way we try to minimize the computation effort.
 !
 ! Default behavior:
 !
-! - If `copyFull, copyStructure, usePointer` are absent then this subroutine, copy the value of the matrix, however, it will be not allocate the [[CSRSparsity_]] object field of [[CSRMatrix_]]. It will simply point to the obj2%mat%csr. In this way, we do not have to create multiple sparsity on the same domain.
+! - If `copyFull, copyStructure, usePointer` are absent then this subroutine, copy the value of the matrix, however, it will be not allocate the [[CSRSparsity_]] field of [[CSRMatrix_]]. Instead, it will use pointer reference to the obj2%mat%csr. In this way, we do not have to create multiple sparsity patterns on the same domain.
 !
 ! - `copyFull=.TRUE., copyStructure=.TRUE., usePointer=.TRUE.`, then default behavior
+!
+! Other type of behaviors can be included in the future
+!
 !
 
 INTERFACE
@@ -239,6 +321,38 @@ MODULE SUBROUTINE mField_Display( obj, msg, unitNo )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE mField_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Import@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Imports the content of matrix field from hdf5file
+
+INTERFACE
+MODULE SUBROUTINE mField_Import( obj, hdf5, group )
+  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mField_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Export@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Exports the content of matrixfield_ to hdf5 file
+
+INTERFACE
+MODULE SUBROUTINE mField_Export( obj, hdf5, group )
+  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------

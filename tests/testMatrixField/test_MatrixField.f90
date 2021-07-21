@@ -154,49 +154,87 @@ contains
 !   call FPL_FINALIZE()
 ! end subroutine
 
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-! subroutine test3
-!   type( domain_ ) :: dom
-!   type( MatrixField_ ) :: obj
-!   type( HDF5File_ ) :: meshfile
-!   type( ParameterList_ ) :: param
-!   integer( i4b ) :: ierr
-!   real( DFP ), ALLOCATABLE :: realVec( : )
+subroutine test3
+  type( domain_ ) :: dom
+  type( MatrixField_ ) :: obj
+  type( HDF5File_ ) :: meshfile, hdf5
+  type( ParameterList_ ) :: param
+  integer( i4b ) :: ierr, tnodes
+  class( mesh_ ), pointer :: meshObj
 
-!   call display( "Testing set methods for normal data" )
-!   CALL FPL_INIT()
-!   CALL param%initiate()
-!   ierr = param%set(key="name", value="U" )
-!   ierr = param%set(key="fieldType", value=FIELD_TYPE_NORMAL)
-!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-!   call meshfile%open()
-!   call dom%initiate( meshfile )
+  !-------------------------------------------------------------------!
+  call display( "TESTING SET METHODS" )
+  ! Initiate FPL environment
+  call FPL_INIT()
+  ! open mesh file
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" ); call meshfile%open()
+  ! open output file
+  call hdf5%initiate(filename="./test3.h5", mode="NEW" )
+  call hdf5%open()
+  !> Initiate domain
+  call dom%initiate( meshfile )
+  !> close mesh file
+  call meshfile%close(); call meshfile%deallocateData()
+  ! initiate parameters and set parameters for matrix field
+  call param%initiate()
+  call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
+  ! initiate matrix field
+  call obj%initiate( param, dom )
+  ! getPointer to mesh
+  meshObj => dom%getMeshPointer( dim=2, tag=1 )
+  ! export mesh
+  call meshObj%export()
 
-!   call obj%initiate( param, dom )
-!   call obj%set( globalNode = 10, value= 100.0_DFP )
-!   call obj%display( "scalar field = ")
-!   call obj%set( value= 200.0_DFP )
-!   call obj%display( "scalar field = ")
 
-!   call reallocate( realVec, obj%domain%getTotalNodes() )
-!   call RANDOM_NUMBER( realVec )
-!   call obj%set(realVec)
-!   call obj%display( "scalar field = ")
 
-!   call obj%set(globalNode=[1,2,5], value=0.0_DFP )
-!   call obj%display( "scalar field = ")
 
-!   call obj%deallocateData()
-!   call dom%deallocateData()
-!   call meshfile%close()
-!   call meshfile%deallocateData()
-!   call param%deallocateData()
-!   call FPL_FINALIZE()
-! end subroutine
 
+
+  call hdf5%close()
+  call hdf5%deallocateData()
+  call obj%deallocateData()
+  call dom%deallocateData()
+  call param%deallocateData()
+  call FPL_FINALIZE()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test2
+  type( domain_ ) :: dom
+  type( MatrixField_ ) :: obj, obj2
+  type( HDF5File_ ) :: meshfile, hdf5
+  type( ParameterList_ ) :: param
+  integer( i4b ) :: ierr, tnodes
+  call display( "TESTING INITIATE BY COPYING" )
+  call FPL_INIT()
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call dom%initiate( meshfile )
+  call meshfile%close()
+  call meshfile%deallocateData()
+  tnodes = dom%getTotalNodes()
+  call param%initiate()
+  call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
+  call obj%initiate( param, dom )
+  call obj2%initiate( obj )
+  call hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
+  call hdf5%open()
+  call obj2%export(hdf5=hdf5,group='')
+  call hdf5%close()
+  call hdf5%deallocateData()
+  call obj%deallocateData()
+  call obj2%deallocateData()
+  call dom%deallocateData()
+  call param%deallocateData()
+  call FPL_FINALIZE()
+end subroutine
 
 !----------------------------------------------------------------------------
 !
@@ -205,66 +243,27 @@ contains
 subroutine test1
   type( domain_ ) :: dom
   type( MatrixField_ ) :: obj
-  type( HDF5File_ ) :: meshfile
+  type( HDF5File_ ) :: meshfile, hdf5
   type( ParameterList_ ) :: param
-  type( DOF_ ) :: dofobj
   integer( i4b ) :: ierr, tnodes
-
-  call display( "Testing Initiate and DeallocateData" )
+  call display( "TESTING INITIATE AND DEALLOCATEDATA" )
   CALL FPL_INIT()
   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
   call meshfile%open()
   call dom%initiate( meshfile )
-  tnodes = dom%getTotalNodes()
-  CALL initiate( obj=dofobj, names=['K'], spaceCompo=[2], timeCompo=[2], storageFMT=DOF_FMT, tNodes=[tNodes] )
-  CALL param%initiate()
-  ierr = param%set(key="name", value="K" )
-  ierr = param%set(key="fieldType", value=FIELD_TYPE_CONSTANT)
-  ierr = param%set(key="matrixProp", value="UNSYM" )
-  call set( param, "dof", dofobj )
-  call obj%initiate( param, dom )
-  call obj%display( "Matrix field = ", unitNo=8 )
-  call obj%deallocateData()
-  call dom%deallocateData()
   call meshfile%close()
   call meshfile%deallocateData()
-  call param%deallocateData()
-  call FPL_FINALIZE()
-end subroutine
-
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-subroutine test0
-  type( domain_ ) :: dom
-  type( MatrixField_ ) :: obj, obj2
-  type( HDF5File_ ) :: meshfile
-  type( ParameterList_ ) :: param
-  type( DOF_ ) :: dofobj
-  integer( i4b ) :: ierr, tnodes
-
-  call display( "Testing Initiate and DeallocateData" )
-  CALL FPL_INIT()
-  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  call meshfile%open()
-  call dom%initiate( meshfile )
   tnodes = dom%getTotalNodes()
-  CALL initiate( obj=dofobj, names=['K'], spaceCompo=[2], timeCompo=[2], storageFMT=DOF_FMT, tNodes=[tNodes] )
-  CALL param%initiate()
-  ierr = param%set(key="name", value="K" )
-  ierr = param%set(key="fieldType", value=FIELD_TYPE_CONSTANT)
-  ierr = param%set(key="matrixProp", value="UNSYM" )
-  call set( param, "dof", dofobj )
+  call param%initiate()
+  call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
   call obj%initiate( param, dom )
-  call obj2%initiate( obj )
-  call obj2%display( "Matrix field = ", unitNo=8 )
+  CALL hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
+  CALL hdf5%open()
+  CALL obj%export(hdf5=hdf5,group='')
+  CALL hdf5%close()
+  CALL hdf5%deallocateData()
   call obj%deallocateData()
-  call obj2%deallocateData()
   call dom%deallocateData()
-  call meshfile%close()
-  call meshfile%deallocateData()
   call param%deallocateData()
   call FPL_FINALIZE()
 end subroutine

@@ -27,6 +27,7 @@ USE ScalarField_Class, ONLY: ScalarField_
 USE VectorField_Class, ONLY: VectorField_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
+USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
@@ -93,8 +94,9 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   PROCEDURE, PASS( obj ) :: get8 => stvField_get8
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7, get8
     !! get the entries of STVector field
-
   PROCEDURE, PASS( obj ) :: getPointerOfComponent => stvField_getPointerOfComponent
+  PROCEDURE, PUBLIC, PASS( obj ) :: Import => stvField_Import
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => stvField_Export
 END TYPE STVectorField_
 
 PUBLIC :: STVectorField_
@@ -292,6 +294,38 @@ MODULE SUBROUTINE stvField_Display( obj, msg, unitNo )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE stvField_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Import@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Imports the content
+
+INTERFACE
+MODULE SUBROUTINE stvField_Import( obj, hdf5, group )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE stvField_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Export@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Exports the content
+
+INTERFACE
+MODULE SUBROUTINE stvField_Export( obj, hdf5, group )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE stvField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------

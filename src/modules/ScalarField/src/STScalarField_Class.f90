@@ -26,6 +26,7 @@ USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
+USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
@@ -90,8 +91,9 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   PROCEDURE, PASS( obj ) :: get7 => stsField_get7
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
     !! get the entries of STScalar field
-
   PROCEDURE, PASS( obj ) :: getPointerOfComponent => stsField_getPointerOfComponent
+  PROCEDURE, PUBLIC, PASS( obj ) :: Import => stsField_Import
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => stsField_Export
 END TYPE STScalarField_
 
 PUBLIC :: STScalarField_
@@ -287,6 +289,38 @@ MODULE SUBROUTINE stsField_Display( obj, msg, unitNo )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE stsField_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Import@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Imports the content
+
+INTERFACE
+MODULE SUBROUTINE stsField_Import( obj, hdf5, group )
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE stsField_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Export@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Exports the content
+
+INTERFACE
+MODULE SUBROUTINE stsField_Export( obj, hdf5, group )
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE stsField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------

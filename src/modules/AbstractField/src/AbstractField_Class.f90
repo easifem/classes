@@ -32,6 +32,7 @@ MODULE AbstractField_Class
 USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
+USE HDF5File_Class, ONLY : HDF5File_
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
@@ -77,6 +78,10 @@ TYPE, ABSTRACT :: AbstractField_
       !! Deallocate the field
     PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
       !! Display the field
+    PROCEDURE(aField_Import), DEFERRED, PUBLIC, PASS( obj ) :: Import
+      !! Import data from hdf5 file
+    PROCEDURE(aField_Export), DEFERRED, PUBLIC, PASS( obj ) :: Export
+      !! Export data in hdf5 file
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
@@ -132,6 +137,32 @@ SUBROUTINE aField_DeallocateData( obj )
   IMPORT :: AbstractField_
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE aField_DeallocateData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 IMPORT
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE aField_Import( obj, hdf5, group )
+  IMPORT :: AbstractField_, I4B, HDF5File_
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE aField_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE aField_Export( obj, hdf5, group )
+  IMPORT :: AbstractField_, HDF5File_
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE aField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------

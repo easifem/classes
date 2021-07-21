@@ -26,6 +26,7 @@ USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
+USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
@@ -90,8 +91,9 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PASS( obj ) :: get7 => vField_get7
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
     !! get the entries of Vector field
-
   PROCEDURE, PASS( obj ) :: getPointerOfComponent => vField_getPointerOfComponent
+  PROCEDURE, PUBLIC, PASS( obj ) :: Import => vField_Import
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => vField_Export
 END TYPE VectorField_
 
 PUBLIC :: VectorField_
@@ -287,6 +289,38 @@ MODULE SUBROUTINE vField_Display( obj, msg, unitNo )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE vField_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Import@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Imports the content
+
+INTERFACE
+MODULE SUBROUTINE vField_Import( obj, hdf5, group )
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE vField_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Export@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Exports the content
+
+INTERFACE
+MODULE SUBROUTINE vField_Export( obj, hdf5, group )
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE vField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------

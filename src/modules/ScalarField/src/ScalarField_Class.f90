@@ -25,6 +25,7 @@ USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
+USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
@@ -78,6 +79,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
     !! get selected values to given scalar
   GENERIC, PUBLIC :: get => get1, get2, get3, get4
     !! get the entries of scalar field
+  PROCEDURE, PUBLIC, PASS( obj ) :: Import => sField_Import
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => sField_Export
 END TYPE ScalarField_
 
 PUBLIC :: ScalarField_
@@ -244,6 +247,38 @@ MODULE SUBROUTINE sField_Display( obj, msg, unitNo )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE sField_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Import@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Imports the content
+
+INTERFACE
+MODULE SUBROUTINE sField_Import( obj, hdf5, group )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE sField_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                Export@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Exports the content
+
+INTERFACE
+MODULE SUBROUTINE sField_Export( obj, hdf5, group )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE sField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
