@@ -37,6 +37,11 @@ USE Domain_Class
 ! USE QuadratureVariables_Class
 
 USE Gmsh_Class
+USE mshFormat_Class
+USE mshPhysicalNames_Class
+USE mshEntity_Class
+USE mshNodes_Class
+USE mshElements_Class
 USE MSH_Class
 USE AbstractVector_Class
 USE Vector_Class

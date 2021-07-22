@@ -77,56 +77,6 @@ TYPE :: MSH_
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => msh_initiate
       !! initiate the object
     PROCEDURE, PUBLIC, PASS( obj ) :: ExportMesh => msh_ExportMesh
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: TotalNodes => msh_totalnodes
-    !   !! returns total nodes in mesh
-
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: generate => mesh_generate
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: write => mesh_write
-
-    ! GENERIC, PUBLIC :: getNodes => msh_getnodes_array, &
-    !   & msh_getnodes_file
-    ! PROCEDURE, PRIVATE, PASS( obj ) :: msh_getnodes_array
-    !   !! returns nodes in an array
-    ! PROCEDURE, PRIVATE, PASS( obj ) :: msh_getnodes_file
-    !   !! writes notes to a file
-
-    ! GENERIC, PUBLIC :: TotalElements => msh_telements_1, &
-    !   & msh_telements_2, &
-    !   & msh_telements_3
-    ! PROCEDURE, PRIVATE, PASS( obj ) :: msh_telements_1
-    !   !! returns total elements in mesh
-    ! PROCEDURE, PRIVATE, PASS( obj ) :: msh_telements_2
-    !   !! returns total elements in mesh
-    ! PROCEDURE, PRIVATE, PASS( obj ) :: msh_telements_3
-    !   !! returns total elements in mesh
-
-    ! GENERIC, PUBLIC :: getElements => &
-    !   & msh_getelements_1,  &
-    !   & msh_getelements_2,  &
-    !   & msh_getelements_2c, &
-    !   & msh_getelements_3,  &
-    !   & msh_getelements_3c, &
-    !   & msh_getelements_4,  &
-    !   & msh_getelements_4c, &
-    !   & dom_init_from_gmshMesh
-
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_1
-    !   !! return finite element mesh
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_2
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_2c
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_3
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_3c
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_4
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: msh_getelements_4c
-    ! PROCEDURE, PUBLIC, PASS( mshobj ) :: dom_init_from_gmshMesh
-
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: WriteMesh => msh_write_mesh
-    ! GENERIC, PUBLIC :: WriteNodeData => &
-    !   & msh_write_nodedata_1, &
-    !   & msh_write_nodedata_2
-    ! PROCEDURE, PUBLIC, PASS( obj ) ::  msh_write_nodedata_1
-    ! PROCEDURE, PUBLIC, PASS( obj ) ::  msh_write_nodedata_2
-
 END TYPE MSH_
 
 !----------------------------------------------------------------------------

@@ -27,66 +27,62 @@ CONTAINS
 
 MODULE PROCEDURE msh_ExportMesh
   TYPE( HDF5File_ ) :: hdf5
-  INTEGER( I4B ) :: ii, tsize
+  INTEGER( I4B ) :: ii, tsize,  tNodes
+  REAL( DFP ), ALLOCATABLE :: nodeCoord( :, : )
 
+  tNodes = obj%nodes%getNumNodes()
+  ALLOCATE( nodeCoord( 3, tNodes ) )
   CALL hdf5%initiate(filename=file, mode="NEW" )
   CALL hdf5%open()
-
   CALL hdf5%write(dsetname="/NSD", vals=obj%nsd)
-
   CALL ExportMeshFormat(obj,hdf5)
   CALL ExportMeshPhysicalNames(obj,hdf5)
   CALL ExportMeshNodeInfo(obj,hdf5)
   CALL ExportMeshElementInfo(obj,hdf5)
-
   IF( ALLOCATED(obj%pointEntities) ) THEN
     tsize = SIZE(obj%pointEntities)
   ELSE
     tsize = 0
   END IF
   CALL hdf5%write(dsetname="/numPointEntities", vals=tsize)
-
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, dsetname="/pointEntities_"//TRIM(str(ii, .true.)))
+    CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, dsetname="/pointEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd )
+    CALL getNodeCoord( obj=obj%pointEntities(ii), nodeCoord=nodeCoord )
   END DO
-
   IF( ALLOCATED(obj%curveEntities) ) THEN
     tsize = SIZE(obj%curveEntities)
   ELSE
     tsize = 0
   END IF
   CALL hdf5%write(dsetname="/numCurveEntities", vals=tsize)
-
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, dsetname="/curveEntities_"//TRIM(str(ii, .true.)))
+    CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, dsetname="/curveEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
+    CALL getNodeCoord( obj=obj%curveEntities(ii), nodeCoord=nodeCoord )
   END DO
-
   IF( ALLOCATED(obj%surfaceEntities) ) THEN
     tsize = SIZE(obj%surfaceEntities)
   ELSE
     tsize = 0
   END IF
   CALL hdf5%write(dsetname="/numSurfaceEntities", vals=tsize)
-
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%surfaceEntities(ii), hdf5, dsetname="/surfaceEntities_"//TRIM(str(ii, .true.)))
+    CALL ExportMeshEntity(obj%surfaceEntities(ii), hdf5, dsetname="/surfaceEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
+    CALL getNodeCoord( obj=obj%surfaceEntities(ii), nodeCoord=nodeCoord )
   END DO
-
-
   IF( ALLOCATED(obj%volumeEntities) ) THEN
     tsize = SIZE(obj%volumeEntities)
   ELSE
     tsize = 0
   END IF
   CALL hdf5%write(dsetname="/numVolumeEntities", vals=tsize)
-
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%volumeEntities(ii), hdf5, dsetname="/volumeEntities_"//TRIM(str(ii, .true.)))
+    CALL ExportMeshEntity(obj%volumeEntities(ii), hdf5, dsetname="/volumeEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
+    CALL getNodeCoord( obj=obj%volumeEntities(ii), nodeCoord=nodeCoord )
   END DO
-
+  CALL hdf5%write(dsetname="/nodeCoord", vals=nodeCoord )
   CALL hdf5%close()
   CALL hdf5%DeallocateData()
-
+  IF( ALLOCATED( nodeCoord ) ) DEALLOCATE( nodeCoord )
 END PROCEDURE msh_ExportMesh
 
 !----------------------------------------------------------------------------
@@ -153,7 +149,6 @@ END SUBROUTINE ExportMeshPhysicalNames
 SUBROUTINE ExportMeshNodeInfo( obj, hdf5 )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-
   CALL hdf5%write(dsetname="/tNodes", vals=obj%Nodes%getNumNodes())
   CALL hdf5%write(dsetname="/tEntitiesForNodes", vals=obj%Nodes%getnumEntityBlocks())
   CALL hdf5%write(dsetname="/minNptrs", vals=obj%Nodes%getMinNodeTag())
@@ -167,7 +162,6 @@ END SUBROUTINE ExportMeshNodeInfo
 SUBROUTINE ExportMeshElementInfo( obj, hdf5 )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-
   CALL hdf5%write(dsetname="/tElements",vals=obj%Elements%getNumElements())
   CALL hdf5%write(dsetname="/tEntitiesForElements", &
     & vals=obj%Elements%getnumEntityBlocks())
@@ -181,16 +175,18 @@ END SUBROUTINE ExportMeshElementInfo
 !                                                          ExportMeshEntity
 !----------------------------------------------------------------------------
 
-SUBROUTINE ExportMeshEntity( obj, hdf5, dsetname )
+SUBROUTINE ExportMeshEntity( obj, hdf5, dsetname, nsd )
   TYPE( mshEntity_ ), INTENT( IN ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) ::  hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: dsetname
+  INTEGER( I4B ), INTENT( IN ) :: nsd
   INTEGER( I4B ), ALLOCATABLE :: intvec( : )
   REAL( DFP ), ALLOCATABLE :: realvec( : ), realMat(:,:)
 
   CALL hdf5%write( TRIM(dsetname) // "/uid", obj%getUid() )
   CALL hdf5%write( TRIM(dsetname) // "/xidim", obj%getXidim() )
   CALL hdf5%write( TRIM(dsetname) // "/elemType", obj%getElemType() )
+  CALL hdf5%write( TRIM(dsetname) // "/nsd", nsd )
   CALL hdf5%write( TRIM(dsetname) // "/minX", obj%getMinX() )
   CALL hdf5%write( TRIM(dsetname) // "/minY", obj%getMinY() )
   CALL hdf5%write( TRIM(dsetname) // "/minZ", obj%getMinZ() )
@@ -204,7 +200,6 @@ SUBROUTINE ExportMeshEntity( obj, hdf5, dsetname )
   CALL hdf5%write( TRIM(dsetname) // "/tElements", obj%getTotalElements() )
   CALL hdf5%write( TRIM(dsetname) // "/tIntNodes", obj%getTotalIntNodes() )
 
-  CALL hdf5%write( TRIM(dsetname) // "/nodeCoord", obj%getNodeCoord() )
   CALL hdf5%write( TRIM(dsetname) // "/physicalTag", obj%getPhysicalTag() )
   CALL hdf5%write( TRIM(dsetname) // "/intNodeNumber", obj%getIntNodeNumber() )
   CALL hdf5%write( TRIM(dsetname) // "/elemNumber", obj%getElemNumber() )
@@ -216,5 +211,24 @@ SUBROUTINE ExportMeshEntity( obj, hdf5, dsetname )
     & intvec )
   END IF
 END SUBROUTINE ExportMeshEntity
+
+!----------------------------------------------------------------------------
+!                                                           ExportNodeCoord
+!----------------------------------------------------------------------------
+
+SUBROUTINE getNodeCoord( obj, nodeCoord )
+  TYPE( mshEntity_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( INOUT ) :: nodeCoord( :, : )
+  ! internal data
+  REAL( DFP ), ALLOCATABLE :: myNodeCoord(:,:)
+  INTEGER( I4B ), ALLOCATABLE :: myNptrs( : )
+  myNodeCoord = obj%getNodeCoord()
+  myNptrs = obj%getIntNodeNumber()
+  nodeCoord(:,myNptrs)=myNodeCoord(:,:)
+  IF( ALLOCATED(myNodeCoord) ) DEALLOCATE( myNodeCoord )
+  IF( ALLOCATED(myNptrs) ) DEALLOCATE( myNptrs )
+END SUBROUTINE getNodeCoord
+
+
 
 END SUBMODULE ExportMethods

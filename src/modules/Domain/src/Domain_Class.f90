@@ -31,7 +31,6 @@ USE ExceptionHandler_Class
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER( LEN = * ), PARAMETER :: modName = "DOMAIN_CLASS"
 TYPE( ExceptionHandler_ ) :: eDomain
 INTEGER( I4B ), PARAMETER :: eUnitNo = 1001
@@ -121,11 +120,9 @@ TYPE :: Domain_
     FINAL :: Domain_Final
     PROCEDURE, PASS( Obj ) :: Import => Domain_Import
       !! Import entire domain data
-
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalEntities => &
       & Domain_getTotalPhysicalEntities
       !! Returns total number of physical entities, points, surface, volumes
-
     GENERIC, PUBLIC :: getIndex => &
       & Domain_getIndex_a, Domain_getIndex_b, &
       & Domain_getIndex_c, Domain_getIndex_d, &
@@ -140,7 +137,6 @@ TYPE :: Domain_
       !! Returns the index of a physical group
     PROCEDURE, PASS( Obj ) :: Domain_getIndex_e
       !! Returns the index of a physical group
-
     PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalNames => &
       & Domain_getPhysicalNames
       !! Returns the physical names
@@ -174,7 +170,6 @@ TYPE :: Domain_
     PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber2
     GENERIC, PUBLIC :: getLocalNodeNumber => Domain_getLocalNodeNumber1, &
       & Domain_getLocalNodeNumber2
-
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMesh => Domain_getTotalMesh
       !! This routine returns total number of meshes of given dimension
     PROCEDURE, PUBLIC, PASS( obj ) :: getMeshPointer => Domain_getMeshPointer
@@ -199,7 +194,7 @@ END TYPE DomainPointer_
 PUBLIC :: DomainPointer_
 
 !----------------------------------------------------------------------------
-!                                                     Initiate@DomainMethods
+!                                                     Initiate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -207,30 +202,18 @@ PUBLIC :: DomainPointer_
 ! summary: Initiate the instance of [[Domain_]] object
 
 INTERFACE
-MODULE SUBROUTINE Domain_Initiate( obj, meshFile )
+MODULE SUBROUTINE Domain_Initiate( obj, hdf5, group )
   CLASS( Domain_ ), INTENT( INOUT ) :: obj
     !! DomainData object
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+    !! HDF5 file
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+    !! Group name (directory name)
 END SUBROUTINE Domain_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      Import@DomainMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	18 June 2021
-! summary: Import domain data
-
-INTERFACE
-MODULE SUBROUTINE Domain_Import( obj, meshFile )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
-END SUBROUTINE Domain_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               DeallocateData@DomainMethods
+!                                               DeallocateData@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -251,7 +234,7 @@ INTERFACE DeallocateData
 END INTERFACE DeallocateData
 
 !----------------------------------------------------------------------------
-!                                                        Final@DomainMethods
+!                                                        Final@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -265,7 +248,7 @@ END SUBROUTINE Domain_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Domain@DomainMethods
+!                                                       Domain@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -273,8 +256,9 @@ END INTERFACE
 ! summary: Domain methods
 
 INTERFACE
-MODULE FUNCTION Domain_Constructor1( meshFile ) RESULT( Ans )
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
+MODULE FUNCTION Domain_Constructor1( hdf5, group ) RESULT( Ans )
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
   TYPE( Domain_ ) :: ans
 END FUNCTION Domain_Constructor1
 END INTERFACE
@@ -286,7 +270,7 @@ END INTERFACE Domain
 PUBLIC :: Domain
 
 !----------------------------------------------------------------------------
-!                                               Domain_Pointer@DomainMethods
+!                                               Domain_Pointer@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -294,8 +278,9 @@ PUBLIC :: Domain
 ! summary: Domain methods
 
 INTERFACE
-MODULE FUNCTION Domain_Constructor_1( meshFile ) RESULT( Ans )
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: meshFile
+MODULE FUNCTION Domain_Constructor_1( hdf5, group ) RESULT( Ans )
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
   CLASS( Domain_ ), POINTER :: ans
 END FUNCTION Domain_Constructor_1
 END INTERFACE
@@ -305,6 +290,103 @@ INTERFACE Domain_Pointer
 END INTERFACE Domain_Pointer
 
 PUBLIC :: Domain_Pointer
+
+!----------------------------------------------------------------------------
+!                                                                Import@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	18 June 2021
+! summary: Import domain data
+
+INTERFACE
+MODULE SUBROUTINE Domain_Import( obj, hdf5, group )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE Domain_Import
+END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                                 getTotalNodes@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+
+INTERFACE
+MODULE FUNCTION Domain_getTotalNodes( obj, physicalTag, physicalName, &
+  & entityNum, dim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: physicalTag
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: physicalName
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getTotalNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getLocalNodeNumber@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getLocalNodeNumber1( obj, globalNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getLocalNodeNumber@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getLocalNodeNumber2( obj, globalNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+  INTEGER( I4B ) :: ans( SIZE( globalNode ) )
+END FUNCTION Domain_getLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getTotalMesh@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getTotalMesh( obj, dim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getTotalMesh
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 getMeshPointer@getMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION Domain_getMeshPointer( obj, dim, tag ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  INTEGER( I4B ), INTENT( IN ) :: tag
+  CLASS( Mesh_), POINTER :: ans
+END FUNCTION Domain_getMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     setSparsity@setMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE Domain_setSparsity( obj, mat )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+END SUBROUTINE Domain_setSparsity
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                              getTotalPhysicalEntities@PhysicalNamesMethods
@@ -784,86 +866,6 @@ MODULE PURE SUBROUTINE Domain_setNumNodes( obj, indx, numNode )
   INTEGER( I4B ), INTENT( IN ) :: indx
   INTEGER( I4B ), INTENT( IN ) :: numNode
 END SUBROUTINE Domain_setNumNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 getTotalNodes@getMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary: Returns the total number of nodes in the domain
-
-INTERFACE
-MODULE FUNCTION Domain_getTotalNodes( obj, physicalTag, physicalName, &
-  & entityNum, dim ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: physicalTag
-  TYPE( String ), OPTIONAL, INTENT( IN ) :: physicalName
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getTotalNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             getLocalNodeNumber@getMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE FUNCTION Domain_getLocalNodeNumber1( obj, globalNode ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalNode
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getLocalNodeNumber1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             getLocalNodeNumber@getMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE FUNCTION Domain_getLocalNodeNumber2( obj, globalNode ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  INTEGER( I4B ) :: ans( SIZE( globalNode ) )
-END FUNCTION Domain_getLocalNodeNumber2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 getTotalMesh@getMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE FUNCTION Domain_getTotalMesh( obj, dim ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getTotalMesh
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 getMeshPointer@getMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE FUNCTION Domain_getMeshPointer( obj, dim, tag ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ), INTENT( IN ) :: tag
-  CLASS( Mesh_), POINTER :: ans
-END FUNCTION Domain_getMeshPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     setSparsity@setMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE Domain_setSparsity( obj, mat )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
-END SUBROUTINE Domain_setSparsity
 END INTERFACE
 
 !----------------------------------------------------------------------------
