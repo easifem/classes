@@ -155,159 +155,263 @@ contains
 !   call meshfile%deallocateData()
 ! end subroutine
 
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-
-! subroutine test4
-!   type( mesh_ ) :: obj
-!   integer( I4B ) :: ierr
-!   type( HDF5File_ ) :: meshfile
-
-!   call display( "testing query methods of meshdata")
-!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-!   call meshfile%open()
-!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-!   call obj%GenerateMeshData()
-!   call display( obj%isNodeToNodesInitiated(), "isNodeToNodesInitiated")
-
-!   call display( obj%isNodeToElementsInitiated(), "isNodeToElementsInitiated=")
-
-!   call display( obj%isElementToElementsInitiated(), "isElementToElementsInitiated=")
-
-!   call display( obj%isConnectivityInitiated(), "isConnectivityInitiated=")
-
-!   call display( obj%isBoundaryDataInitiated(), "isBoundaryDataInitiated=")
-
-!   call display( obj%isInternalNptrsInitiated(), "isInternalNptrsInitiated=")
-
-!   call display( obj%isBoundaryNptrsInitiated(), "isBoundaryNptrsInitiated=")
-
-!   call display( obj%isLocalNptrsInitiated(), "isLocalNptrsInitiated=")
-
-!   call display( obj%isInternalBoundaryDataInitiated(), "isInternalBoundaryDataInitiated=")
-
-!   call meshfile%close()
-!   call meshfile%deallocateData()
-! end subroutine
-
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-
-! subroutine test3
-!   type( mesh_ ) :: obj
-!   integer( I4B ) :: ierr
-!   type( HDF5File_ ) :: meshfile
-
-!   call display( "testing scalars of meshdata")
-!   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-!   call meshfile%open()
-!   call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-!   call obj%GenerateMeshData()
-!   call display( obj%uid, "uid = ")
-!   call display( obj%xidim, "xidim = ")
-!   call display( obj%elemType, "elemType = ")
-!   call display( obj%nsd, "nsd = ")
-!   call display( obj%maxNptrs, "maxNptrs = ")
-!   call display( obj%minNptrs, "minNptrs = ")
-!   call display( obj%tNodes, "tNodes = ")
-!   call display( obj%tIntNodes, "tIntNodes = ")
-!   call display( obj%tElements, "tElements = ")
-!   call display( obj%minX, "minX = ")
-!   call display( obj%minY, "minY = ")
-!   call display( obj%minZ, "minZ = ")
-!   call display( obj%maxX, "maxX = ")
-!   call display( obj%maxY, "maxY = ")
-!   call display( obj%maxZ, "maxZ = ")
-!   call display( obj%x, "x = ")
-!   call display( obj%y, "y = ")
-!   call display( obj%z, "z = ")
-!   call display( obj%isInitiated, "isInitiated = ")
-!   call meshfile%close()
-!   call meshfile%deallocateData()
-! end subroutine
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 subroutine test0
   type( mesh_ ) :: obj
-  integer( I4B ) :: ierr
+  integer( I4B ) :: ierr, ii
   type( HDF5File_ ) :: meshfile
-
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('testing  :', color_fg='blue', &
+    & style='underline_on') )
   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
   call meshfile%open()
-  call obj%initiate(meshfile=meshfile, xidim=2, id=1 )
-  call obj%deallocateData()
-  call obj%initiate(meshfile=meshfile, xidim=1, id=1 )
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  do ii = obj%minElemNum,obj%maxElemNum
+    if( .NOT. obj%isElementPresent(ii ) ) cycle
+    if( obj%isBoundaryElement(ii) ) then
+      call display( obj%getBoundaryElementData( ii ), &
+      & "element = " // trim( string( ii ) ) &
+      & // ' is connected to global elements = ' )
+    end if
+  end do
   call obj%deallocateData()
   call meshfile%close()
   call meshfile%deallocateData()
 end subroutine
 
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-! subroutine test1
-!   type( mesh_ ) :: obj
-!   class( ReferenceElement_ ), pointer :: refelem
-!   class( element_ ), pointer :: elem
-!   type( ParameterList_ ) :: param
-!   integer( I4B ), ALLOCATABLE :: nptrs(:)
-!   integer( I4B ) :: ierr
+subroutine test9
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  call display( obj%getNptrs(), "getNptrs = ")
+  call display( obj%getInternalNptrs(), "getInternalNptrs = ")
+  call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
 
-!   refelem => ReferenceLine_Pointer( NSD = 1 )
-!   call FPL_INIT()
-!   call param%init()
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-!   nptrs = [1,2]
-!   ierr = param%set(key='nptrs', value=nptrs)
-!   ierr = param%set(key="mat_type", value=1)
-!   elem => Element_Pointer( param=param, refelem = refelem )
-!   ierr = param%set(key="nsd", value=2)
-!   ierr = param%set(key="size", value=10)
-!   call obj%initiate(param)
-!   call obj%pushback(Elem=elem)
+subroutine test8
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('ELEMENT TO ELEMENTS:', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  do ii = obj%minElemNum, obj%maxElemNum
+    if( .not. obj%isElementPresent( ii ) ) cycle
+    call display( obj%getElementToElements( ii ), &
+      & "element = " // trim( string( ii ) ) &
+      & // ' is connected to global elements = ' )
+  end do
+  do ii = obj%minElemNum, obj%maxElemNum
+    if( .not. obj%isElementPresent( ii ) ) cycle
+    call display( obj%isBoundaryElement( ii ), &
+      & "element = " // trim( string( ii ) ) &
+      & // ' is a boundary element = ' )
+  end do
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
 
-!   nptrs = [2,3]
-!   ierr = param%set(key='nptrs', value=nptrs)
-!   ierr = param%set(key="mat_type", value=2)
-!   elem => Element_Pointer( param=param, refelem = refelem )
-!   call obj%pushback(Elem=elem)
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-!   nptrs = [3,4]
-!   ierr = param%set(key='nptrs', value=nptrs)
-!   ierr = param%set(key="mat_type", value=3)
-!   elem => Element_Pointer( param=param, refelem = refelem )
-!   call obj%pushback(Elem=elem)
+subroutine test7
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('NODE TO NODES:', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  do ii = obj%minNptrs, obj%maxNptrs
+    if( .not. obj%isNodePresent( ii ) ) cycle
+    call display( obj%getNodeToNodes( ii, .true. ), &
+      & "node = " // trim( string( ii ) ) &
+      & // ' is connected to global nodes = ' )
+  end do
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
 
-!   nptrs = [4,5]
-!   ierr = param%set(key='nptrs', value=nptrs)
-!   ierr = param%set(key="mat_type", value=4)
-!   elem => Element_Pointer( param=param, refelem = refelem )
-!   call obj%pushback(Elem=elem)
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-!   ierr = param%set(key="mat_type", value=4)
-!   elem => Element_Pointer( param=param, refelem = refelem )
-!   call obj%setElement( iel = 4, elem = elem )
-!   call obj%display( "mesh=" )
+subroutine test6
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('NODE TO ELEMENTS:', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  do ii = obj%minElemNum, obj%maxElemNum
+    if( .not. obj%isElementPresent( ii ) ) cycle
+  end do
+  do ii = obj%minNptrs, obj%maxNptrs
+    if( .not. obj%isNodePresent( ii ) ) cycle
+    call display( obj%getNodeToElements( ii ), "node = " // trim( string( ii ) ) // ' is connected to global elements = '  )
+  end do
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
 
-!   elem => obj%getElementPointer( iel=2 )
-!   call elem%display( "getElementPointer()=" )
-!   call display( obj%size(), "size()=" )
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-!   call obj%RemoveElement( iel=3, freeMem = .TRUE. )
-!   call display( obj%size(), "size()=" )
-!   call obj%display( "Removing iel=3 " )
-!   ! call display( obj%size(), "size()=" )
-!   ! call obj%Prune()
+subroutine test5
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii, jj
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('LOOPING ON NODES:', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
 
-!   call FPL_Finalize()
-! end subroutine
+  do ii = obj%minNptrs, obj%maxNptrs
+    if( .not. obj%isNodePresent( ii ) ) cycle
+    call display( obj%getNodeToElements( ii ), "node = " // trim( string( ii ) ) // ' is connected to global elements = '  )
+  end do
 
+  do ii = 1, obj%getTotalNodes()
+    jj = obj%getGlobalNodeNumber( ii )
+    call display( obj%getNodeToElements( jj ), "node = " // trim( string( jj ) ) // ' is connected to global elements = '  )
+  end do
+
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test4
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii, jj
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('LOOPING ON ELEMENTS:', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+
+  do ii = obj%minElemNum, obj%maxElemNum
+    if( .not. obj%isElementPresent( ii ) ) cycle
+  end do
+
+  do ii = 1, obj%getTotalElements()
+    jj = obj%getGlobalElemNumber( ii )
+    if( .not. obj%isElementPresent( jj ) ) cycle
+  end do
+
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test3
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='blue', style='underline_on') &
+    & // colorize('INITIATE POINT ENTITIES:', color_fg='green', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/pointEntities_1" )
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test2
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='blue', style='underline_on') //&
+    & colorize('INITIATE CURVE ENTITIES:', color_fg='green', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/curveEntities_1" )
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test1
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr
+  type( HDF5File_ ) :: meshfile
+  call display( colorize('TEST:', color_fg='blue', style='underline_on') &
+    & // colorize('INITIATE SURFACE ENTITIES:', color_fg='green', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine exportMesh
+  TYPE( MSH_ ) :: mshFile
+  CALL mshFile%initiate( file="./mesh.msh", NSD=2 )
+  CALL mshFile%ExportMesh( file="./mesh.h5" )
+  CALL mshFile%DeallocateData()
+end
 
 !----------------------------------------------------------------------------
 !
@@ -322,5 +426,6 @@ end module test_m
 program main
 use test_m
 implicit none
+! call exportMesh
 call test0
 end program main

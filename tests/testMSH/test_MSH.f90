@@ -18,9 +18,6 @@
 module test_m
 use easifemBase
 use easifemClasses
-use mshFormat_Class
-use mshPhysicalNames_Class
-use mshEntity_Class
 implicit none
 contains
 
@@ -32,7 +29,6 @@ SUBROUTINE test0
   TYPE( MSH_ ) :: mshFile
   TYPE( string ) :: line
   INTEGER( I4B ) :: ii, error
-
   CALL mshFile%initiate( file="./mesh.msh", NSD=2 )
   CALL mshFile%ExportMesh( file="./mesh.h5" )
   CALL mshFile%DeallocateData()

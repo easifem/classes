@@ -69,7 +69,6 @@ MODULE PROCEDURE Domain_getTotalNodes
 
 END PROCEDURE Domain_getTotalNodes
 
-
 !----------------------------------------------------------------------------
 !                                                     getLocalNodeNumber
 !----------------------------------------------------------------------------
