@@ -107,23 +107,6 @@ SUBROUTINE ExportCSRSparsity( obj, hdf5, group)
       & vals=obj%JA )
   END IF
 
-  IF( ALLOCATED(obj%colSize) ) THEN
-    dname = trim(group)//"/colSize"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
-      & vals=obj%colSize )
-  END IF
-
-  IF( ALLOCATED(obj%rowSize) ) THEN
-    dname = trim(group)//"/rowSize"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
-      & vals=obj%rowSize )
-  END IF
-
-  IF( ALLOCATED(obj%diagIndx) ) THEN
-    dname = trim(group)//"/diagIndx"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
-      & vals=obj%diagIndx )
-  END IF
 END SUBROUTINE ExportCSRSparsity
 
 !----------------------------------------------------------------------------

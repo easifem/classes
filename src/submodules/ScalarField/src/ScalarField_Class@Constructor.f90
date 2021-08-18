@@ -21,6 +21,20 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                            setScalarField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE setScalarFieldParam
+  INTEGER( I4B ) :: ierr
+  ierr = param%set( key="name", value=name )
+  IF( PRESENT( fieldType ) ) THEN
+    ierr = param%set( key="fieldType", value=fieldType )
+  ELSE
+    ierr = param%set( key="fieldType", value=FIELD_TYPE_NORMAL )
+  END IF
+END PROCEDURE setScalarFieldParam
+
+!----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
@@ -54,13 +68,13 @@ MODULE PROCEDURE sField_Initiate1
   ierr = param%get( key="name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
-
+  !
   IF( param%isPresent(key="fieldType") ) THEN
     ierr = param%get( key="fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
-
+  !
   spaceCompo = [1]
   timeCompo = [1]
   storageFMT = FMT_NODES
@@ -72,7 +86,7 @@ MODULE PROCEDURE sField_Initiate1
     tNodes = obj%domain%getTotalNodes()
     obj%tSize = tNodes( 1 )
   END IF
-
+  !
   CALL initiate( obj=obj%dof, tNodes=tNodes, names=names_char, &
     & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
   !>
@@ -89,8 +103,19 @@ END PROCEDURE sField_Initiate1
 
 MODULE PROCEDURE sField_Initiate2
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_Initiate2"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine has not been initiated so far!')
+  IF( .NOT. obj2%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Obj2 is not initiated!')
+  obj%isInitiated = .TRUE.
+  obj%fieldType = obj2%fieldType
+  obj%domain => obj2%domain
+  obj%name = obj2%name
+  SELECT TYPE ( obj2 )
+  TYPE IS ( ScalarField_ )
+    obj%tSize = obj2%tSize
+    obj%realVec = obj2%realVec
+    obj%dof = obj2%dof
+  END SELECT
 END PROCEDURE sField_Initiate2
 
 !----------------------------------------------------------------------------

@@ -40,7 +40,7 @@ MODULE PROCEDURE mField_setPrecondition
     & CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'Precondition matrix is already initiated')
   !
-  IF( param%isPresent(key="preconditionName") ) THEN
+  IF( param%isPresent( key="preconditionName") ) THEN
     ierr = param%get( key="preconditionName", value=obj%Pmat%PmatName )
   ELSE
     CALL e%raiseError(modName//'::'//myName// " - "// &
@@ -152,7 +152,7 @@ SUBROUTINE mField_getILUTP( obj, param )
 END SUBROUTINE mField_getILUTP
 
 !----------------------------------------------------------------------------
-!                                                                      ILUTD
+!                                                                      ILUD
 !----------------------------------------------------------------------------
 
 SUBROUTINE mField_getILUD( obj, param )

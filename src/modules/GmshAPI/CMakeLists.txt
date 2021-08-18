@@ -1,7 +1,6 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/GmshInterface/C_interface_module.f90
   ${src_path}/GmshInterface/GmshInterface.f90
   ${src_path}/Gmsh_Class.f90
   ${src_path}/GmshGraphics_Class.f90

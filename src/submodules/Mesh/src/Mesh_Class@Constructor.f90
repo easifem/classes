@@ -56,7 +56,7 @@ MODULE PROCEDURE mesh_initiate
   CALL obj%Import(hdf5, group)
   CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
     & 'Mesh imported' )
-  IF( obj%elemType .NE. Point1 .AND. obj%elemType .NE. 0 ) THEN
+  IF( obj%elemType .NE. 0 .OR. obj%elemType .EQ. Point1 ) THEN
     CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
       & 'Initiating node to elements mapping' )
     CALL obj%InitiateNodeToElements()
@@ -95,6 +95,11 @@ END PROCEDURE mesh_Constructor_1
 
 MODULE PROCEDURE mesh_DeallocateData
   obj%readFromFile = .FALSE.
+  obj%isInitiated = .FALSE.
+  obj%isNodeToElementsInitiated = .FALSE.
+  obj%isNodeToNodesInitiated = .FALSE.
+  obj%isElementToElementsInitiated = .FALSE.
+  obj%isBoundaryDataInitiated = .FALSE.
   obj%uid = 0
   obj%xidim = 0
   obj%elemType = 0
@@ -114,13 +119,14 @@ MODULE PROCEDURE mesh_DeallocateData
   obj%X=0.0_DFP
   obj%Y=0.0_DFP
   obj%Z=0.0_DFP
-  obj%isInitiated = .FALSE.
   obj%refelem => NULL()
   IF( ALLOCATED( obj%FacetElements ) ) DEALLOCATE( obj%FacetElements )
   IF( ALLOCATED( obj%local_elemNumber ) ) DEALLOCATE( obj%local_elemNumber )
+  IF( ALLOCATED( obj%Local_Nptrs ) ) DEALLOCATE( obj%Local_Nptrs )
   IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
   IF( ALLOCATED( obj%boundingEntity ) ) DEALLOCATE( obj%boundingEntity )
-  IF( ALLOCATED( obj%Local_Nptrs ) ) DEALLOCATE( obj%Local_Nptrs )
+  IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
+  IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
   CALL eMesh%reset()
 END PROCEDURE mesh_DeallocateData
 

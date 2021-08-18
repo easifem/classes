@@ -19,7 +19,7 @@ MODULE GmshModelMesh_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE Utility, ONLY: Reallocate
 USE GmshInterface
-USE C_Interface_MODULE, ONLY: C_PTR_TO_INT_VEC
+USE CInterface, ONLY: C_PTR_TO_INT_VEC
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE

@@ -27,11 +27,15 @@ CONTAINS
 
 MODULE PROCEDURE msh_ExportMesh
   TYPE( HDF5File_ ) :: hdf5
-  INTEGER( I4B ) :: ii, tsize,  tNodes
+  INTEGER( I4B ) :: ii, tsize,  tNodes, count
   REAL( DFP ), ALLOCATABLE :: nodeCoord( :, : )
+  INTEGER( I4B ), ALLOCATABLE :: local_nptrs( : )
 
   tNodes = obj%nodes%getNumNodes()
   ALLOCATE( nodeCoord( 3, tNodes ) )
+  ALLOCATE( local_nptrs( obj%Nodes%getMaxNodeTag() ) )
+  count = 0
+  local_nptrs = 0
   CALL hdf5%initiate(filename=file, mode="NEW" )
   CALL hdf5%open()
   CALL hdf5%write(dsetname="/NSD", vals=obj%nsd)
@@ -47,7 +51,8 @@ MODULE PROCEDURE msh_ExportMesh
   CALL hdf5%write(dsetname="/numPointEntities", vals=tsize)
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, dsetname="/pointEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd )
-    CALL getNodeCoord( obj=obj%pointEntities(ii), nodeCoord=nodeCoord )
+    CALL getNodeCoord( obj=obj%pointEntities(ii), nodeCoord=nodeCoord, &
+      & local_nptrs=local_nptrs, count=count )
   END DO
   IF( ALLOCATED(obj%curveEntities) ) THEN
     tsize = SIZE(obj%curveEntities)
@@ -57,7 +62,8 @@ MODULE PROCEDURE msh_ExportMesh
   CALL hdf5%write(dsetname="/numCurveEntities", vals=tsize)
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, dsetname="/curveEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
-    CALL getNodeCoord( obj=obj%curveEntities(ii), nodeCoord=nodeCoord )
+    CALL getNodeCoord( obj=obj%curveEntities(ii), nodeCoord=nodeCoord, &
+      & local_nptrs=local_nptrs, count=count )
   END DO
   IF( ALLOCATED(obj%surfaceEntities) ) THEN
     tsize = SIZE(obj%surfaceEntities)
@@ -67,7 +73,8 @@ MODULE PROCEDURE msh_ExportMesh
   CALL hdf5%write(dsetname="/numSurfaceEntities", vals=tsize)
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%surfaceEntities(ii), hdf5, dsetname="/surfaceEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
-    CALL getNodeCoord( obj=obj%surfaceEntities(ii), nodeCoord=nodeCoord )
+    CALL getNodeCoord( obj=obj%surfaceEntities(ii), nodeCoord=nodeCoord, &
+      & local_nptrs=local_nptrs, count=count )
   END DO
   IF( ALLOCATED(obj%volumeEntities) ) THEN
     tsize = SIZE(obj%volumeEntities)
@@ -77,9 +84,11 @@ MODULE PROCEDURE msh_ExportMesh
   CALL hdf5%write(dsetname="/numVolumeEntities", vals=tsize)
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%volumeEntities(ii), hdf5, dsetname="/volumeEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
-    CALL getNodeCoord( obj=obj%volumeEntities(ii), nodeCoord=nodeCoord )
+    CALL getNodeCoord( obj=obj%volumeEntities(ii), nodeCoord=nodeCoord, &
+      & local_nptrs=local_nptrs, count=count )
   END DO
   CALL hdf5%write(dsetname="/nodeCoord", vals=nodeCoord )
+  CALL hdf5%write(dsetname="/local_nptrs", vals=local_nptrs )
   CALL hdf5%close()
   CALL hdf5%DeallocateData()
   IF( ALLOCATED( nodeCoord ) ) DEALLOCATE( nodeCoord )
@@ -216,19 +225,24 @@ END SUBROUTINE ExportMeshEntity
 !                                                           ExportNodeCoord
 !----------------------------------------------------------------------------
 
-SUBROUTINE getNodeCoord( obj, nodeCoord )
+SUBROUTINE getNodeCoord( obj, nodeCoord, local_nptrs, count )
   TYPE( mshEntity_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( INOUT ) :: nodeCoord( :, : )
+  INTEGER( I4B ), INTENT( INOUT ) :: local_nptrs( : )
+  INTEGER( I4B ), INTENT( INOUT ) :: count
   ! internal data
   REAL( DFP ), ALLOCATABLE :: myNodeCoord(:,:)
   INTEGER( I4B ), ALLOCATABLE :: myNptrs( : )
+  INTEGER( I4B ) :: ii
   myNodeCoord = obj%getNodeCoord()
   myNptrs = obj%getIntNodeNumber()
-  nodeCoord(:,myNptrs)=myNodeCoord(:,:)
-  IF( ALLOCATED(myNodeCoord) ) DEALLOCATE( myNodeCoord )
-  IF( ALLOCATED(myNptrs) ) DEALLOCATE( myNptrs )
+  DO ii = 1, SIZE( myNptrs )
+    count = count + 1
+    local_nptrs( myNptrs( ii ) ) = count
+    nodeCoord( :, count ) = myNodeCoord(:,ii)
+  END DO
+  IF( ALLOCATED( myNodeCoord ) ) DEALLOCATE( myNodeCoord )
+  IF( ALLOCATED( myNptrs ) ) DEALLOCATE( myNptrs )
 END SUBROUTINE getNodeCoord
-
-
 
 END SUBMODULE ExportMethods

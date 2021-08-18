@@ -54,13 +54,11 @@ MODULE PROCEDURE Domain_getTotalNodes
       & CALL eDomain%raiseError(modName//'::'//myName//'-'// &
       & 'The mesh of enitityNum '// trim(str(entityNum, .true.)) &
       & // " and dimension " // trim(str(dim, .true.)) // " is empty." )
-
     IF( entityNum .GT. obj%meshList( dim )%size() ) &
       & CALL eDomain%raiseError(modName//'::'//myName//'-'// &
       & 'The the enitityNum '// trim(str(entityNum, .true.)) &
       & // " for dimension " // trim(str(dim, .true.)) // &
       & " is out of bound." )
-
     iterator = obj%meshList( dim )%Begin() + (entityNum - 1)
     ans = iterator%value%ptr%getTotalNodes()
   ELSE
@@ -135,6 +133,22 @@ MODULE PROCEDURE Domain_getMeshPointer
   ans => iterator%value%ptr
   CALL iterator%DeallocateData()
 END PROCEDURE Domain_getMeshPointer
+
+!----------------------------------------------------------------------------
+!                                                              getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getNodeCoord
+  IF( ALLOCATED( obj%nodeCoord ) ) nodeCoord = obj%nodeCoord
+END PROCEDURE Domain_getNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                        getNodeCoordPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getNodeCoordPointer
+  ans => obj%nodeCoord
+END PROCEDURE Domain_getNodeCoordPointer
 
 !----------------------------------------------------------------------------
 !

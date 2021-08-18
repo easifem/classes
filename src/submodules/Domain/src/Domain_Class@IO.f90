@@ -156,6 +156,18 @@ MODULE PROCEDURE Domain_Import
       & unitNo = eDomain%getLogFileUnit() )
   END IF
 
+  !> nodeCoord
+  dsetname=trim(group)//"/local_nptrs"
+  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+    CALL eDomain%raiseError(modName//'::'//myName// &
+      & trim(dsetname%chars()) // ' path does not exists' )
+  ELSE
+    CALL hdf5%read( trim(dsetname%chars()), obj%local_nptrs )
+    IF( eDomain%isLogActive() ) &
+      & CALL Display( obj%local_nptrs, 'local_nptrs = ', &
+      & unitNo = eDomain%getLogFileUnit() )
+  END IF
+
   !> is node number sparse
   IF( ( obj%maxNptrs - obj%minNptrs ) .EQ. ( obj%tNodes - 1 ) ) THEN
     obj%isNodeNumberSparse = .FALSE.

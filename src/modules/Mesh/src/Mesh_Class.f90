@@ -35,12 +35,10 @@ TYPE( ExceptionHandler_ ), PUBLIC :: eMesh
 INTEGER( I4B ), PARAMETER :: eUnitNo = 1003
 CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MESH_CLASS_EXCEPTION.txt"
   !! Exception handler
-
 INTEGER( I4B ), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
 INTEGER( I4B ), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_NODE = -2
 INTEGER( I4B ), PARAMETER, PUBLIC :: GHOST_NODE = -3
-
 INTEGER( I4B ), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER( I4B ), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
@@ -193,8 +191,22 @@ TYPE :: Mesh_
       !! Initiate boundary data
     PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mesh_DeallocateData
       !! Deallocate data
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNode => &
+      & mesh_isBoundaryNode
+      !! Returns true if a given global node number is a boundary node
+    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryElement => &
+      & mesh_isBoundaryElement
+      !! Returns true if a given global element number is a boundary element
+    PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
+      & mesh_isNodePresent
+      !! Returns true if a node number is present
+    PROCEDURE, PUBLIC, PASS( obj ) :: isElementPresent => &
+      & mesh_isElementPresent
+      !! Returns true if a given element number is present
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => mesh_size
       !! Returns the size of the mesh
+    PROCEDURE, PUBLIC, PASS( obj ) :: getRefElemPointer => mesh_getRefElemPointer
+      !! Returns pointer to the reference element
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalElements => mesh_size
       !! Returns the size of the mesh
     PROCEDURE, PUBLIC, PASS( obj ) :: getBoundingEntity => &
@@ -208,18 +220,6 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: getBoundaryNptrs => &
       & mesh_getBoundaryNptrs
       !! Returns a vector of boundary node numbers
-    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNode => &
-      & mesh_isBoundaryNode
-      !! Returns true if a given global node number is a boundary node
-    PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryElement => &
-      & mesh_isBoundaryElement
-      !! Returns true if a given global element number is a boundary element
-    PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
-      & mesh_isNodePresent
-      !! Returns true if a node number is present
-    PROCEDURE, PUBLIC, PASS( obj ) :: isElementPresent => &
-      & mesh_isElementPresent
-      !! Returns true if a given element number is present
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalNodes => mesh_getTotalInternalNodes
       !! Returns the total number of internal nodes
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalNodes => mesh_getTotalNodes
@@ -503,6 +503,21 @@ MODULE FUNCTION mesh_size( obj ) RESULT( ans )
     !! mesh object
   INTEGER( I4B ) :: ans
 END FUNCTION mesh_size
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               getRefElemPointer@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: REturns the pointer to the reference element
+
+INTERFACE
+MODULE FUNCTION mesh_getRefElemPointer( obj ) RESULT( Ans )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CLASS( ReferenceElement_ ), POINTER :: ans
+END FUNCTION mesh_getRefElemPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

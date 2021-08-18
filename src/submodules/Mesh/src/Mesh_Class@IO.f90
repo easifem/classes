@@ -123,7 +123,8 @@ MODULE PROCEDURE mesh_Import
       & 'tElements = ' // TRIM(str(obj%tElements, .true.)) )
   END IF
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
-  ALLOCATE( obj%elementData( obj%tElements ) )
+  IF( obj%tElements .NE. 0) &
+    & ALLOCATE( obj%elementData( obj%tElements ) )
   !>reading minX
   IF( .NOT. hdf5%pathExists(TRIM(dsetname) // "/minX") ) THEN
     CALL eMesh%raiseError(modName//'::'//myName// " - "// &
@@ -260,32 +261,39 @@ MODULE PROCEDURE mesh_Import
       & TRIM(dsetname) // "/connectivity" // ' path does not exists' )
   ELSE
     CALL hdf5%read( TRIM(dsetname) // "/connectivity", connectivity )
-    IF( ALLOCATED( connectivity ) .AND. SIZE( connectivity ) .NE. 0 ) THEN
+    IF( obj%elemType .EQ. Point1 .OR. obj%elemType .EQ. 0 ) THEN
+      obj%tNodes = 1
+      IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
+      ALLOCATE( obj%nodeData( obj%tNodes ) )
+      obj%nodeData( 1 )%globalNodeNum = 1
+      obj%nodeData( 1 )%localNodeNum = 1
+      obj%nodeData( 1 )%nodeType = BOUNDARY_NODE
+    ELSE
       obj%maxNptrs=MAXVAL(connectivity)
       obj%minNptrs=MINVAL(connectivity)
+      CALL Reallocate( obj%Local_Nptrs, obj%maxNptrs )
+      DO CONCURRENT(ii = 1:obj%tElements)
+        obj%elementData(ii)%globalNodes=connectivity(:,ii)
+        obj%Local_Nptrs( connectivity(:,ii) ) = connectivity(:,ii)
+      END DO
+      obj%tNodes = COUNT( obj%Local_Nptrs .NE. 0 )
+      IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
+      ALLOCATE( obj%nodeData( obj%tNodes ) )
+      dummy = 0
+      DO ii = 1, obj%maxNptrs
+        IF( obj%Local_Nptrs( ii ) .NE. 0 ) THEN
+          dummy = dummy + 1
+          obj%nodeData( dummy )%globalNodeNum = obj%Local_Nptrs( ii )
+          obj%nodeData( dummy )%localNodeNum = dummy
+          obj%nodeData( dummy )%nodeType = BOUNDARY_NODE
+            !! The above step is unusual, but we know the position of
+            !! internal nptrs, so later we will set the
+            !! those nodes as INTERNAL_NODE, in this way we can
+            !! identify the boundary nodes
+          obj%Local_Nptrs( ii ) = dummy
+        END IF
+      END DO
     END IF
-    CALL Reallocate( obj%Local_Nptrs, obj%maxNptrs )
-    DO CONCURRENT(ii = 1:obj%tElements)
-      obj%elementData(ii)%globalNodes=connectivity(:,ii)
-      obj%Local_Nptrs( connectivity(:,ii) ) = connectivity(:,ii)
-    END DO
-    obj%tNodes = COUNT( obj%Local_Nptrs .NE. 0 )
-    IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
-    ALLOCATE( obj%nodeData( obj%tNodes ) )
-    dummy = 0
-    DO ii = 1, obj%maxNptrs
-      IF( obj%Local_Nptrs( ii ) .NE. 0 ) THEN
-        dummy = dummy + 1
-        obj%nodeData( dummy )%globalNodeNum = obj%Local_Nptrs( ii )
-        obj%nodeData( dummy )%localNodeNum = dummy
-        obj%nodeData( dummy )%nodeType = BOUNDARY_NODE
-          !! The above step is unusual, but we know the position of
-          !! internal nptrs, so later we will set the
-          !! those nodes as INTERNAL_NODE, in this way we can
-          !! identify the boundary nodes
-        obj%Local_Nptrs( ii ) = dummy
-      END IF
-    END DO
     IF( eMesh%isLogActive() ) THEN
       CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
         & 'connectivity(1:NNS, 1:tElements) is given below = ' )
@@ -302,6 +310,8 @@ MODULE PROCEDURE mesh_Import
         & 'maxNptrs = ' // trim(str(obj%maxNptrs, .TRUE. )) )
     CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
         & 'minNptrs = ' // trim(str(obj%minNptrs, .TRUE. )) )
+    CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+        & 'tNodes = ' // trim(str(obj%tNodes, .TRUE. )) )
   END IF
   !> reading InternalNptrs, nodeData%globalNodeNumber,
   !> nodeData%localNodeNumber, nodeData%nodeType
@@ -318,11 +328,16 @@ MODULE PROCEDURE mesh_Import
       CALL Display( InternalNptrs, "InternalNptrs = ", &
         & unitNo = eMesh%getLogFileUnit() )
     END IF
-    DO ii = 1, SIZE( InternalNptrs )
-      jj = obj%getLocalNodeNumber( InternalNptrs( ii ) )
-      obj%nodeData(jj)%globalNodeNum = InternalNptrs( ii )
-      obj%nodeData(jj)%nodeType = INTERNAL_NODE
-    END DO
+    IF( obj%elemType .EQ. Point1 .OR. obj%elemType .EQ. 0 ) THEN
+      obj%nodeData(1)%globalNodeNum = InternalNptrs( 1 )
+      obj%nodeData(1)%nodeType = INTERNAL_NODE
+    ELSE
+      DO ii = 1, SIZE( InternalNptrs )
+        jj = obj%getLocalNodeNumber( InternalNptrs( ii ) )
+        obj%nodeData(jj)%globalNodeNum = InternalNptrs( ii )
+        obj%nodeData(jj)%nodeType = INTERNAL_NODE
+      END DO
+    END IF
   END IF
   !> reading boundingEntity
   CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
@@ -337,6 +352,8 @@ MODULE PROCEDURE mesh_Import
     END IF
   END IF
   !> set Reference Element
+  CALL eMesh%raiseInformation(modName//'::'//myName// " - " &
+    & // "settting reference element" )
   obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, nsd=obj%nsd, &
     & elemType=obj%elemType)
 

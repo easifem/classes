@@ -18,7 +18,7 @@
 MODULE GmshOption_Class
 USE GlobalData, ONLY: DFP=> Real64, I4B=>Int32, LGT
 USE GmshInterface
-USE C_Interface_MODULE, ONLY: C2FStringPtr => C_F_string_ptr
+USE CInterface, ONLY: C2FStringPtr => C_F_string_ptr
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE

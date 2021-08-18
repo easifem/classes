@@ -174,6 +174,9 @@ TYPE :: Domain_
       !! This routine returns total number of meshes of given dimension
     PROCEDURE, PUBLIC, PASS( obj ) :: getMeshPointer => Domain_getMeshPointer
       !! This routine a pointer to [[Mesh_]] object
+    PROCEDURE, PASS( obj ) :: getNodeCoord => Domain_getNodeCoord
+      !! This routine returns the nodal coordinate in rank2 array
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNodeCoordPointer => Domain_getNodeCoordPointer
     PROCEDURE, PUBLIC, PASS( obj ) :: setSparsity => Domain_setSparsity
 END TYPE Domain_
 
@@ -295,6 +298,7 @@ PUBLIC :: Domain_Pointer
 !                                                                Import@IO
 !----------------------------------------------------------------------------
 
+
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	18 June 2021
 ! summary: Import domain data
@@ -368,6 +372,15 @@ END INTERFACE
 !                                                 getMeshPointer@getMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This rotuine returns mesh pointer
+!
+!### Introduction
+! This returns the mesh Entity pointer.
+! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point, curve, surface, volume meshes.
+! - tag, is the number of mesh
+
 INTERFACE
 MODULE FUNCTION Domain_getMeshPointer( obj, dim, tag ) RESULT( Ans )
   CLASS( Domain_ ), INTENT( IN ) :: obj
@@ -375,6 +388,44 @@ MODULE FUNCTION Domain_getMeshPointer( obj, dim, tag ) RESULT( Ans )
   INTEGER( I4B ), INTENT( IN ) :: tag
   CLASS( Mesh_), POINTER :: ans
 END FUNCTION Domain_getMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getNodeCoord@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the nodal coordinates
+!
+!### Introduction
+! - This routine returns the nodal coordinates in the form of rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
+
+INTERFACE
+MODULE SUBROUTINE Domain_getNodeCoord( obj, nodeCoord )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: nodeCoord( :, : )
+END SUBROUTINE Domain_getNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             getNodeCoordPointer@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the pointer to nodal coordinates
+!
+!### Introduction
+! - This routine returns the pointer to nodal coordinates in the form of rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
+
+INTERFACE
+MODULE FUNCTION Domain_getNodeCoordPointer( obj ) RESULT( ans )
+  CLASS( Domain_ ), TARGET, INTENT( IN ) :: obj
+  REAL( DFP ), POINTER :: ans( :, : )
+END FUNCTION Domain_getNodeCoordPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

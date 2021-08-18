@@ -159,4 +159,12 @@ MODULE PROCEDURE mField_Export
   END IF
 END PROCEDURE mField_Export
 
+!----------------------------------------------------------------------------
+!                                                                      SPY
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_SPY
+  CALL SPY( obj=obj%mat, filename=filename )
+END PROCEDURE mField_SPY
+
 END SUBMODULE IO

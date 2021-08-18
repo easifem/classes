@@ -40,10 +40,9 @@ MODULE PROCEDURE Domain_setSparsity
     tmesh = obj%getTotalMesh( dim=dim )
     DO imesh = 1, tmesh
       meshobj => obj%getMeshPointer( dim=dim, tag=imesh )
-      IF( ASSOCIATED( meshobj )  ) THEN
-        CALL meshobj%setSparsity( mat=mat, localNodeNumber=obj%local_nptrs, &
-          & lbound=lb, ubound=ub )
-      END IF
+      IF( ASSOCIATED( meshobj )  ) &
+        & CALL meshobj%setSparsity( mat=mat, &
+        & localNodeNumber=obj%local_nptrs, lbound=lb, ubound=ub )
     END DO
   END DO
   CALL setSparsity( mat )

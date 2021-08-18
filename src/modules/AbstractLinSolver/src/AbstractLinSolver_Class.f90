@@ -76,15 +76,10 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   REAL( DFP ), ALLOCATABLE :: RES( : )
     !! Residual in each iteration
   CLASS( AbstractMatrixField_ ), POINTER :: Amat => NULL()
-  CLASS( AbstractMatrixField_ ), POINTER :: Pmat => NULL()
   CONTAINS
   PROCEDURE( als_initiate ), PUBLIC, DEFERRED, PASS( obj ) :: Initiate
     !! Initiate the object
   PROCEDURE( als_set ), PUBLIC, DEFERRED, PASS( obj ) :: set
-    !! Set the matrix and preconditioning matrix
-  PROCEDURE( als_setPrecondition ), PUBLIC, DEFERRED, PASS( obj ) :: setPrecondition
-    !! Set the matrix and preconditioning matrix
-  PROCEDURE( als_SetMatrix ), PUBLIC, DEFERRED, PASS( obj ) :: setMatrix
     !! Set the matrix and preconditioning matrix
   PROCEDURE( als_solve ), PUBLIC, DEFERRED, PASS( obj ) :: Solve
     !! Solve system of linear equation
@@ -123,36 +118,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Set( obj, Amat, Pmat )
+SUBROUTINE als_Set( obj, Amat )
   IMPORT :: AbstractLinSolver_, AbstractMatrixField_
   CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
   CLASS( AbstractMatrixField_ ), TARGET, INTENT( INOUT ) :: Amat
-  CLASS( AbstractMatrixField_ ), TARGET,  INTENT( INOUT ) :: Pmat
 END SUBROUTINE als_Set
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           SetPrecondition
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-SUBROUTINE als_setPrecondition( obj, mat )
-  IMPORT :: AbstractLinSolver_, AbstractMatrixField_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
-  CLASS( AbstractMatrixField_ ), TARGET,  INTENT( INOUT ) :: mat
-END SUBROUTINE als_setPrecondition
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                SetMatrix
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-SUBROUTINE als_SetMatrix( obj, mat )
-  IMPORT :: AbstractLinSolver_, AbstractMatrixField_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
-  CLASS( AbstractMatrixField_ ), TARGET,  INTENT( INOUT ) :: mat
-END SUBROUTINE als_SetMatrix
 END INTERFACE
 
 !----------------------------------------------------------------------------

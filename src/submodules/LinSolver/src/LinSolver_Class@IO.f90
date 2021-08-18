@@ -46,11 +46,6 @@ MODULE PROCEDURE ls_Display
   ELSE
     CALL Display( "Amat is NOT associated", unitNo=I)
   END IF
-  IF( ASSOCIATED( obj%Pmat ) ) THEN
-    CALL Display( "Pmat is associated", unitNo=I)
-  ELSE
-    CALL Display( "Pmat is NOT associated", unitNo=I)
-  END IF
   CALL Display(  obj%IPAR, "# IPAR : ", unitNo=I )
   CALL Display(  obj%FPAR, "# FPAR : ", unitNo=I )
   IF( ALLOCATED( obj%RES ) ) &

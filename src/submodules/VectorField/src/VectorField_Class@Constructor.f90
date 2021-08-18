@@ -21,6 +21,17 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                       setVectorFieldParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE setVectorFieldParam
+  INTEGER( I4B ) :: ierr
+  ierr = param%set( key="name", value=trim(name) )
+  ierr = param%set( key="spaceCompo", value=spaceCompo )
+  ierr = param%set( key="fieldType", value=INPUT(default=FIELD_TYPE_NORMAL, option=fieldType) )
+END PROCEDURE setVectorFieldParam
+
+!----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 

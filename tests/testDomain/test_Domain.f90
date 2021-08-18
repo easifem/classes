@@ -22,17 +22,106 @@ use easifemClasses
 implicit none
 contains
 
+
+subroutine test0
+  type( domain_ ) :: dom
+  class( mesh_ ), pointer :: meshPtr
+  integer( I4B ) :: ierr, ii
+  type( HDF5File_ ) :: meshfile
+  type( elemShapeData_ ) :: elemsd
+  type( quadraturePoint_ ) :: quad
+  class( ReferenceElement_ ), pointer :: refelem
+  type( vectorField_ ) :: coordfield
+  type( parameterList_ ) :: param
+  real( dfp ), pointer :: nodecoordPtr( :, : )
+  real( dfp ), allocatable :: xij( :, : )
+  integer( i4b ), allocatable :: nptrs( : )
+
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('Element shape data formation  :', color_fg='blue', &
+    & style='underline_on') )
+
+  CALL FPL_INIT; call param%initiate()
+  !> open meshfile
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  !> initiate domain
+  call dom%initiate(hdf5=meshfile, group="" )
+  !> get node coord
+  nodecoordPtr => dom%getNodeCoordPointer()
+  call setVectorFieldParam( param=param, name="coord", spaceCompo=3 )
+  call coordfield%initiate( param=param, dom=dom )
+  call coordfield%set( value = nodecoordPtr )
+  nullify( nodecoordPtr )
+  !> get mesh
+  meshPtr => dom%getMeshPointer( dim=2, tag=1 )
+  refelem => meshPtr%getRefElemPointer()
+  quad = GaussLegendreQuadrature( refelem=refelem, order=refelem%order )
+  call initiate( obj = elemsd, quad = quad, refelem = refelem, &
+    & ContinuityType= TypeH1, InterpolType = TypeLagrangeInterpolation )
+  !> start element loop
+  do ii = meshPtr%minElemNum, meshPtr%maxElemNum
+    if( .NOT. meshPtr%isElementPresent(ii) ) cycle
+    nptrs = meshPtr%getConnectivity(ii)
+    call coordfield%get( value=xij, globalNode=nptrs )
+    call setValue(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi )
+  end do
+  call dom%deallocateData()
+  call meshPtr%deallocateData()
+  call meshfile%close(); call meshfile%deallocateData()
+  call param%deallocateData(); CALL FPL_FINALIZE
+end subroutine
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-subroutine test0
+subroutine test4
+  type( domain_ ) :: dom
+  class( mesh_ ), pointer :: meshObj
+  type( HDF5File_ ) :: meshfile
+  real( dfp ), pointer :: nodeCoord( :, : )
+  call display( "Testing getMeshPointer" )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call dom%initiate( meshfile, '' )
+  nodeCoord => dom%getNodeCoordPointer()
+  call display( TRANSPOSE(nodeCoord), "nodeCoord = ")
+  call dom%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test3
+  type( domain_ ) :: dom
+  class( mesh_ ), pointer :: meshObj
+  type( HDF5File_ ) :: meshfile
+  call display( "Testing getMeshPointer" )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call dom%initiate( meshfile, '' )
+  meshObj => dom%getMeshPointer(dim=2,tag=1)
+  meshObj => NULL()
+  call dom%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+subroutine test2
   type( domain_ ) :: dom
   type( HDF5File_ ) :: meshfile
   call display( "Testing getTotalNodes" )
   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
   call meshfile%open()
-  call dom%initiate( meshfile )
+  call dom%initiate( meshfile, '' )
   call display( dom%getTotalNodes(), "102=" )
   call display( dom%getTotalNodes(physicalName=string("bottom")), "9=" )
   call display( dom%getTotalNodes(physicalName=string("right")), "9=" )
@@ -46,10 +135,10 @@ subroutine test0
   call display( dom%getTotalNodes(physicalTag=4, dim=1), "9=" )
   call display( dom%getTotalNodes(physicalTag=1, dim=2), "56=" )
   call display( dom%getTotalNodes(physicalTag=2, dim=2), "55=" )
-  call display( dom%getTotalNodes(entityNum=1, dim=1), "9=" )
-  call display( dom%getTotalNodes(entityNum=2, dim=1), "9=" )
+  call display( dom%getTotalNodes(entityNum=1, dim=1), "5=" )
+  call display( dom%getTotalNodes(entityNum=2, dim=1), "5=" )
   call display( dom%getTotalNodes(entityNum=3, dim=1), "9=" )
-  call display( dom%getTotalNodes(entityNum=4, dim=1), "9=" )
+  call display( dom%getTotalNodes(entityNum=4, dim=1), "5=" )
   call dom%deallocateData()
   call meshfile%close()
   call meshfile%deallocateData()
@@ -65,7 +154,7 @@ subroutine test1
   call display( "Testing Initiate and DeallocateData" )
   call meshfile%initiate( filename="./mesh.h5", mode="READ" )
   call meshfile%open()
-  call dom%initiate( meshfile )
+  call dom%initiate( meshfile, '' )
   call dom%deallocateData()
   call meshfile%close()
   call meshfile%deallocateData()
@@ -81,7 +170,6 @@ subroutine exportMesh
   CALL mshFile%ExportMesh( file="./mesh.h5" )
   CALL mshFile%DeallocateData()
 end
-
 
 end module test_m
 

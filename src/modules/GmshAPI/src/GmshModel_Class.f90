@@ -20,7 +20,7 @@ USE GlobalData, ONLY: DFP=> Real64, I4B => Int32, LGT
 USE Utility, ONLY: Reallocate
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE GmshInterface
-USE C_Interface_MODULE, ONLY: C_F_STRING_PTR, C_PTR_TO_INT_VEC
+USE CInterface, ONLY: C_F_STRING_PTR, C_PTR_TO_INT_VEC
 USE ISO_C_BINDING
 USE GmshModelGeo_Class
 USE GmshModelOcc_Class

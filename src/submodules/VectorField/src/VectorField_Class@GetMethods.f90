@@ -76,7 +76,7 @@ MODULE PROCEDURE vField_get3
   REAL( DFP ), ALLOCATABLE :: v( : )
 
   localNode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( ANY( localNode .GT. obj%domain%getTotalNodes() )) &
+  IF( ANY( localNode .EQ. 0 ) ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Some of the global node num are out of bound' )
   CALL getValue( v=v, val=obj%realVec, obj=obj%dof, &
@@ -95,7 +95,7 @@ MODULE PROCEDURE vField_get4
   INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
 
   localNode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( ANY( localNode .GT. obj%domain%getTotalNodes() )) &
+  IF( ANY( localNode .EQ. 0 )) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Some of the global node num are out of bound' )
   IF( spaceCompo .GT. obj%spaceCompo ) &

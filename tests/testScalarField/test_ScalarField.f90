@@ -48,7 +48,6 @@ subroutine test0
   realVec = [sfield%get( globalNode = 10 )]
   call display( realVec, "100.0=" )
 
-
   call sfield%set( value= 200.0_DFP )
   realVec = sfield%get()
   call display( realVec, "realVec = " )
