@@ -37,6 +37,7 @@ src/submodules/build/
 # easifem.wiki/
 # pages/
 # doc/
+tests/
 
 MESH_CLASS_EXCEPTION.txt
 MSH_CLASS_EXCEPTION.txt
