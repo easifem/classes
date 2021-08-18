@@ -32,11 +32,11 @@ MODULE PROCEDURE sField_set1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated' )
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL set( obj%realVec, indx=[1], value=[value]  )
+    CALL set( obj%realVec, indx=[1], value=[val]  )
   ELSE
     localNode = obj%domain%getLocalNodeNumber( globalNode )
-    IF( obj%tSize .GE. localNode ) THEN
-      CALL set( obj%realVec, indx=[localNode], value=[value] )
+    IF( localNode .NE. 0 ) THEN
+      CALL set( obj%realVec, indx=[localNode], value=[val] )
     ELSE
       CALL e%raiseError(modName//'::'//myName// " - " &
       & // 'globalNode :: '// trim(str(globalNode, .true.)) &
@@ -56,7 +56,7 @@ MODULE PROCEDURE sField_set2
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'Scalar field object is not initiated' )
   ELSE
-    CALL set( obj%realVec, value=value )
+    CALL set( obj%realVec, value=val )
   END IF
 END PROCEDURE sField_set2
 
@@ -75,10 +75,10 @@ MODULE PROCEDURE sField_set3
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'This routine should not be called for constant field type.' )
   ELSE
-    IF ( obj%tSize .NE. SIZE(value) ) &
+    IF ( obj%tSize .NE. SIZE(val) ) &
       & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'Size of given value is not same as the size of scalar field vector' )
-      CALL set( obj%realVec, value=value )
+      & 'Size of given val is not same as the size of scalar field vector' )
+      CALL set( obj%realVec, value=val )
   END IF
 END PROCEDURE sField_set3
 
@@ -87,9 +87,9 @@ END PROCEDURE sField_set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_set4
-  REAL( DFP ) :: val( SIZE(globalNode) )
-  val = value
-  CALL obj%set( globalNode, val )
+  REAL( DFP ) :: value( SIZE(globalNode) )
+  value = val
+  CALL obj%set( globalNode, value )
 END PROCEDURE sField_set4
 
 !----------------------------------------------------------------------------
@@ -111,7 +111,7 @@ MODULE PROCEDURE sField_set5
     IF( ANY( localNode .GT. obj%tSize ) ) &
       & CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'Some of the globalNode are out of bound' )
-    CALL set( obj%realVec, indx=localNode, value=value )
+    CALL set( obj%realVec, indx=localNode, value=val )
   END IF
 END PROCEDURE sField_set5
 
@@ -135,7 +135,7 @@ MODULE PROCEDURE sField_set6
       jj = jj + 1
       globalNode( jj ) = ii
     END DO
-    CALL obj%set( globalNode=globalNode, value=value )
+    CALL obj%set( globalNode=globalNode, val=val )
   END IF
 END PROCEDURE sField_set6
 
@@ -160,7 +160,7 @@ MODULE PROCEDURE sField_set7
       jj = jj + 1
       globalNode( jj ) = ii
     END DO
-    CALL obj%set( globalNode=globalNode, value=value )
+    CALL obj%set( globalNode=globalNode, val=val )
   END IF
 END PROCEDURE sField_set7
 

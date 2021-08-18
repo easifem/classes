@@ -62,16 +62,21 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
   PROCEDURE( amField_LUSOLVE2 ), DEFERRED, PASS( obj ) :: LUSOLVE2
     !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: LUSOLVE => LUSOLVE1, LUSOLVE2
-  PROCEDURE( amField_LUTSOLVE1 ), DEFERRED, PASS( obj ) :: LUTSOLVE1
-    !! Matrix vector multiplication, here vector is fortran array
-  PROCEDURE( amField_LUTSOLVE2 ), DEFERRED, PASS( obj ) :: LUTSOLVE2
-    !! Matrix vector multiplication, here vector is AbstractNodeField_
-  GENERIC, PUBLIC :: LUTSOLVE => LUTSOLVE1, LUTSOLVE2
   PROCEDURE( amField_setPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: setPrecondition
     !! Build precondition matrix
   PROCEDURE( amField_getPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: getPrecondition
     !! Get the precondition matrix
   PROCEDURE( amField_reversePermutation ), DEFERRED, PUBLIC, PASS( obj ) :: reversePermutation
+  PROCEDURE( amField_set1 ), DEFERRED, PASS( obj ) :: set1
+  PROCEDURE( amField_set2 ), DEFERRED, PASS( obj ) :: set2
+  PROCEDURE( amField_set3 ), DEFERRED, PASS( obj ) :: set3
+  GENERIC, PUBLIC :: set => set1, set2, set3
+
+  PROCEDURE( amField_setRow ), PUBLIC, DEFERRED, PASS( obj ) :: setRow
+  PROCEDURE( amField_setColumn ), PUBLIC, DEFERRED, PASS( obj ) :: setColumn
+  PROCEDURE( amField_getRow ), PUBLIC, DEFERRED, PASS( obj ) :: getRow
+  PROCEDURE( amField_getColumn ), PUBLIC, DEFERRED, PASS( obj ) :: getColumn
+
 END TYPE AbstractMatrixField_
 
 PUBLIC :: AbstractMatrixField_
@@ -164,19 +169,25 @@ END INTERFACE
 !
 !### Introduction
 !
+! If transp is absent or it is false then:
 ! This routine solves (LU) sol = rhs
 ! sol and rhs are fortran real vector
 ! The LU decomposition is stored inside the AbstractMatrixField_.
 ! Note that sol should be allocated by the user, and size of sol should be same as the size of rhs
+!
+! If transp is present and it is true then:
+!
+! If transp is present and it is true then this subroutine solves (LU)^T sol = rhs
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_LUSOLVE1( obj, sol, rhs )
-  IMPORT :: AbstractMatrixField_, DFP
+SUBROUTINE amField_LUSOLVE1( obj, sol, rhs, transp )
+  IMPORT :: AbstractMatrixField_, DFP, LGT
   CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( INOUT ) :: sol( : )
     !! Output vector y=Ax
   REAL( DFP ), INTENT( IN ) :: rhs( : )
     !! Input vector in y=Ax
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: transp
 END SUBROUTINE amField_LUSOLVE1
 END INTERFACE
 
@@ -190,70 +201,24 @@ END INTERFACE
 !
 !### Introduction
 !
+! If transp is not present or it is false then:
 ! This routine solves (LU) sol = rhs
 ! sol and rhs are [[AbstractNodeField_]]
 ! The LU decomposition is stored inside the AbstractMatrixField_.
+!
+! If transp is present and it is true then this subroutine solves (LU)^T sol = rhs
+
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_LUSOLVE2( obj, sol, rhs )
-  IMPORT :: AbstractMatrixField_, AbstractNodeField_
+SUBROUTINE amField_LUSOLVE2( obj, sol, rhs, transp )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, LGT
   CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: sol
     !! Output vector
   CLASS( AbstractNodeField_ ), INTENT( IN ) :: rhs
     !! Input vector, rhs
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: transp
 END SUBROUTINE amField_LUSOLVE2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                  LUTSOLVE
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 July 2021
-! summary: This routine solves (LU) sol = rhs
-!
-!### Introduction
-!
-! This routine solves (LU) sol = rhs
-! sol and rhs are fortran real vector
-! The LU decomposition is stored inside the AbstractMatrixField_.
-! Note that sol should be allocated by the user, and size of sol should be same as the size of rhs
-
-ABSTRACT INTERFACE
-SUBROUTINE amField_LUTSOLVE1( obj, sol, rhs )
-  IMPORT :: AbstractMatrixField_, DFP
-  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( INOUT ) :: sol( : )
-    !! Output vector y=Ax
-  REAL( DFP ), INTENT( IN ) :: rhs( : )
-    !! Input vector in y=Ax
-END SUBROUTINE amField_LUTSOLVE1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                  LUTSOLVE
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 July 2021
-! summary: This routine solves (LU) sol = rhs
-!
-!### Introduction
-!
-! This routine solves (LU) sol = rhs
-! sol and rhs are [[AbstractNodeField_]]
-! The LU decomposition is stored inside the AbstractMatrixField_.
-
-ABSTRACT INTERFACE
-SUBROUTINE amField_LUTSOLVE2( obj, sol, rhs )
-  IMPORT :: AbstractMatrixField_, AbstractNodeField_
-  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
-  CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: sol
-    !! Output vector
-  CLASS( AbstractNodeField_ ), INTENT( IN ) :: rhs
-    !! Input vector, rhs
-END SUBROUTINE amField_LUTSOLVE2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -308,6 +273,177 @@ SUBROUTINE amField_reversePermutation( obj, rhs, sol )
   CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: rhs
   CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: sol
 END SUBROUTINE amField_reversePermutation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set1( obj, globalNode, val, storageFMT, scale, &
+  & addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  REAL( DFP ), INTENT( IN ) :: val(:,:)
+  INTEGER( I4B ), INTENT( IN ) :: storageFMT
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set2( obj, globalNode, val, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalNode(:)
+  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set3( obj, rowNodeNum, colNodeNum, rowDOF, colDOF, val, &
+  & scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: rowNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: colNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: rowDOF
+  INTEGER( I4B ), INTENT( IN ) :: colDOF
+  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!### Introduction
+! This routine sets the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow( obj, globalNode, idof, scalarVal, vecVal, &
+  & nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!### Introduction
+! This routine sets the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn( obj, globalNode, idof, scalarVal, vecVal, &
+  & nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!### Introduction
+! This routine returns the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `val` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow( obj, globalNode, idof, val, nodeFieldVal, &
+  & scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: val( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!### Introduction
+! This routine returns the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `val` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn( obj, globalNode, idof, val, nodeFieldVal, &
+  & scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: val( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn
 END INTERFACE
 
 END MODULE AbstractMatrixField_Class

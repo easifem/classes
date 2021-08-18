@@ -83,8 +83,11 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
     & set7, set8, set9, set10, set11, set12
 
   PROCEDURE, PASS( obj ) :: get1 => vField_get1
+    !! returns the single entry
   PROCEDURE, PASS( obj ) :: get2 => vField_get2
+    !! returns all entries in rank2 array of real
   PROCEDURE, PASS( obj ) :: get3 => vField_get3
+    !! returns selected values in XiJ format
   PROCEDURE, PASS( obj ) :: get4 => vField_get4
   PROCEDURE, PASS( obj ) :: get5 => vField_get5
   PROCEDURE, PASS( obj ) :: get6 => vField_get6
@@ -108,6 +111,25 @@ TYPE :: VectorFieldPointer_
 END TYPE VectorFieldPointer_
 
 PUBLIC :: VectorFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                          setVectorFieldParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine set the essential and optional parameters for creating the vector field
+!
+INTERFACE
+MODULE SUBROUTINE setVectorFieldParam( param, name, spaceCompo, fieldType )
+  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  INTEGER( I4B ), INTENT( IN ) :: spaceCompo
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+END SUBROUTINE setVectorFieldParam
+END INTERFACE
+
+PUBLIC :: setVectorFieldParam
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor

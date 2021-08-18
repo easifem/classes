@@ -33,7 +33,14 @@ MODULE PROCEDURE mField_Matvec1
   s = obj%shape()
   IF( SIZE( y ) .NE. s( 1 ) .OR. SIZE( x ) .NE. s(2) ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'There is some mismatch in dimension of matrix and vectors' )
+    & 'There is some mismatch in dimension of matrix and vectors' // &
+    & 'The shape of MatrixField_ instance is ' &
+    & // trim( str( s(1), .true. ) ) // ", " &
+    & // trim( str( s(2), .true. ) ) // ", " &
+    & // 'However, the size of x is ' &
+    & // trim( str( SIZE( x ), .true. ) ) // ", " &
+    & // 'and, the size of y is ' &
+    & // trim( str( SIZE( y ), .true. ) ) // ", " )
   CALL Matvec( obj=obj%mat, y=y, x=x, transp=transp )
 END PROCEDURE mField_Matvec1
 
@@ -42,9 +49,11 @@ END PROCEDURE mField_Matvec1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Matvec2
-  CHARACTER( LEN = * ), PARAMETER :: myName="amField_Matvec2"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine has not been implemented so far')
+  REAL( DFP ), POINTER :: xVec( : ), yVec( : )
+  xVec => x%getPointer()
+  yVec => y%getPointer()
+  CALL obj%matvec( x=xVec, y=yVec )
+  NULLIFY( xVec, yVec )
 END PROCEDURE mField_Matvec2
 
 END SUBMODULE MatVecMethods

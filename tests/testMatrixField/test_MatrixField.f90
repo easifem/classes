@@ -189,11 +189,6 @@ subroutine test3
   ! export mesh
   call meshObj%export()
 
-
-
-
-
-
   call hdf5%close()
   call hdf5%deallocateData()
   call obj%deallocateData()

@@ -29,6 +29,14 @@ MODULE PROCEDURE mesh_size
 END PROCEDURE mesh_size
 
 !----------------------------------------------------------------------------
+!                                                          getRefElemPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getRefElemPointer
+  ans => obj%refelem
+END PROCEDURE mesh_getRefElemPointer
+
+!----------------------------------------------------------------------------
 !                                                         getBoundingEntity
 !----------------------------------------------------------------------------
 

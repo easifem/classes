@@ -4,6 +4,7 @@ target_sources(
   ${src_path}/MatrixField_Class@Constructor.f90
   ${src_path}/MatrixField_Class@IO.f90
   ${src_path}/MatrixField_Class@GetMethods.f90
+  ${src_path}/MatrixField_Class@SetMethods.f90
   ${src_path}/MatrixField_Class@MatVecMethods.f90
   ${src_path}/MatrixField_Class@LUsolveMethods.f90
   ${src_path}/MatrixField_Class@PreconditionMethods.f90

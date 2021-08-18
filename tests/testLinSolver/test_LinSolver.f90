@@ -28,8 +28,8 @@ contains
 
 subroutine test0
   type( MatrixField_ ) :: Amat, Pmat
-  type( ParameterList_ ) :: param
   type( LinSolver_ ) :: obj
+  type( ParameterList_ ) :: param
   integer( i4b ) :: ierr, tnodes
 
   call display( "Testing Initiate and DeallocateData" )

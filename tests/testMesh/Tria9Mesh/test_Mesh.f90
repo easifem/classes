@@ -25,6 +25,37 @@ contains
 !
 !----------------------------------------------------------------------------
 
+subroutine test11
+  type( mesh_ ) :: obj
+  integer( I4B ) :: ierr, ii
+  type( HDF5File_ ) :: meshfile
+  type( elemShapeData_ ) :: elemsd
+  type( quadraturePoint_ ) :: quad
+  class( referenceElement_ ), pointer :: refelem
+  type( vectorField_ ) :: nodeCoord
+  !
+  call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+    & // colorize('Element shape data formation  :', color_fg='blue', &
+    & style='underline_on') )
+  call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+  call meshfile%open()
+  call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+  refelem => obj%getRefElemPointer()
+  quad = GaussLegendreQuadrature( refelem=refelem, order=refelem%order )
+  call initiate( obj = elemsd, quad = quad, refelem = refelem, &
+    & continuityType= TypeH1, interpolType = TypeLagrangeInterpolation )
+  do ii = obj%minElemNum,obj%maxElemNum
+    if( .NOT. obj%isElementPresent(ii ) ) cycle
+  end do
+  call obj%deallocateData()
+  call meshfile%close()
+  call meshfile%deallocateData()
+end subroutine
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 subroutine test10
   type( mesh_ ) :: obj
   integer( I4B ) :: ierr, ii
@@ -294,5 +325,4 @@ use test_m
 implicit none
 ! call exportMesh
 call test0
-call display("done testing")
 end program main

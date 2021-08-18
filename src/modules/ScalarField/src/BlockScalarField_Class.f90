@@ -18,7 +18,7 @@
 ! date: 28 June 2021
 ! summary: Scalar field data type is defined
 
-MODULE ScalarField_Class
+MODULE BlockScalarField_Class
 USE GlobalData
 USE BaseType
 USE AbstractField_Class
@@ -29,10 +29,10 @@ USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "SCALARFIELD_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "BLOCKSCALARFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
 INTEGER( I4B ), PARAMETER :: eUnitNo = 1004
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "SCALARFIELD_CLASS_EXCEPTION.txt"
+CHARACTER( LEN = * ), PARAMETER :: eLogFile = "BLOCKSCALARFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -44,7 +44,7 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "SCALARFIELD_CLASS_EXCEPTION.txt"
 !
 !{!pages/ScalarField.md}
 
-TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
+TYPE, EXTENDS( AbstractNodeField_ ) :: BlockScalarField_
   CONTAINS
   PRIVATE
   PROCEDURE, PASS( obj ) :: checkEssentialParam => sField_checkEssentialParam
@@ -81,7 +81,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
     !! get the entries of scalar field
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => sField_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => sField_Export
-END TYPE ScalarField_
+END TYPE BlockScalarField_
 
 PUBLIC :: ScalarField_
 TYPE( ScalarField_ ), PARAMETER, PUBLIC :: Type = ScalarField_()
@@ -478,4 +478,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE ScalarField_Class
+END MODULE BlockScalarField_Class

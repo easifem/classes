@@ -6,7 +6,7 @@
 #-----------------------------------------------------------------------
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10.0 FATAL_ERROR)
-SET(PROJECT_NAME "Domain")
+SET(PROJECT_NAME "Diffusion")
 PROJECT(${PROJECT_NAME})
 ENABLE_LANGUAGE(Fortran)
 SET(TARGET_NAME "test")

@@ -36,10 +36,10 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
     !! Degree of freedom object, which contains the information about how the different components are stored inside the realVec
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => anf_getPointer
+    PROCEDURE, PUBLIC, PASS( obj ) :: size => anf_Size
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
-
 
 CONTAINS
 
@@ -56,6 +56,18 @@ FUNCTION anf_getPointer( obj ) RESULT( ans )
   REAL( DFP ), POINTER :: ans( : )
   ans => getPointer( obj%realVec )
 END FUNCTION anf_getPointer
+
+
+!----------------------------------------------------------------------------
+!                                                                    Size
+!----------------------------------------------------------------------------
+
+FUNCTION anf_Size( obj, dims ) RESULT( ans )
+  CLASS( AbstractNodeField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), OPTIONAL :: dims
+  INTEGER( I4B ) :: ans
+  ans = obj%tSize
+END FUNCTION anf_Size
 
 !----------------------------------------------------------------------------
 !

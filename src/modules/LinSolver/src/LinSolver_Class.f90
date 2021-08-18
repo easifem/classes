@@ -95,10 +95,6 @@ TYPE, EXTENDS( AbstractLinSolver_ ) :: LinSolver_
     !! Initiate object
   PROCEDURE, PUBLIC, PASS( obj ) :: Set => ls_Set
     !! Set the matrix and preconditioning matrix
-  PROCEDURE, PUBLIC, PASS( obj ) :: SetPrecondition => ls_setPrecondition
-    !! Set the preconditioning matrix
-  PROCEDURE, PUBLIC, PASS( obj ) :: SetMatrix => ls_SetMatrix
-    !! Set tangent matrix
   PROCEDURE, PUBLIC, PASS( obj ) :: Solve => ls_solve
     !! Solve the system of linear equation
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => ls_display
@@ -215,37 +211,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE ls_Set( obj, Amat, Pmat )
+MODULE SUBROUTINE ls_Set( obj, Amat )
   CLASS( LinSolver_ ), INTENT( INOUT) :: obj
   CLASS( AbstractMatrixField_ ), TARGET, INTENT( INOUT ) :: Amat
-  CLASS( AbstractMatrixField_ ), TARGET,  INTENT( INOUT ) :: Pmat
 END SUBROUTINE ls_Set
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 SetPrecondition@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: Set preconditioners in [[LinSolver_]]
-
-INTERFACE
-MODULE SUBROUTINE ls_SetPrecondition( obj, mat )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
-  CLASS( AbstractMatrixField_ ), TARGET,  INTENT( INOUT ) :: mat
-END SUBROUTINE ls_SetPrecondition
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       SetMatrix@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE ls_SetMatrix( obj, mat )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
-  CLASS( AbstractMatrixField_ ), TARGET,  INTENT( INOUT ) :: mat
-END SUBROUTINE ls_SetMatrix
 END INTERFACE
 
 !----------------------------------------------------------------------------

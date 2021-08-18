@@ -73,56 +73,19 @@ MODULE PROCEDURE ls_Set
   CHARACTER( LEN = * ), PARAMETER :: myName="ls_Set"
   INTEGER( I4B ) :: s(2)
   obj%Amat => Amat
-  obj%Pmat => Pmat
-
   SELECT TYPE( Amat )
   TYPE IS ( MatrixField_ )
     s = Amat%SHAPE()
   CLASS DEFAULT
     CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'Type of Amat cannot be recognized, it should be MatrixField_ ')
+    & 'Type of Amat cannot be recognized, it should be MatrixField_ ')
   END SELECT
-
   obj%localNumRow = s(1)
   obj%localNumColumn = s(2)
   obj%globalNumRow = s(1)
   obj%globalNumColumn = s(2)
-
-  CALL AllocateWorkSpace( W=obj%W, n=obj%globalNumRow, solverName=obj%solverName, IPAR=obj%IPAR)
-
+  CALL AllocateWorkSpace( W=obj%W, n=obj%globalNumRow, &
+    & solverName=obj%solverName, IPAR=obj%IPAR)
 END PROCEDURE ls_Set
-
-!----------------------------------------------------------------------------
-!                                                            SetPrecondition
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ls_SetPrecondition
-  obj%Pmat => mat
-END PROCEDURE ls_SetPrecondition
-
-!----------------------------------------------------------------------------
-!                                                                 SetMatrix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ls_SetMatrix
-  CHARACTER( LEN = * ), PARAMETER :: myName="ls_Set"
-  INTEGER( I4B ) :: s(2)
-
-  obj%Amat => mat
-  SELECT TYPE( mat )
-  TYPE IS ( MatrixField_ )
-    s = mat%SHAPE()
-  CLASS DEFAULT
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'Type of Amat cannot be recognized, it should be MatrixField_ ')
-  END SELECT
-
-  obj%localNumRow = s(1)
-  obj%localNumColumn = s(2)
-  obj%globalNumRow = s(1)
-  obj%globalNumColumn = s(2)
-
-  CALL AllocateWorkSpace( W=obj%W, n=obj%globalNumRow, solverName=obj%solverName, IPAR=obj%IPAR)
-END PROCEDURE ls_SetMatrix
 
 END SUBMODULE SetMethods

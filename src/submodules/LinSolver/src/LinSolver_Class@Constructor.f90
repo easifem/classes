@@ -146,6 +146,7 @@ MODULE PROCEDURE setLinSolverParam
   ELSE
     ierr = param%set( key="atol", value=atol )
   END IF
+  !> hello
 END PROCEDURE setLinSolverParam
 
 !----------------------------------------------------------------------------
@@ -273,7 +274,7 @@ MODULE PROCEDURE ls_DeallocateData
   obj%localNumRow = 0
   IF( ALLOCATED( obj%RES ) ) DEALLOCATE( obj%RES )
   IF( ALLOCATED( obj%W ) ) DEALLOCATE( obj%W )
-  NULLIFY( obj%Amat, obj%Pmat )
+  NULLIFY( obj%Amat )
 END PROCEDURE ls_DeallocateData
 
 END SUBMODULE Constructor

@@ -131,7 +131,7 @@ MODULE PROCEDURE msh_initiate
       & // ' total number of point entities : ' // TRIM(str(tp, .true.)) &
       & // ' total number of curve entities : ' // TRIM(str(tc, .true.)) &
       & // ' total number of surface entities : ' // TRIM(str(ts, .true.)) &
-      & // ' total number of volume entities : ' // TRIM(str(tc, .true.)) )
+      & // ' total number of volume entities : ' // TRIM(str(tv, .true.)) )
 
     IF( ALLOCATED( obj%PointEntities ) ) DEALLOCATE( obj%PointEntities )
     IF( ALLOCATED( obj%CurveEntities ) ) DEALLOCATE( obj%CurveEntities )
@@ -278,15 +278,15 @@ MODULE PROCEDURE msh_initiate
           CALL obj%PointEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%PointEntities( j )%setNodeCoord( NodeCoord )
         CASE( 1 )
-          j = getIndex( obj%PointEntities, entityTag )
+          j = getIndex( obj%CurveEntities, entityTag )
           CALL obj%CurveEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%CurveEntities( j )%setNodeCoord( NodeCoord )
         CASE( 2 )
-          j = getIndex( obj%PointEntities, entityTag )
+          j = getIndex( obj%SurfaceEntities, entityTag )
           CALL obj%SurfaceEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%SurfaceEntities( j )%setNodeCoord( NodeCoord )
         CASE( 3 )
-          j = getIndex( obj%PointEntities, entityTag )
+          j = getIndex( obj%VolumeEntities, entityTag )
           CALL obj%VolumeEntities( j )%setIntNodeNumber( NodeNumber )
           CALL obj%VolumeEntities( j )%setNodeCoord( NodeCoord )
       END SELECT
