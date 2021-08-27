@@ -33,8 +33,6 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MATRIXFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1010
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MATRIXFIELD_CLASS_EXCEPTION.txt"
 INTEGER( I4B ), PARAMETER :: IPAR_LENGTH = 14
 INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 
@@ -105,6 +103,7 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
   LOGICAL( LGT ) :: isPmatInitiated = .FALSE.
   CONTAINS
   PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mField_addSurrogate
     PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => mField_checkEssentialParam
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate1 => mField_Initiate1
       !! Initiate from the parameter list
@@ -148,6 +147,22 @@ END TYPE MatrixField_
 
 PUBLIC :: MatrixField_
 
+
+!----------------------------------------------------------------------------
+!                                                 addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+INTERFACE
+MODULE SUBROUTINE mField_addSurrogate( obj, UserObj )
+  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE mField_addSurrogate
+END INTERFACE
+
 !----------------------------------------------------------------------------
 !                                            setMatrixFieldParam@Constructor
 !----------------------------------------------------------------------------
@@ -165,6 +180,11 @@ MODULE SUBROUTINE setMatrixFieldParam( param, name, matrixProp, spaceCompo, &
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: timeCompo
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+    !! fieldType can be following
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    !! FIELD_TYPE_CONSTANT_SPACE
+    !! FIELD_TYPE_CONSTANT_TIME
 END SUBROUTINE setMatrixFieldParam
 END INTERFACE
 
@@ -339,10 +359,11 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-MODULE SUBROUTINE mField_Import( obj, hdf5, group )
+MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE mField_Import
 END INTERFACE
 

@@ -21,18 +21,41 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                    setSTScalarFieldParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE setSTScalarFieldParam
+  INTEGER( I4B ) :: ierr
+  ierr = param%set(key="STScalarField/name", value=TRIM(name))
+  ierr = param%set(key="STScalarField/timeCompo", value=timeCompo)
+  IF( PRESENT( fieldType ) ) THEN
+    ierr = param%set(key="STScalarField/fieldType", value=fieldType)
+  ELSE
+    ierr = param%set(key="STScalarField/fieldType", value=FIELD_TYPE_NORMAL)
+  END IF
+END PROCEDURE setSTScalarFieldParam
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_addSurrogate
+  CALL e%addSurrogate(UserObj)
+END PROCEDURE stsField_addSurrogate
+
+!----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_checkEssentialParam
   CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_checkEssentialParam"
-  IF( .NOT. param%isPresent(key="name") ) THEN
+  IF( .NOT. param%isPresent(key="STScalarField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'names should be present in param')
+    & 'STScalarField/name should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="timeCompo") ) THEN
+  IF( .NOT. param%isPresent(key="STScalarField/timeCompo") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'timeCompo should be present in param')
+    & 'STScalarField/timeCompo should be present in param')
   END IF
 END PROCEDURE stsField_checkEssentialParam
 
@@ -52,13 +75,13 @@ MODULE PROCEDURE stsField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'STScalar field object is already initiated')
   CALL obj%checkEssentialParam(param)
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
-  ierr = param%get( key="name", value=char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="STScalarField/name" ) ) :: char_var )
+  ierr = param%get( key="STScalarField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
-  ierr = param%get( key="timeCompo", value=obj%timeCompo )
-  IF( param%isPresent(key="fieldType") ) THEN
-    ierr = param%get( key="fieldType", value=obj%fieldType )
+  ierr = param%get( key="STScalarField/timeCompo", value=obj%timeCompo )
+  IF( param%isPresent(key="STScalarField/fieldType") ) THEN
+    ierr = param%get( key="STScalarField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF

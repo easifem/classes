@@ -45,18 +45,9 @@ USE mshElements_Class
 USE MSH_Class
 USE AbstractVector_Class
 USE Vector_Class
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE AbstractElementField_Class
-USE AbstractMatrixField_Class
-USE ScalarField_Class
-USE STScalarField_Class
-USE VectorField_Class
-USE STVectorField_Class
-USE MatrixField_Class
 
-USE AbstractLinSolver_Class
-USE LinSolver_Class
+USE Field
+USE FieldFactory
 
   ! USE vtkType
 

@@ -32,8 +32,6 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "STSCALARFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1007
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "STSCALARFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                              STScalarField_
@@ -49,7 +47,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   INTEGER( I4B ) :: timeCompo = 0_I4B
   CONTAINS
   PRIVATE
-  PROCEDURE, PASS( obj ) :: checkEssentialParam => stsField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => stsField_addSurrogate
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => stsField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stsField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stsField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stsField_Display
@@ -108,6 +107,41 @@ TYPE :: STScalarFieldPointer_
 END TYPE STScalarFieldPointer_
 
 PUBLIC :: STScalarFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+INTERFACE
+MODULE SUBROUTINE stsField_addSurrogate( obj, UserObj )
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE stsField_addSurrogate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         setSTScalarFieldParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This routine is used to for setting space time scalar field
+
+INTERFACE
+MODULE SUBROUTINE setSTScalarFieldParam( param, name, timeCompo, &
+  & fieldType )
+  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+END SUBROUTINE setSTScalarFieldParam
+END INTERFACE
+
+PUBLIC :: setSTScalarFieldParam
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -300,10 +334,11 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE stsField_Import( obj, hdf5, group )
+MODULE SUBROUTINE stsField_Import( obj, hdf5, group, dom )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE stsField_Import
 END INTERFACE
 

@@ -33,10 +33,10 @@ USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY : HDF5File_
+USE ExceptionHandler_Class, ONLY : ExceptionHandler_
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-
 INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 0
 INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 2
@@ -69,6 +69,10 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE( String ) :: name
   CONTAINS
   PRIVATE
+    PROCEDURE(aField_addSurrogate), DEFERRED, PUBLIC, PASS( obj ) :: addSurrogate
+      !! check essential parameters
+    PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS( obj ) :: checkEssentialParam
+      !! check essential parameters
     PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS( obj ) :: Initiate1
       !! Initiate the field
     PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS( obj ) :: Initiate2
@@ -85,6 +89,38 @@ TYPE, ABSTRACT :: AbstractField_
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
+
+!----------------------------------------------------------------------------
+!                                           addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+ABSTRACT INTERFACE
+SUBROUTINE aField_addSurrogate( obj, UserObj )
+  IMPORT :: AbstractField_, ExceptionHandler_
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE aField_addSurrogate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           checkEssentialParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+ABSTRACT INTERFACE
+SUBROUTINE aField_checkEssentialParam( obj, param )
+  IMPORT :: AbstractField_, ParameterList_
+  CLASS( AbstractField_ ), INTENT( IN ) :: obj
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+END SUBROUTINE aField_checkEssentialParam
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
@@ -144,11 +180,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Import( obj, hdf5, group )
-  IMPORT :: AbstractField_, I4B, HDF5File_
+SUBROUTINE aField_Import( obj, hdf5, group, dom )
+  IMPORT :: AbstractField_, I4B, HDF5File_, Domain_
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE aField_Import
 END INTERFACE
 

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VectorField_Class ) IO
+SUBMODULE( VectorField_Class ) IOMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -56,8 +56,76 @@ END PROCEDURE vField_Display
 
 MODULE PROCEDURE vField_Import
   CHARACTER( LEN = * ), PARAMETER :: myName="vField_Import"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine has not been implemented')
+  TYPE( String ) :: strval, dsetname, name
+  INTEGER( I4B ) :: fieldType, spaceCompo
+  LOGICAL( LGT ) :: restart
+  TYPE( ParameterList_ ) :: param
+  ! main program
+  IF( obj%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Vector field object is already initiated')
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "IMPORTING VECTOR FIELD")
+  !> check
+  IF( .NOT. hdf5%isOpen() ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'HDF5 file is not opened')
+  END IF
+  !> check
+  IF( .NOT. hdf5%isRead() ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'HDF5 file does not have read permission')
+  END IF
+  ! READ fieldType
+  dsetname=trim(group)//"/fieldType"
+  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+      CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+      SELECT CASE( TRIM(strval%chars()) )
+      CASE( "NORMAL" )
+        fieldType = FIELD_TYPE_NORMAL
+      CASE( "CONSTANT" )
+        fieldType = FIELD_TYPE_CONSTANT
+      CASE( "CONSTANT_SPACE" )
+        fieldType = FIELD_TYPE_CONSTANT_SPACE
+      CASE( "CONSTANT_TIME" )
+        fieldType = FIELD_TYPE_CONSTANT_TIME
+      END SELECT
+  ELSE
+    fieldType = FIELD_TYPE_NORMAL
+  END IF
+  ! READ name
+  dsetname=trim(group)//"/name"
+  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'The dataset name should be present')
+  END IF
+  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
+  ! READ spaceCompo
+  dsetname=trim(group)//"/spaceCompo"
+  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'The dataset spaceCompo should be present')
+  END IF
+  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=spaceCompo)
+  ! READ restart
+  dsetname=trim(group)//"/restart"
+  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=restart)
+  ELSE
+    restart = .FALSE.
+  END IF
+  IF( .NOT. restart ) THEN
+    CALL FPL_INIT(); CALL param%initiate()
+    CALL setVectorFieldParam( param=param, &
+      & name=trim(name%chars()), &
+      & fieldType = fieldType, spaceCompo=spaceCompo )
+    CALL obj%initiate( param=param, dom=dom )
+    CALL param%deallocateData(); CALL FPL_FINALIZE()
+  ELSE
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'At present restart option is not available, we are working on it.' )
+  END IF
 END PROCEDURE vField_Import
 
 !----------------------------------------------------------------------------
@@ -70,4 +138,4 @@ MODULE PROCEDURE vField_Export
     & 'This routine has not been implemented')
 END PROCEDURE vField_Export
 
-END SUBMODULE IO
+END SUBMODULE IOMethods

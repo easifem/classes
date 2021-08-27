@@ -20,23 +20,43 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
+MODULE PROCEDURE setSTVectorFieldParam
+  INTEGER( I4B ) :: ierr
+  ierr = param%set(key="STVectorField/name", value=TRIM(name) )
+  ierr = param%set(key="STVectorField/spaceCompo", value=spaceCompo )
+  ierr = param%set(key="STVectorField/timeCompo", value=timeCompo )
+  IF( PRESENT( fieldType ) ) THEN
+    ierr = param%set(key="STVectorField/fieldType", value=fieldType)
+  ELSE
+    ierr = param%set(key="STVectorField/fieldType", value=FIELD_TYPE_NORMAL)
+  END IF
+END PROCEDURE setSTVectorFieldParam
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_addSurrogate
+  CALL e%addSurrogate(UserObj)
+END PROCEDURE stvField_addSurrogate
+
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_checkEssentialParam
   CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_checkEssentialParam"
-  IF( .NOT. param%isPresent(key="name") ) THEN
+  IF( .NOT. param%isPresent(key="STVectorField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'names should be present in param')
+    & 'STVectorField/name should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="spaceCompo") ) THEN
+  IF( .NOT. param%isPresent(key="STVectorField/spaceCompo") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'spaceCompo should be present in param')
+    & 'STVectorField/spaceCompo should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="timeCompo") ) THEN
+  IF( .NOT. param%isPresent(key="STVectorField/timeCompo") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'timeCompo should be present in param')
+    & 'STVectorField/timeCompo should be present in param')
   END IF
 END PROCEDURE stvField_checkEssentialParam
 
@@ -57,16 +77,16 @@ MODULE PROCEDURE stvField_Initiate1
     & 'STVector field object is already initiated')
   CALL obj%checkEssentialParam(param)
   !-----------------------------------------------------------------------!
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
-  ierr = param%get( key="name", value=char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="STVectorField/name" ) ) :: char_var )
+  ierr = param%get( key="STVectorField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
   !-----------------------------------------------------------------------!
-  ierr = param%get( key="spaceCompo", value=obj%spaceCompo )
-  ierr = param%get( key="timeCompo", value=obj%timeCompo )
+  ierr = param%get( key="STVectorField/spaceCompo", value=obj%spaceCompo )
+  ierr = param%get( key="STVectorField/timeCompo", value=obj%timeCompo )
   !-----------------------------------------------------------------------!
-  IF( param%isPresent(key="fieldType") ) THEN
-    ierr = param%get( key="fieldType", value=obj%fieldType )
+  IF( param%isPresent(key="STVectorField/fieldType") ) THEN
+    ierr = param%get( key="STVectorField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF

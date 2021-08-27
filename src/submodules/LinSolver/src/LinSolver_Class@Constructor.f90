@@ -21,6 +21,144 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                 getLinSolverCodeFromName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE getLinSolverCodeFromName
+  SELECT CASE( TRIM( name ) )
+  CASE( "CG" ) !1
+    ans = LIS_CG
+  CASE( "BICG" ) !2
+    ans = LIS_BICG
+  CASE( "CGS" ) !3
+    ans = LIS_CGS
+  CASE( "BICGSTAB" ) !4
+    ans = LIS_BICGSTAB
+  CASE( "BICGSTABL" ) !5
+    ans = LIS_BICGSTABL
+  CASE( "GPBICG" ) !6
+    ans = LIS_GPBICG
+  CASE( "TFQMR" ) !7
+    ans = LIS_TFQMR
+  CASE( "OMN", "FOM", "ORTHOMIN" ) !8
+    ans = LIS_OMN
+  CASE( "GMRES", "GMR" ) !9
+    ans = LIS_GMRES
+  CASE( "JACOBI" ) !10
+    ans = LIS_JACOBI
+  CASE( "GS" ) !11
+    ans = LIS_GS
+  CASE( "SOR" ) !12
+    ans = LIS_SOR
+  CASE( "BICGSAFE" ) !13
+    ans = LIS_BICGSAFE
+  CASE( "CR" ) !14
+    ans = LIS_CR
+  CASE( "BICR" ) !15
+    ans = LIS_BICR
+  CASE( "CRS" ) !16
+    ans = LIS_CRS
+  CASE( "BICRSTAB" ) !17
+    ans = LIS_BICRSTAB
+  CASE( "GPBICR" ) !18
+    ans = LIS_GPBICR
+  CASE( "BICRSAFE" ) !19
+    ans = LIS_BICRSAFE
+  CASE( "FGMRES" ) !20
+    ans = LIS_FGMRES
+  CASE( "IDRS" ) !21
+    ans = LIS_IDRS
+  CASE( "IDR1" ) !22
+    ans = LIS_IDR1
+  CASE( "MINRES" ) !23
+    ans = LIS_MINRES
+  CASE( "COCG" ) !24
+    ans = LIS_COCG
+  CASE( "COCR" ) !25
+    ans = LIS_COCR
+  CASE( "CGNR", "CGN" ) !26
+    ans = LIS_CGNR
+  CASE( "DBICG" ) !27
+    ans = LIS_DBICG
+  CASE( "DQGMRES" ) !28
+    ans = LIS_DQGMRES
+  END SELECT
+END PROCEDURE getLinSolverCodeFromName
+
+!----------------------------------------------------------------------------
+!                                                 getLinSolverNameFromCode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE getLinSolverNameFromCode
+  SELECT CASE( name )
+    CASE( LIS_CG )
+    ans = "CG" !1
+    CASE( LIS_BICG )
+    ans = "BICG" !2
+    CASE( LIS_CGS )
+    ans = "CGS" !3
+    CASE( LIS_BICGSTAB )
+    ans = "BICGSTAB" !4
+    CASE( LIS_BICGSTABL )
+    ans = "BICGSTABL" !5
+    CASE( LIS_GPBICG )
+    ans = "GPBICG" !6
+    CASE( LIS_TFQMR )
+    ans = "TFQMR" !7
+    CASE( LIS_OMN )
+    ans = "ORTHOMIN" !8
+    CASE( LIS_GMRES )
+    ans = "GMRES" !9
+    CASE( LIS_JACOBI )
+    ans = "JACOBI" !10
+    CASE( LIS_GS )
+    ans = "GS" !11
+    CASE( LIS_SOR )
+    ans = "SOR" !12
+    CASE( LIS_BICGSAFE )
+    ans = "BICGSAFE" !13
+    CASE( LIS_CR )
+    ans = "CR" !14
+    CASE( LIS_BICR )
+    ans = "BICR" !15
+    CASE( LIS_CRS )
+    ans = "CRS" !16
+    CASE( LIS_BICRSTAB )
+    ans = "BICRSTAB" !17
+    CASE( LIS_GPBICR )
+    ans = "GPBICR" !18
+    CASE( LIS_BICRSAFE )
+    ans = "BICRSAFE" !19
+    CASE( LIS_FGMRES )
+    ans = "FGMRES" !20
+    CASE( LIS_IDRS )
+    ans = "IDRS" !21
+    CASE( LIS_IDR1 )
+    ans = "IDR1" !22
+    CASE( LIS_MINRES )
+    ans = "MINRES" !23
+    CASE( LIS_COCG )
+    ans = "COCG" !24
+    CASE( LIS_COCR )
+    ans = "COCR" !25
+    CASE( LIS_CGNR )
+    ans = "CGNR" !26
+    CASE( LIS_DBICG )
+    ans = "DBICG" !27
+    CASE( LIS_DQGMRES )
+    ans = "DQGMRES" !28
+  END SELECT
+END PROCEDURE getLinSolverNameFromCode
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_addSurrogate
+  CALL e%addSurrogate( UserObj )
+END PROCEDURE ls_addSurrogate
+
+!----------------------------------------------------------------------------
 !                                                     setPreconditionOption
 !----------------------------------------------------------------------------
 
@@ -121,30 +259,31 @@ END SUBROUTINE
 
 MODULE PROCEDURE setLinSolverParam
   INTEGER( I4B ) :: ierr
-  ierr = param%set( key="solverName", value=solverName )
-  ierr = param%set( key="preconditionOption", value=preconditionOption )
-  ierr = param%set( key="convergenceIn", value=convergenceIn )
-  ierr = param%set( key="convergenceType", value=convergenceType )
-  ierr = param%set( key="maxIter", value=maxIter )
+  ierr = param%set( key="LinSolver/solverName", value=solverName )
+  ierr = param%set( key="LinSolver/preconditionOption", value=preconditionOption )
+  ierr = param%set( key="LinSolver/convergenceIn", value=convergenceIn )
+  ierr = param%set( key="LinSolver/convergenceType", value=convergenceType )
+  ierr = param%set( key="LinSolver/maxIter", value=maxIter )
+  ierr = param%set( key="LinSolver/engine", value="NATIVE_SERIAL" )
   IF( PRESENT( relativeToRHS ) ) THEN
-    ierr = param%set( key="relativeToRHS", value=.FALSE. )
+    ierr = param%set( key="LinSolver/relativeToRHS", value=.FALSE. )
   ELSE
-    ierr = param%set( key="relativeToRHS", value=relativeToRHS )
+    ierr = param%set( key="LinSolver/relativeToRHS", value=relativeToRHS )
   END IF
   IF( PRESENT( KrylovSubspaceSize ) ) THEN
-    ierr = param%set( key="KrylovSubspaceSize", value=15_I4B )
+    ierr = param%set( key="LinSolver/KrylovSubspaceSize", value=15_I4B )
   ELSE
-    ierr = param%set( key="KrylovSubspaceSize", value=KrylovSubspaceSize )
+    ierr = param%set( key="LinSolver/KrylovSubspaceSize", value=KrylovSubspaceSize )
   END IF
   IF( PRESENT( rtol ) ) THEN
-    ierr = param%set( key="rtol", value=REAL(1.0E-8, DFP) )
+    ierr = param%set( key="LinSolver/rtol", value=REAL(1.0E-8, DFP) )
   ELSE
-    ierr = param%set( key="rtol", value=rtol )
+    ierr = param%set( key="LinSolver/rtol", value=rtol )
   END IF
   IF( PRESENT( atol ) ) THEN
-    ierr = param%set( key="atol", value=REAL(1.0E-8, DFP) )
+    ierr = param%set( key="LinSolver/atol", value=REAL(1.0E-8, DFP) )
   ELSE
-    ierr = param%set( key="atol", value=atol )
+    ierr = param%set( key="LinSolver/atol", value=atol )
   END IF
   !> hello
 END PROCEDURE setLinSolverParam
@@ -155,15 +294,15 @@ END PROCEDURE setLinSolverParam
 
 MODULE PROCEDURE getLinSolverParam
   INTEGER( I4B ) :: ierr
-  ierr = param%get( key="solverName", value=solverName )
-  ierr = param%get( key="preconditionOption", value=preconditionOption )
-  ierr = param%get( key="convergenceIn", value=convergenceIn )
-  ierr = param%get( key="convergenceType", value=convergenceType )
-  ierr = param%get( key="maxIter", value=maxIter )
-  ierr = param%get( key="relativeToRHS", value=relativeToRHS )
-  ierr = param%get( key="KrylovSubspaceSize", value=KrylovSubspaceSize )
-  ierr = param%get( key="rtol", value=rtol )
-  ierr = param%get( key="atol", value=atol )
+  ierr = param%get( key="LinSolver/solverName", value=solverName )
+  ierr = param%get( key="LinSolver/preconditionOption", value=preconditionOption )
+  ierr = param%get( key="LinSolver/convergenceIn", value=convergenceIn )
+  ierr = param%get( key="LinSolver/convergenceType", value=convergenceType )
+  ierr = param%get( key="LinSolver/maxIter", value=maxIter )
+  ierr = param%get( key="LinSolver/relativeToRHS", value=relativeToRHS )
+  ierr = param%get( key="LinSolver/KrylovSubspaceSize", value=KrylovSubspaceSize )
+  ierr = param%get( key="LinSolver/rtol", value=rtol )
+  ierr = param%get( key="LinSolver/atol", value=atol )
 END PROCEDURE getLinSolverParam
 
 !----------------------------------------------------------------------------
@@ -173,41 +312,41 @@ END PROCEDURE getLinSolverParam
 MODULE PROCEDURE ls_checkEssentialParam
   CHARACTER( LEN = * ), PARAMETER :: myName = "ls_checkEssentialParam"
 
-  IF( .NOT. param%isPresent(key="solverName") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/solverName") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'solverName should be present in param')
+    & 'LinSolver/solverName should be present in param')
 
-  IF( .NOT. param%isPresent(key="preconditionOption") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/preconditionOption") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'preconditionOption should be present in param')
+    & 'LinSolver/preconditionOption should be present in param')
 
-  IF( .NOT. param%isPresent(key="convergenceIn") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/convergenceIn") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'convergenceIn should be present in param')
+    & 'LinSolver/convergenceIn should be present in param')
 
-  IF( .NOT. param%isPresent(key="convergenceType") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/convergenceType") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'convergenceType should be present in param')
+    & 'LinSolver/convergenceType should be present in param')
 
-  IF( .NOT. param%isPresent(key="maxIter") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/maxIter") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'maxIter should be present in param')
+    & 'LinSolver/maxIter should be present in param')
 
-  IF( .NOT. param%isPresent(key="relativeToRHS") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/relativeToRHS") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'relativeToRHS should be present in param')
+    & 'LinSolver/relativeToRHS should be present in param')
 
-  IF( .NOT. param%isPresent(key="KrylovSubspaceSize") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/KrylovSubspaceSize") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'KrylovSubspaceSize should be present in param')
+    & 'LinSolver/KrylovSubspaceSize should be present in param')
 
-  IF( .NOT. param%isPresent(key="rtol") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/rtol") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'rtol should be present in param')
+    & 'LinSolver/rtol should be present in param')
 
-  IF( .NOT. param%isPresent(key="atol") ) &
+  IF( .NOT. param%isPresent(key="LinSolver/atol") ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'atol should be present in param')
+    & 'LinSolver/atol should be present in param')
 END PROCEDURE ls_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -226,6 +365,7 @@ MODULE PROCEDURE ls_Initiate
     & relativeToRHS=relativeToRHS, KrylovSubspaceSize=KrylovSubspaceSize, &
     & rtol=rtol, atol=atol )
   obj%isInitiated = .TRUE.
+  obj%engine = "NATIVE_SERIAL"
   obj%ierr = 0
   obj%iter=0
   obj%solverName=solverName
@@ -254,6 +394,7 @@ END PROCEDURE ls_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ls_DeallocateData
+  obj%engine=''
   obj%IPAR=0
   obj%FPAR=0.0_DFP
   obj%isInitiated = .FALSE.

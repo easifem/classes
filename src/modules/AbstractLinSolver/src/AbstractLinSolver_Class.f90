@@ -23,6 +23,8 @@ MODULE AbstractLinSolver_Class
 USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE HDF5File_Class
 USE AbstractNodeField_Class
 USE AbstractMatrixField_Class
 IMPLICIT NONE
@@ -48,6 +50,14 @@ PRIVATE
 TYPE, ABSTRACT :: AbstractLinSolver_
   LOGICAL( LGT ) :: isInitiated = .FALSE.
     !! is object initiated?
+  TYPE( String ) :: engine
+    !! Name of the engine
+    !! NATIVE-SERIAL
+    !! NATIVE-OMP
+    !! NATIVE-MPI
+    !! PETSC
+    !! LIS-OMP
+    !! LIS-MPI
   INTEGER( I4B ) :: solverName = 0
     !! Solver name
   INTEGER( I4B ) :: ierr = 0
@@ -77,6 +87,9 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! Residual in each iteration
   CLASS( AbstractMatrixField_ ), POINTER :: Amat => NULL()
   CONTAINS
+  PROCEDURE( als_addSurrogate ), PUBLIC, DEFERRED, PASS( obj ) :: addSurrogate
+    !! add surrogate to the module exception handler
+  PROCEDURE( als_checkEssentialParam ), PUBLIC, DEFERRED, PASS( obj ) :: checkEssentialParam
   PROCEDURE( als_initiate ), PUBLIC, DEFERRED, PASS( obj ) :: Initiate
     !! Initiate the object
   PROCEDURE( als_set ), PUBLIC, DEFERRED, PASS( obj ) :: set
@@ -87,6 +100,10 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! Display the content
   PROCEDURE( als_deallocateData ), PUBLIC, DEFERRED, PASS( obj ) :: DeallocateData
     !! Deallocate Data
+  PROCEDURE( als_Import ), PUBLIC, DEFERRED, PASS( obj ) :: Import
+    !! importing linsolver from external file
+  PROCEDURE( als_Export ), PUBLIC, DEFERRED, PASS( obj ) :: Export
+    !! exporting linsolver from external file
 END TYPE AbstractLinSolver_
 
 PUBLIC :: AbstractLinSolver_
@@ -101,6 +118,39 @@ END TYPE
 
 PUBLIC :: AbstractLinSolverPointer_
 
+
+!----------------------------------------------------------------------------
+!                                                              addSurrogate
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	23 Aug 2021
+! summary: 	Add surrogates to exceptionHandler of the module
+
+ABSTRACT INTERFACE
+SUBROUTINE als_addSurrogate( obj, UserObj )
+  IMPORT :: AbstractLinSolver_, ExceptionHandler_
+  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE als_addSurrogate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        checkEssentialParam
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Aug 2021
+! summary: This routine checks the essential parameters
+
+ABSTRACT INTERFACE
+SUBROUTINE als_checkEssentialParam( obj, param )
+  IMPORT :: AbstractLinSolver_, ParameterList_
+  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+END SUBROUTINE als_checkEssentialParam
+END INTERFACE
+
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
@@ -111,6 +161,17 @@ SUBROUTINE als_Initiate( obj, param )
   CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
 END SUBROUTINE als_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             DeallocateData
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE als_DeallocateData( obj )
+  IMPORT :: AbstractLinSolver_
+  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
+END SUBROUTINE als_DeallocateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -153,14 +214,37 @@ END SUBROUTINE als_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                          Import@IOMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Aug 2021
+! summary: This routine intiates the linear solver from import
+
 ABSTRACT INTERFACE
-SUBROUTINE als_DeallocateData( obj )
-  IMPORT :: AbstractLinSolver_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
-END SUBROUTINE als_DeallocateData
+SUBROUTINE als_Import( obj, hdf5, group )
+  IMPORT :: AbstractLinSolver_, HDF5File_
+  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE als_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Aug 2021
+! summary: This routine exports the linear solver to external file
+
+ABSTRACT INTERFACE
+SUBROUTINE als_Export( obj, hdf5, group )
+  IMPORT :: AbstractLinSolver_, HDF5File_
+  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE als_Export
 END INTERFACE
 
 END MODULE AbstractLinSolver_Class

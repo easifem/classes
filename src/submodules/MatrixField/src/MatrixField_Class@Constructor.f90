@@ -29,12 +29,20 @@ CONTAINS
 
 MODULE PROCEDURE setMatrixFieldParam
   INTEGER( I4B ) :: ierr
-  ierr = param%set( key="name", value=TRIM(name) )
-  ierr = param%set( key="matrixProp", value=TRIM(matrixProp) )
-  ierr = param%set( key="spaceCompo", value=INPUT( option=spaceCompo, default=1 ) )
-  ierr = param%set( key="timeCompo", value=INPUT( option=timeCompo, default=1 ) )
-  ierr = param%set( key="fieldType", value=INPUT( option=fieldType, default=FIELD_TYPE_NORMAL ) )
+  ierr = param%set( key="MatrixField/name", value=TRIM(name) )
+  ierr = param%set( key="MatrixField/matrixProp", value=TRIM(matrixProp) )
+  ierr = param%set( key="MatrixField/spaceCompo", value=INPUT( option=spaceCompo, default=1 ) )
+  ierr = param%set( key="MatrixField/timeCompo", value=INPUT( option=timeCompo, default=1 ) )
+  ierr = param%set( key="MatrixField/fieldType", value=INPUT( option=fieldType, default=FIELD_TYPE_NORMAL ) )
 END PROCEDURE setMatrixFieldParam
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_addSurrogate
+  CALL e%addSurrogate(UserObj)
+END PROCEDURE mField_addSurrogate
 
 !----------------------------------------------------------------------------
 !
@@ -42,13 +50,13 @@ END PROCEDURE setMatrixFieldParam
 
 MODULE PROCEDURE mField_checkEssentialParam
   CHARACTER( LEN = * ), PARAMETER :: myName = "mField_checkEssentialParam"
-  IF( .NOT. param%isPresent(key="name") ) THEN
+  IF( .NOT. param%isPresent(key="MatrixField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'name should be present in param')
+    & 'MatrixField/name should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="matrixProp") ) THEN
+  IF( .NOT. param%isPresent(key="MatrixField/matrixProp") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'matrixProp should be present in param')
+    & 'MatrixField/matrixProp should be present in param')
   END IF
 END PROCEDURE mField_checkEssentialParam
 
@@ -70,25 +78,25 @@ MODULE PROCEDURE mField_Initiate1
     & 'Matrix field object is already initiated')
   CALL obj%checkEssentialParam(param)
   !-----------------------------------------------------------------------!
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
-  ierr = param%get( key="name", value=char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="MatrixField/name" ) ) :: char_var )
+  ierr = param%get( key="MatrixField/name", value=char_var )
   obj%name = char_var
   names_char(1)(1:1) = char_var(1:1)
   !-----------------------------------------------------------------------!
-  IF( param%isPresent(key="fieldType") ) THEN
-    ierr = param%get( key="fieldType", value=obj%fieldType )
+  IF( param%isPresent(key="MatrixField/fieldType") ) THEN
+    ierr = param%get( key="MatrixField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
   !-----------------------------------------------------------------------!
-  IF( param%isPresent(key="spaceCompo") ) THEN
-    ierr = param%get( key="spaceCompo", value=spaceCompo(1) )
+  IF( param%isPresent(key="MatrixField/spaceCompo") ) THEN
+    ierr = param%get( key="MatrixField/spaceCompo", value=spaceCompo(1) )
   ELSE
     spaceCompo(1) = 1
   END IF
   !-----------------------------------------------------------------------!
-  IF( param%isPresent(key="timeCompo") ) THEN
-    ierr = param%get( key="timeCompo", value=timeCompo(1) )
+  IF( param%isPresent(key="MatrixField/timeCompo") ) THEN
+    ierr = param%get( key="MatrixField/timeCompo", value=timeCompo(1) )
   ELSE
     timeCompo(1) = 1
   END IF
@@ -100,8 +108,8 @@ MODULE PROCEDURE mField_Initiate1
     & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
   !-----------------------------------------------------------------------!
   DEALLOCATE( char_var )
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="matrixProp" ) ) :: char_var )
-  ierr = param%get( key="matrixProp", value=char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="MatrixField/matrixProp" ) ) :: char_var )
+  ierr = param%get( key="MatrixField/matrixProp", value=char_var )
   !-----------------------------------------------------------------------!
   nrow = tNodes(1) * spaceCompo(1) * timeCompo(1)
   ncol = nrow

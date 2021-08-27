@@ -32,8 +32,6 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "VECTORFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1005
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "VECTORFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                              VectorField_
@@ -49,7 +47,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   INTEGER( I4B ) :: spaceCompo = 0_I4B
   CONTAINS
   PRIVATE
-  PROCEDURE, PASS( obj ) :: checkEssentialParam => vField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => vField_addSurrogate
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => vField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => vField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => vField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => vField_Display
@@ -111,6 +110,21 @@ TYPE :: VectorFieldPointer_
 END TYPE VectorFieldPointer_
 
 PUBLIC :: VectorFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+INTERFACE
+MODULE SUBROUTINE vField_addSurrogate( obj, UserObj )
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE vField_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                          setVectorFieldParam@Constructor
@@ -322,10 +336,11 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE vField_Import( obj, hdf5, group )
+MODULE SUBROUTINE vField_Import( obj, hdf5, group, dom )
   CLASS( VectorField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE vField_Import
 END INTERFACE
 

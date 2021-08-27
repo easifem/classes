@@ -31,8 +31,6 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "SCALARFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1004
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "SCALARFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -47,7 +45,8 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "SCALARFIELD_CLASS_EXCEPTION.txt"
 TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
   CONTAINS
   PRIVATE
-  PROCEDURE, PASS( obj ) :: checkEssentialParam => sField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => sField_addSurrogate
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => sField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => sField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => sField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => sField_Display
@@ -109,6 +108,21 @@ END SUBROUTINE setScalarFieldParam
 END INTERFACE
 
 PUBLIC :: setScalarFieldParam
+
+!----------------------------------------------------------------------------
+!                                                 addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+INTERFACE
+MODULE SUBROUTINE sField_addSurrogate( obj, UserObj )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE sField_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -272,10 +286,11 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE sField_Import( obj, hdf5, group )
+MODULE SUBROUTINE sField_Import( obj, hdf5, group, dom )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE sField_Import
 END INTERFACE
 
