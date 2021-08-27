@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE( LinSolver_Class ) Solve
+SUBMODULE( LinSolver_Class ) SolveMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -229,4 +229,4 @@ SUBROUTINE CHECKERROR( IPAR, FPAR, myName )
   END SELECT
 END SUBROUTINE CHECKERROR
 
-END SUBMODULE Solve
+END SUBMODULE SolveMethods

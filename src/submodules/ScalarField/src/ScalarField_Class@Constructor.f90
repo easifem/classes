@@ -26,13 +26,22 @@ CONTAINS
 
 MODULE PROCEDURE setScalarFieldParam
   INTEGER( I4B ) :: ierr
-  ierr = param%set( key="name", value=name )
+  ierr = param%set( key="ScalarField/name", value=name )
   IF( PRESENT( fieldType ) ) THEN
-    ierr = param%set( key="fieldType", value=fieldType )
+    ierr = param%set( key="ScalarField/fieldType", value=fieldType )
   ELSE
-    ierr = param%set( key="fieldType", value=FIELD_TYPE_NORMAL )
+    ierr = param%set( key="ScalarField/fieldType", value=FIELD_TYPE_NORMAL )
   END IF
 END PROCEDURE setScalarFieldParam
+
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_addSurrogate
+  CALL e%addSurrogate(UserObj)
+END PROCEDURE sField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
@@ -40,7 +49,7 @@ END PROCEDURE setScalarFieldParam
 
 MODULE PROCEDURE sField_checkEssentialParam
   CHARACTER( LEN = * ), PARAMETER :: myName = "sField_checkEssentialParam"
-  IF( .NOT. param%isPresent(key="name") ) THEN
+  IF( .NOT. param%isPresent(key="ScalarField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'names should be present in param')
   END IF
@@ -64,13 +73,13 @@ MODULE PROCEDURE sField_Initiate1
 
   CALL obj%checkEssentialParam(param)
 
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
-  ierr = param%get( key="name", value=char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="ScalarField/name" ) ) :: char_var )
+  ierr = param%get( key="ScalarField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
   !
-  IF( param%isPresent(key="fieldType") ) THEN
-    ierr = param%get( key="fieldType", value=obj%fieldType )
+  IF( param%isPresent(key="ScalarField/fieldType") ) THEN
+    ierr = param%get( key="ScalarField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF

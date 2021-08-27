@@ -33,8 +33,6 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "STVECTORFIELD_CLASS"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1008
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "STVECTORFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                              STVectorField_
@@ -51,7 +49,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   INTEGER( I4B ) :: timeCompo = 0_I4B
   CONTAINS
   PRIVATE
-  PROCEDURE, PASS( obj ) :: checkEssentialParam => stvField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => stvField_addSurrogate
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => stvField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stvField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stvField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stvField_Display
@@ -111,6 +110,42 @@ TYPE :: STVectorFieldPointer_
 END TYPE STVectorFieldPointer_
 
 PUBLIC :: STVectorFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                         setSTVectorFieldParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: set essential parameter
+
+INTERFACE
+MODULE SUBROUTINE setSTVectorFieldParam( param, name, spaceCompo, &
+  & timeCompo, fieldType )
+  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  INTEGER( I4B ), INTENT( IN ) :: spaceCompo
+  INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+END SUBROUTINE setSTVectorFieldParam
+END INTERFACE
+
+PUBLIC :: setSTVectorFieldParam
+
+!----------------------------------------------------------------------------
+!                                                 addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine check the essential parameters in param.
+
+INTERFACE
+MODULE SUBROUTINE stvField_addSurrogate( obj, UserObj )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE stvField_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -305,10 +340,11 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE stvField_Import( obj, hdf5, group )
+MODULE SUBROUTINE stvField_Import( obj, hdf5, group, dom )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE stvField_Import
 END INTERFACE
 

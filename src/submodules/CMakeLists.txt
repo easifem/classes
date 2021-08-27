@@ -23,3 +23,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 
 #LinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
+
+#FieldFactory
+include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)

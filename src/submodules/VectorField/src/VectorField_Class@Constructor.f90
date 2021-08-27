@@ -20,15 +20,24 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_addSurrogate
+  CALL e%addSurrogate(UserObj)
+END PROCEDURE vField_addSurrogate
+
 !----------------------------------------------------------------------------
 !                                                       setVectorFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setVectorFieldParam
   INTEGER( I4B ) :: ierr
-  ierr = param%set( key="name", value=trim(name) )
-  ierr = param%set( key="spaceCompo", value=spaceCompo )
-  ierr = param%set( key="fieldType", value=INPUT(default=FIELD_TYPE_NORMAL, option=fieldType) )
+  ierr = param%set( key="VectorField/name", value=trim(name) )
+  ierr = param%set( key="VectorField/spaceCompo", value=spaceCompo )
+  ierr = param%set( key="VectorField/fieldType", value=INPUT(default=FIELD_TYPE_NORMAL, option=fieldType) )
 END PROCEDURE setVectorFieldParam
 
 !----------------------------------------------------------------------------
@@ -37,13 +46,13 @@ END PROCEDURE setVectorFieldParam
 
 MODULE PROCEDURE vField_checkEssentialParam
   CHARACTER( LEN = * ), PARAMETER :: myName = "vField_checkEssentialParam"
-  IF( .NOT. param%isPresent(key="name") ) THEN
+  IF( .NOT. param%isPresent(key="VectorField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'names should be present in param')
+    & 'VectorField/name should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="spaceCompo") ) THEN
+  IF( .NOT. param%isPresent(key="VectorField/spaceCompo") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'spaceCompo should be present in param')
+    & 'VectorField/spaceCompo should be present in param')
   END IF
 END PROCEDURE vField_checkEssentialParam
 
@@ -63,13 +72,13 @@ MODULE PROCEDURE vField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Vector field object is already initiated')
   CALL obj%checkEssentialParam(param)
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="name" ) ) :: char_var )
-  ierr = param%get( key="name", value=char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="VectorField/name" ) ) :: char_var )
+  ierr = param%get( key="VectorField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
-  ierr = param%get( key="spaceCompo", value=obj%spaceCompo )
-  IF( param%isPresent(key="fieldType") ) THEN
-    ierr = param%get( key="fieldType", value=obj%fieldType )
+  ierr = param%get( key="VectorField/spaceCompo", value=obj%spaceCompo )
+  IF( param%isPresent(key="VectorField/fieldType") ) THEN
+    ierr = param%get( key="VectorField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF

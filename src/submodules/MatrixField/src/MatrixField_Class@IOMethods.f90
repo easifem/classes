@@ -19,7 +19,7 @@
 ! date: 16 July 2021
 ! summary: This module contains constructor method for [[MatrixField_]]
 
-SUBMODULE( MatrixField_Class ) IO
+SUBMODULE( MatrixField_Class ) IOMethods
 USE BaseMethod
 USE HDF5File_Method
 IMPLICIT NONE
@@ -54,8 +54,93 @@ END PROCEDURE mField_Display
 
 MODULE PROCEDURE mField_Import
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_Import"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine has not been implemented')
+  TYPE( String ) :: strval, dsetname, name, matrixProp
+  INTEGER( I4B ) :: timeCompo, spaceCompo, fieldType
+  LOGICAL( LGT ) :: restart
+  TYPE( ParameterList_ ) :: param
+  ! main program
+  IF( obj%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Matrix field object is already initiated')
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "IMPORTING MATRIX FIELD")
+  !> check
+  IF( .NOT. hdf5%isOpen() ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'HDF5 file is not opened')
+  END IF
+  !> check
+  IF( .NOT. hdf5%isRead() ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'HDF5 file does not have read permission')
+  END IF
+  ! READ fieldType
+  dsetname=trim(group)//"/fieldType"
+  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+      CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+      SELECT CASE( TRIM(strval%chars()) )
+      CASE( "NORMAL" )
+        fieldType = FIELD_TYPE_NORMAL
+      CASE( "CONSTANT" )
+        fieldType = FIELD_TYPE_CONSTANT
+      CASE( "CONSTANT_SPACE" )
+        fieldType = FIELD_TYPE_CONSTANT_SPACE
+      CASE( "CONSTANT_TIME" )
+        fieldType = FIELD_TYPE_CONSTANT_TIME
+      END SELECT
+  ELSE
+    fieldType = FIELD_TYPE_NORMAL
+  END IF
+  ! READ name
+  dsetname=trim(group)//"/name"
+  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'The dataset name should be present')
+  END IF
+  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
+  ! READ matrixProp
+  dsetname=trim(group)//"/matrixProp"
+  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'The dataset matrixProp should be present')
+  END IF
+  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=matrixProp)
+  ! READ spaceCompo
+  dsetname=trim(group)//"/spaceCompo"
+  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'The dataset spaceCompo should be present')
+  END IF
+  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=spaceCompo)
+  ! READ timeCompo
+  dsetname=trim(group)//"/timeCompo"
+  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=timeCompo)
+  ELSE
+    timeCompo = 1
+  END IF
+  ! READ restart
+  dsetname=trim(group)//"/restart"
+  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=restart)
+  ELSE
+    restart = .FALSE.
+  END IF
+  IF( .NOT. restart ) THEN
+    CALL FPL_INIT(); CALL param%initiate()
+    CALL setMatrixFieldParam( param=param, &
+      & name=trim(name%chars()), &
+      & matrixProp=trim(matrixProp%chars()), &
+      & spaceCompo=spaceCompo, &
+      & timeCompo = timeCompo, &
+      & fieldType = fieldType )
+    CALL obj%initiate( param=param, dom=dom )
+    CALL param%deallocateData(); CALL FPL_FINALIZE()
+  ELSE
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'At present restart option is not available, we are working on it.' )
+  END IF
 END PROCEDURE mField_Import
 
 !----------------------------------------------------------------------------
@@ -167,4 +252,4 @@ MODULE PROCEDURE mField_SPY
   CALL SPY( obj=obj%mat, filename=filename )
 END PROCEDURE mField_SPY
 
-END SUBMODULE IO
+END SUBMODULE IOMethods
