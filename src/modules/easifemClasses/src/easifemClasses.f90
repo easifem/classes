@@ -34,7 +34,9 @@ USE Mesh_Class
 ! USE MeshConnectivity_Class
 USE MeshPointerVector_Class
 USE Domain_Class
+USE MeshSelection_Class
 ! USE QuadratureVariables_Class
+
 
 USE Gmsh_Class
 USE mshFormat_Class

@@ -85,6 +85,8 @@ MODULE PROCEDURE stsField_Initiate1
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
+  !> SET engine
+  obj%engine="NATIVE_SERIAL"
   timeCompo = obj%timeCompo
   spaceCompo = 1
   storageFMT = FMT_NODES

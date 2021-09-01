@@ -82,6 +82,7 @@ MODULE PROCEDURE vField_Initiate1
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
+  obj%engine = "NATIVE_SERIAL"
   spaceCompo = obj%spaceCompo
   timeCompo = 1
   storageFMT = FMT_NODES

@@ -25,6 +25,22 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                            addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_addSurrogate
+  CALL e%addSurrogate(userObj)
+END PROCEDURE Domain_addSurrogate
+
+!----------------------------------------------------------------------------
+!                                                            addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE addSurrogate_Domain
+  CALL e%addSurrogate(userObj)
+END PROCEDURE addSurrogate_Domain
+
+!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
@@ -34,38 +50,20 @@ MODULE PROCEDURE Domain_Initiate
   LOGICAL( LGT ) :: exist, opened
 
   !> setting up exception messages output settings
-  surr => NULL()
-  CALL eDomain%getSurrogate(surr)
-  IF( .NOT. ASSOCIATED( surr ) ) THEN
-    CALL eDomain%setQuietMode( .TRUE. )
-    CALL eDomain%setStopOnError( .TRUE. )
-    INQUIRE(file=eLogFile, exist=exist, opened=opened )
-    IF( exist ) THEN
-      IF( .NOT. opened ) OPEN( Unit=eUnitNo, FILE=eLogFile, &
-        & POSITION='APPEND',STATUS='OLD', &
-        & ACTION="WRITE" )
-      CALL eDomain%setLogFileUnit( eUnitNo )
-      CALL eDomain%setLogActive( .TRUE. )
-    ELSE
-      OPEN( Unit=eUnitNo, FILE=eLogFile, &
-        & ACCESS='SEQUENTIAL',FORM='FORMATTED',STATUS='REPLACE' )
-      CALL eDomain%setLogFileUnit( eUnitNo )
-      CALL eDomain%setLogActive( .TRUE. )
-    END IF
-  END IF
+  surr => NULL(); CALL e%getSurrogate(surr)
+  IF( ASSOCIATED( surr ) ) CALL addSurrogate_Mesh( surr )
   surr => NULL()
   ! > Exception related to Mesh_ data type wil be printed in the
   ! domain only
-  CALL eMesh%addSurrogate(eDomain)
-  CALL eDomain%raiseInformation( modName//'::'//myName//'-'// &
+  CALL e%raiseInformation( modName//'::'//myName//'-'// &
     & 'Initiating domain' )
   CALL obj%import( hdf5, group )
-  CALL eDomain%raiseInformation( modName//'::'//myName//'-'// &
+  CALL e%raiseInformation( modName//'::'//myName//'-'// &
     & 'Domain has been initiated' )
   !> now we are going to fix the nodal coordinates
-  CALL eDomain%raiseInformation( modName//'::'//myName//'-'// &
+  CALL e%raiseInformation( modName//'::'//myName//'-'// &
     & 'Fixing nodal coordinates' )
-  CALL eDomain%raiseInformation( modName//'::'//myName//'-'// &
+  CALL e%raiseInformation( modName//'::'//myName//'-'// &
     & 'Nodal coordinates fixed' )
 END PROCEDURE Domain_Initiate
 

@@ -32,9 +32,7 @@ USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "DOMAIN_CLASS"
-TYPE( ExceptionHandler_ ) :: eDomain
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1001
-CHARACTER( LEN = * ), PARAMETER :: eLogFile="DOMAIN_CLASS_EXCEPTION.txt"
+TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
 !                                                                   Domain_
@@ -98,7 +96,7 @@ TYPE :: Domain_
     !! tElements( 3 ) = total number of volume/cell elements
   INTEGER( I4B ) :: tEntities( 0:3 ) = [0,0,0,0]
     !! total number of entities inside the domain
-    !! tEntities( 1 ) = total number of point entities, Points
+    !! tEntities( 0 ) = total number of point entities, Points
     !! tEntities( 1 ) = total number of line entities, Edge
     !! tEntities( 2 ) = total number of surface entities, Boundary
     !! tEntities( 3 ) = total number of volume entities, Omega
@@ -113,6 +111,7 @@ TYPE :: Domain_
     !! meshList( 3 ) list of meshes of volume entities
   CONTAINS
     PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => Domain_addSurrogate
     PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => Domain_Initiate
       !! Initiate domain data
     PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => Domain_DeallocateData
@@ -177,6 +176,7 @@ TYPE :: Domain_
     PROCEDURE, PASS( obj ) :: getNodeCoord => Domain_getNodeCoord
       !! This routine returns the nodal coordinate in rank2 array
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeCoordPointer => Domain_getNodeCoordPointer
+      !! This routine returns the pointer to nodal coordinate
     PROCEDURE, PUBLIC, PASS( obj ) :: setSparsity => Domain_setSparsity
 END TYPE Domain_
 
@@ -195,6 +195,37 @@ TYPE :: DomainPointer_
 END TYPE DomainPointer_
 
 PUBLIC :: DomainPointer_
+
+!----------------------------------------------------------------------------
+!                                                  addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 1 Sept 2021
+! summary: This routine addes surrogate to module exception handler
+
+INTERFACE
+MODULE SUBROUTINE Domain_addSurrogate( obj, userObj )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
+END SUBROUTINE Domain_addSurrogate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  addSurrogate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 1 Sept 2021
+! summary: This routine addes surrogate to module exception handler
+
+INTERFACE
+MODULE SUBROUTINE addSurrogate_Domain( userObj )
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
+END SUBROUTINE addSurrogate_Domain
+END INTERFACE
+
+PUBLIC :: addSurrogate_Domain
 
 !----------------------------------------------------------------------------
 !                                                     Initiate@Constructor

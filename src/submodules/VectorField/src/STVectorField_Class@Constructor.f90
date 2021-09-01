@@ -90,6 +90,7 @@ MODULE PROCEDURE stvField_Initiate1
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
+  obj%engine = "NATIVE_SERIAL"
   !-----------------------------------------------------------------------!
   spaceCompo = obj%spaceCompo
   timeCompo = obj%timeCompo

@@ -82,7 +82,7 @@ MODULE PROCEDURE mesh_InitiateElementToElements
   CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateElementToElements"
 
   IF( .NOT. ASSOCIATED( obj%refelem ) ) THEN
-    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Unable to identify the Reference element of the mesh, may be it is not set" )
   END IF
 

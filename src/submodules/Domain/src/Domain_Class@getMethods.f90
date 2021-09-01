@@ -37,7 +37,7 @@ MODULE PROCEDURE Domain_getTotalNodes
     IF( ans .NE. 0 ) THEN
       ans = obj%numNodes( ans )
     ELSE
-      CALL eDomain%raiseError(modName//'::'//myName//'-'// &
+      CALL e%raiseError(modName//'::'//myName//'-'// &
         & 'The physical name '// physicalName // " not found" )
     END IF
   ELSE IF( PRESENT( physicalTag )  .AND. PRESENT( dim ) ) THEN
@@ -45,17 +45,17 @@ MODULE PROCEDURE Domain_getTotalNodes
     IF( ans .NE. 0 ) THEN
       ans = obj%numNodes( ans )
     ELSE
-      CALL eDomain%raiseError(modName//'::'//myName//'-'// &
+      CALL e%raiseError(modName//'::'//myName//'-'// &
         & 'The physical tag '// trim(str(physicalTag, .true.)) &
         & // " and dimension " // trim(str(dim, .true.)) // " not found" )
     END IF
   ELSE IF( PRESENT( entityNum )  .AND. PRESENT( dim ) ) THEN
     IF( obj%meshList( dim )%isEmpty() ) &
-      & CALL eDomain%raiseError(modName//'::'//myName//'-'// &
+      & CALL e%raiseError(modName//'::'//myName//'-'// &
       & 'The mesh of enitityNum '// trim(str(entityNum, .true.)) &
       & // " and dimension " // trim(str(dim, .true.)) // " is empty." )
     IF( entityNum .GT. obj%meshList( dim )%size() ) &
-      & CALL eDomain%raiseError(modName//'::'//myName//'-'// &
+      & CALL e%raiseError(modName//'::'//myName//'-'// &
       & 'The the enitityNum '// trim(str(entityNum, .true.)) &
       & // " for dimension " // trim(str(dim, .true.)) // &
       & " is out of bound." )
@@ -74,7 +74,7 @@ END PROCEDURE Domain_getTotalNodes
 MODULE PROCEDURE Domain_getLocalNodeNumber1
   CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getLocalNodeNumber"
   IF( globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs ) &
-    & CALL eDomain%raiseError(modName//'::'//myName//'-'// &
+    & CALL e%raiseError(modName//'::'//myName//'-'// &
     & "globalNode : "// trim(str(globalNode, .true.))//" is not present inside the domain" )
   ans = obj%local_nptrs( globalNode )
 END PROCEDURE Domain_getLocalNodeNumber1
@@ -98,7 +98,7 @@ END PROCEDURE Domain_getLocalNodeNumber2
 MODULE PROCEDURE Domain_getTotalMesh
   CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getTotalMesh"
   IF( dim .LT. 0 .OR. dim .GT. 3 ) THEN
-    CALL eDomain%raiseError( modName//"::"//myName//" - "// &
+    CALL e%raiseError( modName//"::"//myName//" - "// &
       & "dim should be in [0,1,2,3]" )
   END IF
 
@@ -122,7 +122,7 @@ MODULE PROCEDURE Domain_getMeshPointer
   iterator%value%ptr => NULL()
   tsize = obj%getTotalMesh( dim=dim )
   IF( tag .GT. tsize ) THEN
-    CALL eDomain%raiseInformation( modName//"::"//myName//" - "// &
+    CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "tag are out of bound" )
   END IF
   iterator = obj%meshList( dim )%Begin()

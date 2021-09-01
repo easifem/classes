@@ -25,28 +25,27 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Display
-  INTEGER( I4B ) :: I
-  I = Input( option=unitNo, default=stdout )
-
-  IF( LEN_TRIM( msg) .NE. 0 ) WRITE( I, "(A)") "# "//TRIM( msg )
-  CALL Display( obj%name, "# name : ")
+  CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
   IF( obj%isInitiated ) THEN
-    WRITE( I, "(A)" ) "# isInitiated : TRUE"
+    CALL Display( "# isInitiated : TRUE", unitNo=unitNo )
   ELSE
-    WRITE( I, "(A)" ) "# isInitiated : FALSE"
+    CALL Display( "# isInitiated : FALSE, Nothing to Display!!", unitNo=unitNo )
+    RETURN
   END IF
-  CALL Display( obj%tSize, "# tSize : " )
+  CALL Display( "# engine : NATIVE_SERIAL", unitNo=unitNo )
+  CALL Display( obj%name, "# name : ", unitNo=unitNo )
+  CALL Display( obj%tSize, "# tSize : ", unitNo=unitNo )
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    WRITE( I, "(A)" ) "# fieldType : constant"
+    CALL Display( "# fieldType : CONSTANT", unitNo=unitNo )
   ELSE
-    WRITE( I, "(A)" ) "# fieldType : normal"
+    CALL Display( "# fieldType : NORMAL", unitNo=unitNo )
   END IF
   IF( ASSOCIATED( obj%domain )  ) THEN
-    WRITE( I, "(A)" ) "# domain : associated"
+    CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
   ELSE
-    WRITE( I, "(A)" ) "# domain : not associated"
+    CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
   END IF
-  CALL Display( obj%realVec, obj%dof,  "# realVec : ", I )
+  CALL Display( obj%realVec, obj%dof,  "# realVec : ", unitNo=unitNo )
 END PROCEDURE sField_Display
 
 !----------------------------------------------------------------------------

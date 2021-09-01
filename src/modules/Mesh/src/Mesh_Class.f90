@@ -31,9 +31,7 @@ USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MESH_CLASS"
-TYPE( ExceptionHandler_ ), PUBLIC :: eMesh
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1003
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MESH_CLASS_EXCEPTION.txt"
+TYPE( ExceptionHandler_ ) :: e
   !! Exception handler
 INTEGER( I4B ), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
@@ -168,6 +166,7 @@ TYPE :: Mesh_
   TYPE( ElemData_ ), ALLOCATABLE :: elementData( : )
   CONTAINS
     PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mesh_addSurrogate
     PROCEDURE, PASS( obj ) :: Import => mesh_Import
       !! Read mesh from hdf5 file
     ! PROCEDURE, PUBLIC, PASS( obj ) :: Export => mesh_Export
@@ -294,6 +293,29 @@ TYPE :: MeshPointer_
 END TYPE MeshPointer_
 
 PUBLIC :: MeshPointer_
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogte
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE mesh_addSurrogate( obj,  userObj )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
+END SUBROUTINE mesh_addSurrogate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogte
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE addSurrogate_mesh( userObj )
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
+END SUBROUTINE addSurrogate_mesh
+END INTERFACE
+
+PUBLIC :: addSurrogate_Mesh
 
 !----------------------------------------------------------------------------
 !                                                                 Import@IO

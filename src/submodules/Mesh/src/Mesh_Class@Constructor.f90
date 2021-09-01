@@ -21,52 +21,45 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_addSurrogate
+  CALL e%addSurrogate( userObj )
+END PROCEDURE mesh_addSurrogate
+
+!----------------------------------------------------------------------------
+!                                                             addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE addSurrogate_mesh
+  CALL e%addSurrogate( userObj )
+END PROCEDURE addSurrogate_mesh
+
+!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_initiate
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_initiate"
-  CLASS( ExceptionHandler_ ), POINTER :: surr
-  LOGICAL( LGT ) :: exist, opened
-  !> setting up exception messages output settings
-  surr => NULL()
-  CALL eMesh%getSurrogate(surr)
-  IF( .NOT. ASSOCIATED( surr ) ) THEN
-    CALL eMesh%setQuietMode( .TRUE. )
-    CALL eMesh%setStopOnError( .TRUE. )
-    INQUIRE(file=eLogFile, exist=exist, opened=opened )
-    IF( exist ) THEN
-      IF( .NOT. opened ) OPEN( Unit=eUnitNo, FILE=eLogFile, &
-        & POSITION='APPEND',STATUS='OLD', &
-        & ACTION="WRITE" )
-      CALL eMesh%setLogFileUnit( eUnitNo )
-      CALL eMesh%setLogActive( .TRUE. )
-    ELSE
-      OPEN( Unit=eUnitNo, FILE=eLogFile, &
-        & ACCESS='SEQUENTIAL',FORM='FORMATTED',STATUS='REPLACE' )
-      CALL eMesh%setLogFileUnit( eUnitNo )
-      CALL eMesh%setLogActive( .TRUE. )
-    END IF
-  END IF
-  surr => NULL()
   obj%readFromFile = .TRUE.
   obj%isInitiated = .TRUE.
-  CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+  CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'Importing mesh' )
   CALL obj%Import(hdf5, group)
-  CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+  CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'Mesh imported' )
   IF( obj%elemType .NE. 0 .OR. obj%elemType .EQ. Point1 ) THEN
-    CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+    CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Initiating node to elements mapping' )
     CALL obj%InitiateNodeToElements()
-    CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+    CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Initiating node to nodes mapping' )
     CALL obj%InitiateNodeToNodes()
-    CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+    CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Initiating element to elements mapping' )
     CALL obj%InitiateElementToElements()
-    CALL eMesh%raiseInformation(modName//'::'//myName// " - "// &
+    CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Initiating boundary data' )
     CALL obj%InitiateBoundaryData()
   END IF
@@ -127,7 +120,7 @@ MODULE PROCEDURE mesh_DeallocateData
   IF( ALLOCATED( obj%boundingEntity ) ) DEALLOCATE( obj%boundingEntity )
   IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
-  CALL eMesh%reset()
+  ! CALL e%reset()
 END PROCEDURE mesh_DeallocateData
 
 !----------------------------------------------------------------------------
