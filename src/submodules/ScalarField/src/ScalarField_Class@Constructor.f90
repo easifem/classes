@@ -70,19 +70,21 @@ MODULE PROCEDURE sField_Initiate1
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar object is already initiated')
-
+  !> check
   CALL obj%checkEssentialParam(param)
-
+  !> READ name
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="ScalarField/name" ) ) :: char_var )
   ierr = param%get( key="ScalarField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
-  !
+  !> READ fieldType
   IF( param%isPresent(key="ScalarField/fieldType") ) THEN
     ierr = param%get( key="ScalarField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
+  !> SET engine
+  obj%engine="NATIVE_SERIAL"
   !
   spaceCompo = [1]
   timeCompo = [1]
@@ -119,6 +121,7 @@ MODULE PROCEDURE sField_Initiate2
   obj%fieldType = obj2%fieldType
   obj%domain => obj2%domain
   obj%name = obj2%name
+  obj%engine = obj2%engine
   SELECT TYPE ( obj2 )
   TYPE IS ( ScalarField_ )
     obj%tSize = obj2%tSize

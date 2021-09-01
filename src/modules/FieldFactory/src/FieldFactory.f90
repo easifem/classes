@@ -79,4 +79,72 @@ END INTERFACE
 
 PUBLIC :: NodeFieldFactory
 
+!----------------------------------------------------------------------------
+!                                                         VectorFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractNodeField_]] based on engine
+
+INTERFACE
+MODULE FUNCTION VectorFieldFactory( engine ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: engine
+  CLASS( VectorField_ ), POINTER :: ans
+END FUNCTION VectorFieldFactory
+END INTERFACE
+
+PUBLIC :: VectorFieldFactory
+
+!----------------------------------------------------------------------------
+!                                                         ScalarFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractNodeField_]] based on engine
+
+INTERFACE
+MODULE FUNCTION ScalarFieldFactory( engine ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: engine
+  CLASS( ScalarField_ ), POINTER :: ans
+END FUNCTION ScalarFieldFactory
+END INTERFACE
+
+PUBLIC :: ScalarFieldFactory
+
+!----------------------------------------------------------------------------
+!                                                      STVectorFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractNodeField_]] based on engine
+
+INTERFACE
+MODULE FUNCTION STVectorFieldFactory( engine ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: engine
+  CLASS( STVectorField_ ), POINTER :: ans
+END FUNCTION STVectorFieldFactory
+END INTERFACE
+
+PUBLIC :: STVectorFieldFactory
+
+!----------------------------------------------------------------------------
+!                                                      STScalarFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractNodeField_]] based on engine
+
+INTERFACE
+MODULE FUNCTION STScalarFieldFactory( engine ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: engine
+  CLASS( STScalarField_ ), POINTER :: ans
+END FUNCTION STScalarFieldFactory
+END INTERFACE
+
+PUBLIC :: STScalarFieldFactory
+
 END MODULE FieldFactory

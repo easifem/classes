@@ -30,7 +30,7 @@ MODULE PROCEDURE mesh_setSparsity1
   INTEGER( I4B ), allocatable :: n2n( : )
 
   IF( .NOT. obj%isInitiated ) THEN
-    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
   DO i = 1, obj%tNodes
@@ -55,7 +55,7 @@ MODULE PROCEDURE mesh_setSparsity2
   INTEGER( I4B ), allocatable :: n2n( : )
 
   IF( .NOT. obj%isInitiated ) THEN
-    CALL eMesh%raiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
   DO i = 1, obj%tNodes

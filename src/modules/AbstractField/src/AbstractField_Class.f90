@@ -67,6 +67,10 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE( Domain_ ), POINTER :: domain => NULL()
     !! Domain contains the information of the finite element meshes.
   TYPE( String ) :: name
+    !! name of the field
+  TYPE( String ) :: engine
+    !! Engine of the field, for example NATIVE_SERIAL, NATIVE_OMP,
+    !! NATIVE_MPI, PETSC, LIS_SERIAL, LIS_OMP, LIS_MPI
   CONTAINS
   PRIVATE
     PROCEDURE(aField_addSurrogate), DEFERRED, PUBLIC, PASS( obj ) :: addSurrogate

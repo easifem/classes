@@ -21,38 +21,39 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                    Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_Display
-  INTEGER( I4B ) :: I
-  I = Input( option=unitNo, default=stdout )
-
-  IF( LEN_TRIM( msg) .NE. 0 ) WRITE( I, "(A)") "# "//TRIM( msg )
-  CALL Display( obj%name, "# name : ")
-  IF( obj%isInitiated ) THEN
-    WRITE( I, "(A)" ) "# isInitiated : TRUE"
-  ELSE
-    WRITE( I, "(A)" ) "# isInitiated : FALSE"
+  IF( LEN_TRIM( msg) .NE. 0 ) THEN
+    CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
   END IF
-  CALL Display( obj%spaceCompo, "# space components : " )
-  CALL Display( obj%timeCompo, "# space components : " )
-  CALL Display( obj%tSize, "# tSize : " )
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    WRITE( I, "(A)" ) "# fieldType : constant"
+  IF( obj%isInitiated ) THEN
+    CALL Display( "# isInitiated : TRUE", unitNo=unitNo)
   ELSE
-    WRITE( I, "(A)" ) "# fieldType : normal"
+    CALL Display( "# isInitiated : FALSE, Nothing to Display!", unitNo=unitNo)
+    RETURN
+  END IF
+  CALL Display( obj%name, "# name : ", unitNo=unitNo)
+  CALL Display( "# engine : NATIVE_SERIAL", unitNo=unitNo)
+  CALL Display( obj%spaceCompo, "# space components : ", unitNo=unitNo )
+  CALL Display( obj%timeCompo, "# time components : ", unitNo=unitNo )
+  CALL Display( obj%tSize, "# tSize : ", unitNo=unitNo )
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    CALL Display( "# fieldType : CONSTANT", unitNo=unitNo )
+  ELSE
+    CALL Display( "# fieldType : NORMAL", unitNo=unitNo )
   END IF
   IF( ASSOCIATED( obj%domain )  ) THEN
-    WRITE( I, "(A)" ) "# domain : associated"
+    CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
   ELSE
-    WRITE( I, "(A)" ) "# domain : not associated"
+    CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
   END IF
-  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=I )
+  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
 END PROCEDURE stvField_Display
 
 !----------------------------------------------------------------------------
-!                                                                 Import
+!                                                                     Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_Import
@@ -136,7 +137,7 @@ MODULE PROCEDURE stvField_Import
 END PROCEDURE stvField_Import
 
 !----------------------------------------------------------------------------
-!                                                                 Export
+!                                                                     Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_Export

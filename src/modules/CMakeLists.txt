@@ -30,6 +30,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)
 # include(${CMAKE_CURRENT_LIST_DIR}/MeshConnectivity/CMakeLists.txt)
 #Domain
 include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
+
+#MeshSelection
+include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
+
 #GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 #MSH

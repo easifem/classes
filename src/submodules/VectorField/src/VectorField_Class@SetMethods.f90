@@ -118,8 +118,7 @@ MODULE PROCEDURE vField_set4
     & 'This subroutine is not callable for constant vector field' )
 
   tnodes = obj%domain%getTotalNodes()
-  IF( SIZE( value,1) .NE. obj%spaceCompo &
-    & .OR. SIZE( value,2) .NE. tnodes ) &
+  IF( SIZE( value,2) .NE. tnodes ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The shape of value should be [ ' &
     & // trim(str(obj%spaceCompo, .true.)) &

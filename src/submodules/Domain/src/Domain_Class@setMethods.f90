@@ -30,7 +30,7 @@ MODULE PROCEDURE Domain_setSparsity
   CLASS( Mesh_ ), POINTER :: meshobj
 
   IF( .NOT. obj%isInitiated ) THEN
-    CALL eDomain%raiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
   meshobj => NULL()

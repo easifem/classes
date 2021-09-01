@@ -102,7 +102,7 @@ PUBLIC :: VectorField_
 TYPE( VectorField_ ), PARAMETER, PUBLIC :: Type = VectorField_()
 
 !----------------------------------------------------------------------------
-!                                                             VectorFieldPointer_
+!                                                       VectorFieldPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: VectorFieldPointer_
@@ -112,7 +112,7 @@ END TYPE VectorFieldPointer_
 PUBLIC :: VectorFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                                 addSurrogate@Constructor
+!                                                  addSurrogate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -127,7 +127,7 @@ END SUBROUTINE vField_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          setVectorFieldParam@Constructor
+!                                            setVectorFieldParam@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -290,7 +290,7 @@ END INTERFACE VectorField
 PUBLIC :: VectorField
 
 !----------------------------------------------------------------------------
-!                                                 VectorField_Pointer@Constructor
+!                                           VectorField_Pointer@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
