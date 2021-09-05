@@ -35,31 +35,121 @@ MODULE PROCEDURE mField_setPrecondition
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'MatrixField_ is not initiated')
-  !
-  IF( obj%isPmatInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'Precondition matrix is already initiated')
-  !
-  IF( param%isPresent( key="preconditionName") ) THEN
-    ierr = param%get( key="preconditionName", value=obj%Pmat%PmatName )
+  IF( PRESENT( param ) ) THEN
+    IF( param%isPresent( key="MatrixField/preconditionName") ) THEN
+      ierr = param%get( key="MatrixField/preconditionName", value=obj%Pmat%PmatName )
+    ELSE
+      CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'MatrixField/preconditionName should be present in param')
+    END IF
+    !
+    SELECT CASE( obj%Pmat%PmatName )
+    CASE( PRECOND_ILUT )
+      IF( param%isPresent(key="MatrixField/droptol") ) THEN
+        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/droptol should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/lfil") ) THEN
+        ierr = param%get( key="MatrixField/lfil", value=obj%Pmat%lfil )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/lfil should be present in param')
+      END IF
+    CASE( PRECOND_ILUTP )
+      IF( param%isPresent(key="MatrixField/droptol") ) THEN
+        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/droptol should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/lfil") ) THEN
+        ierr = param%get( key="MatrixField/lfil", value=obj%Pmat%lfil )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/lfil should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/permtol") ) THEN
+        ierr = param%get( key="MatrixField/permtol", value=obj%Pmat%permtol )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/permtol should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/mbloc") ) THEN
+        ierr = param%get( key="MatrixField/mbloc", value=obj%Pmat%mbloc )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/mbloc should be present in param')
+      END IF
+    CASE( PRECOND_ILUD )
+      IF( param%isPresent(key="MatrixField/droptol") ) THEN
+        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/droptol should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/alpha") ) THEN
+        ierr = param%get( key="MatrixField/alpha", value=obj%Pmat%alpha )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/alpha should be present in param')
+      END IF
+    CASE( PRECOND_ILUDP )
+      IF( param%isPresent(key="MatrixField/droptol") ) THEN
+        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/droptol should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/alpha") ) THEN
+        ierr = param%get( key="MatrixField/alpha", value=obj%Pmat%alpha )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/alpha should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/permtol") ) THEN
+        ierr = param%get( key="MatrixField/permtol", value=obj%Pmat%permtol )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/permtol should be present in param')
+      END IF
+      !
+      IF( param%isPresent(key="MatrixField/mbloc") ) THEN
+        ierr = param%get( key="MatrixField/mbloc", value=obj%Pmat%mbloc )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/mbloc should be present in param')
+      END IF
+    CASE( PRECOND_ILUK )
+      IF( param%isPresent(key="MatrixField/lfil") ) THEN
+        ierr = param%get( key="MatrixField/lfil", value=obj%Pmat%lfil )
+      ELSE
+        CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'MatrixField/lfil should be present in param')
+      END IF
+    END SELECT
   ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'preconditionName should be present in param')
+    SELECT CASE( obj%Pmat%PmatName )
+    CASE( PRECOND_ILUT )
+      CALL mField_getILUT( obj )
+    CASE( PRECOND_ILUTP )
+      CALL mField_getILUTP( obj )
+    CASE( PRECOND_ILUD )
+      CALL mField_getILUD( obj )
+    CASE( PRECOND_ILUDP )
+      CALL mField_getILUDP( obj )
+    CASE( PRECOND_ILUK )
+      CALL mField_getILUK( obj )
+    END SELECT
   END IF
-  !
-  SELECT CASE( obj%Pmat%PmatName )
-  CASE( PRECOND_ILUT )
-    CALL mField_getILUT( obj, param )
-  CASE( PRECOND_ILUTP )
-    CALL mField_getILUTP( obj, param )
-  CASE( PRECOND_ILUD )
-    CALL mField_getILUD( obj, param )
-  CASE( PRECOND_ILUDP )
-    CALL mField_getILUDP( obj, param )
-  CASE( PRECOND_ILUK )
-    CALL mField_getILUK( obj, param )
-  END SELECT
-
 END PROCEDURE mField_setPrecondition
 
 !----------------------------------------------------------------------------
@@ -76,28 +166,13 @@ END PROCEDURE mField_getPrecondition
 !                                                                      ILUT
 !----------------------------------------------------------------------------
 
-SUBROUTINE mField_getILUT( obj, param )
+SUBROUTINE mField_getILUT( obj )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
   ! internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName = "mField_getILUT"
   INTEGER( I4B ) :: ierr
   !
   obj%Pmat%PmatName = PRECOND_ILUT
-  IF( param%isPresent(key="droptol") ) THEN
-    ierr = param%get( key="droptol", value=obj%Pmat%droptol )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'droptol should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="lfil") ) THEN
-    ierr = param%get( key="lfil", value=obj%Pmat%lfil )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'lfil should be present in param')
-  END IF
-  !
   obj%isPmatInitiated = .TRUE.
   CALL getILUT(obj=obj%mat, lfil=obj%Pmat%lfil, droptol=obj%Pmat%droptol, &
     & ALU=obj%Pmat%A, JLU=obj%Pmat%JA, JU=obj%Pmat%JU )
@@ -107,42 +182,13 @@ END SUBROUTINE mField_getILUT
 !                                                                      ILUTP
 !----------------------------------------------------------------------------
 
-SUBROUTINE mField_getILUTP( obj, param )
+SUBROUTINE mField_getILUTP( obj )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
   ! internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName = "mField_getILUTP"
   INTEGER( I4B ) :: ierr
   !
   obj%Pmat%PmatName = PRECOND_ILUTP
-  IF( param%isPresent(key="droptol") ) THEN
-    ierr = param%get( key="droptol", value=obj%Pmat%droptol )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'droptol should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="lfil") ) THEN
-    ierr = param%get( key="lfil", value=obj%Pmat%lfil )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'lfil should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="permtol") ) THEN
-    ierr = param%get( key="permtol", value=obj%Pmat%permtol )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'permtol should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="mbloc") ) THEN
-    ierr = param%get( key="mbloc", value=obj%Pmat%mbloc )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'mbloc should be present in param')
-  END IF
-  !
   obj%isPmatInitiated = .TRUE.
   CALL getILUTP( &
     & obj=obj%mat, lfil=obj%Pmat%lfil, droptol=obj%Pmat%droptol, &
@@ -155,28 +201,13 @@ END SUBROUTINE mField_getILUTP
 !                                                                      ILUD
 !----------------------------------------------------------------------------
 
-SUBROUTINE mField_getILUD( obj, param )
+SUBROUTINE mField_getILUD( obj )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
   ! internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName = "mField_getILUD"
   INTEGER( I4B ) :: ierr
   !
   obj%Pmat%PmatName = PRECOND_ILUD
-  IF( param%isPresent(key="droptol") ) THEN
-    ierr = param%get( key="droptol", value=obj%Pmat%droptol )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'droptol should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="alpha") ) THEN
-    ierr = param%get( key="alpha", value=obj%Pmat%alpha )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'alpha should be present in param')
-  END IF
-  !
   obj%isPmatInitiated = .TRUE.
   CALL getILUD( &
     & obj=obj%mat, alpha=obj%Pmat%alpha, droptol=obj%Pmat%droptol, &
@@ -187,75 +218,36 @@ END SUBROUTINE mField_getILUD
 !                                                                     ILUTDP
 !----------------------------------------------------------------------------
 
-SUBROUTINE mField_getILUDP( obj, param )
+SUBROUTINE mField_getILUDP( obj )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
   ! internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName = "mField_getILUDP"
   INTEGER( I4B ) :: ierr
   !
   obj%Pmat%PmatName = PRECOND_ILUDP
-  IF( param%isPresent(key="droptol") ) THEN
-    ierr = param%get( key="droptol", value=obj%Pmat%droptol )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'droptol should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="alpha") ) THEN
-    ierr = param%get( key="alpha", value=obj%Pmat%alpha )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'alpha should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="permtol") ) THEN
-    ierr = param%get( key="permtol", value=obj%Pmat%permtol )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'permtol should be present in param')
-  END IF
-  !
-  IF( param%isPresent(key="mbloc") ) THEN
-    ierr = param%get( key="mbloc", value=obj%Pmat%mbloc )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'mbloc should be present in param')
-  END IF
-  !
   obj%isPmatInitiated = .TRUE.
   CALL getILUDP( &
     & obj=obj%mat, alpha=obj%Pmat%alpha, droptol=obj%Pmat%droptol, &
     & permtol=obj%Pmat%permtol, mbloc=obj%Pmat%mbloc, &
     & IPERM=obj%Pmat%IPERM, &
     & ALU=obj%Pmat%A, JLU=obj%Pmat%JA, JU=obj%Pmat%JU )
-  !
 END SUBROUTINE mField_getILUDP
 
 !----------------------------------------------------------------------------
 !                                                                     ILUK
 !----------------------------------------------------------------------------
 
-SUBROUTINE mField_getILUK( obj, param )
+SUBROUTINE mField_getILUK( obj )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
   ! internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName = "mField_getILUK"
   INTEGER( I4B ) :: ierr
   !
   obj%Pmat%PmatName = PRECOND_ILUK
-  IF( param%isPresent(key="lfil") ) THEN
-    ierr = param%get( key="lfil", value=obj%Pmat%lfil )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'lfil should be present in param')
-  END IF
-  !
   obj%isPmatInitiated = .TRUE.
   CALL getILUK( &
     & obj=obj%mat, lfil=obj%Pmat%lfil, LEVS=obj%Pmat%LEVS, &
     & ALU=obj%Pmat%A, JLU=obj%Pmat%JA, JU=obj%Pmat%JU )
-  !
 END SUBROUTINE mField_getILUK
 
 !----------------------------------------------------------------------------

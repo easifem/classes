@@ -151,6 +151,36 @@ MODULE PROCEDURE Domain_getNodeCoordPointer
 END PROCEDURE Domain_getNodeCoordPointer
 
 !----------------------------------------------------------------------------
+!                                                                   getNSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getNSD
+  ans = obj%NSD
+END PROCEDURE Domain_getNSD
+
+!----------------------------------------------------------------------------
+!                                                                 getNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getNptrs
+  INTEGER( I4B ) :: ii
+  CLASS( Mesh_ ), POINTER :: meshptr
+  TYPE( IntVector_ ) :: intvec
+  !>
+  meshptr => NULL()
+  DO ii = 1, SIZE( meshID )
+    meshptr => obj%GetMeshPointer( dim=xidim, tag=meshID( ii ) )
+    IF( ASSOCIATED( meshptr )  ) THEN
+      CALL APPEND( intvec, meshptr%getNptrs() )
+    END IF
+  END DO
+  CALL RemoveDuplicates( intvec )
+  ans = intvec
+  CALL DeallocateData( intvec )
+  NULLIFY( meshptr )
+END PROCEDURE Domain_getNptrs
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 END SUBMODULE getMethods

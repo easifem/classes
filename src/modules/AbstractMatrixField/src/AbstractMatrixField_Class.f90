@@ -48,6 +48,8 @@ PRIVATE
 ! - [[ACCMatrixField_]]
 
 TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
+  LOGICAL( LGT ) :: isPmatInitiated = .FALSE.
+    !! True if precondition matrix is initiated
   CONTAINS
   PRIVATE
   PROCEDURE( amField_Size ), DEFERRED, PUBLIC, PASS( obj ) :: Size
@@ -62,6 +64,10 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
   PROCEDURE( amField_LUSOLVE2 ), DEFERRED, PASS( obj ) :: LUSOLVE2
     !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: LUSOLVE => LUSOLVE1, LUSOLVE2
+    !! Generic LU Solve
+  PROCEDURE, PUBLIC, PASS( obj ) :: isPreconditionSet => &
+    & amField_isPreconditionSet
+    !! True if prcondition is set
   PROCEDURE( amField_setPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: setPrecondition
     !! Build precondition matrix
   PROCEDURE( amField_getPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: getPrecondition
@@ -76,6 +82,7 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
   PROCEDURE( amField_setColumn ), PUBLIC, DEFERRED, PASS( obj ) :: setColumn
   PROCEDURE( amField_getRow ), PUBLIC, DEFERRED, PASS( obj ) :: getRow
   PROCEDURE( amField_getColumn ), PUBLIC, DEFERRED, PASS( obj ) :: getColumn
+
 
 END TYPE AbstractMatrixField_
 
@@ -233,7 +240,7 @@ ABSTRACT INTERFACE
 SUBROUTINE amField_setPrecondition( obj, param )
   IMPORT :: AbstractMatrixField_, ParameterList_
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( ParameterList_ ), OPTIONAL, INTENT( IN ) :: param
 END SUBROUTINE amField_setPrecondition
 END INTERFACE
 
@@ -445,5 +452,18 @@ SUBROUTINE amField_getColumn( obj, globalNode, idof, val, nodeFieldVal, &
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE amField_getColumn
 END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                                 isPreconditionSet@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION amField_isPreconditionSet( obj ) RESULT( Ans )
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION amField_isPreconditionSet
+END INTERFACE
+
 
 END MODULE AbstractMatrixField_Class

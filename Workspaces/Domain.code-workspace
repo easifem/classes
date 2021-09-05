@@ -8,6 +8,12 @@
 		},
 		{
 			"path": "../tests/testDomain"
+		},
+		{
+			"path": "../src/modules/Mesh"
+		},
+		{
+			"path": "../src/submodules/Mesh"
 		}
 	]
 }

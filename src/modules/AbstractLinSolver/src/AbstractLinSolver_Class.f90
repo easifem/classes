@@ -63,7 +63,8 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   INTEGER( I4B ) :: ierr = 0
     !! error code returned by the solver
   INTEGER( I4B ) :: preconditionOption = 0
-    !! Name of preconditioner
+    !! Name of preconditioner; NO_PRECONDITION, LEFT_PRECONDITION
+    !! RIGHT_PRECONDITION, LEFT_RIGHT_PRECONDITON
   INTEGER( I4B ) ::  iter=0
     !! Current iteration number
   INTEGER( I4B ) ::  maxIter=0
@@ -104,6 +105,8 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! importing linsolver from external file
   PROCEDURE( als_Export ), PUBLIC, DEFERRED, PASS( obj ) :: Export
     !! exporting linsolver from external file
+  PROCEDURE, PUBLIC, PASS( obj ) :: getPreconditionOption => &
+    & als_getPreconditionOption
 END TYPE AbstractLinSolver_
 
 PUBLIC :: AbstractLinSolver_
@@ -246,5 +249,21 @@ SUBROUTINE als_Export( obj, hdf5, group )
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE als_Export
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getPreconditionOption@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 3 Sept 2021
+! summary: Returns the preconditionOption
+
+INTERFACE
+MODULE PURE FUNCTION als_getPreconditionOption( obj ) RESULT( Ans )
+  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION als_getPreconditionOption
+END INTERFACE
+
 
 END MODULE AbstractLinSolver_Class

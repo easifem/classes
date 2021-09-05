@@ -18,11 +18,7 @@
 MODULE easifemClasses
 USE ExceptionHandler_Class
 USE FPL_Method
-USE FortranFile_Class
-USE TxtFile_Class
-USE InputFile_Class
-USE HDF5File_Class
-USE HDF5File_Method
+USE Files
 USE ElementFactory
 !FTL Containers
 USE IntList_Class
@@ -50,6 +46,9 @@ USE Vector_Class
 
 USE Field
 USE FieldFactory
+
+USE AbstractBC_Class
+USE DirichletBC_Class
 
   ! USE vtkType
 

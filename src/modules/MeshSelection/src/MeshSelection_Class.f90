@@ -36,8 +36,9 @@ TYPE :: MeshSelection_
   PRIVATE
   LOGICAL( LGT ), PUBLIC :: isInitiated = .FALSE.
   LOGICAL( LGT ), PUBLIC :: isSelectionByMeshID = .FALSE.
-  LOGICAL( LGT ), PUBLIC :: isSelectionByElemID = .FALSE.
+  LOGICAL( LGT ), PUBLIC :: isSelectionByElemNum = .FALSE.
   LOGICAL( LGT ), PUBLIC :: isSelectionByBox = .FALSE.
+  LOGICAL( LGT ), PUBLIC :: isSelectionByNodeNum = .FALSE.
   TYPE( IntVector_ ) :: PointMeshID
   !! It denotes the IDs of mesh which has xidim = 0 (point-mesh)
   TYPE( IntVector_ ) :: CurveMeshID
@@ -51,10 +52,15 @@ TYPE :: MeshSelection_
   TYPE( IntVector_ ) :: SurfaceElemNum
   TYPE( IntVector_ ) :: VolumeElemNum
   !! Element number sorted based on xiDim of mesh
+  TYPE( IntVector_ ) :: NodeNum
+  !! Global Node number
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => meshSelect_addSurrogate
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => meshSelect_Initiate
+  PROCEDURE, PASS( obj ) :: Copy => meshSelect_Copy
+    !! This routine copies object
+  GENERIC, PUBLIC :: ASSIGNMENT( = ) => Copy
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => meshSelect_DeallocateData
   FINAL :: meshSelect_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: Add => meshSelect_Add
@@ -64,6 +70,13 @@ TYPE :: MeshSelection_
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => meshSelect_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: getMeshID => meshSelect_getMeshID
   PROCEDURE, PUBLIC, PASS( obj ) :: getElemNum => meshSelect_getElemNum
+  PROCEDURE, PUBLIC, PASS( obj ) :: getNodeNum => meshSelect_getNodeNum
+  PROCEDURE, PUBLIC, PASS( obj ) :: isMeshIDAllocated => &
+    & meshSelect_isMeshIDAllocated
+  PROCEDURE, PUBLIC, PASS( obj ) :: isElemNumAllocated => &
+    & meshSelect_isElemNumAllocated
+  PROCEDURE, PUBLIC, PASS( obj ) :: isNodeNumAllocated => &
+    & meshSelect_isNodeNumAllocated
 END TYPE MeshSelection_
 
 PUBLIC :: MeshSelection_
@@ -82,7 +95,7 @@ END TYPE MeshSelectionPointer_
 PUBLIC :: MeshSelectionPointer_
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogate
+!                                            addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -97,7 +110,7 @@ END SUBROUTINE meshSelect_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -106,16 +119,32 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE meshSelect_Initiate( obj, isSelectionByMeshID, &
-  & isSelectionByElemID, isSelectionByBox )
+  & isSelectionByElemNum, isSelectionByBox, isSelectionByNodeNum )
   CLASS( MeshSelection_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isSelectionByMeshID
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isSelectionByElemID
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isSelectionByElemNum
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isSelectionByBox
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isSelectionByNodeNum
 END SUBROUTINE meshSelect_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                   Copy@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 1 Sep 2021
+! summary: Initiate obj by copying another object
+
+INTERFACE
+MODULE SUBROUTINE meshSelect_Copy( obj, obj2 )
+  CLASS( MeshSelection_ ), INTENT( INOUT ) :: obj
+  CLASS( MeshSelection_ ), INTENT( IN ) :: obj2
+END SUBROUTINE meshSelect_Copy
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        DeallocateData@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -129,7 +158,7 @@ END SUBROUTINE meshSelect_DeallocateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                     Final
+!                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -143,7 +172,7 @@ END SUBROUTINE meshSelect_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                       Add
+!                                                            Add@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -151,18 +180,20 @@ END INTERFACE
 ! summary: This routine adds data to the meshSelection
 
 INTERFACE
-MODULE SUBROUTINE meshSelect_Add( obj, dom, xidim, meshID, box, elemNum )
+MODULE SUBROUTINE meshSelect_Add( obj, dom, xidim, meshID, box, elemNum, &
+  & nodeNum )
   CLASS( MeshSelection_ ), INTENT( INOUT ) :: obj
   TYPE( Domain_ ), OPTIONAL, INTENT( IN ) :: dom
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: xidim
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: meshID( : )
   TYPE( BoundingBox_ ), OPTIONAL, INTENT( IN ) :: box
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: elemNum( : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: nodeNum( : )
 END SUBROUTINE meshSelect_Add
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                       Set
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -176,7 +207,7 @@ END SUBROUTINE meshSelect_Set
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   Import
+!                                                          Import@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -193,7 +224,7 @@ END SUBROUTINE meshSelect_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   Export
+!                                                           Export@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -209,7 +240,7 @@ END SUBROUTINE meshSelect_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   Display
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -225,7 +256,7 @@ END SUBROUTINE meshSelect_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 getMeshID
+!                                                      getMeshID@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -240,9 +271,8 @@ MODULE PURE FUNCTION meshSelect_getMeshID( obj, xidim ) RESULT( Ans )
 END FUNCTION meshSelect_getMeshID
 END INTERFACE
 
-
 !----------------------------------------------------------------------------
-!                                                                 getElemNum
+!                                                      getElemNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -255,6 +285,68 @@ MODULE PURE FUNCTION meshSelect_getElemNum( obj, xidim ) RESULT( Ans )
   INTEGER( I4B ), INTENT( IN ) :: xidim
   INTEGER( I4B ), ALLOCATABLE :: ans(:)
 END FUNCTION meshSelect_getElemNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getNodeNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+
+INTERFACE
+MODULE PURE FUNCTION meshSelect_getNodeNum( obj ) RESULT( Ans )
+  CLASS( MeshSelection_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), ALLOCATABLE :: ans(:)
+END FUNCTION meshSelect_getNodeNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              isMeshIDAllocated@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+
+INTERFACE
+MODULE PURE FUNCTION meshSelect_isMeshIDAllocated( obj, xidim ) RESULT( Ans )
+  CLASS( MeshSelection_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: xidim
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshSelect_isMeshIDAllocated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            isElemNumAllocated@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+
+INTERFACE
+MODULE PURE FUNCTION meshSelect_isElemNumAllocated( obj, xidim ) RESULT( Ans )
+  CLASS( MeshSelection_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: xidim
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshSelect_isElemNumAllocated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             isNodeNumAllocated@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+
+INTERFACE
+MODULE PURE FUNCTION meshSelect_isNodeNumAllocated( obj ) RESULT( Ans )
+  CLASS( MeshSelection_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION meshSelect_isNodeNumAllocated
 END INTERFACE
 
 END MODULE MeshSelection_Class
