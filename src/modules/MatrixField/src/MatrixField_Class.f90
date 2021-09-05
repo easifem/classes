@@ -100,7 +100,6 @@ END TYPE MatrixFieldPrecondition_
 TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
   TYPE( CSRMatrix_ ) :: mat
   TYPE( MatrixFieldPrecondition_ ) :: Pmat
-  LOGICAL( LGT ) :: isPmatInitiated = .FALSE.
   CONTAINS
   PRIVATE
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mField_addSurrogate
@@ -622,7 +621,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_setPrecondition( obj, param )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( ParameterList_ ), OPTIONAL, INTENT( IN ) :: param
 END SUBROUTINE mField_setPrecondition
 END INTERFACE
 

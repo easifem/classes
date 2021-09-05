@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/ScalarField"
+		},
+		{
+			"path": "../src/submodules/ScalarField"
+		}
+	]
+}

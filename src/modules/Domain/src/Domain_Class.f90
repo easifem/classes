@@ -154,8 +154,6 @@ TYPE :: Domain_
       !! Increase node number
     PROCEDURE, PUBLIC, PASS( Obj ) :: getEntities => Domain_getEntities
       !! Returns the geometric entities number of each physical entities
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
-      !! Returns the spatial dimension of each physical entities
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNumElements => &
       & Domain_getNumElements
       !! Returns the number of elements in each physical entities/group
@@ -175,8 +173,13 @@ TYPE :: Domain_
       !! This routine a pointer to [[Mesh_]] object
     PROCEDURE, PASS( obj ) :: getNodeCoord => Domain_getNodeCoord
       !! This routine returns the nodal coordinate in rank2 array
-    PROCEDURE, PUBLIC, PASS( obj ) :: getNodeCoordPointer => Domain_getNodeCoordPointer
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNodeCoordPointer => &
+      & Domain_getNodeCoordPointer
       !! This routine returns the pointer to nodal coordinate
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNptrs => &
+      & Domain_getNptrs
+    PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
+      !! Returns the spatial dimension of each physical entities
     PROCEDURE, PUBLIC, PASS( obj ) :: setSparsity => Domain_setSparsity
 END TYPE Domain_
 
@@ -457,6 +460,38 @@ MODULE FUNCTION Domain_getNodeCoordPointer( obj ) RESULT( ans )
   CLASS( Domain_ ), TARGET, INTENT( IN ) :: obj
   REAL( DFP ), POINTER :: ans( :, : )
 END FUNCTION Domain_getNodeCoordPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  Domain_getNptrs@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2 Sept 2021
+! summary: this routine returns the global node number
+!
+!### Introduction
+! This routine returns the global node number
+! xidim is the dimension of the mesh
+
+INTERFACE
+MODULE FUNCTION Domain_getNptrs( obj, meshID, xidim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: meshID( : )
+  INTEGER( I4B ), INTENT( IN ) :: xidim
+  INTEGER( I4B ), ALLOCATABLE :: ans( : )
+END FUNCTION Domain_getNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getNSD@PhysicalNamesMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getNSD( obj ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -882,17 +917,6 @@ MODULE PURE SUBROUTINE Domain_IncNumNodes( obj, indx, incr )
   INTEGER( I4B ), INTENT( IN ) :: indx
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: incr
 END SUBROUTINE Domain_IncNumNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                getNSD@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getNSD( obj ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION Domain_getNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------

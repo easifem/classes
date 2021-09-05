@@ -319,10 +319,10 @@ END INTERFACE
 ! summary: This routine sets the single entry of the scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_set1( obj, globalNode, val )
+MODULE SUBROUTINE sField_set1( obj, globalNode, value )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
-  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), INTENT( IN ) :: value
 END SUBROUTINE sField_set1
 END INTERFACE
 
@@ -335,9 +335,9 @@ END INTERFACE
 ! summary: This routine sets all the entries of a scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_set2( obj, val )
+MODULE SUBROUTINE sField_set2( obj, value )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), INTENT( IN ) :: value
 END SUBROUTINE sField_set2
 END INTERFACE
 
@@ -350,9 +350,9 @@ END INTERFACE
 ! summary: This routine set all the entries by using given scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_set3( obj, val )
+MODULE SUBROUTINE sField_set3( obj, value )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: val( : )
+  REAL( DFP ), INTENT( IN ) :: value( : )
 END SUBROUTINE sField_set3
 END INTERFACE
 
@@ -365,10 +365,10 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_set4(obj, globalNode, val)
+MODULE SUBROUTINE sField_set4(obj, globalNode, value)
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), INTENT( IN ) :: value
 END SUBROUTINE sField_set4
 END INTERFACE
 
@@ -381,10 +381,10 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_set5(obj, globalNode, val)
+MODULE SUBROUTINE sField_set5(obj, globalNode, value)
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  REAL( DFP ), INTENT( IN ) :: val( : )
+  REAL( DFP ), INTENT( IN ) :: value( : )
 END SUBROUTINE sField_set5
 END INTERFACE
 
@@ -397,12 +397,12 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_set6( obj, istart, iend, stride, val )
+MODULE SUBROUTINE sField_set6( obj, istart, iend, stride, value )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
-  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), INTENT( IN ) :: value
 END SUBROUTINE sField_set6
 END INTERFACE
 
@@ -415,12 +415,12 @@ END INTERFACE
 ! summary: set the vector vals using triplet
 
 INTERFACE
-MODULE SUBROUTINE sField_set7( obj, istart, iend, stride, val )
+MODULE SUBROUTINE sField_set7( obj, istart, iend, stride, value )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
-  REAL( DFP ), INTENT( IN ) :: val( : )
+  REAL( DFP ), INTENT( IN ) :: value( : )
 END SUBROUTINE sField_set7
 END INTERFACE
 
@@ -433,9 +433,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_get1( obj, val, globalNode )
+MODULE SUBROUTINE sField_get1( obj, value, globalNode )
   CLASS( ScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ) :: val
+  REAL( DFP ) :: value
   INTEGER( I4B ), INTENT( IN ) :: globalNode
 END SUBROUTINE sField_get1
 END INTERFACE
@@ -449,9 +449,9 @@ END INTERFACE
 ! summary: This routine set all the entries by using given scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_get2( obj, val )
+MODULE SUBROUTINE sField_get2( obj, value )
   CLASS( ScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: val( : )
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( : )
 END SUBROUTINE sField_get2
 END INTERFACE
 
@@ -464,9 +464,9 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_get3(obj, val, globalNode )
+MODULE SUBROUTINE sField_get3(obj, value, globalNode )
   CLASS( ScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: val( : )
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( : )
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
 END SUBROUTINE sField_get3
 END INTERFACE
@@ -480,9 +480,9 @@ END INTERFACE
 ! summary: set the vector vals using triplet
 
 INTERFACE
-MODULE SUBROUTINE sField_get4( obj, val, istart, iend, stride )
+MODULE SUBROUTINE sField_get4( obj, value, istart, iend, stride )
   CLASS( ScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: val( : )
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( : )
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride

@@ -32,13 +32,13 @@ MODULE PROCEDURE sField_get1
     & CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'ScalarField object is not initiated')
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    val = get( obj=obj%realVec, indx=1, dataType= 1.0_DFP )
+    value = get( obj=obj%realVec, indx=1, dataType= 1.0_DFP )
   ELSE
     localNode = obj%domain%getLocalNodeNumber( globalNode )
     IF( localNode .GT. obj%tsize ) &
       & CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Out of bound index')
-    val = get( obj=obj%realVec, indx=localNode, dataType= 1.0_DFP )
+    value = get( obj=obj%realVec, indx=localNode, dataType= 1.0_DFP )
   END IF
 END PROCEDURE sField_get1
 
@@ -53,10 +53,10 @@ MODULE PROCEDURE sField_get2
     & CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'ScalarField object is not initiated')
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    ALLOCATE( val( obj%tsize ) )
-    val = get( obj=obj%realVec, indx=1, dataType= 1.0_DFP )
+    ALLOCATE( value( obj%tsize ) )
+    value = get( obj=obj%realVec, indx=1, dataType= 1.0_DFP )
   ELSE
-    val = get( obj=obj%realVec, dataType= 1.0_DFP )
+    value = get( obj=obj%realVec, dataType= 1.0_DFP )
   END IF
 END PROCEDURE sField_get2
 
@@ -78,7 +78,7 @@ MODULE PROCEDURE sField_get3
     IF( ANY(localNode .GT. obj%tsize) ) &
       & CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Out of bound index')
-    val = get( obj=obj%realVec, indx=localNode, dataType= 1.0_DFP )
+    value = get( obj=obj%realVec, indx=localNode, dataType= 1.0_DFP )
   END IF
 END PROCEDURE sField_get3
 
@@ -102,7 +102,7 @@ MODULE PROCEDURE sField_get4
       jj = jj + 1
       globalNode( jj ) = ii
     END DO
-    CALL obj%get( globalNode=globalNode, val=val )
+    CALL obj%get( globalNode=globalNode, value=value )
   END IF
 END PROCEDURE sField_get4
 
