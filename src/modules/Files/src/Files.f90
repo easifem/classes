@@ -21,4 +21,5 @@ USE FortranFile_Class
 USE TxtFile_Class
 USE InputFile_Class
 USE HDF5File_Class
+USE XMLFile_Class
 END MODULE Files
