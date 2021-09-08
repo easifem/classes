@@ -7,7 +7,6 @@ import os
 import sys
 import platform
 
-
 def installRequest(LIB):
     while True:
         choice = input(
@@ -17,12 +16,10 @@ def installRequest(LIB):
         else:
           return False
 
-
 def getOption(key, opt):
   while True:
     separator = ', '
     return input(f"select option for {key}, possible options are : {separator.join(opt)} : ") + " "
-
 
 print("Detecting OS type...")
 _os = platform.system()
