@@ -15,18 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( XMLTag_Class ) Methods
+SUBMODULE( XMLTag_Class ) GetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                             addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE xmlTag_addSurrogate
-  CALL e%addSurrogate( UserObj )
-END PROCEDURE xmlTag_addSurrogate
 
 !----------------------------------------------------------------------------
 !
@@ -272,106 +264,89 @@ MODULE PROCEDURE getChildTagInfo
 END PROCEDURE getChildTagInfo
 
 !----------------------------------------------------------------------------
-!
+!                                                                   isEmpty
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE xmlTag_Initiate
-  INTEGER( I4B ) :: tChild,ichild,ierr
-  INTEGER( I4B ), ALLOCATABLE :: childTags(:,:)
-  TYPE( String ) :: startTagName,endTagName,tmpStr
-  CHARACTER( LEN = * ), PARAMETER :: myName="xmlTag_Initiate"
+MODULE PROCEDURE xmlTag_isEmpty
+  ans=( obj%content%LEN_TRIM() .EQ. 0 .AND. &
+    & .NOT. ASSOCIATED(obj%children) )
+END PROCEDURE xmlTag_isEmpty
 
-  IF(iTag(3,tagStart) .EQ. EMPTY_ELEMENT_TAG) THEN
-    !> Empty Element
-    IF(tagEnd .EQ. tagStart) THEN
-      !Get obj%name
-      CALL getTagName( &
-        & chars=cachedFile(iTag(1,tagStart):iTag(2,tagStart)), &
-        & ierr=ierr, tagname=obj%name )
-      !Process the attributes
-      CALL ConvertCharArrayToStr( &
-        & chars=cachedFile(iTag(1,tagStart):iTag(2,tagStart)), &
-        & strobj = tmpStr )
-      CALL parseTagAttributes( &
-        & chars=TRIM(tmpStr%chars()), &
-        & tAttributes = obj%tAttributes, &
-        & attrNames = obj%attrNames, &
-        & attrValues = obj%attrValues, &
-        & ierr = ierr)
-      IF(ierr .NE. 0) THEN
-        CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'Some error has occured while parsing tag attributes')
-      ENDIF
-    ELSE
-      CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'Some error has occured while parsing tag attributes')
-    ENDIF
+!----------------------------------------------------------------------------
+!                                                                 hasParent
+!----------------------------------------------------------------------------
 
-  ELSEIF(iTag(3,tagStart) .EQ. START_TAG) THEN
-    !Start/End Tagged Element
-    IF(tagEnd > tagStart) THEN
-      IF(iTag(3,tagEnd) .EQ. END_TAG) THEN
-        !Verify matching element names
-        CALL getTagName( &
-          & chars=cachedFile(iTag(1,tagStart):iTag(2,tagStart)), &
-          & ierr=ierr, tagname= startTagName)
-        CALL getTagName( &
-          & chars=cachedFile(iTag(1,tagEnd):iTag(2,tagEnd)), &
-          ierr=ierr, tagname=endTagName)
-        IF(startTagName .EQ. endTagName .AND. ierr .EQ. 0) THEN
-          !Store the name
-          obj%name=startTagName
-          !Process attributes
-          CALL ConvertCharArrayToStr( &
-            & chars=cachedFile(iTag(1,tagStart):iTag(2,tagStart)), &
-            & strobj = tmpStr)
-          CALL parseTagAttributes( &
-            & chars=trim(tmpStr%chars()), &
-            & tAttributes = obj%tAttributes, &
-            & attrNames = obj%attrNames, &
-            & attrValues = obj%attrValues, ierr = ierr)
-          IF(ierr .NE. 0) THEN
-            CALL e%raiseError(modName//'::'//myName// " - "// &
-              & 'Some error has occured while parsing tag attributes')
-          ENDIF
-          !Determine the number of children
-          CALL getChildTagInfo( tagStart=tagStart, tagEnd=tagEnd, &
-            & iTag=iTag, tChild=tChild, childTags=childTags, ierr=ierr)
-          IF(tChild > 0) THEN
-            !Process the children if any
-            ALLOCATE(obj%children(tChild))
-            DO iChild=1,tChild
-              !Find the tag begin and end for the child
-              CALL obj%children(ichild)%Initiate( cachedFile=cachedFile, &
-                & iTag=iTag, lines=lines, tagStart=childTags(1,iChild), &
-                & tagEnd=childTags(2,iChild) )
-              SELECT TYPE(xmle => obj)
-              TYPE IS( XMLTag_ ); obj%children(ichild)%parent => xmle
-              END SELECT
-            END DO
-          ELSE
-            !Store Content
-            CALL ConvertCharArrayToStr( &
-              & chars=cachedFile(iTag(2,tagStart)+1:iTag(1,tagEnd)-1), &
-              & strobj=obj%content )
-            obj%content=TRIM(obj%content%chars())
-          END IF
-        ELSE
-          CALL e%raiseError(modName//'::'//myName// " - "// &
-            & 'Some error has occured')
-        END IF
-      ELSE
-        CALL e%raiseError(modName//'::'//myName// " - "// &
-          & 'Some error has occured')
-      END IF
-    ELSE
-      CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'Some error has occured')
+MODULE PROCEDURE xmlTag_hasParent
+  ans = ASSOCIATED( obj%parent )
+END PROCEDURE xmlTag_hasParent
+
+!----------------------------------------------------------------------------
+!                                                          getParentPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_getParentPointer
+  NULLIFY( ans )
+  ans => obj%parent
+END PROCEDURE xmlTag_getParentPointer
+
+!----------------------------------------------------------------------------
+!                                                               hasChildren
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_hasChildren
+  ans = ASSOCIATED( obj%children )
+END PROCEDURE xmlTag_hasChildren
+
+!----------------------------------------------------------------------------
+!                                                        getChildrenPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_getChildrenPointer
+  NULLIFY( ans )
+  ans => obj%children
+END PROCEDURE xmlTag_getChildrenPointer
+
+!----------------------------------------------------------------------------
+!                                                              getAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_getAttributes
+  INTEGER( I4B ) :: i
+  IF(ALLOCATED(names)) DEALLOCATE(names)
+  IF(ALLOCATED(values)) DEALLOCATE(values)
+  ALLOCATE(names(obj%tAttributes))
+  ALLOCATE(values(obj%tAttributes))
+  DO i=1,obj%tAttributes
+    names(i)=obj%attrNames(i)
+    values(i)=obj%attrValues(i)
+  END DO
+END PROCEDURE xmlTag_getAttributes
+
+!----------------------------------------------------------------------------
+!                                                         getAttributeValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_getAttributeValue
+ INTEGER( I4B ) :: i
+  value=''
+  DO i=1,obj%tAttributes
+    IF(name == obj%attrNames(i)) THEN
+      value=obj%attrValues(i)
+      EXIT
     END IF
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'Some error has occured')
-  END IF
-END PROCEDURE xmlTag_Initiate
+  END DO
+END PROCEDURE xmlTag_getAttributeValue
 
-END SUBMODULE Methods
+!----------------------------------------------------------------------------
+!                                                               getContent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_getContent
+  ans=obj%content
+END PROCEDURE xmlTag_getContent
+
+!----------------------------------------------------------------------------
+!                                                                 
+!----------------------------------------------------------------------------
+
+END SUBMODULE GetMethods
