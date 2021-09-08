@@ -42,9 +42,9 @@ TYPE :: XMLTag_
     !! parent tag
   TYPE( XMLTag_ ), POINTER :: children( : ) => NULL()
     !! children tag
-  CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => xmlTag_Initiate
+  ! CONTAINS
+  ! PRIVATE
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => xmlTag_Initiate
 END TYPE XMLTag_
 
 PUBLIC :: XMLTag_
@@ -65,23 +65,23 @@ PUBLIC :: XMLTagPointer_
 !
 !### Introduction
 ! Get the name of an XML tag.
-! This routine is taken from
+! This routine is modified from the following library
 ! [https://github.com/CASL/Futility/blob/master/src/FileType_XML.f90](https://github.com/CASL/Futility/blob/master/src/FileType_XML.f90)
 !
 
 INTERFACE
-MODULE SUBROUTINE getTagName(fullTag,ierr,sname)
-  CHARACTER( LEN=1 ), INTENT( IN ) :: fullTag(:)
-    !! fulltag the full tag string
+MODULE SUBROUTINE getTagName(chars, tagname, ierr)
+  CHARACTER( LEN=1 ), INTENT( IN ) :: chars(:)
+    !! chars the full tag string
+  TYPE( String ), INTENT( INOUT ) :: tagname
+    !! String with Tag name
   INTEGER( I4B ), INTENT( INOUT ) :: ierr
     !! ierr return error code
     !!  0: Success
-    !! -1: Bad value for fulltag
+    !! -1: Bad value for chars
     !! -2: illegal first character for tag name
     !! -3: illegal character in tag name
     !! -4: tag name starts with "xml"
-  TYPE( String ), INTENT( INOUT ) :: sname
-    !! sname a string with the tag name
 END SUBROUTINE getTagName
 END INTERFACE
 

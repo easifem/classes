@@ -26,7 +26,6 @@ print(str)
 str = "(c) 2020-present"
 print(str)
 print("")
-print("External packages used in easifemBase are:")
 print("================================================================\n")
 
 def installpkgs():
@@ -69,9 +68,9 @@ elif _os == "Linux":
     print("Linux system found")
     print("Setting up for Linux...")
     if(installpkgs()):
-        os.system("bash ./setup/install_pkgs_Ubuntu.sh")
+        os.system("${SHELL} ./setup/install_pkgs_Ubuntu.sh")
     if(setEnvVar()):
-        os.system("bash ./setup/set_envvar_Ubuntu.sh")
+        os.system("${SHELL} ./setup/set_envvar_Ubuntu.sh")
 
 else:
     print("ERROR: Unknown Operating System")
