@@ -24,27 +24,20 @@ PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName="XMLTAG_CLASS"
 TYPE( ExceptionHandler_ ) :: e
   !! name of the module
-CHARACTER(LEN=1),PARAMETER :: CHAR_SPACE=' '
-  !! Character constant for a single space
-CHARACTER(LEN=1),PARAMETER :: CHAR_CR=CHAR(13)
-  !! Character constant for a carraige return
-CHARACTER(LEN=1),PARAMETER :: CHAR_LF=CHAR(10)
-  !! Character constant for a line feed
-CHARACTER(LEN=1),PARAMETER :: CHAR_TAB=CHAR(9)
   !! Character constant for a tab
-INTEGER(I4B) :: BAD_TAG=-1
+INTEGER(I4B), PUBLIC  :: BAD_TAG=-1
   !! Module local constant for indicating a bad tag
-INTEGER(I4B) :: START_TAG=1
+INTEGER(I4B), PUBLIC :: START_TAG=1
   !! Module local constant for indicating the start of a tag
-INTEGER(I4B) :: END_TAG=2
+INTEGER(I4B), PUBLIC :: END_TAG=2
   !! Module local constant for indicating the end of a tag
-INTEGER(I4B) :: EMPTY_ELEMENT_TAG=3
+INTEGER(I4B), PUBLIC :: EMPTY_ELEMENT_TAG=3
   !! Module local constant for indicating an empty tag
-INTEGER(I4B) :: COMMENT_TAG=4
+INTEGER(I4B), PUBLIC :: COMMENT_TAG=4
   !! Module local constant for indicating comment tag
-INTEGER(I4B) :: PROCESSING_INST_TAG=5
+INTEGER(I4B), PUBLIC :: PROCESSING_INST_TAG=5
   !! Module local constant for indicating ??? tag
-INTEGER(I4B) :: DECLARATION_TAG=6
+INTEGER(I4B), PUBLIC :: DECLARATION_TAG=6
   !! Module local constant for indicating a declaration tag
   !! the declaration tag, is usually the first tag in the file.
 
@@ -72,6 +65,22 @@ TYPE :: XMLTag_
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => xmlTag_addSurrogate
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => xmlTag_Initiate
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => xmlTag_Export
+  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => xmlTag_DeallocateData
+  FINAL :: xmlTag_Final
+  PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => xmlTag_isEmpty
+  PROCEDURE, PUBLIC, PASS( obj ) :: hasParent => xmlTag_hasParent
+  PROCEDURE, PUBLIC, PASS( obj ) :: getParentPointer => xmlTag_getParentPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: setParent => xmlTag_setParent
+  PROCEDURE, PUBLIC, PASS( obj ) :: hasChildren => xmlTag_hasChildren
+  PROCEDURE, PUBLIC, PASS( obj ) :: getChildrenPointer => xmlTag_getChildrenPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: getAttributes => xmlTag_getAttributes
+  PROCEDURE, PUBLIC, PASS( obj ) :: getAttributeValue => xmlTag_getAttributeValue
+  PROCEDURE, PUBLIC, PASS( obj ) :: getContent => xmlTag_getContent
+  PROCEDURE, PUBLIC, PASS( obj ) :: setName => xmlTag_setName
+  PROCEDURE, PUBLIC, PASS( obj ) :: setChildren => xmlTag_setChildren
+  PROCEDURE, PUBLIC, PASS( obj ) :: setAttribute => xmlTag_setAttribute
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => xmlTag_Display
 END TYPE XMLTag_
 
 PUBLIC :: XMLTag_
@@ -83,7 +92,7 @@ END TYPE XMLTagPointer_
 PUBLIC :: XMLTagPointer_
 
 !----------------------------------------------------------------------------
-!                                                      addSurrogate@Methods
+!                                           addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -101,7 +110,57 @@ END SUBROUTINE xmlTag_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine initializes an instance of XMLTag_ class
 !
+!### Introduction
+! This routine initializes an instance of XMLTag_ class
+
+
+INTERFACE
+MODULE RECURSIVE SUBROUTINE xmlTag_Initiate( obj, cachedFile, iTag, lines, &
+  & tagStart, tagEnd )
+  CLASS( XMLTag_ ), TARGET, INTENT( INOUT ) :: obj
+    !! xmlTag object
+  CHARACTER( LEN = 1 ), INTENT( IN ) :: cachedFile( : )
+    !! cached file, which will be used to construct the obj
+  INTEGER( I4B ), INTENT( IN ) :: iTag(:,:)
+    !! The starting and ending position of each tag
+  INTEGER( I4B ), INTENT( IN ) :: lines(:)
+    !! The position of line endings
+  INTEGER( I4B ), INTENT( IN ) :: tagStart
+    !! Starting position of tag
+  INTEGER( I4B ), INTENT( IN ) :: tagEnd
+    !! Ending position of tag
+END SUBROUTINE xmlTag_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         DeallocateData@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_DeallocateData( obj )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE xmlTag_DeallocateData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Final@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_Final( obj )
+  TYPE( XMLTag_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE xmlTag_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getTagName@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -131,7 +190,7 @@ END SUBROUTINE getTagName
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              ConvertCharArrayToStr@Methods
+!                                          ConvertCharArrayToStr@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -146,8 +205,10 @@ MODULE PURE SUBROUTINE ConvertCharArrayToStr(chars, strobj)
 END SUBROUTINE ConvertCharArrayToStr
 END INTERFACE
 
+PUBLIC :: ConvertCharArrayToStr
+
 !----------------------------------------------------------------------------
-!                                                 parseTagAttributes@Methods
+!                                            parseTagAttributes@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -181,13 +242,15 @@ MODULE SUBROUTINE parseTagAttributes( chars, tAttributes, attrNames, &
 END SUBROUTINE parseTagAttributes
 END INTERFACE
 
+PUBLIC :: parseTagAttributes
+
 !----------------------------------------------------------------------------
-!
+!                                                getChildTagInfo@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 Sept 2021
-! summary: 	Determines the number of child elements fora  given XML element
+! summary: Determines the number of child elements fora  given XML element
 !
 !### Introduction
 !
@@ -212,33 +275,222 @@ END SUBROUTINE getChildTagInfo
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Initiate@Methods
+!                                                            Write@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 Sept 2021
-! summary: This routine initializes an instance of XMLTag_ class
-!
-!### Introduction
-! This routine initializes an instance of XMLTag_ class
-
+! summary: This routine Writes an XML element object to a file
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE xmlTag_Initiate( obj, cachedFile, iTag, lines, &
-  & tagStart, tagEnd )
-  CLASS( XMLTag_ ), TARGET, INTENT( INOUT ) :: obj
-    !! xmlTag object
-  CHARACTER( LEN = 1 ), INTENT( IN ) :: cachedFile( : )
-    !! cached file, which will be used to construct the obj
-  INTEGER( I4B ), INTENT( IN ) :: iTag(:,:)
-    !! The starting and ending position of each tag
-  INTEGER( I4B ), INTENT( IN ) :: lines(:)
-    !! The position of line endings
-  INTEGER( I4B ), INTENT( IN ) :: tagStart
-    !! Starting position of tag
-  INTEGER( I4B ), INTENT( IN ) :: tagEnd
-    !! Ending position of tag
-END SUBROUTINE xmlTag_Initiate
+MODULE SUBROUTINE xmlTag_export( obj, unitNo, nindent )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: unitNo
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: nindent
+END SUBROUTINE xmlTag_export
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        isEmpty@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 sept 2021
+! summary: This routine returns true if the object is empty
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_isEmpty( obj ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION xmlTag_isEmpty
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       hasParent@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 sept 2021
+! summary: This routine returns true if the xmltag has parent
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_hasParent( obj ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION xmlTag_hasParent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getParentPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 sept 2021
+! summary: This routine returns the pointer to the parent of xmlTag
+
+INTERFACE
+MODULE FUNCTION xmlTag_getParentPointer( obj ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+  CLASS( XMLTag_ ), POINTER :: ans
+END FUNCTION xmlTag_getParentPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setParent@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 sept 2021
+! summary: This routine sets the pointer to the parent of xmlTag
+
+INTERFACE
+MODULE PURE SUBROUTINE xmlTag_setParent( obj, parent )
+  CLASS( xmlTag_ ), INTENT( INOUT ) :: obj
+  CLASS( xmlTag_ ), TARGET, INTENT( INOUT ) :: parent
+END SUBROUTINE xmlTag_setParent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    hasChildren@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 sept 2021
+! summary: This routine returns true if the xmltag has a child
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_hasChildren( obj ) RESULT( Ans )
+  CLASS( xmlTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION xmlTag_hasChildren
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getChildrenPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine returns the pointer to the children of xmltag
+
+INTERFACE
+MODULE FUNCTION xmlTag_getChildrenPointer( obj ) RESULT( Ans )
+  CLASS( xmlTag_ ), INTENT( INOUT ) :: obj
+  CLASS( xmlTag_ ), POINTER :: ans( : )
+END FUNCTION xmlTag_getChildrenPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getAttributes@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: Get a list of the attributes of an XML element
+
+INTERFACE
+MODULE PURE SUBROUTINE xmlTag_getAttributes(obj,names,values)
+  CLASS( xmlTag_ ), INTENT( IN ) :: obj
+  TYPE( String ), ALLOCATABLE, INTENT( INOUT ) :: names(:)
+  TYPE( String ), ALLOCATABLE, INTENT( INOUT ) :: values(:)
+END SUBROUTINE xmlTag_getAttributes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getAttributeValue@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: Get a list of the attributes of an XML element
+
+INTERFACE
+MODULE PURE SUBROUTINE xmlTag_getAttributeValue(obj,name,value)
+  CLASS( xmlTag_ ), INTENT( IN ) :: obj
+  TYPE( String ), INTENT( IN ) :: name
+  TYPE( String ), INTENT( INOUT ) :: value
+END SUBROUTINE xmlTag_getAttributeValue
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   getContent@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary:
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_getContent( obj ) RESULT( ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  TYPE( String ) :: ans
+END FUNCTION xmlTag_getContent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    setName@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine sets the name of xmltag
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_setName( obj, name )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+  TYPE( String ), INTENT( IN ) :: name
+END SUBROUTINE xmlTag_setName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     setChildren@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine set the children
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_setChildren( obj, children )
+  CLASS( XMLTag_ ), TARGET, INTENT( INOUT ) :: obj
+  TYPE( XMLTag_ ), POINTER, INTENT( INOUT ) :: children( : )
+END SUBROUTINE xmlTag_setChildren
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  setAttribute@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine sets the attribute name and value
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_setAttribute( obj, name, value )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+  TYPE( String ), INTENT( IN ) :: name
+  TYPE( String ), INTENT( IN ) :: value
+END SUBROUTINE xmlTag_setAttribute
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine displays the content of xmlTag
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_Display( obj, msg, unitNo )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
+END SUBROUTINE xmlTag_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE XMLTag_Class

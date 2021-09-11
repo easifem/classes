@@ -40,7 +40,6 @@ USE BaseType, ONLY: String
 USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-
 !List of Public Members
 CHARACTER(LEN=*),PARAMETER :: modName='ABSTRACTFILE_CLASS'
 INTEGER(I4B), PARAMETER :: maxStrLen=256

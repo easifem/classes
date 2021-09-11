@@ -33,7 +33,6 @@ USE ExceptionHandler_Class
 USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER(LEN=*),PARAMETER :: modName='FORTRANFILE_CLASS', hash="#", comma=","
 INTEGER(I4B), PARAMETER :: maxStrLen=256
 

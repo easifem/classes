@@ -5,6 +5,8 @@
 		}
 	],
 	"settings": {
-		"fortran.preferredCase": "uppercase"
+		"fortran.preferredCase": "uppercase",
+		"cmake.installPrefix": "/home/easifem/.easifem/classes",
+		"cmake.configureOnEdit": false
 	}
 }

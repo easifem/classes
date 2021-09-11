@@ -15,11 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE Files
-USE AbstractFile_Class
-USE FortranFile_Class
-USE TxtFile_Class
-USE InputFile_Class
-USE HDF5File_Class
-USE XMLFile_Class
-END MODULE Files
+MODULE VTKData_Class
+
+END MODULE VTKData_Class

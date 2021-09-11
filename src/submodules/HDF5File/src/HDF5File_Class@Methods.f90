@@ -148,6 +148,7 @@ MODULE PROCEDURE hdf5_initiate
   TYPE( String ) :: fpath, fname, fext, mode_in
   INTEGER( I4B ) :: unitno
   LOGICAL( LGT ) :: ostat,exists
+  CHARACTER(LEN=LEN(filename)) :: tempchars
 
   IF(obj%isinit) THEN
     CALL obj%e%raiseError(modName//'::'//myName// &
@@ -155,22 +156,27 @@ MODULE PROCEDURE hdf5_initiate
       & ' is already initialized!')
     RETURN
   ENDIF
-
-  fpath = obj%getFilePath()
-  fname = obj%getFileName()
-  fext = obj%getFileExt()
-  CALL obj%setFilePath(fpath)
-  CALL obj%setFileName(fname)
-  CALL obj%setFileExt(fext)
-
+  !>
+  CALL getPath( chars=filename, path=tempchars )
+  fpath=trim(tempchars)
+  CALL getFileNameExt( chars=filename, ext=tempchars )
+  fext=trim(tempchars)
+  CALL getFileName( chars=filename, fname=tempchars )
+  fname=trim(tempchars)
+  ! fpath = obj%getFilePath()
+  ! fname = obj%getFileName()
+  ! fext = obj%getFileExt()
+  CALL obj%setFilePath( fpath )
+  CALL obj%setFileName( fname )
+  CALL obj%setFileExt( fext )
+  !>
   IF(PRESENT(zlibOpt)) THEN
     IF(zlibOpt .GE. 0) THEN
       obj%hasCompression=.TRUE.
       obj%zlibOpt=zlibOpt
     ENDIF
   ENDIF
-
-  ! Store the access mode
+  !> Store the access mode
   mode_in=mode
   mode_in = mode_in%upper()
   SELECTCASE(TRIM(mode_in%chars()))
