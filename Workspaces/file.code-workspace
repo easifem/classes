@@ -1,25 +1,16 @@
 {
 	"folders": [
 		{
-			"path": "../src/modules/File"
+			"path": "../src/modules/AbstractFile"
 		},
 		{
-			"path": "../src/submodules/File"
+			"path": "../src/modules/FortranFile"
 		},
 		{
-			"path": "../src/modules/MSH"
+			"path": "../src/submodules/AbstractFile"
 		},
 		{
-			"path": "../src/submodules/MSH"
-		},
-		{
-			"path": "../tests/testMSH"
-		},
-		{
-			"path": "../tests/testFortranFile"
-		},
-		{
-			"path": "../tests/testInputFile"
+			"path": "../src/submodules/FortranFile"
 		}
 	]
 }

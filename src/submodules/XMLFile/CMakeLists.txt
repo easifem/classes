@@ -5,4 +5,8 @@ target_sources(
   ${src_path}/XMLTag_Class@GetMethods.f90
   ${src_path}/XMLTag_Class@SetMethods.f90
   ${src_path}/XMLTag_Class@IOMethods.f90
+  ${src_path}/XMLFile_Class@ConstructorMethods.f90
+  ${src_path}/XMLFile_Class@IOMethods.f90
+  ${src_path}/XMLFile_Class@SetMethods.f90
+  ${src_path}/XMLFile_Class@GetMethods.f90
 )

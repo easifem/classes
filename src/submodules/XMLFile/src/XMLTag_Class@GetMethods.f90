@@ -346,7 +346,7 @@ MODULE PROCEDURE xmlTag_getContent
 END PROCEDURE xmlTag_getContent
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE GetMethods

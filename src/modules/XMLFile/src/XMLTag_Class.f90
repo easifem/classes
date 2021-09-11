@@ -24,27 +24,20 @@ PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName="XMLTAG_CLASS"
 TYPE( ExceptionHandler_ ) :: e
   !! name of the module
-CHARACTER(LEN=1),PARAMETER :: CHAR_SPACE=' '
-  !! Character constant for a single space
-CHARACTER(LEN=1),PARAMETER :: CHAR_CR=CHAR(13)
-  !! Character constant for a carraige return
-CHARACTER(LEN=1),PARAMETER :: CHAR_LF=CHAR(10)
-  !! Character constant for a line feed
-CHARACTER(LEN=1),PARAMETER :: CHAR_TAB=CHAR(9)
   !! Character constant for a tab
-INTEGER(I4B) :: BAD_TAG=-1
+INTEGER(I4B), PUBLIC  :: BAD_TAG=-1
   !! Module local constant for indicating a bad tag
-INTEGER(I4B) :: START_TAG=1
+INTEGER(I4B), PUBLIC :: START_TAG=1
   !! Module local constant for indicating the start of a tag
-INTEGER(I4B) :: END_TAG=2
+INTEGER(I4B), PUBLIC :: END_TAG=2
   !! Module local constant for indicating the end of a tag
-INTEGER(I4B) :: EMPTY_ELEMENT_TAG=3
+INTEGER(I4B), PUBLIC :: EMPTY_ELEMENT_TAG=3
   !! Module local constant for indicating an empty tag
-INTEGER(I4B) :: COMMENT_TAG=4
+INTEGER(I4B), PUBLIC :: COMMENT_TAG=4
   !! Module local constant for indicating comment tag
-INTEGER(I4B) :: PROCESSING_INST_TAG=5
+INTEGER(I4B), PUBLIC :: PROCESSING_INST_TAG=5
   !! Module local constant for indicating ??? tag
-INTEGER(I4B) :: DECLARATION_TAG=6
+INTEGER(I4B), PUBLIC :: DECLARATION_TAG=6
   !! Module local constant for indicating a declaration tag
   !! the declaration tag, is usually the first tag in the file.
 
@@ -81,12 +74,13 @@ TYPE :: XMLTag_
   PROCEDURE, PUBLIC, PASS( obj ) :: setParent => xmlTag_setParent
   PROCEDURE, PUBLIC, PASS( obj ) :: hasChildren => xmlTag_hasChildren
   PROCEDURE, PUBLIC, PASS( obj ) :: getChildrenPointer => xmlTag_getChildrenPointer
-  PROCEDURE, PUBLIC, PASS( obj ) :: getAttributes => xmlTag_getAttributes 
+  PROCEDURE, PUBLIC, PASS( obj ) :: getAttributes => xmlTag_getAttributes
   PROCEDURE, PUBLIC, PASS( obj ) :: getAttributeValue => xmlTag_getAttributeValue
   PROCEDURE, PUBLIC, PASS( obj ) :: getContent => xmlTag_getContent
   PROCEDURE, PUBLIC, PASS( obj ) :: setName => xmlTag_setName
   PROCEDURE, PUBLIC, PASS( obj ) :: setChildren => xmlTag_setChildren
   PROCEDURE, PUBLIC, PASS( obj ) :: setAttribute => xmlTag_setAttribute
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => xmlTag_Display
 END TYPE XMLTag_
 
 PUBLIC :: XMLTag_
@@ -211,6 +205,8 @@ MODULE PURE SUBROUTINE ConvertCharArrayToStr(chars, strobj)
 END SUBROUTINE ConvertCharArrayToStr
 END INTERFACE
 
+PUBLIC :: ConvertCharArrayToStr
+
 !----------------------------------------------------------------------------
 !                                            parseTagAttributes@GetMethods
 !----------------------------------------------------------------------------
@@ -246,13 +242,15 @@ MODULE SUBROUTINE parseTagAttributes( chars, tAttributes, attrNames, &
 END SUBROUTINE parseTagAttributes
 END INTERFACE
 
+PUBLIC :: parseTagAttributes
+
 !----------------------------------------------------------------------------
 !                                                getChildTagInfo@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 Sept 2021
-! summary: 	Determines the number of child elements fora  given XML element
+! summary: Determines the number of child elements fora  given XML element
 !
 !### Introduction
 !
@@ -388,7 +386,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 Sept 2021
-! summary: Get a list of the attributes of an XML element 
+! summary: Get a list of the attributes of an XML element
 
 INTERFACE
 MODULE PURE SUBROUTINE xmlTag_getAttributes(obj,names,values)
@@ -404,7 +402,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 Sept 2021
-! summary: Get a list of the attributes of an XML element 
+! summary: Get a list of the attributes of an XML element
 
 INTERFACE
 MODULE PURE SUBROUTINE xmlTag_getAttributeValue(obj,name,value)
@@ -420,7 +418,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 Sept 2021
-! summary: 
+! summary:
 
 INTERFACE
 MODULE PURE FUNCTION xmlTag_getContent( obj ) RESULT( ans )
@@ -476,7 +474,23 @@ END SUBROUTINE xmlTag_setAttribute
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine displays the content of xmlTag
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_Display( obj, msg, unitNo )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
+END SUBROUTINE xmlTag_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
 !----------------------------------------------------------------------------
 
 END MODULE XMLTag_Class

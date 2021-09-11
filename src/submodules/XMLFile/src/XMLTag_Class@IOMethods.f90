@@ -127,11 +127,122 @@ MODULE PROCEDURE xmlTag_export
     ENDIF
     fmt=''
     tmpTag=''
-  ENDIF  
+  ENDIF
 END PROCEDURE xmlTag_export
 
 !----------------------------------------------------------------------------
-!                                                                 
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_Display
+  CHARACTER( LEN=16 ) :: sint
+  INTEGER( I4B ) :: i,ierr,nspace, unit_No
+  TYPE( String ) :: fmt,tmpTag
+  !>
+  IF( obj%name%len_trim() > 0 ) THEN
+    nspace=0
+    unit_No = INPUT( option=unitNo, default=stdout )
+    ! IF(PRESENT(nindent)) nspace=2*nindent
+    IF(ASSOCIATED(obj%children)) THEN
+      !start tag
+      tmpTag='<'//obj%name
+      !Add attributes
+      DO i=1,obj%tAttributes
+        tmpTag=tmpTag//' '//obj%attrNames(i)//'="'// &
+            obj%attrValues(i)//'"'
+      END DO
+      tmpTag=tmpTag//'>'
+      IF(nspace > 0) THEN
+        WRITE(sint,'(i16)',IOSTAT=ierr) nspace
+        fmt='('//TRIM(ADJUSTL(sint))//'x'
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt=fmt//',a'//TRIM(ADJUSTL(sint))//')'
+      ELSE
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt='(a'//TRIM(ADJUSTL(sint))//')'
+      ENDIF
+      WRITE(unit_No,FMT=trim(fmt%chars()),IOSTAT=ierr) trim(tmpTag%chars())
+      !children
+      DO i=1,SIZE(obj%children)
+        CALL obj%children(i)%export(unit_No,nspace/2+1)
+      ENDDO
+      !end tag
+      tmpTag='</'//obj%name//'>'
+      IF(nspace > 0) THEN
+        WRITE(sint,'(i16)',IOSTAT=ierr) nspace
+        fmt='('//TRIM(ADJUSTL(sint))//'x'
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt=fmt//',a'//TRIM(ADJUSTL(sint))//')'
+      ELSE
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt='(a'//TRIM(ADJUSTL(sint))//')'
+      ENDIF
+      WRITE(unit_No,FMT=trim(fmt%chars()),IOSTAT=ierr) trim(tmpTag%chars())
+    ELSEIF(obj%content%len() > 0) THEN
+      !start tag
+      tmpTag='<'//obj%name
+      !Add attributes
+      DO i=1,obj%tAttributes
+        tmpTag=tmpTag//' '//obj%attrNames(i)//'="'// &
+          & obj%attrValues(i)//'"'
+      END DO
+      tmpTag=tmpTag//'>'
+      IF(nspace > 0) THEN
+        WRITE(sint,'(i16)',IOSTAT=ierr) nspace
+        fmt='('//TRIM(ADJUSTL(sint))//'x'
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt=fmt//',a'//TRIM(ADJUSTL(sint))//')'
+      ELSE
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt='(a'//TRIM(ADJUSTL(sint))//')'
+      ENDIF
+      WRITE(unit_No,FMT=trim(fmt%chars()),IOSTAT=ierr) trim(tmpTag%chars())
+      !content
+      WRITE(sint,'(i16)',IOSTAT=ierr) nspace+2
+      fmt='('//TRIM(ADJUSTL(sint))//'x'
+      WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(obj%content)
+      fmt=fmt//',a'//TRIM(ADJUSTL(sint))//')'
+      IF(obj%content /= CHAR_LF) &
+      & WRITE(unit_No,FMT=TRIM(fmt%chars()),IOSTAT=ierr) TRIM(obj%content%chars())
+      !endtag
+      tmpTag='</'//obj%name//'>'
+      IF(nspace > 0) THEN
+        WRITE(sint,'(i16)',IOSTAT=ierr) nspace
+        fmt='('//TRIM(ADJUSTL(sint))//'x'
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt=fmt//',a'//TRIM(ADJUSTL(sint))//')'
+      ELSE
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt='(a'//TRIM(ADJUSTL(sint))//')'
+      ENDIF
+      WRITE(unit_No,FMT=TRIM(fmt%chars()),IOSTAT=ierr) TRIM(tmpTag%chars())
+    ELSE
+      !empty element tag
+      tmpTag='<'//obj%name
+      !Add attributes
+      DO i=1,obj%tAttributes
+        tmpTag=tmpTag//' '//obj%attrNames(i)//'="'// &
+            obj%attrValues(i)//'"'
+      END DO
+      tmpTag=tmpTag//'/>'
+      IF(nspace > 0) THEN
+        WRITE(sint,'(i16)',IOSTAT=ierr) nspace
+        fmt='('//TRIM(ADJUSTL(sint))//'x'
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt=fmt//',a'//TRIM(ADJUSTL(sint))//')'
+      ELSE
+        WRITE(sint,'(i16)',IOSTAT=ierr) LEN_TRIM(tmpTag)
+        fmt='(a'//TRIM(ADJUSTL(sint))//')'
+      ENDIF
+      WRITE(unit_No,FMT=TRIM(fmt%chars()),IOSTAT=ierr) TRIM(tmpTag%chars())
+    ENDIF
+    fmt=''
+    tmpTag=''
+  ENDIF
+END PROCEDURE xmlTag_Display
+
+!----------------------------------------------------------------------------
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods

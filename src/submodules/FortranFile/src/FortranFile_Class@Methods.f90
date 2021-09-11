@@ -369,7 +369,6 @@ MODULE PROCEDURE ff_open
       path = obj%getFilePath()
       filename = obj%getFileName()
       ext = obj%getFileExt()
-
       !STATUS clause value
       IF(.NOT.obj%isNew()) THEN
         statusvar='OLD'
@@ -408,12 +407,10 @@ MODULE PROCEDURE ff_open
       ELSE
         padvar='NO'
       ENDIF
-
       !The POSITION clause is illegal to use in the OPEN statement if
       !the file is DIRECT access.
       !The PAD clause is illegal to use in the OPEN statement if the file
       !is UNFORMATTED.
-
       IF(obj%isDirect()) THEN
         IF(obj%isFormatted()) THEN
           !Omit the POSITION clause, and include the PAD clause
@@ -446,7 +443,6 @@ MODULE PROCEDURE ff_open
               TRIM(filename%chars())//TRIM(ext%chars()),IOMSG=iomsg)
         ENDIF
       ENDIF
-
       IF(ioerr /= 0) THEN
         WRITE(emesg,'(a,i4,a,i4)') 'Error opening file "'// &
             & TRIM(path%chars())// &
