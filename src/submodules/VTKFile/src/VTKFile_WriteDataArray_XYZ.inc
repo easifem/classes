@@ -15,12 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE Files
-USE AbstractFile_Class
-USE FortranFile_Class
-USE TxtFile_Class
-USE InputFile_Class
-USE HDF5File_Class
-USE XMLFile_Class
-USE VTKFile_Class
-END MODULE Files
+SELECT CASE( obj%DataFormat )
+CASE( VTK_ASCII )
+  content = encodeVTKDataArray( x=x, y=y, z=z, fmt="ASCII" )
+CASE( VTK_BINARY )
+  content = encodeVTKDataArray( x=x, y=y, z=z, fmt="BINARY" )
+CASE( VTK_APPENDED )
+  isOffset = .TRUE.
+END SELECT
+
+CALL obj%WriteDataArrayTag( dataType=dataType, &
+& numberOfComponents=noc, &
+& name=name, isTuples=isTuples, &
+& isOffset=isOffset, content=content )
+
+IF( isOffset) THEN
+  CALL obj%WriteToScratch( x=x, y=y, z=z )
+  CALL Obj%UpdateOffset( nByte=nByte )
+END IF

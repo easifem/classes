@@ -15,12 +15,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE Files
-USE AbstractFile_Class
-USE FortranFile_Class
-USE TxtFile_Class
-USE InputFile_Class
-USE HDF5File_Class
-USE XMLFile_Class
-USE VTKFile_Class
-END MODULE Files
+SELECT CASE( TRIM(fmt) )
+  CASE( "ASCII" )
+  DO k=1,kk
+    DO j=1, jj
+      DO i=1, ii
+        ans = ans // str(n=x(i, j, k)) &
+          & // ' ' // str(n=y(i, j, k)) &
+          & // ' ' // str(n=z(i, j, k))
+      END DO
+    END DO
+  END DO
+  !>
+  CASE( "BINARY" )
+    jj = ii * jj * kk
+    CALL PACK_DATA( &
+      & a1=[ INT(nbyte, I4B) ], &
+      & a2=[(((x(i,j,k), y(i,j,k), z(i,j,k), i=1, ii), j=1, jj), k=1,kk)], &
+      & packed=xp )
+    CALL B64_ENCODE( n=xp, code=ans )
+END SELECT

@@ -220,7 +220,6 @@ MODULE PROCEDURE getChildTagInfo
 
   tChild=0
   IF(ALLOCATED(childTags)) DEALLOCATE(childTags)
-
   nTagRemain=tagEnd-tagStart-1
   ierr=-1
   IF(nTagRemain > 0) THEN
@@ -327,7 +326,7 @@ END PROCEDURE xmlTag_getAttributes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlTag_getAttributeValue
- INTEGER( I4B ) :: i
+  INTEGER( I4B ) :: i
   value=''
   DO i=1,obj%tAttributes
     IF(name == obj%attrNames(i)) THEN
@@ -346,7 +345,103 @@ MODULE PROCEDURE xmlTag_getContent
 END PROCEDURE xmlTag_getContent
 
 !----------------------------------------------------------------------------
-!
+!                                                                  StartTag
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE xmlTag_StartTag
+  INTEGER( I4B ) :: ii
+  ans = '<' // TRIM( obj%name )
+  DO ii = 1, obj%tAttributes
+    ans = ans // CHAR_SPACE // TRIM( obj%attrNames( ii ) ) // "=" // &
+      & TRIM( obj%attrValues( ii ) )
+  END DO
+  ans = ans // '>'
+  IF( PRESENT(isIndented) ) THEN
+    IF( isIndented ) ans = REPEAT( CHAR_SPACE, obj%indent ) // ans
+  END IF
+END PROCEDURE xmlTag_StartTag
+
+!----------------------------------------------------------------------------
+!                                                                  EndTag
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_EndTag
+  ans = '</' // TRIM( obj%name ) // '>'
+  IF( PRESENT(isIndented) ) THEN
+    IF( isIndented ) ans = REPEAT( CHAR_SPACE, obj%indent ) // ans
+  END IF
+END PROCEDURE xmlTag_EndTag
+
+!----------------------------------------------------------------------------
+!                                                            SelfClosingTag
+!----------------------------------------------------------------------------
+
+
+MODULE PROCEDURE xmlTag_SelfClosingTag
+  INTEGER( I4B ) :: ii
+  ans = '<' // TRIM( obj%name )
+  DO ii = 1, obj%tAttributes
+    ans = ans // CHAR_SPACE // TRIM( obj%attrNames( ii ) ) // "=" // &
+      & TRIM( obj%attrValues( ii ) )
+  END DO
+  ans = ans//'/>'
+  if (present(isIndented)) then
+    if (isIndented) ans = REPEAT(' ', obj%indent)//ans
+  endif
+END PROCEDURE xmlTag_SelfClosingTag
+
+!----------------------------------------------------------------------------
+!                                                                 Stringify
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_Stringify
+  CHARACTER( LEN = * ), PARAMETER :: myName="xmlTag_Stringify"
+  LOGICAL( LGT ) :: isContentIndented0
+  LOGICAL( LGT ) :: onlyStart0
+  LOGICAL( LGT ) :: onlyContent0
+  LOGICAL( LGT ) :: onlyEnd0
+  !>
+  isContentIndented0 = INPUT( option=isContentIndented, default=.FALSE.)
+  onlyStart0 = INPUT( option=onlyStart, default=.FALSE.)
+  onlyContent0 = INPUT( option=onlyContent, default=.FALSE.)
+  onlyEnd0 = INPUT( option=onlyEnd, default=.FALSE.)
+  !>
+  IF( onlyStart0 ) THEN
+    ans = obj%StartTag(isIndented=isIndented)
+  ELSE IF( onlyContent0 ) THEN
+    IF( LEN_TRIM( obj%content ) .NE. 0 ) THEN
+      IF( isContentIndented0 ) THEN
+        ans = repeat( CHAR_SPACE, obj%indent+2 ) // TRIM(obj%content)
+      ELSE
+        ans = obj%content%chars()
+      END IF
+    END IF
+  ELSE IF( onlyEnd0 ) THEN
+    ans = obj%EndTag(isIndented=isIndented)
+  ELSE
+    ans = ''
+    IF( LEN_TRIM( obj%name ) .NE. 0 ) THEN
+      IF( obj%isSelfClosing ) then
+        ans = obj%SelfClosingTag( isIndented=isIndented )
+      ELSE
+        ans = obj%StartTag( isIndented=isIndented )
+        IF( obj%content%is_allocated() ) THEN
+          IF( isContentIndented0 ) THEN
+            ans = ans // new_line('a') // &
+              & REPEAT( CHAR_SPACE, obj%indent+2 ) // &
+              & TRIM( obj%content ) // new_line('a') // &
+              & REPEAT( CHAR_SPACE, obj%indent )
+          ELSE
+            ans = ans // TRIM( obj%content )
+          END IF
+        END IF
+        ans = ans // obj%EndTag()
+      END IF
+    END IF
+  END IF
+END PROCEDURE xmlTag_Stringify
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 END SUBMODULE GetMethods

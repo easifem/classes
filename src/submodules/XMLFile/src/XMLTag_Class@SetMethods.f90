@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( XMLTag_Class ) SetMethods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -29,12 +30,27 @@ MODULE PROCEDURE xmlTag_setParent
 END PROCEDURE xmlTag_setParent
 
 !----------------------------------------------------------------------------
-!                                                               setName
+!                                                                    setName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlTag_setName
   obj%name=name
 END PROCEDURE xmlTag_setName
+
+!----------------------------------------------------------------------------
+!                                                                 setContent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_setContent
+  LOGICAL( LGT ) :: isContentIndented0
+  isContentIndented0=INPUT( Default=.FALSE., option=isContentIndented )
+  IF( isContentIndented0 ) THEN
+    obj%content = new_line('a')//REPEAT(CHAR_SPACE, obj%indent+2) &
+      & // content // new_line('a')
+  else
+    obj%content = content
+  endif
+END PROCEDURE xmlTag_setContent
 
 !----------------------------------------------------------------------------
 !                                                                 setChildren
@@ -49,7 +65,7 @@ MODULE PROCEDURE xmlTag_setChildren
     ENDDO
     DEALLOCATE(obj%children)
   ENDIF
-  !> 
+  !>
   IF( SIZE(children) > 0 ) THEN
     nChildren=SIZE(children)
     obj%children => children
@@ -68,7 +84,7 @@ END PROCEDURE xmlTag_setChildren
 MODULE PROCEDURE xmlTag_setAttribute
   INTEGER( I4B ) :: i
   TYPE( String ), ALLOCATABLE :: tmpNames(:),tmpVals(:)
-  !> 
+  !>
   DO i=1,obj%tAttributes
     IF(name == obj%attrNames(i)) THEN
       obj%attrValues(i)=value
@@ -104,5 +120,35 @@ MODULE PROCEDURE xmlTag_setAttribute
     obj%attrValues=value
   ENDIF
 END PROCEDURE xmlTag_setAttribute
+
+!----------------------------------------------------------------------------
+!                                                             setAttributes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_setAttributes
+  INTEGER( I4B ) :: ii
+  DO ii = 1, SIZE( names )
+    CALL obj%setAttribute( name=names( ii ), value=values( ii ) )
+  END DO
+END PROCEDURE xmlTag_setAttributes
+
+!----------------------------------------------------------------------------
+!                                                                      set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmlTag_set
+  IF( PRESENT( name ) ) CALL obj%setName( name )
+  IF( PRESENT( attrName ) .AND. PRESENT( attrValue ) ) THEN
+    CALL obj%setAttribute( name=attrName, value=attrValue )
+  END IF
+  IF( PRESENT( attrNames ) .AND. PRESENT( attrValues ) ) THEN
+    CALL obj%setAttributes( names=attrNames, values=attrValues )
+  END IF
+  IF( PRESENT( parent ) ) CALL obj%setParent( parent )
+  IF( PRESENT( children ) ) CALL obj%setChildren( children )
+  IF( PRESENT( indent ) ) obj%Indent = indent
+  IF( PRESENT( isSelfClosing ) ) obj%isSelfClosing = isSelfClosing
+  IF( PRESENT( content ) ) CALL obj%setContent( content, isContentIndented )
+END PROCEDURE xmlTag_set
 
 END SUBMODULE SetMethods

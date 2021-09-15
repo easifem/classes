@@ -15,6 +15,20 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE VTKData_Class
-
-END MODULE VTKData_Class
+SELECT CASE( TRIM(fmt) )
+  CASE( "ASCII" )
+  DO j=1, jj
+    DO i=1, ii
+      ans = ans // str(n=x(i, j)) &
+        & // ' ' // str(n=y(i, j)) &
+        & // ' ' // str(n=z(i, j))
+    END DO
+  END DO
+  !>
+  CASE( "BINARY" )
+    jj = jj * ii
+    CALL PACK_DATA( &
+      & a1=[ INT(nbyte, I4B) ], &
+      & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )
+    CALL B64_ENCODE( n=xp, code=ans )
+END SELECT

@@ -22,6 +22,8 @@ USE AbstractFile_Class
 USE XMLTag_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
+PRIVATE
+!>
 CHARACTER( LEN = * ), PARAMETER :: modName="XMLFILE_CLASS"
 TYPE( ExceptionHandler_ ) :: e
 PUBLIC :: xmlTag_
@@ -32,9 +34,9 @@ PUBLIC :: xmlTag_
 
 TYPE, EXTENDS( AbstractFile_ ) :: XMLFile_
   PRIVATE
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
+  LOGICAL( LGT ), PUBLIC :: isInitiated = .FALSE.
     !! Logical indicating if file was initialized
-  INTEGER( I4B ) :: unitNo=-1
+  INTEGER( I4B ), PUBLIC :: unitNo=-1
     !! The unit number assigned to the file
   REAL( DFP ) :: version=1.0_DFP
     !! The XML version
@@ -129,6 +131,8 @@ MODULE SUBROUTINE xmlFile_DeallocateData( obj, delete )
 END SUBROUTINE xmlFile_DeallocateData
 END INTERFACE
 
+PUBLIC :: xmlFile_DeallocateData
+
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -158,6 +162,8 @@ MODULE SUBROUTINE xmlFile_Close( obj )
   CLASS( xmlFile_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE xmlFile_Close
 END INTERFACE
+
+PUBLIC :: XMLFile_Close
 
 !----------------------------------------------------------------------------
 !                                                   Delete@ConstructorMethods
