@@ -242,6 +242,38 @@ MODULE PROCEDURE xmlTag_Display
 END PROCEDURE xmlTag_Display
 
 !----------------------------------------------------------------------------
+!                                                                     Write
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE xmltag_Write
+  CHARACTER( LEN = * ), PARAMETER :: myName="xmltag_Write"
+  INTEGER( I4B ) :: iostat
+  CHARACTER( LEN = 100 ) :: iomsg
+  TYPE( String )  :: endRecord_
+
+  IF( PRESENT( endRecord ) ) THEN
+    endRecord_ = endRecord
+  ELSE
+    endRecord_ = ''
+  END IF
+  !>
+  WRITE( unit=unitNo, fmt='(A)', iostat=iostat, iomsg=iomsg ) &
+    & obj%stringify(                        &
+    & isIndented=isIndented,                &
+    & isContentIndented=isContentIndented,  &
+    & onlyStart=onlyStart,                  &
+    & onlyContent=onlyContent,              &
+    & onlyEnd=onlyEnd) // endRecord_
+  !>
+  IF( iostat .NE. 0 ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+      & ' - Error has occured while writing header info in VTKFile &
+      & iostat = ' // trim(str(iostat, .true.)) // ' error msg :: ' // &
+      & TRIM( iomsg ) )
+  END IF
+END PROCEDURE xmltag_Write
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

@@ -39,7 +39,7 @@ MODULE PROCEDURE xmlFile_Initiate
   LOGICAL( LGT ) :: exists
   !>
   IF( obj%isInitiated ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - xmlFile '//obj%getFileName()// &
       & ' is already initialized!')
     RETURN
@@ -63,7 +63,7 @@ MODULE PROCEDURE xmlFile_Initiate
       CALL obj%setWriteStat(.FALSE.)
       CALL obj%setReadStat(.TRUE.)
     ELSE
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - XML file '//filename//' is being opened with '// &
         & 'mode READ but does not exist.' )
     END IF
@@ -73,7 +73,7 @@ MODULE PROCEDURE xmlFile_Initiate
       CALL obj%setWriteStat( .TRUE. )
       CALL obj%setReadStat( .FALSE. )
     ELSE
-      CALL obj%e%raiseError( modName//'::'//myName// &
+      CALL e%raiseError( modName//'::'//myName// &
         & ' - XML file '//filename//' is being opened with '// &
         & 'mode WRITE but does not exist.')
     END IF
@@ -84,7 +84,7 @@ MODULE PROCEDURE xmlFile_Initiate
       CALL obj%setOverwriteStat( .TRUE. )
       CALL obj%setReadStat( .TRUE. )
     ELSE
-      CALL obj%e%raiseError( modName // '::' // myName // &
+      CALL e%raiseError( modName // '::' // myName // &
         & ' - XML file ' // filename // ' is being opened with ' // &
         & 'mode OVERWRITE but does not exist.')
     END IF
@@ -165,7 +165,7 @@ MODULE PROCEDURE xmlFile_Open
   END IF
   !>
   IF( obj%isOpen() ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       ' - File is already open!')
   END IF
   !>

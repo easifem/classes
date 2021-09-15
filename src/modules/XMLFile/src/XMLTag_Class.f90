@@ -61,26 +61,42 @@ TYPE :: XMLTag_
     !! parent tag
   TYPE( XMLTag_ ), POINTER :: children( : ) => NULL()
     !! children tag
+  INTEGER( I4B ) :: indent = 0
+    !! Indent
+  LOGICAL( LGT ) :: isSelfClosing = .FALSE.
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => xmlTag_addSurrogate
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => xmlTag_Initiate
+  PROCEDURE, PUBLIC, PASS( obj ) :: set => xmlTag_set
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => xmlTag_Export
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => xmlTag_DeallocateData
   FINAL :: xmlTag_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => xmlTag_isEmpty
+
+  PROCEDURE, PUBLIC, PASS( obj ) :: setName => xmlTag_setName
+
   PROCEDURE, PUBLIC, PASS( obj ) :: hasParent => xmlTag_hasParent
   PROCEDURE, PUBLIC, PASS( obj ) :: getParentPointer => xmlTag_getParentPointer
   PROCEDURE, PUBLIC, PASS( obj ) :: setParent => xmlTag_setParent
+
   PROCEDURE, PUBLIC, PASS( obj ) :: hasChildren => xmlTag_hasChildren
   PROCEDURE, PUBLIC, PASS( obj ) :: getChildrenPointer => xmlTag_getChildrenPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: setChildren => xmlTag_setChildren
+
   PROCEDURE, PUBLIC, PASS( obj ) :: getAttributes => xmlTag_getAttributes
   PROCEDURE, PUBLIC, PASS( obj ) :: getAttributeValue => xmlTag_getAttributeValue
-  PROCEDURE, PUBLIC, PASS( obj ) :: getContent => xmlTag_getContent
-  PROCEDURE, PUBLIC, PASS( obj ) :: setName => xmlTag_setName
-  PROCEDURE, PUBLIC, PASS( obj ) :: setChildren => xmlTag_setChildren
   PROCEDURE, PUBLIC, PASS( obj ) :: setAttribute => xmlTag_setAttribute
+  PROCEDURE, PUBLIC, PASS( obj ) :: setAttributes => xmlTag_setAttributes
+
+  PROCEDURE, PUBLIC, PASS( obj ) :: setContent => xmlTag_setContent
+  PROCEDURE, PUBLIC, PASS( obj ) :: getContent => xmlTag_getContent
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => xmlTag_Display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Write => xmlTag_Write
+  PROCEDURE, PUBLIC, PASS( obj ) :: Stringify => xmlTag_Stringify
+  PROCEDURE, PUBLIC, PASS( obj ) :: StartTag => xmlTag_StartTag
+  PROCEDURE, PUBLIC, PASS( obj ) :: EndTag => xmlTag_EndTag
+  PROCEDURE, PUBLIC, PASS( obj ) :: SelfClosingTag => xmlTag_SelfClosingTag
 END TYPE XMLTag_
 
 PUBLIC :: XMLTag_
@@ -137,6 +153,29 @@ MODULE RECURSIVE SUBROUTINE xmlTag_Initiate( obj, cachedFile, iTag, lines, &
   INTEGER( I4B ), INTENT( IN ) :: tagEnd
     !! Ending position of tag
 END SUBROUTINE xmlTag_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_set( obj, name, content, attrName, attrValue, &
+  & attrNames, attrValues, parent, children, indent, isSelfClosing, &
+  & isContentIndented )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: name
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: content
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: attrName
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: attrValue
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: attrNames( : )
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: attrValues( : )
+  TYPE( XMLTag_ ), OPTIONAL, TARGET, INTENT( INOUT ) :: parent
+  TYPE( XMLTag_ ), OPTIONAL, TARGET, INTENT( INOUT ) :: children( : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: indent
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isSelfClosing
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isContentIndented
+END SUBROUTINE xmlTag_set
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -297,6 +336,10 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 sept 2021
 ! summary: This routine returns true if the object is empty
+!
+!### Introduction
+! This routine returns true if the object is empty.
+! The xmltag is empty when there is no content and no children.
 
 INTERFACE
 MODULE PURE FUNCTION xmlTag_isEmpty( obj ) RESULT( Ans )
@@ -413,6 +456,22 @@ END SUBROUTINE xmlTag_getAttributeValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      getContent@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary:
+
+INTERFACE
+MODULE PURE SUBROUTINE xmlTag_SetContent( obj, content, isContentIndented )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+  TYPE( String ), INTENT( IN ) :: content
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isContentIndented
+END SUBROUTINE xmlTag_SetContent
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   getContent@GetMethods
 !----------------------------------------------------------------------------
 
@@ -453,7 +512,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE xmlTag_setChildren( obj, children )
   CLASS( XMLTag_ ), TARGET, INTENT( INOUT ) :: obj
-  TYPE( XMLTag_ ), POINTER, INTENT( INOUT ) :: children( : )
+  TYPE( XMLTag_ ), TARGET, INTENT( INOUT ) :: children( : )
 END SUBROUTINE xmlTag_setChildren
 END INTERFACE
 
@@ -474,6 +533,22 @@ END SUBROUTINE xmlTag_setAttribute
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                  setAttributes@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 Sept 2021
+! summary: This routine sets the attribute name and value
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_setAttributes( obj, names, values )
+  CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
+  TYPE( String ), INTENT( IN ) :: names( : )
+  TYPE( String ), INTENT( IN ) :: values( : )
+END SUBROUTINE xmlTag_setAttributes
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
@@ -489,8 +564,97 @@ MODULE SUBROUTINE xmlTag_Display( obj, msg, unitNo )
 END SUBROUTINE xmlTag_Display
 END INTERFACE
 
+
+!----------------------------------------------------------------------------
+!                                                           Write@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Sept 2021
+! summary: This routine writes the tag to a file
+
+INTERFACE
+MODULE SUBROUTINE xmlTag_Write( obj, unitNo, isIndented, &
+  & isContentIndented, onlyStart, onlyContent, onlyEnd, &
+  & endRecord )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: unitNo
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isIndented
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isContentIndented
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: onlyStart
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: onlyContent
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: onlyEnd
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: endRecord
+    !! Ending record
+END SUBROUTINE xmlTag_Write
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        StartTag@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Sept 2021
+! summary:
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_StartTag( obj, isIndented ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isIndented
+  CHARACTER( LEN = : ), ALLOCATABLE :: ans
+END FUNCTION xmlTag_StartTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         EndTag@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Sept 2021
+! summary:
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_EndTag( obj, isIndented ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isIndented
+  CHARACTER( LEN = : ), ALLOCATABLE :: ans
+END FUNCTION xmlTag_EndTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SelfClosingTag@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_SelfClosingTag( obj, isIndented ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isIndented
+  CHARACTER( LEN = : ), ALLOCATABLE :: ans
+END FUNCTION xmlTag_SelfClosingTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Stringify@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Sept 2021
+! summary: This routine stringify
+
+INTERFACE
+MODULE PURE FUNCTION xmlTag_Stringify( obj, isIndented, &
+  & isContentIndented, onlyStart, onlyContent, onlyEnd ) RESULT( Ans )
+  CLASS( XMLTag_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isIndented
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isContentIndented
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: onlyStart
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: onlyContent
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: onlyEnd
+  CHARACTER( LEN = : ), ALLOCATABLE :: ans
+END FUNCTION xmlTag_Stringify
+END INTERFACE
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
 END MODULE XMLTag_Class

@@ -22,4 +22,5 @@ USE TxtFile_Class
 USE InputFile_Class
 USE HDF5File_Class
 USE XMLFile_Class
+USE VTKFile_Class
 END MODULE Files

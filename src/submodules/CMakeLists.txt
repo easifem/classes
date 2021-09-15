@@ -12,6 +12,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/InputFile/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
 #XMLFile
 include(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
+#VTKFile
+include(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
 #Element
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
 # FacetElement
