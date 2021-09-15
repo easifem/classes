@@ -114,18 +114,38 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
   CALL obj%writeStartTag( name=String(obj%DataStructureName), &
     & attrNames=attrNames(1:tattr), attrValues=attrValues(1:tattr) )
 
-  ! parallel topologies peculiars
+  ! parallel data structure types
   SELECT CASE( obj%DataStructureType )
   CASE( PARALLEL_VTK_RectilinearGrid )
-    CALL e%raiseError(modName//'::'//myName// &
-      & ' - Parallel VTKFile is currently unavaialable, see &
-      & https://github.com/szaghi/VTKFortran/blob/master/src/lib/&
-      & vtk_fortran_vtk_file_xml_writer_abstract.f90 for implementation' )
+    IF( .NOT. PRESENT( meshDataFormat )) THEN
+      CALL e%raiseError(modName//'::'//myName// &
+      & ' - meshDataFormat should be present for PARALLEL_VTK_RECTILINEAR')
+    END IF
+    !> Write <PCoordinates>
+    CALL obj%WriteStartTag(name=String('PCoordinates'))
+    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+      & attrNames = [String( 'type' )], &
+      & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"') ] )
+    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+      & attrNames = [String( 'type' )], &
+      & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"') ] )
+    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+      & attrNames = [String( 'type' )], &
+      & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"') ] )
+    CALL obj%WriteEndTag(name=String('PCoordinates'))
+  !> case of structured grid and unstructured parallel grids
   CASE ( PARALLEL_VTK_StructuredGrid, PARALLEL_VTK_UnstructuredGrid )
-    CALL e%raiseError(modName//'::'//myName// &
-      & ' - Parallel VTKFile is currently unavaialable, see &
-      & https://github.com/szaghi/VTKFortran/blob/master/src/lib/&
-      & vtk_fortran_vtk_file_xml_writer_abstract.f90 for implementation' )
+    IF( .NOT. PRESENT( meshDataFormat )) THEN
+      CALL e%raiseError(modName//'::'//myName// &
+      & ' - meshDataFormat should be present for PARALLEL CASE')
+    END IF
+    CALL obj%WriteStartTag(name=String('PPoints'))
+    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+      & attrNames = [String( 'type' ), String( 'NumberOfComponents' ), &
+      & String( 'Name' ) ], &
+      & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"'), &
+      & String( '"3"'), String( '"Points"') ] )
+    CALL obj%WriteEndTag(name=String('PPoints'))
   END SELECT
 END PROCEDURE VTKFile_WriteDataStructureTag
 

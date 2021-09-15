@@ -21,6 +21,36 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_LocationTag
+  TYPE( String ) :: loc, act
+  !> main
+  loc = location%upper()
+  act = action%upper()
+  SELECT CASE( TRIM(loc%chars()) )
+  CASE( 'CELL' )
+    loc = 'CellData'
+  CASE( 'NODE' )
+    loc = 'PointData'
+  END SELECT
+  !>
+  SELECT CASE( obj%DataStructureType )
+  CASE( PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid, &
+    & PARALLEL_VTK_UnstructuredGrid )
+    loc = 'P'// loc
+  END SELECT
+  !>
+  SELECT CASE( TRIM(act%chars()) )
+  CASE( 'OPEN' )
+    CALL obj%WriteStartTag( name=loc )
+  CASE('CLOSE')
+    CALL obj%WriteEndTag( name=loc )
+  END SELECT
+END PROCEDURE VTKFile_WriteDataArray_LocationTag
+
+!----------------------------------------------------------------------------
 !                                                        WriteDataArrrayTag
 !----------------------------------------------------------------------------
 
@@ -88,36 +118,14 @@ END PROCEDURE VTKFile_WriteDataArrayLocationTag
 
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Real32
   TYPE( String ) :: dataType, content
-  INTEGER( I4B ) :: numberOfComponents
-  CHARACTER( LEN = 10 ) :: fmt
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
   !> main
-  SELECT CASE( obj%DataFormat )
-  CASE( VTK_ASCII )
-    fmt = "ASCII"
-    dataType = String('Float64')
-    numberOfComponents = 1
-    content = encodeVTKDataArray( x=x, fmt=fmt )
-    CALL obj%WriteDataArrayTag( dataType=dataType, &
-      & numberOfComponents=numberOfComponents, &
-      & name=name, content=content, isTuples=isTuples )
-  CASE( VTK_BINARY )
-    fmt = "BINARY"
-    dataType = String('Float64')
-    numberOfComponents = 1
-    content = encodeVTKDataArray( x=x, fmt=fmt )
-    CALL obj%WriteDataArrayTag( dataType=dataType, &
-      & numberOfComponents=numberOfComponents, &
-      & name=name, content=content, isTuples=isTuples )
-  CASE( VTK_APPENDED )
-    dataType = String('Float64')
-    numberOfComponents = 1
-    CALL obj%WriteDataArrayTag( dataType=dataType, &
-      & numberOfComponents=numberOfComponents, &
-      & name=name, isTuples=isTuples, &
-      & isOffset=.TRUE. )
-    CALL obj%WriteToScratch( x )
-    CALL Obj%UpdateOffset( nByte=SIZE( x, 1 ) * BYReal32 )
-  END SELECT
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x, 1 ) * BYReal32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Real32
 
 !----------------------------------------------------------------------------
@@ -125,6 +133,15 @@ END PROCEDURE VTKFile_WriteDataArray_Rank1_Real32
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x, 1 ) * BYReal64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Real64
 
 !----------------------------------------------------------------------------
@@ -132,6 +149,15 @@ END PROCEDURE VTKFile_WriteDataArray_Rank1_Real64
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  SIZE( x, 1 ) * BYInt8
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int8
 
 !----------------------------------------------------------------------------
@@ -139,6 +165,15 @@ END PROCEDURE VTKFile_WriteDataArray_Rank1_Int8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  SIZE( x, 1 ) * BYInt16
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int16
 
 !----------------------------------------------------------------------------
@@ -146,6 +181,15 @@ END PROCEDURE VTKFile_WriteDataArray_Rank1_Int16
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x, 1 ) * BYInt32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int32
 
 !----------------------------------------------------------------------------
@@ -154,7 +198,596 @@ END PROCEDURE VTKFile_WriteDataArray_Rank1_Int32
 
 #ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x, 1 ) * BYInt64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
+#endif
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Real32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYReal32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank2_Real32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYReal64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank2_Real64
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt8
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank2_Int8
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt16
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank2_Int16
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank2_Int32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+#ifdef USE_Int64
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
+#endif
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Real32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYReal32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank3_Real32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYReal64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank3_Real64
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt8
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank3_Int8
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt16
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank3_Int16
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank3_Int32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+#ifdef USE_Int64
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
+#endif
+
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Real32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYReal32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank4_Real32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYReal64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank4_Real64
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt8
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+
+END PROCEDURE VTKFile_WriteDataArray_Rank4_Int8
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt16
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank4_Int16
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt32
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank4_Int32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+#ifdef USE_Int64
+MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  SIZE( x ) * BYInt64
+#include "./VTKFile_WriteDataArray_Rank1234.inc"
+END PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
+#endif
+
+!----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Real32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal32
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Real32
+
+!----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal64
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Real64
+
+!----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt8
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int8
+
+!----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt16
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int16
+
+!----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt32
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int32
+
+!----------------------------------------------------------------------------
+!                                                             WriteDataArray
+!----------------------------------------------------------------------------
+
+#ifdef USE_Int64
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt64
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int64
+#endif
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Real32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal32
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Real32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal64
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Real64
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt8
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int8
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt16
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int16
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt32
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+#ifdef USE_Int64
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt64
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int64
+#endif
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Real32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float32')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal32
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Real32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Real64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Float64')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal64
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Real64
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int8
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int8')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt8
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int8
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int16
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int16')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt16
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int16
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int32
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int32')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt32
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int32
+
+!----------------------------------------------------------------------------
+!                                                            WriteDataArray
+!----------------------------------------------------------------------------
+
+#ifdef USE_Int64
+MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int64
+  TYPE( String ) :: dataType, content
+  INTEGER( I4B ) :: noc, nByte
+  LOGICAL( LGT ) :: isOffset
+  !> main
+  dataType = String('Int64')
+  isOffset = .FALSE.
+  nByte =  (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt64
+  noc = 3
+#include "./VTKFile_WriteDataArray_XYZ.inc"
+END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int64
 #endif
 
 !----------------------------------------------------------------------------

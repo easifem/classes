@@ -52,34 +52,6 @@ END PROCEDURE encode_rank2_Real32
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE encode_xyz_rank2_Real32
-  INTEGER( I4B ) :: i, j, jj, ii
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO j=1, jj
-    DO i=1, ii
-      ans = ans // str(n=x(i, j)) &
-        & // ' ' // str(n=y(i, j)) &
-        & // ' ' // str(n=z(i, j))
-    END DO
-  END DO
-  !>
-  CASE( "BINARY" )
-    jj = jj * ii
-    CALL PACK_DATA( &
-      & a1=[ INT(3*jj*BYReal32, I4B) ], &
-      & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
-END PROCEDURE encode_xyz_rank2_Real32
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE encode_rank2_Real64
   INTEGER( I4B ) :: ii, jj, nn, mm
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -102,34 +74,6 @@ MODULE PROCEDURE encode_rank2_Real64
     CALL B64_ENCODE( n=xp, code=ans )
   END SELECT
 END PROCEDURE encode_rank2_Real64
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE encode_xyz_rank2_Real64
-  INTEGER( I4B ) :: i, j, jj, ii
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO j=1, jj
-    DO i=1, ii
-      ans = ans // str(n=x(i, j)) &
-        & // ' ' // str(n=y(i, j)) &
-        & // ' ' // str(n=z(i, j))
-    END DO
-  END DO
-  !>
-  CASE( "BINARY" )
-    jj = jj * ii
-    CALL PACK_DATA( &
-      & a1=[ INT(3*jj*BYReal64, I4B) ], &
-      & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
-END PROCEDURE encode_xyz_rank2_Real64
 
 !----------------------------------------------------------------------------
 !
@@ -164,36 +108,6 @@ END PROCEDURE encode_rank2_Int64
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
-MODULE PROCEDURE encode_xyz_rank2_Int64
-  INTEGER( I4B ) :: i, j, jj, ii
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO j=1, jj
-    DO i=1, ii
-      ans = ans // str(n=x(i, j)) &
-        & // ' ' // str(n=y(i, j)) &
-        & // ' ' // str(n=z(i, j))
-    END DO
-  END DO
-  !>
-  CASE( "BINARY" )
-    jj = jj * ii
-    CALL PACK_DATA( &
-      & a1=[ INT(3*jj*BYInt64, I4B) ], &
-      & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
-END PROCEDURE encode_xyz_rank2_Int64
-#endif
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE encode_rank2_Int32
   INTEGER( I4B ) :: ii, jj, nn, mm
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -214,33 +128,6 @@ MODULE PROCEDURE encode_rank2_Int32
     CALL B64_ENCODE( n=xp, code=ans )
   END SELECT
 END PROCEDURE encode_rank2_Int32
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE encode_xyz_rank2_Int32
-  INTEGER( I4B ) :: i, j, jj, ii
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO j=1, jj
-    DO i=1, ii
-      ans = ans // str(n=x(i, j)) &
-        & // ' ' // str(n=y(i, j)) &
-        & // ' ' // str(n=z(i, j))
-    END DO
-  END DO
-  !>
-  CASE( "BINARY" )
-    jj = jj * ii
-    xp = TRANSFER([ INT(3*jj*BYInt32, I4B), [((x(i, j), y(i, j), z(i, j), &
-      & i=1, ii), j=1, jj)]], xp)
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
-END PROCEDURE encode_xyz_rank2_Int32
 
 !----------------------------------------------------------------------------
 !
@@ -273,34 +160,6 @@ END PROCEDURE encode_rank2_Int16
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE encode_xyz_rank2_Int16
-  INTEGER( I4B ) :: i, j, jj, ii
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO j=1, jj
-    DO i=1, ii
-      ans = ans // str(n=x(i, j)) &
-        & // ' ' // str(n=y(i, j)) &
-        & // ' ' // str(n=z(i, j))
-    END DO
-  END DO
-  !>
-  CASE( "BINARY" )
-    jj = jj * ii
-    CALL PACK_DATA( &
-      & a1=[ INT(3*jj*BYInt16, I4B) ], &
-      & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
-END PROCEDURE encode_xyz_rank2_Int16
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE encode_rank2_Int8
   INTEGER( I4B ) :: ii, jj, nn, mm
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -323,33 +182,5 @@ MODULE PROCEDURE encode_rank2_Int8
     CALL B64_ENCODE( n=xp, code=ans )
   END SELECT
 END PROCEDURE encode_rank2_Int8
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE encode_xyz_rank2_Int8
-  INTEGER( I4B ) :: i, j, jj, ii
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  !> main
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  SELECT CASE( TRIM(fmt) )
-  CASE( "ASCII" )
-  DO j=1, jj
-    DO i=1, ii
-      ans = ans // str(n=x(i, j)) &
-        & // ' ' // str(n=y(i, j)) &
-        & // ' ' // str(n=z(i, j))
-    END DO
-  END DO
-  !>
-  CASE( "BINARY" )
-    jj = jj * ii
-    CALL PACK_DATA( &
-      & a1=[ INT(3*jj*BYInt8, I4B) ], &
-      & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )
-    CALL B64_ENCODE( n=xp, code=ans )
-  END SELECT
-END PROCEDURE encode_xyz_rank2_Int8
 
 END SUBMODULE Rank2Methods

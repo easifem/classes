@@ -5,8 +5,12 @@ target_sources(
   ${src_path}/VTKDataArrayEncoder@Rank2Methods.f90
   ${src_path}/VTKDataArrayEncoder@Rank3Methods.f90
   ${src_path}/VTKDataArrayEncoder@Rank4Methods.f90
+  ${src_path}/VTKDataArrayEncoder@XYZRank1Methods.f90
+  ${src_path}/VTKDataArrayEncoder@XYZRank2Methods.f90
+  ${src_path}/VTKDataArrayEncoder@XYZRank3Methods.f90
   ${src_path}/VTKFile_Class@ConstructorMethods.f90
   ${src_path}/VTKFile_Class@IOMethods.f90
   ${src_path}/VTKFile_Class@DataArrayMethods.f90
   ${src_path}/VTKFile_Class@DataArrayAppendedMethods.f90
+  ${src_path}/VTKFile_Class@FieldDataMethods.f90
 )

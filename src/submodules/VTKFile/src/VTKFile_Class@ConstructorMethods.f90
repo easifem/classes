@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( VTKFile_Class ) ConstructorMethods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -23,47 +24,66 @@ CONTAINS
 !                                                                 VTKFile
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE VTKFile1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "VTKFile1"
-  CALL ans%initiate( filename=filename, mode=mode )
-  ans%DataFormat = DataFormat
-  ans%DataStructureType = DataStructureType
-  ans%DataStructureName = TRIM( DataStructureName( DataStructureType ) )
-  IF( PRESENT( its ) ) ans%its=its
-  IF( PRESENT( iter ) ) ans%iter=iter
-  IF( PRESENT( WholeExtent ) ) ans%WholeExtent=WholeExtent
-
+MODULE PROCEDURE InitiateVTKFile
+  CHARACTER( LEN = * ), PARAMETER :: myName = "InitiateVTKFile"
+  !> main
+  IF( obj%isInitiated ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+      & ' - VTKFile is already initiated, use DeallocateData() first')
+  END IF
+  !>
+  obj%DataFormat = DataFormat
+  obj%DataStructureType = DataStructureType
+  obj%DataStructureName = TRIM( DataStructureName( DataStructureType ) )
+  IF( PRESENT( WholeExtent ) ) THEN
+    obj%WholeExtent=WholeExtent
+  ELSE
+    obj%WholeExtent = 0.0_DFP
+  END IF
+  IF( PRESENT( isVolatile ) ) THEN
+    obj%isVolatile=isVolatile
+  ELSE
+    obj%isVolatile=.FALSE.
+  END IF
+  !>
   SELECT CASE( DataStructureType )
+  !> Structured case
   CASE( VTK_ImageData, VTK_RectilinearGrid, VTK_StructuredGrid, &
     & PARALLEL_VTK_ImageData, PARALLEL_VTK_RectilinearGrid, &
     & PARALLEL_VTK_StructuredGrid )
-    ans%isStructured = .TRUE.
+    obj%isStructured = .TRUE.
     IF( .NOT. PRESENT( WholeExtent ) ) &
       &  CALL e%raiseError(modName//'::'//myName// &
       & ' - In case of structured data set WholeExtent should be given')
-
+  !> Unstructured case
   CASE( VTK_PolyData, VTK_UnstructuredGrid, PARALLEL_VTK_PolyData, &
     & PARALLEL_VTK_UnstructuredGrid )
-    ans%isStructured = .FALSE.
-
+    obj%isStructured = .FALSE.
+  !> Default case prints error
   CASE DEFAULT
     CALL e%raiseError(modName//'::'//myName// &
       & ' - Cannot recognize DataStructureType')
   END SELECT
-END PROCEDURE VTKFile1
-
-!----------------------------------------------------------------------------
-!                                                          VTKFile_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE VTKFile_Pointer1
-  CHARACTER( LEN = * ), PARAMETER :: myName= "VTKFile_Pointer1"
-  ALLOCATE( ans )
-  SELECT TYPE( ans ); TYPE IS ( VTKFile_ )
-    ans = VTKFile1( filename, mode, DataFormat, DataStructureType, its, &
-      & iter, WholeExtent )
-  END SELECT
-END PROCEDURE VTKFile_Pointer1
+  !> Handle appended case
+  IF( DataFormat .EQ. VTK_APPENDED ) THEN
+    obj%encoding4Appended='raw'
+    obj%offset = 0
+  ELSE IF ( DataFormat .EQ. VTK_BINARY_APPENDED ) THEN
+    obj%encoding4Appended='base64'
+    obj%DataFormat = VTK_APPENDED
+    obj%offset = 0
+  END IF
+  !>
+  IF( obj%isVolatile ) THEN
+    obj%volatileBuffer = ''
+  ELSE
+    CALL obj%initiate( filename=filename, mode=mode )
+    CALL obj%Open()
+  END IF
+  CALL obj%WriteRootTag()
+  CALL obj%WriteDataStructureTag(meshDataFormat = meshDataFormat)
+  CALL obj%OpenScratchFile()
+END PROCEDURE InitiateVTKFile
 
 !----------------------------------------------------------------------------
 !                                                              AddSurrogate
@@ -83,13 +103,14 @@ MODULE PROCEDURE VTKFile_DeallocateData
   obj%DataStructureType = 0
   obj%DataStructureName = ''
   obj%DataFormat = 0
-  obj%its = -1
-  obj%iter = -1
   obj%WholeExtent = 0.0_DFP
   obj%indent = 0
+  obj%offset = 0
   obj%encoding4Appended=""
   obj%scratch=0
   obj%offset=0
+  obj%isVolatile = .FALSE.
+  obj%VolatileBuffer = ''
 END PROCEDURE VTKFile_DeallocateData
 
 !----------------------------------------------------------------------------
@@ -105,12 +126,13 @@ END PROCEDURE VTKFile_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_Close
-  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_Close"
-  CALL obj%WriteEndTag( name=String(obj%DataStructureName) )
-  CALL obj%WriteDataArray()
-  CALL obj%WriteEndTag( name=String( 'VTKFile' ) )
-  CALL xmlFile_Close( obj )
-  CALL obj%closeScratchFile()
+  IF( obj%isOpen( ) ) THEN
+    CALL obj%WriteEndTag( name=String(obj%DataStructureName) )
+    CALL obj%WriteDataArray()
+    CALL obj%WriteEndTag( name=String( 'VTKFile' ) )
+    IF( .NOT. obj%isVolatile ) CALL xmlFile_Close( obj )
+    CALL obj%closeScratchFile()
+  END IF
 END PROCEDURE VTKFile_Close
 
 !----------------------------------------------------------------------------

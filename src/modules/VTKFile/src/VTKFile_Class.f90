@@ -51,12 +51,14 @@ CHARACTER( LEN=* ), PARAMETER, DIMENSION( 10 ) :: DataStructureName = &
   & "PRectilinearGrid ", &
   & "PStructuredGrid  ", &
   & "PPolyData        ", &
-  & "PUnstructuredGrid" &
+  & "PUnstructuredGrid"  &
   & ]
 
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_ASCII = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_BINARY = 2
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_APPENDED = 3
+INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
+INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
 
 CHARACTER( LEN = * ), PARAMETER, DIMENSION( 3 ) :: DataFormatName = &
   & [ &
@@ -79,10 +81,6 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     !! Unstructured Grid, Unstructured Grid
   INTEGER( I4B ) :: DataFormat = 0
     !! ASCII, BINARY, APPENDED
-  INTEGER( I4B ) :: its = -1
-    !!Time step
-  INTEGER( I4B ) :: iter = -1
-    !! Iteration number
   REAL( DFP ) :: WholeExtent( 6 ) = 0.0_DFP
     !! Whole extent
   INTEGER( I4B ) :: indent = 0
@@ -94,8 +92,11 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     !! appended data encoding: "raw" or "base64".
   INTEGER( I4B ) :: scratch=0
     !! Used for scratch file
+  LOGICAL( LGT ) :: isVolatile = .FALSE.
+  TYPE( String ) :: VolatileBuffer
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: InitiateVTKFile
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => VTKFile_addSurrogate
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => VTKFile_DeallocateData
   FINAL :: VTKFile_Final
@@ -158,8 +159,8 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     & VTKFile_WriteToScratch20, &
     & VTKFile_WriteToScratch21, VTKFile_WriteToScratch22
 
-
   GENERIC, PUBLIC :: WriteDataArray => &
+    & VTKFile_WriteDataArray_LocationTag, &
     & VTKFile_WriteDataArray_Appended, &
     & VTKFile_WriteDataArray_Rank1_Real32, &
     & VTKFile_WriteDataArray_Rank1_Real64, &
@@ -168,9 +169,59 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
 #endif
     & VTKFile_WriteDataArray_Rank1_Int32, &
     & VTKFile_WriteDataArray_Rank1_Int16, &
-    & VTKFile_WriteDataArray_Rank1_Int8
+    & VTKFile_WriteDataArray_Rank1_Int8, &
+    & VTKFile_WriteDataArray_Rank2_Real32, &
+    & VTKFile_WriteDataArray_Rank2_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_Rank2_Int64, &
+#endif
+    & VTKFile_WriteDataArray_Rank2_Int32, &
+    & VTKFile_WriteDataArray_Rank2_Int16, &
+    & VTKFile_WriteDataArray_Rank2_Int8, &
+    & VTKFile_WriteDataArray_Rank3_Real32, &
+    & VTKFile_WriteDataArray_Rank3_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_Rank3_Int64, &
+#endif
+    & VTKFile_WriteDataArray_Rank3_Int32, &
+    & VTKFile_WriteDataArray_Rank3_Int16, &
+    & VTKFile_WriteDataArray_Rank3_Int8, &
+    & VTKFile_WriteDataArray_Rank4_Real32, &
+    & VTKFile_WriteDataArray_Rank4_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_Rank4_Int64, &
+#endif
+    & VTKFile_WriteDataArray_Rank4_Int32, &
+    & VTKFile_WriteDataArray_Rank4_Int16, &
+    & VTKFile_WriteDataArray_Rank4_Int8, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Real32, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int64, &
+#endif
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int32, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int16, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int8, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Real32, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int64, &
+#endif
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int32, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int16, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int8, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Real32, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int64, &
+#endif
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int32, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int16, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int8
+
 
   PROCEDURE, PASS( obj ) :: &
+    & VTKFile_WriteDataArray_LocationTag, &
     & VTKFile_WriteDataArray_Appended, &
     & VTKFile_WriteDataArray_Rank1_Real32, &
     & VTKFile_WriteDataArray_Rank1_Real64, &
@@ -179,7 +230,64 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
 #endif
     & VTKFile_WriteDataArray_Rank1_Int32, &
     & VTKFile_WriteDataArray_Rank1_Int16, &
-    & VTKFile_WriteDataArray_Rank1_Int8
+    & VTKFile_WriteDataArray_Rank1_Int8, &
+    & VTKFile_WriteDataArray_Rank2_Real32, &
+    & VTKFile_WriteDataArray_Rank2_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_Rank2_Int64, &
+#endif
+    & VTKFile_WriteDataArray_Rank2_Int32, &
+    & VTKFile_WriteDataArray_Rank2_Int16, &
+    & VTKFile_WriteDataArray_Rank2_Int8, &
+    & VTKFile_WriteDataArray_Rank3_Real32, &
+    & VTKFile_WriteDataArray_Rank3_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_Rank3_Int64, &
+#endif
+    & VTKFile_WriteDataArray_Rank3_Int32, &
+    & VTKFile_WriteDataArray_Rank3_Int16, &
+    & VTKFile_WriteDataArray_Rank3_Int8, &
+    & VTKFile_WriteDataArray_Rank4_Real32, &
+    & VTKFile_WriteDataArray_Rank4_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_Rank4_Int64, &
+#endif
+    & VTKFile_WriteDataArray_Rank4_Int32, &
+    & VTKFile_WriteDataArray_Rank4_Int16, &
+    & VTKFile_WriteDataArray_Rank4_Int8, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Real32, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int64, &
+#endif
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int32, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int16, &
+    & VTKFile_WriteDataArray_XYZ_Rank1_Int8, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Real32, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int64, &
+#endif
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int32, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int16, &
+    & VTKFile_WriteDataArray_XYZ_Rank2_Int8, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Real32, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Real64, &
+#ifdef USE_Int64
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int64, &
+#endif
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int32, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int16, &
+    & VTKFile_WriteDataArray_XYZ_Rank3_Int8
+
+
+  GENERIC, PUBLIC :: WriteFieldData => &
+    & VTKFile_WriteFieldData_1, &
+    & VTKFile_WriteFieldData_2
+
+  PROCEDURE, PASS( obj ) :: &
+    & VTKFile_WriteFieldData_1, &
+    & VTKFile_WriteFieldData_2
 
   ! PROCEDURE, PUBLIC, PASS( obj ) :: WriteConnectivity
   ! PROCEDURE, PUBLIC, PASS( obj ) :: WritePiece
@@ -206,59 +314,42 @@ PUBLIC :: VTKFilePointer_
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 Sept 2021
 ! summary: This function returns an instance of VTKFile
+!
+!### Introduction
+! This function returns an instance if VTKFile. After calling this function
+! This routine initiates the XMLFile, and opens it.
+! It also write header file and DataStructure tag to the file.
+!
+! - `filename` is the name of the file
+! - `mode` can be `READ`, `WRITE`, `NEW`, `OVERWRITE`
+! - `DataFormat` defines the format of DataArray in VTKFile, it can be
+! `VTK_ASCII`, `VTK_BINARY`, `VTK_APPENED`, `VTK_RAW_APPENED`,
+! `VTK_BINARY_APPENDED`.
+! - `VTK_APPENDED` and `VTK_RAW_APPENDED` are the same, where appended data
+! is in raw format
+! - `VTK_BINARY_APPENDED`, on the other hand, appends data in binary form
 
 INTERFACE
-MODULE FUNCTION VTKFile1(  filename, mode, DataFormat, &
-  & DataStructureType, its, iter, WholeExtent ) &
-  & RESULT( Ans )
+MODULE SUBROUTINE InitiateVTKFile( obj, filename, mode, DataFormat, &
+  & DataStructureType, WholeExtent, isVolatile, meshDataFormat )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: filename
+    !! Name of the file, where xml data will be printed
   CHARACTER( LEN = * ), INTENT( IN ) :: mode
+    !! READ, WRITE, NEW, REPLACE
   INTEGER( I4B ), INTENT( IN ) :: DataFormat
-    !! ASCII, BINARY, APPENEDED
+    !! VTK_ASCII, VTK_APPENEDED, VTK_BINARY
   INTEGER( I4B ), INTENT( IN ) :: DataStructureType
     !! VTK_IMAGEDATA, VTK_STRUCTUREDGRID, ...
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: its
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: iter
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: WholeExtent( 6 )
-  TYPE( VTKFile_ ) :: ans
-END FUNCTION VTKFile1
+    !! Required for structured data set
+    !! [x1, x2, y1, y2, z1, z2]
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isVolatile
+    !! True if volatileBuffer is used to keep the xml file
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: meshDataFormat
+    !! Float32, Float64, etc
+END SUBROUTINE InitiateVTKFile
 END INTERFACE
-
-INTERFACE VTKFile
-  MODULE PROCEDURE VTKFile1
-END INTERFACE VTKFile
-
-PUBLIC :: VTKFile
-
-!----------------------------------------------------------------------------
-!                                        VTKFile_Pointer@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 Sept 2021
-! summary: This function returns an instance of VTKFile
-
-INTERFACE
-MODULE FUNCTION VTKFile_Pointer1(  filename, mode, DataFormat, &
-  & DataStructureType, its, iter, WholeExtent ) &
-  & RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: filename
-  CHARACTER( LEN = * ), INTENT( IN ) :: mode
-  INTEGER( I4B ), INTENT( IN ) :: DataFormat
-    !! ASCII, BINARY, APPENEDED
-  INTEGER( I4B ), INTENT( IN ) :: DataStructureType
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: its
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: iter
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: WholeExtent( 6 )
-  CLASS( VTKFile_ ), POINTER :: ans
-END FUNCTION VTKFile_Pointer1
-END INTERFACE
-
-INTERFACE VTKFile_Pointer
-  MODULE PROCEDURE VTKFile_Pointer1
-END INTERFACE VTKFile_Pointer
-
-PUBLIC :: VTKFile_Pointer
 
 !----------------------------------------------------------------------------
 !                                           AddSurrogate@ConstructorMethods
@@ -316,7 +407,41 @@ END SUBROUTINE VTKFile_UpdateOffset
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    WriteRootTag@IOMethods
+!                                                   Close@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Sept 2021
+! summary: Close the file
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_Close( obj )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE VTKFile_Close
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         OpenScratchFile@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_OpenScratchFile( obj )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE VTKFile_OpenScratchFile
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       CloseScratchFile@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_CloseScratchFile( obj )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE VTKFile_CloseScratchFile
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     WriteRootTag@IOMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -326,12 +451,14 @@ END SUBROUTINE VTKFile_WriteRootTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          WriteDataStructureTag@IOMethods
+!                                            WriteDataStructureTag@IOMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataStructureTag( obj )
+MODULE SUBROUTINE VTKFile_WriteDataStructureTag( obj, meshDataFormat )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: meshDataFormat
+    !! Float32, Float64
 END SUBROUTINE VTKFile_WriteDataStructureTag
 END INTERFACE
 
@@ -353,7 +480,7 @@ END SUBROUTINE VTKFile_WriteStartTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    WriteEndTag@IOMethods
+!                                                      WriteEndTag@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -368,7 +495,7 @@ END SUBROUTINE VTKFile_WriteEndTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            WriteSelfClosingTag@IOMethods
+!                                              WriteSelfClosingTag@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -386,7 +513,7 @@ END SUBROUTINE VTKFile_WriteSelfClosingTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        WriteTag@IOMethods
+!                                                         WriteTag@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -402,20 +529,6 @@ MODULE SUBROUTINE VTKFile_WriteTag( obj, name, attrNames, &
   TYPE( String ), OPTIONAL, INTENT( IN ) :: attrValues( : )
   TYPE( String ), OPTIONAL, INTENT( IN ) :: content
 END SUBROUTINE VTKFile_WriteTag
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  Close@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 Sept 2021
-! summary: Close the file
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_Close( obj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_Close
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -440,7 +553,7 @@ END SUBROUTINE VTKFile_WriteDataArrayTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       WriteDataArrayLocationTag@IOMethods
+!                                         WriteDataArrayLocationTag@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -459,83 +572,7 @@ END INTERFACE
 !                                           WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32( obj, name, x, &
-  & isTuples )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: name
-  REAL( Real32 ), INTENT( IN ) :: x( 1: )
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
-END SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           WriteDataArray@DataArrayMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real64( obj, name, x, &
-  & isTuples )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: name
-  REAL( Real64 ), INTENT( IN ) :: x( 1: )
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
-END SUBROUTINE VTKFile_WriteDataArray_Rank1_Real64
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           WriteDataArray@DataArrayMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int8( obj, name, x, isTuples )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: name
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1: )
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
-END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int8
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           WriteDataArray@DataArrayMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int16( obj, name, x, isTuples)
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: name
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1: )
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
-END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int16
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           WriteDataArray@DataArrayMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int32(obj, name, x, isTuples)
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: name
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1: )
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
-END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int32
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           WriteDataArray@DataArrayMethods
-!----------------------------------------------------------------------------
-
-#ifdef USE_Int64
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64(obj, name, x, isTuples)
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: name
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1: )
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
-END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64
-END INTERFACE
-#endif
+#include "./VTKFile_WriteDataArray.inc"
 
 !----------------------------------------------------------------------------
 !                                    WriteDataArray@DataArrayAppendedMethods
@@ -548,307 +585,42 @@ END SUBROUTINE VTKFile_WriteDataArray_Appended
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
+!                                    WriteToScratch@DataArrayAppendedMethods
 !----------------------------------------------------------------------------
 
+#include "./VTKFile_WriteToScratch.inc"
+
+!----------------------------------------------------------------------------
+!                                          WriteFieldData@FieldDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
 INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch1( obj, x )
+MODULE SUBROUTINE VTKFile_WriteFieldData_1( obj, name, x )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  CLASS( * ), INTENT( IN ) :: x( 1: )
-END SUBROUTINE VTKFile_WriteToScratch1
+  TYPE( String ), INTENT( IN ) :: name
+  CLASS( * ), INTENT( IN ) :: x
+END SUBROUTINE VTKFile_WriteFieldData_1
 END INTERFACE
 
+
 !----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
+!                                          WriteFieldData@FieldDataMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch2( obj, x )
+MODULE SUBROUTINE VTKFile_WriteFieldData_2( obj, action )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  CLASS( * ), INTENT( IN ) :: x( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch3( obj, x )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  CLASS( * ), INTENT( IN ) :: x( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch4( obj, x )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  CLASS( * ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch5( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  REAL( Real64 ), INTENT( IN ) :: x( 1: )
-  REAL( Real64 ), INTENT( IN ) :: y( 1: )
-  REAL( Real64 ), INTENT( IN ) :: z( 1: )
-END SUBROUTINE VTKFile_WriteToScratch5
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch6( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  REAL( Real32 ), INTENT( IN ) :: x( 1: )
-  REAL( Real32 ), INTENT( IN ) :: y( 1: )
-  REAL( Real32 ), INTENT( IN ) :: z( 1: )
-END SUBROUTINE VTKFile_WriteToScratch6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-#ifdef USE_Int64
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch7( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: z( 1: )
-END SUBROUTINE VTKFile_WriteToScratch7
-END INTERFACE
-#endif
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch8( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: z( 1: )
-END SUBROUTINE VTKFile_WriteToScratch8
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch9( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: z( 1: )
-END SUBROUTINE VTKFile_WriteToScratch9
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch10( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: z( 1: )
-END SUBROUTINE VTKFile_WriteToScratch10
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch11( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: y( 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: z( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch11
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch12( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: y( 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: z( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch12
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-#ifdef USE_Int64
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch13( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: z( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch13
-END INTERFACE
-#endif
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch14( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: z( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch14
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch15( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: z( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch15
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch16( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: z( 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch16
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch17( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch17
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch18( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch18
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-#ifdef USE_Int64
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch19( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch19
-END INTERFACE
-#endif
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch20( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch20
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch21( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch21
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   WriteToScratch@DataArrayAppendedMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_WriteToScratch22( obj, x, y, z )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-END SUBROUTINE VTKFile_WriteToScratch22
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       OpenScratchFile@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_OpenScratchFile( obj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_OpenScratchFile
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       CloseScratchFile@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_CloseScratchFile( obj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_CloseScratchFile
+  TYPE( String ), INTENT( IN ) :: action
+    !! Open, Close
+END SUBROUTINE VTKFile_WriteFieldData_2
 END INTERFACE
 
 !----------------------------------------------------------------------------
