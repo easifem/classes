@@ -15,8 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
-
 SELECT CASE( obj%DataFormat )
 CASE( VTK_ASCII )
   content = encodeVTKDataArray( x=x, fmt="ASCII" )

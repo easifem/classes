@@ -25,9 +25,9 @@ CASE( VTK_APPENDED )
 END SELECT
 
 CALL obj%WriteDataArrayTag( dataType=dataType, &
-& numberOfComponents=noc, &
-& name=name, isTuples=isTuples, &
-& isOffset=isOffset, content=content )
+  & numberOfComponents=noc, &
+  & name=name, isTuples=isTuples, &
+  & isOffset=isOffset, content=content )
 
 IF( isOffset) THEN
   CALL obj%WriteToScratch( x=x, y=y, z=z )

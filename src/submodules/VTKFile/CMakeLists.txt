@@ -13,4 +13,6 @@ target_sources(
   ${src_path}/VTKFile_Class@DataArrayMethods.f90
   ${src_path}/VTKFile_Class@DataArrayAppendedMethods.f90
   ${src_path}/VTKFile_Class@FieldDataMethods.f90
+  ${src_path}/VTKFile_Class@PointsMethods.f90
+  ${src_path}/VTKFile_Class@PieceMethods.f90
 )

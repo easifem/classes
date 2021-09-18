@@ -26,7 +26,6 @@ SELECT CASE( TRIM(fmt) )
   END DO
   !>
   CASE( "BINARY" )
-    jj = jj * ii
     CALL PACK_DATA( &
       & a1=[ INT(nbyte, I4B) ], &
       & a2=[((x(i,j), y(i,j), z(i,j), i=1, ii), j=1, jj)], packed=xp )

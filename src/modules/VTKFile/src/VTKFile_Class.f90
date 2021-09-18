@@ -81,7 +81,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     !! Unstructured Grid, Unstructured Grid
   INTEGER( I4B ) :: DataFormat = 0
     !! ASCII, BINARY, APPENDED
-  REAL( DFP ) :: WholeExtent( 6 ) = 0.0_DFP
+  INTEGER( I4B ) :: WholeExtent( 6 ) = 0
     !! Whole extent
   INTEGER( I4B ) :: indent = 0
     !! Indent
@@ -219,7 +219,6 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     & VTKFile_WriteDataArray_XYZ_Rank3_Int16, &
     & VTKFile_WriteDataArray_XYZ_Rank3_Int8
 
-
   PROCEDURE, PASS( obj ) :: &
     & VTKFile_WriteDataArray_LocationTag, &
     & VTKFile_WriteDataArray_Appended, &
@@ -289,6 +288,38 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     & VTKFile_WriteFieldData_1, &
     & VTKFile_WriteFieldData_2
 
+
+  GENERIC, PUBLIC :: WritePoints => &
+    & VTKFile_WritePoints_1, &
+    & VTKFile_WritePoints_2, &
+    & VTKFile_WritePoints_3, &
+    & VTKFile_WritePoints_4, &
+    & VTKFile_WritePoints_5, &
+    & VTKFile_WritePoints_6
+
+  PROCEDURE, PASS( obj ) :: &
+    & VTKFile_WritePoints_1, &
+    & VTKFile_WritePoints_2, &
+    & VTKFile_WritePoints_3, &
+    & VTKFile_WritePoints_4, &
+    & VTKFile_WritePoints_5, &
+    & VTKFile_WritePoints_6
+
+  GENERIC, PUBLIC :: WritePiece => &
+    & VTKFile_WritePiece_1, &
+    & VTKFile_WritePiece_2, &
+    & VTKFile_WritePiece_3, &
+    & VTKFile_WritePiece_4
+
+  PROCEDURE, PASS( obj ) :: &
+    & VTKFile_WritePiece_1, &
+    & VTKFile_WritePiece_2, &
+    & VTKFile_WritePiece_3, &
+    & VTKFile_WritePiece_4
+
+  PROCEDURE, PUBLIC, PASS( obj ) :: WriteCells => VTKFile_WriteCells
+  PROCEDURE, PUBLIC, PASS( obj ) :: WriteVerts => VTKFile_WriteVerts
+
   ! PROCEDURE, PUBLIC, PASS( obj ) :: WriteConnectivity
   ! PROCEDURE, PUBLIC, PASS( obj ) :: WritePiece
   ! PROCEDURE, PUBLIC, PASS( obj ) :: WriteFieldData
@@ -341,7 +372,7 @@ MODULE SUBROUTINE InitiateVTKFile( obj, filename, mode, DataFormat, &
     !! VTK_ASCII, VTK_APPENEDED, VTK_BINARY
   INTEGER( I4B ), INTENT( IN ) :: DataStructureType
     !! VTK_IMAGEDATA, VTK_STRUCTUREDGRID, ...
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: WholeExtent( 6 )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: WholeExtent( 6 )
     !! Required for structured data set
     !! [x1, x2, y1, y2, z1, z2]
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isVolatile
@@ -621,6 +652,234 @@ MODULE SUBROUTINE VTKFile_WriteFieldData_2( obj, action )
   TYPE( String ), INTENT( IN ) :: action
     !! Open, Close
 END SUBROUTINE VTKFile_WriteFieldData_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_1( obj, x, y, z )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real64 ), INTENT( IN ) :: x( : )
+  REAL( Real64 ), INTENT( IN ) :: y( : )
+  REAL( Real64 ), INTENT( IN ) :: z( : )
+END SUBROUTINE VTKFile_WritePoints_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_2( obj, x, y, z )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real32 ), INTENT( IN ) :: x( : )
+  REAL( Real32 ), INTENT( IN ) :: y( : )
+  REAL( Real32 ), INTENT( IN ) :: z( : )
+END SUBROUTINE VTKFile_WritePoints_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_3( obj, x )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1: )
+END SUBROUTINE VTKFile_WritePoints_3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_4( obj, x )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1: )
+END SUBROUTINE VTKFile_WritePoints_4
+END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_5( obj, x, y, z )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real64 ), INTENT( IN ) :: x( :, :, : )
+  REAL( Real64 ), INTENT( IN ) :: y( :, :, : )
+  REAL( Real64 ), INTENT( IN ) :: z( :, :, : )
+END SUBROUTINE VTKFile_WritePoints_5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_6( obj, x, y, z )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real32 ), INTENT( IN ) :: x( :, :, : )
+  REAL( Real32 ), INTENT( IN ) :: y( :, :, : )
+  REAL( Real32 ), INTENT( IN ) :: z( :, :, : )
+END SUBROUTINE VTKFile_WritePoints_6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_7( obj, x )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real64 ), INTENT( IN ) :: x( :, :, :, : )
+END SUBROUTINE VTKFile_WritePoints_7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                WritePoints@PointsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePoints_8( obj, x )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  REAL( Real32 ), INTENT( IN ) :: x( :, :, :, : )
+END SUBROUTINE VTKFile_WritePoints_8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   WritePiece@PieceMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePiece_1( obj, extent, srcFileName )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: extent( 6 )
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: srcFileName
+END SUBROUTINE VTKFile_WritePiece_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   WritePiece@PieceMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePiece_2( obj, nPoints, nCells )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: nPoints
+  INTEGER( I4B ), INTENT( IN ) :: nCells
+END SUBROUTINE VTKFile_WritePiece_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   WritePiece@PieceMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePiece_3( obj, nPoints, nVerts, nLines, &
+  & nStrips, nPolys )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: nPoints
+  INTEGER( I4B ), INTENT( IN ) :: nVerts
+  INTEGER( I4B ), INTENT( IN ) :: nLines
+  INTEGER( I4B ), INTENT( IN ) :: nStrips
+  INTEGER( I4B ), INTENT( IN ) :: nPolys
+END SUBROUTINE VTKFile_WritePiece_3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   WritePiece@PieceMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WritePiece_4( obj )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE VTKFile_WritePiece_4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    WriteCells@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WriteCells( obj, connectivity, offsets, types )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: connectivity( : )
+  INTEGER( I4B ), INTENT( IN ) :: offsets( : )
+  INTEGER( Int8 ), INTENT( IN ) :: types( : )
+END SUBROUTINE VTKFile_WriteCells
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    WriteVerts@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 sept 2021
+! summary:
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WriteVerts( obj, connectivity, offsets )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: connectivity( : )
+  INTEGER( I4B ), INTENT( IN ) :: offsets( : )
+END SUBROUTINE VTKFile_WriteVerts
 END INTERFACE
 
 !----------------------------------------------------------------------------
