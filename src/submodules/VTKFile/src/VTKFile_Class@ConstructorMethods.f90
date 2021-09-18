@@ -38,7 +38,7 @@ MODULE PROCEDURE InitiateVTKFile
   IF( PRESENT( WholeExtent ) ) THEN
     obj%WholeExtent=WholeExtent
   ELSE
-    obj%WholeExtent = 0.0_DFP
+    obj%WholeExtent = 0
   END IF
   IF( PRESENT( isVolatile ) ) THEN
     obj%isVolatile=isVolatile
@@ -103,7 +103,7 @@ MODULE PROCEDURE VTKFile_DeallocateData
   obj%DataStructureType = 0
   obj%DataStructureName = ''
   obj%DataFormat = 0
-  obj%WholeExtent = 0.0_DFP
+  obj%WholeExtent = 0
   obj%indent = 0
   obj%offset = 0
   obj%encoding4Appended=""
@@ -154,12 +154,19 @@ END PROCEDURE VTKFile_UpdateOffset
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE  VTKFile_OpenScratchFile
+  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_OpenScratchFile"
+  INTEGER( I4B ) :: iostat
   IF( obj%DataFormat .EQ. VTK_APPENDED ) THEN
+    ! obj%scratch = getUnitNo()
     OPEN(newunit=obj%scratch, &
       & form='UNFORMATTED',   &
       & access='STREAM',      &
       & action='READWRITE',   &
-      & status='SCRATCH')
+      & status='SCRATCH', &
+      & iostat=iostat )
+    IF( iostat .NE. 0 ) &
+      & CALL e%raiseError(modName//'::'//myName// &
+      & ' - Some error has occured while opening scratch file')
   END IF
 END PROCEDURE VTKFile_OpenScratchFile
 
@@ -168,8 +175,13 @@ END PROCEDURE VTKFile_OpenScratchFile
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_CloseScratchFile
+  INTEGER( I4B ) :: iostat
+  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_CloseScratchFile"
   IF( obj%DataFormat .EQ. VTK_APPENDED ) THEN
-    CLOSE(unit=obj%scratch)
+    CLOSE(unit=obj%scratch, iostat=iostat )
+    IF( iostat .NE. 0 ) &
+      & CALL e%raiseError(modName//'::'//myName// &
+      & ' - Some error has occured while closing scratch file')
   END IF
 END PROCEDURE VTKFile_CloseScratchFile
 

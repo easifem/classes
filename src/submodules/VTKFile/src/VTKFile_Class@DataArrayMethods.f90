@@ -124,6 +124,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Real32
   dataType = String('Float32')
   isOffset = .FALSE.
   nByte =  SIZE( x, 1 ) * BYReal32
+  noc = INPUT( default=1, option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Real32
@@ -140,6 +141,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Real64
   dataType = String('Float64')
   isOffset = .FALSE.
   nByte =  SIZE( x, 1 ) * BYReal64
+  noc = INPUT( default=1, option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Real64
@@ -156,6 +158,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int8
   dataType = String('Int8')
   isOffset = .FALSE.
   nByte =  SIZE( x, 1 ) * BYInt8
+  noc = INPUT( default=1, option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int8
@@ -172,6 +175,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int16
   dataType = String('Int16')
   isOffset = .FALSE.
   nByte =  SIZE( x, 1 ) * BYInt16
+  noc = INPUT( default=1, option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int16
@@ -188,6 +192,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int32
   dataType = String('Int32')
   isOffset = .FALSE.
   nByte =  SIZE( x, 1 ) * BYInt32
+  noc = INPUT( default=1, option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int32
@@ -205,6 +210,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
   dataType = String('Int64')
   isOffset = .FALSE.
   nByte =  SIZE( x, 1 ) * BYInt64
+  noc = INPUT( default=1, option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
@@ -222,6 +228,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Real32
   dataType = String('Float32')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYReal32
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Real32
@@ -238,6 +245,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Real64
   dataType = String('Float64')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYReal64
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Real64
@@ -254,6 +262,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int8
   dataType = String('Int8')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt8
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Int8
@@ -270,6 +279,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int16
   dataType = String('Int16')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt16
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Int16
 
@@ -285,6 +295,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int32
   dataType = String('Int32')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt32
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Int32
 
@@ -301,6 +312,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
   dataType = String('Int64')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt64
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
 #endif
@@ -317,6 +329,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Real32
   dataType = String('Float32')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYReal32
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Real32
@@ -333,6 +346,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Real64
   dataType = String('Float64')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYReal64
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Real64
@@ -349,6 +363,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int8
   dataType = String('Int8')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt8
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Int8
@@ -365,6 +380,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int16
   dataType = String('Int16')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt16
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Int16
 
@@ -380,6 +396,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int32
   dataType = String('Int32')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt32
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Int32
 
@@ -396,6 +413,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
   dataType = String('Int64')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt64
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
 #endif
@@ -413,6 +431,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Real32
   dataType = String('Float32')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYReal32
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Real32
@@ -429,6 +448,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Real64
   dataType = String('Float64')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYReal64
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Real64
@@ -445,6 +465,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int8
   dataType = String('Int8')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt8
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Int8
@@ -461,6 +482,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int16
   dataType = String('Int16')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt16
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Int16
 
@@ -476,6 +498,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int32
   dataType = String('Int32')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt32
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Int32
 
@@ -492,6 +515,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
   dataType = String('Int64')
   isOffset = .FALSE.
   nByte =  SIZE( x ) * BYInt64
+  noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
 #endif

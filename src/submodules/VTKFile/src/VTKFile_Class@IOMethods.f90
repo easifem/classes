@@ -75,7 +75,7 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
 
   !> main
   SELECT CASE( obj%DataStructureType )
-  CASE(VTK_RectilinearGrid, VTK_StructuredGrid )
+  CASE(VTK_RectilinearGrid, VTK_StructuredGrid, VTK_ImageData )
     attrNames( 1 ) = "WholeExtent"
     attrValues( 1 ) = &
       & '"' // &
@@ -199,5 +199,28 @@ MODULE PROCEDURE VTKFile_WriteTag
     & isContentIndented=.TRUE., endRecord=CHAR_LF )
   CALL tag%DeallocateData()
 END PROCEDURE VTKFile_WriteTag
+
+!----------------------------------------------------------------------------
+!                                                                WriteCells
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteCells
+  CALL obj%WriteStartTag(name=String('Cells'))
+  CALL obj%WriteDataArray( name=String('connectivity'), x=connectivity )
+  CALL obj%WriteDataArray( name=String('offsets'), x=offsets )
+  CALL obj%WriteDataArray( name=String('types'), x=types )
+  CALL obj%WriteEndTag(name=String('Cells'))
+END PROCEDURE VTKFile_WriteCells
+
+!----------------------------------------------------------------------------
+!                                                                 WriteVerts
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VTKFile_WriteVerts
+  CALL obj%WriteStartTag(name=String('Verts'))
+  CALL obj%WriteDataArray( name=String('connectivity'), x=connectivity )
+  CALL obj%WriteDataArray( name=String('offsets'), x=offsets )
+  CALL obj%WriteEndTag(name=String('Verts'))
+END PROCEDURE VTKFile_WriteVerts
 
 END SUBMODULE IOMethods

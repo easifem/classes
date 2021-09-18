@@ -20,7 +20,6 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
-
 !----------------------------------------------------------------------------
 !                                                           WriteDataArray
 !----------------------------------------------------------------------------
@@ -38,6 +37,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
   INTEGER( Int32 ), ALLOCATABLE :: dataarray_I4P(:)
   INTEGER( Int16 ), ALLOCATABLE :: dataarray_I2P(:)
   INTEGER( int8 ), ALLOCATABLE :: dataarray_I1P(:)
+
   !> main
   SELECT CASE( obj%DataFormat )
   CASE( VTK_APPENDED )
@@ -45,47 +45,52 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
     names( 1 ) = "encoding"
     values( 1 ) = '"' // TRIM(obj%encoding4Appended%chars()) // '"'
     CALL obj%WriteStartTag( name=name, attrNames=names, attrValues=values )
-    WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat) '_'
-    ENDFILE(unit=obj%scratch, iostat=iostat )
-    REWIND(unit=obj%scratch, iostat=iostat )
+    WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO" ) '_'
+    !> rewind
+    REWIND(obj%scratch)
     DO
       CALL read_dataarray_from_scratch
-      IF( iostat .EQ. 0 ) CALL write_dataarray_on_xml
+      IF( iostat .EQ. 0 ) &
+        & CALL write_dataarray_on_xml
       IF( IS_IOSTAT_END( iostat ) ) EXIT
     END DO
-    CLOSE( unit=obj%scratch, iostat=iostat )
     WRITE( unit=obj%unitNo, iostat=iostat ) CHAR_LF
     CALL obj%WriteEndTag( name=name )
   END SELECT
 
   CONTAINS
+
   !---------------------------------------------------------------------
   !
   !---------------------------------------------------------------------
 
   SUBROUTINE read_dataarray_from_scratch
     !< Read the current dataaray from scratch file.
-    READ(unit=obj%scratch, iostat=iostat, end=10)nByte, dataarray_type, &
-      & dataarray_dim
+    READ(unit=obj%scratch, iostat=iostat ) &
+      & nByte, dataarray_type, dataarray_dim
+    IF( IS_IOSTAT_END( iostat ) ) THEN
+      RETURN
+    ELSE
+      IF( iostat .NE. 0 ) &
+      & CALL e%raiseError(modName//'::'//myName// &
+      & ' - Some error has occured while reading scratch file')
+    END IF
     !> select case
     SELECT CASE(dataarray_type)
     CASE('R8')
       IF( ALLOCATED( dataarray_R8P ) ) DEALLOCATE( dataarray_R8P )
       ALLOCATE( dataarray_R8P(1:dataarray_dim) )
       READ(unit=obj%scratch, iostat=iostat) dataarray_R8P
-
     CASE('R4')
       IF( ALLOCATED(dataarray_R4P) ) DEALLOCATE(dataarray_R4P)
       ALLOCATE( dataarray_R4P(1:dataarray_dim) )
       READ( unit=obj%scratch, iostat=iostat ) dataarray_R4P
-
 #ifdef USE_Int64
     CASE( 'I8' )
       IF( ALLOCATED(dataarray_I8P) ) DEALLOCATE(dataarray_I8P)
       ALLOCATE( dataarray_I8P(1:dataarray_dim) )
       READ( unit=obj%scratch, iostat=iostat ) dataarray_I8P
 #endif
-
     CASE('I4')
       IF( ALLOCATED(dataarray_I4P) ) DEALLOCATE(dataarray_I4P)
       ALLOCATE(dataarray_I4P(1:dataarray_dim))
@@ -109,7 +114,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
         & ' dataarray dimension = ' // TRIM( str(dataarray_dim, .true.)))
 
     END SELECT
-    10 RETURN
   END SUBROUTINE read_dataarray_from_scratch
 
   !----------------------------------------------------------------------
@@ -120,51 +124,58 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
     !< Write the current dataaray on xml file.
     character(len=:), allocatable  :: content
 
-    IF (obj%encoding4Appended .EQ. 'raw') THEN
+    IF ( TRIM(obj%encoding4Appended%chars()) .EQ. 'raw') THEN
       SELECT CASE( dataarray_type )
       CASE('R8')
-        WRITE( unit=obj%unitNo, iostat=iostat )nByte, dataarray_R8P
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_R8P, fmt="ASCII" )
+        WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_R8P)
       CASE('R4')
-        WRITE(unit=obj%unitNo, iostat=iostat )nByte, dataarray_R4P
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_R4P, fmt="ASCII" )
+        WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_R4P)
 #ifdef USE_Int64
       CASE('I8')
-        WRITE(unit=obj%unitNo, iostat=iostat )nByte, dataarray_I8P
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I8P, fmt="ASCII" )
+        WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I8P)
 #endif
       CASE('I4')
-        WRITE(unit=obj%unitNo, iostat=iostat )nByte, dataarray_I4P
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I4P, fmt="ASCII" )
+        WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I4P)
       CASE('I2')
-        WRITE(unit=obj%unitNo, iostat=iostat )nByte, dataarray_I2P
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I2P, fmt="ASCII" )
+        WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I2P)
       CASE('I1')
-        WRITE(unit=obj%unitNo, iostat=iostat )nByte, dataarray_I1P
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I1P, fmt="ASCII" )
+        WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I1P)
       END SELECT
     ELSE
+      !..BASE64..BASE64..BASE64..BASE64..BASE64..BASE64..BASE64..!
       SELECT CASE(dataarray_type)
       CASE('R8')
         content = encodeVTKDataArray(x=dataarray_R8P, fmt="BINARY")
-        WRITE(unit=obj%unitNo, iostat=iostat)content
+        WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
       CASE('R4')
         content = encodeVTKDataArray(x=dataarray_R4P, fmt="BINARY")
-        WRITE(unit=obj%unitNo, iostat=iostat)content
+        WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
 #ifdef USE_Int64
       CASE('I8')
         content = encodeVTKDataArray(x=dataarray_I8P, fmt="BINARY")
-        WRITE(unit=obj%unitNo, iostat=iostat)content
+        WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
 #endif
       CASE('I4')
         content = encodeVTKDataArray(x=dataarray_I4P, fmt="BINARY")
-        WRITE(unit=obj%unitNo, iostat=iostat)content
+        WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
       CASE('I2')
         content = encodeVTKDataArray(x=dataarray_I2P, fmt="BINARY")
-        WRITE(unit=obj%unitNo, iostat=iostat)content
+        WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
       CASE('I1')
         content = encodeVTKDataArray(x=dataarray_I1P, fmt="BINARY")
-        WRITE(unit=obj%unitNo, iostat=iostat)content
+        WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
       END SELECT
     END IF
     END SUBROUTINE write_dataarray_on_xml
@@ -186,7 +197,7 @@ END PROCEDURE VTKFile_WriteToScratch1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteToScratch2
-  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch1"
+  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch2"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE( x, dim=1 ) * SIZE( x, dim=2 )
 #include "./VTKFile_WriteToScratch1_4.inc"
@@ -196,7 +207,7 @@ END PROCEDURE VTKFile_WriteToScratch2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteToScratch3
-  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch1"
+  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch3"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE(x, dim=1)*SIZE(x, dim=2)*SIZE(x, dim=3)
 #include "./VTKFile_WriteToScratch1_4.inc"
@@ -207,6 +218,7 @@ END PROCEDURE VTKFile_WriteToScratch3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_WriteToScratch4
+  CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WriteToScratch4"
   INTEGER( I4B ) :: nn, iostat, n_byte
   nn = SIZE(x, dim=1)*SIZE(x, dim=2)*SIZE(x, dim=3)*SIZE(x, dim=4)
 #include "./VTKFile_WriteToScratch1_4.inc"
