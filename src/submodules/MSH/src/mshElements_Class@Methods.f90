@@ -50,7 +50,7 @@ MODULE PROCEDURE el_GotoTag
   CHARACTER( LEN = * ), PARAMETER :: myName = "el_GotoTag"
 
   IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'mshFile is either not opened or does not have read access!')
     error = -1
   ELSE
@@ -64,7 +64,7 @@ MODULE PROCEDURE el_GotoTag
         Reopen = Reopen + 1
       END IF
       IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+        CALL e%raiseError(modName//'::'//myName//' - '// &
         & 'Could not find $Elements !')
         error = -2
         EXIT

@@ -22,21 +22,29 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                              addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_addSurrogate
+  CALL e%addSurrogate( UserObj )
+END PROCEDURE txt_addSurrogate
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_initiate
   CHARACTER(LEN=*),PARAMETER :: myName='inp_initiate'
 
-  IF(PRESENT(access)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(access)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "ACCESS" is being ignored. Value is "SEQUENTIAL".')
-  IF(PRESENT(form)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(form)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "FORM" is being ignored. Value is "FORMATTED".')
-  IF(PRESENT(pad)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(pad)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "PAD" is being ignored. Value is "YES".')
-  IF(PRESENT(position)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(position)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "POSITION" is being ignored. Value is "REWIND".')
-  IF(PRESENT(recl)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(recl)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "RECL" is being ignored. File is "SEQUENTIAL".')
 
   !Initialize the input file
@@ -85,7 +93,7 @@ MODULE PROCEDURE txt_readLine
           IF(eioerr /= 0) THEN
             WRITE(sioerr,'(i4)') eioerr; sioerr=ADJUSTL(sioerr)
             WRITE(sunit,'(i4)') obj%echounit; sunit=ADJUSTL(sunit)
-            CALL obj%e%raiseError(modName//'::'//myName// &
+            CALL e%raiseError(modName//'::'//myName// &
               &' - Error echoing line to UNIT='//TRIM(sunit) //' (IOSTAT='//&
               & TRIM(sioerr)//')!')
           ENDIF
@@ -94,7 +102,7 @@ MODULE PROCEDURE txt_readLine
       ELSEIF(ioerr < IOSTAT_EOR) THEN
         !Error reading line from input file
         WRITE(sioerr,'(i4)') ioerr; sioerr=ADJUSTL(sioerr)
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Error reading one line from input file (IOSTAT='// &
           & TRIM(sioerr)//')!')
       ELSE
@@ -130,7 +138,7 @@ MODULE PROCEDURE txt_setEchoUnit
   IF( (0 .LT. unitno) .AND. (unitno .NE. stdout) .AND. (unitno .NE. stderr)) THEN
     obj%echounit=unitno
   ELSE
-    CALL obj%e%raiseError('Incorrect input to '//modName//'::'// &
+    CALL e%raiseError('Incorrect input to '//modName//'::'// &
       & myName//' - Illegal value for unit number!')
   ENDIF
 END PROCEDURE txt_setEchoUnit

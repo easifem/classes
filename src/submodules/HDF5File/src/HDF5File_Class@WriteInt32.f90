@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( HDF5File_Class ) WriteInt32
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

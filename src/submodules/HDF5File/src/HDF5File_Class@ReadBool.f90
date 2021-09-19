@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( HDF5File_Class ) ReadBool
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

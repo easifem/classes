@@ -31,7 +31,7 @@ MODULE PROCEDURE mesh_display
 END PROCEDURE mesh_display
 
 !----------------------------------------------------------------------------
-!                                                                 Import
+!                                                                     Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_Import
@@ -361,5 +361,40 @@ MODULE PROCEDURE mesh_Import
   IF( ALLOCATED(connectivity) ) DEALLOCATE(connectivity)
   IF( ALLOCATED(InternalNptrs) ) DEALLOCATE(InternalNptrs)
 END PROCEDURE mesh_Import
+
+!----------------------------------------------------------------------------
+!                                                                     Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_Export"
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "This routine has not been implemented yet.")
+END PROCEDURE mesh_Export
+
+!----------------------------------------------------------------------------
+!                                                                     Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_ExportToVTK
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_ExportToVTK"
+  INTEGER( I4B ) :: nCells, nPoints
+  !> main
+  IF( .NOT. vtkFile%isInitiated ) THEN
+    IF( .NOT. PRESENT( filename ) ) THEN
+      CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "VTKFile_ is not initiated, and filename is not present.")
+    ELSE
+      CALL vtkFile%InitiateVTKFile(filename=filename, &
+        & mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+        & DataStructureType=VTK_UnStructuredGrid )
+    END IF
+  END IF
+  !>
+  nCells = obj%getTotalElements()
+  nPoints = obj%getTotalNodes( )
+  CALL vtkFile%WritePiece( nPoints=nPoints, nCells=nCells )
+  CALL vtkFile%WritePiece( )
+END PROCEDURE mesh_ExportToVTK
 
 END SUBMODULE IOMethods

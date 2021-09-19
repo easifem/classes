@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( HDF5File_Class ) WriteBool
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

@@ -43,9 +43,12 @@ PRIVATE
 !List of Public Members
 CHARACTER(LEN=*),PARAMETER :: modName='ABSTRACTFILE_CLASS'
 INTEGER(I4B), PARAMETER :: maxStrLen=256
+TYPE(ExceptionHandler_), PRIVATE :: e
+  !! The exception handler for the object
+  !! List of type bound procedures (methods) for the Base File Type object
 
 !----------------------------------------------------------------------------
-!
+!                                                             AbstractFile_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -74,43 +77,62 @@ TYPE,ABSTRACT :: AbstractFile_
     !! Whether or not the file is open for reading
   LOGICAL(LGT) :: writestat=.FALSE.
     !! Whether or not the file is open for writing
-  TYPE(ExceptionHandler_), PUBLIC :: e
-    !! The exception handler for the object
-    !! List of type bound procedures (methods) for the Base File Type object
   CONTAINS
     PRIVATE
-    PROCEDURE(empty_abstract_iface), PUBLIC, DEFERRED, PASS( obj ) :: open
-    PROCEDURE(empty_abstract_iface), PUBLIC, DEFERRED, PASS( obj ) :: close
-    PROCEDURE(empty_abstract_iface), PUBLIC, DEFERRED, PASS( obj ) :: delete
-    PROCEDURE, PUBLIC, PASS( obj ) :: setFilePath => setFilePath_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: setFileName => setFileName_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: setFileExt => setFileExt_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFilePath => getFilePath_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileName => getFileName_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileExt => getFileExt_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileParts => getFileParts_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: setEOFstat => setEOFStat_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: setOpenStat => setOpenStat_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: setReadStat => setReadStat_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: setWriteStat => setWriteStat_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: isOpen => isOpen_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: isEOF => isEOF_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: isRead => isRead_file
-    PROCEDURE, PUBLIC, PASS( obj ) :: isWrite => isWrite_file
-    PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateBaseData => deallocateData_file
+    PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS( obj ) :: open
+    PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS( obj ) :: close
+    PROCEDURE(aFile_delete), PUBLIC, DEFERRED, PASS( obj ) :: delete
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => aFile_addSurrogate
+    PROCEDURE, PUBLIC, PASS( obj ) :: setFilePath => aFile_setFilePath
+    PROCEDURE, PUBLIC, PASS( obj ) :: setFileName => aFile_setFileName
+    PROCEDURE, PUBLIC, PASS( obj ) :: setFileExt => aFile_setFileExt
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFilePath => aFile_getFilePath
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFileName => aFile_getFileName
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFileExt => aFile_getFileExt
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFileParts => aFile_getFileParts
+    PROCEDURE, PUBLIC, PASS( obj ) :: setEOFstat => aFile_setEOFStat
+    PROCEDURE, PUBLIC, PASS( obj ) :: setOpenStat => aFile_setOpenStat
+    PROCEDURE, PUBLIC, PASS( obj ) :: setReadStat => aFile_setReadStat
+    PROCEDURE, PUBLIC, PASS( obj ) :: setWriteStat => aFile_setWriteStat
+    PROCEDURE, PUBLIC, PASS( obj ) :: isOpen => aFile_isOpen
+    PROCEDURE, PUBLIC, PASS( obj ) :: isEOF => aFile_isEOF
+    PROCEDURE, PUBLIC, PASS( obj ) :: isRead => aFile_isRead
+    PROCEDURE, PUBLIC, PASS( obj ) :: isWrite => aFile_isWrite
+    PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => aFile_deallocateData
 ENDTYPE AbstractFile_
 
 PUBLIC :: AbstractFile_
+
+!----------------------------------------------------------------------------
+!                                                       AbstractFilePointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractFilePointer_
+CLASS( AbstractFile_ ), POINTER :: ptr => NULL()
+END TYPE AbstractFilePointer_
+
+PUBLIC :: AbstractFilePointer_
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogate
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE aFile_addSurrogate( obj, UserObj )
+  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE aFile_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setFilePath_file( obj, path )
+MODULE SUBROUTINE aFile_setFilePath( obj, path )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   TYPE( String ), INTENT( IN ) :: path
-END SUBROUTINE setFilePath_file
+END SUBROUTINE aFile_setFilePath
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -118,10 +140,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setFileName_file( obj, fileName )
+MODULE SUBROUTINE aFile_setFileName( obj, fileName )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   TYPE( String ), INTENT( IN ) :: fileName
-END SUBROUTINE setFileName_file
+END SUBROUTINE aFile_setFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -129,10 +151,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setFileExt_file( obj, Ext )
+MODULE SUBROUTINE aFile_setFileExt( obj, Ext )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   TYPE( String ), INTENT( IN ) :: Ext
-END SUBROUTINE setFileExt_file
+END SUBROUTINE aFile_setFileExt
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -140,12 +162,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE getFileParts_file( obj, path, fileName, ext )
+MODULE PURE SUBROUTINE aFile_getFileParts( obj, path, fileName, ext )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   TYPE( String ), INTENT( OUT ) :: path
   TYPE( String ), INTENT( OUT ) :: fileName
   TYPE( String ), INTENT( OUT ) :: ext
-END SUBROUTINE getFileParts_file
+END SUBROUTINE aFile_getFileParts
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -153,10 +175,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION getFilePath_file( obj ) RESULT( path )
+MODULE FUNCTION aFile_getFilePath( obj ) RESULT( path )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   TYPE( String ) :: path
-END FUNCTION getFilePath_file
+END FUNCTION aFile_getFilePath
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -164,10 +186,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION getFileName_file( obj ) RESULT( fileName )
+MODULE FUNCTION aFile_getFileName( obj ) RESULT( fileName )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   TYPE( String ) :: fileName
-END FUNCTION getFileName_file
+END FUNCTION aFile_getFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -175,10 +197,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION getFileExt_file( obj ) RESULT( Ext )
+MODULE FUNCTION aFile_getFileExt( obj ) RESULT( Ext )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   TYPE( String ) :: Ext
-END FUNCTION getFileExt_file
+END FUNCTION aFile_getFileExt
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -186,10 +208,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION isOpen_file( obj ) RESULT( ans )
+MODULE FUNCTION aFile_isOpen( obj ) RESULT( ans )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
-END FUNCTION isOpen_file
+END FUNCTION aFile_isOpen
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -197,10 +219,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION isEOF_file( obj ) RESULT( ans )
+MODULE FUNCTION aFile_isEOF( obj ) RESULT( ans )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
-END FUNCTION isEOF_file
+END FUNCTION aFile_isEOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -208,10 +230,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION isWrite_file( obj ) RESULT( ans )
+MODULE FUNCTION aFile_isWrite( obj ) RESULT( ans )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
-END FUNCTION isWrite_file
+END FUNCTION aFile_isWrite
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -219,10 +241,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION isRead_file( obj ) RESULT( ans )
+MODULE FUNCTION aFile_isRead( obj ) RESULT( ans )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
-END FUNCTION isRead_file
+END FUNCTION aFile_isRead
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -230,10 +252,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setEOFstat_file( obj, stat )
+MODULE SUBROUTINE aFile_setEOFstat( obj, stat )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE setEOFstat_file
+END SUBROUTINE aFile_setEOFstat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -241,10 +263,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setOpenStat_file( obj, stat )
+MODULE SUBROUTINE aFile_setOpenStat( obj, stat )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE setOpenStat_file
+END SUBROUTINE aFile_setOpenStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -252,10 +274,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setReadStat_file( obj, stat )
+MODULE SUBROUTINE aFile_setReadStat( obj, stat )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE setReadStat_file
+END SUBROUTINE aFile_setReadStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -263,10 +285,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE setWriteStat_file( obj, stat )
+MODULE SUBROUTINE aFile_setWriteStat( obj, stat )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE setWriteStat_file
+END SUBROUTINE aFile_setWriteStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -274,9 +296,23 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE deallocateData_file( obj )
+MODULE SUBROUTINE aFile_deallocateData( obj, delete )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE deallocateData_file
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
+END SUBROUTINE aFile_deallocateData
+END INTERFACE
+
+PUBLIC :: aFile_deallocateData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE aFile_Close(obj)
+    IMPORT :: AbstractFile_
+    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  END SUBROUTINE aFile_Close
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -284,10 +320,21 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE empty_abstract_iface(obj)
+  SUBROUTINE aFile_Open(obj)
     IMPORT :: AbstractFile_
     CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  END SUBROUTINE empty_abstract_iface
+  END SUBROUTINE aFile_Open
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE aFile_Delete(obj)
+    IMPORT :: AbstractFile_
+    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  END SUBROUTINE aFile_Delete
 END INTERFACE
 
 ENDMODULE AbstractFile_Class

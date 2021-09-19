@@ -22,25 +22,33 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                              addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE inp_addSurrogate
+  CALL e%addSurrogate( UserObj )
+END PROCEDURE inp_addSurrogate
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE inp_initiate
   CHARACTER(LEN=*),PARAMETER :: myName='inp_initiate'
 
-  IF(PRESENT(status)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(status)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "STATUS" is being ignored. Value is "OLD".')
-  IF(PRESENT(access)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(access)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "ACCESS" is being ignored. Value is "SEQUENTIAL".')
-  IF(PRESENT(form)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(form)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "FORM" is being ignored. Value is "FORMATTED".')
-  IF(PRESENT(action)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(action)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "ACTION" is being ignored. Value is "READ".')
-  IF(PRESENT(pad)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(pad)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "PAD" is being ignored. Value is "YES".')
-  IF(PRESENT(position)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(position)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "POSITION" is being ignored. Value is "REWIND".')
-  IF(PRESENT(recl)) CALL obj%e%raiseDebug(modName//'::'//myName// &
+  IF(PRESENT(recl)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "RECL" is being ignored. File is "SEQUENTIAL".')
 
   !Initialize the input file
@@ -111,7 +119,7 @@ MODULE PROCEDURE inp_readLine
           IF(eioerr /= 0) THEN
             WRITE(sioerr,'(i4)') eioerr; sioerr=ADJUSTL(sioerr)
             WRITE(sunit,'(i4)') obj%echounit; sunit=ADJUSTL(sunit)
-            CALL obj%e%raiseError(modName//'::'//myName// &
+            CALL e%raiseError(modName//'::'//myName// &
               &' - Error echoing line to UNIT='//TRIM(sunit) //' (IOSTAT='//&
               & TRIM(sioerr)//')!')
           ENDIF
@@ -120,7 +128,7 @@ MODULE PROCEDURE inp_readLine
       ELSEIF(ioerr < IOSTAT_EOR) THEN
         !Error reading line from input file
         WRITE(sioerr,'(i4)') ioerr; sioerr=ADJUSTL(sioerr)
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Error reading one line from input file (IOSTAT='// &
           & TRIM(sioerr)//')!')
       ELSE
@@ -164,7 +172,7 @@ MODULE PROCEDURE inp_setEchoUnit
   IF( (0 .LT. unitno) .AND. (unitno .NE. stdout) .AND. (unitno .NE. stderr)) THEN
     obj%echounit=unitno
   ELSE
-    CALL obj%e%raiseError('Incorrect input to '//modName//'::'// &
+    CALL e%raiseError('Incorrect input to '//modName//'::'// &
       & myName//' - Illegal value for unit number!')
   ENDIF
 END PROCEDURE inp_setEchoUnit

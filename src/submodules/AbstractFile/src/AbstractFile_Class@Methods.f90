@@ -21,172 +21,180 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                              addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aFile_addSurrogate
+  CALL e%addSurrogate( UserObj )
+END PROCEDURE aFile_addSurrogate
+
+!----------------------------------------------------------------------------
 !                                                               setFilePath
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setFilePath_file
-  CHARACTER(LEN=*),PARAMETER :: myName='setFilePath_file'
+MODULE PROCEDURE aFile_setFilePath
+  CHARACTER(LEN=*),PARAMETER :: myName='aFile_setFilePath'
   IF(obj%openstat) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
         'Cannot change path of file while it is open!')
   ELSE
     obj%path=TRIM(ADJUSTL(path))
     obj%pathlen=LEN_TRIM(obj%path)
   ENDIF
-END PROCEDURE setFilePath_file
+END PROCEDURE aFile_setFilePath
 
 !----------------------------------------------------------------------------
 !                                                               setFileName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setFileName_file
-  CHARACTER(LEN=*),PARAMETER :: myName='setFileName_file'
+MODULE PROCEDURE aFile_setFileName
+  CHARACTER(LEN=*),PARAMETER :: myName='aFile_setFileName'
   IF(obj%openstat) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
         'Cannot change Filename of file while it is open!')
   ELSE
     obj%fileName=TRIM(ADJUSTL(fileName))
     obj%fnamelen=LEN_TRIM(obj%fileName)
   ENDIF
-END PROCEDURE setFileName_file
+END PROCEDURE aFile_setFileName
 
 !----------------------------------------------------------------------------
 !                                                                 setFileExt
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setFileExt_file
-  CHARACTER(LEN=*),PARAMETER :: myName='setFileExt_file'
+MODULE PROCEDURE aFile_setFileExt
+  CHARACTER(LEN=*),PARAMETER :: myName='aFile_setFileExt'
 
   IF(obj%openstat) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Cannot change extension of file while it is open!')
   ELSE
     obj%ext=TRIM(ADJUSTL(ext))
     obj%extlen=LEN_TRIM(obj%ext)
   ENDIF
-END PROCEDURE setFileExt_file
+END PROCEDURE aFile_setFileExt
 
 !----------------------------------------------------------------------------
 !                                                              getFileParts
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getFileParts_file
+MODULE PROCEDURE aFile_getFileParts
   path=obj%path
   fileName=obj%fileName
   ext=obj%ext
-END PROCEDURE getFileParts_file
+END PROCEDURE aFile_getFileParts
 
 !----------------------------------------------------------------------------
 !                                                                getFilePath
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getFilePath_file
+MODULE PROCEDURE aFile_getFilePath
   path = obj%path
-END PROCEDURE getFilePath_file
+END PROCEDURE aFile_getFilePath
 
 !----------------------------------------------------------------------------
 !                                                                getFileName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getFileName_file
+MODULE PROCEDURE aFile_getFileName
   fileName = obj%fileName
-END PROCEDURE getFileName_file
+END PROCEDURE aFile_getFileName
 
 !----------------------------------------------------------------------------
 !                                                                getFileExt
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getFileExt_file
+MODULE PROCEDURE aFile_getFileExt
   ext = obj%ext
-END PROCEDURE getFileExt_file
+END PROCEDURE aFile_getFileExt
 
 !----------------------------------------------------------------------------
 !                                                                 isOpen
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE isOpen_file
+MODULE PROCEDURE aFile_isOpen
   ans = obj%openStat
-END PROCEDURE isOpen_file
+END PROCEDURE aFile_isOpen
 
 !----------------------------------------------------------------------------
 !                                                                 isEOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE isEOF_file
+MODULE PROCEDURE aFile_isEOF
   ans = obj%eofStat
-END PROCEDURE isEOF_file
+END PROCEDURE aFile_isEOF
 
 !----------------------------------------------------------------------------
 !                                                                 isWrite
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE isWrite_file
+MODULE PROCEDURE aFile_isWrite
   ans = obj%writeStat
-END PROCEDURE isWrite_file
+END PROCEDURE aFile_isWrite
 
 !----------------------------------------------------------------------------
 !                                                                 isRead
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE isRead_file
+MODULE PROCEDURE aFile_isRead
   ans = obj%readStat
-END PROCEDURE isRead_file
+END PROCEDURE aFile_isRead
 
 !----------------------------------------------------------------------------
 !                                                                 setEOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setEOFstat_file
-  CHARACTER(LEN=*),PARAMETER :: myName='setEOFstat_file'
+MODULE PROCEDURE aFile_setEOFstat
+  CHARACTER(LEN=*),PARAMETER :: myName='aFile_setEOFstat'
   IF(obj%openstat) THEN
     obj%EOFstat=stat
   ELSE
-    CALL obj%e%raiseDebug(modName//'::'//myName// &
-        ' - EOF status cannot be changed on a file that is not open!')
+    CALL e%raiseDebug(modName//'::'//myName// &
+      & ' - EOF status cannot be changed on a file that is not open!')
   ENDIF
-END PROCEDURE setEOFstat_file
+END PROCEDURE aFile_setEOFstat
 
 !----------------------------------------------------------------------------
 !                                                                 setOpenStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setOpenStat_file
+MODULE PROCEDURE aFile_setOpenStat
   obj%openStat = stat
-END PROCEDURE setOpenStat_file
+END PROCEDURE aFile_setOpenStat
 
 !----------------------------------------------------------------------------
 !                                                                setReadStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setReadStat_file
-  CHARACTER(LEN=*),PARAMETER :: myName='setReadStat_file'
+MODULE PROCEDURE aFile_setReadStat
+  CHARACTER(LEN=*),PARAMETER :: myName='aFile_setReadStat'
   IF(obj%openstat) THEN
-    CALL obj%e%raiseDebug(modName//'::'//myName// &
+    CALL e%raiseDebug(modName//'::'//myName// &
         ' - Cannot change read status of a file if it is open!')
   ELSE
     obj%readstat=stat
   ENDIF
-END PROCEDURE setReadStat_file
+END PROCEDURE aFile_setReadStat
 
 !----------------------------------------------------------------------------
 !                                                               setWriteStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setWriteStat_file
-  CHARACTER(LEN=*),PARAMETER :: myName='setWriteStat_file'
+MODULE PROCEDURE aFile_setWriteStat
+  CHARACTER(LEN=*),PARAMETER :: myName='aFile_setWriteStat'
   IF(obj%openstat) THEN
-    CALL obj%e%raiseDebug(modName//'::'//myName// &
+    CALL e%raiseDebug(modName//'::'//myName// &
         ' - Cannot change write status of a file if it is open!')
   ELSE
     obj%writestat=stat
   ENDIF
-END PROCEDURE setWriteStat_file
+END PROCEDURE aFile_setWriteStat
 
 !----------------------------------------------------------------------------
 !                                                             DeallocateData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE deallocateData_file
+MODULE PROCEDURE aFile_deallocateData
   obj%path=''
   obj%fileName=''
   obj%ext=''
@@ -197,7 +205,6 @@ MODULE PROCEDURE deallocateData_file
   obj%EOFstat=.FALSE.
   obj%readstat=.FALSE.
   obj%writestat=.FALSE.
-  CALL obj%e%reset()
-END PROCEDURE deallocateData_file
+END PROCEDURE aFile_deallocateData
 
 END SUBMODULE Methods

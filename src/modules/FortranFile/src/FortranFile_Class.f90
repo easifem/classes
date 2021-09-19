@@ -35,6 +35,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*),PARAMETER :: modName='FORTRANFILE_CLASS', hash="#", comma=","
 INTEGER(I4B), PARAMETER :: maxStrLen=256
+TYPE(ExceptionHandler_), PRIVATE :: e
 
 !----------------------------------------------------------------------------
 !
@@ -67,6 +68,7 @@ TYPE, EXTENDS(AbstractFile_) :: FortranFile_
   CONTAINS
   PRIVATE
   PROCEDURE,NOPASS :: newUnitNo => ff_newUnitNo
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => ff_addSurrogate
   PROCEDURE, PUBLIC, PASS( Obj ) :: initiate => ff_initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: clear => ff_clear
   PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => ff_clear
@@ -109,6 +111,17 @@ MODULE FUNCTION ff_newUnitNo(istt) RESULT( ans )
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: istt
   INTEGER( I4B ) :: ans
 END FUNCTION
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogate
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE ff_addSurrogate( obj, UserObj )
+  CLASS( FortranFile_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE ff_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------

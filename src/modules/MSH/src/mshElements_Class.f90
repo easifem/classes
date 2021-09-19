@@ -24,10 +24,11 @@ USE BaseType
 USE GlobalData
 USE mshFormat_Class
 USE TxtFile_Class
+USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSHELEMENT_CLASS"
+TYPE(ExceptionHandler_), PRIVATE :: e
 
 !----------------------------------------------------------------------------
 !                                                              mshElements_
@@ -44,7 +45,6 @@ TYPE :: mshElements_
   INTEGER( I4B ) :: minElementTag = 0
   INTEGER( I4B ) :: maxElementTag = 0
   LOGICAL( LGT ) :: isSparse = .FALSE.
-
   CONTAINS
     PRIVATE
     FINAL :: el_Final

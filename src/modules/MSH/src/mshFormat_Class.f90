@@ -34,12 +34,13 @@ MODULE mshFormat_Class
 USE BaseType
 USE GlobalData
 USE TxtFile_Class
+USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER( LEN = * ), PARAMETER :: modName = "mshFormat_Class"
 INTEGER( I4B ) :: ierr
 !$OMP THREADPRIVATE(ierr)
+TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
 !                                                                 mshFormat_

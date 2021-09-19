@@ -104,7 +104,7 @@ MODULE PROCEDURE fmt_Read
       obj%isASCII = .TRUE.
     END IF
   ELSE
-    CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Could not read mesh format from mshFile !')
   END IF
 END PROCEDURE fmt_Read
@@ -147,7 +147,7 @@ MODULE PROCEDURE fmt_GotoTag
   ! Find $meshFormat
 
   IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'mshFile is either not opened or does not have read access!')
     error = -1
   ELSE
@@ -161,7 +161,7 @@ MODULE PROCEDURE fmt_GotoTag
         Reopen = Reopen + 1
       END IF
       IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+        CALL e%raiseError(modName//'::'//myName//' - '// &
         & 'Could not find $MeshFormat!')
         error = -2
         EXIT

@@ -51,6 +51,14 @@ MODULE PROCEDURE ff_newUnitNo
 END PROCEDURE ff_newUnitNo
 
 !----------------------------------------------------------------------------
+!                                                              addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ff_addSurrogate
+  CALL e%addSurrogate( UserObj )
+END PROCEDURE ff_addSurrogate
+
+!----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
@@ -72,10 +80,10 @@ MODULE PROCEDURE ff_initiate
   actionval=''
   padval=''
 
-  oldcnt=obj%e%getCounter(EXCEPTION_ERROR)
+  oldcnt=e%getCounter(EXCEPTION_ERROR)
 
   IF(obj%initstat) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Fortran file has already been initialized!')
   ELSE
     !Initialize the file
@@ -90,21 +98,21 @@ MODULE PROCEDURE ff_initiate
 
     IF(PRESENT(unit)) THEN
       IF(unit == stdout) THEN
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
             'value for optional input argument UNIT! Value is equal to '// &
             'default OUTPUT_UNIT.')
       ELSEIF(unit == stderr) THEN
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
             'value for optional input argument UNIT! Value is equal to '// &
             'default ERROR_UNIT.')
       ELSEIF(unit == stdin) THEN
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
             'value for optional input argument UNIT! Value is equal to '// &
             'default INPUT_UNIT.')
       ELSE
         INQUIRE(UNIT=unit,OPENED=ostat)
         IF(ostat) THEN
-          CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+          CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
               'value for optional input argument UNIT! Unit is being used'// &
               ' by another file!')
         ELSE
@@ -138,7 +146,7 @@ MODULE PROCEDURE ff_initiate
         statusval='REPLACE'
         ierr  = system_mkdir(fpath//'', RWX_U)
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
             'value ('//status//') for optional input argument STATUS!')
       ENDSELECT
     ELSE
@@ -160,7 +168,7 @@ MODULE PROCEDURE ff_initiate
         !File has streaming access !F2003, might have problems.
         accessval=access
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value ('//access//') for optional input argument ACCESS!')
       ENDSELECT
     ELSE
@@ -178,7 +186,7 @@ MODULE PROCEDURE ff_initiate
         !File a binary file
         formval=form
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value ('//form//') for optional input argument FORM!')
       ENDSELECT
     ELSE
@@ -199,7 +207,7 @@ MODULE PROCEDURE ff_initiate
         !File opens with file pointer as is
         obj%posopt=position
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value ('//position//') for optional input argument POSITION!')
       ENDSELECT
     ELSE
@@ -216,7 +224,7 @@ MODULE PROCEDURE ff_initiate
       CASE('READWRITE') !File opens with read write access
         actionval=action
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
             'value ('//action//') for optional input argument ACTION!')
       ENDSELECT
     ELSE
@@ -231,7 +239,7 @@ MODULE PROCEDURE ff_initiate
       CASE('NO') !File is not padded
         padval=pad
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value ('//pad//') for optional input argument PAD!')
       ENDSELECT
     ELSE
@@ -241,7 +249,7 @@ MODULE PROCEDURE ff_initiate
 
     IF(PRESENT(recl)) THEN
       IF(recl < 1) THEN
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value for input option RECL must be set to greater than 0!')
       ELSE
         obj%reclval=recl
@@ -268,14 +276,14 @@ MODULE PROCEDURE ff_initiate
     obj%padstat=(TRIM(padval) ==  'YES')
     IF(TRIM(accessval) == 'DIRECT' .OR. TRIM(accessval) == 'STREAM') THEN
       obj%accessstat=.TRUE.
-      IF(obj%reclval < 1) CALL obj%e%raiseError(modName//'::'// &
+      IF(obj%reclval < 1) CALL e%raiseError(modName//'::'// &
         & myName//' - Record length must be set to greater than 0 for '// &
         & 'direct access files!')
     ENDIF
 
     IF(TRIM(actionval) == 'READ') THEN
       CALL obj%setReadStat(.TRUE.)
-      IF(obj%newstat) CALL obj%e%raiseError(modName//'::'// &
+      IF(obj%newstat) CALL e%raiseError(modName//'::'// &
         & myName//' - Cannot have a new file with a read only status!')
     ELSEIF(TRIM(actionval) == 'WRITE') THEN
       CALL obj%setWriteStat(.TRUE.)
@@ -284,8 +292,8 @@ MODULE PROCEDURE ff_initiate
       CALL obj%setWriteStat(.TRUE.)
     ENDIF
 
-    IF(oldcnt < obj%e%getCounter(EXCEPTION_ERROR)) THEN
-      CALL obj%e%raiseError(modName//'::'//myName//' - Exceptions '// &
+    IF(oldcnt < e%getCounter(EXCEPTION_ERROR)) THEN
+      CALL e%raiseError(modName//'::'//myName//' - Exceptions '// &
           'during file initialization! File not initialized!')
       !Reset all attributes if initialization failed.
       obj%unitno=-1
@@ -341,7 +349,7 @@ MODULE PROCEDURE ff_clear
   obj%separator = comma
   obj%delimiter = '\n'
   !Set BaseFileType attributes to default
-  CALL obj%DeallocateBaseData()
+  CALL aFile_DeallocateData(obj)
 END PROCEDURE ff_clear
 
 !----------------------------------------------------------------------------
@@ -364,7 +372,7 @@ MODULE PROCEDURE ff_open
     IF(obj%isOpen()) THEN
       WRITE(emesg,'(a,i4,a)') 'Cannot open file (UNIT=', &
           obj%unitno,') File is already open!'
-      CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
     ELSE
       path = obj%getFilePath()
       filename = obj%getFileName()
@@ -448,7 +456,7 @@ MODULE PROCEDURE ff_open
             & TRIM(path%chars())// &
             & TRIM(filename%chars())//TRIM(ext%chars()) &
             & //'" (UNIT=',obj%unitno, ') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg &
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg &
             //' IOMSG="'//TRIM(iomsg)//'"')
       ELSE
         CALL obj%setOpenStat(.TRUE.)
@@ -456,7 +464,7 @@ MODULE PROCEDURE ff_open
       ENDIF
     ENDIF
   ELSE
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Cannot open file! Object has not been initialized!')
   ENDIF
 END PROCEDURE ff_open
@@ -474,17 +482,17 @@ MODULE PROCEDURE ff_close
       IF(ioerr /= 0) THEN
         WRITE(emesg,'(a,i4,a,i4)') 'Error closing file (UNIT=', &
           & obj%unitno,') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg)
       ELSE
         CALL obj%setOpenStat(.FALSE.)
       ENDIF
     ELSE
       WRITE(emesg,'(a,i4,a)') 'Cannot close file (UNIT=', &
         & obj%unitno,') File is not open!'
-      CALL obj%e%raiseDebug(modName//'::'//myName//' - '//emesg)
+      CALL e%raiseDebug(modName//'::'//myName//' - '//emesg)
     ENDIF
   ELSE
-    CALL obj%e%raiseDebug(modName//'::'//myName//' - '// &
+    CALL e%raiseDebug(modName//'::'//myName//' - '// &
       & 'Cannot close file! File object has not been initialized!')
   ENDIF
 END PROCEDURE ff_close
@@ -503,7 +511,7 @@ MODULE PROCEDURE ff_delete
       IF(ioerr /= 0) THEN
         WRITE(emesg,'(a,i4,a,i4)') 'Error deleting file (UNIT=', &
           & obj%unitno,') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg)
       ELSE
         CALL obj%setOpenStat(.FALSE.)
       ENDIF
@@ -523,19 +531,19 @@ MODULE PROCEDURE ff_delete
         WRITE(emesg,'(a,i4,a,i4)') &
           & 'Error deleting file (UNIT=', &
           & obj%unitno,') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg)
       ENDIF
       CLOSE(UNIT=obj%unitno,STATUS='DELETE',IOSTAT=ioerr)
       IF(ioerr /= 0) THEN
         WRITE(emesg,'(a,i4,a,i4)') 'Error deleting file (UNIT=', &
           & obj%unitno,') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg)
       ELSE
         CALL obj%setOpenStat(.FALSE.)
       ENDIF
     ENDIF
   ELSE
-    CALL obj%e%raiseDebug(modName//'::'//myName//' - '// &
+    CALL e%raiseDebug(modName//'::'//myName//' - '// &
       & 'Cannot delete file! File object has not been initialized!')
   ENDIF
 END PROCEDURE ff_delete
@@ -554,17 +562,17 @@ MODULE PROCEDURE ff_backspace
       IF(ioerr /= 0) THEN
         WRITE(emesg,'(a,i4,a,i4)') 'Error backspacing file (UNIT=', &
           & obj%unitno,') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg)
       ELSE
         IF(obj%isEOF()) CALL obj%setEOFstat(.FALSE.)
       ENDIF
     ELSE
       WRITE(emesg,'(a,i4,a)') 'Cannot backspace file (UNIT=',obj%unitno, &
         & '). File not is not open!'
-      CALL obj%e%raiseDebug(modName//'::'//myName//' - '//emesg)
+      CALL e%raiseDebug(modName//'::'//myName//' - '//emesg)
     ENDIF
   ELSE
-    CALL obj%e%raiseDebug(modName//'::'// myName//' - '// &
+    CALL e%raiseDebug(modName//'::'// myName//' - '// &
       & 'Cannot backspace file! File object has not been initialized!')
   ENDIF
 END PROCEDURE ff_backspace
@@ -582,15 +590,15 @@ MODULE PROCEDURE ff_rewind
       IF(ioerr /= 0) THEN
         WRITE(emesg,'(a,i4,a,i4)') 'Error rewinding file (UNIT=', &
           & obj%unitno,') IOSTAT=',ioerr
-        CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+        CALL e%raiseError(modName//'::'//myName//' - '//emesg)
       ENDIF
     ELSE
       WRITE(emesg,'(a,i4,a)') 'Cannot rewind file (UNIT=',obj%unitno, &
         & '). File not is not open!'
-      CALL obj%e%raiseDebug(modName//'::'//myName//' - '//emesg)
+      CALL e%raiseDebug(modName//'::'//myName//' - '//emesg)
     ENDIF
   ELSE
-    CALL obj%e%raiseDebug(modName//'::'//myName//' - '// &
+    CALL e%raiseDebug(modName//'::'//myName//' - '// &
       & 'Cannot rewind file! File object has not been initialized!')
   ENDIF
 END PROCEDURE ff_rewind
@@ -684,15 +692,15 @@ MODULE PROCEDURE ff_setStatus
         obj%newstat=.TRUE.
         obj%overwrite=.TRUE.
       CASE DEFAULT
-        CALL obj%e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
           & 'value ('//status//') for input argument STATUS!')
       ENDSELECT
     ELSE
-      CALL obj%e%raiseError(modName//'::'//myName//' - File status '// &
+      CALL e%raiseError(modName//'::'//myName//' - File status '// &
         & 'cannot be changed while file is open!')
     ENDIF
   ELSE
-    CALL obj%e%raiseError(modName//'::'//myName//' - File status '// &
+    CALL e%raiseError(modName//'::'//myName//' - File status '// &
       & 'cannot be changed on uninitialized file!')
   ENDIF
 END PROCEDURE ff_setStatus

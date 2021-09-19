@@ -53,7 +53,7 @@ MODULE PROCEDURE n_GotoTag
   ! Find $meshFormat
 
   IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'mshFile is either not opened or does not have read access!')
     error = -1
   ELSE
@@ -67,7 +67,7 @@ MODULE PROCEDURE n_GotoTag
         Reopen = Reopen + 1
       END IF
       IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL mshFile%e%raiseError(modName//'::'//myName//' - '// &
+        CALL e%raiseError(modName//'::'//myName//' - '// &
         & 'Could not find $Nodes !')
         error = -2
         EXIT

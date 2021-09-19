@@ -20,8 +20,63 @@
 ! summary: 	HDF5File Methods
 
 SUBMODULE( HDF5File_Class ) Methods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 HDF5Open
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5Open
+  INTEGER( I4B ) :: herr
+  CHARACTER( LEN = * ), PARAMETER :: myName="HDF5Open"
+  IF( .NOT. libh5Open ) THEN
+    CALL H5open_f(herr)
+    IF(herr .NE. 0) THEN
+      CALL e%raiseError( modName // '::' // myName // &
+        & ' - There is some error in opening the hdf5lib')
+    END IF
+    libh5Open=.TRUE.
+  END IF
+END SUBROUTINE HDF5Open
+
+!----------------------------------------------------------------------------
+!                                                                 HDF5Close
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5Close
+  INTEGER( I4B ) :: herr
+  herr=-1
+  IF(libh5Open) CALL H5close_f(herr)
+  IF(herr == 0) libh5Open=.FALSE.
+END SUBROUTINE HDF5Close
+
+!----------------------------------------------------------------------------
+!                                                                 HDF5Quiet
+!----------------------------------------------------------------------------
+
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	8 May 2021
+! summary: Enable/disable HDF5 exception writing
+
+SUBROUTINE HDF5Quiet(quiet)
+  LOGICAL, INTENT( IN ) :: quiet
+  IF(quiet) THEN
+    CALL h5eset_auto_f(0, ierr)
+  ELSE
+    CALL h5eset_auto_f(1, ierr)
+  ENDIF
+END SUBROUTINE HDF5Quiet
+
+!----------------------------------------------------------------------------
+!                                                              addSurrogate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE hdf5_addSurrogate
+  CALL e%addSurrogate( UserObj )
+END PROCEDURE hdf5_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                                 Open
@@ -31,16 +86,15 @@ MODULE PROCEDURE hdf5_open
   CHARACTER( LEN = * ), PARAMETER :: myName='hdf5_open'
   INTEGER :: acc
   INTEGER( HID_T ) :: plist_id
-
+  !> main program
   IF( obj%isinit ) THEN
     CALL h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, ierr)
     CALL h5pset_fclose_degree_f(plist_id, H5F_CLOSE_SEMI_F, ierr)
 
     IF (ierr .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Unable to create property list for open operation.')
     END IF
-
     ! Decide what access type to use
     IF(obj%isNew()) THEN
       acc=H5F_ACC_TRUNC_F
@@ -58,19 +112,19 @@ MODULE PROCEDURE hdf5_open
       CALL h5fopen_f(obj%fullname%chars(), acc, obj%file_id, ierr, &
         & access_prp=plist_id)
     ELSE
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Unrecognized access mode! The file is not'// &
         & ' set as either new, read, or write!')
     ENDIF
-
+    !>
     IF (ierr .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Unable to open the file.')
     END IF
-
+    !>
     CALL h5pclose_f(plist_id,ierr)
     IF(ierr .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Unable to destroy property list.')
     ELSE
       CALL obj%setOpenStat(.TRUE.)
@@ -85,11 +139,11 @@ END PROCEDURE hdf5_open
 MODULE PROCEDURE hdf5_close
   CHARACTER( LEN = * ), PARAMETER :: myName='hdf5_close'
   LOGICAL( LGT ) :: lastStopOnError
-  lastStopOnError=obj%e%isStopOnError()
-  CALL obj%e%setStopOnError(.FALSE.)
+  lastStopOnError=e%isStopOnError()
+  CALL e%setStopOnError(.FALSE.)
   !Check init status
   IF(.NOT.obj%isinit) THEN
-    CALL obj%e%raiseError(modName// &
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ELSE
     !Check open status.
@@ -97,14 +151,14 @@ MODULE PROCEDURE hdf5_close
       CALL h5fclose_f(obj%file_id,ierr)
       obj%file_id=0
       IF(ierr /= 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Unable to close HDF5 file.')
       ELSE
         CALL obj%setOpenStat(.FALSE.)
       ENDIF
     ENDIF
   ENDIF
-  CALL obj%e%setStopOnError(lastStopOnError)
+  CALL e%setStopOnError(lastStopOnError)
 END PROCEDURE hdf5_close
 
 !----------------------------------------------------------------------------
@@ -115,7 +169,7 @@ MODULE PROCEDURE hdf5_delete
   CHARACTER( LEN = * ), PARAMETER :: myName='hdf5_delete'
   CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH) :: emesg
   TYPE( String ) :: fileName
-
+  !> main
   IF(obj%isinit) THEN
     !So, HDF5 is special in that the unitno assigned isn't used in the
     !fopen() operation.  So, regardless of the %isOpen() status, it needs
@@ -126,13 +180,13 @@ MODULE PROCEDURE hdf5_delete
     IF(ierr .NE. 0) THEN
       WRITE( emesg,'(a,i4,a,i4)') 'Error deleting file (UNIT=', &
         & obj%unitno,' ) IOSTAT=', ierr
-      CALL obj%e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
     ENDIF
     CLOSE( UNIT=obj%unitno, STATUS='DELETE', IOSTAT=ierr )
     IF(ierr .NE. 0) THEN
       WRITE( emesg,'(a,i4,a,i4)') 'Error deleting file (UNIT=', &
         & obj%unitno,' ) IOSTAT=',ierr
-      CALL obj%e%raiseError( modName//'::'//myName//' - '//emesg )
+      CALL e%raiseError( modName//'::'//myName//' - '//emesg )
     ELSE
       CALL obj%setOpenStat( .FALSE. )
     ENDIF
@@ -149,26 +203,37 @@ MODULE PROCEDURE hdf5_initiate
   INTEGER( I4B ) :: unitno
   LOGICAL( LGT ) :: ostat,exists
   CHARACTER(LEN=LEN(filename)) :: tempchars
-
+  !> main
   IF(obj%isinit) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is already initialized!')
     RETURN
   ENDIF
-  !>
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL getPath( chars=filename, path=tempchars )
   fpath=trim(tempchars)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL getFileNameExt( chars=filename, ext=tempchars )
   fext=trim(tempchars)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL getFileName( chars=filename, fname=tempchars )
   fname=trim(tempchars)
-  ! fpath = obj%getFilePath()
-  ! fname = obj%getFileName()
-  ! fext = obj%getFileExt()
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL obj%setFilePath( fpath )
   CALL obj%setFileName( fname )
   CALL obj%setFileExt( fext )
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   !>
   IF(PRESENT(zlibOpt)) THEN
     IF(zlibOpt .GE. 0) THEN
@@ -176,6 +241,9 @@ MODULE PROCEDURE hdf5_initiate
       obj%zlibOpt=zlibOpt
     ENDIF
   ENDIF
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   !> Store the access mode
   mode_in=mode
   mode_in = mode_in%upper()
@@ -186,7 +254,7 @@ MODULE PROCEDURE hdf5_initiate
       CALL obj%setWriteStat(.FALSE.)
       CALL obj%setReadStat(.TRUE.)
     ELSE
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - HDF5 file '//filename//' is being opened with '// &
         & 'mode READ but does not exist.')
     ENDIF
@@ -196,7 +264,7 @@ MODULE PROCEDURE hdf5_initiate
       CALL obj%setWriteStat( .TRUE. )
       CALL obj%setReadStat( .FALSE. )
     ELSE
-      CALL obj%e%raiseError( modName//'::'//myName// &
+      CALL e%raiseError( modName//'::'//myName// &
         & ' - HDF5 file '//filename//' is being opened with '// &
         & 'mode WRITE but does not exist.')
     ENDIF
@@ -207,24 +275,36 @@ MODULE PROCEDURE hdf5_initiate
       CALL obj%setOverwriteStat( .TRUE. )
       CALL obj%setReadStat( .TRUE. )
     ELSE
-      CALL obj%e%raiseError( modName // '::' // myName // &
+      CALL e%raiseError( modName // '::' // myName // &
         & ' - HDF5 file ' // filename // ' is being opened with ' // &
         & 'mode OVERWRITE but does not exist.')
     ENDIF
   CASE( 'NEW' )
     CALL obj%setWriteStat( .TRUE. )
-    CALL obj%setNewStat( .TRUE. )
     CALL obj%setReadStat( .TRUE. )
+    CALL obj%setNewStat( .TRUE. )
+    CALL obj%setOverwriteStat( .TRUE. )
   CASE DEFAULT
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - Unrecognized access mode.')
   ENDSELECT
 
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   obj%fullname=filename
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
 
   ! Initialize the HDF5 interface. This needs be done before any other calls
   ! to the HF5 interface can be made.
-  CALL HDF5Open
+  CALL e%raiseInformation(modName//'::'//myName// &
+    & ' - Debugging here.... check it out')
+  IF( .NOT. libh5Open ) THEN
+    CALL H5open_f(ierr); libh5Open=.TRUE.
+  ! CALL HDF5Open()
+  END IF
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
 
   ! Assign arbitrary UNIT number to file.  Used only for deleting file.
   unitno=99
@@ -268,7 +348,7 @@ MODULE PROCEDURE hdf5_clear
     obj%fullname=''
     obj%unitno=-1
     obj%overwriteStat = .FALSE.
-    CALL obj%DeallocateBaseData()
+    CALL aFile_DeallocateData(obj)
   ENDIF
 END PROCEDURE hdf5_clear
 
@@ -318,12 +398,12 @@ MODULE PROCEDURE hdf5_ls
 
   ! Make sure the object is initialized
   IF(.NOT. obj%isinit) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ELSEIF(.NOT.obj%isOpen()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is not opened!')
   ELSE
@@ -334,13 +414,13 @@ MODULE PROCEDURE hdf5_ls
       path2=TRIM(path)
       CALL h5gopen_f(obj%file_id,TRIM(path),grp_id,ierr)
       IF(ierr .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Unable to open file.')
       END IF
 
       CALL h5gget_info_f(grp_id,store_type,nlinks,max_corder,ierr)
       IF(ierr .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Unable to get group information.')
       END IF
 
@@ -349,12 +429,12 @@ MODULE PROCEDURE hdf5_ls
         CALL h5lget_name_by_idx_f(obj%file_id,TRIM(path), &
           & H5_INDEX_NAME_F,H5_ITER_INC_F,i,tmpchar,ierr)
         objs(i+1)=TRIM(tmpchar)
-        IF(ierr .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+        IF(ierr .NE. 0) CALL e%raiseError(modName//'::'//myName// &
           & ' - Unable to get object name.')
       END DO
 
       CALL h5gclose_f(grp_id, ierr)
-      IF(ierr .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+      IF(ierr .NE. 0) CALL e%raiseError(modName//'::'//myName// &
           ' - Unable to close group.')
     ENDIF
   ENDIF
@@ -373,16 +453,16 @@ MODULE PROCEDURE hdf5_mkdir
 
   ! Make sure the object is initialized
   IF(.NOT. obj%isinit) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ! Ensure that we have write permissions to the file
   ELSEIF(.NOT.obj%isWrite()) THEN
-    CALL obj%e%raiseError(modName &
+    CALL e%raiseError(modName &
       & //'::'//myName//' - Can not create group in read-only file.')
   ELSEIF(.NOT.obj%isOpen()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is already not opened!')
   ELSE
@@ -395,7 +475,7 @@ MODULE PROCEDURE hdf5_mkdir
       ENDIF
     ENDIF
     CALL h5lexists_f(obj%file_id,path,dset_exists,ierr)
-    IF(ierr .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(ierr .NE. 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - invalid group path: '//path)
 
     IF(obj%overwriteStat .AND. dset_exists) THEN
@@ -409,10 +489,10 @@ MODULE PROCEDURE hdf5_mkdir
       IF(ierr == 0) THEN
         ! Close the group
         CALL h5gclose_f(group_id,ierr)
-        IF(ierr .NE. 0) CALL obj%e%raiseDebug(modName//'::'// &
+        IF(ierr .NE. 0) CALL e%raiseDebug(modName//'::'// &
           & myName//' - Failed to close HDF group')
       ELSE
-        CALL obj%e%raiseDebug(modName//'::'//myName// &
+        CALL e%raiseDebug(modName//'::'//myName// &
           & ' - Failed to create HDF5 group.')
       ENDIF
     ENDIF
@@ -432,16 +512,16 @@ MODULE PROCEDURE hdf5_mkalldir
 
   ! Make sure the object is initialized
   IF( .NOT. obj%isinit) THEN
-    CALL obj%e%setStopOnError( .FALSE. )
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError( .FALSE. )
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ! Ensure that we have write permissions to the file
   ELSEIF( .NOT. obj%isWrite()) THEN
-    CALL obj%e%raiseError(modName &
+    CALL e%raiseError(modName &
       & //'::'//myName//' - Can not create group in read-only file.')
   ELSEIF( .NOT. obj%isOpen()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is already not opened!')
   ELSE
@@ -455,13 +535,13 @@ MODULE PROCEDURE hdf5_mkalldir
       IF( .NOT. obj%pathExists( TRIM( tmppath%chars() ))) THEN
         CALL h5gcreate_f(obj%file_id, TRIM( tmppath%chars()), group_id, ierr)
         IF( ierr .NE. 0 ) THEN
-          CALL obj%e%raiseError(modName//'::'// &
+          CALL e%raiseError(modName//'::'// &
           & myName//' - Failed to create a HDF group')
         END IF
 
         CALL h5gclose_f(group_id, ierr)
         IF( ierr .NE. 0 ) THEN
-          CALL obj%e%raiseError(modName//'::'// &
+          CALL e%raiseError(modName//'::'// &
           & myName//' - Failed to close a HDF group')
         END IF
       ENDIF
@@ -471,12 +551,12 @@ MODULE PROCEDURE hdf5_mkalldir
     IF( .NOT. obj%pathExists( TRIM( path2%chars() ))) THEN
       CALL h5gcreate_f(obj%file_id, TRIM( path2%chars()), group_id, ierr)
       IF( ierr .NE. 0 ) THEN
-        CALL obj%e%raiseError(modName//'::'// &
+        CALL e%raiseError(modName//'::'// &
           & myName//' - Failed to create a HDF group')
       ELSE
         CALL h5gclose_f(group_id, ierr)
         IF( ierr .NE. 0 ) THEN
-          CALL obj%e%raiseError(modName//'::'// &
+          CALL e%raiseError(modName//'::'// &
           & myName//' - Failed to close HDF group')
         END IF
       END IF
@@ -495,33 +575,33 @@ MODULE PROCEDURE hdf5_ngrp
 
   ! Make sure the object is initialized
   IF( .NOT. obj%isinit ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ! Make sure the object is open
   ELSE IF(.NOT.obj%isOpen()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is already not opened!')
   ELSE
 
     CALL h5gopen_f(obj%file_id, TRIM(path), grp_id, ierr)
     IF( ierr .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
       & ' - Could not open group in HDF5 file.')
     END IF
 
     CALL h5gget_info_f(grp_id, store_type, nlinks, max_corder, ierr)
     IF(ierr .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not get group info in HDF5 file.')
     END IF
 
     ! Close the group
     CALL h5gclose_f(grp_id, ierr)
     IF(ierr .NE. 0) THEN
-      CALL obj%e%raiseDebug(modName//'::'// &
+      CALL e%raiseDebug(modName//'::'// &
         & myName//' - Failed to close HDF group')
     END IF
     ans = nlinks
@@ -553,7 +633,7 @@ MODULE PROCEDURE hdf5_isgroup
       ! Close the object
       CALL h5oclose_f(obj_id, ierr)
       IF( ierr .NE. 0) THEN
-        CALL obj%e%raiseDebug(modName//'::'// &
+        CALL e%raiseDebug(modName//'::'// &
           & myName//' - Failed to close HDF object!')
       END IF
     ENDIF
@@ -613,11 +693,11 @@ MODULE PROCEDURE hdf5_createHardLink
       !CALL H5Oclose_f(src_obj_id,ierr)
       ierr = H5Oclose(src_obj_id)
     ELSE
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Location of new link already exists!')
     ENDIF
   ELSE
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - Target of new link must exist in file!')
   ENDIF
 END PROCEDURE hdf5_createHardLink
@@ -634,13 +714,13 @@ MODULE PROCEDURE hdf5_getChunkSize
 
   ! Make sure the object is initialized, and opened
   IF( .NOT. obj%isinit ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ! Make sure the object is open
   ELSE IF(.NOT.obj%isOpen()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is already not opened!')
   END IF
@@ -682,21 +762,21 @@ MODULE PROCEDURE hdf5_isCompressed
   ! Make sure the object is initialized, and opened
   ! Make sure the object is initialized, and opened
   IF( .NOT. obj%isinit ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ! Make sure the object is open
   ELSE IF(.NOT.obj%isOpen()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' is already not opened!')
   END IF
 
   IF( PRESENT(path) ) THEN
     IF( obj%pathExists(path) ) THEN
-      CALL obj%e%setStopOnError(.FALSE.)
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%setStopOnError(.FALSE.)
+      CALL e%raiseError(modName//'::'//myName// &
       & ' - HDF5file '//obj%getFileName()// &
       & ' path does not exists!')
     END IF
@@ -738,18 +818,18 @@ MODULE PROCEDURE preWrite
   dset_id=-1
   ! Make sure the object is initialized
   IF( .NOT. obj%isinit) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
     error = -1
   ! Check that the file is writable. Best to catch this before HDF5 does.
   ELSEIF(.NOT.obj%isWrite()) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - File is readonly!')
     error=-2
   ! Check that the file is Open.
   ELSEIF(.NOT.obj%isOpen()) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - File is not Open!')
     error=-3
   ELSE
@@ -757,19 +837,19 @@ MODULE PROCEDURE preWrite
     !Create an HDF5 parameter list for the dataset creation.
     CALL h5pcreate_f(H5P_DATASET_CREATE_F,plist_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not create parameter list.')
     END IF
 
     IF(rank .EQ. 0) THEN
       CALL h5screate_f(H5S_SCALAR_F,gspace_id,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Could not create scalar dataspace.')
       END IF
       CALL h5screate_f(H5S_SCALAR_F,dspace_id,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not create scalar dataspace.')
       END IF
     ELSE
@@ -777,14 +857,14 @@ MODULE PROCEDURE preWrite
       ! Global dataspace
       CALL h5screate_simple_f(rank,gdims,gspace_id,error)
       IF(error /= 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not create dataspace.')
       END IF
 
       ! Local dataspace
       CALL h5screate_simple_f(rank,ldims,dspace_id,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not create dataspace.')
       END IF
 
@@ -820,7 +900,7 @@ MODULE PROCEDURE preWrite
     ! Create the dataset, if necessary
     CALL h5lexists_f(file_id,path,dset_exists,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - invalid group path:'//path)
     ENDIF
 
@@ -828,33 +908,33 @@ MODULE PROCEDURE preWrite
       ! Open group for overwrite if it already exists and the file has overwrite status
       CALL h5dopen_f(file_id,path,dset_id,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Could not open dataset:'//path)
       END IF
 
       ! Get the old and new data type sizes
       CALL h5dget_type_f(dset_id,oldmem,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Could not retrieve data type:'//path)
       END IF
 
       CALL h5tget_size_f(oldmem,oldsize,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Could not retrieve old data type size:'//path)
       END IF
 
       CALL h5tget_size_f(mem,newsize,error)
       IF(error .NE. 0) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Could not retrieve new data type size:'//path)
       END IF
 
       ! Check that the size of the data type is equal to or less than the data type size
       ! in the dataset since there is currently no way to resize the dataset
       IF(oldsize < newsize) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Size of new data is greater than size of pre-existing data &
           & type:'//path)
       ENDIF
@@ -863,33 +943,33 @@ MODULE PROCEDURE preWrite
       ! array size in the dataset since there is currently no way to resize the dataset
       CALL h5dget_storage_size_f(dset_id,oldsize,error)
       IF(oldsize < newsize*PRODUCT(gdims)) THEN
-        CALL obj%e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName// &
           & ' - Storage size of the pre-existing dataset is too small:'//path)
       END IF
     ELSE
       CALL h5dcreate_f(file_id,path,mem,gspace_id,dset_id,error,dcpl_id=plist_id)
-      IF(error /= 0) CALL obj%e%raiseError(modName//'::'//myName// &
+      IF(error /= 0) CALL e%raiseError(modName//'::'//myName// &
           ' - Could not create dataset:'//path)
     ENDIF
 
     ! Destroy the property list
     CALL h5pclose_f(plist_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not close parameter list.')
     END IF
 
     ! Select the global dataspace for the dataset
     CALL h5dget_space_f(dset_id,gspace_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not select global dataspace for the dataset.')
     END IF
 
     ! Create a property list for the write operation
     CALL h5pcreate_f(H5P_DATASET_XFER_F,plist_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not create property list for write operation.')
     END IF
   ENDIF
@@ -919,46 +999,46 @@ MODULE PROCEDURE postWrite
   CHARACTER(LEN=*),PARAMETER :: myName='postWrite'
   ! Make sure the object is initialized
   IF( .NOT. obj%isinit ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ! Check that the file is writable. Best to catch this before HDF5 does.
   ELSEIF(.NOT. obj%isWrite()) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - File is not Writable!' )
   ! Check that the file is Open.
   ELSEIF(.NOT. obj%isOpen()) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - File is not Open!')
   ELSE
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
       & ' - Could not write to the dataset.')
     END IF
 
     ! Close the dataset
     CALL h5dclose_f(dset_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         ' - Could not close the dataset.')
     END IF
 
     ! Close the dataspace
     CALL h5sclose_f(dspace_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
       & ' - Could not close the dataspace.')
     END IF
 
     CALL h5sclose_f(gspace_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & ' - Could not close the dataspace.')
     END IF
 
     CALL h5pclose_f(plist_id,error)
     IF(error .NE. 0) THEN
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         ' - Could not close the parameter list.')
     END IF
   ENDIF
@@ -976,35 +1056,35 @@ MODULE PROCEDURE preRead
   error=0
   ! Make sure the object is initialized
   IF(.NOT. obj%isinit ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
     error=-1
   ELSEIF(.NOT. obj%isRead() ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File is not Readable!')
     error=-2
   ELSE
     ! Open the dataset
     CALL h5dopen_f(obj%file_id, path, dset_id, error)
-    IF(error .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to open dataset.')
 
     ! Get dataset dimensions for allocation
     CALL h5dget_space_f(dset_id,dspace_id,error)
-    IF(error .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to obtain the dataspace.')
 
     ! Make sure the rank is right
     IF(rank > 0) THEN
       CALL h5sget_simple_extent_ndims_f(dspace_id,ndims,error)
-      IF(error < 0) CALL obj%e%raiseError(modName//'::'//myName// &
+      IF(error < 0) CALL e%raiseError(modName//'::'//myName// &
         & ' - Failed to retrieve number of dataspace dimensions.')
-      IF(ndims /= rank) CALL obj%e%raiseError(modName//'::'//myName// &
+      IF(ndims /= rank) CALL e%raiseError(modName//'::'//myName// &
         & ' - Using wrong read function for rank.')
       CALL h5sget_simple_extent_dims_f(dspace_id,dims,maxdims,error)
-      IF(error < 0) CALL obj%e%raiseError(modName//'::'//myName// &
+      IF(error < 0) CALL e%raiseError(modName//'::'//myName// &
         & ' - Failed to retrieve dataspace dimensions.')
     ELSE
       dims=1
@@ -1027,13 +1107,13 @@ MODULE PROCEDURE getDataShape
   error=0
   ! Make sure the object is initialized
   IF(.NOT. obj%isinit) THEN
-    CALL obj%e%setStopOnError( .FALSE. )
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError( .FALSE. )
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
     error=-1
   ELSEIF(.NOT.obj%isRead()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File is not Readable!')
     error=-2
   ELSE
@@ -1042,22 +1122,22 @@ MODULE PROCEDURE getDataShape
     ENDIF
     ! Open the dataset
     CALL h5dopen_f(obj%file_id, TRIM(path), dset_id, error)
-    IF(error .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to open dataset.')
     CALL h5dget_space_f(dset_id,dspace_id,error)
-    IF(error .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to obtain the dataspace.')
 
     ! Get the number of dimensions
     CALL h5sget_simple_extent_ndims_f(dspace_id,ndims,error)
-    IF(error < 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error < 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to retrieve number of dataspace dimensions.')
 
     ! Get the dimensions
     ALLOCATE(dims(ndims))
     ALLOCATE(maxdims(ndims))
     CALL h5sget_simple_extent_dims_f(dspace_id,dims,maxdims,error)
-    IF(error < 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error < 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to retrieve dataspace dimensions.')
 
     ! Copy to the Futility integer type
@@ -1080,13 +1160,13 @@ MODULE PROCEDURE getDataType
   error=0
   ! Make sure the object is initialized
   IF( .NOT. obj%isinit ) THEN
-    CALL obj%e%setStopOnError( .FALSE. )
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError( .FALSE. )
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
     error=-1
   ELSEIF( .NOT. obj%isRead() ) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File is not Readable!')
     error=-2
   ELSE
@@ -1096,18 +1176,18 @@ MODULE PROCEDURE getDataType
 
     ! Open the dataset
     CALL h5dopen_f( obj%file_id, TRIM(path), dset_id, error )
-    IF( error .NE. 0 ) CALL obj%e%raiseError( modName//'::'//myName// &
+    IF( error .NE. 0 ) CALL e%raiseError( modName//'::'//myName// &
       & ' - Failed to open dataset.' )
 
     ! Get the dataset type
     CALL h5dget_type_f( dset_id, dtype, error )
-    IF( error .NE. 0 ) CALL obj%e%raiseError( modName//'::'//myName// &
+    IF( error .NE. 0 ) CALL e%raiseError( modName//'::'//myName// &
       & ' - Failed to retrive dataset type identifier.' )
     CALL h5tget_class_f( dtype, class_type, error )
-    IF( error .NE. 0 ) CALL obj%e%raiseError( modName//'::'//myName// &
+    IF( error .NE. 0 ) CALL e%raiseError( modName//'::'//myName// &
       & ' - Failed to retrive dataset class.' )
     CALL h5tget_precision_f( dtype, dtype_prec, error )
-    IF( error .NE. 0 ) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF( error .NE. 0 ) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to retrive dataset precision.')
     dataType='N/A'
     IF( class_type == H5T_FLOAT_F ) THEN
@@ -1125,7 +1205,7 @@ MODULE PROCEDURE getDataType
     ELSEIF( class_type == H5T_STRING_F ) THEN
       dataType = 'STR'
     ELSE
-      CALL obj%e%raiseError( modName//'::'//myName// &
+      CALL e%raiseError( modName//'::'//myName// &
         & ' - Unsupported data type ')
     ENDIF
   ENDIF
@@ -1141,12 +1221,12 @@ MODULE PROCEDURE postRead
 
   ! Make sure the object is initialized
   IF( .NOT. obj%isinit) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File object not initialized.')
   ELSEIF(.NOT.obj%isRead()) THEN
-    CALL obj%e%setStopOnError(.FALSE.)
-    CALL obj%e%raiseError(modName// &
+    CALL e%setStopOnError(.FALSE.)
+    CALL e%raiseError(modName// &
       & '::'//myName//' - File is not Readable!')
   ELSE
     IF(error .NE. 0) THEN
@@ -1154,7 +1234,7 @@ MODULE PROCEDURE postRead
       IF( obj%isCompressed( path ) ) THEN
         CALL obj%getChunkSize(path,cdims)
         IF(MAXVAL(cdims) > 16777216_HSIZE_T) THEN !This is 64/128MB
-          CALL obj%e%raiseWarning( &      !depending on dataset type.
+          CALL e%raiseWarning( &      !depending on dataset type.
               modName//'::'//myName//' - Potentially high memory usage'// &
               'when reading decompressed dataset "'//TRIM(path)//'".'// &
               CHAR(10)//CHAR(10)//'Try decompressing file before rerunning:'// &
@@ -1163,16 +1243,16 @@ MODULE PROCEDURE postRead
               TRIM(obj%fullname)//'.uncompressed"')
         ENDIF
       ENDIF
-      CALL obj%e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName// &
         & '- Failed to read data from dataset"'//TRIM(path)//'".')
     ENDIF
     ! Close the dataset
     CALL h5dclose_f(dset_id,error)
-    IF(error .NE. 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to close dataset "'//TRIM(path)//'".')
     ! Close the dataspace
     CALL h5sclose_f(dspace_id,error)
-    IF(error /= 0) CALL obj%e%raiseError(modName//'::'//myName// &
+    IF(error /= 0) CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to close dataspace for "'//TRIM(path)//'".')
   ENDIF
 END PROCEDURE postRead

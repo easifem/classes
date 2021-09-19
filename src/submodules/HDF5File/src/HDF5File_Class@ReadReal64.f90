@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( HDF5File_Class ) ReadReal64
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

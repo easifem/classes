@@ -33,12 +33,12 @@ USE ExceptionHandler_Class
 USE FortranFile_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER(LEN=*),PARAMETER :: modName='TXTFILE_CLASS'
 INTEGER(I4B), PARAMETER :: maxStrLen=256
+TYPE(ExceptionHandler_), PRIVATE :: e
 
 !----------------------------------------------------------------------------
-!
+!                                                                 TxtFile_
 !----------------------------------------------------------------------------
 
 TYPE, EXTENDS(FortranFile_) :: TxtFile_
@@ -48,6 +48,7 @@ TYPE, EXTENDS(FortranFile_) :: TxtFile_
   !
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => txt_addSurrogate
   PROCEDURE, PUBLIC, PASS( Obj ) :: initiate => txt_initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: clear => txt_clear
   PROCEDURE, PUBLIC, PASS( Obj ) :: readLine => txt_readLine
@@ -65,6 +66,17 @@ TYPE :: TxtFilePointer_
 END TYPE
 
 PUBLIC :: TxtFilePointer_
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogate
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE txt_addSurrogate( obj, UserObj )
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE txt_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
