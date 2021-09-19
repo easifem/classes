@@ -47,7 +47,6 @@ else:
 
     opt = getOption("CMAKE_INSTALL_PREFIX", ["${PREFIX}"])
     if(opt == " "):
-        #   opt = "${HOME}/PENF"
         opt = "${EASIFEM_CLASSES}"
     cmake_def += " -DCMAKE_INSTALL_PREFIX=" + opt
 
@@ -55,6 +54,6 @@ else:
 
     print("CMAKE DEF : ", cmake_def)
 
-    os.system(f"cmake -S ./ -B ./build {cmake_def}")
-    os.system(f"cmake --build ./build --target install")
+    os.system(f"cmake -S ./ -B ~/temp/easifem-classes/build {cmake_def}")
+    os.system(f"cmake --build ~/temp/easifem-classes/build --target install")
     print("Installation DONE!!")

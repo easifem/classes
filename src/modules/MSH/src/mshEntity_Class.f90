@@ -23,10 +23,11 @@ MODULE mshEntity_Class
 USE BaseType
 USE GlobalData
 USE TxtFile_Class
+USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSHENTITY_CLASS"
+TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
 !                                                                 mshEntity_

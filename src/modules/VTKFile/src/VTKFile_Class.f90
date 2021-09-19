@@ -22,6 +22,7 @@ USE VTKDataArrayEncoder
 USE XMLFile_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
+PRIVATE
 !>
 PUBLIC :: encodeVTKDataArray
 CHARACTER( LEN = * ), PARAMETER :: modName="VTKFILE_CLASS"
@@ -101,7 +102,8 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => VTKFile_DeallocateData
   FINAL :: VTKFile_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: WriteRootTag => VTKFile_WriteRootTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteDataStructureTag => VTKFile_WriteDataStructureTag
+  PROCEDURE, PUBLIC, PASS( obj ) :: WriteDataStructureTag => &
+    & VTKFile_WriteDataStructureTag
   PROCEDURE, PUBLIC, PASS( obj ) :: WriteStartTag => VTKFile_WriteStartTag
   PROCEDURE, PUBLIC, PASS( obj ) :: WriteEndTag => VTKFile_WriteEndTag
   PROCEDURE, PUBLIC, PASS( obj ) :: WriteSelfClosingTag => &
@@ -717,7 +719,6 @@ MODULE SUBROUTINE VTKFile_WritePoints_4( obj, x )
   REAL( Real32 ), INTENT( IN ) :: x( 1:, 1: )
 END SUBROUTINE VTKFile_WritePoints_4
 END INTERFACE
-
 
 !----------------------------------------------------------------------------
 !                                                WritePoints@PointsMethods

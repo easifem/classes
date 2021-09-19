@@ -23,9 +23,10 @@ MODULE mshPhysicalNames_Class
 USE BaseType
 USE GlobalData
 USE TxtFile_Class
+USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-
+TYPE( ExceptionHandler_ ) :: e
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSHPHYSICALNAMES_CLASS"
 INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 

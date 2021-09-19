@@ -55,19 +55,9 @@ MODULE PROCEDURE msh_initiate
   INTEGER( I4B ) :: error, unitNo
   CHARACTER( LEN = * ), PARAMETER :: myName = "msh_Initiate"
 
-  CALL eMSH%setQuietMode( .TRUE. )
-  CALL eMSH%setLogFileUnit( eUnitNo )
-  CALL eMSH%setLogActive( .TRUE. )
-  IF( .NOT. eMSH%isLogActive() ) THEN
-    OPEN( Unit=eUnitNo, FILE=eLogFile, &
-      & ACCESS='SEQUENTIAL',FORM='FORMATTED',STATUS='REPLACE' )
-  END IF
-  CALL obj%e%addSurrogate(eMSH)
-  CALL obj%e%setLogActive( .TRUE. )
-
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'READING GMSH FILE!')
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Opening Gmsh File')
 
   CALL obj%mshFile%initiate(file=file, status="OLD", action="READ")
@@ -75,42 +65,42 @@ MODULE PROCEDURE msh_initiate
   obj%NSD = NSD
   unitNo = obj%mshFile%getunitNo()
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Gmsh file is opened')
 
-  CALL obj%e%raiseDebug(modName//'::'//myName//' - '// &
+  CALL e%raiseDebug(modName//'::'//myName//' - '// &
     & 'Reading mesh format')
   CALL obj%Format%Read( mshFile=obj%mshFile, error=error)
 
   IF( error .NE. 0 ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Failed in Reading mesh format')
   ELSE
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Success in Reading mesh format')
   END IF
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Reading physical group information')
   CALL obj%PhysicalNames%Read( mshFile=obj%mshFile, error=error )
 
   IF( error .NE. 0 ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Failed in Reading physical group information')
   ELSE
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Success in Reading physical group information')
   END IF
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Locating entity tag')
 
   CALL TypemshEntity%GotoTag( mshFile=obj%mshFile, error=error )
   IF( error .NE. 0 ) THEN
-    CALL obj%e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Failed in Locating entity tag')
   ELSE
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Success in Locating entity tag')
   END IF
 
@@ -118,7 +108,7 @@ MODULE PROCEDURE msh_initiate
   ! Entities
   !---------------------------------------------------------------------------
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Reading entities')
 
   BLOCK
@@ -127,7 +117,7 @@ MODULE PROCEDURE msh_initiate
     ! we read header of Entities block
     READ( unitNo, * ) tp, tc, ts, tv
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - ' &
+    CALL e%raiseInformation(modName//'::'//myName//' - ' &
       & // ' total number of point entities : ' // TRIM(str(tp, .true.)) &
       & // ' total number of curve entities : ' // TRIM(str(tc, .true.)) &
       & // ' total number of surface entities : ' // TRIM(str(ts, .true.)) &
@@ -142,10 +132,10 @@ MODULE PROCEDURE msh_initiate
     IF( ts .NE. 0 ) ALLOCATE( obj%SurfaceEntities( ts ) )
     IF( tv .NE. 0 ) ALLOCATE( obj%VolumeEntities( tv ) )
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Reading point entities' )
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Creating physical point to entities map' )
 
     DO i = 1, tp
@@ -165,10 +155,10 @@ MODULE PROCEDURE msh_initiate
       END IF
     END DO
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Reading curve entities' )
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Creating physical curve to entities map' )
 
     DO i = 1, tc
@@ -188,10 +178,10 @@ MODULE PROCEDURE msh_initiate
       END IF
     END DO
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Reading surface entities' )
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Creating physical surface to entities map' )
 
     DO i = 1, ts
@@ -212,10 +202,10 @@ MODULE PROCEDURE msh_initiate
       END IF
     END DO
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Reading volume entities' )
 
-    CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'Creating physical volume to entities map' )
 
     DO i = 1, tv
@@ -242,7 +232,7 @@ MODULE PROCEDURE msh_initiate
   ! Nodes
   !---------------------------------------------------------------------------
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Reading nodes section' )
 
   BLOCK
@@ -298,7 +288,7 @@ MODULE PROCEDURE msh_initiate
   ! Elements
   !---------------------------------------------------------------------------
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Reading element section' )
 
   ! at this point we have read $Nodes and now we are ready to read elements
@@ -399,7 +389,7 @@ MODULE PROCEDURE msh_initiate
   ! Counting number of nodes in physical region
   !---------------------------------------------------------------------------
 
-  CALL obj%e%raiseInformation(modName//'::'//myName//' - '// &
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'Reading Nodes in Physical groups' )
 
   BLOCK

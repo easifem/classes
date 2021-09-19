@@ -26,6 +26,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_ExportMesh
+  CHARACTER( LEN = * ), PARAMETER :: myName="msh_ExportMesh"
   TYPE( HDF5File_ ) :: hdf5
   INTEGER( I4B ) :: ii, tsize,  tNodes, count
   REAL( DFP ), ALLOCATABLE :: nodeCoord( :, : )
@@ -36,57 +37,117 @@ MODULE PROCEDURE msh_ExportMesh
   ALLOCATE( local_nptrs( obj%Nodes%getMaxNodeTag() ) )
   count = 0
   local_nptrs = 0
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%initiate(filename=file, mode="NEW" )
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%open()
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%write(dsetname="/NSD", vals=obj%nsd)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL ExportMeshFormat(obj,hdf5)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL ExportMeshPhysicalNames(obj,hdf5)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL ExportMeshNodeInfo(obj,hdf5)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL ExportMeshElementInfo(obj,hdf5)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   IF( ALLOCATED(obj%pointEntities) ) THEN
     tsize = SIZE(obj%pointEntities)
   ELSE
     tsize = 0
   END IF
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%write(dsetname="/numPointEntities", vals=tsize)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, dsetname="/pointEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd )
     CALL getNodeCoord( obj=obj%pointEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   IF( ALLOCATED(obj%curveEntities) ) THEN
     tsize = SIZE(obj%curveEntities)
   ELSE
     tsize = 0
   END IF
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%write(dsetname="/numCurveEntities", vals=tsize)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, dsetname="/curveEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
     CALL getNodeCoord( obj=obj%curveEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   IF( ALLOCATED(obj%surfaceEntities) ) THEN
     tsize = SIZE(obj%surfaceEntities)
   ELSE
     tsize = 0
   END IF
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%write(dsetname="/numSurfaceEntities", vals=tsize)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%surfaceEntities(ii), hdf5, dsetname="/surfaceEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
     CALL getNodeCoord( obj=obj%surfaceEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   IF( ALLOCATED(obj%volumeEntities) ) THEN
     tsize = SIZE(obj%volumeEntities)
   ELSE
     tsize = 0
   END IF
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%write(dsetname="/numVolumeEntities", vals=tsize)
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   DO ii = 1, tsize
     CALL ExportMeshEntity(obj%volumeEntities(ii), hdf5, dsetname="/volumeEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
     CALL getNodeCoord( obj=obj%volumeEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
+
+  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
+
   CALL hdf5%write(dsetname="/nodeCoord", vals=nodeCoord )
   CALL hdf5%write(dsetname="/local_nptrs", vals=local_nptrs )
   CALL hdf5%close()

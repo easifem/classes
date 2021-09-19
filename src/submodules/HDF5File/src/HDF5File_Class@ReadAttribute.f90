@@ -16,6 +16,7 @@
 !
 
 SUBMODULE( HDF5File_Class ) ReadAttribute
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -82,7 +83,7 @@ MODULE PROCEDURE hdf5_read_attribute_i0
   CALL open_attribute(obj,obj_id,attr_name,attr_id)
   CALL h5aread_f(attr_id,H5T_NATIVE_INTEGER,attr_val,dims,error)
   IF(error .NE. 0) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to read attribute.')
     RETURN
   ENDIF
@@ -106,7 +107,7 @@ MODULE PROCEDURE hdf5_read_attribute_d0
   CALL open_attribute(obj,obj_id,attr_name,attr_id)
   CALL h5aread_f(attr_id,H5T_NATIVE_DOUBLE,attr_val,dims,error)
   IF(error .NE. 0) THEN
-    CALL obj%e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName// &
       & ' - Failed to read attribute.')
     RETURN
   ENDIF

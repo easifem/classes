@@ -36,6 +36,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*),PARAMETER :: modName='INPUTFILE_CLASS'
 INTEGER(I4B), PARAMETER :: maxStrLen=256
+TYPE(ExceptionHandler_), PRIVATE :: e
 
 !----------------------------------------------------------------------------
 !
@@ -53,6 +54,7 @@ TYPE, EXTENDS( FortranFile_ ) :: InputFile_
     !! The first character of the line before the line that was just read
   CONTAINS
     PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => inp_addSurrogate
     PROCEDURE, PUBLIC, PASS(obj) :: initiate => inp_initiate
     PROCEDURE, PUBLIC, PASS(obj) :: rewind => inp_rewind
     PROCEDURE, PUBLIC, PASS(obj) :: backspace => inp_backspace
@@ -73,6 +75,17 @@ TYPE :: InputFilePointer_
 END TYPE
 
 PUBLIC :: InputFilePointer_
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogate
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE inp_addSurrogate( obj, UserObj )
+  CLASS( InputFile_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE inp_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

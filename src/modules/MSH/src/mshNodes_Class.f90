@@ -24,9 +24,10 @@ USE BaseType
 USE GlobalData
 USE mshFormat_Class
 USE TxtFile_Class
+USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-
+TYPE( ExceptionHandler_ ) :: e
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSHNODES_CLASS"
 
 !----------------------------------------------------------------------------

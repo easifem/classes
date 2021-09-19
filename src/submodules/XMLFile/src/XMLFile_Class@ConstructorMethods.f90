@@ -134,7 +134,7 @@ MODULE PROCEDURE xmlFile_DeallocateData
     obj%overwriteStat = .FALSE.
     obj%version=1.0
     obj%encoding='UTF-8'
-    CALL obj%DeallocateBaseData()
+    CALL aFile_DeallocateData( obj )
   END IF
 END PROCEDURE xmlFile_DeallocateData
 

@@ -28,6 +28,7 @@ USE ElementFactory
 USE ExceptionHandler_Class
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
+USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MESH_CLASS"
@@ -89,7 +90,9 @@ END TYPE ElemData_
 ! date: 	13 June 2021
 ! summary: 	This datatype contains the meta data of a mesh
 !
-!{!pages/Mesh.md}
+!### Introduction
+!
+! This datatype contains the mesh data. To be added.
 
 TYPE :: Mesh_
   PRIVATE
@@ -163,14 +166,18 @@ TYPE :: Mesh_
   TYPE( ReferenceElement_ ), ALLOCATABLE :: FacetElements( : )
     !! Facet Elements in the reference element
   TYPE( NodeData_ ), ALLOCATABLE :: nodeData( : )
+    !! Node data
   TYPE( ElemData_ ), ALLOCATABLE :: elementData( : )
+    !! element data
   CONTAINS
     PRIVATE
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mesh_addSurrogate
     PROCEDURE, PASS( obj ) :: Import => mesh_Import
       !! Read mesh from hdf5 file
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: Export => mesh_Export
+    PROCEDURE, PUBLIC, PASS( obj ) :: Export => mesh_Export
       !! Export mesh to an hdf5 file
+    PROCEDURE, PUBLIC, PASS( obj ) :: ExportToVTK => mesh_ExportToVTK
+      !! Export mesh to a VTKfile
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => mesh_display
       !! Display the mesh
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mesh_initiate
@@ -344,6 +351,40 @@ MODULE SUBROUTINE mesh_Import( obj, hdf5, group )
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE mesh_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Export@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	18 June 2021
+! summary: This routine exports the mesh to a hdf5 file
+!
+!### Introduction
+
+INTERFACE
+MODULE SUBROUTINE mesh_Export( obj, hdf5, group )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mesh_Export
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             ExportToVTK@IO
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 Sept 2021
+! summary: Export mesh to a VTK file
+
+INTERFACE
+MODULE SUBROUTINE mesh_ExportToVTK( obj, vtkFile, filename )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  TYPE( VTKFile_ ), INTENT( INOUT ) :: vtkFile
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: filename
+END SUBROUTINE mesh_ExportToVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------

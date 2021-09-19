@@ -16,15 +16,18 @@
 !
 
 MODULE HDF5File_Class
-USE easifemBase
+USE GlobalData
+USE BaseType
 USE HDF5
+USE H5LT
+! USE H5Fortran
 USE ExceptionHandler_Class
 USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
-
-PUBLIC :: HDF5Open, HDF5Close, HDF5Quiet
-CHARACTER( LEN=* ), PARAMETER :: modName='HDF5File_Class'
+! PUBLIC :: HDF5Open, HDF5Close, HDF5Quiet
+TYPE(ExceptionHandler_) :: e
+CHARACTER( LEN=* ), PARAMETER :: modName='HDF5FILE_CLASS'
 INTEGER( I4B ), PARAMETER :: MAXSTRLEN=1024
 INTEGER( I4B ), SAVE :: ierr=0
 INTEGER( I4B ), SAVE :: nhdf5fileinuse=0
@@ -73,6 +76,7 @@ TYPE, EXTENDS( AbstractFile_ ) :: HDF5File_
     !! File id assigned by the HDF5 library when file is opened
   CONTAINS
     PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => hdf5_addSurrogate
     PROCEDURE, PUBLIC, PASS( Obj ) :: open => hdf5_open
     PROCEDURE, PUBLIC, PASS( Obj ) :: close => hdf5_close
     PROCEDURE, PUBLIC, PASS( Obj ) :: delete => hdf5_delete
@@ -181,6 +185,17 @@ TYPE :: HDF5FilePointer_
 END TYPE HDF5FilePointer_
 
 PUBLIC :: HDF5FilePointer_
+
+!----------------------------------------------------------------------------
+!                                                               addSurrogate
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE hdf5_addSurrogate( obj, UserObj )
+  CLASS( HDF5File_ ), INTENT( INOUT ) :: obj
+  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
+END SUBROUTINE hdf5_addSurrogate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 Open
@@ -2269,7 +2284,7 @@ END SUBROUTINE close_object
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          CreateAttribute
+!                                                            CreateAttribute
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -2305,47 +2320,5 @@ MODULE SUBROUTINE close_attribute(obj,attr_id)
   INTEGER( HID_T ), INTENT( IN ) :: attr_id
 END SUBROUTINE close_attribute
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                  HDF5Open
-!----------------------------------------------------------------------------
-
-CONTAINS
-
-SUBROUTINE HDF5Open
-  INTEGER( I4B ) :: herr
-  herr=-1
-  IF(.NOT.libh5Open) CALL H5open_f(herr)
-  IF(herr == 0) libh5Open=.TRUE.
-END SUBROUTINE HDF5Open
-
-!----------------------------------------------------------------------------
-!                                                                 HDF5Close
-!----------------------------------------------------------------------------
-
-SUBROUTINE HDF5Close
-  INTEGER( I4B ) :: herr
-  herr=-1
-  IF(libh5Open) CALL H5close_f(herr)
-  IF(herr == 0) libh5Open=.FALSE.
-END SUBROUTINE HDF5Close
-
-!----------------------------------------------------------------------------
-!                                                                 HDF5Quiet
-!----------------------------------------------------------------------------
-
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	8 May 2021
-! summary: Enable/disable HDF5 exception writing
-
-SUBROUTINE HDF5Quiet(quiet)
-  LOGICAL, INTENT( IN ) :: quiet
-  IF(quiet) THEN
-    CALL h5eset_auto_f(0, ierr)
-  ELSE
-    CALL h5eset_auto_f(1, ierr)
-  ENDIF
-END SUBROUTINE HDF5Quiet
 
 END MODULE HDF5File_Class

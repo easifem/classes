@@ -1,16 +1,47 @@
 {
 	"folders": [
 		{
+			"name": "AbstractFile",
 			"path": "../src/modules/AbstractFile"
 		},
 		{
-			"path": "../src/modules/FortranFile"
-		},
-		{
+			"name": "AbstractFile",
 			"path": "../src/submodules/AbstractFile"
 		},
 		{
+			"name": "FortranFile",
+			"path": "../src/modules/FortranFile"
+		},
+		{
+			"name": "FortranFile",
 			"path": "../src/submodules/FortranFile"
+		},
+		{
+			"name": "HDF5File",
+			"path": "../src/modules/HDF5File"
+		},
+		{
+			"name": "HDF5File",
+			"path": "../src/submodules/HDF5File"
+		},
+		{
+			"name": "XMLFile",
+			"path": "../src/modules/XMLFile"
+		},
+		{
+			"path": "../src/modules/TxtFile"
+		},
+		{
+			"path": "../src/submodules/TxtFile"
+		},
+		{
+			"path": "../src/modules/InputFile"
+		},
+		{
+			"path": "../src/submodules/InputFile"
+		},
+		{
+			"path": "../src/submodules/XMLFile"
 		}
 	]
 }

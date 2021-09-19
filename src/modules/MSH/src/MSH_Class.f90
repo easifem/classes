@@ -31,9 +31,7 @@ USE mshElements_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSH_CLASS"
-TYPE( ExceptionHandler_ ) :: eMSH
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1002
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "MSH_CLASS_EXCEPTION.txt"
+TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
 !                                                                       MSH_
@@ -67,7 +65,6 @@ TYPE :: MSH_
     !! surface entities
   TYPE( mshEntity_ ), ALLOCATABLE :: volumeEntities( : )
     !! volume entities
-  TYPE( ExceptionHandler_ ), PUBLIC :: e
   CONTAINS
     PRIVATE
     FINAL :: msh_Final
