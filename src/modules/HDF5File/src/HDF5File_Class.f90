@@ -19,7 +19,7 @@ MODULE HDF5File_Class
 USE GlobalData
 USE BaseType
 USE HDF5
-USE H5LT
+! USE H5LT
 ! USE H5Fortran
 USE ExceptionHandler_Class
 USE AbstractFile_Class
@@ -2185,7 +2185,6 @@ MODULE SUBROUTINE hdf5_write_attribute_d0(obj,obj_name,attr_name,attr_val)
   REAL( DFP ), INTENT( IN ) :: attr_val
 END SUBROUTINE hdf5_write_attribute_d0
 END INTERFACE
-
 
 !----------------------------------------------------------------------------
 !                                                             ReadAttribute
