@@ -210,30 +210,15 @@ MODULE PROCEDURE hdf5_initiate
       & ' is already initialized!')
     RETURN
   ENDIF
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   CALL getPath( chars=filename, path=tempchars )
   fpath=trim(tempchars)
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   CALL getFileNameExt( chars=filename, ext=tempchars )
   fext=trim(tempchars)
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   CALL getFileName( chars=filename, fname=tempchars )
   fname=trim(tempchars)
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   CALL obj%setFilePath( fpath )
   CALL obj%setFileName( fname )
   CALL obj%setFileExt( fext )
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   !>
   IF(PRESENT(zlibOpt)) THEN
     IF(zlibOpt .GE. 0) THEN
@@ -241,9 +226,6 @@ MODULE PROCEDURE hdf5_initiate
       obj%zlibOpt=zlibOpt
     ENDIF
   ENDIF
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   !> Store the access mode
   mode_in=mode
   mode_in = mode_in%upper()
@@ -288,24 +270,12 @@ MODULE PROCEDURE hdf5_initiate
     CALL e%raiseError(modName//'::'//myName// &
       & ' - Unrecognized access mode.')
   ENDSELECT
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   obj%fullname=filename
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
   ! Initialize the HDF5 interface. This needs be done before any other calls
   ! to the HF5 interface can be made.
-  CALL e%raiseInformation(modName//'::'//myName// &
-    & ' - Debugging here.... check it out')
-  IF( .NOT. libh5Open ) THEN
-    CALL H5open_f(ierr); libh5Open=.TRUE.
-  ! CALL HDF5Open()
-  END IF
-
-  CALL Display( __LINE__, "debug :: " // myName // " LINE :: " )
-
+  CALL e%raiseDebug(modName//'::'//myName// &
+    & ' - CALL HDF5Open(), currently breaks in ubuntu [ISSUE-1]')
+  CALL HDF5Open()
   ! Assign arbitrary UNIT number to file.  Used only for deleting file.
   unitno=99
   INQUIRE( UNIT=unitno, OPENED=ostat )
@@ -336,7 +306,6 @@ MODULE PROCEDURE hdf5_clear
     ELSE
       CALL obj%close()
     ENDIF
-
     ! Close the HDF5 interface. This can only be done once all calls to the
     ! HDF5 library are complete.
     nhdf5fileinuse=nhdf5fileinuse-1
