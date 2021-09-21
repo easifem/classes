@@ -239,7 +239,7 @@ MODULE PROCEDURE mesh_getGlobalNodeNumber1
 END PROCEDURE mesh_getGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
-!                                                       getGlobalNodeNumber
+!                                                         getGlobalNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getGlobalNodeNumber2
@@ -253,7 +253,7 @@ MODULE PROCEDURE mesh_getGlobalNodeNumber2
 END PROCEDURE mesh_getGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
-!                                                       getGlobalElemNumber
+!                                                        getGlobalElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getGlobalElemNumber_1
@@ -278,7 +278,7 @@ MODULE PROCEDURE mesh_getGlobalElemNumber_2
 END PROCEDURE mesh_getGlobalElemNumber_2
 
 !----------------------------------------------------------------------------
-!                                                   getLocalElemNumber
+!                                                         getLocalElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalElemNumber_1
@@ -289,7 +289,7 @@ MODULE PROCEDURE mesh_getLocalElemNumber_1
 END PROCEDURE mesh_getLocalElemNumber_1
 
 !----------------------------------------------------------------------------
-!                                                   getLocalElemNumber
+!                                                         getLocalElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalElemNumber_2
@@ -302,7 +302,7 @@ MODULE PROCEDURE mesh_getLocalElemNumber_2
 END PROCEDURE mesh_getLocalElemNumber_2
 
 !----------------------------------------------------------------------------
-!                                                         getNodeToElements
+!                                                          getNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNodeToElements
@@ -344,7 +344,7 @@ MODULE PROCEDURE mesh_getNodeToNodes
 END PROCEDURE mesh_getNodeToNodes
 
 !----------------------------------------------------------------------------
-!                                                     getElementToElements
+!                                                       getElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getElementToElements
@@ -367,7 +367,7 @@ MODULE PROCEDURE mesh_getElementToElements
 END PROCEDURE mesh_getElementToElements
 
 !----------------------------------------------------------------------------
-!                                                    getBoundaryElementData
+!                                                     getBoundaryElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getBoundaryElementData
