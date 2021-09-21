@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Mesh_Class ) Constructor
+SUBMODULE( Mesh_Class ) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -131,4 +131,4 @@ MODULE PROCEDURE mesh_final
   CALL obj%DeallocateData()
 END PROCEDURE mesh_final
 
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods

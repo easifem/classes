@@ -17,9 +17,6 @@
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 March 2021
 ! summary: `Mesh_Class` module contains data type for handling the mesh.
-!
-!{!pages/MeshData.md}
-!{!pages/Mesh.md}
 
 MODULE Mesh_Class
 USE BaseType
@@ -171,18 +168,29 @@ TYPE :: Mesh_
     !! element data
   CONTAINS
     PRIVATE
+    ! @ConstructorMethods
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mesh_addSurrogate
-    PROCEDURE, PASS( obj ) :: Import => mesh_Import
+      !! Add surrogate to module error handler
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mesh_initiate
+      !! Allocate size of a mesh
+    FINAL :: mesh_final
+      !! mesh finalizer
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mesh_DeallocateData
+      !! Deallocate memory occupied by the mesh instance
+    !
+    ! @IOMethods
+    PROCEDURE, PUBLIC, PASS( obj ) :: Import => mesh_Import
       !! Read mesh from hdf5 file
+    PROCEDURE, PUBLIC, PASS( obj ) :: getNodeCoord => mesh_getNodeCoord
+      !! Read the nodeCoords from the hdf5file
     PROCEDURE, PUBLIC, PASS( obj ) :: Export => mesh_Export
       !! Export mesh to an hdf5 file
     PROCEDURE, PUBLIC, PASS( obj ) :: ExportToVTK => mesh_ExportToVTK
       !! Export mesh to a VTKfile
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => mesh_display
       !! Display the mesh
-    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mesh_initiate
-      !! Allocate size of a mesh
-    FINAL :: mesh_final
+    !
+    ! @getMethod
     PROCEDURE, PASS( obj ) :: InitiateNodeToElements => &
       & mesh_InitiateNodeToElements
       !! Initiate node to node data
@@ -195,8 +203,6 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: InitiateBoundaryData => &
       & mesh_InitiateBoundaryData
       !! Initiate boundary data
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mesh_DeallocateData
-      !! Deallocate data
     PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryNode => &
       & mesh_isBoundaryNode
       !! Returns true if a given global node number is a boundary node
@@ -292,9 +298,11 @@ PUBLIC :: Mesh_
 !
 !----------------------------------------------------------------------------
 
-!>
-! `MeshPointer_` is a userdefine datatype which contains the pointer to
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 Sept 2021
+! summary: This is a userdefine datatype which contains the pointer to
 ! a mesh
+
 TYPE :: MeshPointer_
   TYPE( Mesh_ ), POINTER :: Ptr => NULL( )
 END TYPE MeshPointer_
@@ -302,7 +310,7 @@ END TYPE MeshPointer_
 PUBLIC :: MeshPointer_
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogte
+!                                            addSurrogte@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -313,7 +321,7 @@ END SUBROUTINE mesh_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogte
+!                                             addSurrogte@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -324,108 +332,9 @@ END INTERFACE
 
 PUBLIC :: addSurrogate_Mesh
 
-!----------------------------------------------------------------------------
-!                                                                 Import@IO
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	18 June 2021
-! summary: This routine reads the mesh from a meshFile which is an hdf5
-! file
-!
-!### Introduction
-!
-! This routine reads the following
-!
-! meshdata%uid,  meshdata%xidim, meshData%elemType, meshData%minX, meshData%minY, meshData%minZ, meshData%maxX, meshData%maxY, meshData%maxZ, meshData%X,meshData%Y, meshData%Z, meshData%tElements, meshData%tIntNodes,  meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber, meshData%connectivity, meshData%boundingEntity
-!
-! This routine initiate the local_nptrs data in mesh.
-! This routine also sets the number of nodes in the mesh (tNodes)
-! This routine allocate obj%nodeData
-! This routine set localNodeNum and globalNodeNum data inside the
-! nodeData
-
-INTERFACE
-MODULE SUBROUTINE mesh_Import( obj, hdf5, group )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE mesh_Import
-END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Export@IO
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	18 June 2021
-! summary: This routine exports the mesh to a hdf5 file
-!
-!### Introduction
-
-INTERFACE
-MODULE SUBROUTINE mesh_Export( obj, hdf5, group )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE mesh_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             ExportToVTK@IO
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 Sept 2021
-! summary: Export mesh to a VTK file
-
-INTERFACE
-MODULE SUBROUTINE mesh_ExportToVTK( obj, vtkFile, filename )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  TYPE( VTKFile_ ), INTENT( INOUT ) :: vtkFile
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: filename
-END SUBROUTINE mesh_ExportToVTK
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                Display@IO
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	12 June 2021
-! summary: 	Displays the content of [[mesh_]] datatype
-!
-!### Introduction
-! 	This routine displays the content of [[mesh_]] datatype
-!
-!### Usage
-!
-!```fortran
-!	call display( obj, 'mesh', stdout )
-!	call obj%display( 'mesh', stdout )
-!```
-
-INTERFACE
-MODULE SUBROUTINE mesh_display( obj, msg, UnitNo )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh object
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-    !! message on screen
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
-    !! unit number of ouput file
-END SUBROUTINE mesh_display
-END INTERFACE
-
-!>
-! generic routine to display content of mesh
-INTERFACE Display
-  MODULE PROCEDURE mesh_display
-END INTERFACE Display
-
-PUBLIC :: Display
-
-!----------------------------------------------------------------------------
-!                                                       Initiate@Constructor
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -457,7 +366,7 @@ END SUBROUTINE mesh_initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Mesh@Constructor
+!                                                   Mesh@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -481,7 +390,7 @@ END INTERFACE Mesh
 PUBLIC :: Mesh
 
 !----------------------------------------------------------------------------
-!                                                   Mesh_Pointer@Constructor
+!                                           Mesh_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -543,7 +452,142 @@ END SUBROUTINE mesh_final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              getTotalElements@getMethod
+!                                                           Import@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	18 June 2021
+! summary: This routine reads the mesh from a meshFile which is an hdf5
+! file
+!
+!### Introduction
+!
+! This routine reads the following
+!
+! meshdata%uid,  meshdata%xidim, meshData%elemType, meshData%minX, meshData%minY, meshData%minZ, meshData%maxX, meshData%maxY, meshData%maxZ, meshData%X,meshData%Y, meshData%Z, meshData%tElements, meshData%tIntNodes,  meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber, meshData%connectivity, meshData%boundingEntity
+!
+! This routine initiate the local_nptrs data in mesh.
+! This routine also sets the number of nodes in the mesh (tNodes)
+! This routine allocate obj%nodeData
+! This routine set localNodeNum and globalNodeNum data inside the
+! nodeData
+
+INTERFACE
+MODULE SUBROUTINE mesh_Import( obj, hdf5, group )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mesh_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getNodeCoord@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Reads hdf5File for nodecoord of the mesh
+!
+!### Introduction
+!
+! This routine reads [[HDFFile_]] instance for constructing nodeCoord of mesh
+!
+! - Rows of `nodeCoord` represents the spatial component
+! - Columns of `nodeCoord` retpresents the node number
+! - Total number of columns in `nodeCoord` is equal to the number of
+! nodes present in the mesh object.
+!
+!@note
+! The nodeCoord returned by this routine should be used by the mesh object itselt. This is because, in nodeCoords the nodes are arranged locally. However, if you wish to use nodeCoord, then get the localNodeNumber of a global node by calling the mesh methods, and use this localNodeNumber to extract the coordinates.
+!@endnote
+
+INTERFACE
+MODULE SUBROUTINE mesh_getNodeCoord( obj, nodeCoord, hdf5, group )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: nodeCoord( :, : )
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mesh_getNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	18 June 2021
+! summary: This routine exports the mesh to a hdf5 file
+!
+!### Introduction
+
+INTERFACE
+MODULE SUBROUTINE mesh_Export( obj, hdf5, group )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mesh_Export
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ExportToVTK@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 Sept 2021
+! summary: Export mesh to a VTK file
+
+INTERFACE
+MODULE SUBROUTINE mesh_ExportToVTK( obj, vtkFile, nodeCoord, filename, &
+  & OpenTag, Content, CloseTag )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  TYPE( VTKFile_ ), INTENT( INOUT ) :: vtkFile
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: nodeCoord( :, : )
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: filename
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: OpenTag
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: CloseTag
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: Content
+END SUBROUTINE mesh_ExportToVTK
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	12 June 2021
+! summary: 	Displays the content of [[mesh_]] datatype
+!
+!### Introduction
+! 	This routine displays the content of [[mesh_]] datatype
+!
+!### Usage
+!
+!```fortran
+!	call display( obj, 'mesh', stdout )
+!	call obj%display( 'mesh', stdout )
+!```
+
+INTERFACE
+MODULE SUBROUTINE mesh_display( obj, msg, UnitNo )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    !! mesh object
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+    !! message on screen
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
+    !! unit number of ouput file
+END SUBROUTINE mesh_display
+END INTERFACE
+
+!>
+! generic routine to display content of mesh
+INTERFACE Display
+  MODULE PROCEDURE mesh_display
+END INTERFACE Display
+
+PUBLIC :: Display
+
+!----------------------------------------------------------------------------
+!                                                 getTotalElements@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -650,21 +694,21 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! type( mesh_ ) :: obj
-  ! integer( I4B ) :: ierr, ii
-  ! type( HDF5File_ ) :: meshfile
-  ! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
-  !   & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :', color_fg='blue', &
-  !   & style='underline_on') )
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
-  ! call display( obj%getNptrs(), "getNptrs = ")
-  ! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
-  ! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
-  ! call obj%deallocateData()
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
+! type( mesh_ ) :: obj
+! integer( I4B ) :: ierr, ii
+! type( HDF5File_ ) :: meshfile
+! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+!   & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :', color_fg='blue', &
+!   & style='underline_on') )
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+! call display( obj%getNptrs(), "getNptrs = ")
+! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
+! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
+! call obj%deallocateData()
+! call meshfile%close()
+! call meshfile%deallocateData()
 !```
 
 INTERFACE
@@ -675,7 +719,7 @@ END FUNCTION mesh_getInternalNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getBoundaryNptrs@setMethod
+!                                                getBoundaryNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -688,21 +732,21 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! type( mesh_ ) :: obj
-  ! integer( I4B ) :: ierr, ii
-  ! type( HDF5File_ ) :: meshfile
-  ! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
-  !   & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :', color_fg='blue', &
-  !   & style='underline_on') )
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
-  ! call display( obj%getNptrs(), "getNptrs = ")
-  ! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
-  ! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
-  ! call obj%deallocateData()
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
+! type( mesh_ ) :: obj
+! integer( I4B ) :: ierr, ii
+! type( HDF5File_ ) :: meshfile
+! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+!   & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :', color_fg='blue', &
+!   & style='underline_on') )
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+! call display( obj%getNptrs(), "getNptrs = ")
+! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
+! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
+! call obj%deallocateData()
+! call meshfile%close()
+! call meshfile%deallocateData()
 !```
 
 INTERFACE
@@ -710,93 +754,6 @@ MODULE PURE FUNCTION mesh_getBoundaryNptrs( obj ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION mesh_getBoundaryNptrs
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      initiateNodeToElements@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	generate Elements surrounding a node mapping
-!
-!### Introduction
-!
-! - This subroutine generates Elements surrounding a node mapping.
-! - Elements numbers are global element number.
-! - This mapping is stored inside obj%nodeData array
-! - For a local node number ii, obj%nodeData(ii)%globalElements(:) contains the global element numbers.
-!
-!@note
-! Always use method called `getNodeToElements()` to access this information. This methods requires global Node number
-!@endnote
-!
-! @warning
-! Always use the mapping between global node number and local node number to
-! avoid segmentation fault
-! @endwarning
-!
-!### Usage
-!
-! ```fortran
-!	call obj%initiateNodeToElements()
-! ```
-
-INTERFACE
-MODULE SUBROUTINE mesh_InitiateNodeToElements( obj )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE mesh_InitiateNodeToElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        InitiateNodeToNode@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	Initiate node to node connectivity data
-!
-!### Introduction
-! This routine generate the node to nodes mapping
-! This mapping is stored inside `obj%nodeData%globalNodeNum`
-!
-! For a local node number i, obj%nodeData(i)%globalNodeNum denotes the global node data surrounding the local node number. This list does not include self node.
-
-INTERFACE
-MODULE SUBROUTINE mesh_InitiateNodetoNodes( obj )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE mesh_InitiateNodetoNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 InitiateElementToElements@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	Initiate boundary data
-
-INTERFACE
-MODULE SUBROUTINE mesh_InitiateElementToElements( obj )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE mesh_InitiateElementToElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 InitiateBoundaryData@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	15 June 2021
-! summary: 	Initiate boundary data
-
-INTERFACE
-MODULE SUBROUTINE mesh_InitiateBoundaryData( obj )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-    !! mesh data
-END SUBROUTINE mesh_InitiateBoundaryData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -816,7 +773,39 @@ END FUNCTION mesh_isBoundaryNode
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                  isNodePresent@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 June 2021
+! summary: Returns  TRUE if a given global node number is present
+
+INTERFACE
+MODULE PURE FUNCTION mesh_isNodePresent( obj, GlobalNode ) RESULT( Ans )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: GlobalNode
+  LOGICAL( LGT ) :: ans
+END FUNCTION mesh_isNodePresent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 isElementPresent@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 June 2021
+! summary: Returns  TRUE if a given global Element number is present
+
+INTERFACE
+MODULE PURE FUNCTION mesh_isElementPresent( obj, GlobalElement ) RESULT( Ans )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: GlobalElement
+  LOGICAL( LGT ) :: ans
+END FUNCTION mesh_isElementPresent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                isBoundaryElement@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -834,38 +823,6 @@ MODULE PURE FUNCTION mesh_isBoundaryElement( obj, globalElemNumber ) &
   INTEGER( I4B ), INTENT( IN ) :: globalElemNumber
   LOGICAL( LGT ) :: ans
 END FUNCTION mesh_isBoundaryElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  isNodePresent@getMethod
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 June 2021
-! summary: Returns  TRUE if a given global node number is present
-
-INTERFACE
-MODULE PURE FUNCTION mesh_isNodePresent( obj, GlobalNode ) RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: GlobalNode
-  LOGICAL( LGT ) :: ans
-END FUNCTION mesh_isNodePresent
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  isElementPresent@getMethod
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 June 2021
-! summary: Returns  TRUE if a given global Element number is present
-
-INTERFACE
-MODULE PURE FUNCTION mesh_isElementPresent( obj, GlobalElement ) RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: GlobalElement
-  LOGICAL( LGT ) :: ans
-END FUNCTION mesh_isElementPresent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -960,7 +917,7 @@ END FUNCTION mesh_getConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getLocalNptrs@MeshDataMethods
+!                                        getLocalNodeNumber@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -980,7 +937,7 @@ END FUNCTION mesh_getLocalNodeNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getLocalNptrs@MeshDataMethods
+!                                         getLocalNodeNumber@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1112,25 +1069,25 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! type( mesh_ ) :: obj
-  ! integer( I4B ) :: ierr, ii
-  ! type( HDF5File_ ) :: meshfile
-  ! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
-  !   & // colorize('NODE TO ELEMENTS:', color_fg='blue', &
-  !   & style='underline_on') )
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
-  ! do ii = obj%minElemNum, obj%maxElemNum
-  !   if( .not. obj%isElementPresent( ii ) ) cycle
-  ! end do
-  ! do ii = obj%minNptrs, obj%maxNptrs
-  !   if( .not. obj%isNodePresent( ii ) ) cycle
-  !   call display( obj%getNodeToElements( ii ), "node = " // trim( string( ii ) ) // ' is connected to global elements = '  )
-  ! end do
-  ! call obj%deallocateData()
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
+! type( mesh_ ) :: obj
+! integer( I4B ) :: ierr, ii
+! type( HDF5File_ ) :: meshfile
+! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+!   & // colorize('NODE TO ELEMENTS:', color_fg='blue', &
+!   & style='underline_on') )
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+! do ii = obj%minElemNum, obj%maxElemNum
+!   if( .not. obj%isElementPresent( ii ) ) cycle
+! end do
+! do ii = obj%minNptrs, obj%maxNptrs
+!   if( .not. obj%isNodePresent( ii ) ) cycle
+!   call display( obj%getNodeToElements( ii ), "node = " // trim( string( ii ) ) // ' is connected to global elements = '  )
+! end do
+! call obj%deallocateData()
+! call meshfile%close()
+! call meshfile%deallocateData()
 !```
 
 INTERFACE
@@ -1167,24 +1124,24 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! type( mesh_ ) :: obj
-  ! integer( I4B ) :: ierr, ii
-  ! type( HDF5File_ ) :: meshfile
-  ! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
-  !   & // colorize('NODE TO NODES:', color_fg='blue', &
-  !   & style='underline_on') )
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
-  ! do ii = obj%minNptrs, obj%maxNptrs
-  !   if( .not. obj%isNodePresent( ii ) ) cycle
-  !   call display( obj%getNodeToNodes( ii, .true. ), &
-  !     & "node = " // trim( string( ii ) ) &
-  !     & // ' is connected to global nodes = ' )
-  ! end do
-  ! call obj%deallocateData()
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
+! type( mesh_ ) :: obj
+! integer( I4B ) :: ierr, ii
+! type( HDF5File_ ) :: meshfile
+! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+!   & // colorize('NODE TO NODES:', color_fg='blue', &
+!   & style='underline_on') )
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+! do ii = obj%minNptrs, obj%maxNptrs
+!   if( .not. obj%isNodePresent( ii ) ) cycle
+!   call display( obj%getNodeToNodes( ii, .true. ), &
+!     & "node = " // trim( string( ii ) ) &
+!     & // ' is connected to global nodes = ' )
+! end do
+! call obj%deallocateData()
+! call meshfile%close()
+! call meshfile%deallocateData()
 !```
 
 INTERFACE
@@ -1249,26 +1206,26 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! type( mesh_ ) :: obj
-  ! integer( I4B ) :: ierr, ii
-  ! type( HDF5File_ ) :: meshfile
-  ! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
-  !   & // colorize('testing  :', color_fg='blue', &
-  !   & style='underline_on') )
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
-  ! do ii = obj%minElemNum,obj%maxElemNum
-  !   if( .NOT. obj%isElementPresent(ii ) ) cycle
-  !   if( obj%isBoundaryElement(ii) ) then
-  !     call display( obj%getBoundaryElementData( ii ), &
-  !     & "element = " // trim( string( ii ) ) &
-  !     & // ' is connected to global elements = ' )
-  !   end if
-  ! end do
-  ! call obj%deallocateData()
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
+! type( mesh_ ) :: obj
+! integer( I4B ) :: ierr, ii
+! type( HDF5File_ ) :: meshfile
+! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+!   & // colorize('testing  :', color_fg='blue', &
+!   & style='underline_on') )
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+! do ii = obj%minElemNum,obj%maxElemNum
+!   if( .NOT. obj%isElementPresent(ii ) ) cycle
+!   if( obj%isBoundaryElement(ii) ) then
+!     call display( obj%getBoundaryElementData( ii ), &
+!     & "element = " // trim( string( ii ) ) &
+!     & // ' is connected to global elements = ' )
+!   end if
+! end do
+! call obj%deallocateData()
+! call meshfile%close()
+! call meshfile%deallocateData()
 !```
 
 INTERFACE
@@ -1278,6 +1235,93 @@ MODULE PURE FUNCTION mesh_getBoundaryElementData( obj, globalElemNumber ) &
   INTEGER( I4B ), INTENT( IN ) :: globalElemNumber
   INTEGER( I4B ), ALLOCATABLE :: ans( : )
 END FUNCTION mesh_getBoundaryElementData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     initiateNodeToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	generate Elements surrounding a node mapping
+!
+!### Introduction
+!
+! - This subroutine generates Elements surrounding a node mapping.
+! - Elements numbers are global element number.
+! - This mapping is stored inside obj%nodeData array
+! - For a local node number ii, obj%nodeData(ii)%globalElements(:) contains the global element numbers.
+!
+!@note
+! Always use method called `getNodeToElements()` to access this information. This methods requires global Node number
+!@endnote
+!
+! @warning
+! Always use the mapping between global node number and local node number to
+! avoid segmentation fault
+! @endwarning
+!
+!### Usage
+!
+! ```fortran
+!	call obj%initiateNodeToElements()
+! ```
+
+INTERFACE
+MODULE SUBROUTINE mesh_InitiateNodeToElements( obj )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE mesh_InitiateNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         InitiateNodeToNode@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate node to node connectivity data
+!
+!### Introduction
+! This routine generate the node to nodes mapping
+! This mapping is stored inside `obj%nodeData%globalNodeNum`
+!
+! For a local node number i, obj%nodeData(i)%globalNodeNum denotes the global node data surrounding the local node number. This list does not include self node.
+
+INTERFACE
+MODULE SUBROUTINE mesh_InitiateNodetoNodes( obj )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE mesh_InitiateNodetoNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateElementToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate boundary data
+
+INTERFACE
+MODULE SUBROUTINE mesh_InitiateElementToElements( obj )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE mesh_InitiateElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 InitiateBoundaryData@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	15 June 2021
+! summary: 	Initiate boundary data
+
+INTERFACE
+MODULE SUBROUTINE mesh_InitiateBoundaryData( obj )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    !! mesh data
+END SUBROUTINE mesh_InitiateBoundaryData
 END INTERFACE
 
 !----------------------------------------------------------------------------

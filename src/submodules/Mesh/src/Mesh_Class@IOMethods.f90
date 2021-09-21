@@ -363,6 +363,39 @@ MODULE PROCEDURE mesh_Import
 END PROCEDURE mesh_Import
 
 !----------------------------------------------------------------------------
+!                                                              getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getNodeCoord
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_getNodeCoord"
+  TYPE( String ) :: dsetname
+  INTEGER( I4B ) :: ii, jj
+  REAL( DFP ), ALLOCATABLE :: xij( :, : )
+  !> main
+  dsetname=TRIM(group)
+  !>check
+  IF( .NOT. hdf5%isOpen() ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'HDF5 file is not opened')
+  !>check
+  IF( .NOT. hdf5%isRead() ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'HDF5 file does not have read permission')
+  !>check
+  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars())) ) &
+    & CALL e%raiseError(modName//'::'//myName// " - " // &
+    & TRIM(dsetname) // ' path does not exists' )
+  !> build nodeCoord
+  CALL hdf5%read( TRIM(dsetname%chars()), xij )
+  CALL Reallocate( nodeCoord, 3_I4B, obj%getTotalNodes() )
+  jj = SIZE( xij, 1 )
+  DO ii = 1, SIZE( nodeCoord, 2 )
+    nodeCoord( 1:jj, ii ) = xij( 1:jj, obj%getGlobalNodeNumber(ii) )
+  END DO
+  IF( ALLOCATED( xij ) ) DEALLOCATE( xij )
+END PROCEDURE mesh_getNodeCoord
+
+!----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
@@ -378,7 +411,12 @@ END PROCEDURE mesh_Export
 
 MODULE PROCEDURE mesh_ExportToVTK
   CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_ExportToVTK"
-  INTEGER( I4B ) :: nCells, nPoints
+  LOGICAL( LGT ) :: OpenTag_, CloseTag_, Content_
+  INTEGER( Int8 ) :: vtkType
+  INTEGER( Int8 ), ALLOCATABLE :: types( : )
+  INTEGER( I4B ) :: nCells, nPoints, ii, jj, nne
+  INTEGER( I4B ), ALLOCATABLE :: vtkIndx( : ), connectivity( : ), &
+    & offsets( : ), localNptrs( : )
   !> main
   IF( .NOT. vtkFile%isInitiated ) THEN
     IF( .NOT. PRESENT( filename ) ) THEN
@@ -393,8 +431,47 @@ MODULE PROCEDURE mesh_ExportToVTK
   !>
   nCells = obj%getTotalElements()
   nPoints = obj%getTotalNodes( )
-  CALL vtkFile%WritePiece( nPoints=nPoints, nCells=nCells )
-  CALL vtkFile%WritePiece( )
+  OpenTag_ = INPUT( default=.TRUE., option=OpenTag )
+  CloseTag_ = INPUT( default=.TRUE., option=CloseTag )
+  Content_ = INPUT( default=.TRUE., option=Content )
+  !> Write piece information if OpenTag is true
+  IF( OpenTag_ ) CALL vtkFile%WritePiece( nPoints=nPoints, nCells=nCells )
+  !> Write Points information
+  IF( PRESENT( nodeCoord ) ) THEN
+    IF( ANY( SHAPE( nodeCoord ) .NE. [3, nPoints] ) ) &
+        & CALL e%raiseError(modName//"::"//myName//" - "// &
+        & "Shape of nodeCoord should be [3, nPoints]")
+    CALL vtkFile%WritePoints( x=nodeCoord )
+  END IF
+  !> Write Cells
+  IF( Content_ ) THEN
+    CALL getVTKelementType( elemType = obj%elemType, &
+      & vtk_type = vtkType, Nptrs = vtkIndx )
+    nne = SIZE( vtkIndx )
+    ALLOCATE( types( nCells ), offsets( nCells ), &
+      & connectivity( nne*nCells ) )
+    types = vtkType; offsets( 1 ) = nne; jj=0
+    DO ii = 2, nCells
+      offsets( ii ) = offsets( ii - 1 ) + nne
+    END DO
+    DO ii=obj%minElemNum, obj%maxElemNum
+      IF( obj%isElementPresent( ii ) ) THEN
+        jj = jj + 1
+        localNptrs = obj%getLocalNodeNumber( &
+          & obj%getConnectivity( globalElemNumber=ii ) )
+        connectivity( offsets( jj )-nne+1 : offsets( jj ) ) = localNptrs(vtkIndx) - 1
+      END IF
+    END DO
+    CALL vtkFile%WriteCells( connectivity=connectivity, offsets=offsets, &
+      & types=types )
+  END IF
+  IF( CloseTag_ ) CALL vtkFile%WritePiece( )
+  !> clean up
+  IF( ALLOCATED( types ) ) DEALLOCATE( types )
+  IF( ALLOCATED( vtkIndx ) ) DEALLOCATE( vtkIndx )
+  IF( ALLOCATED( connectivity ) ) DEALLOCATE( connectivity )
+  IF( ALLOCATED( offsets ) ) DEALLOCATE( offsets )
+  IF( ALLOCATED( localNptrs ) ) DEALLOCATE( localNptrs )
 END PROCEDURE mesh_ExportToVTK
 
 END SUBMODULE IOMethods

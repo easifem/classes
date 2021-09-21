@@ -18,8 +18,6 @@
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 June 2021
 ! summary: This module contains methods for domain data type
-!
-!{!pages/Domain.md}
 
 MODULE Domain_Class
 USE BaseType
@@ -41,8 +39,6 @@ TYPE( ExceptionHandler_ ) :: e
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 June 2021
 ! summary: Domain_ contains data of Domain_
-!
-!{!pages/Domain.md}
 
 TYPE :: Domain_
   PRIVATE
@@ -111,14 +107,19 @@ TYPE :: Domain_
     !! meshList( 3 ) list of meshes of volume entities
   CONTAINS
     PRIVATE
+    ! @ConstructorMethods
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => Domain_addSurrogate
+      !! Add surrogate to the module error handler
     PROCEDURE, PUBLIC, PASS( Obj ) :: Initiate => Domain_Initiate
-      !! Initiate domain data
+      !! Initiate an instance of domain
     PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => Domain_DeallocateData
-      !! Deallocate data stored inside the domain data
+      !! Deallocate data stored inside an instance of domain
     FINAL :: Domain_Final
+      !! Finalizer for domain
+    ! @IOMethods
     PROCEDURE, PASS( Obj ) :: Import => Domain_Import
-      !! Import entire domain data
+      !! Initiates an instance of domain by importing data from meshfile
+    ! @getMethods
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalEntities => &
       & Domain_getTotalPhysicalEntities
       !! Returns total number of physical entities, points, surface, volumes
@@ -200,7 +201,7 @@ END TYPE DomainPointer_
 PUBLIC :: DomainPointer_
 
 !----------------------------------------------------------------------------
-!                                                  addSurrogate@Constructor
+!                                            addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -215,7 +216,7 @@ END SUBROUTINE Domain_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  addSurrogate@Constructor
+!                                            addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -231,7 +232,7 @@ END INTERFACE
 PUBLIC :: addSurrogate_Domain
 
 !----------------------------------------------------------------------------
-!                                                     Initiate@Constructor
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -250,7 +251,7 @@ END SUBROUTINE Domain_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               DeallocateData@Constructor
+!                                          DeallocateData@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -264,14 +265,14 @@ MODULE SUBROUTINE Domain_DeallocateData( obj )
 END SUBROUTINE Domain_DeallocateData
 END INTERFACE
 
-!>
-! generic interface to deallocate data in [[Domain_]]
 INTERFACE DeallocateData
   MODULE PROCEDURE Domain_DeallocateData
 END INTERFACE DeallocateData
 
+PUBLIC :: DeallocateData
+
 !----------------------------------------------------------------------------
-!                                                        Final@Constructor
+!                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -285,7 +286,7 @@ END SUBROUTINE Domain_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Domain@Constructor
+!                                                  Domain@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -307,7 +308,7 @@ END INTERFACE Domain
 PUBLIC :: Domain
 
 !----------------------------------------------------------------------------
-!                                               Domain_Pointer@Constructor
+!                                          Domain_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -329,7 +330,7 @@ END INTERFACE Domain_Pointer
 PUBLIC :: Domain_Pointer
 
 !----------------------------------------------------------------------------
-!                                                                Import@IO
+!                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
 
@@ -344,7 +345,6 @@ MODULE SUBROUTINE Domain_Import( obj, hdf5, group )
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE Domain_Import
 END INTERFACE
-
 
 !----------------------------------------------------------------------------
 !                                                 getTotalNodes@getMethods
@@ -379,7 +379,7 @@ END FUNCTION Domain_getLocalNodeNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getLocalNodeNumber@getMethods
+!                                              getLocalNodeNumber@getMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -391,7 +391,7 @@ END FUNCTION Domain_getLocalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 getTotalMesh@getMethods
+!                                                    getTotalMesh@getMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -403,7 +403,7 @@ END FUNCTION Domain_getTotalMesh
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 getMeshPointer@getMethods
+!                                                  getMeshPointer@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
