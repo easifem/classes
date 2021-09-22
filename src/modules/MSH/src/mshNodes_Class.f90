@@ -122,7 +122,7 @@ PUBLIC :: DeallocateData
 INTERFACE
 MODULE SUBROUTINE n_GotoTag( obj, mshFile, error )
   CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  TYPE( txtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE n_GotoTag
 END INTERFACE
@@ -138,7 +138,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE n_Read( obj, mshFile, mshFormat, error )
   CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
-  TYPE( txtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE n_Read
@@ -155,7 +155,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE n_Write( obj, mshFile, mshFormat, Str, EndStr )
   CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
-  TYPE( txtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
   TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
 END SUBROUTINE n_Write

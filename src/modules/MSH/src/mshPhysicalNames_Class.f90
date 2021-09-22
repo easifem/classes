@@ -167,7 +167,7 @@ PUBLIC :: DeallocateData
 INTERFACE
 MODULE SUBROUTINE pn_GotoTag( obj, mshFile, error )
   CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
-  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE pn_GotoTag
 END INTERFACE
@@ -183,7 +183,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE pn_Read( obj, mshFile, error )
   CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: obj
-  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE pn_Read
 END INTERFACE
@@ -199,7 +199,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE pn_Write( obj, mshFile, StartStr, EndStr )
   CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: obj
-  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: StartStr, EndStr
 END SUBROUTINE pn_Write
 END INTERFACE
@@ -600,7 +600,7 @@ END INTERFACE
 INTERFACE
 MODULE PURE FUNCTION pn_OutputFileName( obj, mshFile, indx ) RESULT( ans )
   CLASS( mshPhysicalNames_ ), INTENT( IN ) :: obj
-  TYPE( TxtFile_ ), INTENT( IN ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( IN ) :: mshFile
   INTEGER( I4B ), INTENT( IN ) :: indx
   TYPE( String ) :: ans
 END FUNCTION pn_OutputFileName

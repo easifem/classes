@@ -44,6 +44,7 @@ MODULE PROCEDURE msh_deallocatedata
   obj%nsd = 0
   IF( ASSOCIATED( obj % buffer ) ) DEALLOCATE( obj%buffer )
   NULLIFY( obj%buffer )
+  CALL DeallocateTxtFile( obj, Delete )
 END PROCEDURE msh_deallocatedata
 
 !----------------------------------------------------------------------------
@@ -59,16 +60,16 @@ MODULE PROCEDURE msh_initiate
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'OPENING: MSH4 file')
   !> initiating mshFile
-  CALL obj%mshFile%initiate(file=file, status="OLD", action="READ")
-  CALL obj%mshFile%open()
-  unitNo = obj%mshFile%getunitNo()
+  CALL InitiateTxtFile( obj=obj, file=file, status="OLD", action="READ" )
+  CALL obj%open()
+  unitNo = obj%getunitNo()
   !> info
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'OPENING: MSH4 file [OK!]')
   !> reading mesh format
   CALL e%raiseDebug(modName//'::'//myName//' - '// &
     & 'READING: meshFormat')
-  CALL obj%Format%Read( mshFile=obj%mshFile, error=error)
+  CALL obj%Format%Read( mshFile=obj, error=error)
   IF( error .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Failed in Reading mesh format')
@@ -79,7 +80,7 @@ MODULE PROCEDURE msh_initiate
   !> reading physical group information
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'READING: physicalNames')
-  CALL obj%PhysicalNames%Read( mshFile=obj%mshFile, error=error )
+  CALL obj%PhysicalNames%Read( mshFile=obj, error=error )
   IF( obj%PhysicalNames%isInitiated ) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'READING: physicalNames [OK!]')
@@ -90,7 +91,7 @@ MODULE PROCEDURE msh_initiate
   !> Entities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'LOCATING: $Entities')
-  CALL TypemshEntity%GotoTag( mshFile=obj%mshFile, error=error )
+  CALL TypemshEntity%GotoTag( mshFile=obj, error=error )
   IF( error .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'LOCATING: $Entities [NOT FOUND!]')

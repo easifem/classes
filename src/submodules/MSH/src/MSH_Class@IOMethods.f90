@@ -302,7 +302,7 @@ MODULE PROCEDURE msh_ReadPointEntities
   INTEGER( I4B ) :: i, j, k, tpt, error, dim
   INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
   !> main program
-  dim = 0; unitNo=obj%mshFile%getUnitNo()
+  dim = 0; unitNo=obj%getUnitNo()
   CALL e%raiseInformation(modName//'::'//myName//' - ' &
     & // 'Total Point Entities: ' // TRIM(str(te, .true.)) )
   IF( ALLOCATED( obj%PointEntities ) ) DEALLOCATE( obj%PointEntities )
@@ -310,7 +310,7 @@ MODULE PROCEDURE msh_ReadPointEntities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'READING: PointEntities' )
     DO i = 1, te
-      CALL obj%PointEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+      CALL obj%PointEntities(i)%Read( mshFile=obj, dim=dim, &
         & readTag=.FALSE., error=error )
       ! get total physical tag
       tpt = obj%PointEntities(i)%getTotalPhysicalTags()
@@ -339,7 +339,7 @@ MODULE PROCEDURE msh_ReadCurveEntities
   INTEGER( I4B ) :: i, j, k, tpt, error, dim
   INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
   !> main program
-  dim = 1; unitNo=obj%mshFile%getUnitNo()
+  dim = 1; unitNo=obj%getUnitNo()
   CALL e%raiseInformation(modName//'::'//myName//' - ' &
     & // 'Total Curve Entities: ' // TRIM(str(te, .true.)) )
   IF( ALLOCATED( obj%CurveEntities ) ) DEALLOCATE( obj%CurveEntities )
@@ -347,7 +347,7 @@ MODULE PROCEDURE msh_ReadCurveEntities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'READING: CurveEntities' )
     DO i = 1, te
-      CALL obj%CurveEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+      CALL obj%CurveEntities(i)%Read( mshFile=obj, dim=dim, &
         & readTag=.FALSE., error=error )
       ! get total physical tag
       tpt = obj%CurveEntities(i)%getTotalPhysicalTags()
@@ -376,7 +376,7 @@ MODULE PROCEDURE msh_ReadSurfaceEntities
   INTEGER( I4B ) :: i, j, k, tpt, error, dim
   INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
   !> main program
-  dim = 2; unitNo=obj%mshFile%getUnitNo()
+  dim = 2; unitNo=obj%getUnitNo()
   CALL e%raiseInformation(modName//'::'//myName//' - ' &
     & // 'Total Surface Entities: ' // TRIM(str(te, .true.)) )
   IF( ALLOCATED( obj%SurfaceEntities ) ) DEALLOCATE( obj%SurfaceEntities )
@@ -384,7 +384,7 @@ MODULE PROCEDURE msh_ReadSurfaceEntities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'READING: SurfaceEntities' )
     DO i = 1, te
-      CALL obj%SurfaceEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+      CALL obj%SurfaceEntities(i)%Read( mshFile=obj, dim=dim, &
         & readTag=.FALSE., error=error )
       ! get total physical tag
       tpt = obj%SurfaceEntities(i)%getTotalPhysicalTags()
@@ -413,7 +413,7 @@ MODULE PROCEDURE msh_ReadVolumeEntities
   INTEGER( I4B ) :: i, j, k, tpt, error, dim
   INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
   !> main program
-  dim = 3; unitNo=obj%mshFile%getUnitNo()
+  dim = 3; unitNo=obj%getUnitNo()
   CALL e%raiseInformation(modName//'::'//myName//' - ' &
     & // 'Total Volume Entities: ' // TRIM(str(te, .true.)) )
   IF( ALLOCATED( obj%VolumeEntities ) ) DEALLOCATE( obj%VolumeEntities )
@@ -421,7 +421,7 @@ MODULE PROCEDURE msh_ReadVolumeEntities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'READING: VolumeEntities' )
     DO i = 1, te
-      CALL obj%VolumeEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+      CALL obj%VolumeEntities(i)%Read( mshFile=obj, dim=dim, &
         & readTag=.FALSE., error=error )
       ! get total physical tag
       tpt = obj%VolumeEntities(i)%getTotalPhysicalTags()
@@ -453,12 +453,12 @@ MODULE PROCEDURE msh_ReadNodes
   REAL( DFP ), ALLOCATABLE :: NodeCoord( :, : )
   !> main program
   ! we read first line of $Nodes block
-  CALL obj%Nodes%Read( mshFile=obj%mshFile, mshFormat=obj%Format, &
+  CALL obj%Nodes%Read( mshFile=obj, mshFormat=obj%Format, &
     & error=error )
   IF( error .NE. 0 ) &
     & CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Error has occured in reading the header of nodes.' )
-  unitNo=obj%mshFile%getUnitNo()
+  unitNo=obj%getUnitNo()
   !start reading each entity block
   DO i = 1, obj%Nodes%getnumEntityBlocks()
     ! read entity dimension and entity tag (uid)
@@ -510,8 +510,8 @@ MODULE PROCEDURE msh_ReadElements
 
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'READING: $Elements' )
-  unitNo = obj%mshFile%getUnitNo()
-  CALL obj%Elements%Read( mshFile=obj%mshFile, mshFormat=obj%Format, &
+  unitNo = obj%getUnitNo()
+  CALL obj%Elements%Read( mshFile=obj, mshFormat=obj%Format, &
     & error=error )
   IF( error .NE. 0 ) &
     & CALL e%raiseError(modName//'::'//myName//' - '// &
