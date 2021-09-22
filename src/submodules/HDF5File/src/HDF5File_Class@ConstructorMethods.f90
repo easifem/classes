@@ -19,7 +19,7 @@
 ! date: 	8 May 2021
 ! summary: 	HDF5File Methods
 
-SUBMODULE( HDF5File_Class ) Methods
+SUBMODULE( HDF5File_Class ) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -1230,4 +1230,4 @@ END PROCEDURE postRead
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE Methods
+END SUBMODULE ConstructorMethods

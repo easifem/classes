@@ -28,7 +28,7 @@ MODULE PROCEDURE Domain_setSparsity
   CHARACTER( LEN = * ), PARAMETER :: myName="Domain_setSparsity"
   INTEGER( I4B ) :: imesh, dim, tmesh, lb, ub
   CLASS( Mesh_ ), POINTER :: meshobj
-
+  ! main
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
@@ -39,7 +39,7 @@ MODULE PROCEDURE Domain_setSparsity
   DO dim = 1, 3
     tmesh = obj%getTotalMesh( dim=dim )
     DO imesh = 1, tmesh
-      meshobj => obj%getMeshPointer( dim=dim, tag=imesh )
+      meshobj => obj%getMeshPointer( dim=dim, entityNum=imesh )
       IF( ASSOCIATED( meshobj )  ) &
         & CALL meshobj%setSparsity( mat=mat, &
         & localNodeNumber=obj%local_nptrs, lbound=lb, ubound=ub )
@@ -48,5 +48,9 @@ MODULE PROCEDURE Domain_setSparsity
   CALL setSparsity( mat )
   NULLIFY( meshobj )
 END PROCEDURE Domain_setSparsity
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE setMethods

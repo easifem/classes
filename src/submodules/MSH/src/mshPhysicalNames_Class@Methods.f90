@@ -39,6 +39,7 @@ MODULE PROCEDURE pn_deallocatedata
   IF( ALLOCATED( obj%numNodes ) ) DEALLOCATE( obj%numNodes )
   IF( ALLOCATED( obj%Entities ) ) DEALLOCATE( obj%Entities )
   IF( ALLOCATED( obj%PhysicalName ) ) DEALLOCATE( obj%PhysicalName )
+  obj%isInitiated = .FALSE.
 END PROCEDURE pn_deallocatedata
 
 !----------------------------------------------------------------------------
@@ -51,25 +52,21 @@ MODULE PROCEDURE pn_GotoTag
   CHARACTER( LEN = 100 ) :: Dummy
   CHARACTER( LEN = * ), PARAMETER :: myName = "pn_GotoTag"
   !
-  ! Find $meshFormat
-
+  ! Find $PhysicalNames
   IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'mshFile is either not opened or does not have read access!')
     error = -1
   ELSE
-    Reopen = 0
-    error = 0
+    Reopen = 0; error = 0; CALL mshFile%Rewind()
     DO
       unitNo = mshFile%getUnitNo()
       READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( mshFile%isEOF() ) THEN
-        CALL mshFile%Rewind()
+      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
+        CALL mshFile%setEOFStat( .TRUE. )
         Reopen = Reopen + 1
       END IF
       IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'Could not find $PhysicalNames!')
         error = -2
         EXIT
       ELSE IF( TRIM( Dummy ) .EQ. '$PhysicalNames' ) THEN
@@ -91,12 +88,11 @@ MODULE PROCEDURE pn_Read
 
   ! Go to $PhysicalNames
   CALL obj%GotoTag( mshFile, error )
-  !
   IF( error .EQ. 0 ) THEN
     CALL Obj%DeallocateData()
+    obj%isInitiated = .TRUE.
     unitNo = mshFile%getUnitNo()
     READ( UnitNo, * ) tp
-
     ALLOCATE( &
       & obj%numElements( tp ), &
       & obj%numNodes( tp ), &
@@ -104,10 +100,8 @@ MODULE PROCEDURE pn_Read
       & obj%Tag( tp ), &
       & obj%PhysicalName( tp ), &
       & obj%Entities( tp ) )
-
     obj%numElements = 0
     obj%numNodes = 0
-
     DO k = 1, tp
       READ( UnitNo, *, IOSTAT = IOSTAT ) obj%NSD( k ), &
         & obj%Tag( k ), dummystr
@@ -115,8 +109,9 @@ MODULE PROCEDURE pn_Read
       dummystr = ""
     END DO
   ELSE
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not read PhysicalNames from mshFile !')
+    obj%isInitiated = .FALSE.
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'PhysicalNames information is not present in the mshFile !')
   END IF
 END PROCEDURE pn_Read
 
@@ -130,34 +125,32 @@ MODULE PROCEDURE pn_Write
   TYPE( TxtFile_ ) :: outFile
   TYPE( String ) :: path, filename, ext
   INTEGER( I4B ) :: unitNo
-
-  CALL mshFile%getFileParts(path, filename, ext)
-
-  CALL outFile%initiate(file = path // filename // "_PhysicalNames" // ext, action = "WRITE" )
-  CALL outFile%open()
-  unitNo = outFile%getUnitNo()
-  tp = SIZE( obj%NSD )
-
-  IF( PRESENT( StartStr ) ) THEN
-    WRITE( UnitNo, "(A)" ) TRIM( StartStr )
+  !> Main
+  IF( obj%isInitiated ) THEN
+    CALL mshFile%getFileParts(path, filename, ext)
+    CALL outFile%initiate(file = path // filename // &
+      & "_PhysicalNames" // ext, action = "WRITE" )
+    CALL outFile%open()
+    unitNo = outFile%getUnitNo()
+    tp = SIZE( obj%NSD )
+    IF( PRESENT( StartStr ) ) THEN
+      WRITE( UnitNo, "(A)" ) TRIM( StartStr )
+    END IF
+    WRITE( UnitNo, "(I6)") tp
+    DO k = 1, tp
+      WRITE( UnitNo, "(A)" ) &
+        & TRIM(str(obj%NSD( k ), .TRUE. )) &
+        & // " " &
+        & // TRIM(str(obj%Tag( k ), .TRUE.)) &
+        & // ' "' &
+        & // TRIM(obj%PhysicalName( k )) // '"'
+    END DO
+    IF( PRESENT( EndStr )) THEN
+      WRITE( UnitNo, "(A)" ) TRIM( EndStr )
+    END IF
+    CALL outFile%close()
+    CALL outFile%DeallocateData()
   END IF
-
-  WRITE( UnitNo, "(I6)") tp
-
-  DO k = 1, tp
-    WRITE( UnitNo, "(A)" ) &
-      & TRIM(str(obj%NSD( k ), .TRUE. )) &
-      & // " " &
-      & // TRIM(str(obj%Tag( k ), .TRUE.)) &
-      & // ' "' &
-      & // TRIM(obj%PhysicalName( k )) // '"'
-  END DO
-
-  IF( PRESENT( EndStr )) THEN
-    WRITE( UnitNo, "(A)" ) TRIM( EndStr )
-  END IF
-  CALL outFile%close()
-  CALL outFile%DeallocateData()
 END PROCEDURE pn_Write
 
 !----------------------------------------------------------------------------
@@ -168,52 +161,53 @@ MODULE PROCEDURE pn_Display
   ! Define internal variables
   INTEGER( I4B ) :: I, tSize, j
   TYPE( String ) :: Str1, Str2
-
   ! set unit number
-  IF( PRESENT( UnitNo ) ) THEN
-    I = UnitNo
-  ELSE
-    I = stdout
-  END IF
-  ! print message
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( I, "(A)" ) TRIM( Msg )
-  END IF
-  ! get total size info
-  tSize = SIZE( obj%NSD )
-  IF( tSize .NE. 0 ) THEN
-    ! write header in markdown
-    CALL BlankLines( UnitNo = I, NOL = 1 )
-    WRITE( I, "(A)" ) "| Sr.No. |  NSD  | Physical Tag | Physical Name | &
-      & NumElem | NumNodes |"
-    WRITE( I, "(A)" ) "| :---   | :---: | :---:        | :---:          | &
-      & :---: | ---: |"
-    ! Write entries one by one
-    DO j = 1, tSize
-      Str2 = Str1%Join( [ &
-        & String( "| "// TRIM( Str( j, .true. ) ) ), &
-        & String( Str( obj%NSD( j ), .true. ) ), &
-        & String( Str( obj%Tag( j ), .true. ) ), &
-        & TRIM( obj%PhysicalName( j ) ), &
-        & String( Str( obj%numElements( j ), .true. ) ), &
-        & String( Str( obj%numNodes( j ), .true. ) ) ], " | " )
-      WRITE( I, "(A)") TRIM( Str2 ) // " | "
-    END DO
-    !
-    IF( ALLOCATED( obj%Entities ) ) THEN
-      CALL BlankLines( UnitNo = I, NOL = 1 )
-      WRITE( I, "(A)" ) "Physical Tag to Entities Tag"
-      WRITE( I, "(A)") "| Physical Tag | PhysicalName | Entities Tag |"
-      WRITE( I, "(A)") "| :--- | :---: | ---: |"
-      DO j = 1, SIZE( obj%Entities )
-        tSize = SIZE( obj%Entities( j ) )
-        WRITE( I, "( A, I4, A, " // TRIM( Str( tSize, .false. ) ) &
-          & // "(I4,',')"//", A )" ) &
-          & "| ", obj%Tag( j ), &
-          & "| "//TRIM( obj%PhysicalName( j ) )//" | ", &
-          & obj%Entities( j )%Val, " |"
-      END DO
-    END IF
+  IF( obj%isInitiated ) THEN
+    IF( PRESENT( UnitNo ) ) THEN
+        I = UnitNo
+      ELSE
+        I = stdout
+      END IF
+      ! print message
+      IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
+        WRITE( I, "(A)" ) TRIM( Msg )
+      END IF
+      ! get total size info
+      tSize = SIZE( obj%NSD )
+      IF( tSize .NE. 0 ) THEN
+        ! write header in markdown
+        CALL BlankLines( UnitNo = I, NOL = 1 )
+        WRITE( I, "(A)" ) "| Sr.No. |  NSD  | Physical Tag | Physical Name |&
+          & NumElem | NumNodes |"
+        WRITE( I, "(A)" ) "| :---   | :---: | :---:        | :---:          | &
+          & :---: | ---: |"
+        ! Write entries one by one
+        DO j = 1, tSize
+          Str2 = Str1%Join( [ &
+            & String( "| "// TRIM( Str( j, .true. ) ) ), &
+            & String( Str( obj%NSD( j ), .true. ) ), &
+            & String( Str( obj%Tag( j ), .true. ) ), &
+            & TRIM( obj%PhysicalName( j ) ), &
+            & String( Str( obj%numElements( j ), .true. ) ), &
+            & String( Str( obj%numNodes( j ), .true. ) ) ], " | " )
+          WRITE( I, "(A)") TRIM( Str2 ) // " | "
+        END DO
+        !
+        IF( ALLOCATED( obj%Entities ) ) THEN
+          CALL BlankLines( UnitNo = I, NOL = 1 )
+          WRITE( I, "(A)" ) "Physical Tag to Entities Tag"
+          WRITE( I, "(A)") "| Physical Tag | PhysicalName | Entities Tag |"
+          WRITE( I, "(A)") "| :--- | :---: | ---: |"
+          DO j = 1, SIZE( obj%Entities )
+            tSize = SIZE( obj%Entities( j ) )
+            WRITE( I, "( A, I4, A, " // TRIM( Str( tSize, .false. ) ) &
+              & // "(I4,',')"//", A )" ) &
+              & "| ", obj%Tag( j ), &
+              & "| "//TRIM( obj%PhysicalName( j ) )//" | ", &
+              & obj%Entities( j )%Val, " |"
+          END DO
+        END IF
+      END IF
   END IF
 END PROCEDURE pn_Display
 
@@ -223,7 +217,7 @@ END PROCEDURE pn_Display
 
 MODULE PROCEDURE pn_getTotalPhysicalEntities
   INTEGER( I4B ) :: ii
-
+  !> main
   IF( .NOT. PRESENT( dim ) ) THEN
     IF( ALLOCATED( obj%NSD ) ) THEN
       ans = SIZE( obj%NSD )
@@ -412,9 +406,8 @@ END PROCEDURE pn_getPhysicalNames
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getPhysicalPointNames
-  ! Define internal variables
   INTEGER( I4B ) :: tPoints, i, k
-
+  !> main
   tPoints = getTotalPhysicalPoints( obj )
   ALLOCATE( ans( tPoints ) )
   IF( tPoints .NE. 0 ) THEN
@@ -433,9 +426,8 @@ END PROCEDURE getPhysicalPointNames
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getPhysicalCurveNames
-  ! Define internal variables
   INTEGER( I4B ) :: tLines, i, k
-
+  !> main
   tLines = getTotalPhysicalCurves(obj)
   ALLOCATE( ans( tLines ) )
   IF( tLines .NE. 0 ) THEN
@@ -456,7 +448,7 @@ END PROCEDURE getPhysicalCurveNames
 MODULE PROCEDURE getPhysicalSurfaceNames
   ! Define internal variables
   INTEGER( I4B ) :: tSurfaces, i, k
-
+  !> main
   tSurfaces = getTotalPhysicalSurfaces(obj)
   ALLOCATE( ans( tSurfaces ) )
   IF( tSurfaces .NE. 0 ) THEN

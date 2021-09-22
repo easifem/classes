@@ -72,32 +72,21 @@ TYPE :: Domain_
     !! Total number of entities required for reading nodes
   INTEGER( I4B ) :: tEntitiesForElements = 0
     !! Total number of entities required for reading elements
-  INTEGER( I4B ), ALLOCATABLE :: NSDVec( : )
-    !! Spatial dimension of each physical entities
-  INTEGER( I4B ), ALLOCATABLE :: tag( : )
-    !! Unique ID of each physical entities
-  INTEGER( I4B ), ALLOCATABLE :: numElements( : )
-    !! Number of elements in each physical entity
-  INTEGER( I4B ), ALLOCATABLE :: numNodes( : )
-    !! Number of nodes in each physical entity
-  TYPE( IntVector_ ), ALLOCATABLE :: entities( : )
-    !! Tags of Entities in each physical entities
-  TYPE( String ), ALLOCATABLE :: physicalName( : )
-    !! Physical name of each physical group
   INTEGER( I4B ) :: tElements( 0:3 ) = [0,0,0,0]
-    !! total number of elements inside the domain
+    !! Total number of elements inside the domain
     !! tElements( 0 ) = total number of point elements
     !! tElements( 1 ) = total number of line elements
     !! tElements( 2 ) =  total number of surface elements
     !! tElements( 3 ) = total number of volume/cell elements
   INTEGER( I4B ) :: tEntities( 0:3 ) = [0,0,0,0]
-    !! total number of entities inside the domain
-    !! tEntities( 0 ) = total number of point entities, Points
-    !! tEntities( 1 ) = total number of line entities, Edge
-    !! tEntities( 2 ) = total number of surface entities, Boundary
-    !! tEntities( 3 ) = total number of volume entities, Omega
+    !! Total number of entities inside the domain
+    !! tEntities( 0 ) = total number of point mesh entities, mesh of Points
+    !! tEntities( 1 ) = total number of line mesh entities, mesh of Edge
+    !! tEntities( 2 ) = total number of surface mesh entities, mesh Boundary
+    !! tEntities( 3 ) = total number of volume mesh entities, Omega
   REAL( DFP ), ALLOCATABLE, PUBLIC :: nodeCoord( :, : )
     !! Nodal coordinates in XiJ format
+    !! Number of rows are 3, and number of columns is total nodes
   INTEGER( I4B ), ALLOCATABLE, PUBLIC :: local_nptrs( : )
     !! local_nptrs are required to access the nodeCoord
   TYPE( MeshPointerVector_ ), ALLOCATABLE :: meshList( : )
@@ -120,48 +109,8 @@ TYPE :: Domain_
     PROCEDURE, PASS( Obj ) :: Import => Domain_Import
       !! Initiates an instance of domain by importing data from meshfile
     ! @getMethods
-    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalEntities => &
-      & Domain_getTotalPhysicalEntities
-      !! Returns total number of physical entities, points, surface, volumes
-    GENERIC, PUBLIC :: getIndex => &
-      & Domain_getIndex_a, Domain_getIndex_b, &
-      & Domain_getIndex_c, Domain_getIndex_d, &
-      & Domain_getIndex_e
-    PROCEDURE, PASS( obj ) :: Domain_getIndex_a
-      !! Returns the index of a physical group
-    PROCEDURE, PASS( obj ) :: Domain_getIndex_b
-      !! Returns the index of a physical group
-    PROCEDURE, PASS( obj ) :: Domain_getIndex_c
-      !! Returns the index of a physical group
-    PROCEDURE, PASS( obj ) :: Domain_getIndex_d
-      !! Returns the index of a physical group
-    PROCEDURE, PASS( Obj ) :: Domain_getIndex_e
-      !! Returns the index of a physical group
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalNames => &
-      & Domain_getPhysicalNames
-      !! Returns the physical names
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getPhysicalTags => &
-      & Domain_getPhysicalTags
-      !! Returns tags of physical entities
-    PROCEDURE, PUBLIC, PASS( obj ) :: WhoAmI => Domain_WhoAmI
-      !! Enquire about "volume, surface, curve, point'
-    PROCEDURE, PUBLIC, PASS( Obj ) :: AppendEntities => &
-      & Domain_AppendEntities
-      !! Append entries to entities
-    PROCEDURE, PUBLIC, PASS( Obj ) :: IncNumElements => &
-      & Domain_IncNumElements
-      !! Increase element number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: IncNumNodes => Domain_IncNumNodes
-      !! Increase node number
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getEntities => Domain_getEntities
-      !! Returns the geometric entities number of each physical entities
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNumElements => &
-      & Domain_getNumElements
-      !! Returns the number of elements in each physical entities/group
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNumNodes => Domain_getNumNodes
-      !! Returns the number of nodes in each physical entities/group
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setNumNodes => Domain_setNumNodes
-      !! Set the number of nodes in each physical entities/group
+    PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
+      & Domain_isNodePresent
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalNodes => Domain_getTotalNodes
       !! returns the total number of nodes in the mesh
     PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber1
@@ -313,7 +262,7 @@ PUBLIC :: Domain
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 19 June 2021
-! summary: Domain methods
+! summary: This function returns pointer to a newly constructed Domain obj
 
 INTERFACE
 MODULE FUNCTION Domain_Constructor_1( hdf5, group ) RESULT( Ans )
@@ -336,7 +285,7 @@ PUBLIC :: Domain_Pointer
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	18 June 2021
-! summary: Import domain data
+! summary: Construct an instance of domain by importing data from mesh
 
 INTERFACE
 MODULE SUBROUTINE Domain_Import( obj, hdf5, group )
@@ -347,19 +296,43 @@ END SUBROUTINE Domain_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   isNodePresent@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns true if the global node number is present
+
+INTERFACE
+MODULE FUNCTION Domain_isNodePresent( obj, globalNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  LOGICAL( LGT ) :: ans
+END FUNCTION Domain_isNodePresent
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 getTotalNodes@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 28 June 2021
 ! summary: Returns the total number of nodes in the domain
+!
+!### Introduction
+!
+! This function returns the total number of nodes in a given mesh entity
+! The mesh entity is given by its ID and its dimension.
+!
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+! - `entityNum` should not be out of bound
 
 INTERFACE
-MODULE FUNCTION Domain_getTotalNodes( obj, physicalTag, physicalName, &
-  & entityNum, dim ) RESULT( Ans )
+MODULE FUNCTION Domain_getTotalNodes( obj, entityNum, dim ) RESULT( Ans )
   CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: physicalTag
-  TYPE( String ), OPTIONAL, INTENT( IN ) :: physicalName
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
   INTEGER( I4B ) :: ans
@@ -369,6 +342,15 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                             getLocalNodeNumber@getMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+!
+!### Introduction
+!
+! This function returns the local node number of a global node number.
+
 
 INTERFACE
 MODULE FUNCTION Domain_getLocalNodeNumber1( obj, globalNode ) RESULT( Ans )
@@ -382,6 +364,14 @@ END INTERFACE
 !                                              getLocalNodeNumber@getMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+!
+!### Introduction
+!
+! This function returns the local node number of a global node number.
+
 INTERFACE
 MODULE FUNCTION Domain_getLocalNodeNumber2( obj, globalNode ) RESULT( Ans )
   CLASS( Domain_ ), INTENT( IN ) :: obj
@@ -393,6 +383,19 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                    getTotalMesh@getMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This function returns the total number of mesh
+!
+!### Introduction
+!
+! This function returns the total number of mesh
+!
+! - `dim=0` returns the total number of mesh of point entities
+! - `dim=1` returns the total number of mesh of curve entities
+! - `dim=2` returns the total number of mesh of surface entities
+! - `dim=3` returns the total number of mesh of volume entities
 
 INTERFACE
 MODULE FUNCTION Domain_getTotalMesh( obj, dim ) RESULT( Ans )
@@ -411,15 +414,16 @@ END INTERFACE
 ! summary: This rotuine returns mesh pointer
 !
 !### Introduction
+!
 ! This returns the mesh Entity pointer.
 ! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point, curve, surface, volume meshes.
 ! - tag, is the number of mesh
 
 INTERFACE
-MODULE FUNCTION Domain_getMeshPointer( obj, dim, tag ) RESULT( Ans )
+MODULE FUNCTION Domain_getMeshPointer( obj, dim, entityNum ) RESULT( Ans )
   CLASS( Domain_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), INTENT( IN ) :: entityNum
   CLASS( Mesh_), POINTER :: ans
 END FUNCTION Domain_getMeshPointer
 END INTERFACE
@@ -435,11 +439,15 @@ END INTERFACE
 !### Introduction
 ! - This routine returns the nodal coordinates in the form of rank2 array.
 ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
+! - If `dim` and `tag` are absent then this routine returns the nodal coordinates of the entire domain
+! - If `dim` and `tag` are present then the routine selects the mesh and returns its nodal coordinates
 
 INTERFACE
-MODULE SUBROUTINE Domain_getNodeCoord( obj, nodeCoord )
+MODULE SUBROUTINE Domain_getNodeCoord( obj, nodeCoord, dim, entityNum )
   CLASS( Domain_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: nodeCoord( :, : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
 END SUBROUTINE Domain_getNodeCoord
 END INTERFACE
 
@@ -463,7 +471,7 @@ END FUNCTION Domain_getNodeCoordPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  Domain_getNptrs@getMethod
+!                                                         getNptrs@getMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -484,8 +492,12 @@ END FUNCTION Domain_getNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getNSD@PhysicalNamesMethods
+!                                                           getNSD@getMethod
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: This routine returns the number of spatial dimensions
 
 INTERFACE
 MODULE PURE FUNCTION Domain_getNSD( obj ) RESULT( Ans )
@@ -503,475 +515,6 @@ MODULE SUBROUTINE Domain_setSparsity( obj, mat )
   CLASS( Domain_ ), INTENT( IN ) :: obj
   TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
 END SUBROUTINE Domain_setSparsity
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                              getTotalPhysicalEntities@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: This function returns total number of physical entities
-!
-!### Introduction
-! This function returns the total number of physical entities of given dimension. We can club the dimensions. For example [0,1] will give total number of physical entities of points and curves
-!
-!### Usage
-!
-!```fortran
-!	m = getTotalPhysicalEntities()
-!	m = getTotalPhysicalEntities([0])
-!	m = getTotalPhysicalEntities([1])
-!	m = getTotalPhysicalEntities([2])
-!	m = getTotalPhysicalEntities([3])
-!	m = getTotalPhysicalEntities([0,1])
-!	m = getTotalPhysicalEntities([0,1,2])
-!	m = getTotalPhysicalEntities([0,1,3])
-!
-!```
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getTotalPhysicalEntities( obj, dim ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ):: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim(:)
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getTotalPhysicalEntities
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                               getTotalPhysicalPoints@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: This function returns total number of physical points
-
-INTERFACE
-MODULE PURE FUNCTION getTotalPhysicalPoints( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ):: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION getTotalPhysicalPoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                               getTotalPhysicalCurves@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	This function returns total number of physical curves
-
-INTERFACE
-MODULE PURE FUNCTION getTotalPhysicalCurves( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ):: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION getTotalPhysicalCurves
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                             getTotalPhysicalSurfaces@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns total number of physical surfaces
-
-INTERFACE
-MODULE PURE FUNCTION getTotalPhysicalSurfaces( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ):: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION getTotalPhysicalSurfaces
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                              getTotalPhysicalVolumes@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	This function returns total number of physical volumes
-
-INTERFACE
-MODULE PURE FUNCTION getTotalPhysicalVolumes( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ):: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION getTotalPhysicalVolumes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getIndex@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns index of a given physical name
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getIndex_a( obj, Name ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( String ), INTENT( IN ) :: Name
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getIndex_a
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getIndex@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns index of a given physical name
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getIndex_b( obj, Name ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( String ), INTENT( IN ) :: Name( : )
-  INTEGER( I4B ) :: ans( SIZE( Name ) )
-END FUNCTION Domain_getIndex_b
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getIndex@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	20 June 2021
-! summary: 	 This function returns index of a given physical name
-!
-!### Introduction
-! This function returns index of a given physical name
-!
-! - `dim` denotes the XiDImension of physical entity
-!     - 0 => point
-!     - 1 => line
-!     - 2 => surface
-!     - 3 => volume
-! - `tag` denotes the Physical Tag of physical entity
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getIndex_c( obj, dim, tag ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim, tag
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getIndex_c
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getIndex@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	20 June 2021
-! summary: 	This function returns index of a given physical name
-!
-!### Introduction
-!
-! This function returns index of a given physical name
-!
-! - `dim` denotes the XiDImension of physical entity
-! - `dim` = 0 => returns indices of points
-! - `dim` = 1 => returns indices of lines
-! - `dim` = 2 => returns indices of surfaces
-! - `dim` = 3 => returns indices of volumes
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getIndex_d( obj, dim ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ), ALLOCATABLE  :: ans( : )
-END FUNCTION Domain_getIndex_d
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getIndex@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	20 June 2021
-! summary: 	 This function returns index of a given physical name
-!
-!### Introduction
-! This function returns index of a given physical name
-!
-! - `dim` denotes the XiDImension of physical entity
-!     - 0 => point
-!     - 1 => line
-!     - 2 => surface
-!     - 3 => volume
-! - `tag` denotes the Physical TagS of physical entity
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getIndex_e( obj, dim, tag ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim, tag( : )
-  INTEGER( I4B ) :: ans( SIZE( tag ) )
-END FUNCTION Domain_getIndex_e
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     getPhysicalNames@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 10 June 2021
-! summary: This function returns the names of physical entities
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getPhysicalNames( obj, dim ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
-  TYPE( String ), ALLOCATABLE :: ans( : )
-END FUNCTION Domain_getPhysicalNames
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 getPhysicalPointNamesPhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: This function returns the names of physical poins
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalPointNames( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( String ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalPointNames
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 getPhysicalCurveNames@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: This function returns the names of physical names
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalCurveNames( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( String ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalCurveNames
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                              getPhysicalSurfaceNames@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: This function returns the names of physical surface
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalSurfaceNames( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( String ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalSurfaceNames
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                               getPhysicalVolumeNames@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: This function returns the names of physical volume
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalVolumeNames( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  TYPE( String ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalVolumeNames
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      getPhysicalTags@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	This routine returns the physical tags of a physical entities
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getPhysicalTags( obj, dim ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION Domain_getPhysicalTags
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  getPhysicalPointTags@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns the physical tags of all physical points
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalPointTags( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalPointTags
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 getPhysicalCurveTags@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns the physical tags of all physical curves
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalCurveTags( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalCurveTags
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                               getPhysicalSurfaceTags@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns the physical tags of all physical surfaces
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalSurfaceTags( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalSurfaceTags
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                getPhysicalVolumeTags@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 	10 June 2021
-! summary: 	 This function returns the physical tags of all physical volumes
-
-INTERFACE
-MODULE PURE FUNCTION getPhysicalVolumeTags( obj ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION getPhysicalVolumeTags
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               WhoAmI@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION Domain_WhoAmI( obj, I ) RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: I
-  TYPE( String ) :: ans
-END FUNCTION Domain_WhoAmI
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        AppendEntities@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE Domain_AppendEntities( obj, indx, Entitytag )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: EntityTag( : ), indx
-END SUBROUTINE Domain_AppendEntities
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       IncNumElements@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE SUBROUTINE Domain_IncNumElements( obj, indx, incr )
-  CLASS( Domain_  ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: incr
-END SUBROUTINE Domain_IncNumElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          getEntities@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getEntities( obj, indx ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
-  INTEGER( I4B ), ALLOCATABLE :: Ans( : )
-END FUNCTION Domain_getEntities
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          IncNumNodes@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE SUBROUTINE Domain_IncNumNodes( obj, indx, incr )
-  CLASS( Domain_  ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: incr
-END SUBROUTINE Domain_IncNumNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       getNumElements@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getNumElements( obj ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION Domain_getNumElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          getNumNodes@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary:  Returns the number of nodes in each physical entities
-!
-!### Introduction
-! This function returns the number of nodes in each physical entities
-! Ans( 1 ) denotes the number of nodes in physical group 1
-! the name of this physical group would be obj%physicalName(1)
-! The dimension of this physical entities will be obj%nsdVec( 1 )
-
-INTERFACE
-MODULE PURE FUNCTION Domain_getNumNodes( obj ) RESULT( Ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION Domain_getNumNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           setNumNodes@PhysicalNamesMethods
-!----------------------------------------------------------------------------
-
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary:  set the number of nodes in each physical entities
-!
-!### Introduction
-! This routine sets the number of nodes in each physical entities.
-! For example, numNode( 1 ) denotes the number of nodes in physical group 1
-! the name of this physical group would be obj%physicalName(1)
-! The dimension of this physical entities will be obj%nsdVec( 1 )
-
-INTERFACE
-MODULE PURE SUBROUTINE Domain_setNumNodes( obj, indx, numNode )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
-  INTEGER( I4B ), INTENT( IN ) :: numNode
-END SUBROUTINE Domain_setNumNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------

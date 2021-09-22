@@ -21,7 +21,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Final
+!                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Final
@@ -61,7 +61,7 @@ MODULE PROCEDURE ent_GotoTag
   ! Define internal variables
   INTEGER( I4B ) :: IOSTAT, Reopen, unitNo
   CHARACTER( LEN = 100 ) :: Dummy
-  CHARACTER( LEN = * ), PARAMETER :: myName = "pn_GotoTag"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "ent_GotoTag"
   !
   ! Find $meshFormat
 
@@ -70,13 +70,12 @@ MODULE PROCEDURE ent_GotoTag
       & 'mshFile is either not opened or does not have read access!')
     error = -1
   ELSE
-    Reopen = 0
-    error = 0
+    Reopen = 0; error = 0; CALL mshFile%Rewind()
     DO
       unitNo = mshFile%getUnitNo()
       READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( mshFile%isEOF() ) THEN
-        CALL mshFile%Rewind()
+      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
+        CALL mshFile%setEOFStat( .TRUE. )
         Reopen = Reopen + 1
       END IF
       IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
@@ -103,75 +102,57 @@ END PROCEDURE ent_Write
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_display
-  INTEGER( I4B ) :: I, j
-  TYPE( String ) :: Str1
-
-  I = Input( Default=stdout, Option=UnitNo )
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( I, "(A)" ) TRIM( Msg )
-  END IF
-
-  CALL BlankLines( UnitNo = I, NOL = 1 )
-  WRITE( I, "(A)" ) "| Property | Value |"
-  WRITE( I, "(A)" ) "| :---     | ---:  |"
-  WRITE( I, "(A, I4, A )" ) " | Tag | ", obj%UiD, " | "
+  CALL Display( Msg, UnitNo=UnitNo )
+  CALL Display( obj%UiD, Msg="Tag: ", unitNo=unitNo )
   SELECT CASE( obj%XiDim )
   CASE( 0 )
-    WRITE( I, "(A)" ) " | Type |  Point | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | X, Y, Z | ", obj%X, &
-      & obj%Y, obj%Z, " | "
+    CALL Display( "Type: Point", unitNo=unitNo )
+    CALL Display( obj%X, "X: ", unitNo=unitNo )
+    CALL Display( obj%Y, "Y: ", unitNo=unitNo )
+    CALL Display( obj%Z, "Z: ", unitNo=unitNo )
   CASE( 1 )
-    WRITE( I, "(A)" ) " | Type |  Curve | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | minX, minY, minZ | ", &
-      & obj%minX, obj%minY, obj%minZ, " | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | maxX, maxY, maxZ | ", &
-      & obj%maxX, obj%maxY, obj%maxZ, " | "
-    Str1 = String( Str( SIZE( obj%BoundingEntity ), .true. ) )
-    WRITE( I, "(A, "//TRIM( Str1 )//"(I4, ','), A)" ) &
-      & "| Bounding Points |", obj%BoundingEntity, " |"
+    CALL Display( "Type: Curve", unitNo=unitNo )
+    CALL Display( obj%minX, "minX: ", unitNo=unitNo )
+    CALL Display( obj%minY, "minY: ", unitNo=unitNo )
+    CALL Display( obj%minZ, "minZ: ", unitNo=unitNo )
+    CALL Display( obj%maxX, "maxX: ", unitNo=unitNo )
+    CALL Display( obj%maxY, "maxY: ", unitNo=unitNo )
+    CALL Display( obj%maxZ, "maxZ: ", unitNo=unitNo )
+    CALL Display( obj%BoundingEntity, "Bounding points: ", unitNo=unitNo )
   CASE( 2 )
-    WRITE( I, "(A)" ) " | Type |  Surface | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | minX, minY, minZ | ", &
-      & obj%minX, obj%minY, obj%minZ, " | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | maxX, maxY, maxZ | ", &
-      & obj%maxX, obj%maxY, obj%maxZ, " | "
-    Str1 = String( Str( SIZE( obj%BoundingEntity ), .true. ) )
-    WRITE( I, "(A, "//TRIM( Str1 )//"(I4, ','), A)" ) &
-      & "| Bounding Curves |", obj%BoundingEntity, " |"
+    CALL Display( "Type: Surface", unitNo=unitNo )
+    CALL Display( obj%minX, "minX: ", unitNo=unitNo )
+    CALL Display( obj%minY, "minY: ", unitNo=unitNo )
+    CALL Display( obj%minZ, "minZ: ", unitNo=unitNo )
+    CALL Display( obj%maxX, "maxX: ", unitNo=unitNo )
+    CALL Display( obj%maxY, "maxY: ", unitNo=unitNo )
+    CALL Display( obj%maxZ, "maxZ: ", unitNo=unitNo )
+    CALL Display( obj%BoundingEntity, "Bounding curves: ", unitNo=unitNo )
   CASE( 3 )
-    WRITE( I, "(A)" ) " | Type |  Volume | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | minX, minY, minZ | ", &
-      & obj%minX, obj%minY, obj%minZ, " | "
-    WRITE( I, "(A, 3(G13.6, ','), A)" ) " | maxX, maxY, maxZ | ", &
-      & obj%maxX, obj%maxY, obj%maxZ, " | "
-    Str1 = String( Str( SIZE( obj%BoundingEntity ), .true. ) )
-    WRITE( I, "(A, "//TRIM( Str1 )//"(I4, ','), A)" ) &
-      & "| Bounding Surfaces |", obj%BoundingEntity, " |"
+    CALL Display( "Type: Surface", unitNo=unitNo )
+    CALL Display( obj%minX, "minX: ", unitNo=unitNo )
+    CALL Display( obj%minY, "minY: ", unitNo=unitNo )
+    CALL Display( obj%minZ, "minZ: ", unitNo=unitNo )
+    CALL Display( obj%maxX, "maxX: ", unitNo=unitNo )
+    CALL Display( obj%maxY, "maxY: ", unitNo=unitNo )
+    CALL Display( obj%maxZ, "maxZ: ", unitNo=unitNo )
+    CALL Display( obj%BoundingEntity, "Bounding surfaces: ", unitNo=unitNo )
   END SELECT
   ! Physical Tag
   IF( ALLOCATED( obj%physicalTag ) ) THEN
-    Str1 = String( Str( SIZE( obj%physicalTag ), .true. ) )
-    WRITE( I, "(A, "//TRIM( Str1 )//"(I4, ','), A)" ) &
-      & "| Physical Tag |", obj%physicalTag, " | "
+    CALL Display( obj%physicalTag, "physicalTag: ", unitNo=unitNo )
   END IF
   ! Nodes
   IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
-    WRITE( I, "(A, I4)" ) "| Total Nodes |", SIZE( obj%IntNodeNumber )
-    WRITE( I, "(A)" ) "| Node Number | Coordinates |"
-    DO j = 1, SIZE( obj%IntNodeNumber )
-      WRITE( I, "(A, I4, A, 3(G13.6, ','), A)" ) &
-      & "| ", obj%IntNodeNumber( j ), " | ", obj%NodeCoord( 1:3, j), " |"
-    END DO
+    CALL Display( obj%IntNodeNumber, "Internal Node Number: ", unitNo=unitNo )
+    CALL Display( TRANSPOSE(obj%NodeCoord), "Nodal Coordinates: ", &
+      & unitNo=unitNo )
   END IF
   ! Elements
   IF( ALLOCATED( obj%ElemNumber ) ) THEN
-    WRITE( I, "(A, I4)" ) "| Total Elements |", SIZE( obj%ElemNumber )
-    WRITE( I, "(A)" ) "| Element Number | Connectivity |"
-    Str1 = String( Str( SIZE( obj%Connectivity, 1 ), .true. ) )
-    DO j = 1, SIZE( obj%ElemNumber )
-      WRITE( I, "(A, I4, A, "//TRIM(Str1)//"(G13.6, ','), A)" ) &
-      & "| ", obj%ElemNumber( j ), " | ", obj%Connectivity( 1:, j), " |"
-    END DO
+    CALL Display( obj%ElemNumber, "Element number: ", unitNo=unitNo )
+    CALL Display( TRANSPOSE(obj%Connectivity), "Connectivity: ", &
+      & unitNo=unitNo )
   END IF
 END PROCEDURE ent_display
 
@@ -212,9 +193,7 @@ MODULE PROCEDURE ReadPointEntity
     obj%XiDim = 0
     READ( mshFile%getUnitNo(), * ) obj%Uid, obj%X, obj%Y, obj%Z, &
       & n, (Intvec(i), i=1,n)
-
     IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-
     IF( n .NE. 0 ) THEN
       ALLOCATE( obj%physicalTag( n ) )
       obj%physicalTag( 1 : n ) = Intvec( 1 : n )
@@ -501,7 +480,7 @@ MODULE PROCEDURE ent_setElemNumber
 END PROCEDURE ent_setElemNumber
 
 !----------------------------------------------------------------------------
-!                                                                 setConnectivity
+!                                                            setConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_setConnectivity

@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE( Domain_Class ) IOMethods
 USE BaseMethod
@@ -241,117 +240,15 @@ MODULE PROCEDURE Domain_Import
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "numPointEntites = "//trim( str(obj%tEntities( 0 ), .true.) ) )
   END IF
-  !> PhysicalNames/NSD
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "reading NSDVec")
-  dsetname=trim(group)//"/PhysicalNames/NSD"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
-  ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%NSDVec )
-    IF( e%isLogActive() ) CALL Display( obj%NSDVec, "NSD(:)=", unitNo=e%getLogFileUnit() )
-  END IF
-  !> PhysicalNames/tag
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "reading tag")
-  dsetname=trim(group)//"/PhysicalNames/tag"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
-  ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tag )
-    IF( e%isLogActive() ) CALL Display( obj%tag, &
-      & "tag(:)=", unitNo=e%getLogFileUnit() )
-  END IF
-
-  !> PhysicalNames/numElements
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "reading numElements")
-  dsetname=trim(group)//"/PhysicalNames/numElements"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
-  ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%numElements )
-    IF( e%isLogActive() ) CALL Display( obj%numElements, &
-      & "numElements(:)=", unitNo=e%getLogFileUnit() )
-  END IF
-  !> PhysicalNames/numNodes
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "reading numNodes")
-  dsetname=trim(group)//"/PhysicalNames/numNodes"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
-  ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%numNodes )
-    IF( e%isLogActive() ) CALL Display( obj%numNodes, &
-      & "numNodes(:)=", unitNo=e%getLogFileUnit() )
-  END IF
-  !> PhysicalNames/totalPhysicalEntities
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "reading totalPhysicalEntities")
-  dsetname=trim(group)//"/PhysicalNames/totalPhysicalEntities"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
-  ELSE
-    CALL hdf5%read( trim(dsetname%chars()), tEntities )
-  END IF
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "Allocatting entities")
-  ALLOCATE( obj%entities( tEntities ) )
-
-  DO ii = 1, tEntities
-    !> PhysicalNames/totalPhysicalEntities
-    dsetname=trim(group)//"/PhysicalNames/entities_" // TRIM(str(ii,.true.))
-    CALL e%raiseInformation(modName//"::"//myName//" - "// &
-      & "Reading "//TRIM(dsetname) )
-    IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-      CALL e%raiseError(modName//'::'//myName// &
-        &  TRIM(dsetname%chars()) // 'path does not exists' )
-    ELSE
-      CALL hdf5%read( TRIM(dsetname%chars()), intvec )
-      obj%entities( ii ) = IntVector( intvec )
-      IF( e%isLogActive() ) CALL Display( intvec, dsetname//'=', &
-        & unitNo = e%getLogFileUnit() )
-      IF( ALLOCATED( intvec ) ) DEALLOCATE( intvec )
-    END IF
-  END DO
-  !> PhysicalNames/physicalName
-  CALL e%raiseInformation( modName//"::"//myName//" - "// &
-    & "Reading physical names" )
-  dsetname=trim(group)//"/PhysicalNames/physicalName"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
-  ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%physicalName )
-    IF( e%isLogActive() ) THEN
-      DO ii = 1, SIZE(obj%physicalName)
-        CALL Display( obj%physicalName(ii), &
-          & dsetname//'=', unitNo = e%getLogFileUnit() )
-      END DO
-    END IF
-  END IF
-  dsetname = ''
-  CALL e%raiseInformation( modName//"::"//myName//" - "// &
-    & "Storing total number of elements" )
-  DO ii = 0, 3
-    obj%tElements( ii ) = SUM( obj%numElements, obj%NSDVec .EQ. ii )
-  END DO
-  CALL Display( obj%tElements, 'tElements =', &
-    & unitNo = e%getLogFileUnit() )
   !> set the sizes of meshes of point, curve, surface, volume entities
   CALL e%raiseInformation( modName//"::"//myName//" - "// &
-    & "Allocating obj%meshList" )
+    & "ALLOCATING obj%meshList" )
   ALLOCATE( obj%meshList( 0:3 ) )
   DO ii = 0, 3
     CALL obj%meshList(ii)%initiate( )
   END DO
   ! > Handling point entities
-  meshObj%ptr => NULL()
+  meshObj%ptr => NULL(); obj%tElements( 0: ) = 0
   DO jj = 0, 3
     DO ii = 1, obj%tEntities( jj )
       CALL e%raiseInformation( modName//"::"//myName//" - "// &
@@ -367,13 +264,15 @@ MODULE PROCEDURE Domain_Import
       CASE( 3 )
       dsetname = trim(group)//"/volumeEntities_"//TRIM(str(ii, .true.) )
       END SELECT
-      meshObj%ptr => Mesh_Pointer(hdf5, trim(dsetname%chars()) )
+      meshObj%ptr => Mesh_Pointer(hdf5=hdf5, group=trim(dsetname%chars()))
       IF( .NOT. ASSOCIATED( meshObj%ptr ) ) &
         & CALL e%raiseError(modName//'::'//myName// &
         & 'some of the mesh entities are not associated' )
       CALL obj%meshList( jj )%pushback( meshObj )
+      obj%tElements( jj ) = obj%tElements( jj )+meshObj%ptr%getTotalElements()
     END DO
   END DO
+  CALL Display( obj%tElements, 'tElements =', unitNo = e%getLogFileUnit() )
   NULLIFY( meshObj%ptr )
 END PROCEDURE Domain_Import
 

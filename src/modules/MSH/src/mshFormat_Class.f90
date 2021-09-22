@@ -220,7 +220,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE fmt_Read( obj, mshFile, error )
   CLASS( mshFormat_ ), INTENT( INOUT) :: obj
-  TYPE( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE fmt_Read
 END INTERFACE
@@ -236,7 +236,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE fmt_Write( obj, mshFile, Str, EndStr )
   CLASS( mshFormat_ ), INTENT( INOUT ) :: obj
-  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
 END SUBROUTINE fmt_Write
 END INTERFACE
@@ -252,7 +252,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE fmt_GotoTag( obj, mshFile, error )
   CLASS( mshFormat_ ), INTENT( IN ) :: obj
-  TYPE( TxtFile_ ), INTENT( INOUT ) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE fmt_GotoTag
 END INTERFACE
