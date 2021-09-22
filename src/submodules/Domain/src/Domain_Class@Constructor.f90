@@ -46,25 +46,13 @@ END PROCEDURE addSurrogate_Domain
 
 MODULE PROCEDURE Domain_Initiate
   CHARACTER( LEN = * ), PARAMETER :: myName="Domain_Initiate"
-  CLASS( ExceptionHandler_ ), POINTER :: surr
-  LOGICAL( LGT ) :: exist, opened
-
-  !> setting up exception messages output settings
-  surr => NULL(); CALL e%getSurrogate(surr)
-  IF( ASSOCIATED( surr ) ) CALL addSurrogate_Mesh( surr )
-  surr => NULL()
   ! > Exception related to Mesh_ data type wil be printed in the
   ! domain only
   CALL e%raiseInformation( modName//'::'//myName//'-'// &
-    & 'Initiating domain' )
-  CALL obj%import( hdf5, group )
+    & 'INITIATING DOMAIN BY IMPORTING FROM MESH-FILE' )
+  CALL obj%import( hdf5=hdf5, group=group )
   CALL e%raiseInformation( modName//'::'//myName//'-'// &
-    & 'Domain has been initiated' )
-  !> now we are going to fix the nodal coordinates
-  CALL e%raiseInformation( modName//'::'//myName//'-'// &
-    & 'Fixing nodal coordinates' )
-  CALL e%raiseInformation( modName//'::'//myName//'-'// &
-    & 'Nodal coordinates fixed' )
+    & 'MESH-FILE IS READ & DOMAIN HAS BEEN CREATED' )
 END PROCEDURE Domain_Initiate
 
 !----------------------------------------------------------------------------
@@ -72,6 +60,7 @@ END PROCEDURE Domain_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_DeallocateData
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_DeallocateData"
   INTEGER( I4B ) :: ii, jj
   obj%isInitiated = .FALSE.
   obj%engine = ''
@@ -88,14 +77,10 @@ MODULE PROCEDURE Domain_DeallocateData
   obj%isElemNumberSparse = .FALSE.
   obj%tEntitiesForNodes = 0
   obj%tEntitiesForElements = 0
-  IF( ALLOCATED( obj%NSDVec ) ) DEALLOCATE( obj%NSDVec )
-  IF( ALLOCATED( obj%tag ) ) DEALLOCATE( obj%tag )
-  IF( ALLOCATED( obj%numElements ) ) DEALLOCATE( obj%numElements )
-  IF( ALLOCATED( obj%numNodes ) ) DEALLOCATE( obj%numNodes )
-  IF( ALLOCATED( obj%entities ) ) DEALLOCATE( obj%entities )
-  IF( ALLOCATED( obj%physicalName ) ) DEALLOCATE( obj%physicalName )
   obj%tElements( 0:3 ) = 0
   obj%tEntities( 0:3 ) = 0
+  CALL e%raiseDebug( modName//'::'//myName//'-'// &
+    & 'There should be better way to deallocate obj%meshList...' )
   IF( ALLOCATED( obj%meshList ) ) DEALLOCATE( obj%meshList )
   IF( ALLOCATED( obj%nodeCoord ) ) DEALLOCATE( obj%nodeCoord )
   IF( ALLOCATED( obj%local_nptrs ) ) DEALLOCATE( obj%local_nptrs )
@@ -114,7 +99,7 @@ END PROCEDURE Domain_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Constructor1
-  CALL ans%initiate( hdf5, group )
+  CALL ans%initiate( hdf5=hdf5, group=group )
 END PROCEDURE Domain_Constructor1
 
 !----------------------------------------------------------------------------
@@ -122,8 +107,8 @@ END PROCEDURE Domain_Constructor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Constructor_1
-  ALLOCATE( ans )
-  CALL ans%initiate( hdf5, group )
+  ALLOCATE( Domain_::ans )
+  CALL ans%initiate( hdf5=hdf5, group=group )
 END PROCEDURE Domain_Constructor_1
 
 !----------------------------------------------------------------------------

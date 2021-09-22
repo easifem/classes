@@ -40,6 +40,8 @@ INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 
 TYPE :: mshPhysicalNames_
   PRIVATE
+  LOGICAL( LGT ), PUBLIC :: isInitiated = .FALSE.
+    !! True if mshPhysicalNames_ is initiated.
   INTEGER( I4B ), ALLOCATABLE :: NSD( : )
     !! spatial dimension of each physical group
   INTEGER( I4B ), ALLOCATABLE :: tag( : )
@@ -52,7 +54,6 @@ TYPE :: mshPhysicalNames_
     !! Tags of Entities in each physical group
   TYPE( String ), ALLOCATABLE :: physicalName( : )
     !! Physical name of each physical group
-
   CONTAINS
     PRIVATE
     FINAL :: pn_final
@@ -99,28 +100,28 @@ TYPE :: mshPhysicalNames_
     PROCEDURE, PUBLIC, PASS( Obj ) :: setNumNodes => pn_setNumNodes
 END TYPE mshPhysicalNames_
 
+PUBLIC :: mshPhysicalNames_
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PUBLIC :: mshPhysicalNames_
-
 TYPE( mshPhysicalNames_ ), PARAMETER, PUBLIC :: &
   & TypeMSHPhysicalNames = &
-    & mshPhysicalNames_( &
-      & NSD = NULL( ), &
-      & Tag =  NULL( ), &
-      & numElements = NULL( ), &
-      & numNodes = NULL( ), &
-      & PhysicalName = NULL( ), &
-      & Entities = NULL( ) )
+  & mshPhysicalNames_( &
+  & NSD = NULL( ), &
+  & Tag =  NULL( ), &
+  & numElements = NULL( ), &
+  & numNodes = NULL( ), &
+  & PhysicalName = NULL( ), &
+  & Entities = NULL( ) )
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: mshPhysicalNamesPointer_
-  CLASS( mshPhysicalNames_ ), POINTER :: Ptr => NULL( )
+  CLASS( mshPhysicalNames_ ), POINTER :: ptr => NULL( )
 END TYPE mshPhysicalNamesPointer_
 
 PUBLIC :: mshPhysicalNamesPointer_

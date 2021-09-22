@@ -3,7 +3,6 @@ TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/Domain_Class@Constructor.f90
   ${src_path}/Domain_Class@IOMethods.f90
-  ${src_path}/Domain_Class@PhysicalNamesMethods.f90
   ${src_path}/Domain_Class@getMethods.f90
   ${src_path}/Domain_Class@setMethods.f90
   )

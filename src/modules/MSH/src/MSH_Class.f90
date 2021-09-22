@@ -25,9 +25,7 @@ USE mshPhysicalNames_Class
 USE mshEntity_Class
 USE mshNodes_Class
 USE mshElements_Class
-! USE Mesh_Class
-! USE FE
-! USE Domain_Class
+USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSH_CLASS"
@@ -73,7 +71,10 @@ TYPE :: MSH_
       !! deallocate the data
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => msh_initiate
       !! initiate the object
-    PROCEDURE, PUBLIC, PASS( obj ) :: ExportMesh => msh_ExportMesh
+    PROCEDURE, PUBLIC, PASS( obj ) :: Import => msh_Import
+      !! Read the file and initiate the object
+    PROCEDURE, PUBLIC, PASS( obj ) :: Export => msh_Export
+      !! Export to the external hdf5 file
 END TYPE MSH_
 
 !----------------------------------------------------------------------------
@@ -152,14 +153,31 @@ END INTERFACE Initiate
 PUBLIC :: Initiate
 
 !----------------------------------------------------------------------------
-!                                                                ExportMesh
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 	11 June 2021
+! summary: This subroutine generates the MSH_ object
+
+INTERFACE
+MODULE SUBROUTINE msh_Import( obj, txtFile, nsd )
+  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: txtFile
+  INTEGER( I4B ), INTENT( IN ) :: NSD
+END SUBROUTINE msh_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Export@IOMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ExportMesh( obj, file )
+MODULE SUBROUTINE msh_Export( obj, hdf5, group )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: file
-END SUBROUTINE msh_ExportMesh
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE msh_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------

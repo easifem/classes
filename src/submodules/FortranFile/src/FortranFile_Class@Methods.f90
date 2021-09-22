@@ -370,9 +370,9 @@ MODULE PROCEDURE ff_open
   !Get the appropriate clause values for the OPEN statement
   IF(obj%initstat) THEN
     IF(obj%isOpen()) THEN
-      WRITE(emesg,'(a,i4,a)') 'Cannot open file (UNIT=', &
+      WRITE(iomsg,'(a,i4,a)') 'Cannot open file (UNIT=', &
           obj%unitno,') File is already open!'
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%raiseError(modName//'::'//myName//' - '//TRIM(iomsg))
     ELSE
       path = obj%getFilePath()
       filename = obj%getFileName()
@@ -456,7 +456,7 @@ MODULE PROCEDURE ff_open
             & TRIM(path%chars())// &
             & TRIM(filename%chars())//TRIM(ext%chars()) &
             & //'" (UNIT=',obj%unitno, ') IOSTAT=',ioerr
-        CALL e%raiseError(modName//'::'//myName//' - '//emesg &
+        CALL e%raiseError(modName//'::'//myName//' - '//TRIM(emesg) &
             //' IOMSG="'//TRIM(iomsg)//'"')
       ELSE
         CALL obj%setOpenStat(.TRUE.)

@@ -15,9 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( MSH_Class ) ExportMethods
+SUBMODULE( MSH_Class ) IOMethods
 USE BaseMethod
-USE HDF5File_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -25,33 +24,58 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE msh_ExportMesh
-  CHARACTER( LEN = * ), PARAMETER :: myName="msh_ExportMesh"
-  TYPE( HDF5File_ ) :: hdf5
+MODULE PROCEDURE msh_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="msh_Export"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'This routine is under condtruction')
+END PROCEDURE msh_Import
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="msh_Export"
   INTEGER( I4B ) :: ii, tsize,  tNodes, count
   REAL( DFP ), ALLOCATABLE :: nodeCoord( :, : )
   INTEGER( I4B ), ALLOCATABLE :: local_nptrs( : )
+  TYPE( String ) :: dsetname
+  !> main
+  dsetname = trim(group)
+  !>check
+  IF( .NOT. hdf5%isOpen() ) THEN
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'HDF5 file is not opened')
+  END IF
+  !>check
+  IF( .NOT. hdf5%isWrite() ) THEN
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'HDF5 file does not have write permission')
+  END IF
 
   tNodes = obj%nodes%getNumNodes()
   ALLOCATE( nodeCoord( 3, tNodes ) )
   ALLOCATE( local_nptrs( obj%Nodes%getMaxNodeTag() ) )
   count = 0
   local_nptrs = 0
-  CALL hdf5%initiate(filename=file, mode="NEW" )
-  CALL hdf5%open()
-  CALL hdf5%write(dsetname="/NSD", vals=obj%nsd)
-  CALL ExportMeshFormat(obj,hdf5)
-  CALL ExportMeshPhysicalNames(obj,hdf5)
-  CALL ExportMeshNodeInfo(obj,hdf5)
-  CALL ExportMeshElementInfo(obj,hdf5)
+
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/NSD", vals=obj%nsd)
+  CALL ExportMeshFormat(obj,hdf5,dsetname)
+  IF( obj%physicalNames%isInitiated ) &
+    & CALL ExportMeshPhysicalNames(obj,hdf5,dsetname)
+  CALL ExportMeshNodeInfo(obj,hdf5,dsetname)
+  CALL ExportMeshElementInfo(obj,hdf5,dsetname)
   IF( ALLOCATED(obj%pointEntities) ) THEN
     tsize = SIZE(obj%pointEntities)
   ELSE
     tsize = 0
   END IF
-  CALL hdf5%write(dsetname="/numPointEntities", vals=tsize)
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/numPointEntities", vals=tsize)
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, dsetname="/pointEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd )
+    CALL ExportMeshEntity(obj%pointEntities(ii), hdf5, &
+      & dsetname=TRIM(dsetname%chars())//"/pointEntities_" // &
+      & TRIM(str(ii, .true.)), nsd=obj%nsd )
     CALL getNodeCoord( obj=obj%pointEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
@@ -60,9 +84,12 @@ MODULE PROCEDURE msh_ExportMesh
   ELSE
     tsize = 0
   END IF
-  CALL hdf5%write(dsetname="/numCurveEntities", vals=tsize)
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/numCurveEntities", vals=tsize)
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, dsetname="/curveEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
+    CALL ExportMeshEntity(obj%curveEntities(ii), hdf5, &
+      & dsetname=TRIM(dsetname%chars())//"/curveEntities_"// &
+      & TRIM(str(ii, .true.)), nsd=obj%nsd)
     CALL getNodeCoord( obj=obj%curveEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
@@ -71,9 +98,12 @@ MODULE PROCEDURE msh_ExportMesh
   ELSE
     tsize = 0
   END IF
-  CALL hdf5%write(dsetname="/numSurfaceEntities", vals=tsize)
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/numSurfaceEntities", vals=tsize)
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%surfaceEntities(ii), hdf5, dsetname="/surfaceEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
+    CALL ExportMeshEntity(obj%surfaceEntities(ii), hdf5, &
+      & dsetname=TRIM(dsetname%chars())//"/surfaceEntities_"// &
+      & TRIM(str(ii, .true.)), nsd=obj%nsd)
     CALL getNodeCoord( obj=obj%surfaceEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
@@ -82,35 +112,38 @@ MODULE PROCEDURE msh_ExportMesh
   ELSE
     tsize = 0
   END IF
-  CALL hdf5%write(dsetname="/numVolumeEntities", vals=tsize)
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/numVolumeEntities", vals=tsize)
   DO ii = 1, tsize
-    CALL ExportMeshEntity(obj%volumeEntities(ii), hdf5, dsetname="/volumeEntities_"//TRIM(str(ii, .true.)), nsd=obj%nsd)
+    CALL ExportMeshEntity(obj%volumeEntities(ii), hdf5, &
+      & dsetname=TRIM(dsetname%chars())//"/volumeEntities_"// &
+      & TRIM(str(ii, .true.)), nsd=obj%nsd)
     CALL getNodeCoord( obj=obj%volumeEntities(ii), nodeCoord=nodeCoord, &
       & local_nptrs=local_nptrs, count=count )
   END DO
-  CALL hdf5%write(dsetname="/nodeCoord", vals=nodeCoord )
-  CALL hdf5%write(dsetname="/local_nptrs", vals=local_nptrs )
-  CALL hdf5%close()
-  CALL hdf5%DeallocateData()
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/nodeCoord", &
+    &vals=nodeCoord )
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/local_nptrs", &
+    &vals=local_nptrs )
   IF( ALLOCATED( nodeCoord ) ) DEALLOCATE( nodeCoord )
-END PROCEDURE msh_ExportMesh
+END PROCEDURE msh_Export
 
 !----------------------------------------------------------------------------
 !                                                          ExportMeshFormat
 !----------------------------------------------------------------------------
 
-SUBROUTINE ExportMeshFormat(obj, hdf5)
+SUBROUTINE ExportMeshFormat(obj, hdf5, dsetname)
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-
+  TYPE( String ), INTENT( IN ) :: dsetname
   ! Writing mesh format
-  CALL hdf5%write(dsetname="/version", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/version", &
     & vals=obj%format%getVersion() )
-  CALL hdf5%write(dsetname="/majorVersion", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/majorVersion", &
     & vals=obj%format%getMajorVersion() )
-  CALL hdf5%write(dsetname="/minorVersion", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/minorVersion", &
     & vals=obj%format%getMinorVersion() )
-  CALL hdf5%write(dsetname="/engine", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/engine", &
     & vals=string("GMSH 4.1 0 8") )
 END SUBROUTINE ExportMeshFormat
 
@@ -118,37 +151,43 @@ END SUBROUTINE ExportMeshFormat
 !                                                    ExportMeshPhysicalNames
 !----------------------------------------------------------------------------
 
-SUBROUTINE ExportMeshPhysicalNames( obj, hdf5 )
+SUBROUTINE ExportMeshPhysicalNames( obj, hdf5, dsetname )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  TYPE( String ), INTENT( IN ) :: dsetname
 
   ! Internal variables
   INTEGER( I4B ) :: ii, tsize
 
   ! Physical Names
   tsize = obj%physicalNames%getTotalPhysicalEntities()
-  CALL hdf5%write(dsetname="/PhysicalNames/totalPhysicalEntities", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/PhysicalNames/totalPhysicalEntities", &
     & vals=tsize)
 
-  CALL hdf5%write(dsetname="/PhysicalNames/NSD", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/PhysicalNames/NSD", &
     & vals=obj%physicalNames%getNSD() )
 
-  CALL hdf5%write(dsetname="/PhysicalNames/tag", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/PhysicalNames/tag", &
     & vals=obj%physicalNames%getPhysicalTags() )
 
-  CALL hdf5%write(dsetname="/PhysicalNames/numElements", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/PhysicalNames/numElements", &
     & vals=obj%physicalNames%getNumElements() )
 
-  CALL hdf5%write(dsetname="/PhysicalNames/numNodes", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/PhysicalNames/numNodes", &
     & vals=obj%physicalNames%getNumNodes() )
 
-  CALL hdf5%write(dsetname="/PhysicalNames/physicalName", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/PhysicalNames/physicalName", &
     & vals=obj%physicalNames%getPhysicalNames() )
 
   DO ii = 1, tsize
-    CALL hdf5%write(dsetname="/PhysicalNames/entities_" &
-      & // trim(str(ii, .true.)), &
-      & vals=obj%physicalNames%getEntities(indx=ii) )
+    CALL hdf5%write(dsetname=TRIM(dsetname%chars())// &
+    & "/PhysicalNames/entities_" &
+    & // trim(str(ii, .true.)), &
+    & vals=obj%physicalNames%getEntities(indx=ii) )
   END DO
 END SUBROUTINE ExportMeshPhysicalNames
 
@@ -156,28 +195,35 @@ END SUBROUTINE ExportMeshPhysicalNames
 !                                                     ExportMeshNodeInfo
 !----------------------------------------------------------------------------
 
-SUBROUTINE ExportMeshNodeInfo( obj, hdf5 )
+SUBROUTINE ExportMeshNodeInfo( obj, hdf5, dsetname )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CALL hdf5%write(dsetname="/tNodes", vals=obj%Nodes%getNumNodes())
-  CALL hdf5%write(dsetname="/tEntitiesForNodes", vals=obj%Nodes%getnumEntityBlocks())
-  CALL hdf5%write(dsetname="/minNptrs", vals=obj%Nodes%getMinNodeTag())
-  CALL hdf5%write(dsetname="/maxNptrs", vals=obj%Nodes%getMaxNodeTag())
+  TYPE( String ), INTENT( IN ) :: dsetname
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/tNodes", &
+    & vals=obj%Nodes%getNumNodes())
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/tEntitiesForNodes", &
+    & vals=obj%Nodes%getnumEntityBlocks())
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/minNptrs", &
+    & vals=obj%Nodes%getMinNodeTag())
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/maxNptrs", &
+    & vals=obj%Nodes%getMaxNodeTag())
 END SUBROUTINE ExportMeshNodeInfo
 
 !----------------------------------------------------------------------------
 !                                                     ExportMeshElementInfo
 !----------------------------------------------------------------------------
 
-SUBROUTINE ExportMeshElementInfo( obj, hdf5 )
+SUBROUTINE ExportMeshElementInfo( obj, hdf5, dsetname )
   CLASS( MSH_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CALL hdf5%write(dsetname="/tElements",vals=obj%Elements%getNumElements())
-  CALL hdf5%write(dsetname="/tEntitiesForElements", &
+  TYPE( String ), INTENT( IN ) :: dsetname
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/tElements", &
+    & vals=obj%Elements%getNumElements())
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/tEntitiesForElements", &
     & vals=obj%Elements%getnumEntityBlocks())
-  CALL hdf5%write(dsetname="/minElemNum", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/minElemNum", &
     & vals=obj%Elements%getMinElementTag())
-  CALL hdf5%write(dsetname="/maxElemNum", &
+  CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/maxElemNum", &
     & vals=obj%Elements%getMaxElementTag())
 END SUBROUTINE ExportMeshElementInfo
 
@@ -246,4 +292,4 @@ SUBROUTINE getNodeCoord( obj, nodeCoord, local_nptrs, count )
   IF( ALLOCATED( myNptrs ) ) DEALLOCATE( myNptrs )
 END SUBROUTINE getNodeCoord
 
-END SUBMODULE ExportMethods
+END SUBMODULE IOMethods

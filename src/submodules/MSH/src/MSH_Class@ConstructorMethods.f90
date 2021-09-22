@@ -54,54 +54,49 @@ MODULE PROCEDURE msh_initiate
   ! Define internal variables
   INTEGER( I4B ) :: error, unitNo
   CHARACTER( LEN = * ), PARAMETER :: myName = "msh_Initiate"
-
+  !> main
+  !> info
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'READING GMSH FILE!')
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Opening Gmsh File')
-
+    & 'OPENING: MSH4 file')
+  !> initiating mshFile
   CALL obj%mshFile%initiate(file=file, status="OLD", action="READ")
-  CALL obj%mshFile%open()
-  obj%NSD = NSD
+  CALL obj%mshFile%open(); obj%NSD = NSD
   unitNo = obj%mshFile%getunitNo()
-
+  !> info
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Gmsh file is opened')
-
+    & 'OPENING: MSH4 file [OK!]')
+  !> reading mesh format
   CALL e%raiseDebug(modName//'::'//myName//' - '// &
-    & 'Reading mesh format')
+    & 'READING: meshFormat')
   CALL obj%Format%Read( mshFile=obj%mshFile, error=error)
-
   IF( error .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Failed in Reading mesh format')
   ELSE
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Success in Reading mesh format')
+      & 'READING: meshFormat [OK!]')
   END IF
-
+  !> reading physical group information
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Reading physical group information')
+    & 'READING: physicalNames')
   CALL obj%PhysicalNames%Read( mshFile=obj%mshFile, error=error )
-
-  IF( error .NE. 0 ) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Failed in Reading physical group information')
+  IF( obj%PhysicalNames%isInitiated ) THEN
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: physicalNames [OK!]')
   ELSE
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Success in Reading physical group information')
+      & 'READING: physicalNames [NOT FOUND!]')
   END IF
-
+  !> Entities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Locating entity tag')
-
+    & 'LOCATING: $Entities')
   CALL TypemshEntity%GotoTag( mshFile=obj%mshFile, error=error )
   IF( error .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Failed in Locating entity tag')
+      & 'LOCATING: $Entities [NOT FOUND!]')
   ELSE
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Success in Locating entity tag')
+      & 'LOCATING: $Entities [OK!]')
   END IF
 
   !---------------------------------------------------------------------------
@@ -109,35 +104,31 @@ MODULE PROCEDURE msh_initiate
   !---------------------------------------------------------------------------
 
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Reading entities')
+    & 'READING: $Entities')
 
   BLOCK
     INTEGER( I4B ) :: tp, tc, ts, tv, i, j, k, tpt
     INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
+
     ! we read header of Entities block
     READ( unitNo, * ) tp, tc, ts, tv
-
     CALL e%raiseInformation(modName//'::'//myName//' - ' &
-      & // ' total number of point entities : ' // TRIM(str(tp, .true.)) &
-      & // ' total number of curve entities : ' // TRIM(str(tc, .true.)) &
-      & // ' total number of surface entities : ' // TRIM(str(ts, .true.)) &
-      & // ' total number of volume entities : ' // TRIM(str(tv, .true.)) )
+      & // 'Total Point Entities: ' // TRIM(str(tp, .true.)) &
+      & // 'Total Curve Entities: ' // TRIM(str(tc, .true.)) &
+      & // 'Total Surface Entities: ' // TRIM(str(ts, .true.)) &
+      & // 'Total Volume Entities: ' // TRIM(str(tv, .true.)) )
 
     IF( ALLOCATED( obj%PointEntities ) ) DEALLOCATE( obj%PointEntities )
+    IF( tp .NE. 0 ) ALLOCATE( obj%PointEntities(tp) )
     IF( ALLOCATED( obj%CurveEntities ) ) DEALLOCATE( obj%CurveEntities )
-    IF( ALLOCATED( obj%SurfaceEntities ) ) DEALLOCATE(obj%SurfaceEntities)
-    IF( ALLOCATED( obj%VolumeEntities ) ) DEALLOCATE(obj%VolumeEntities)
-    IF( tp .NE. 0 ) ALLOCATE( obj%PointEntities( tp ) )
-    IF( tc .NE. 0 ) ALLOCATE( obj%CurveEntities( tc ) )
-    IF( ts .NE. 0 ) ALLOCATE( obj%SurfaceEntities( ts ) )
-    IF( tv .NE. 0 ) ALLOCATE( obj%VolumeEntities( tv ) )
+    IF( tc .NE. 0 ) ALLOCATE( obj%CurveEntities(tc) )
+    IF( ALLOCATED( obj%SurfaceEntities ) ) DEALLOCATE( obj%SurfaceEntities )
+    IF( ts .NE. 0 ) ALLOCATE( obj%SurfaceEntities(ts) )
+    IF( ALLOCATED( obj%VolumeEntities ) ) DEALLOCATE( obj%VolumeEntities )
+    IF( tv .NE. 0 ) ALLOCATE( obj%VolumeEntities(tv) )
 
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Reading point entities' )
-
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Creating physical point to entities map' )
-
+      & 'READING: pointEntities' )
     DO i = 1, tp
       CALL obj%PointEntities( i )%Read( mshFile=obj%mshFile, dim=0, &
         & readTag=.FALSE., error=error )
@@ -154,13 +145,11 @@ MODULE PROCEDURE msh_initiate
         END DO
       END IF
     END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: pointEntities [OK!]' )
 
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Reading curve entities' )
-
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Creating physical curve to entities map' )
-
+      & 'READING: curveEntities' )
     DO i = 1, tc
       CALL obj%CurveEntities( i )%Read( mshFile=obj%mshFile, dim=1, &
         & readTag=.FALSE., error=error )
@@ -177,19 +166,16 @@ MODULE PROCEDURE msh_initiate
         END DO
       END IF
     END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: curveEntities [OK!]' )
 
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Reading surface entities' )
-
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Creating physical surface to entities map' )
-
+      & 'READING: surfaceEntities' )
     DO i = 1, ts
       CALL obj%SurfaceEntities( i )%Read( mshFile=obj%mshFile, &
         & dim=2, readTag=.false., error=error )
       ! get total physical tag
       tpt = obj%SurfaceEntities( i )%getTotalPhysicalTags( )
-
       IF( tpt .NE. 0 ) THEN
         ! get physical tag int vector
         PhysicalTag = obj%SurfaceEntities( i )%getPhysicalTag()
@@ -201,12 +187,11 @@ MODULE PROCEDURE msh_initiate
         END DO
       END IF
     END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: surfaceEntities [OK!]' )
 
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Reading volume entities' )
-
-    CALL e%raiseInformation(modName//'::'//myName//' - '// &
-      & 'Creating physical volume to entities map' )
+      & 'READING: volumeEntities' )
 
     DO i = 1, tv
       CALL obj%VolumeEntities( i )%Read( mshFile=obj%mshFile, &
@@ -225,6 +210,8 @@ MODULE PROCEDURE msh_initiate
         END DO
       END IF
     END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: volumeEntities [OK!]' )
     IF( ALLOCATED( PhysicalTag ) ) DEALLOCATE( PhysicalTag )
   END BLOCK
 
@@ -233,7 +220,7 @@ MODULE PROCEDURE msh_initiate
   !---------------------------------------------------------------------------
 
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Reading nodes section' )
+    & 'READING: $Nodes' )
 
   BLOCK
     ! define internal variable
@@ -284,12 +271,15 @@ MODULE PROCEDURE msh_initiate
     DEALLOCATE( NodeNumber, NodeCoord )
   END BLOCK
 
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'READING: $Nodes [OK!]' )
+
   !---------------------------------------------------------------------------
   ! Elements
   !---------------------------------------------------------------------------
 
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Reading element section' )
+    & 'READING: $Elements' )
 
   ! at this point we have read $Nodes and now we are ready to read elements
   BLOCK
@@ -384,13 +374,15 @@ MODULE PROCEDURE msh_initiate
     IF( ALLOCATED( ElemNumber ) ) DEALLOCATE( ElemNumber )
     IF( ALLOCATED( PhyTag ) ) DEALLOCATE( PhyTag )
   END BLOCK
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'READING: $Elements [OK!]' )
 
   !---------------------------------------------------------------------------
   ! Counting number of nodes in physical region
   !---------------------------------------------------------------------------
 
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'Reading Nodes in Physical groups' )
+    & 'READING: Nodes in Physical entities' )
 
   BLOCK
     ! define internal variables
@@ -478,7 +470,17 @@ MODULE PROCEDURE msh_initiate
     IF( ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
     IF( ALLOCATED( DummyNptrs ) ) DEALLOCATE( DummyNptrs )
   END BLOCK
+
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'READING: Nodes in Physical entities [OK!]' )
 END PROCEDURE msh_initiate
+
+!----------------------------------------------------------------------------
+!                                                              ReadEntities
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadEntities
+END SUBROUTINE ReadEntities
 
 ! !----------------------------------------------------------------------------
 ! !                                                                        msh4

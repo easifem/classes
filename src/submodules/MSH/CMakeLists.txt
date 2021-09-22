@@ -6,6 +6,6 @@ TARGET_SOURCES(
   ${src_path}/mshEntity_Class@Methods.f90
   ${src_path}/mshNodes_Class@Methods.f90
   ${src_path}/mshElements_Class@Methods.f90
-  ${src_path}/MSH_Class@Methods.f90
-  ${src_path}/MSH_Class@ExportMethods.f90
+  ${src_path}/MSH_Class@ConstructorMethods.f90
+  ${src_path}/MSH_Class@IOMethods.f90
   )

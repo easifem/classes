@@ -151,13 +151,12 @@ MODULE PROCEDURE fmt_GotoTag
       & 'mshFile is either not opened or does not have read access!')
     error = -1
   ELSE
-    Reopen = 0
-    error = 0
+    Reopen = 0; error = 0; CALL mshFile%Rewind()
     DO
       unitNo = mshFile%getUnitNo()
       READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( mshFile%isEOF() ) THEN
-        CALL mshFile%Rewind()
+      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
+        CALL mshFile%setEOFStat( .TRUE. )
         Reopen = Reopen + 1
       END IF
       IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
