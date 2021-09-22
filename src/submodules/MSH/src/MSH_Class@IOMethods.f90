@@ -25,9 +25,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_Import
-  CHARACTER( LEN = * ), PARAMETER :: myName="msh_Export"
+  CHARACTER( LEN = * ), PARAMETER :: myName="msh_Import"
   CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'This routine is under condtruction')
+    & 'This routine is under condtruction')
 END PROCEDURE msh_Import
 
 !----------------------------------------------------------------------------
@@ -291,5 +291,390 @@ SUBROUTINE getNodeCoord( obj, nodeCoord, local_nptrs, count )
   IF( ALLOCATED( myNodeCoord ) ) DEALLOCATE( myNodeCoord )
   IF( ALLOCATED( myNptrs ) ) DEALLOCATE( myNptrs )
 END SUBROUTINE getNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                        ReadPointEntities
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ReadPointEntities
+  INTEGER( I4B ) :: unitNo
+  CHARACTER( LEN = * ), PARAMETER :: myName = "ReadPointEntities"
+  INTEGER( I4B ) :: i, j, k, tpt, error, dim
+  INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
+  !> main program
+  dim = 0; unitNo=obj%mshFile%getUnitNo()
+  CALL e%raiseInformation(modName//'::'//myName//' - ' &
+    & // 'Total Point Entities: ' // TRIM(str(te, .true.)) )
+  IF( ALLOCATED( obj%PointEntities ) ) DEALLOCATE( obj%PointEntities )
+  IF( te .NE. 0 ) ALLOCATE( obj%PointEntities(te) )
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: PointEntities' )
+    DO i = 1, te
+      CALL obj%PointEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+        & readTag=.FALSE., error=error )
+      ! get total physical tag
+      tpt = obj%PointEntities(i)%getTotalPhysicalTags()
+      IF( tpt .NE. 0 ) THEN
+        ! get physical tag int vector
+        PhysicalTag = obj%PointEntities(i)%getPhysicalTag()
+        DO j = 1, tpt
+          ! get index of physical tag
+          k = obj%PhysicalNames%getIndex( dim=dim, tag=PhysicalTag(j) )
+          ! append this index to entities
+          CALL obj%PhysicalNames%AppendEntities( indx=k, EntityTag = [i] )
+        END DO
+      END IF
+    END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: pointEntities [OK!]' )
+END PROCEDURE msh_ReadPointEntities
+
+!----------------------------------------------------------------------------
+!                                                         ReadCurveEntities
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ReadCurveEntities
+  INTEGER( I4B ) :: unitNo
+  CHARACTER( LEN = * ), PARAMETER :: myName = "ReadCurveEntities"
+  INTEGER( I4B ) :: i, j, k, tpt, error, dim
+  INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
+  !> main program
+  dim = 1; unitNo=obj%mshFile%getUnitNo()
+  CALL e%raiseInformation(modName//'::'//myName//' - ' &
+    & // 'Total Curve Entities: ' // TRIM(str(te, .true.)) )
+  IF( ALLOCATED( obj%CurveEntities ) ) DEALLOCATE( obj%CurveEntities )
+  IF( te .NE. 0 ) ALLOCATE( obj%CurveEntities(te) )
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: CurveEntities' )
+    DO i = 1, te
+      CALL obj%CurveEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+        & readTag=.FALSE., error=error )
+      ! get total physical tag
+      tpt = obj%CurveEntities(i)%getTotalPhysicalTags()
+      IF( tpt .NE. 0 ) THEN
+        ! get physical tag int vector
+        PhysicalTag = obj%CurveEntities(i)%getPhysicalTag()
+        DO j = 1, tpt
+          ! get index of physical tag
+          k = obj%PhysicalNames%getIndex( dim=dim, tag=PhysicalTag(j) )
+          ! append this index to entities
+          CALL obj%PhysicalNames%AppendEntities( indx=k, EntityTag = [i] )
+        END DO
+      END IF
+    END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: CurveEntities [OK!]' )
+END PROCEDURE msh_ReadCurveEntities
+
+!----------------------------------------------------------------------------
+!                                                        ReadSurfaceEntities
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ReadSurfaceEntities
+  INTEGER( I4B ) :: unitNo
+  CHARACTER( LEN = * ), PARAMETER :: myName = "ReadSurfaceEntities"
+  INTEGER( I4B ) :: i, j, k, tpt, error, dim
+  INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
+  !> main program
+  dim = 2; unitNo=obj%mshFile%getUnitNo()
+  CALL e%raiseInformation(modName//'::'//myName//' - ' &
+    & // 'Total Surface Entities: ' // TRIM(str(te, .true.)) )
+  IF( ALLOCATED( obj%SurfaceEntities ) ) DEALLOCATE( obj%SurfaceEntities )
+  IF( te .NE. 0 ) ALLOCATE( obj%SurfaceEntities(te) )
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: SurfaceEntities' )
+    DO i = 1, te
+      CALL obj%SurfaceEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+        & readTag=.FALSE., error=error )
+      ! get total physical tag
+      tpt = obj%SurfaceEntities(i)%getTotalPhysicalTags()
+      IF( tpt .NE. 0 ) THEN
+        ! get physical tag int vector
+        PhysicalTag = obj%SurfaceEntities(i)%getPhysicalTag()
+        DO j = 1, tpt
+          ! get index of physical tag
+          k = obj%PhysicalNames%getIndex( dim=dim, tag=PhysicalTag(j) )
+          ! append this index to entities
+          CALL obj%PhysicalNames%AppendEntities( indx=k, EntityTag = [i] )
+        END DO
+      END IF
+    END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: SurfaceEntities [OK!]' )
+END PROCEDURE msh_ReadSurfaceEntities
+
+!----------------------------------------------------------------------------
+!                                                        ReadVolumeEntities
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ReadVolumeEntities
+  INTEGER( I4B ) :: unitNo
+  CHARACTER( LEN = * ), PARAMETER :: myName = "ReadVolumeEntities"
+  INTEGER( I4B ) :: i, j, k, tpt, error, dim
+  INTEGER( I4B ), ALLOCATABLE :: PhysicalTag( : )
+  !> main program
+  dim = 3; unitNo=obj%mshFile%getUnitNo()
+  CALL e%raiseInformation(modName//'::'//myName//' - ' &
+    & // 'Total Volume Entities: ' // TRIM(str(te, .true.)) )
+  IF( ALLOCATED( obj%VolumeEntities ) ) DEALLOCATE( obj%VolumeEntities )
+  IF( te .NE. 0 ) ALLOCATE( obj%VolumeEntities(te) )
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: VolumeEntities' )
+    DO i = 1, te
+      CALL obj%VolumeEntities(i)%Read( mshFile=obj%mshFile, dim=dim, &
+        & readTag=.FALSE., error=error )
+      ! get total physical tag
+      tpt = obj%VolumeEntities(i)%getTotalPhysicalTags()
+      IF( tpt .NE. 0 ) THEN
+        ! get physical tag int vector
+        PhysicalTag = obj%VolumeEntities(i)%getPhysicalTag()
+        DO j = 1, tpt
+          ! get index of physical tag
+          k = obj%PhysicalNames%getIndex( dim=dim, tag=PhysicalTag(j) )
+          ! append this index to entities
+          CALL obj%PhysicalNames%AppendEntities( indx=k, EntityTag = [i] )
+        END DO
+      END IF
+    END DO
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'READING: VolumeEntities [OK!]' )
+END PROCEDURE msh_ReadVolumeEntities
+
+!----------------------------------------------------------------------------
+!                                                                 ReadNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ReadNodes
+  !> internal variables
+  CHARACTER( LEN = * ), PARAMETER :: myName="ReadNodes"
+  INTEGER( I4B ) :: i, j, k, l, entityDim, entityTag, parametric, &
+    & numNodesInBlock, error, unitNo
+  INTEGER( I4B ), ALLOCATABLE ::  NodeNumber( : )
+  REAL( DFP ), ALLOCATABLE :: NodeCoord( :, : )
+  !> main program
+  ! we read first line of $Nodes block
+  CALL obj%Nodes%Read( mshFile=obj%mshFile, mshFormat=obj%Format, &
+    & error=error )
+  IF( error .NE. 0 ) &
+    & CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Error has occured in reading the header of nodes.' )
+  unitNo=obj%mshFile%getUnitNo()
+  !start reading each entity block
+  DO i = 1, obj%Nodes%getnumEntityBlocks()
+    ! read entity dimension and entity tag (uid)
+    READ( UnitNo, * ) entityDim, entityTag, parametric, numNodesInBlock
+    CALL Reallocate( NodeNumber, numNodesInBlock )
+    ! now we read node numbers in NodeNumber( : )
+    DO k = 1, numNodesInBlock; READ( UnitNo, * ) NodeNumber( k ); END DO
+    CALL Reallocate( NodeCoord, [3, numNodesInBlock] )
+    ! now we read node coordinates
+    DO k = 1, numNodesInBlock
+      READ( UnitNo, * ) (NodeCoord(l, k), l = 1, 3)
+    END DO
+    !make case based on entity dimension
+    SELECT CASE( entityDim )
+      CASE( 0 )
+        j = getIndex( obj%PointEntities, entityTag )
+        CALL obj%PointEntities(j)%setIntNodeNumber( NodeNumber )
+        CALL obj%PointEntities(j)%setNodeCoord( NodeCoord )
+      CASE( 1 )
+        j = getIndex( obj%CurveEntities, entityTag )
+        CALL obj%CurveEntities(j)%setIntNodeNumber( NodeNumber )
+        CALL obj%CurveEntities(j)%setNodeCoord( NodeCoord )
+      CASE( 2 )
+        j = getIndex( obj%SurfaceEntities, entityTag )
+        CALL obj%SurfaceEntities(j)%setIntNodeNumber( NodeNumber )
+        CALL obj%SurfaceEntities(j)%setNodeCoord( NodeCoord )
+      CASE( 3 )
+        j = getIndex( obj%VolumeEntities, entityTag )
+        CALL obj%VolumeEntities(j)%setIntNodeNumber( NodeNumber )
+        CALL obj%VolumeEntities(j)%setNodeCoord( NodeCoord )
+    END SELECT
+  END DO
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'READING: $Nodes [OK!]' )
+  IF( ALLOCATED( NodeNumber ) ) DEALLOCATE( NodeNumber )
+  IF( ALLOCATED( NodeCoord ) ) DEALLOCATE( NodeCoord )
+END PROCEDURE msh_ReadNodes
+
+!----------------------------------------------------------------------------
+!                                                               ReadElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ReadElements
+  ! define internal variables
+  CHARACTER( LEN = * ), PARAMETER :: myName="msh_ReadElements"
+  INTEGER( I4B ) :: i, j, k, l, entityDim, entityTag, elemType, &
+    & numElementsInBlock, tNodes, tpt, unitNo, error
+  INTEGER( I4B ), ALLOCATABLE :: ElemNumber( : ), Nptrs( :, : ), PhyTag( : )
+
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'READING: $Elements' )
+  unitNo = obj%mshFile%getUnitNo()
+  CALL obj%Elements%Read( mshFile=obj%mshFile, mshFormat=obj%Format, &
+    & error=error )
+  IF( error .NE. 0 ) &
+    & CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Error has occured in reading the header of elements.' )
+  ! start reading each entity block
+  DO i = 1, obj%Elements%getnumEntityBlocks()
+    ! read entity dimension and entity tag (uid)
+    READ( UnitNo, * ) entityDim, entityTag, elemType, numElementsInBlock
+    ! get the total number of nodes in element
+    tNodes = TotalNodesInElement( elemType )
+    CALL Reallocate( ElemNumber, numElementsInBlock )
+    CALL Reallocate( Nptrs, [tNodes, numElementsInBlock] )
+    ! now we read ElemNumber and Nptrs
+    DO k = 1, numElementsInBlock
+      READ( UnitNo, * ) ElemNumber( k ), (Nptrs( l, k ), l = 1, tNodes)
+    END DO
+    ! make case based on entity dimension
+    SELECT CASE( entityDim )
+      CASE( 0 )
+        j = getIndex( obj%PointEntities, entityTag )
+        ! set the element type
+        CALL obj%PointEntities(j)%setElemType(elemType)
+        CALL obj%PointEntities(j)%setElemNumber(ElemNumber)
+        CALL obj%PointEntities(j)%setConnectivity(Nptrs)
+        ! counting nodes in each physical group
+        tpt = obj%PointEntities(j)%getTotalPhysicalTags( )
+        IF( tpt .NE. 0 ) THEN
+          ! get the physical tag in nptrs
+          PhyTag = obj%PointEntities(j)%getPhysicalTag()
+          DO k = 1, tpt
+            l = obj%PhysicalNames%getIndex(dim=0, tag=PhyTag(k))
+            CALL obj%PhysicalNames%IncNumElements( indx=l, incr=numElementsInBlock )
+          END DO
+        END IF
+      CASE( 1 )
+        j = getIndex( obj%CurveEntities, entityTag )
+        ! set the element type
+        CALL obj%CurveEntities(j)%setElemType(ElemType)
+        CALL obj%CurveEntities(j)%setElemNumber(ElemNumber)
+        CALL obj%CurveEntities(j)%setConnectivity(Nptrs)
+        ! counting nodes in each physical group
+        tpt = obj%CurveEntities(j)%getTotalPhysicalTags( )
+        IF( tpt .NE. 0 ) THEN
+          ! get the physical tag in nptrs
+          PhyTag = obj%CurveEntities(j)%getPhysicalTag()
+          DO k = 1, tpt
+            l = obj%PhysicalNames%getIndex( dim=1, tag=PhyTag( k ) )
+            CALL obj%PhysicalNames%IncNumElements( indx=l, incr=numElementsInBlock )
+          END DO
+        END IF
+      CASE( 2 )
+        j = getIndex( obj%SurfaceEntities, entityTag )
+        ! set the element type
+        CALL obj%SurfaceEntities(j)%setElemType(ElemType)
+        CALL obj%SurfaceEntities(j)%setElemNumber(ElemNumber)
+        CALL obj%SurfaceEntities(j)%setConnectivity(Nptrs)
+        ! counting nodes in each physical group
+        tpt = obj%SurfaceEntities(j)%getTotalPhysicalTags()
+        IF( tpt .NE. 0 ) THEN
+          ! get the physical tag in nptrs
+          PhyTag = obj%SurfaceEntities(j)%getPhysicalTag()
+          DO k = 1, tpt
+            l = obj%PhysicalNames%getIndex( dim=2, tag=PhyTag( k ) )
+            CALL obj%PhysicalNames%IncNumElements( indx=l, incr=numElementsInBlock )
+          END DO
+        END IF
+      CASE( 3 )
+        j = getIndex( obj%VolumeEntities, entityTag )
+        ! set the element type
+        CALL obj%VolumeEntities(j)%setElemType(ElemType)
+        CALL obj%VolumeEntities(j)%setElemNumber(ElemNumber)
+        CALL obj%VolumeEntities(j)%setConnectivity(Nptrs)
+        ! counting nodes in each physical group
+        tpt = obj%VolumeEntities(j)%getTotalPhysicalTags()
+        IF( tpt .NE. 0 ) THEN
+          ! get the physical tag in nptrs
+          PhyTag = obj%VolumeEntities(j)%getPhysicalTag()
+          DO k = 1, tpt
+            l = obj%PhysicalNames%getIndex( dim=3, tag=PhyTag( k ) )
+            CALL obj%PhysicalNames%IncNumElements( indx=l, incr=numElementsInBlock )
+          END DO
+        END IF
+    END SELECT
+  END DO
+  IF(ALLOCATED( Nptrs ) ) DEALLOCATE( Nptrs )
+  IF( ALLOCATED( ElemNumber ) ) DEALLOCATE( ElemNumber )
+  IF( ALLOCATED( PhyTag ) ) DEALLOCATE( PhyTag )
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'READING: $Elements [OK!]' )
+END PROCEDURE msh_ReadElements
+
+! !----------------------------------------------------------------------------
+! !                                                                    Display
+! !----------------------------------------------------------------------------
+
+! MODULE PROCEDURE msh_display
+!   ! Define internal variable
+!   INTEGER( I4B ) :: I, j
+!   ! output unit
+!   IF( PRESENT( UnitNo ) ) THEN
+!     I = UnitNo
+!   ELSE
+!     I = stdout
+!   END IF
+!   ! print the message
+!   IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
+!     WRITE( I, "(A)" ) TRIM( Msg )
+!   END IF
+!   ! Printiting the Gmsh Format
+!   CALL BlankLines( UnitNo = I, NOL = 1 )
+!   CALL Display( obj%Format, "Mesh Format = ", I )
+
+!   ! Printing the PhysicalNames
+!   CALL BlankLines( UnitNo = I, NOL = 1 )
+!   CALL Display( obj%PhysicalNames, "Physical Names", I )
+
+!   ! Printing the point entities
+!   IF( ALLOCATED( obj%PointEntities ) ) THEN
+!     CALL BlankLines( UnitNo = I, NOL = 1 )
+
+!     WRITE( I, "(A)" ) "Point Entities"
+!     DO j = 1, SIZE( obj%PointEntities )
+!       CALL Display( &
+!         & obj%PointEntities( j ), &
+!         & "PointEntities( "//TRIM( int2str( j ) )//" )", I )
+!     END DO
+!   END IF
+!   ! Printing the Curve entities
+!   IF( ALLOCATED( obj%CurveEntities ) ) THEN
+!     CALL BlankLines( UnitNo = I, NOL = 1 )
+!     WRITE( I, "(A)" ) "Curve Entities"
+!     DO j = 1, SIZE( obj%CurveEntities )
+!       CALL Display( &
+!         & obj%CurveEntities( j ), &
+!         & "CurveEntities( "//TRIM( int2str( j ) )//" )", I )
+!     END DO
+!   END IF
+!   ! Printing the Surface entities
+!   IF ( ALLOCATED( obj%SurfaceEntities ) ) THEN
+!     CALL BlankLines( UnitNo = I, NOL = 1 )
+!     WRITE( I, "(A)" ) "Surface Entities"
+!     DO j = 1, SIZE( obj%SurfaceEntities )
+!       CALL Display( &
+!         & obj%SurfaceEntities( j ), &
+!         & "SurfaceEntities( "//TRIM( int2str( j ) )//" )", I )
+!     END DO
+!   END IF
+!   ! Printing the Volume entities
+!   IF( ALLOCATED( obj%VolumeEntities ) ) THEN
+!     CALL BlankLines( UnitNo = I, NOL = 1 )
+!     WRITE( I, "(A)" ) "Volume Entities"
+!     DO j = 1, SIZE( obj%VolumeEntities )
+!       CALL Display( &
+!         & obj%VolumeEntities( j ), &
+!         & "VolumeEntities( "//TRIM( int2str( j ) )//" )", I )
+!     END DO
+!   END IF
+!   ! Printing nodes
+!   CALL BlankLines( UnitNo = I, NOL = 1 )
+!   CALL Display( obj%Nodes, "Nodes", I )
+!   ! Printing elements
+!   CALL BlankLines( UnitNo = I, NOL = 1 )
+!   CALL Display( obj%Elements, "Elements", I )
+! END PROCEDURE msh_display
 
 END SUBMODULE IOMethods

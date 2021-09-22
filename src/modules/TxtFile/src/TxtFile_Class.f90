@@ -114,6 +114,12 @@ MODULE SUBROUTINE txt_initiate(obj,file,unit,status,access,form, &
 END SUBROUTINE txt_initiate
 END INTERFACE
 
+INTERFACE InitiateTxtFile
+  MODULE PROCEDURE txt_initiate
+END INTERFACE InitiateTxtFile
+
+PUBLIC :: InitiateTxtFile
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
