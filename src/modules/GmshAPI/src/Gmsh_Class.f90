@@ -28,14 +28,15 @@ USE GmshGraphics_Class
 USE GmshFLTK_Class
 USE GmshOption_Class
 USE GmshModel_Class
+USE GmshOnelab_Class
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER( LEN = * ), PARAMETER :: modName = "GMSH_CLASS"
 INTEGER( C_INT ) :: ierr
 !$OMP THREADPRIVATE(ierr)
-TYPE( ExceptionHandler_ ), SAVE, PUBLIC :: eGmsh
-!$OMP THREADPRIVATE(eGmsh)
+TYPE( ExceptionHandler_ ) :: e
+!$OMP THREADPRIVATE(e)
 INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 
 PUBLIC :: GMSH_INIT
@@ -67,6 +68,7 @@ TYPE :: Gmsh_
   TYPE( GmshGraphics_ ), PUBLIC, POINTER :: Graphics => NULL()
   TYPE( GmshOption_ ), PUBLIC, POINTER :: Option => NULL()
   TYPE( GmshFLTK_ ), PUBLIC, POINTER :: FLTK => NULL()
+  TYPE( GmshOnelab_ ), PUBLIC, POINTER :: Onelab => NULL()
   TYPE( GmshModel_ ), PUBLIC, POINTER :: Model => NULL( )
   ! INTEGER( I4B ) :: nsd = 0
   LOGICAL( LGT ) :: isInitiated = .FALSE.
@@ -112,16 +114,20 @@ CONTAINS
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-!> authors: Dr. Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: This function will start the Gmsh engine
 !
-! This function will start the Gmsh engine
-! It allocates obj%Model
+!### Introduction
+!
+! This function will start the Gmsh engine, and it allocates
+! the pointer fields.
 !
 !### Usage
 !
-! ```fortran
-!	ierr = obj%initialize( NSD )
-! ```
+!```fortran
+! ierr = obj%initialize( NSD )
+!```
 
 FUNCTION Gmsh_initialize( obj ) RESULT( ans )
   CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
@@ -131,48 +137,66 @@ FUNCTION Gmsh_initialize( obj ) RESULT( ans )
 
   ans = 0
   IF( .NOT. obj%isInitiated ) THEN
+    !> Graphics
     IF( ASSOCIATED( obj%Graphics )  ) THEN
-      CALL eGmsh%raiseError(modName//"::"//myName//" - "// &
+      CALL e%raiseError(modName//"::"//myName//" - "// &
         "Gmsh%Graphics is already associated; hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Graphics )
-    !
+    ALLOCATE( obj%Graphics ); CALL obj%Graphics%Initiate()
+    !> Option
     IF( ASSOCIATED( obj%Option )  ) THEN
-      CALL eGmsh%raiseError(modName//"::"//myName//" - "// &
+      CALL e%raiseError(modName//"::"//myName//" - "// &
         "Gmsh%option is already associated; hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Option )
-    !
+    ALLOCATE( obj%Option ); Call obj%Option%Initiate()
+    !> FLTK
     IF( ASSOCIATED( obj%FLTK )  ) THEN
-      CALL eGmsh%raiseError(modName//"::"//myName//" - "// &
+      CALL e%raiseError(modName//"::"//myName//" - "// &
         "Gmsh%FLTK is already associated; hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%FLTK )
-    !
+    ALLOCATE( obj%FLTK ); CALL obj%FLTK%Initiate()
+    !> Onelab
+    IF( ASSOCIATED( obj%Onelab )  ) THEN
+      CALL e%raiseError(modName//"::"//myName//" - "// &
+        "Gmsh%Onelab is already associated; hint: You can try, first Nullifying it")
+      ans = -1
+    END IF
+    ALLOCATE( obj%Onelab ); CALL obj%Onelab%Initiate()
+    !> Model
     IF( ASSOCIATED( obj%Model )  ) THEN
-      CALL eGmsh%raiseError(modName//"::"//myName//" - "// &
+      CALL e%raiseError(modName//"::"//myName//" - "// &
         "Gmsh%model is already associated; hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Model )
-    ALLOCATE( obj%Model%Geo )
-    ALLOCATE( obj%Model%Occ )
-    ALLOCATE( obj%Model%Geo%mesh )
-    ALLOCATE( obj%Model%Occ%mesh )
-    ALLOCATE( obj%Model%Mesh )
+    ALLOCATE( obj%Model ); CALL obj%Model%Initiate()
     obj%isInitiated = .TRUE.
   ELSE
-    CALL eGmsh%raiseError(modName//"::"//myName//" - "// &
-        "Gmsh is already initiated; hint: You can run finalize(), the initialize()")
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Gmsh is already initiated; hint: You can run finalize(), &
+      & the initialize()")
   END IF
 END FUNCTION Gmsh_initialize
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: This function will start the Gmsh engine
+!
+!### Introduction
+!
+! This function will start the Gmsh engine.
+!
+!### Usage
+!
+!```fortran
+!  CALL GMSH_INIT
+!```
 
 SUBROUTINE GMSH_INIT
   CALL gmshInitialize( 0, C_NULL_PTR, 1, ierr )
@@ -182,15 +206,18 @@ END SUBROUTINE GMSH_INIT
 !                                                                 Finalize
 !----------------------------------------------------------------------------
 
-!> authors: Dr. Vikas Sharma
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: This function will stop the Gmsh engine
 !
+!### Introduction
 ! This function will stop the Gmsh engine
 !
 !### Usage
 !
-! ```fortran
+!```fortran
 !	ierr = obj%finalize()
-! ```
+!```
 
 FUNCTION Gmsh_finalize( obj ) RESULT( ans )
   CLASS( Gmsh_  ), INTENT( INOUT ) :: obj
@@ -227,6 +254,19 @@ END FUNCTION Gmsh_finalize
 !
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: This function will stop the Gmsh engine
+!
+!### Introduction
+! This function will stop the Gmsh engine
+!
+!### Usage
+!
+!```fortran
+!	CALL GMSH_FINAL
+!```
+
 SUBROUTINE GMSH_FINAL
   CALL gmshFinalize( ierr = ierr )
 END SUBROUTINE GMSH_FINAL
@@ -245,13 +285,37 @@ END SUBROUTINE Gmsh_finalize_
 !                                                                      Open
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary:  Open a file.
+!
+!### Introduction
+!
+! Open a file. Equivalent to the `File->Open` menu in the Gmsh app. Handling
+! of the file depends on its extension and/or its contents: opening a file
+! with model data will create a new model.
+!
+!
+!### Usage
+!
+!```fortran
+! type( gmsh_ ) :: gmsh
+! integer( i4b ) :: ierr
+! CALL GMSH_INIT
+! ierr = gmsh%initialize()
+! ierr = gmsh%open(fileName="t1.msh" )
+! ierr = gmsh%write(fileName="t2.msh")
+! ierr = gmsh%finalize()
+! ierr = gmsh%clear()
+! CALL GMSH_FINAL
+!```
+
 FUNCTION Gmsh_Open( obj, fileName ) RESULT( ans )
   CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: fileName
   INTEGER( I4B ) :: ans
   ! Internal variables
   CHARACTER( LEN = maxStrLen ), TARGET :: C_STR
-
   C_STR = TRIM( fileName ) // C_NULL_CHAR
   CALL gmshOpen( fileName = C_LOC(C_STR), ierr=ierr )
   ans = INT( ierr, KIND=I4B )
@@ -261,13 +325,36 @@ END FUNCTION Gmsh_Open
 !                                                                     Close
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: Merge a file
+!
+!### Introduction
+!
+! Merge a file. Equivalent to the `File->Merge` menu in the Gmsh app.
+! Handling of the file depends on its extension and/or its contents. Merging
+! a file with model data will add the data to the current model.
+!
+!### Usage
+!
+!```fortran
+! type( gmsh_ ) :: gmsh
+! integer( i4b ) :: ierr
+! CALL GMSH_INIT
+! ierr = gmsh%initialize()
+! ierr = gmsh%open(fileName="t1.msh" )
+! ierr = gmsh%write(fileName="t2.msh")
+! ierr = gmsh%finalize()
+! ierr = gmsh%clear()
+! CALL GMSH_FINAL
+!```
+
 FUNCTION Gmsh_Merge( obj, fileName ) RESULT( ans )
   CLASS( Gmsh_ ), INTENT( INOUT) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: fileName
   INTEGER( I4B ) :: ans
   ! Internal variables
   CHARACTER( LEN = maxStrLen ), TARGET :: C_STR
-
   C_STR = TRIM( fileName ) // C_NULL_CHAR
   CALL gmshMerge( fileName = C_LOC(C_STR), ierr=ierr )
   ans = INT( ierr, KIND=I4B )
@@ -276,6 +363,29 @@ END FUNCTION Gmsh_Merge
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: Write a file
+!
+!### Introduction
+!
+! Write a file. The export format is determined by the file extension.
+!
+!
+!### Usage
+!
+!```fortran
+! type( gmsh_ ) :: gmsh
+! integer( i4b ) :: ierr
+! CALL GMSH_INIT
+! ierr = gmsh%initialize()
+! ierr = gmsh%open(fileName="t1.msh" )
+! ierr = gmsh%write(fileName="t2.msh")
+! ierr = gmsh%finalize()
+! ierr = gmsh%clear()
+! CALL GMSH_FINAL
+!```
 
 FUNCTION Gmsh_Write( obj, fileName ) RESULT( ans )
   CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
@@ -292,6 +402,30 @@ END FUNCTION Gmsh_Write
 !----------------------------------------------------------------------------
 !                                                                     Clear
 !----------------------------------------------------------------------------
+
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 Sept 2021
+! summary: Clear all loaded models
+!
+!### Introduction
+!
+! Clear all loaded models and post-processing data, and add a new empty
+! model.
+!
+!### Usage
+!
+!```fortran
+! type( gmsh_ ) :: gmsh
+! integer( i4b ) :: ierr
+! CALL GMSH_INIT
+! ierr = gmsh%initialize()
+! ierr = gmsh%open(fileName="t1.msh" )
+! ierr = gmsh%write(fileName="t2.msh")
+! ierr = gmsh%finalize()
+! ierr = gmsh%clear()
+! CALL GMSH_FINAL
+!```
 
 FUNCTION Gmsh_Clear( obj ) RESULT( ans )
   CLASS( Gmsh_ ), INTENT( INOUT) :: obj

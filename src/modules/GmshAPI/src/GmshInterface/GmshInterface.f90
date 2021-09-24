@@ -44,5 +44,6 @@ PRIVATE
 #include "./GmshModelOcc.inc"
 #include "./GmshModelOccMesh.inc"
 #include "./GmshModelMesh.inc"
+#include "./GmshOnelab.inc"
 
 END MODULE GmshInterface

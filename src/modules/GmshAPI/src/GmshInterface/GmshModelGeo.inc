@@ -516,7 +516,7 @@ SUBROUTINE gmshModelGeoExtrude(dimTags, dimTags_n, dx, dy, dz, outDimTags, &
   _ST_V_IN_ :: numElements_n
   _I_IN_ :: numElements(numElements_n)
   _ST_V_IN_ :: heights_n
-  _I_IN_ :: heights(heights_n)
+  _R_IN_ :: heights(heights_n)
   _I_V_IN_ :: recombine
   _I_OUT_ :: ierr
 END SUBROUTINE gmshModelGeoExtrude
@@ -565,7 +565,7 @@ SUBROUTINE gmshModelGeoRevolve(dimTags, dimTags_n, x, y, z, ax, ay, az, &
   _ST_V_IN_ :: numElements_n
   _I_IN_ :: numElements(numElements_n)
   _ST_V_IN_ :: heights_n
-  _I_IN_ :: heights(heights_n)
+  _R_IN_ :: heights(heights_n)
   _I_V_IN_ :: recombine
   _I_OUT_ :: ierr
 END SUBROUTINE gmshModelGeoRevolve
@@ -618,7 +618,7 @@ SUBROUTINE gmshModelGeoTwist(dimTags, dimTags_n, x, y, z, dx, dy, dz, ax, &
   _ST_V_IN_ :: numElements_n
   _I_IN_ :: numElements(numElements_n)
   _ST_V_IN_ :: heights_n
-  _I_IN_ :: heights(heights_n)
+  _R_IN_ :: heights(heights_n)
   _I_V_IN_ :: recombine
   _I_OUT_ :: ierr
 END SUBROUTINE gmshModelGeoTwist
@@ -661,7 +661,7 @@ SUBROUTINE gmshModelGeoExtrudeBoundaryLayer(dimTags, dimTags_n, outDimTags, &
   _ST_V_IN_ :: numElements_n
   _I_IN_ :: numElements(numElements_n)
   _ST_V_IN_ :: heights_n
-  _I_IN_ :: heights(heights_n)
+  _R_IN_ :: heights(heights_n)
   _I_V_IN_ :: recombine, second, viewIndex
   _I_OUT_ :: ierr
 END SUBROUTINE gmshModelGeoExtrudeBoundaryLayer

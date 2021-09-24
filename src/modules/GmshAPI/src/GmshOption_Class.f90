@@ -18,7 +18,7 @@
 MODULE GmshOption_Class
 USE GlobalData, ONLY: DFP=> Real64, I4B=>Int32, LGT
 USE GmshInterface
-USE CInterface, ONLY: C2FStringPtr => C_F_string_ptr
+USE CInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
@@ -34,6 +34,7 @@ INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 TYPE :: GmshOption_
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => opt_Initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: setNumber => opt_setNumber
   PROCEDURE, PUBLIC, PASS( Obj ) :: getNumber => opt_getNumber
   PROCEDURE, PUBLIC, PASS( Obj ) :: setString => opt_setString
@@ -60,6 +61,18 @@ PUBLIC :: GmshOptionPointer_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE opt_Initiate( obj )
+  CLASS( GmshOption_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE opt_Initiate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 FUNCTION opt_setNumber(obj, name, value ) RESULT( ans )
   CLASS( GmshOption_ ), INTENT( IN ) :: obj
@@ -136,7 +149,7 @@ FUNCTION opt_getString(obj, name, value) RESULT( ans )
 
   name_ = TRIM(name) // C_NULL_CHAR
   CALL gmshOptionGetString( name=C_LOC(name_),  val=value_, ierr=ans )
-  CALL C2FStringPtr( C_String=value_, F_String=value )
+  CALL C2Fortran( C_String=value_, F_String=value )
   ! ans = INT( ierr, KIND=I4B )
 END FUNCTION opt_getString
 

@@ -16,10 +16,10 @@
 !
 
 MODULE GmshFLTK_Class
-USE GlobalData, ONLY: DFP, I4B
-USE Utility, ONLY: Reallocate
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE Utility, ONLY: Reallocate, INPUT
 USE GmshInterface
-USE CInterface, ONLY: C_F_STRING_PTR, C_PTR_TO_INT_VEC
+USE CInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
@@ -35,6 +35,7 @@ INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 TYPE :: GmshFLTK_
   CONTAINS
   PRIVATE
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => fltk_Initiate
     PROCEDURE, PUBLIC, PASS( Obj ) :: Initialize => fltk_Initialize
     PROCEDURE, PUBLIC, PASS( Obj ) :: Wait => fltk_Wait
     PROCEDURE, PUBLIC, PASS( Obj ) :: Update => fltk_Update
@@ -76,6 +77,14 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE fltk_Initiate( obj )
+  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE fltk_Initiate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 ! Create the FLTK graphical user interface. Can only be called in the main
 !  * thread.
 !
@@ -101,9 +110,9 @@ END FUNCTION fltk_Initialize
 
 FUNCTION fltk_Wait(obj, time) RESULT( ans )
   CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: time
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: time
   INTEGER( I4B ) :: ans
-  CALL gmshFltkWait(time, ierr)
+  CALL gmshFltkWait(INPUT(option=time, default=-1.0_DFP), ierr)
   ans = int(ierr, i4b)
 END FUNCTION fltk_Wait
 
@@ -205,8 +214,15 @@ END FUNCTION Fltk_Run
 
 FUNCTION Fltk_IsAvailable(obj) RESULT( ans )
   CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
-  ans = gmshFltkIsAvailable(ierr)
+  LOGICAL( LGT ) :: ans
+  !> main
+  INTEGER( I4B ) :: n
+  n = gmshFltkIsAvailable(ierr)
+  IF( n .EQ. 1 ) THEN
+    ans = .TRUE.
+  ELSE
+    ans = .FALSE.
+  END IF
 END FUNCTION Fltk_IsAvailable
 
 !----------------------------------------------------------------------------

@@ -20,6 +20,7 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE Utility, ONLY: Reallocate
 USE GmshInterface
 USE GmshModelGeoMesh_Class
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE CInterface, ONLY: C_PTR_TO_INT_VEC
 USE ISO_C_BINDING
 IMPLICIT NONE
@@ -27,6 +28,8 @@ PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "GMSHOPTION_CLASS"
 INTEGER( C_INT ) :: ierr
 !$OMP THREADPRIVATE(ierr)
+TYPE( ExceptionHandler_ ) :: e
+!$OMP THREADPRIVATE(e)
 INTEGER( I4B ), PARAMETER :: maxStrLen = 120
 
 !----------------------------------------------------------------------------
@@ -39,6 +42,7 @@ TYPE :: GmshModelGeo_
   TYPE( GmshModelGeoMesh_ ), POINTER :: mesh => NULL()
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => geo_Initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddPoint => geo_AddPoint
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddLine => geo_AddLine
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddCircleArc => geo_AddCircleArc
@@ -55,8 +59,8 @@ TYPE :: GmshModelGeo_
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddSurfaceFilling => geo_AddSurfaceFilling
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddSurfaceLoop => geo_AddSurfaceLoop
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddVolume => geo_AddVolume
-  PROCEDURE, PUBLIC, PASS( Obj ) :: GeoExtrude => geo_GeoExtrude
-  PROCEDURE, PUBLIC, PASS( Obj ) :: GeoRevolve => geo_GeoRevolve
+  PROCEDURE, PUBLIC, PASS( Obj ) :: Extrude => geo_Extrude
+  PROCEDURE, PUBLIC, PASS( Obj ) :: Revolve => geo_GeoRevolve
   PROCEDURE, PUBLIC, PASS( Obj ) :: Twist => geo_Twist
   PROCEDURE, PUBLIC, PASS( Obj ) :: ExtrudeBoundaryLayer => geo_ExtrudeBoundaryLayer
   PROCEDURE, PUBLIC, PASS( Obj ) :: GeoTranslate => geo_GeoTranslate
@@ -93,6 +97,22 @@ PUBLIC :: GmshModelGeoPointer_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE geo_Initiate(obj)
+  CLASS( GmshModelGeo_ ), INTENT( INOUT ) :: obj
+  !> internal var
+  CHARACTER( LEN = * ), PARAMETER :: myName="geo_Initiate"
+  !> main program
+  IF( ASSOCIATED( obj%Mesh )  ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "gmsh::Model::Geo::Mesh is already associated;")
+  END IF
+  ALLOCATE( obj%Mesh )
+END SUBROUTINE geo_Initiate
 
 !----------------------------------------------------------------------------
 !
@@ -329,14 +349,14 @@ END FUNCTION geo_AddVolume
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_GeoExtrude(obj, dimTags, dx, dy, dz, &
+FUNCTION geo_Extrude(obj, dimTags, dx, dy, dz, &
   & outDimTags, numElements, heights, recombine ) RESULT( ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
   REAL( DFP ), INTENT( IN ) :: dx, dy, dz
   INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
   INTEGER( I4B ), INTENT( IN ) :: numElements(:)
-  INTEGER( I4B ), INTENT( IN ) :: heights(:)
+  REAL( DFP ), INTENT( IN ) :: heights(:)
   INTEGER( I4B ), INTENT( IN ) :: recombine
   INTEGER( I4B ) :: ans
 
@@ -350,7 +370,7 @@ FUNCTION geo_GeoExtrude(obj, dimTags, dx, dy, dz, &
   ans = INT(ierr, I4B)
   CALL Reallocate( outDimTags, INT(outDimTags_n, I4B) )
   CALL C_PTR_TO_INT_VEC( vec = outDimTags, cptr = cptr )
-END FUNCTION geo_GeoExtrude
+END FUNCTION geo_Extrude
 
 !----------------------------------------------------------------------------
 !
@@ -364,7 +384,7 @@ FUNCTION geo_GeoRevolve(obj, dimTags, x, y, z, ax, ay, az, &
   REAL( DFP ), INTENT( IN ) :: x, y, z, ax, ay, az, angle
   INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
   INTEGER( I4B ), INTENT( IN ) :: numElements( : )
-  INTEGER( I4B ), INTENT( IN ) :: heights( : )
+  REAL( DFP ), INTENT( IN ) :: heights( : )
   INTEGER( I4B ), INTENT( IN ) :: recombine
   INTEGER( I4B ) :: ans
 
@@ -391,7 +411,7 @@ FUNCTION geo_Twist( obj, dimTags, x, y, z, dx, dy, dz, ax, &
   REAL( DFP ), INTENT( IN ) :: x, y, z, dx, dy, dz, ax, ay, az, angle
   INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
   INTEGER( I4B ), INTENT( IN ) :: numElements(:)
-  INTEGER( I4B ), INTENT( IN ) :: heights(:)
+  REAL( DFP ), INTENT( IN ) :: heights(:)
   INTEGER( I4B ), INTENT( IN ) :: recombine
   INTEGER( I4B ) :: ans
   !
@@ -418,7 +438,7 @@ FUNCTION geo_ExtrudeBoundaryLayer( obj, dimTags, &
   INTEGER( I4B ), INTENT( IN ) :: dimTags( : )
   INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
   INTEGER( I4B ), INTENT( IN ) :: numElements(:)
-  INTEGER( I4B ), INTENT( IN ) :: heights(:)
+  REAL( DFP ), INTENT( IN ) :: heights(:)
   INTEGER( I4B ), INTENT( IN ) :: recombine, second, viewIndex
   INTEGER( I4B ) :: ans
   !

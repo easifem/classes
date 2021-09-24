@@ -34,6 +34,7 @@ TYPE :: GmshGraphics_
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( Obj ) :: Draw=>graphics_Draw
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => graphics_Initiate
 END TYPE GmshGraphics_
 
 PUBLIC :: GmshGraphics_
@@ -54,6 +55,18 @@ PUBLIC :: GmshGraphicsPointer_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE graphics_Initiate( obj )
+  CLASS( GmshGraphics_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE graphics_Initiate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 FUNCTION graphics_Draw(obj) RESULT( ans )
   CLASS( GmshGraphics_ ), INTENT( INOUT ) :: obj
