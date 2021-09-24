@@ -20,7 +20,7 @@ USE GlobalData, ONLY: DFP=> Real64, I4B => Int32, LGT
 USE Utility, ONLY: Reallocate
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE GmshInterface
-USE CInterface, ONLY: C_F_STRING_PTR, C_PTR_TO_INT_VEC
+USE CInterface
 USE ISO_C_BINDING
 USE GmshModelGeo_Class
 USE GmshModelOcc_Class
@@ -30,8 +30,8 @@ PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "GMSHMODEL_CLASS"
 INTEGER( C_INT ) :: ierr
 !$OMP THREADPRIVATE(ierr)
-TYPE( ExceptionHandler_ ), SAVE, PUBLIC :: eGmshModel
-!$OMP THREADPRIVATE(eGmshModel)
+TYPE( ExceptionHandler_ ), SAVE :: e
+!$OMP THREADPRIVATE(e)
 INTEGER( I4B ), PARAMETER :: maxStrLen = 120
 
 !----------------------------------------------------------------------------
@@ -45,6 +45,7 @@ TYPE :: GmshModel_
   TYPE( GmshModelMesh_ ), PUBLIC, POINTER :: Mesh => NULL()
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: initiate => model_initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: add => model_add
   PROCEDURE, PUBLIC, PASS( Obj ) :: remove => model_remove
   PROCEDURE, PUBLIC, PASS( Obj ) :: list => model_list
@@ -66,7 +67,7 @@ TYPE :: GmshModel_
 END TYPE GmshModel_
 
 PUBLIC :: GmshModel_
-TYPE( GmshModel_ ), PUBLIC, PARAMETER :: TypeGmshModel = GmshModel_()
+TYPE( GmshModel_ ), PUBLIC, PARAMETER :: Type = GmshModel_()
 
 !----------------------------------------------------------------------------
 !
@@ -83,6 +84,33 @@ PUBLIC :: GmshModelPointer_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+SUBROUTINE model_initiate( obj )
+  CLASS( GmshModel_ ), INTENT( INOUT ) :: obj
+  !> internal var
+  CHARACTER( LEN = * ), PARAMETER :: myName="model_initiate"
+  !> main program
+  IF( ASSOCIATED( obj%Geo )  ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      "gmsh::Model::Geo is already associated;")
+  END IF
+  ALLOCATE( obj%Geo ); CALL obj%Geo%Initiate()
+  IF( ASSOCIATED( obj%Occ )  ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      "gmsh::Model::Occ is already associated;")
+  END IF
+  ALLOCATE( obj%Occ ); CALL obj%Occ%initiate()
+  IF( ASSOCIATED( obj%Mesh )  ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      "gmsh::Model::Mesh is already associated;")
+  END IF
+  ALLOCATE( obj%Mesh ); CALL obj%Mesh%initiate()
+
+END SUBROUTINE model_initiate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 FUNCTION model_add(obj, name ) RESULT( ans )
   CLASS( GmshModel_ ), INTENT( IN ) :: obj
@@ -121,7 +149,7 @@ FUNCTION model_list(obj, names, names_n) RESULT( ans )
 
   CHARACTER( LEN=* ), PARAMETER :: myName="model_list()"
 
-  CALL eGmshModel%raiseError(modName//"::"//myName//" - "// &
+  CALL e%raiseError(modName//"::"//myName//" - "// &
     & "This interface is under construction")
 END FUNCTION model_list
 
@@ -138,7 +166,7 @@ FUNCTION model_getCurrent( obj, name ) RESULT( ans )
   TYPE( C_PTR ) :: cstring
   CALL gmshModelGetCurrent( name=cstring, ierr=ierr )
   ans = INT( ierr, KIND=I4B )
-  CALL C_F_STRING_PTR(C_string=cstring, F_string=name)
+  CALL C2Fortran(C_string=cstring, F_string=name)
 END FUNCTION model_getCurrent
 
 !----------------------------------------------------------------------------
@@ -172,7 +200,7 @@ FUNCTION model_getFileName( obj, fileName ) RESULT( ans )
 
   CALL gmshModelGetFileName( fileName=cstring, ierr=ierr )
   ans = INT( ierr, KIND=I4B )
-  CALL C_F_STRING_PTR(C_string=cstring, F_string=fileName)
+  CALL C2Fortran(C_string=cstring, F_string=fileName)
 END FUNCTION model_getFileName
 
 !----------------------------------------------------------------------------
@@ -208,7 +236,6 @@ FUNCTION model_GetEntities(obj, dimTags, dim, dimTags_n ) &
   TYPE( C_PTR ) :: cptr
   INTEGER( C_SIZE_T ) :: dimTags_n_
   INTEGER( I4B ), ALLOCATABLE :: p( : )
-
   CALL gmshModelGetEntities(cptr, dimTags_n_, dim, ierr)
   ans = int( ierr, i4b )
   IF( PRESENT( dimTags_n ) ) dimTags_n = int(dimTags_n_, i4b)
@@ -216,7 +243,6 @@ FUNCTION model_GetEntities(obj, dimTags, dim, dimTags_n ) &
   CALL C_PTR_TO_INT_VEC( cptr = cptr, vec = p )
   dimTags = TRANSPOSE(RESHAPE( p, [2, int(dimTags_n_/2)]))
   DEALLOCATE( p )
-
 END FUNCTION model_GetEntities
 
 !----------------------------------------------------------------------------
@@ -253,7 +279,7 @@ FUNCTION model_GetEntityName( obj, dim, tag, name ) &
 
   CALL gmshModelGetEntityName(dim, tag, cptr, ierr)
   ans = int(ierr, i4b)
-  CALL C_F_STRING_PTR(c_string=cptr, f_string=name)
+  CALL C2Fortran(c_string=cptr, f_string=name)
 END FUNCTION model_GetEntityName
 
 !----------------------------------------------------------------------------
@@ -280,7 +306,7 @@ FUNCTION model_GetPhysicalGroups(obj,dimTags, dim, dimTags_n ) &
     RETURN
   END IF
   ALLOCATE( p( dimTags_n_ ) )
-  CALL C_PTR_TO_INT_VEC( cptr = cptr, vec = p )
+  CALL C2Fortran( cptr = cptr, vec = p )
   dimTags = TRANSPOSE(RESHAPE( p, [2, int(dimTags_n_/2)]))
   DEALLOCATE( p )
 END FUNCTION model_GetPhysicalGroups
@@ -305,7 +331,7 @@ FUNCTION model_GetEntitiesForPhysicalGroup(obj, dim, tag, tags, &
   ans = int( ierr, i4b )
   IF( PRESENT( tags_n ) ) tags_n = int(tags_n_, i4b)
   CALL Reallocate( tags, int(tags_n_, i4b) )
-  CALL C_PTR_TO_INT_VEC( cptr = cptr, vec = tags )
+  CALL C2Fortran( cptr = cptr, vec = tags )
 END FUNCTION model_GetEntitiesForPhysicalGroup
 
 !----------------------------------------------------------------------------
@@ -329,7 +355,7 @@ FUNCTION model_GetPhysicalGroupsForEntity(obj, dim, tag, physicalTags, &
   ans = int( ierr, i4b )
   IF( PRESENT( physicalTags_n ) ) physicalTags_n = int(physicalTags_n_, i4b)
   CALL Reallocate( physicalTags, int(physicalTags_n_, i4b) )
-  CALL C_PTR_TO_INT_VEC( cptr = cptr, vec = physicalTags )
+  CALL C2Fortran( cptr = cptr, vec = physicalTags )
 END FUNCTION model_GetPhysicalGroupsForEntity
 
 !----------------------------------------------------------------------------
@@ -413,7 +439,7 @@ FUNCTION model_GetPhysicalName(obj, dim, tag, name) &
 
   CALL gmshModelGetPhysicalName(dim, tag, cptr, ierr)
   ans = int( ierr, i4b )
-  CALL C_F_STRING_PTR( C_STRING=cptr, F_STRING=name )
+  CALL C2Fortran( C_STRING=cptr, F_STRING=name )
 END FUNCTION model_GetPhysicalName
 
 !----------------------------------------------------------------------------

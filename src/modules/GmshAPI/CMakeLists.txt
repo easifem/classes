@@ -5,6 +5,7 @@ TARGET_SOURCES(
   ${src_path}/Gmsh_Class.f90
   ${src_path}/GmshGraphics_Class.f90
   ${src_path}/GmshOption_Class.f90
+  ${src_path}/GmshOnelab_Class.f90
   ${src_path}/GmshFLTK_Class.f90
   ${src_path}/GmshModel_Class.f90
   ${src_path}/GmshModelGeo_Class.f90

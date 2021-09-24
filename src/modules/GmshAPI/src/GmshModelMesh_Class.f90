@@ -35,6 +35,7 @@ INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 TYPE :: GmshModelMesh_
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => mesh_Initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: Generate => mesh_Generate
   PROCEDURE, PUBLIC, PASS( Obj ) :: Partition => mesh_Partition
   PROCEDURE, PUBLIC, PASS( Obj ) :: Unpartition => mesh_Unpartition
@@ -59,6 +60,14 @@ PUBLIC :: GmshModelMeshPointer_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE mesh_Initiate( obj )
+  CLASS( GmshModelMesh_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE mesh_Initiate
 
 !----------------------------------------------------------------------------
 !

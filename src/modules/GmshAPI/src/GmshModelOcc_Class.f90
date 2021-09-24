@@ -20,6 +20,7 @@ USE GlobalData, ONLY: DFP, I4B, LGT, PI
 USE Utility, ONLY: Reallocate, input
 USE GmshInterface
 USE GmshModelOccMesh_Class
+USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE CInterface, ONLY: C_PTR_TO_INT_VEC
 USE ISO_C_BINDING
 IMPLICIT NONE
@@ -30,6 +31,8 @@ INTEGER( C_INT ) :: ierr
 INTEGER( I4B ), PARAMETER :: maxStrLen = 256
 REAL( DFP ), PARAMETER, DIMENSION(0) :: emptyReal=0
 INTEGER( I4B ), PARAMETER, DIMENSION(1) :: emptyInt=0
+TYPE( ExceptionHandler_ ) :: e
+!$OMP THREADPRIVATE(e)
 
 !----------------------------------------------------------------------------
 !
@@ -40,6 +43,7 @@ TYPE :: GmshModelOcc_
   TYPE( GmshModelOccMesh_ ), PUBLIC, POINTER :: Mesh => NULL()
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => occ_Initiate
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddPoint => occ_AddPoint
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddLine => occ_AddLine
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddCircleArc => occ_AddCircleArc
@@ -92,6 +96,22 @@ PUBLIC :: GmshModelOccPointer_
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE occ_Initiate(obj)
+  CLASS( GmshModelOcc_ ), INTENT( INOUT ) :: obj
+  !> internal var
+  CHARACTER( LEN = * ), PARAMETER :: myName="occ_Initiate"
+  !> main program
+  IF( ASSOCIATED( obj%Mesh )  ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "gmsh::Model::Occ::Mesh is already associated;")
+  END IF
+  ALLOCATE( obj%Mesh )
+END SUBROUTINE occ_Initiate
 
 !----------------------------------------------------------------------------
 !

@@ -716,9 +716,9 @@ PUBLIC :: gmshModelGetPartitions
 ! /* Evaluate the parametrization of the entity of dimension `dim' and tag `tag' at the parametric coordinates `parametricCoord'. Only valid for `dim' equal to 0 (with empty `parametricCoord'), 1 (with `parametricCoord' containing parametric coordinates on the curve) or 2 (with `parametricCoord' containing pairs of u, v parametric coordinates on the surface, concatenated: [p1u, p1v, p2u, ...]). Return triplets of x, y, z coordinates in `coord', concatenated: [p1x, p1y, p1z, p2x, ...]. */
 !
 ! GMSH_API void gmshModelGetValue(const int dim,
-!                                 const int tag,
-!                                 double *parametricCoord, size_t parametricCoord_n,
-!                                 double **coord, size_t *coord_n,
+!   const int tag,
+!   double *parametricCoord, size_t parametricCoord_n,
+!   double **coord, size_t *coord_n,
 !                                 int *ierr);
 
 INTERFACE
