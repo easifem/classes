@@ -86,7 +86,7 @@ PUBLIC :: ScalarField_
 TYPE( ScalarField_ ), PARAMETER, PUBLIC :: Type = ScalarField_()
 
 !----------------------------------------------------------------------------
-!                                                             ScalarFieldPointer_
+!                                                       ScalarFieldPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: ScalarFieldPointer_
@@ -99,11 +99,16 @@ PUBLIC :: ScalarFieldPointer_
 !                                           setScalarFieldParam@Constructor
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: Set the essential parameters
+
 INTERFACE
 MODULE SUBROUTINE setScalarFieldParam( param, name, fieldType )
   TYPE( ParameterList_ ), INTENT( INOUT ) :: param
   CHARACTER( LEN = * ), INTENT( IN ) :: name
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+
 END SUBROUTINE setScalarFieldParam
 END INTERFACE
 
@@ -150,13 +155,11 @@ PUBLIC :: sField_checkEssentialParam
 ! summary: This subroutine initiates the ScalarField_ object
 !
 !### Introduction
+!
 ! This routine initiate the [[ScalarField_]] object.
 ! `param` contains the information of parameters required to initiate the
 ! scalar field. There are essential and optional information.
 ! Essential information are described below.
-!
-! `CHARACTER(LEN=*) :: name` name of field
-! `INTEGER(I4B) :: tdof` total degrees of freedom
 
 INTERFACE
 MODULE SUBROUTINE sField_Initiate1( obj, param, dom )
@@ -175,10 +178,12 @@ END INTERFACE
 ! summary: This subroutine initiates the ScalarField_ object by copying
 !
 !### Introduction
+!
 ! This routine initiate the [[ScalarField_]] object by copying
 
 INTERFACE
-MODULE SUBROUTINE sField_Initiate2( obj, obj2, copyFull, copyStructure, usePointer )
+MODULE SUBROUTINE sField_Initiate2( obj, obj2, copyFull, copyStructure, &
+  & usePointer )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
@@ -193,7 +198,8 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine deallocates the data stored inside the ScalarField_ obj
+! summary: This routine deallocates the data stored inside the
+! `ScalarField_` obj
 
 INTERFACE
 MODULE SUBROUTINE sField_DeallocateData( obj )

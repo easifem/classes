@@ -27,6 +27,7 @@ CONTAINS
 MODULE PROCEDURE setScalarFieldParam
   INTEGER( I4B ) :: ierr
   ierr = param%set( key="ScalarField/name", value=name )
+  ierr = param%set( key="ScalarField/engine", value="NATIVE_SERIAL" )
   IF( PRESENT( fieldType ) ) THEN
     ierr = param%set( key="ScalarField/fieldType", value=fieldType )
   ELSE
@@ -52,6 +53,14 @@ MODULE PROCEDURE sField_checkEssentialParam
   IF( .NOT. param%isPresent(key="ScalarField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'names should be present in param')
+  END IF
+  IF( .NOT. param%isPresent(key="ScalarField/engine") ) THEN
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'engine should be present in param')
+  END IF
+  IF( .NOT. param%isPresent(key="ScalarField/fieldType") ) THEN
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'fieldType should be present in param')
   END IF
 END PROCEDURE sField_checkEssentialParam
 

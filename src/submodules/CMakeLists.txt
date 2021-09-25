@@ -32,6 +32,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 # VectorField
 include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
+#BlockNodeField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 # AbstractMatrixField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 # MatrixField

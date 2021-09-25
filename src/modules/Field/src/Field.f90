@@ -20,6 +20,7 @@ USE AbstractField_Class
 USE AbstractNodeField_Class
 USE AbstractElementField_Class
 USE AbstractMatrixField_Class
+USE BlockNodeField_Class
 USE ScalarField_Class
 USE STScalarField_Class
 USE VectorField_Class

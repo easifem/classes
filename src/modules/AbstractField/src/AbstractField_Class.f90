@@ -37,10 +37,17 @@ USE ExceptionHandler_Class, ONLY : ExceptionHandler_
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 0
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 1
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 2
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 3
+INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 1
+INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 2
+INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
+INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
+CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
+  & [ &
+      & "NORMAL        ", &
+      & "CONSTANT      ", &
+      & "CONSTANT_SPACE", &
+      & "CONSTANT_TIME " &
+  & ]
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
