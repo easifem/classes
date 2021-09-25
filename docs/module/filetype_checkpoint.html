@@ -1,0 +1,2677 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="EASIFEM Library">
+    
+    <meta name="author" content="Vikas Sharma" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>FileType_Checkpoint &ndash; easifemClasses</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">easifemClasses </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li><a href='../page/index.html'>easifemClasses</a></li>
+      
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+        
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+               
+        
+        
+            </ul>
+        
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>FileType_Checkpoint 
+    <small>Module</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></li> 
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 1.4% of total for modules and submodules.">313 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/FileType_Checkpoint.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/filetype_checkpoint.f90.html'>FileType_Checkpoint.f90</a></li>
+    
+  
+     <li class="active">FileType_Checkpoint</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#variable-modname~13">modName</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#absints-0">Abstract Interfaces</a></h3></div>
+  <div id="absints-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#interface-checkpointfiletype_absintfc">CheckPointFileType_absintfc</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-0">Derived Types</a></h3></div>
+  <div id="types-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#type-checkpointfiletype">CheckpointFileType</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
+  <div id="funcs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-calledfrominterrupt">calledFromInterrupt</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfileext_checkpointfiletype">getFileExt_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfilename_checkpointfiletype">getFileName_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfilepath_checkpointfiletype">getFilePath_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-iseof_checkpointfiletype">isEOF_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-isopen_checkpointfiletype">isOpen_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-isread_checkpointfiletype">isRead_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-iswrite_checkpointfiletype">isWrite_CheckpointFileType</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-checkforfileinterrupt">checkForFileInterrupt</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-clear_checkpointfiletype">clear_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-fclose_checkpointfiletype">fclose_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-fdelete_checkpointfiletype">fdelete_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-fopen_checkpointfiletype">fopen_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfileparts_checkpointfiletype">getFileParts_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-init_checkpointfiletype">init_CheckPointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-seteofstat_checkpointfiletype">setEOFstat_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setexportoninterrupt">setExportOnInterrupt</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setfileext_checkpointfiletype">setFileExt_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setfilename_checkpointfiletype">setFileName_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setfilepath_checkpointfiletype">setFilePath_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setinterruptfile">setInterruptFile</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setopenstat_checkpointfiletype">setOpenStat_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setreadstat_checkpointfiletype">setReadStat_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setwritestat_checkpointfiletype">setWriteStat_CheckpointFileType</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <p>@brief Defines the base Checkpoint file type which is abstract.</p>
+<p>A checkpoint file is file type that is to be used for providing import and
+ export methods to the client. These methods are to be implemented such that
+ they &ldquo;dump&rdquo; information about the simulation to disk such that execution may
+ be halted and resumed later from the same point.</p>
+<p>The base checkpoint file type wraps either a DA32 file type or an HDF5 file
+ type which are the actual file formats and implementations used by the
+ checkpoint file. The type defines interfaces for import and export methods.
+ These are to be implemented in non-abstract extensions of this type which
+ are to define the import and export routines, specifically what data is
+ put into the file and read from the file.</p>
+<p>The abstract base checkpoint file implementation defines a generic
+ initialization method, overloads all the base file type methods, and defines
+ a clear method. In addition to this it provides a basic feature to check
+ for an &ldquo;interrupt file&rdquo; and if this file exists and then the base checkpoint
+ file may call the export routine. In addition to the interrupt file other
+ code that can handle interrupt signals from the OS may want to be utilized
+ to take advantage of conditional exports.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!</p>
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li>FileType_HDF5</li>
+    
+    <li>Strings</li>
+    
+    <li>FileType_Base</li>
+    
+    <li>ExceptionHandler</li>
+    
+    <li>IntrType</li>
+    
+    <li><a href='../module/filetype_da32.html'>FileType_DA32</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
+    
+
+    
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#variable-modname~13">modName</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#absints-1">Abstract Interfaces</a></h3></div>
+  <div id="absints-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#interface-checkpointfiletype_absintfc">CheckPointFileType_absintfc</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#types-1">Derived Types</a></h3></div>
+  <div id="types-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#type-checkpointfiletype">CheckpointFileType</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
+  <div id="funcs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-calledfrominterrupt">calledFromInterrupt</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfileext_checkpointfiletype">getFileExt_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfilename_checkpointfiletype">getFileName_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfilepath_checkpointfiletype">getFilePath_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-iseof_checkpointfiletype">isEOF_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-isopen_checkpointfiletype">isOpen_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-isread_checkpointfiletype">isRead_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-iswrite_checkpointfiletype">isWrite_CheckpointFileType</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-checkforfileinterrupt">checkForFileInterrupt</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-clear_checkpointfiletype">clear_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-fclose_checkpointfiletype">fclose_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-fdelete_checkpointfiletype">fdelete_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-fopen_checkpointfiletype">fopen_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-getfileparts_checkpointfiletype">getFileParts_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-init_checkpointfiletype">init_CheckPointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-seteofstat_checkpointfiletype">setEOFstat_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setexportoninterrupt">setExportOnInterrupt</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setfileext_checkpointfiletype">setFileExt_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setfilename_checkpointfiletype">setFileName_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setfilepath_checkpointfiletype">setFilePath_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setinterruptfile">setInterruptFile</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setopenstat_checkpointfiletype">setOpenStat_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setreadstat_checkpointfiletype">setReadStat_CheckpointFileType</a>
+      
+      <a class="list-group-item" href="../module/filetype_checkpoint.html#proc-setwritestat_checkpointfiletype">setWriteStat_CheckpointFileType</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    <section>
+    <h2>Variables</h2>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-modname~13"></span>character(len=*),</td>
+  
+  <td>private,</td>
+  <td>parameter</td><td>::</td>
+  <td><strong>modName</strong></td><td> =</td><td>'FILETYPE_CHECKPOINT'</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    </section>
+    <br>
+    
+    
+    
+    
+    
+
+    
+    <section>
+     <h2>Abstract Interfaces</h2>
+   
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-checkpointfiletype_absintfc"></span><h3>abstract interface
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Abstract interface used to declare import/export deferred methods.</p>
+  </div>
+  
+  <ul class="list-group">
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine CheckPointFileType_absintfc(thisCPF)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  </ul>
+</div>
+
+    
+    </section>
+  <br>
+    
+    
+    
+    <section>
+     <h2>Derived Types</h2>
+   
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="type-checkpointfiletype"></span><h3>type, public, ABSTRACT, extends(BaseFileType) :: <a href='../type/checkpointfiletype.html'>CheckpointFileType</a>
+    
+  </h3></div>
+  <div class="panel-body">
+    
+    
+    <p>@brief The base checkpoint file type</p><a href="../type/checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+     
+     <h4>Components</h4>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-basefile"></span>class(BaseFileType),</td>
+  
+  <td>private,</td>
+  <td>POINTER</td><td>::</td>
+  <td><strong>basefile</strong></td><td>=> </td><td>NULL()</td><td><p>The actual implementation of the checkpoint file format. It is
+either a DA32 file or an HDF5 file</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-daf"></span>type(DA32FileType),</td>
+  
+  <td>private,</td>
+  <td>POINTER</td><td>::</td>
+  <td><strong>daf</strong></td><td>=> </td><td>NULL()</td><td><p>A pointer to the basefile object&rsquo;s extended type. It is associated
+when DA32 file format is being used for the checkpoint file.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-export_on_interrupt"></span>logical(kind=SBK),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>export_on_interrupt</strong></td><td> =</td><td>.FALSE.</td><td><p>Indicates whether or not exportFile is to be called when
+an interrupt signal is caught (not yet active) or when the interrupt
+file is detected.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-h5f"></span>type(HDF5FileType),</td>
+  
+  <td>private,</td>
+  <td>POINTER</td><td>::</td>
+  <td><strong>h5f</strong></td><td>=> </td><td>NULL()</td><td><p>A pointer to the basefile object&rsquo;s extended type. It is associated
+when HDF5 file format is being used for the checkpoint file.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-interrupt_file"></span>type(StringType),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>interrupt_file</strong></td><td></td><td></td><td><p>The name of the file to signal an interrupt.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-interrupted"></span>logical(kind=SBK),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>interrupted</strong></td><td> =</td><td>.FALSE.</td><td><p>Logical to signal if the export routine was called from an interrupt
+or called directly. This is to allow implementations of export to
+know if it can make certain assumptions about the state of the program
+or not.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-isinit"></span>logical(kind=SBK),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>isInit</strong></td><td> =</td><td>.FALSE.</td><td><p>Initialization status for this file</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-version"></span>character(len=3),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>version</strong></td><td> =</td><td>''</td><td><p>The version of the checkpoint file.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+     
+     
+          
+     
+     <h4>Type-Bound Procedures</h4>
+      <table class="table table-striped varlist">
+      <tbody>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-calledfrominterrupt'>calledFromInterrupt</a></strong>  </td>
+       <td><p>@copybrief FileType_Checkpoint::calledFromInterrupt
+@copydetails FileType_Checkpoint::calledFromInterrupt</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-checkforfileinterrupt'>checkForFileInterrupt</a></strong>  </td>
+       <td><p>@copybrief FileType_Checkpoint::checkForFileInterrupt
+@copydetails FileType_Checkpoint::checkForFileInterrupt</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-clear'>clear</a></strong>  => clear_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::clear_CheckpointFileType
+@copydetails FileType_Checkpoint::clear_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure(CheckPointFileType_absintfc), public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-exportfile'>exportFile</a></strong>  </td>
+       <td><p>Interface declaration for export method</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-fclose'>fclose</a></strong>  => fclose_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::fclose_CheckpointFileType
+@copydetails FileType_Checkpoint::fclose_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-fdelete'>fdelete</a></strong>  => fdelete_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::fdelete_CheckpointFileType
+@copydetails FileType_Checkpoint::fdelete_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-fopen'>fopen</a></strong>  => fopen_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::fopen_CheckpointFileType
+@copydetails FileType_Checkpoint::fopen_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-getfileext'>getFileExt</a></strong>  => getFileExt_CheckpointFileType </td>
+       <td><p>@copybrief FileType_CheckpointFile::getFileExt_CheckpointFileType
+@copydetails FileType_CheckpointFile::getFileExt_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-getfilename'>getFileName</a></strong>  => getFileName_CheckpointFileType </td>
+       <td><p>@copybrief FileType_CheckpointFile::getFileName_CheckpointFileType
+@copydetails FileType_CheckpointFile::getFileName_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-getfileparts'>getFileParts</a></strong>  => getFileParts_CheckpointFileType </td>
+       <td><p>@copybrief FileType_CheckpointFile::getFileParts_CheckpointFileType
+@copydetails FileType_CheckpointFile::getFileParts_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-getfilepath'>getFilePath</a></strong>  => getFilePath_CheckpointFileType </td>
+       <td><p>@copybrief FileType_CheckpointFile::getFilePath_CheckpointFileType
+@copydetails FileType_CheckpointFile::getFilePath_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure(CheckPointFileType_absintfc), public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-importfile'>importFile</a></strong>  </td>
+       <td><p>Interface declaration for import method</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-initbase'>initBase</a></strong>  => init_CheckPointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::init_CheckPointFileType
+@copydetails FileType_Checkpoint::init_CheckPointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-iseof'>isEOF</a></strong>  => isEOF_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::isEOF_CheckpointFileType
+@copydetails FileType_Checkpoint::isEOF_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-isopen'>isOpen</a></strong>  => isOpen_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::isOpen_CheckpointFileType
+@copydetails FileType_Checkpoint::isOpen_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-isread'>isRead</a></strong>  => isRead_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::isRead_CheckpointFileType
+@copydetails FileType_Checkpoint::isRead_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-iswrite'>isWrite</a></strong>  => isWrite_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::isWrite_CheckpointFileType
+@copydetails FileType_Checkpoint::isWrite_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-seteofstat'>setEOFstat</a></strong>  => setEOFstat_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setEOFStat_CheckpointFileType
+@copydetails FileType_Checkpoint::setEOFStat_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setexportoninterrupt'>setExportOnInterrupt</a></strong>  </td>
+       <td><p>@copybrief FileType_Checkpoint::setExportOnInterrupt
+@copydetails FileType_Checkpoint::setExportOnInterrupt</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setfileext'>setFileExt</a></strong>  => setFileExt_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setFileExt_CheckpointFileType
+@copydetails FileType_Checkpoint::setFileExt_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setfilename'>setFileName</a></strong>  => setFileName_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setFileName_CheckpointFileType
+@copydetails FileType_Checkpoint::setFileName_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setfilepath'>setFilePath</a></strong>  => setFilePath_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setFilePath_CheckpointFileType
+@copydetails FileType_Checkpoint::setFilePath_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setinterruptfile'>setInterruptFile</a></strong>  </td>
+       <td><p>@copybrief FileType_Checkpoint::setInterruptFile
+@copydetails FileType_Checkpoint::setInterruptFile</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setopenstat'>setOpenStat</a></strong>  => setOpenStat_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setOpenStat_CheckpointFileType
+@copydetails FileType_Checkpoint::setOpenStat_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setreadstat'>setReadStat</a></strong>  => setReadStat_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setReadStat_CheckpointFileType
+@copydetails FileType_Checkpoint::setReadStat_CheckpointFileType</p></td></tr>
+      
+       <tr><td>procedure, public, PASS :: <strong><a href='../type/checkpointfiletype.html#boundprocedure-setwritestat'>setWriteStat</a></strong>  => setWriteStat_CheckpointFileType </td>
+       <td><p>@copybrief FileType_Checkpoint::setWriteStat_CheckpointFileType
+@copydetails FileType_Checkpoint::setWriteStat_CheckpointFileType</p></td></tr>
+      
+       </tbody>
+       </table>
+     
+  </div>
+</div>
+
+     
+    </section>
+  <br>
+    
+    
+     
+    <section>
+    <h2>Functions</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-calledfrominterrupt"></span><h3>
+private pure function <a href='../proc/calledfrominterrupt.html'>calledFromInterrupt</a>(thisCPF) result(bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Returns the status of the interrupted attribute
+@param thisCPF the checkpoint file object
+@returns logical indicating if the invocation of export was called through
+         an interrupt</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=SBK)
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-getfileext_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/getfileext_checkpointfiletype.html'>getFileExt_CheckpointFileType</a>(file) result(ext)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Get the file name extension of a file object
+@param file the file object
+@param ext output string with the filename extension (including the &lsquo;.&rsquo;)</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=:),
+  ALLOCATABLE</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-getfilename_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/getfilename_checkpointfiletype.html'>getFileName_CheckpointFileType</a>(file) result(fname)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Get the file name of a file object.
+@param file the file object
+@param fname output string with the filename (excludes extension)</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=:),
+  ALLOCATABLE</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-getfilepath_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/getfilepath_checkpointfiletype.html'>getFilePath_CheckpointFileType</a>(file) result(path)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Get the path of a file object.
+@param file the file object
+@param path output string containing just the path (includes file separator
+       at the end)</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=:),
+  ALLOCATABLE</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-iseof_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/iseof_checkpointfiletype.html'>isEOF_CheckpointFileType</a>(file) result(bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Function to query if the end of file has been reached.
+@param file the file object
+@returns bool a logical for the end of file status</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=SBK)
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-isopen_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/isopen_checkpointfiletype.html'>isOpen_CheckpointFileType</a>(file) result(bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Function to query if the file is currently open
+@param file the file object
+@returns bool a logical for the open status</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=SBK)
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-isread_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/isread_checkpointfiletype.html'>isRead_CheckpointFileType</a>(file) result(bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Function to query if the file was opened for reading.
+@param file the file object
+@returns bool a logical for the read status</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=SBK)
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-iswrite_checkpointfiletype"></span><h3>
+private pure function <a href='../proc/iswrite_checkpointfiletype.html'>isWrite_CheckpointFileType</a>(file) result(bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Function to query if the file was opened for writing.
+@param file the file object
+@returns bool a logical for the write status</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=SBK)
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    </section>
+    <br>
+    
+
+    
+    <section>
+    <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-checkforfileinterrupt"></span><h3>
+private subroutine <a href='../proc/checkforfileinterrupt.html'>checkForFileInterrupt</a>(thisCPF)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Checks for the existence of the interrupt file
+@param thisCPF the checkpoint file object</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-clear_checkpointfiletype"></span><h3>
+public subroutine <a href='../proc/clear_checkpointfiletype.html'>clear_CheckpointFileType</a>(thisCPF)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Clears the checkpoint file object
+@param thisCPF the checkpoint file object</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-fclose_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/fclose_checkpointfiletype.html'>fclose_CheckpointFileType</a>(file)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief The file close procedure for the checkpoint file type.
+@param file the checkpoint file object</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-fdelete_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/fdelete_checkpointfiletype.html'>fdelete_CheckpointFileType</a>(file)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief The file delete procedure for the checkpoint file type.
+@param file the checkpoint file object</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-fopen_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/fopen_checkpointfiletype.html'>fopen_CheckpointFileType</a>(file)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief The file open procedure for the checkpoint file type.
+@param file the checkpoint file object</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-getfileparts_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/getfileparts_checkpointfiletype.html'>getFileParts_CheckpointFileType</a>(file, path, fname, ext)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Get the path, filename, and extension of a file object.
+@param file the file object
+@param path output string containing just the path (includes file separator
+       at the end)
+@param fname output string with the filename
+@param ext output string with the filename extension (including the &lsquo;.&rsquo;)</p><a href="../proc/getfileparts_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(StringType),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(StringType),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>fname</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(StringType),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ext</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-init_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/init_checkpointfiletype.html'>init_CheckPointFileType</a>(thisCPF, myBaseFile)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Initializes the base checkpoint file type from an initialized base
+       file type
+@param thisCPF the checkpoint file object to initialize
+@param myBaseFile the base file type to use for initialization</p><a href="../proc/init_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(BaseFileType),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>POINTER</td><td>::</td>
+  <td><strong>myBaseFile</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-seteofstat_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/seteofstat_checkpointfiletype.html'>setEOFstat_CheckpointFileType</a>(file, bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the status of whether or not the end of file record
+has been reached.</p><a href="../proc/seteofstat_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=SBK),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>bool</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setexportoninterrupt"></span><h3>
+private subroutine <a href='../proc/setexportoninterrupt.html'>setExportOnInterrupt</a>(thisCPF, bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Set the logical on whether or not to export the checkpoint file when
+       an interrupt is encountered.
+@param thisCPF the checkpoint file object
+@parm bool the value to use for exporting on interrupts</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=SBK),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>bool</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setfileext_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/setfileext_checkpointfiletype.html'>setFileExt_CheckpointFileType</a>(file, extstr)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the value for the file name extension</p><a href="../proc/setfileext_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>extstr</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setfilename_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/setfilename_checkpointfiletype.html'>setFileName_CheckpointFileType</a>(file, namestr)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the value for the file name</p><a href="../proc/setfilename_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>namestr</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setfilepath_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/setfilepath_checkpointfiletype.html'>setFilePath_CheckpointFileType</a>(file, pathstr)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the value for the path of the file name</p><a href="../proc/setfilepath_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>pathstr</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setinterruptfile"></span><h3>
+private subroutine <a href='../proc/setinterruptfile.html'>setInterruptFile</a>(thisCPF, fname)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Set the name of the interrupt file to use when checking for
+       interrupts.
+@param thisCPF the checkpoint file object
+@param fname the name to use for the interrupt file</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>thisCPF</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>fname</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setopenstat_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/setopenstat_checkpointfiletype.html'>setOpenStat_CheckpointFileType</a>(file, bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the value for when the file is open or closed.</p><a href="../proc/setopenstat_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=SBK),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>bool</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setreadstat_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/setreadstat_checkpointfiletype.html'>setReadStat_CheckpointFileType</a>(file, bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the value for the status of whether or not the file will
+be opened for reading.</p><a href="../proc/setreadstat_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=SBK),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>bool</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setwritestat_checkpointfiletype"></span><h3>
+private subroutine <a href='../proc/setwritestat_checkpointfiletype.html'>setWriteStat_CheckpointFileType</a>(file, bool)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@brief Sets the value for the status of whether or not the file will
+be opened for writing.</p><a href="../proc/setwritestat_checkpointfiletype.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/checkpointfiletype.html'>CheckpointFileType</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>file</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=SBK),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>bool</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    </section>    
+    <br>
+    
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-6"><p>easifemClasses was developed by Vikas Sharma<br>&copy; 2021 <a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a>
+                                          </p>
+        </div>
+        <div class="col-xs-6 col-md-6">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+             on 2021-09-26 00:57  
+            
+          </p>
+        </div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+    
+  </body>
+</html>

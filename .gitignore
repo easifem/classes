@@ -18,7 +18,7 @@
 *.msh
 *Pmat.txt
 vscode-settings
-docs/
+# docs/
 media/
 include/
 lib/

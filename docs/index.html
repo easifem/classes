@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="EASIFEM Library">
+    
+    <meta name="author" content="Vikas Sharma" >
+    <link rel="icon" href="./favicon.png">
+
+    <title> easifemClasses </title>
+
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/pygments.css" rel="stylesheet">
+    <link href="./css/font-awesome.min.css" rel="stylesheet">
+    <link href="./css/local.css" rel="stylesheet">
+    
+    <link  href="./tipuesearch/tipuesearch.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="./js/jquery-2.1.3.min.js"></script>
+    <script src="./js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">easifemClasses </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li><a href='./page/index.html'>easifemClasses</a></li>
+      
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="./lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="./lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="./lists/procedures.html">Procedures</a></li>
+        
+        
+            <li><a href="./lists/absint.html">Abstract Interfaces</a></li>
+               
+            <li><a href="./lists/types.html">Derived Types</a></li>
+        
+               
+        
+        
+            </ul>
+        
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="./lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="./lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="./lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="./lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="./lists/types.html">Derived Types</a></li>
+
+
+
+
+          </ul>
+        
+        <form action="./search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <p>EASIFEM Library</p>
+        	 
+	<p> Find us on&hellip;</p>
+        <p>
+			 
+          <a class="btn btn-lg btn-primary" href="https://github.com/vickysharma0812" role="button">GitHub</a>
+			 
+			 
+			 
+			 
+			 
+          <a class="btn btn-lg btn-primary" href="http://www.easifem.com" role="button">The Web</a>
+			 
+	         
+			 
+          <a class="btn btn-lg btn-danger" style="float:right" href="https://github.com/vickysharma0812" role="button">Download the Source</a>
+			 
+        </p>
+      </div>
+
+      <div class="row" id='text'>
+		  
+        <div class="col-md-8">
+		  
+          <h1>easifemClasses</h1>
+          <h1 id="easifem">EASIFEM</h1>
+<h2 id="introduction">Introduction</h2>
+<h3 id="about">About</h3>
+<p>EASIFEM stands for Expandable And Scalable infrastructure for Finite Element Method. It is a framework for developing code for finite element method by using modern fortran. The framework has been developed in <a href="https://fortran-lang.org/">Modern-Fortran</a> programming language. The library is still in the development stage. EASIFEM is written both in OOP and Multiple dispatch approach.</p>
+<h3 id="capabilities">Capabilities</h3>
+<p>The goal of EASIFEM is to ease the coding of FEM by using fortran language. The library is developed for developing code for complex problems related to multiphysics and multiphase problems. EASIFEM will facilitate an environment where new FEM can be implemented easily while decreasing the time required for writing the code.</p>
+<p>Dr Vikas Sharma, the creator EASIFEM conducts his research in the area of computational geomechanics. Therefore, so far, easifem has been used to develop applications related to dam-reservoir-soil interactions, seismic cracking of dams, nonlinear seismic behavior of earthdams, high-order accurate solvers for transient problems, space-time finite element methods for moving boundary problems, simulation of freezing and thawing in frozen soils, among others.</p>
+<p>EASIFEM describes all types of datatype required for coding FEM, such as string, file, vector, array, degrees of freedom, indices, mesh, nodes, finite elements, domain, shape functions, quadrature rules, linear solver, sparse and dense matrix, iterative and non iterative solvers, among others. EASIFEM also have a strong interface with the <a href="https://gmsh.info/">GMSH</a> for pre- and post- processing. In addition, it provides great interface with <a href="https://www.paraview.org/">PARAVIEW</a> for visualization of results.</p>
+<p>In future, EASIFEM, will also act as a platform to use exisiting finite element libraries in effortless manner. The vision of EASIFEM will always be  to keep  FEM programming easy and ellegant.</p>
+<h3 id="bug-reporting">Bug Reporting</h3>
+<h3 id="changelog">ChangeLog</h3>
+<h3 id="license">License</h3>
+<h3 id="todo">ToDo</h3>
+<h2 id="installation">Installation</h2>
+<h3 id="installing">Installing</h3>
+<h2 id="usage">Usage</h2>
+<h2 id="structure">Structure</h2>
+<h3 id="base">Base</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./pages/BoundingBox.md">BoundingBox</a></td>
+<td><a href="#">Buffer</a></td>
+<td><a href="#">DOF</a></td>
+</tr>
+<tr>
+<td><a href="#">ElemShapeData</a></td>
+<td><a href="#">FEMatrix</a></td>
+<td><a href="#">FEVariable</a></td>
+</tr>
+<tr>
+<td><a href="#">File</a></td>
+<td><a href="#">IndexValue</a></td>
+<td><a href="#">IterationData</a></td>
+</tr>
+<tr>
+<td><a href="#">KeyValue</a></td>
+<td><a href="#">QuadraturePoint</a></td>
+<td><a href="#">Random</a></td>
+</tr>
+<tr>
+<td><a href="#">Tensor</a></td>
+<td><a href="#">ReferenceElement</a></td>
+<td><a href="#">RealMatrix</a></td>
+</tr>
+<tr>
+<td><a href="#">SparseMatrix</a></td>
+<td><a href="#">IntVector</a></td>
+<td><a href="#">RealVector</a></td>
+</tr>
+<tr>
+<td><a href="#">AbstractArray</a></td>
+<td><a href="#">AbstractMatrix</a></td>
+<td><a href="#">AbstractVector</a></td>
+</tr>
+<tr>
+<td><a href="#">BaseMethod</a></td>
+<td><a href="#">BaseType</a></td>
+<td><a href="#">BlasInterface</a></td>
+</tr>
+<tr>
+<td><a href="#">ErrorHandling</a></td>
+<td><a href="#">GlobalData</a></td>
+<td><a href="#">IO</a></td>
+</tr>
+<tr>
+<td><a href="#">Utility</a></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li><a href="./pages/String.md">String</a></li>
+</ul>
+<h2 id="contributing">Contributing</h2>
+<h2 id="credits">Credits</h2>
+<!-- FORD features two macros to make it easier to provide intradocumentation links. These are `.` which gets replaced by the project URL, and `./media`, which gets replaced by the (absolute) path to the media directory in the output. you can also use `favicon:` -->
+        </div>
+		  
+        <div class="col-md-4">
+	  <div class="well">
+          <h2>Developer Info</h2>
+          <h4>Vikas Sharma</h4>
+          
+          <p>Ph. D.
+Graduate School of Agriculture, Kyoto University,
+Kyoto, Japan</p>
+			   
+            <div class="text-center"><div class="btn-group" role="group">
+              
+              <a class="btn btn-lg btn-primary" href="mailto:vickysharma0812@gmail.com"><i class="fa fa-envelope fa-lg"></i></a>
+              
+              
+              
+              <a class="btn btn-lg btn-primary" href="https://vickysharma0812.github.io/"><i class="fa fa-github fa-lg"></i></a>
+              
+              
+				  
+              
+              
+              
+              
+            </div></div>
+            
+       </div>
+       </div>
+       
+      </div>
+      
+      
+      
+      
+      
+      
+		
+        
+      <div class="row">
+        
+        <div class="col-xs-6 col-sm-3">
+              <h3>Source Files</h3>
+              <ul>
+                    <li><a href='./sourcefile/abstractbc_class.f90.html'>AbstractBC_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractelementfield_class.f90.html'>AbstractElementField_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractfield_class.f90.html'>AbstractField_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractfile_class.f90.html'>AbstractFile_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractlinsolver_class.f90.html'>AbstractLinSolver_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractmatrixfield_class.f90.html'>AbstractMatrixField_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractnodefield_class.f90.html'>AbstractNodeField_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/abstractvector_class.f90.html'>AbstractVector_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/blocknodefield_class.f90.html'>BlockNodeField_Class.f90</a></li>
+                  
+                    <li><a href='./sourcefile/blockscalarfield_class.f90.html'>BlockScalarField_Class.f90</a></li>
+                  </ul>
+          </div>
+        
+          
+		  <div class="col-xs-6 col-sm-3">
+              <h3>Modules</h3>
+              <ul>
+                    <li><a href='./module/abstractbc_class.html'>AbstractBC_Class</a></li>
+                  
+                    <li><a href='./module/abstractelementfield_class.html'>AbstractElementField_Class</a></li>
+                  
+                    <li><a href='./module/abstractfield_class.html'>AbstractField_Class</a></li>
+                  
+                    <li><a href='./module/abstractfile_class.html'>AbstractFile_Class</a></li>
+                  
+                    <li><a href='./module/abstractlinsolver_class.html'>AbstractLinSolver_Class</a></li>
+                  
+                    <li><a href='./module/abstractmatrixfield_class.html'>AbstractMatrixField_Class</a></li>
+                  
+                    <li><a href='./module/abstractnodefield_class.html'>AbstractNodeField_Class</a></li>
+                  
+                    <li><a href='./module/abstractvector_class.html'>AbstractVector_Class</a></li>
+                  
+                    <li><a href='./module/blocknodefield_class.html'>BlockNodeField_Class</a></li>
+                  
+                    <li><a href='./module/blockscalarfield_class.html'>BlockScalarField_Class</a></li>
+                  </ul>
+          </div>
+          
+          
+		  <div class="col-xs-6 col-sm-3">
+              <h3>Procedures</h3>
+              <ul>
+                    <li><a href='./interface/addsurrogate.html'>addSurrogate</a></li>
+                  
+                    <li><a href='./interface/addsurrogate_dirichletbc.html'>addSurrogate_DirichletBC</a></li>
+                  
+                    <li><a href='./interface/addsurrogate_domain.html'>addSurrogate_Domain</a></li>
+                  
+                    <li><a href='./interface/addsurrogate_mesh.html'>addSurrogate_mesh</a></li>
+                  
+                    <li><a href='./interface/afile_addsurrogate.html'>aFile_addSurrogate</a></li>
+                  
+                    <li><a href='./interface/afile_deallocatedata.html'>aFile_deallocateData</a></li>
+                  
+                    <li><a href='./interface/afile_getfileext.html'>aFile_getFileExt</a></li>
+                  
+                    <li><a href='./interface/afile_getfilename.html'>aFile_getFileName</a></li>
+                  
+                    <li><a href='./interface/afile_getfileparts.html'>aFile_getFileParts</a></li>
+                  
+                    <li><a href='./interface/afile_getfilepath.html'>aFile_getFilePath</a></li>
+                  </ul>
+          </div>
+          
+          
+		  <div class="col-xs-6 col-sm-3">
+              <h3>Derived Types</h3>
+              <ul>
+                    <li><a href='./type/abstractbc_.html'>AbstractBC_</a></li>
+                  
+                    <li><a href='./type/abstractbcpointer_.html'>AbstractBCPointer_</a></li>
+                  
+                    <li><a href='./type/abstractelementfield_.html'>AbstractElementField_</a></li>
+                  
+                    <li><a href='./type/abstractfield_.html'>AbstractField_</a></li>
+                  
+                    <li><a href='./type/abstractfile_.html'>AbstractFile_</a></li>
+                  
+                    <li><a href='./type/abstractfilepointer_.html'>AbstractFilePointer_</a></li>
+                  
+                    <li><a href='./type/abstractlinsolver_.html'>AbstractLinSolver_</a></li>
+                  
+                    <li><a href='./type/abstractlinsolverpointer_.html'>AbstractLinSolverPointer_</a></li>
+                  
+                    <li><a href='./type/abstractmatrixfield_.html'>AbstractMatrixField_</a></li>
+                  
+                    <li><a href='./type/abstractnodefield_.html'>AbstractNodeField_</a></li>
+                  </ul>
+          </div>
+          
+      </div>
+      
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-6"><p>easifemClasses was developed by Vikas Sharma<br>&copy; 2021 <a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a>
+                                          </p>
+        </div>
+        <div class="col-xs-6 col-md-6">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+             on 2021-09-26 00:57  
+            
+          </p>
+        </div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="./js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="./js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    <script src="./tipuesearch/tipuesearch_content.js"></script>
+    <script src="./tipuesearch/tipuesearch_set.js"></script>
+    <script src="./tipuesearch/tipuesearch.js"></script>
+    
+    
+  </body>
+</html>
