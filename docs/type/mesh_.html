@@ -1,0 +1,5944 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="EASIFEM Library">
+    
+    <meta name="author" content="Vikas Sharma" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>Mesh_ &ndash; easifemClasses </title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">easifemClasses </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li><a href='../page/index.html'>easifemClasses</a></li>
+      
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+        
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+               
+        
+        
+            </ul>
+        
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>Mesh_
+    <small>Derived Type</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+    <li><i class="fa fa-calendar-o"></i> 13 June 2021</li>
+     
+     
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></li> 
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title="<p> 3.6% of total for derived types.</p>Including implementation: 93 statements,  0.7% of total for derived types.">88 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/Mesh_Class.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/mesh_class.f90.html'>Mesh_Class.f90</a></li>
+    
+     <li><a href='../module/mesh_class.html'>Mesh_Class</a></li>
+    
+  
+     <li class="active">Mesh_</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-facetelements">FacetElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-local_nptrs">Local_Nptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-x">X</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-y">Y</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-z">Z</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-boundingentity~2">boundingEntity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-elemtype~2">elemType</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-elementdata">elementData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isboundarydatainitiated">isBoundaryDataInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-iselementtoelementsinitiated">isElementToElementsInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isinitiated~2">isInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isnodetoelementsinitiated">isNodeToElementsInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isnodetonodesinitiated">isNodeToNodesInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-local_elemnumber">local_elemNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxelemnum">maxElemNum</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxnptrs">maxNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxx~2">maxX</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxy~2">maxY</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxz~2">maxZ</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minelemnum">minElemNum</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minnptrs">minNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minx~2">minX</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-miny~2">minY</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minz~2">minZ</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-nodedata">nodeData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-nsd~2">nsd</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-physicaltag~2">physicalTag</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-readfromfile">readFromFile</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-refelem">refelem</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-telements">tElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-tintnodes">tIntNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-tnodes">tNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-uid~2">uid</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-xidim">xidim</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#fins-0">Finalization Procedures</a></h3></div>
+  <div id="fins-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../type/mesh_.html#finalproc-mesh_final">mesh_final</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-0">Type-Bound Procedures</a></h3></div>
+  <div id="boundprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-deallocatedata~10">DeallocateData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-display~8">Display</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-export~3">Export</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-exporttovtk">ExportToVTK</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-import~3">Import</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiate~6">Initiate</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiateboundarydata">InitiateBoundaryData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiateelementtoelements">InitiateElementToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiatenodetoelements">InitiateNodeToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiatenodetonodes">InitiateNodeToNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-size">Size</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-addsurrogate~2">addSurrogate</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundaryelementdata">getBoundaryElementData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundarynptrs">getBoundaryNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundingbox">getBoundingBox</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundingentity">getBoundingEntity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getconnectivity">getConnectivity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getelementtoelements">getElementToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getglobalelemnumber">getGlobalElemNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getglobalnodenumber">getGlobalNodeNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getinternalnptrs">getInternalNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getlocalelemnumber">getLocalElemNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getlocalnodenumber">getLocalNodeNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnodecoord">getNodeCoord</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnodetoelements">getNodeToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnodetonodes">getNodeToNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnptrs">getNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getrefelempointer">getRefElemPointer</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalboundaryelements">getTotalBoundaryElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalboundarynodes">getTotalBoundaryNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalelements~2">getTotalElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalinternalnodes">getTotalInternalNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalnodes">getTotalNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-isboundaryelement">isBoundaryElement</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-isboundarynode">isBoundaryNode</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-iselementpresent">isElementPresent</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-isnodepresent">isNodePresent</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalelemnumber_1">mesh_getGlobalElemNumber_1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalelemnumber_2">mesh_getGlobalElemNumber_2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalnodenumber1">mesh_getGlobalNodeNumber1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalnodenumber2">mesh_getGlobalNodeNumber2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalelemnumber_1">mesh_getLocalElemNumber_1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalelemnumber_2">mesh_getLocalElemNumber_2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalnodenumber1">mesh_getLocalNodeNumber1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalnodenumber2">mesh_getLocalNodeNumber2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-setsparsity~6">setSparsity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-setsparsity1">setSparsity1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-setsparsity2">setSparsity2</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2>type, public :: Mesh_</h2>
+    <h3 id="introduction">Introduction</h3>
+<p>This datatype contains the mesh data. To be added.</p>
+    
+    
+    
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-facetelements">FacetElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-local_nptrs">Local_Nptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-x">X</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-y">Y</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-z">Z</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-boundingentity~2">boundingEntity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-elemtype~2">elemType</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-elementdata">elementData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isboundarydatainitiated">isBoundaryDataInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-iselementtoelementsinitiated">isElementToElementsInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isinitiated~2">isInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isnodetoelementsinitiated">isNodeToElementsInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-isnodetonodesinitiated">isNodeToNodesInitiated</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-local_elemnumber">local_elemNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxelemnum">maxElemNum</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxnptrs">maxNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxx~2">maxX</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxy~2">maxY</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-maxz~2">maxZ</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minelemnum">minElemNum</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minnptrs">minNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minx~2">minX</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-miny~2">minY</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-minz~2">minZ</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-nodedata">nodeData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-nsd~2">nsd</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-physicaltag~2">physicalTag</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-readfromfile">readFromFile</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-refelem">refelem</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-telements">tElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-tintnodes">tIntNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-tnodes">tNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-uid~2">uid</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#variable-xidim">xidim</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#fins-1">Finalization Procedures</a></h3></div>
+  <div id="fins-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../type/mesh_.html#finalproc-mesh_final">mesh_final</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#boundprocs-1">Type-Bound Procedures</a></h3></div>
+  <div id="boundprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-deallocatedata~10">DeallocateData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-display~8">Display</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-export~3">Export</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-exporttovtk">ExportToVTK</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-import~3">Import</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiate~6">Initiate</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiateboundarydata">InitiateBoundaryData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiateelementtoelements">InitiateElementToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiatenodetoelements">InitiateNodeToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-initiatenodetonodes">InitiateNodeToNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-size">Size</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-addsurrogate~2">addSurrogate</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundaryelementdata">getBoundaryElementData</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundarynptrs">getBoundaryNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundingbox">getBoundingBox</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getboundingentity">getBoundingEntity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getconnectivity">getConnectivity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getelementtoelements">getElementToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getglobalelemnumber">getGlobalElemNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getglobalnodenumber">getGlobalNodeNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getinternalnptrs">getInternalNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getlocalelemnumber">getLocalElemNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getlocalnodenumber">getLocalNodeNumber</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnodecoord">getNodeCoord</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnodetoelements">getNodeToElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnodetonodes">getNodeToNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getnptrs">getNptrs</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-getrefelempointer">getRefElemPointer</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalboundaryelements">getTotalBoundaryElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalboundarynodes">getTotalBoundaryNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalelements~2">getTotalElements</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalinternalnodes">getTotalInternalNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-gettotalnodes">getTotalNodes</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-isboundaryelement">isBoundaryElement</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-isboundarynode">isBoundaryNode</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-iselementpresent">isElementPresent</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-isnodepresent">isNodePresent</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalelemnumber_1">mesh_getGlobalElemNumber_1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalelemnumber_2">mesh_getGlobalElemNumber_2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalnodenumber1">mesh_getGlobalNodeNumber1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getglobalnodenumber2">mesh_getGlobalNodeNumber2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalelemnumber_1">mesh_getLocalElemNumber_1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalelemnumber_2">mesh_getLocalElemNumber_2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalnodenumber1">mesh_getLocalNodeNumber1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-mesh_getlocalnodenumber2">mesh_getLocalNodeNumber2</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-setsparsity~6">setSparsity</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-setsparsity1">setSparsity1</a>
+      
+      <a class="list-group-item" href="../type/mesh_.html#boundprocedure-setsparsity2">setSparsity2</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+    <section>
+    <h2>Components</h2>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-facetelements"></span>type(ReferenceElement_),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>FacetElements</strong>(:)</td><td></td><td></td><td><p>Facet Elements in the reference element</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-local_nptrs"></span>integer(kind=I4B),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>Local_Nptrs</strong>(:)</td><td></td><td></td><td><p>Returns local node number from a global node number
+Its length is from 1 to maxNptrs
+Helpul in finding if a global node is present inside the mesh or not</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-x"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>X</strong></td><td> =</td><td>0.0</td><td><p>x coorindate of centroid</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-y"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>Y</strong></td><td> =</td><td>0.0</td><td><p>y coordinate of centroid</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-z"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>Z</strong></td><td> =</td><td>0.0</td><td><p>z coordinate of centroid</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-boundingentity~2"></span>integer(kind=I4B),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>boundingEntity</strong>(:)</td><td></td><td></td><td><p>Bounding entity numbers of the current entity</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-elemtype~2"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>elemType</strong></td><td> =</td><td>0</td><td><p>type of element present inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-elementdata"></span>type(<a href='../type/elemdata_.html'>ElemData_</a>),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>elementData</strong>(:)</td><td></td><td></td><td><p>element data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-isboundarydatainitiated"></span>logical(kind=LGT),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>isBoundaryDataInitiated</strong></td><td> =</td><td>.FALSE.</td><td><p>Boundary data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-iselementtoelementsinitiated"></span>logical(kind=LGT),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>isElementToElementsInitiated</strong></td><td> =</td><td>.FALSE.</td><td><p>Element to elements mapping</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-isinitiated~2"></span>logical(kind=LGT),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>isInitiated</strong></td><td> =</td><td>.FALSE.</td><td><p>logical flag denoting for whether mesh data is initiated or not</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-isnodetoelementsinitiated"></span>logical(kind=LGT),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>isNodeToElementsInitiated</strong></td><td> =</td><td>.FALSE.</td><td><p>Node to elements mapping</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-isnodetonodesinitiated"></span>logical(kind=LGT),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>isNodeToNodesInitiated</strong></td><td> =</td><td>.FALSE.</td><td><p>Node to nodes mapping</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-local_elemnumber"></span>integer(kind=I4B),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>local_elemNumber</strong>(:)</td><td></td><td></td><td><p>List of local element numbers, the lowerbound is <code>minElemNum</code>
+and upper bound is <code>maxElemNum</code>. In this way, local_elemNumber(iel)
+returns the local element number of global element number iel.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-maxelemnum"></span>integer(kind=I4B),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>maxElemNum</strong></td><td> =</td><td>0</td><td><p>largest element number present inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-maxnptrs"></span>integer(kind=I4B),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>maxNptrs</strong></td><td> =</td><td>0</td><td><p>largest node number present inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-maxx~2"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>maxX</strong></td><td> =</td><td>0.0</td><td><p>maximum value of x coordinate</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-maxy~2"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>maxY</strong></td><td> =</td><td>0.0</td><td><p>maximum value of y coordinate</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-maxz~2"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>maxZ</strong></td><td> =</td><td>0.0</td><td><p>maximum value of z coordinate</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-minelemnum"></span>integer(kind=I4B),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>minElemNum</strong></td><td> =</td><td>0</td><td><p>minimum element number present inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-minnptrs"></span>integer(kind=I4B),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>minNptrs</strong></td><td> =</td><td>0</td><td><p>minimum node number present inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-minx~2"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>minX</strong></td><td> =</td><td>0.0</td><td><p>minimum value of x coordinate</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-miny~2"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>minY</strong></td><td> =</td><td>0.0</td><td><p>minimum value of y coordinate</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-minz~2"></span>real(kind=DFP),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>minZ</strong></td><td> =</td><td>0.0</td><td><p>minimum value of z coordinate</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nodedata"></span>type(<a href='../type/nodedata_.html'>NodeData_</a>),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>nodeData</strong>(:)</td><td></td><td></td><td><p>Node data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nsd~2"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>nsd</strong></td><td> =</td><td>0</td><td><p>number of spatial dimension of the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-physicaltag~2"></span>integer(kind=I4B),</td>
+  
+  <td>private,</td>
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>physicalTag</strong>(:)</td><td></td><td></td><td><p>Physical entities associated with the current entity (mesh)</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-readfromfile"></span>logical(kind=LGT),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>readFromFile</strong></td><td> =</td><td>.TRUE.</td><td><p>True if the mesh is read from a file</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-refelem"></span>class(ReferenceElement_),</td>
+  
+  <td>private,</td>
+  <td>POINTER</td><td>::</td>
+  <td><strong>refelem</strong></td><td>=> </td><td>NULL()</td><td><p>Reference element of the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-telements"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>tElements</strong></td><td> =</td><td>0</td><td><p>total number of elements present inside the mesh
+It is the size of elemNumber vector</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tintnodes"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>tIntNodes</strong></td><td> =</td><td>0</td><td><p>total number of internal nodes inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tnodes"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>tNodes</strong></td><td> =</td><td>0</td><td><p>total number of nodes present inside the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-uid~2"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>uid</strong></td><td> =</td><td>0</td><td><p>Unique id of the mesh</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-xidim"></span>integer(kind=I4B),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>xidim</strong></td><td> =</td><td>0</td><td><p>xidimension of elements present inside the mesh</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    </section>
+    <br>
+    
+    
+    
+    
+    
+    <section>
+    <h2>Finalization Procedures</h2>
+     
+         
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="finalproc-mesh_final"></span><h3>final :: <strong>mesh_final</strong> 
+    </h3></div>
+  <div class="panel-body">
+    
+
+
+    <p>mesh finalizer</p>
+  </div>
+  <ul class="list-group">
+     <li class="list-group-item">
+       
+    
+    <h3>
+private interface <a href='../interface/mesh_final.html'>mesh_final</a>()
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+     </li>
+  </ul>
+</div>
+
+         
+    </section>
+    <br>
+    
+    
+     
+    <section>
+    <h2>Type-Bound Procedures</h2>
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-deallocatedata~10"></span><h3>procedure, public, PASS( obj ) :: <strong>DeallocateData</strong>  => <a href='../interface/mesh_deallocatedata.html'>mesh_DeallocateData</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Deallocate memory occupied by the mesh instance</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Free up the memory stored in <a href="../type/mesh_.html">Mesh_</a></p><a href="../interface/mesh_deallocatedata.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_DeallocateData(obj)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-display~8"></span><h3>procedure, public, PASS( obj ) :: <strong>Display</strong>  => <a href='../interface/mesh_display.html'>mesh_display</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Display the mesh</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Displays the content of <a href="../type/mesh_.html">Mesh_</a> datatype</p><a href="../interface/mesh_display.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_display(obj, msg, UnitNo)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh object</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>msg</strong></td><td><p>message on screen</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>UnitNo</strong></td><td><p>unit number of ouput file</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-export~3"></span><h3>procedure, public, PASS( obj ) :: <strong>Export</strong>  => <a href='../interface/mesh_export.html'>mesh_Export</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Export mesh to an hdf5 file</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>This routine exports the mesh to a hdf5 file</p><a href="../interface/mesh_export.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_Export(obj, hdf5, group)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(HDF5File_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>hdf5</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>group</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-exporttovtk"></span><h3>procedure, public, PASS( obj ) :: <strong>ExportToVTK</strong>  => <a href='../interface/mesh_exporttovtk.html'>mesh_ExportToVTK</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Export mesh to a VTKfile</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module subroutine mesh_ExportToVTK(obj, vtkFile, nodeCoord, filename, OpenTag, Content, CloseTag)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(VTKFile_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>vtkFile</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=DFP),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>nodeCoord</strong>(:,:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>filename</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=LGT),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>OpenTag</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=LGT),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>Content</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=LGT),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>CloseTag</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-import~3"></span><h3>procedure, public, PASS( obj ) :: <strong>Import</strong>  => <a href='../interface/mesh_import.html'>mesh_Import</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Read mesh from hdf5 file</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>This routine reads the mesh from a meshFile which is an hdf5</p><a href="../interface/mesh_import.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_Import(obj, hdf5, group)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(HDF5File_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>hdf5</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>group</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-initiate~6"></span><h3>procedure, public, PASS( obj ) :: <strong>Initiate</strong>  => <a href='../interface/mesh_initiate.html'>mesh_initiate</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Allocate size of a mesh</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Allocate the size of the mesh</p><a href="../interface/mesh_initiate.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_initiate(obj, hdf5, group)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh object</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(HDF5File_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>hdf5</strong></td><td><p>Mesh file</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>group</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-initiateboundarydata"></span><h3>procedure, public, PASS( obj ) :: <strong>InitiateBoundaryData</strong>  => <a href='../interface/mesh_initiateboundarydata.html'>mesh_InitiateBoundaryData</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Initiate boundary data</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module subroutine mesh_InitiateBoundaryData(obj)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh data</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-initiateelementtoelements"></span><h3>procedure, public, PASS( obj ) :: <strong>InitiateElementToElements</strong>  => <a href='../interface/mesh_initiateelementtoelements.html'>mesh_InitiateElementToElements</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Initiate element to elements mapping</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module subroutine mesh_InitiateElementToElements(obj)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh data</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-initiatenodetoelements"></span><h3>procedure, private, PASS( obj ) :: <strong>InitiateNodeToElements</strong>  => <a href='../interface/mesh_initiatenodetoelements.html'>mesh_InitiateNodeToElements</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Initiate node to node data</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>generate Elements surrounding a node mapping</p><a href="../interface/mesh_initiatenodetoelements.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_InitiateNodeToElements(obj)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-initiatenodetonodes"></span><h3>procedure, private, PASS( obj ) :: <strong>InitiateNodeToNodes</strong>  => <a href='../interface/mesh_initiatenodetonodes.html'>mesh_InitiateNodetoNodes</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Initiate Node to nodes mapping</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Initiate node to node connectivity data</p><a href="../interface/mesh_initiatenodetonodes.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_InitiateNodetoNodes(obj)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh data</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-size"></span><h3>procedure, public, PASS( obj ) :: <strong>Size</strong>  => <a href='../interface/mesh_size.html'>mesh_size</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the size of the mesh</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns total elements in the mesh</p><a href="../interface/mesh_size.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module function mesh_size(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh object</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-addsurrogate~2"></span><h3>procedure, public, PASS( obj ) :: <strong>addSurrogate</strong>  => <a href='../interface/mesh_addsurrogate.html'>mesh_addSurrogate</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Add surrogate to module error handler</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module subroutine mesh_addSurrogate(obj, userObj)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(ExceptionHandler_),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>userObj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getboundaryelementdata"></span><h3>procedure, public, PASS( obj ) :: <strong>getBoundaryElementData</strong>  => <a href='../interface/mesh_getboundaryelementdata.html'>mesh_getBoundaryElementData</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns boundary element data</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>This routine returns the boundary element data</p><a href="../interface/mesh_getboundaryelementdata.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getBoundaryElementData(obj, globalElemNumber) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>globalElemNumber</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getboundarynptrs"></span><h3>procedure, public, PASS( obj ) :: <strong>getBoundaryNptrs</strong>  => <a href='../interface/mesh_getboundarynptrs.html'>mesh_getBoundaryNptrs</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns a vector of boundary node numbers</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns the vector of global node numbers of boundary nodes</p><a href="../interface/mesh_getboundarynptrs.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getBoundaryNptrs(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getboundingbox"></span><h3>procedure, public, PASS( obj ) :: <strong>getBoundingBox</strong>  => <a href='../interface/mesh_getboundingbox.html'>mesh_getBoundingBox</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the bounding box of the mesh</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getBoundingBox(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>type(BoundingBox_)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getboundingentity"></span><h3>procedure, public, PASS( obj ) :: <strong>getBoundingEntity</strong>  => <a href='../interface/mesh_getboundingentity.html'>mesh_getBoundingEntity</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the nodal coordinates</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getBoundingEntity(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getconnectivity"></span><h3>procedure, public, PASS( obj ) :: <strong>getConnectivity</strong>  => <a href='../interface/mesh_getconnectivity.html'>mesh_getConnectivity</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns  node numbers in an element</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getConnectivity(obj, globalElemNumber) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>globalElemNumber</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getelementtoelements"></span><h3>procedure, public, PASS( obj ) :: <strong>getElementToElements</strong>  => <a href='../interface/mesh_getelementtoelements.html'>mesh_getElementToElements</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns local element number connected to a given local
+element number, it also gives information about the local
+facet number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns element to element connectivity information</p><a href="../interface/mesh_getelementtoelements.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getElementToElements(obj, globalElemNumber, onlyElements) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>globalElemNumber</strong></td><td><p>Global element number</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=LGT),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>onlyElements</strong></td><td><p>If onlyElements is absent or it is FALSE then full information about the elements connected to element iel is given
+If onlyElements is present and it is TRUE then only the information about the elements connected to element iel is given</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:,:)</small></h4>
+  <p>list of elements surrounding elements</p>
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getglobalelemnumber"></span><h3>generic, public :: <strong>getGlobalElemNumber</strong>  => <a href='../type/mesh_.html#boundprocedure-mesh_getglobalelemnumber_1'>mesh_getGlobalElemNumber_1</a>, <a href='../type/mesh_.html#boundprocedure-mesh_getglobalelemnumber_2'>mesh_getGlobalElemNumber_2</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the global element number for a local element number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getglobalelemnumber_1.html'>mesh_getGlobalElemNumber_1</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This function returns the Global node number from local node num</p><a href="../interface/mesh_getglobalelemnumber_1.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getglobalelemnumber_2.html'>mesh_getGlobalElemNumber_2</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This routine returns the Global node number from a local node number</p><a href="../interface/mesh_getglobalelemnumber_2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getglobalnodenumber"></span><h3>generic, public :: <strong>getGlobalNodeNumber</strong>  => <a href='../type/mesh_.html#boundprocedure-mesh_getglobalnodenumber1'>mesh_getGlobalNodeNumber1</a>, <a href='../type/mesh_.html#boundprocedure-mesh_getglobalnodenumber2'>mesh_getGlobalNodeNumber2</a> 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getglobalnodenumber1.html'>mesh_getGlobalNodeNumber1</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This function returns the Global node number from local node num</p><a href="../interface/mesh_getglobalnodenumber1.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getglobalnodenumber2.html'>mesh_getGlobalNodeNumber2</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This routine returns the Global node number from a local node number</p><a href="../interface/mesh_getglobalnodenumber2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getinternalnptrs"></span><h3>procedure, public, PASS( obj ) :: <strong>getInternalNptrs</strong>  => <a href='../interface/mesh_getinternalnptrs.html'>mesh_getInternalNptrs</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns a vector of internal node numbers</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns the vector of global node numbers of internal nodes</p><a href="../interface/mesh_getinternalnptrs.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getInternalNptrs(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getlocalelemnumber"></span><h3>generic, public :: <strong>getLocalElemNumber</strong>  => <a href='../type/mesh_.html#boundprocedure-mesh_getlocalelemnumber_1'>mesh_getLocalElemNumber_1</a>, <a href='../type/mesh_.html#boundprocedure-mesh_getlocalelemnumber_2'>mesh_getLocalElemNumber_2</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the local element number of a global element number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getlocalelemnumber_1.html'>mesh_getLocalElemNumber_1</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This function returns the local element number</p><a href="../interface/mesh_getlocalelemnumber_1.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getlocalelemnumber_2.html'>mesh_getLocalElemNumber_2</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This function returns the local element number</p><a href="../interface/mesh_getlocalelemnumber_2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getlocalnodenumber"></span><h3>generic, public :: <strong>getLocalNodeNumber</strong>  => <a href='../type/mesh_.html#boundprocedure-mesh_getlocalnodenumber1'>mesh_getLocalNodeNumber1</a>, <a href='../type/mesh_.html#boundprocedure-mesh_getlocalnodenumber2'>mesh_getLocalNodeNumber2</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the local node number of a global node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getlocalnodenumber1.html'>mesh_getLocalNodeNumber1</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This function returns the local node number from global node num</p><a href="../interface/mesh_getlocalnodenumber1.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_getlocalnodenumber2.html'>mesh_getLocalNodeNumber2</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>14 June 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This routine returns the local node number from a global node number</p><a href="../interface/mesh_getlocalnodenumber2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getnodecoord"></span><h3>procedure, public, PASS( obj ) :: <strong>getNodeCoord</strong>  => <a href='../interface/mesh_getnodecoord.html'>mesh_getNodeCoord</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Read the nodeCoords from the hdf5file</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Reads hdf5File for nodecoord of the mesh</p><a href="../interface/mesh_getnodecoord.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module subroutine mesh_getNodeCoord(obj, nodeCoord, hdf5, group)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=DFP),</td>
+  <td>intent(inout),</td>
+  <td></td>
+  
+  <td>ALLOCATABLE</td><td>::</td>
+  <td><strong>nodeCoord</strong>(:,:)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(HDF5File_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>hdf5</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>group</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getnodetoelements"></span><h3>procedure, public, PASS( obj ) :: <strong>getNodeToElements</strong>  => <a href='../interface/mesh_getnodetoelements.html'>mesh_getNodeToElements</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the element attached to a given global node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns the element numbers which are connected to the a global node</p><a href="../interface/mesh_getnodetoelements.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getNodeToElements(obj, GlobalNode) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh data</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalNode</strong></td><td><p>global node number</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  <p>A vector of local element number</p>
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getnodetonodes"></span><h3>procedure, public, PASS( obj ) :: <strong>getNodeToNodes</strong>  => <a href='../interface/mesh_getnodetonodes.html'>mesh_getNodeToNodes</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns nodes connected to a given node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns the node surrounding a node</p><a href="../interface/mesh_getnodetonodes.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getNodeToNodes(obj, GlobalNode, IncludeSelf) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalNode</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical(kind=LGT),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>IncludeSelf</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getnptrs"></span><h3>procedure, public, PASS( obj ) :: <strong>getNptrs</strong>  => <a href='../interface/mesh_getnptrs.html'>mesh_getNptrs</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the node number of mesh</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns the vector of global node numbers</p><a href="../interface/mesh_getnptrs.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getNptrs(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B),
+  ALLOCATABLE, (:)</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-getrefelempointer"></span><h3>procedure, public, PASS( obj ) :: <strong>getRefElemPointer</strong>  => <a href='../interface/mesh_getrefelempointer.html'>mesh_getRefElemPointer</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns pointer to the reference element</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module function mesh_getRefElemPointer(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>class(ReferenceElement_),
+  POINTER</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-gettotalboundaryelements"></span><h3>procedure, public, PASS( obj ) :: <strong>getTotalBoundaryElements</strong>  => <a href='../interface/mesh_gettotalboundaryelements.html'>mesh_getTotalBoundaryElements</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the total number of boundary element</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getTotalBoundaryElements(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-gettotalboundarynodes"></span><h3>procedure, public, PASS( obj ) :: <strong>getTotalBoundaryNodes</strong>  => <a href='../interface/mesh_gettotalboundarynodes.html'>mesh_getTotalBoundaryNodes</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the total number of boundary nodes</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getTotalBoundaryNodes(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-gettotalelements~2"></span><h3>procedure, public, PASS( obj ) :: <strong>getTotalElements</strong>  => <a href='../interface/mesh_size.html'>mesh_size</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the size of the mesh</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns total elements in the mesh</p><a href="../interface/mesh_size.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private module function mesh_size(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>mesh object</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-gettotalinternalnodes"></span><h3>procedure, public, PASS( obj ) :: <strong>getTotalInternalNodes</strong>  => <a href='../interface/mesh_gettotalinternalnodes.html'>mesh_getTotalInternalNodes</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the total number of internal nodes</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getTotalInternalNodes(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-gettotalnodes"></span><h3>procedure, public, PASS( obj ) :: <strong>getTotalNodes</strong>  => <a href='../interface/mesh_gettotalnodes.html'>mesh_getTotalNodes</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the total number of nodes</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getTotalNodes(obj) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-isboundaryelement"></span><h3>procedure, public, PASS( obj ) :: <strong>isBoundaryElement</strong>  => <a href='../interface/mesh_isboundaryelement.html'>mesh_isBoundaryElement</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns true if a given global element number is a boundary element</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>Returns true if an global element number is a boundary element</p><a href="../interface/mesh_isboundaryelement.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_isBoundaryElement(obj, globalElemNumber) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>globalElemNumber</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=LGT)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-isboundarynode"></span><h3>procedure, public, PASS( obj ) :: <strong>isBoundaryNode</strong>  => <a href='../interface/mesh_isboundarynode.html'>mesh_isBoundaryNode</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns true if a given global node number is a boundary node</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_isBoundaryNode(obj, GlobalNode) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalNode</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=LGT)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-iselementpresent"></span><h3>procedure, public, PASS( obj ) :: <strong>isElementPresent</strong>  => <a href='../interface/mesh_iselementpresent.html'>mesh_isElementPresent</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns true if a given element number is present</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_isElementPresent(obj, GlobalElement) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalElement</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=LGT)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-isnodepresent"></span><h3>procedure, public, PASS( obj ) :: <strong>isNodePresent</strong>  => <a href='../interface/mesh_isnodepresent.html'>mesh_isNodePresent</a> 
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns true if a node number is present</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_isNodePresent(obj, GlobalNode) result(ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalNode</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical(kind=LGT)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getglobalelemnumber_1"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getGlobalElemNumber_1</strong>  
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getGlobalElemNumber_1(obj, LocalElem) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>LocalElem</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  (SIZE(LocalElem))</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getglobalelemnumber_2"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getGlobalElemNumber_2</strong>  
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getGlobalElemNumber_2(obj, LocalElem) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>LocalElem</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getglobalnodenumber1"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getGlobalNodeNumber1</strong>  
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the global node number of a local node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getGlobalNodeNumber1(obj, LocalNode) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>LocalNode</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  (SIZE(LocalNode))</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getglobalnodenumber2"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getGlobalNodeNumber2</strong>  
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the global node number of a local node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getGlobalNodeNumber2(obj, LocalNode) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>LocalNode</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getlocalelemnumber_1"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getLocalElemNumber_1</strong>  
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getLocalElemNumber_1(obj, GlobalElem) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalElem</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  (SIZE(GlobalElem))</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getlocalelemnumber_2"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getLocalElemNumber_2</strong>  
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getLocalElemNumber_2(obj, GlobalElem) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalElem</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getlocalnodenumber1"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getLocalNodeNumber1</strong>  
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the local node number of a glocal node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+            
+            <p>This function returns the local node number from global node num</p><a href="../interface/mesh_getlocalnodenumber1.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+          
+          
+    
+    <h3>
+private pure module function mesh_getLocalNodeNumber1(obj, GlobalNode) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalNode</strong>(:)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  (SIZE(GlobalNode))</small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-mesh_getlocalnodenumber2"></span><h3>procedure, private, PASS( obj ) :: <strong>mesh_getLocalNodeNumber2</strong>  
+    
+  </h3></div>
+  
+  <div class="panel-body">
+    
+
+
+    <p>Returns the local node number of a global node number</p>
+  </div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private pure module function mesh_getLocalNodeNumber2(obj, GlobalNode) result(Ans)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>GlobalNode</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer(kind=I4B)
+  </small></h4>
+  
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-setsparsity~6"></span><h3>generic, public :: <strong>setSparsity</strong>  => <a href='../type/mesh_.html#boundprocedure-setsparsity1'>setSparsity1</a>, <a href='../type/mesh_.html#boundprocedure-setsparsity2'>setSparsity2</a> 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_setsparsity1.html'>mesh_setSparsity1</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>16 July 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This routine set the sparsity pattern in <a>CSRMatrix_</a> object</p><a href="../interface/mesh_setsparsity1.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+      <li class="list-group-item">
+      
+         
+            
+    
+    <h3>
+private interface <a href='../interface/mesh_setsparsity2.html'>mesh_setSparsity2</a>()
+    
+    
+   
+</h3>
+    
+
+
+
+
+
+  <dl class="dl-horizontal">
+    
+    
+    <dt>Date</dt><dd>16 July 2021</dd>
+    
+    
+    <dt>License</dt><dd><a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a></dd>
+    
+    
+    
+    
+  </dl>
+
+
+
+<p>This routine set the sparsity pattern in <a>CSRMatrix_</a> object</p><a href="../interface/mesh_setsparsity2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+         
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-setsparsity1"></span><h3>procedure, private, PASS( obj ) :: <strong>setSparsity1</strong>  => <a href='../interface/mesh_setsparsity1.html'>mesh_setSparsity1</a> 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module subroutine mesh_setSparsity1(obj, mat, LocalNodeNumber, lbound, ubound)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>Mesh_ class</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(CSRMatrix_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>mat</strong></td><td><p>CSRMatrix object</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>LocalNodeNumber</strong>(lbound:ubound)</td><td><p>Global to local node number map</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>lbound</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=I4B),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ubound</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="boundprocedure-setsparsity2"></span><h3>procedure, private, PASS( obj ) :: <strong>setSparsity2</strong>  => <a href='../interface/mesh_setsparsity2.html'>mesh_setSparsity2</a> 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+    
+      <li class="list-group-item">
+      
+        
+          <h3>interface
+          
+          </h3>
+  
+          
+          
+    
+    <h3>
+private module subroutine mesh_setSparsity2(obj, mat)
+    
+    
+   
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>class(<a href='../type/mesh_.html'>Mesh_</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>obj</strong></td><td><p>Mesh_ class</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(CSRMatrix_),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>mat</strong></td><td><p>CSRMatrix object</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+        
+      
+      </li>
+    
+  </ul>
+</div>
+
+    
+    </section>
+    
+    
+    
+    
+    </div>
+  </div>
+
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-6"><p>easifemClasses was developed by Vikas Sharma<br>&copy; 2021 <a rel="license" href="http://www.gnu.org/licenses/old-licenses/fdl-1.2.en.html">GNU Free Documentation License</a>
+                                          </p>
+        </div>
+        <div class="col-xs-6 col-md-6">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+             on 2021-09-26 00:57  
+            
+          </p>
+        </div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+    
+  </body>
+</html>
