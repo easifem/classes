@@ -1,64 +1,64 @@
-! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
-!
-! This program is free software: you can redistribute it and/or modify
-! it under the terms of the GNU General Public License as published by
-! the Free Software Foundation, either version 3 of the License, or
-! (at your option) any later version.
-!
-! This program is distributed in the hope that it will be useful,
-! but WITHOUT ANY WARRANTY; without even the implied warranty of
-! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-! GNU General Public License for more details.
-!
-! You should have received a copy of the GNU General Public License
-! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+! ! This program is a part of EASIFEM library
+! ! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! !
+! ! This program is free software: you can redistribute it and/or modify
+! ! it under the terms of the GNU General Public License as published by
+! ! the Free Software Foundation, either version 3 of the License, or
+! ! (at your option) any later version.
+! !
+! ! This program is distributed in the hope that it will be useful,
+! ! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! ! GNU General Public License for more details.
+! !
+! ! You should have received a copy of the GNU General Public License
+! ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary: Tensor field data type is defined
+! !> authors: Vikas Sharma, Ph. D.
+! ! date: 28 June 2021
+! ! summary: Tensor field data type is defined
 
-MODULE TensorField
-USE GlobalData
-USE BaseType
-USE AbstractNodeField_Class
-USE ScalarField_Class, ONLY: ScalarField_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
-USE FPL, ONLY: ParameterList_
-USE Domain_Class
-IMPLICIT NONE
-PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "TENSORFIELD_CLASS"
-TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1009 !< this is correct carry on
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "TENSORFIELD_CLASS_EXCEPTION.txt"
+! MODULE TensorField
+! USE GlobalData
+! USE BaseType
+! USE AbstractNodeField_Class
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+! USE FPL, ONLY: ParameterList_
+! USE Domain_Class
+! IMPLICIT NONE
+! PRIVATE
+! CHARACTER( LEN = * ), PARAMETER :: modName = "TENSORFIELD_CLASS"
+! TYPE( ExceptionHandler_ ) :: e
+! INTEGER( I4B ), PARAMETER :: eUnitNo = 1009 !< this is correct carry on
+! CHARACTER( LEN = * ), PARAMETER :: eLogFile = "TENSORFIELD_CLASS_EXCEPTION.txt"
 
-!----------------------------------------------------------------------------
-!                                                              TensorField_
-!----------------------------------------------------------------------------
+! !----------------------------------------------------------------------------
+! !                                                              TensorField_
+! !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Tensor field
-!
-!{!pages/TensorField.md}
+! !> authors: Vikas Sharma, Ph. D.
+! ! date: 25 June 2021
+! ! summary: Tensor field
+! !
+! !{!pages/TensorField.md}
 
-TYPE, EXTENDS( AbstractNodeField_ ) :: TensorField_
-  INTEGER( I4B ) :: m = 0_I4B
-  INTEGER( I4B ) :: n = 0_I4B
-END TYPE TensorField_
+! TYPE, EXTENDS( AbstractNodeField_ ) :: TensorField_
+!   INTEGER( I4B ) :: m = 0_I4B
+!   INTEGER( I4B ) :: n = 0_I4B
+! END TYPE TensorField_
 
-PUBLIC :: TensorField_
-TYPE( TensorField_ ), PARAMETER, PUBLIC :: Type = TensorField_()
+! PUBLIC :: TensorField_
+! TYPE( TensorField_ ), PARAMETER, PUBLIC :: Type = TensorField_()
 
-!----------------------------------------------------------------------------
-!                                                       TensorFieldPointer_
-!----------------------------------------------------------------------------
+! !----------------------------------------------------------------------------
+! !                                                       TensorFieldPointer_
+! !----------------------------------------------------------------------------
 
-TYPE :: TensorFieldPointer_
-  CLASS( TensorField_ ), POINTER :: ptr => NULL()
-END TYPE TensorFieldPointer_
+! TYPE :: TensorFieldPointer_
+!   CLASS( TensorField_ ), POINTER :: ptr => NULL()
+! END TYPE TensorFieldPointer_
 
-PUBLIC :: TensorFieldPointer_
+! PUBLIC :: TensorFieldPointer_
 
-END MODULE TensorField
+! END MODULE TensorField

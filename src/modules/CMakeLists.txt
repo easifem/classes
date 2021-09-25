@@ -70,6 +70,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 #VectorField
 include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
+#BlockNodeField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 #MatrixField
 include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 #AbstractLinSolver

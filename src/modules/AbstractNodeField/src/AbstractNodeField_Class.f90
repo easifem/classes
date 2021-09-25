@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE AbstractNodeField_Class
 USE GlobalData
@@ -26,6 +25,10 @@ PRIVATE
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Sept 2021
+! summary: Abstract node field
 
 TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
   INTEGER( I4B ) :: tSize = 0
@@ -40,6 +43,16 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractNodeFieldPointer_
+  CLASS( AbstractNodeField_ ), POINTER :: ptr => NULL()
+END TYPE AbstractNodeFieldPointer_
+
+PUBLIC :: AbstractNodeFieldPointer_
 
 CONTAINS
 
@@ -61,6 +74,10 @@ END FUNCTION anf_getPointer
 !----------------------------------------------------------------------------
 !                                                                    Size
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: This function returns the size of the field
 
 FUNCTION anf_Size( obj, dims ) RESULT( ans )
   CLASS( AbstractNodeField_ ), INTENT( IN ) :: obj
