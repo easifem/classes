@@ -1,0 +1,21 @@
+# Link libs to the project
+
+FOREACH(p LAPACK95 PENF BeFoR64 FACE StringiFor FPL Sparsekit)
+  FIND_PACKAGE( ${p} REQUIRED )
+  IF( ${p}_FOUND )
+    MESSAGE(STATUS "FOUND ${p}")
+    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${p}::${p} )
+  ELSE()
+    MESSAGE(ERROR "NOT FOUND ${p}")
+  ENDIF()
+ENDFOREACH()
+
+IF( ${PROJECT_NAME} MATCHES "easifemClasses" )
+  FIND_PACKAGE( easifemBase REQUIRED )
+  IF( easifemBase_FOUND )
+    MESSAGE(STATUS "FOUND easifemBase")
+    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC easifemBase::easifemBase )
+  ELSE()
+    MESSAGE(ERROR "NOT FOUND easifemBase")
+  ENDIF()
+ENDIF()

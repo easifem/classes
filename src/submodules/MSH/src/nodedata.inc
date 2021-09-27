@@ -1,5 +1,5 @@
     cmd = "mkdir -p "//trim( path )
-    call executecommand( cmd, "mshType@msh4.f90>>WriteVectorNodeData()" )
+    call executecommand( cmd, "mshType@msh4.F90>>WriteVectorNodeData()" )
 
     IF( PRESENT( nodes ) ) THEN
       call obj%writemesh( path = '',filename = filename, extension = '.msh', &

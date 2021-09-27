@@ -31,6 +31,7 @@ print_creation_date: true
 creation_date: %Y-%m-%d %H:%M %z
 md_extensions: markdown.extensions.toc
                markdown.extensions.smarty
+               markdown.extensions.extra
 predocmark_alt: >
 predocmark: <
 docmark_alt: *

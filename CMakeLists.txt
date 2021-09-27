@@ -1,303 +1,59 @@
-# This file is a part of easifem-base
-# (c) 2021, all right reserved, Dr Vikas Sharma
+# This program is a part of EASIFEM library
+# Copyright (C) 2020-2021  Vikas Sharma, Ph.D
 #
-# log
-# 17/02/2021 this file was created
-#-----------------------------------------------------------------------
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https: //www.gnu.org/licenses/>
+#
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.20.0 FATAL_ERROR)
 SET(PROJECT_NAME "easifemClasses")
 PROJECT(${PROJECT_NAME})
 ENABLE_LANGUAGE(C)
 ENABLE_LANGUAGE(Fortran)
 ENABLE_LANGUAGE(CXX)
-SET(VERSION_MAJOR "1")
-SET(VERSION_MINOR "0")
+SET(VERSION_MAJOR "21")
+SET(VERSION_MINOR "3")
 SET(VERSION_BugFix "0")
 SET(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
-SET(CMAKE_PROJECT_DESCRIPTION "easifem classes")
-SET(CMAKE_PROJECT_HOMEPAGE_URL "https://github.com/vickysharma0812")
+SET(CMAKE_PROJECT_DESCRIPTION "Expandable and Scalable Infrastructure for Finite Element Methods")
+SET(CMAKE_PROJECT_HOMEPAGE_URL "https://github.com/vickysharma0812/easifem-classes")
 SET(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
 SET(namespace "${PROJECT_NAME}")
 INCLUDE(CMakePrintHelpers)
 INCLUDE(FortranCInterface)
 FortranCInterface_VERIFY()
 LIST( APPEND TARGET_COMPILE_DEF "-DUSE_CMAKE" )
-
-# SYSTEM INFORMATION
-# Disable in-source builds to prevent source tree corruption.
-IF(" ${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL " ${CMAKE_CURRENT_BINARY_DIR}")
-  MESSAGE(FATAL_ERROR "
-    FATAL: In-source builds are not allowed.
-    You should create a separate directory for build files.")
-ENDIF()
-
-#Single precision or double precision
-OPTION(USE_Real32 OFF)
-OPTION(USE_Real64 OFF)
-IF(USE_Real32)
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_Real32" )
-ELSEIF(USE_Real64)
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_Real64" )
-ELSE()
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_Real64" )
-ENDIF()
-
-#Single precision or double precision
-OPTION(USE_Int32 OFF)
-OPTION(USE_Int64 OFF)
-IF(USE_Int32)
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_Int32" )
-ELSEIF(USE_Real64)
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_Int64" )
-ELSE()
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_Int32" )
-ENDIF()
-LIST( APPEND TARGET_COMPILE_DEF "-D${CMAKE_HOST_SYSTEM_NAME}_SYSTEM" )
-
-# CREATING DIRECTORIES FOR EASIFEM_BASE
-INCLUDE( GNUInstallDirs )
-SET(
-  CMAKE_Fortran_MODULE_DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR} )
-SET(
-  CMAKE_LIBRARY_OUTPUT_DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} )
-SET(
-  CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} )
-SET(
-  CMAKE_RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR} )
-
-SET(
-  INSTALL_LIBDIR
-  ${CMAKE_INSTALL_LIBDIR}
-  CACHE PATH "install location of lib" )
-SET(
-  INSTALL_INCLUDEDIR
-  ${CMAKE_INSTALL_INCLUDEDIR}
-  CACHE PATH "install location of include" )
-SET(
-  INSTALL_BINDIR
-  ${CMAKE_INSTALL_BINDIR}
-  CACHE PATH "install location of bin" )
-
-IF(WIN32 AND NOT CYGWIN)
-  SET(DEF_INSTALL_CMAKEDIR CMake)
-ELSE()
-  SET(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
-ENDIF()
-SET(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
-
-FOREACH(p LIB BIN INCLUDE CMAKE)
-  FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${INSTALL_${p}DIR} _path)
-  MESSAGE(STATUS "Installing ${p} componenets to ${_path}")
-ENDFOREACH()
-
-OPTION(BUILD_SHARED_LIBS "Build shared library" ON)
-IF(BUILD_SHARED_LIBS)
-  MESSAGE(STATUS "${PROJECT_NAME} will be built as a shared library.")
-ELSE()
-  MESSAGE(STATUS "${PROJECT_NAME} will be built as a static library.")
-ENDIF()
-
-# INSTALLING EASIFEMBASE
+# find my cmake modules here...
+LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/checkError.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/makeDirs.cmake)
 IF(BUILD_SHARED_LIBS)
   ADD_LIBRARY(${PROJECT_NAME} SHARED "" )
 ELSE()
   ADD_LIBRARY(${PROJECT_NAME} STATIC "")
 ENDIF()
-
-# COMPILER RELATED OPTIONS
 INCLUDE(${PROJECT_SOURCE_DIR}/cmake/Compiler.cmake)
-
-IF( $<CONFIG:DEBUG> )
-  LIST( APPEND TARGET_COMPILE_DEF "-DDEBUG_VER" )
-ENDIF()
-
-###########################################
+# Add source files
 INCLUDE(src/modules/CMakeLists.txt)
 INCLUDE(src/submodules/CMakeLists.txt)
-###########################################
-
-LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
-IF(NOT CMAKE_PREFIX_PATH)
-  LIST(APPEND CMAKE_PREFIX_PATH "$ENV{EASIFEM_EXTPKGS}" "$ENV{EASIFEM_BASE}")
-ENDIF()
-
-# install openblas
-SET(BLA_VENDOR "OpenBLAS")
-FIND_PACKAGE( LAPACK REQUIRED )
-IF( LAPACK_FOUND )
-  MESSAGE(STATUS "LAPACK_LIBRARIES found")
-ENDIF()
-IF( BLA_VENDOR MATCHES "MKL" )
-  MESSAGE(STATUS "BLA_VENDOR : MKL")
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_INTEL_MKL" )
-ELSEIF( BLA_VENDOR MATCHES "OpenBLAS" )
-  MESSAGE(STATUS "BLA_VENDOR : OpenBLAS")
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_OpenBLAS" )
-ELSE( )
-  MESSAGE(STATUS "BLA_VENDOR : System provided")
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_NativeBLAS" )
-ENDIF( )
-# Find OpenMP
-OPTION(USE_OpenMP OFF)
-IF(USE_OpenMP)
-  FIND_PACKAGE(OpenMP)
-  IF(OpenMP_FOUND)
-    MESSAGE(STATUS "OpenMP FOUND: ")
-    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_OpenMP" )
-    LIST( APPEND TARGET_COMPILE_OPT ${OpenMP_Fortran_FLAGS}  )
-  ELSE()
-    MESSAGE(STATUS "OpenMP NOT FOUND: building without it")
-  ENDIF()
-ENDIF()
-TARGET_LINK_LIBRARIES(
-  ${PROJECT_NAME}
-  PUBLIC
-  ${LAPACK_LIBRARIES}
-  ${BLAS_LIBRARIES}
-  "$<$<BOOL:${OpenMP_FOUND}>:${OpenMP_Fortran_LIBRARIES}>"
-)
-# Find HDF5
-FIND_PACKAGE(HDF5 REQUIRED COMPONENTS Fortran HL)
-IF(HDF5_VERSION VERSION_LESS 1.8.7)
-  MESSAGE(WARNING "HDF5 VERSION SHOULD BE >= 1.8.7")
-ENDIF()
-IF(HDF5_FOUND)
-  MESSAGE(STATUS "HDF5 FOUND: ")
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_HDF5" )
-  LIST( APPEND TARGET_COMPILE_DEF "${HDF5_Fortran_DEFINITIONS}" )
-  MESSAGE( STATUS "HDF5 fortran lib :: ${HDF5_Fortran_LIBRARIES}")
-ELSE()
-  MESSAGE( ERROR "HDF5 NOT FOUND" )
-ENDIF()
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${HDF5_Fortran_LIBRARIES} )
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${HDF5_Fortran_INCLUDE_DIRS})
-#GMSH SDK
-LIST( APPEND TARGET_COMPILE_DEF "-DBUILD_GMSH_INTERFACE" )
-IF( UNIX )
-  IF(APPLE)
-    SET( GMSH_LIBRARIES "/usr/local/lib/libgmsh.dylib" )
-  ELSE()
-    SET( GMSH_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/libgmsh.so"  )
-    # SET( GMSH_LIBRARIES "/home/vikassharma/miniconda3/envs/easifem/lib/python3.9/site-packages/gmsh-4.8.4-Linux64-sdk/lib/libgmsh.so"  )
-  ENDIF()
-ENDIF()
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${GMSH_LIBRARIES} )
-MESSAGE( STATUS "GMSH_LIBRARIES : ${GMSH_LIBRARIES}" )
-
-TARGET_COMPILE_OPTIONS(
-  ${PROJECT_NAME}
-  PRIVATE
-  ${TARGET_COMPILE_OPT}
-  ${FORTRAN_FLAGS}
-  "$<$<CONFIG:Debug>:${FORTRAN_FLAGS_DEBUG}>"
-  "$<$<CONFIG:Release>:${FORTRAN_FLAGS_RELEASE}>")
-
-TARGET_COMPILE_DEFINITIONS(
-  ${PROJECT_NAME}
-  PUBLIC
-  ${TARGET_COMPILE_DEF} )
-
-# target_compile_definitions()
-SET_TARGET_PROPERTIES(
-  ${PROJECT_NAME}
-    PROPERTIES
-    POSITION_INDEPENDENT_CODE 1
-    SOVERSION ${VERSION_MAJOR}
-    OUTPUT_NAME ${PROJECT_NAME}
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    MACOSX_RPATH ON
-    WINDOWS_EXPORT_ALL_SYMBOLS ON )
-
-TARGET_INCLUDE_DIRECTORIES(
-  ${PROJECT_NAME}
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_Fortran_MODULE_DIRECTORY}>
-  $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
-)
-
-FOREACH(p LAPACK95 PENF BeFoR64 FACE StringiFor FPL Sparsekit easifemBase)
-  FIND_PACKAGE( ${p} REQUIRED )
-  IF( ${p}_FOUND )
-  MESSAGE(STATUS "${p} found")
-  TARGET_LINK_LIBRARIES(
-    ${PROJECT_NAME}
-    PUBLIC
-    ${p}::${p} )
-ELSE()
-  MESSAGE(STATUS "${p} not found")
-ENDIF()
-ENDFOREACH()
-
-TARGET_INCLUDE_DIRECTORIES(
-  ${PROJECT_NAME}
-  PUBLIC
-  "$ENV{EASIFEM_EXTPKGS}/include"
-  "$ENV{EASIFEM_BASE}/include" )
-
-###############################
-###### I N S T A L L ##########
-###############################
-INSTALL(
-  TARGETS
-    ${PROJECT_NAME}
-  EXPORT
-    ${TARGETS_EXPORT_NAME}
-  ARCHIVE
-    DESTINATION ${INSTALL_LIBDIR}
-    COMPONENT lib
-  RUNTIME
-    DESTINATION ${INSTALL_BINDIR}
-    COMPONENT bin
-  LIBRARY
-    DESTINATION ${INSTALL_LIBDIR}
-    COMPONENT lib )
-
-INSTALL(
-  DIRECTORY
-    ${CMAKE_Fortran_MODULE_DIRECTORY}
-    DESTINATION "./"
-    COMPONENT lib )
-
-INSTALL(
-  EXPORT
-    ${TARGETS_EXPORT_NAME}
-    NAMESPACE ${namespace}::
-    DESTINATION ${INSTALL_CMAKEDIR}
-    COMPONENT dev)
-
-INCLUDE(CMakePackageConfigHelpers)
-
-CONFIGURE_PACKAGE_CONFIG_FILE(
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-  INSTALL_DESTINATION ${INSTALL_CMAKEDIR})
-
-IF(BUILD_SHARED_LIBS OR PROJECT_VERSION_MAJOR EQUAL 0)
-  # Due to the uncertain ABI compatibility of Fortran shared libraries
-  # limit compatibility for dynamic linking to same minor version.
-  SET(COMPATIBILITY AnyNewerVersion)
-  # set(COMPATIBILITY SameMinorVersion)
-ELSE()
-  # Require API compatibility via semantic versioning for static linking.
-  SET(COMPATIBILITY AnyNewerVersion)
-  # set(COMPATIBILITY SameMajorVersion)
-ENDIF()
-
-WRITE_BASIC_PACKAGE_VERSION_FILE(
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-  VERSION "${PROJECT_VERSION}"
-  COMPATIBILITY ${COMPATIBILITY})
-
-INSTALL(
-  FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  DESTINATION
-    ${INSTALL_CMAKEDIR})
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/prefixPaths.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/addOpenBLAS.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/addOpenMP.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/addHDF5.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/addGmsh.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/targetLinkLibs.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/targetIncludeDirs.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/targetCompileOpts.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/targetCompileDefs.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/targetProperties.cmake)
+INCLUDE(${PROJECT_SOURCE_DIR}/cmake/install.cmake)

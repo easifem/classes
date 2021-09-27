@@ -12,14 +12,14 @@ def installRequest(LIB):
         choice = input(
             f"Do you want to Install {LIB} 'yes' or 'no' [Y/n]: ").lower()
         if choice in ['Y', 'y', 'ye', 'yes']:
-          return True
+            return True
         else:
-          return False
+            return False
 
 def getOption(key, opt):
-  while True:
-    separator = ', '
-    return input(f"select option for {key}, possible options are : {separator.join(opt)} : ") + " "
+    while True:
+        separator = ', '
+        return input(f"select option for {key}, possible options are : {separator.join(opt)} : ") + " "
 
 print("Detecting OS type...")
 _os = platform.system()
@@ -30,6 +30,19 @@ if _os == 'Windows':
     #print("Installation DONE!!")
 else:
     cmake_def = ""
+
+    opt = getOption("CMAKE_GENERATOR", [
+                    "Unix Makefiles", "Ninja", "Ninja Multi-Config"])
+    if(opt == " "):
+        opt = '"Ninja"'
+        # opt = '"Ninja"'
+    cmake_def += " -G " + opt
+
+    opt = getOption("USE_GMSH_SDK", ["ON", "OFF"])
+    if(opt == " "):
+        opt = "ON"
+    cmake_def += " -DUSE_GMSH_SDK=" + opt
+
     opt = getOption("USE_OpenMP", ["ON", "OFF"])
     if(opt == " "):
         opt = "ON"
