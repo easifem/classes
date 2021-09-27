@@ -3,8 +3,8 @@
     "src",
     "tests"
     ],
-  "excl_suffixes": ["_skip.f90"],
-  "pp_suffixes": [".f90", ".inc", ".part"],
+  "excl_suffixes": ["_skip.F90"],
+  "pp_suffixes": [".F90", ".inc", ".part"],
   "pp_defs": {},
   "include_dirs": [
     "/Users/vikassharma/.easifem/vscode/include/"

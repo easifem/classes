@@ -29,129 +29,129 @@ FFLAGS=$(SPECIALFLAGS) $(OPTFLAGS) $(PRJ_FFLAGS) -J../../include
 
 CFLAGS=$(SPECIALFLAGS) $(OPTFLAGS) $(PRJ_CFLAGS)
 
-"../../lib/Domain_Class@Methods.o": "FEMesh/Domain/Domain_Class@Methods.f90"
-	@echo Compiling FEMesh/Domain/Domain_Class@Methods.f90
-	@$(FC) -c -o "../../lib/Domain_Class@Methods.o" $(FFLAGS) "FEMesh/Domain/Domain_Class@Methods.f90"
+"../../lib/Domain_Class@Methods.o": "FEMesh/Domain/Domain_Class@Methods.F90"
+	@echo Compiling FEMesh/Domain/Domain_Class@Methods.F90
+	@$(FC) -c -o "../../lib/Domain_Class@Methods.o" $(FFLAGS) "FEMesh/Domain/Domain_Class@Methods.F90"
 
-"../../lib/Element_Class@Constructor.o": "FE/Element/Element_Class@Constructor.f90"
-	@echo Compiling FE/Element/Element_Class@Constructor.f90
-	@$(FC) -c -o "../../lib/Element_Class@Constructor.o" $(FFLAGS) "FE/Element/Element_Class@Constructor.f90"
+"../../lib/Element_Class@Constructor.o": "FE/Element/Element_Class@Constructor.F90"
+	@echo Compiling FE/Element/Element_Class@Constructor.F90
+	@$(FC) -c -o "../../lib/Element_Class@Constructor.o" $(FFLAGS) "FE/Element/Element_Class@Constructor.F90"
 
-"../../lib/Element_Class@ShapeData.o": "FE/Element/Element_Class@ShapeData.f90"
-	@echo Compiling FE/Element/Element_Class@ShapeData.f90
-	@$(FC) -c -o "../../lib/Element_Class@ShapeData.o" $(FFLAGS) "FE/Element/Element_Class@ShapeData.f90"
+"../../lib/Element_Class@ShapeData.o": "FE/Element/Element_Class@ShapeData.F90"
+	@echo Compiling FE/Element/Element_Class@ShapeData.F90
+	@$(FC) -c -o "../../lib/Element_Class@ShapeData.o" $(FFLAGS) "FE/Element/Element_Class@ShapeData.F90"
 
-"../../lib/Element_Class@Virtual.o": "FE/Element/Element_Class@Virtual.f90"
-	@echo Compiling FE/Element/Element_Class@Virtual.f90
-	@$(FC) -c -o "../../lib/Element_Class@Virtual.o" $(FFLAGS) "FE/Element/Element_Class@Virtual.f90"
+"../../lib/Element_Class@Virtual.o": "FE/Element/Element_Class@Virtual.F90"
+	@echo Compiling FE/Element/Element_Class@Virtual.F90
+	@$(FC) -c -o "../../lib/Element_Class@Virtual.o" $(FFLAGS) "FE/Element/Element_Class@Virtual.F90"
 
-"../../lib/FacetElement_Class@Constructor.o": "FE/FacetElement/FacetElement_Class@Constructor.f90"
-	@echo Compiling FE/FacetElement/FacetElement_Class@Constructor.f90
-	@$(FC) -c -o "../../lib/FacetElement_Class@Constructor.o" $(FFLAGS) "FE/FacetElement/FacetElement_Class@Constructor.f90"
+"../../lib/FacetElement_Class@Constructor.o": "FE/FacetElement/FacetElement_Class@Constructor.F90"
+	@echo Compiling FE/FacetElement/FacetElement_Class@Constructor.F90
+	@$(FC) -c -o "../../lib/FacetElement_Class@Constructor.o" $(FFLAGS) "FE/FacetElement/FacetElement_Class@Constructor.F90"
 
-"../../lib/FacetElement_Class@ShapeData.o": "FE/FacetElement/FacetElement_Class@ShapeData.f90"
-	@echo Compiling FE/FacetElement/FacetElement_Class@ShapeData.f90
-	@$(FC) -c -o "../../lib/FacetElement_Class@ShapeData.o" $(FFLAGS) "FE/FacetElement/FacetElement_Class@ShapeData.f90"
+"../../lib/FacetElement_Class@ShapeData.o": "FE/FacetElement/FacetElement_Class@ShapeData.F90"
+	@echo Compiling FE/FacetElement/FacetElement_Class@ShapeData.F90
+	@$(FC) -c -o "../../lib/FacetElement_Class@ShapeData.o" $(FFLAGS) "FE/FacetElement/FacetElement_Class@ShapeData.F90"
 
-"../../lib/gmsh_Class@MeshGeneration.o": "GMSH/gmsh_Class@MeshGeneration.f90"
-	@echo Compiling GMSH/gmsh_Class@MeshGeneration.f90
-	@$(FC) -c -o "../../lib/gmsh_Class@MeshGeneration.o" $(FFLAGS) "GMSH/gmsh_Class@MeshGeneration.f90"
+"../../lib/gmsh_Class@MeshGeneration.o": "GMSH/gmsh_Class@MeshGeneration.F90"
+	@echo Compiling GMSH/gmsh_Class@MeshGeneration.F90
+	@$(FC) -c -o "../../lib/gmsh_Class@MeshGeneration.o" $(FFLAGS) "GMSH/gmsh_Class@MeshGeneration.F90"
 
-"../../lib/gmshMesh_Class@BufferMethods.o": "GMSH/gmshMesh/gmshMesh_Class@BufferMethods.f90"
-	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@BufferMethods.f90
-	@$(FC) -c -o "../../lib/gmshMesh_Class@BufferMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@BufferMethods.f90"
+"../../lib/gmshMesh_Class@BufferMethods.o": "GMSH/gmshMesh/gmshMesh_Class@BufferMethods.F90"
+	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@BufferMethods.F90
+	@$(FC) -c -o "../../lib/gmshMesh_Class@BufferMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@BufferMethods.F90"
 
-"../../lib/gmshMesh_Class@ConstructorMethods.o": "GMSH/gmshMesh/gmshMesh_Class@ConstructorMethods.f90"
-	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@ConstructorMethods.f90
-	@$(FC) -c -o "../../lib/gmshMesh_Class@ConstructorMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@ConstructorMethods.f90"
+"../../lib/gmshMesh_Class@ConstructorMethods.o": "GMSH/gmshMesh/gmshMesh_Class@ConstructorMethods.F90"
+	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@ConstructorMethods.F90
+	@$(FC) -c -o "../../lib/gmshMesh_Class@ConstructorMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@ConstructorMethods.F90"
 
-"../../lib/gmshMesh_Class@ElementsMethods.o": "GMSH/gmshMesh/gmshMesh_Class@ElementsMethods.f90"
-	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@ElementsMethods.f90
-	@$(FC) -c -o "../../lib/gmshMesh_Class@ElementsMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@ElementsMethods.f90"
+"../../lib/gmshMesh_Class@ElementsMethods.o": "GMSH/gmshMesh/gmshMesh_Class@ElementsMethods.F90"
+	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@ElementsMethods.F90
+	@$(FC) -c -o "../../lib/gmshMesh_Class@ElementsMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@ElementsMethods.F90"
 
-"../../lib/gmshMesh_Class@NodesMethods.o": "GMSH/gmshMesh/gmshMesh_Class@NodesMethods.f90"
-	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@NodesMethods.f90
-	@$(FC) -c -o "../../lib/gmshMesh_Class@NodesMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@NodesMethods.f90"
+"../../lib/gmshMesh_Class@NodesMethods.o": "GMSH/gmshMesh/gmshMesh_Class@NodesMethods.F90"
+	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@NodesMethods.F90
+	@$(FC) -c -o "../../lib/gmshMesh_Class@NodesMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@NodesMethods.F90"
 
-"../../lib/gmshMesh_Class@PostProcessMethods.o": "GMSH/gmshMesh/gmshMesh_Class@PostProcessMethods.f90" "GMSH/gmshMesh/nodedata.inc" "GMSH/gmshMesh/nodedata.inc"
-	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@PostProcessMethods.f90
-	@$(FC) -c -o "../../lib/gmshMesh_Class@PostProcessMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@PostProcessMethods.f90"
+"../../lib/gmshMesh_Class@PostProcessMethods.o": "GMSH/gmshMesh/gmshMesh_Class@PostProcessMethods.F90" "GMSH/gmshMesh/nodedata.inc" "GMSH/gmshMesh/nodedata.inc"
+	@echo Compiling GMSH/gmshMesh/gmshMesh_Class@PostProcessMethods.F90
+	@$(FC) -c -o "../../lib/gmshMesh_Class@PostProcessMethods.o" $(FFLAGS) "GMSH/gmshMesh/gmshMesh_Class@PostProcessMethods.F90"
 
-"../../lib/LinSolver_Class@LIS.o": "LinSolver/LinSolver_Class@LIS.f90"
-	@echo Compiling LinSolver/LinSolver_Class@LIS.f90
-	@$(FC) -c -o "../../lib/LinSolver_Class@LIS.o" $(FFLAGS) "LinSolver/LinSolver_Class@LIS.f90"
+"../../lib/LinSolver_Class@LIS.o": "LinSolver/LinSolver_Class@LIS.F90"
+	@echo Compiling LinSolver/LinSolver_Class@LIS.F90
+	@$(FC) -c -o "../../lib/LinSolver_Class@LIS.o" $(FFLAGS) "LinSolver/LinSolver_Class@LIS.F90"
 
-"../../lib/LinSolver_Class@Sparsekit.o": "LinSolver/LinSolver_Class@Sparsekit.f90"
-	@echo Compiling LinSolver/LinSolver_Class@Sparsekit.f90
-	@$(FC) -c -o "../../lib/LinSolver_Class@Sparsekit.o" $(FFLAGS) "LinSolver/LinSolver_Class@Sparsekit.f90"
+"../../lib/LinSolver_Class@Sparsekit.o": "LinSolver/LinSolver_Class@Sparsekit.F90"
+	@echo Compiling LinSolver/LinSolver_Class@Sparsekit.F90
+	@$(FC) -c -o "../../lib/LinSolver_Class@Sparsekit.o" $(FFLAGS) "LinSolver/LinSolver_Class@Sparsekit.F90"
 
-"../../lib/Material_Class@Soil.o": "Material/Material_Class@Soil.f90"
-	@echo Compiling Material/Material_Class@Soil.f90
-	@$(FC) -c -o "../../lib/Material_Class@Soil.o" $(FFLAGS) "Material/Material_Class@Soil.f90"
+"../../lib/Material_Class@Soil.o": "Material/Material_Class@Soil.F90"
+	@echo Compiling Material/Material_Class@Soil.F90
+	@$(FC) -c -o "../../lib/Material_Class@Soil.o" $(FFLAGS) "Material/Material_Class@Soil.F90"
 
-"../../lib/Mesh_Class@Methods.o": "FEMesh/Mesh/Mesh_Class@Methods.f90"
-	@echo Compiling FEMesh/Mesh/Mesh_Class@Methods.f90
-	@$(FC) -c -o "../../lib/Mesh_Class@Methods.o" $(FFLAGS) "FEMesh/Mesh/Mesh_Class@Methods.f90"
+"../../lib/Mesh_Class@Methods.o": "FEMesh/Mesh/Mesh_Class@Methods.F90"
+	@echo Compiling FEMesh/Mesh/Mesh_Class@Methods.F90
+	@$(FC) -c -o "../../lib/Mesh_Class@Methods.o" $(FFLAGS) "FEMesh/Mesh/Mesh_Class@Methods.F90"
 
-"../../lib/MeshConnectivity_Class@Methods.o": "FEMesh/Mesh/MeshConnectivity_Class@Methods.f90"
-	@echo Compiling FEMesh/Mesh/MeshConnectivity_Class@Methods.f90
-	@$(FC) -c -o "../../lib/MeshConnectivity_Class@Methods.o" $(FFLAGS) "FEMesh/Mesh/MeshConnectivity_Class@Methods.f90"
+"../../lib/MeshConnectivity_Class@Methods.o": "FEMesh/Mesh/MeshConnectivity_Class@Methods.F90"
+	@echo Compiling FEMesh/Mesh/MeshConnectivity_Class@Methods.F90
+	@$(FC) -c -o "../../lib/MeshConnectivity_Class@Methods.o" $(FFLAGS) "FEMesh/Mesh/MeshConnectivity_Class@Methods.F90"
 
-"../../lib/MeshData_Class@Methods.o": "FEMesh/Mesh/MeshData_Class@Methods.f90"
-	@echo Compiling FEMesh/Mesh/MeshData_Class@Methods.f90
-	@$(FC) -c -o "../../lib/MeshData_Class@Methods.o" $(FFLAGS) "FEMesh/Mesh/MeshData_Class@Methods.f90"
+"../../lib/MeshData_Class@Methods.o": "FEMesh/Mesh/MeshData_Class@Methods.F90"
+	@echo Compiling FEMesh/Mesh/MeshData_Class@Methods.F90
+	@$(FC) -c -o "../../lib/MeshData_Class@Methods.o" $(FFLAGS) "FEMesh/Mesh/MeshData_Class@Methods.F90"
 
-"../../lib/mshElements_Class@Methods.o": "GMSH/MSH/mshElements_Class@Methods.f90"
-	@echo Compiling GMSH/MSH/mshElements_Class@Methods.f90
-	@$(FC) -c -o "../../lib/mshElements_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshElements_Class@Methods.f90"
+"../../lib/mshElements_Class@Methods.o": "GMSH/MSH/mshElements_Class@Methods.F90"
+	@echo Compiling GMSH/MSH/mshElements_Class@Methods.F90
+	@$(FC) -c -o "../../lib/mshElements_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshElements_Class@Methods.F90"
 
-"../../lib/mshEntity_Class@Methods.o": "GMSH/MSH/mshEntity_Class@Methods.f90"
-	@echo Compiling GMSH/MSH/mshEntity_Class@Methods.f90
-	@$(FC) -c -o "../../lib/mshEntity_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshEntity_Class@Methods.f90"
+"../../lib/mshEntity_Class@Methods.o": "GMSH/MSH/mshEntity_Class@Methods.F90"
+	@echo Compiling GMSH/MSH/mshEntity_Class@Methods.F90
+	@$(FC) -c -o "../../lib/mshEntity_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshEntity_Class@Methods.F90"
 
-"../../lib/mshFormat_Class@Methods.o": "GMSH/MSH/mshFormat_Class@Methods.f90"
-	@echo Compiling GMSH/MSH/mshFormat_Class@Methods.f90
-	@$(FC) -c -o "../../lib/mshFormat_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshFormat_Class@Methods.f90"
+"../../lib/mshFormat_Class@Methods.o": "GMSH/MSH/mshFormat_Class@Methods.F90"
+	@echo Compiling GMSH/MSH/mshFormat_Class@Methods.F90
+	@$(FC) -c -o "../../lib/mshFormat_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshFormat_Class@Methods.F90"
 
-"../../lib/mshNodes_Class@Methods.o": "GMSH/MSH/mshNodes_Class@Methods.f90"
-	@echo Compiling GMSH/MSH/mshNodes_Class@Methods.f90
-	@$(FC) -c -o "../../lib/mshNodes_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshNodes_Class@Methods.f90"
+"../../lib/mshNodes_Class@Methods.o": "GMSH/MSH/mshNodes_Class@Methods.F90"
+	@echo Compiling GMSH/MSH/mshNodes_Class@Methods.F90
+	@$(FC) -c -o "../../lib/mshNodes_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshNodes_Class@Methods.F90"
 
-"../../lib/mshPhysicalNames_Class@Methods.o": "GMSH/MSH/mshPhysicalNames_Class@Methods.f90"
-	@echo Compiling GMSH/MSH/mshPhysicalNames_Class@Methods.f90
-	@$(FC) -c -o "../../lib/mshPhysicalNames_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshPhysicalNames_Class@Methods.f90"
+"../../lib/mshPhysicalNames_Class@Methods.o": "GMSH/MSH/mshPhysicalNames_Class@Methods.F90"
+	@echo Compiling GMSH/MSH/mshPhysicalNames_Class@Methods.F90
+	@$(FC) -c -o "../../lib/mshPhysicalNames_Class@Methods.o" $(FFLAGS) "GMSH/MSH/mshPhysicalNames_Class@Methods.F90"
 
-"../../lib/QuadratureVariables_Class@Methods.o": "QuadratureVariables/QuadratureVariables_Class@Methods.f90"
-	@echo Compiling QuadratureVariables/QuadratureVariables_Class@Methods.f90
-	@$(FC) -c -o "../../lib/QuadratureVariables_Class@Methods.o" $(FFLAGS) "QuadratureVariables/QuadratureVariables_Class@Methods.f90"
+"../../lib/QuadratureVariables_Class@Methods.o": "QuadratureVariables/QuadratureVariables_Class@Methods.F90"
+	@echo Compiling QuadratureVariables/QuadratureVariables_Class@Methods.F90
+	@$(FC) -c -o "../../lib/QuadratureVariables_Class@Methods.o" $(FFLAGS) "QuadratureVariables/QuadratureVariables_Class@Methods.F90"
 
-"../../lib/SFCCModel_Class@ExpModel.o": "MaterialProperties/SFCCModel_Class@ExpModel.f90"
-	@echo Compiling MaterialProperties/SFCCModel_Class@ExpModel.f90
-	@$(FC) -c -o "../../lib/SFCCModel_Class@ExpModel.o" $(FFLAGS) "MaterialProperties/SFCCModel_Class@ExpModel.f90"
+"../../lib/SFCCModel_Class@ExpModel.o": "MaterialProperties/SFCCModel_Class@ExpModel.F90"
+	@echo Compiling MaterialProperties/SFCCModel_Class@ExpModel.F90
+	@$(FC) -c -o "../../lib/SFCCModel_Class@ExpModel.o" $(FFLAGS) "MaterialProperties/SFCCModel_Class@ExpModel.F90"
 
-"../../lib/SFCCModel_Class@User.o": "MaterialProperties/SFCCModel_Class@User.f90"
-	@echo Compiling MaterialProperties/SFCCModel_Class@User.f90
-	@$(FC) -c -o "../../lib/SFCCModel_Class@User.o" $(FFLAGS) "MaterialProperties/SFCCModel_Class@User.f90"
+"../../lib/SFCCModel_Class@User.o": "MaterialProperties/SFCCModel_Class@User.F90"
+	@echo Compiling MaterialProperties/SFCCModel_Class@User.F90
+	@$(FC) -c -o "../../lib/SFCCModel_Class@User.o" $(FFLAGS) "MaterialProperties/SFCCModel_Class@User.F90"
 
-"../../lib/ThermCondModel_Class@Johansen.o": "MaterialProperties/ThermCondModel_Class@Johansen.f90"
-	@echo Compiling MaterialProperties/ThermCondModel_Class@Johansen.f90
-	@$(FC) -c -o "../../lib/ThermCondModel_Class@Johansen.o" $(FFLAGS) "MaterialProperties/ThermCondModel_Class@Johansen.f90"
+"../../lib/ThermCondModel_Class@Johansen.o": "MaterialProperties/ThermCondModel_Class@Johansen.F90"
+	@echo Compiling MaterialProperties/ThermCondModel_Class@Johansen.F90
+	@$(FC) -c -o "../../lib/ThermCondModel_Class@Johansen.o" $(FFLAGS) "MaterialProperties/ThermCondModel_Class@Johansen.F90"
 
-"../../lib/ThermCondModel_Class@User.o": "MaterialProperties/ThermCondModel_Class@User.f90"
-	@echo Compiling MaterialProperties/ThermCondModel_Class@User.f90
-	@$(FC) -c -o "../../lib/ThermCondModel_Class@User.o" $(FFLAGS) "MaterialProperties/ThermCondModel_Class@User.f90"
+"../../lib/ThermCondModel_Class@User.o": "MaterialProperties/ThermCondModel_Class@User.F90"
+	@echo Compiling MaterialProperties/ThermCondModel_Class@User.F90
+	@$(FC) -c -o "../../lib/ThermCondModel_Class@User.o" $(FFLAGS) "MaterialProperties/ThermCondModel_Class@User.F90"
 
-"../../lib/VolHeatCapModel_Class@MixModel.o": "MaterialProperties/VolHeatCapModel_Class@MixModel.f90"
-	@echo Compiling MaterialProperties/VolHeatCapModel_Class@MixModel.f90
-	@$(FC) -c -o "../../lib/VolHeatCapModel_Class@MixModel.o" $(FFLAGS) "MaterialProperties/VolHeatCapModel_Class@MixModel.f90"
+"../../lib/VolHeatCapModel_Class@MixModel.o": "MaterialProperties/VolHeatCapModel_Class@MixModel.F90"
+	@echo Compiling MaterialProperties/VolHeatCapModel_Class@MixModel.F90
+	@$(FC) -c -o "../../lib/VolHeatCapModel_Class@MixModel.o" $(FFLAGS) "MaterialProperties/VolHeatCapModel_Class@MixModel.F90"
 
-"../../lib/VolHeatCapModel_Class@User.o": "MaterialProperties/VolHeatCapModel_Class@User.f90"
-	@echo Compiling MaterialProperties/VolHeatCapModel_Class@User.f90
-	@$(FC) -c -o "../../lib/VolHeatCapModel_Class@User.o" $(FFLAGS) "MaterialProperties/VolHeatCapModel_Class@User.f90"
+"../../lib/VolHeatCapModel_Class@User.o": "MaterialProperties/VolHeatCapModel_Class@User.F90"
+	@echo Compiling MaterialProperties/VolHeatCapModel_Class@User.F90
+	@$(FC) -c -o "../../lib/VolHeatCapModel_Class@User.o" $(FFLAGS) "MaterialProperties/VolHeatCapModel_Class@User.F90"
 
-"../../lib/vtkType@Methods.o": "VTK/vtkType@Methods.f90"
-	@echo Compiling VTK/vtkType@Methods.f90
-	@$(FC) -c -o "../../lib/vtkType@Methods.o" $(FFLAGS) "VTK/vtkType@Methods.f90"
+"../../lib/vtkType@Methods.o": "VTK/vtkType@Methods.F90"
+	@echo Compiling VTK/vtkType@Methods.F90
+	@$(FC) -c -o "../../lib/vtkType@Methods.o" $(FFLAGS) "VTK/vtkType@Methods.F90"
 
 clean: .SYMBOLIC
 	@echo Deleting ../../lib/Domain_Class@Methods.o and related files
