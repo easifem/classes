@@ -781,7 +781,7 @@ SUBROUTINE setNumNodesInPhysicalNames( obj )
 END SUBROUTINE setNumNodesInPhysicalNames
 
 ! !----------------------------------------------------------------------------
-! !                                                                    Display
+! !                                                                Display
 ! !----------------------------------------------------------------------------
 
 ! MODULE PROCEDURE msh_display

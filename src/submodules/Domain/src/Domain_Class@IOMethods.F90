@@ -272,7 +272,9 @@ MODULE PROCEDURE Domain_Import
       obj%tElements( jj ) = obj%tElements( jj )+meshObj%ptr%getTotalElements()
     END DO
   END DO
-  CALL Display( obj%tElements, 'tElements =', unitNo = e%getLogFileUnit() )
+  IF( e%isLogActive() ) &
+      & CALL Display( obj%tElements, 'tElements =', &
+      & unitNo = e%getLogFileUnit() )
   NULLIFY( meshObj%ptr )
 END PROCEDURE Domain_Import
 
