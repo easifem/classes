@@ -6,5 +6,5 @@ TARGET_SOURCES(
   ${src_path}/mshEntity_Class.F90
   ${src_path}/mshNodes_Class.F90
   ${src_path}/mshElements_Class.F90
-  ${src_path}/MSH_Class.F90
+  ${src_path}/MSHFile_Class.F90
   )

@@ -50,8 +50,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 
 #GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
-#MSH
-include(${CMAKE_CURRENT_LIST_DIR}/MSH/CMakeLists.txt)
+#MSHFile
+include(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 
 #AbstractVector
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)

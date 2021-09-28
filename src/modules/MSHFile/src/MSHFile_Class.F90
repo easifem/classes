@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE MSH_Class
+MODULE MSHFile_Class
 USE BaseType
 USE GlobalData
 USE TxtFile_Class
@@ -28,18 +28,18 @@ USE mshElements_Class
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "MSH_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "MSHFile_CLASS"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
-!                                                                       MSH_
+!                                                                       MSHFile_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	11 June 2021
 ! summary: 	This class handles the mesh generation by gmsh
 
-TYPE, EXTENDS( TxtFile_ ) :: MSH_
+TYPE, EXTENDS( TxtFile_ ) :: MSHFile_
   PRIVATE
   TYPE( String ), POINTER :: buffer => NULL()
     !! buffer to recoord coommands
@@ -83,22 +83,22 @@ TYPE, EXTENDS( TxtFile_ ) :: MSH_
       & msh_ReadVolumeEntities
     PROCEDURE, PUBLIC, PASS( obj ) :: ReadNodes => msh_ReadNodes
     PROCEDURE, PUBLIC, PASS( obj ) :: ReadElements => msh_ReadElements
-END TYPE MSH_
+END TYPE MSHFile_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-PUBLIC :: MSH_
+PUBLIC :: MSHFile_
 
-! TYPE( MSH_ ), PUBLIC, PARAMETER :: TypeMSH = MSH_( )
+! TYPE( MSHFile_ ), PUBLIC, PARAMETER :: TypeMSH = MSHFile_( )
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: MSHPointer_
-  CLASS( MSH_ ), POINTER :: Ptr => NULL()
+  CLASS( MSHFile_ ), POINTER :: Ptr => NULL()
 END TYPE MSHPointer_
 
 PUBLIC :: MSHPointer_
@@ -109,7 +109,7 @@ PUBLIC :: MSHPointer_
 
 INTERFACE
 MODULE SUBROUTINE msh_Final( obj )
-  TYPE( MSH_ ), INTENT( INOUT ) :: obj
+  TYPE( MSHFile_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE msh_Final
 END INTERFACE
 
@@ -123,7 +123,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_DeallocateData( obj, Delete )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: Delete
 END SUBROUTINE msh_DeallocateData
 END INTERFACE
@@ -140,12 +140,12 @@ PUBLIC :: DeallocateData
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 11 June 2021
-! summary: This subroutine generates the MSH_ object
+! summary: This subroutine generates the MSHFile_ object
 
 INTERFACE
 MODULE SUBROUTINE msh_Import( obj, hdf5, group )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
-  CLASS( MSH_ ), INTENT( INOUT ) :: hdf5
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE msh_Import
 END INTERFACE
@@ -160,7 +160,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_Export( obj, hdf5, group )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE msh_Export
@@ -172,11 +172,11 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	11 June 2021
-! summary: This subroutine reads the `MSH_` file and generate the msh_ data
+! summary: This subroutine reads the `MSHFile_` file and generate the msh_ data
 
 INTERFACE
 MODULE SUBROUTINE msh_Read(obj, error )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE msh_Read
 END INTERFACE
@@ -187,7 +187,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_ReadPointEntities( obj, te )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: te
 END SUBROUTINE msh_ReadPointEntities
 END INTERFACE
@@ -198,7 +198,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_ReadCurveEntities( obj, te )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: te
 END SUBROUTINE msh_ReadCurveEntities
 END INTERFACE
@@ -209,7 +209,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_ReadSurfaceEntities( obj, te )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: te
 END SUBROUTINE msh_ReadSurfaceEntities
 END INTERFACE
@@ -220,7 +220,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_ReadVolumeEntities( obj, te )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: te
 END SUBROUTINE msh_ReadVolumeEntities
 END INTERFACE
@@ -231,7 +231,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_ReadNodes( obj )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE msh_ReadNodes
 END INTERFACE
 
@@ -241,7 +241,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE msh_ReadElements( obj )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE msh_ReadElements
 END INTERFACE
 
@@ -257,7 +257,7 @@ END INTERFACE
 ! ! This will add mesh generation command to .geo file
 
 ! MODULE FUNCTION mesh_generate( obj, dim ) RESULT( ans )
-!   CLASS( MSH_ ), INTENT( INOUT) :: obj
+!   CLASS( MSHFile_ ), INTENT( INOUT) :: obj
 !   INTEGER( I4B ), INTENT( IN ) :: dim
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION mesh_generate
@@ -275,7 +275,7 @@ END INTERFACE
 ! ! This function will dump the buffer content in to a file
 
 ! MODULE FUNCTION mesh_write( obj, UnitNo ) RESULT( ans )
-!   CLASS( MSH_ ), INTENT( INOUT) :: obj
+!   CLASS( MSHFile_ ), INTENT( INOUT) :: obj
 !   INTEGER( I4B ), INTENT( IN ) :: UnitNo
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION mesh_write
@@ -286,14 +286,14 @@ END INTERFACE
 ! !----------------------------------------------------------------------------
 
 ! INTERFACE
-! !! This function will create the [[MSH_]] object
+! !! This function will create the [[MSHFile_]] object
 
 ! !> authors: Dr. Vikas Sharma
 ! !
-! ! This function will create the [[MSH_]] object
+! ! This function will create the [[MSHFile_]] object
 
 ! MODULE FUNCTION msh_constuctor1(Path,FileName,Extension,NSD) RESULT(ans)
-!   TYPE( MSH_ ) :: ans
+!   TYPE( MSHFile_ ) :: ans
 !   CHARACTER( LEN = * ), INTENT( IN ) :: FileName, Extension, Path
 !   INTEGER( I4B ), INTENT( IN ) :: NSD
 ! END FUNCTION msh_constuctor1
@@ -317,7 +317,7 @@ END INTERFACE
 ! ! This subroutine display the content of obj
 
 ! MODULE SUBROUTINE msh_display( obj, Msg, UnitNo )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CHARACTER( LEN = * ), INTENT( IN ) :: msg
 !   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
 ! END SUBROUTINE msh_display
@@ -341,7 +341,7 @@ END INTERFACE
 ! ! This function will return the total number of nodes in mesh
 
 ! MODULE PURE FUNCTION msh_totalnodes( obj ) RESULT( ans )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION msh_totalnodes
 ! END INTERFACE
@@ -357,7 +357,7 @@ END INTERFACE
 ! !
 ! !  This subroutine returns the nodal coordinates
 ! MODULE PURE SUBROUTINE msh_getnodes_array( obj, Nodes )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: Nodes( :, : )
 ! END SUBROUTINE msh_getnodes_array
 ! END INTERFACE
@@ -373,7 +373,7 @@ END INTERFACE
 ! !
 ! !  This subroutine returns the nodal coordinates
 ! MODULE SUBROUTINE msh_getnodes_file( obj, UnitNo, Str, EndStr )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
 !   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: Str, EndStr
 ! END SUBROUTINE msh_getnodes_file
@@ -391,7 +391,7 @@ END INTERFACE
 ! ! This function returns the total element in the mesh
 
 ! MODULE PURE FUNCTION msh_telements_1( obj ) RESULT( ans )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION msh_telements_1
 ! END INTERFACE
@@ -413,7 +413,7 @@ END INTERFACE
 ! ! Xidim=3 => Volume
 
 ! MODULE PURE FUNCTION msh_telements_2( obj, XiDim ) RESULT( ans )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION msh_telements_2
@@ -432,7 +432,7 @@ END INTERFACE
 ! ! We can filter elements based on `Xidim` and `tag`
 
 ! MODULE PURE FUNCTION msh_telements_3( obj, XiDim, Tag ) RESULT( ans )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   INTEGER( I4B ), INTENT( IN ) :: Tag( : )
 !   INTEGER( I4B ) :: ans
@@ -451,7 +451,7 @@ END INTERFACE
 ! ! This subroutine returns a single [[mesh_]] object containing all elements
 
 ! MODULE SUBROUTINE msh_getelements_1( obj, Meshobj, FEobj )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
 ! END SUBROUTINE msh_getelements_1
@@ -479,7 +479,7 @@ END INTERFACE
 ! ! @endnote
 
 ! MODULE SUBROUTINE msh_getelements_2( obj,Meshobj, XiDim, FEobj, Offset )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
@@ -492,7 +492,7 @@ END INTERFACE
 ! !----------------------------------------------------------------------------
 
 ! INTERFACE
-! !! This subroutine build a [[mesh_]] in [[domain_]] by using [[MSH_]]
+! !! This subroutine build a [[mesh_]] in [[domain_]] by using [[MSHFile_]]
 
 ! !> This subroutine builds a mesh of elements with same co-dimensions
 ! !
@@ -507,10 +507,10 @@ END INTERFACE
 ! ! coming elements
 ! !
 ! ! Note that this is just a wrapper for a method defined in
-! ! [[MSH_::getelements]]
+! ! [[MSHFile_::getelements]]
 
 ! MODULE SUBROUTINE msh_getelements_2c( obj, Dom,indx,XiDim,FEobj,Offset )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
 !   INTEGER( I4B ), INTENT( IN ) :: indx
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
@@ -545,7 +545,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_getelements_3( obj, Meshobj, XiDim, Tag, FEobj,&
 !   & Offset )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim, Tag( : )
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
@@ -559,7 +559,7 @@ END INTERFACE
 ! !----------------------------------------------------------------------------
 
 ! INTERFACE
-! !! This subroutine build a [[mesh_]] in [[domain_]] by using [[MSH_]]
+! !! This subroutine build a [[mesh_]] in [[domain_]] by using [[MSHFile_]]
 
 ! !> authors: Dr. Vikas Sharma
 ! !
@@ -579,11 +579,11 @@ END INTERFACE
 ! ! @endnote
 ! !
 ! ! Note that this is just a wrapper for a method defined in
-! ! [[MSH_::getelements]]
+! ! [[MSHFile_::getelements]]
 
 ! MODULE SUBROUTINE msh_getelements_3c( obj, Dom, Indx, XiDim, Tag, &
 !   & FEobj, Offset )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
 !   INTEGER( I4B ), INTENT( IN ) :: Indx
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim, Tag( : )
@@ -618,7 +618,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_getelements_4( obj, Meshobj, XiDim, TagNames, &
 !   & FEobj, Offset )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   TYPE( String ), INTENT( IN ) :: TagNames( : )
@@ -632,7 +632,7 @@ END INTERFACE
 ! !----------------------------------------------------------------------------
 
 ! INTERFACE
-! !! This subroutine build a [[mesh_]] in [[domain_]] by using [[MSH_]]
+! !! This subroutine build a [[mesh_]] in [[domain_]] by using [[MSHFile_]]
 
 ! !> authors: Dr. Vikas Sharma
 ! !
@@ -652,11 +652,11 @@ END INTERFACE
 ! ! @endnote
 ! !
 ! ! Note that this is just a wrapper for a method defined in
-! ! [[MSH_::getelements]]
+! ! [[MSHFile_::getelements]]
 
 ! MODULE SUBROUTINE msh_getelements_4c( obj, Dom, Indx, XiDim, TagNames, &
 !   & FEobj, Offset )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
 !   INTEGER( I4B ), INTENT( IN ) :: Indx
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
@@ -678,11 +678,11 @@ END INTERFACE
 ! ! This subroutine initiate [[domain_]] by reading gmshMesh file
 ! ! This is a high level routine
 ! !
-! ! - It gets all informatio from [[MSH_]] and allocate `obj %  omega`
+! ! - It gets all informatio from [[MSHFile_]] and allocate `obj %  omega`
 ! ! and `obj  % boundary`
 
 ! MODULE SUBROUTINE dom_init_from_gmshMesh( mshobj, obj, facetmesh )
-!   CLASS( MSH_ ), INTENT( IN ) :: mshobj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: mshobj
 !   CLASS( Domain_ ), INTENT( INOUT) :: obj
 !   TYPE( String ), OPTIONAL, INTENT( IN ) ::  facetmesh( :, : )
 ! END SUBROUTINE dom_init_from_gmshMesh
@@ -695,7 +695,7 @@ END INTERFACE
 ! INTERFACE
 ! MODULE SUBROUTINE msh_write_mesh( obj, Path, Filename, Extension, &
 !   & Nodes )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   CHARACTER( LEN = * ), INTENT( IN ) :: Path
 !   CHARACTER( LEN = * ), INTENT( IN ) :: FileName
 !   CHARACTER( LEN = * ), INTENT( IN ) :: Extension
@@ -722,7 +722,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_write_nodedata_1( obj, x, dofobj, name, indx, &
 !   & local_nptrs, nodes )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   REAL( DFP ), INTENT( IN ) :: x( : )
 !   TYPE( DOF_ ), INTENT( IN ) :: dofobj
 !   INTEGER( I4B ), INTENT( IN ) :: indx( : )
@@ -748,7 +748,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_write_nodedata_2( obj, x, dofobj, indx, &
 !   & local_nptrs, nodes )
-!   CLASS( MSH_ ), INTENT( IN ) :: obj
+!   CLASS( MSHFile_ ), INTENT( IN ) :: obj
 !   REAL( DFP ), INTENT( IN ) :: x( : )
 !   TYPE( DOF_ ), INTENT( IN ) :: dofobj
 !   INTEGER( I4B ), INTENT( IN ) :: indx( : )
@@ -778,7 +778,7 @@ END INTERFACE
 
 ! FUNCTION msh_constructor_1( Path, FileName, Extension, NSD) RESULT(obj)
 !     ! Define intent of dummy variables
-!     CLASS( MSH_ ), POINTER :: obj
+!     CLASS( MSHFile_ ), POINTER :: obj
 !     CHARACTER( LEN = * ), INTENT( IN ) :: FileName
 !     CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Extension, Path
 !     INTEGER( I4B ), INTENT( IN ) :: NSD
@@ -788,4 +788,4 @@ END INTERFACE
 
 ! END FUNCTION msh_constructor_1
 
-END MODULE MSH_Class
+END MODULE MSHFile_Class

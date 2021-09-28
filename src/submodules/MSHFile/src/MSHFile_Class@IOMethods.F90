@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( MSH_Class ) IOMethods
+SUBMODULE( MSHFile_Class ) IOMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -133,7 +133,7 @@ END PROCEDURE msh_Export
 !----------------------------------------------------------------------------
 
 SUBROUTINE ExportMeshFormat(obj, hdf5, dsetname)
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   TYPE( String ), INTENT( IN ) :: dsetname
   ! Writing mesh format
@@ -152,7 +152,7 @@ END SUBROUTINE ExportMeshFormat
 !----------------------------------------------------------------------------
 
 SUBROUTINE ExportMeshPhysicalNames( obj, hdf5, dsetname )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   TYPE( String ), INTENT( IN ) :: dsetname
 
@@ -196,7 +196,7 @@ END SUBROUTINE ExportMeshPhysicalNames
 !----------------------------------------------------------------------------
 
 SUBROUTINE ExportMeshNodeInfo( obj, hdf5, dsetname )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   TYPE( String ), INTENT( IN ) :: dsetname
   CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/tNodes", &
@@ -214,7 +214,7 @@ END SUBROUTINE ExportMeshNodeInfo
 !----------------------------------------------------------------------------
 
 SUBROUTINE ExportMeshElementInfo( obj, hdf5, dsetname )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   TYPE( String ), INTENT( IN ) :: dsetname
   CALL hdf5%write(dsetname=TRIM(dsetname%chars())//"/tElements", &
@@ -684,7 +684,7 @@ END PROCEDURE msh_ReadElements
 !----------------------------------------------------------------------------
 
 SUBROUTINE setNumNodesInPhysicalNames( obj )
-  CLASS( MSH_ ), INTENT( INOUT ) :: obj
+  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   ! Internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName="setNumNodesInPhysicalNames"
   INTEGER( I4B ) :: tpt, i, j, k, tElements, dim
@@ -781,7 +781,7 @@ SUBROUTINE setNumNodesInPhysicalNames( obj )
 END SUBROUTINE setNumNodesInPhysicalNames
 
 ! !----------------------------------------------------------------------------
-! !                                                                    Display
+! !                                                                Display
 ! !----------------------------------------------------------------------------
 
 ! MODULE PROCEDURE msh_display
