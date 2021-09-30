@@ -19,6 +19,8 @@ USE GlobalData
 USE BaseType
 USE RealVector_Method, ONLY : getPointer
 USE AbstractField_Class
+USE FPL, ONLY: ParameterList_
+USE Domain_Class, ONLY: DomainPointer_
 IMPLICIT NONE
 PRIVATE
 
@@ -39,7 +41,8 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
     !! Degree of freedom object, which contains the information about how the different components are stored inside the realVec
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => anf_getPointer
-    PROCEDURE, PUBLIC, PASS( obj ) :: size => anf_Size
+    PROCEDURE, PUBLIC, PASS( obj ) :: Size => anf_Size
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => anf_Initiate3
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
@@ -70,7 +73,6 @@ FUNCTION anf_getPointer( obj ) RESULT( ans )
   ans => getPointer( obj%realVec )
 END FUNCTION anf_getPointer
 
-
 !----------------------------------------------------------------------------
 !                                                                    Size
 !----------------------------------------------------------------------------
@@ -85,6 +87,21 @@ FUNCTION anf_Size( obj, dims ) RESULT( ans )
   INTEGER( I4B ) :: ans
   ans = obj%tSize
 END FUNCTION anf_Size
+
+!----------------------------------------------------------------------------
+!                                                            anf_Initiate3
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: This function initiates the block field, here it does nothing in
+! particular
+
+SUBROUTINE anf_Initiate3( obj, param, dom )
+  CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
+END SUBROUTINE anf_Initiate3
 
 !----------------------------------------------------------------------------
 !

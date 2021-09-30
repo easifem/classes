@@ -57,6 +57,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: BlockNodeField_
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => Block_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => Block_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => Block_initiate2
+  PROCEDURE, PUBLIC, PASS( obj ) :: initiate3 => Block_initiate3
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => Block_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => Block_DeallocateData
   FINAL :: Block_Final
@@ -80,11 +81,32 @@ PUBLIC :: BlockNodeFieldPointer_
 !                                 setBlockNodeFieldParam@ConstructorMethod
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Sets the essential parameters to construct an instance of block
+! node field
+!
+!### Introduction
+!
+! This routine sets the essential parameters required for constructing the
+! BlockNodeField_
+!
+! - `param` contains the parameters
+! - the size of `name`, `spaceCompo`, `timeCompo` `fieldType` should be same
+! - the size of `name` actually equal to the total number of physical var
+! - `name` name of each physical variable
+! - `spaceCompo` space components of each physical variable
+! - `timeCompo` time components of each physical variable
+! - `fieldType` of each physical variable
+
 INTERFACE
-MODULE SUBROUTINE setBlockNodeFieldParam( param, name, fieldType )
+MODULE SUBROUTINE setBlockNodeFieldParam( param, name, &
+  & spaceCompo, timeCompo, fieldType )
   TYPE( ParameterList_ ), INTENT( INOUT ) :: param
-  CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
+  TYPE( String ), INTENT( IN ) :: name( : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: spaceCompo( : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: timeCompo( : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType( : )
 END SUBROUTINE setBlockNodeFieldParam
 END INTERFACE
 
@@ -131,11 +153,12 @@ END INTERFACE
 !### Introduction
 ! This routine initiate the [[BlockNodeField_]] object.
 ! `param` contains the information of parameters required to initiate the
-! scalar field. There are essential and optional information.
-! Essential information are described below.
+! Block node field. There are essential and optional information inside the
+! `param`.
 !
-! `CHARACTER(LEN=*) :: name` name of field
-! `INTEGER(I4B) :: tdof` total degrees of freedom
+!@note
+! `param` should be constructed by calling [[BlockNodeField_Class::setBloclNodeFieldParam]] routine.
+!@endnote
 
 INTERFACE
 MODULE SUBROUTINE Block_Initiate1( obj, param, dom )
@@ -164,6 +187,34 @@ MODULE SUBROUTINE Block_Initiate2( obj, obj2, copyFull, copyStructure, usePointe
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
 END SUBROUTINE Block_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Initiate@ConstructorMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This subroutine initiates the BlockNodeField_ object
+!
+!### Introduction
+!
+! This routine initiate the [[BlockNodeField_]] object.
+! `param` contains the information of parameters required to initiate the
+! instance of BlockNodeField_ .
+!
+! - It is better to make `param` by calling
+! [[BlockNodeField_::setBlockNodeFieldParam]]
+! - The size of `dom` should be equal to the number of physical variables
+! present in the block node field.
+! - `dom` contains the pointer to [[Domain_]] class.
+
+INTERFACE
+MODULE SUBROUTINE Block_Initiate3( obj, param, dom )
+  CLASS( BlockNodeField_ ), INTENT( INOUT ) :: obj
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom(:)
+END SUBROUTINE Block_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------

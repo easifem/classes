@@ -147,7 +147,7 @@ MODULE PROCEDURE sField_DeallocateData
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_DeallocateData"
   obj%tSize = 0_I4B
   obj%isInitiated = .FALSE.
-  obj%fieldType = FIELD_TYPE_CONSTANT
+  obj%fieldType = FIELD_TYPE_NORMAL
   CALL DeallocateData( obj%realvec )
   CALL DeallocateData( obj%dof )
   NULLIFY( obj%domain )
