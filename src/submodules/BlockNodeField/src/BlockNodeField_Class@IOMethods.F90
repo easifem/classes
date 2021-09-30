@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE( BlockNodeField_Class ) IOMethods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -23,9 +24,46 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Block_Display
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_Display"
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is under condtruction!')
+  INTEGER( I4B ) :: ii
+  IF( LEN_TRIM( msg) .NE. 0 ) THEN
+    CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
+  END IF
+  !>
+  IF( obj%isInitiated ) THEN
+    CALL Display( "# isInitiated : TRUE", unitNo=unitNo )
+  ELSE
+    CALL Display( "# isInitiated : FALSE, Nothing to Display!", &
+      & unitNo=unitNo )
+    RETURN
+  END IF
+  CALL Display( "# engine : NATIVE_SERIAL", unitNo=unitNo )
+  CALL Display( obj%name, "# name : ", unitNo=unitNo )
+  CALL Display( obj%tSize, "# tSize : ", unitNo=unitNo )
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    CALL Display( "# fieldType : CONSTANT", unitNo=unitNo)
+  ELSE
+    CALL Display( "# fieldType : NORMAL", unitNo=unitNo)
+  END IF
+  IF( ASSOCIATED( obj%domain )  ) THEN
+    CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
+  ELSE
+    CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
+  END IF
+  IF( ALLOCATED( obj%domains )  ) THEN
+    CALL Display( "# domains : ALLOCATED", unitNo=unitNo )
+    DO ii = 1, SIZE(obj%domains)
+      IF( ASSOCIATED( obj%domains(ii)%ptr )  ) THEN
+        CALL Display( "# domains("//TOSTRING(ii)//"): ASSOCIATED", &
+          & unitNo=unitNo )
+      ELSE
+        CALL Display( "# domains("//TOSTRING(ii)//"): NOT ASSOCIATED", &
+          & unitNo=unitNo )
+      END IF
+    END DO
+  ELSE
+    CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
+  END IF
+  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
 END PROCEDURE Block_Display
 
 !----------------------------------------------------------------------------

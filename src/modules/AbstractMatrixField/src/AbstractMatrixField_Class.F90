@@ -83,7 +83,6 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
   PROCEDURE( amField_getRow ), PUBLIC, DEFERRED, PASS( obj ) :: getRow
   PROCEDURE( amField_getColumn ), PUBLIC, DEFERRED, PASS( obj ) :: getColumn
 
-
 END TYPE AbstractMatrixField_
 
 PUBLIC :: AbstractMatrixField_

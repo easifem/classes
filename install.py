@@ -7,6 +7,7 @@ import os
 import sys
 import platform
 
+
 def installRequest(LIB):
     while True:
         choice = input(
@@ -16,10 +17,12 @@ def installRequest(LIB):
         else:
             return False
 
+
 def getOption(key, opt):
     while True:
         separator = ', '
         return input(f"select option for {key}, possible options are : {separator.join(opt)} : ") + " "
+
 
 print("Detecting OS type...")
 _os = platform.system()
@@ -30,38 +33,41 @@ if _os == 'Windows':
     #print("Installation DONE!!")
 else:
     cmake_def = ""
+    user_query = False
+    if user_query:
+        opt = getOption("CMAKE_GENERATOR", [
+                        "Unix Makefiles", "Ninja", "Ninja Multi-Config"])
+        if(opt == " "):
+            opt = '"Ninja"'
+            # opt = '"Ninja"'
+        cmake_def += " -G " + opt
 
-    opt = getOption("CMAKE_GENERATOR", [
-                    "Unix Makefiles", "Ninja", "Ninja Multi-Config"])
-    if(opt == " "):
-        opt = '"Ninja"'
-        # opt = '"Ninja"'
-    cmake_def += " -G " + opt
+        opt = getOption("USE_GMSH_SDK", ["ON", "OFF"])
+        if(opt == " "):
+            opt = "ON"
+        cmake_def += " -DUSE_GMSH_SDK=" + opt
 
-    opt = getOption("USE_GMSH_SDK", ["ON", "OFF"])
-    if(opt == " "):
-        opt = "ON"
-    cmake_def += " -DUSE_GMSH_SDK=" + opt
+        opt = getOption("USE_OpenMP", ["ON", "OFF"])
+        if(opt == " "):
+            opt = "ON"
+        cmake_def += " -DUSE_OpenMP=" + opt
 
-    opt = getOption("USE_OpenMP", ["ON", "OFF"])
-    if(opt == " "):
-        opt = "ON"
-    cmake_def += " -DUSE_OpenMP=" + opt
+        opt = getOption("CMAKE_BUILD_TYPE", ["Release", "Debug"])
+        if(opt == " "):
+            opt = "Release"
+        cmake_def += " -DCMAKE_BUILD_TYPE=" + opt
 
-    opt = getOption("CMAKE_BUILD_TYPE", ["Release", "Debug"])
-    if(opt == " "):
-        opt = "Release"
-    cmake_def += " -DCMAKE_BUILD_TYPE=" + opt
+        opt = getOption("BUILD_SHARED_LIBS", ["ON", "OFF"])
+        if(opt == " "):
+            opt = "ON"
+        cmake_def += " -DBUILD_SHARED_LIBS=" + opt
 
-    opt = getOption("BUILD_SHARED_LIBS", ["ON", "OFF"])
-    if(opt == " "):
-        opt = "ON"
-    cmake_def += " -DBUILD_SHARED_LIBS=" + opt
-
-    opt = getOption("CMAKE_INSTALL_PREFIX", ["${PREFIX}"])
-    if(opt == " "):
-        opt = "${EASIFEM_CLASSES}"
-    cmake_def += " -DCMAKE_INSTALL_PREFIX=" + opt
+        opt = getOption("CMAKE_INSTALL_PREFIX", ["${PREFIX}"])
+        if(opt == " "):
+            opt = "${EASIFEM_CLASSES}"
+        cmake_def += " -DCMAKE_INSTALL_PREFIX=" + opt
+    else:
+        cmake_def += '-G "Ninja" -DUSE_GMSH_SDK:BOOL=ON -DUSE_OpenMP:BOOL=ON -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}'
 
     cmake_def += " -DUSE_Int32=ON -DUSE_Real64=ON"
 

@@ -108,6 +108,8 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
       !! Initiate from the parameter list
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate2 => mField_Initiate2
       !! Initiate by copying other object
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => mField_Initiate3
+      !! Initiate for block matrices
     PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mField_DeallocateData
       !! Deallocate the field
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => mField_Display
@@ -317,6 +319,25 @@ MODULE SUBROUTINE mField_Initiate2( obj, obj2, copyFull, copyStructure, usePoint
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
 END SUBROUTINE mField_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Initiate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine initiates the Matrix Field
+!
+!### Usage
+!
+
+INTERFACE
+MODULE SUBROUTINE mField_Initiate3( obj, param, dom )
+  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
+END SUBROUTINE mField_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------

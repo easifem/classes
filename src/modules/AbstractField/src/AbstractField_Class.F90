@@ -85,10 +85,13 @@ TYPE, ABSTRACT :: AbstractField_
     PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS( obj ) :: checkEssentialParam
       !! check essential parameters
     PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS( obj ) :: Initiate1
-      !! Initiate the field
+      !! Initiate the field by reading param and given domain
     PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS( obj ) :: Initiate2
-      !! Initiate by copying other fields
-    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+      !! Initiate by copying other fields, and different options
+    PROCEDURE(aField_Initiate3), DEFERRED, PUBLIC, PASS( obj ) :: Initiate3
+      !! Initiate  block fields (different physical variables) defined
+      !! over different order of meshes.
+    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
     PROCEDURE(aField_DeallocateData), DEFERRED, PUBLIC, PASS( obj ) :: DeallocateData
       !! Deallocate the field
     PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
@@ -137,6 +140,10 @@ END INTERFACE
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
+
 ABSTRACT INTERFACE
 SUBROUTINE aField_Initiate1( obj, param, dom )
   IMPORT :: AbstractField_, ParameterList_, Domain_
@@ -150,6 +157,10 @@ END INTERFACE
 !                                                            InitiateByCopy
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate by copying other fields, and different options
+
 ABSTRACT INTERFACE
 SUBROUTINE aField_Initiate2( obj, obj2, copyFull, copyStructure, &
   & usePointer )
@@ -160,6 +171,23 @@ SUBROUTINE aField_Initiate2( obj, obj2, copyFull, copyStructure, &
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
 END SUBROUTINE aField_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            InitiateByCopy
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate by copying other fields, and different options
+
+ABSTRACT INTERFACE
+SUBROUTINE aField_Initiate3( obj, param, dom )
+  IMPORT :: AbstractField_, ParameterList_, DomainPointer_
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+  TYPE( ParameterList_ ), INTENT( IN ) :: param
+  TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
+END SUBROUTINE aField_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------

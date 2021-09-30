@@ -55,41 +55,17 @@ MODULE PROCEDURE exceptionMessage
   SELECT CASE( eCode )
   CASE( EXCEPTION_INFORMATION )
     prefix=''
-    WRITE(mesg,'(a)')  &
-      & COLORIZE(string='EXCEPTION_INFORMATION:'// TRIM(mesg), &
-              &  color_fg="BLACK", &
-              &  color_bg="WHITE", &
-              &  style="BOLD_ON" )
+    WRITE(mesg,'(a)')  'EXCEPTION_INFORMATION:'// TRIM(mesg)
     IF(isLogActive) isQuiet=.TRUE.
   CASE(EXCEPTION_WARNING)
-    WRITE(prefix,'(a)')  &
-      & COLORIZE(string='#### EXCEPTION_WARNING ####', &
-              &  color_fg="BLACK", &
-              &  color_bg="YELLOW", &
-              &  style="BOLD_ON" )
-    ! WRITE(prefix,'(a)')  '#### EXCEPTION_WARNING ####'
+    WRITE(prefix,'(a)')  '#### EXCEPTION_WARNING ####'
   CASE(EXCEPTION_ERROR)
-    WRITE(prefix,'(a)')  &
-      & COLORIZE(string='#### EXCEPTION_ERROR ####', &
-              &  color_fg="BLACK", &
-              &  color_bg="MAGENTA", &
-              &  style="BOLD_ON" )
-    ! WRITE(prefix,'(a)')  '#### EXCEPTION_ERROR ####'
+    WRITE(prefix,'(a)')  '#### EXCEPTION_ERROR ####'
   CASE(EXCEPTION_FATAL_ERROR)
-    WRITE(prefix,'(a)')  &
-      & COLORIZE(string='#### EXCEPTION_FATAL_ERROR ####', &
-              &  color_fg="BLACK", &
-              &  color_bg="RED", &
-              &  style="BOLD_ON" )
-    ! WRITE(prefix,'(a)')  '#### EXCEPTION_FATAL_ERROR ####'
+    WRITE(prefix,'(a)')  '#### EXCEPTION_FATAL_ERROR ####'
     isQuiet=.FALSE.
   CASE(EXCEPTION_DEBUG)
-    WRITE(prefix,'(a)')  &
-      & COLORIZE(string='#### EXCEPTION_DEBUG_MESG ####', &
-              &  color_fg="BLACK", &
-              &  color_bg="GREEN", &
-              &  style="BOLD_ON" )
-    ! WRITE(prefix,'(a)')  '#### EXCEPTION_DEBUG_MESG ####'
+    WRITE(prefix,'(a)')  '#### EXCEPTION_DEBUG_MESG ####'
   ENDSELECT
 
   !Write to the default standard error output

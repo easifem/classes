@@ -144,6 +144,16 @@ MODULE PROCEDURE mField_Initiate2
 END PROCEDURE mField_Initiate2
 
 !----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_Initiate3
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_Initiate3"
+  CALL e%raiseInformation(modName//'::'//myName// " - "// &
+    & 'Presently, this subroutine does nothing')
+END PROCEDURE mField_Initiate3
+
+!----------------------------------------------------------------------------
 !                                                            DeallocateData
 !----------------------------------------------------------------------------
 
