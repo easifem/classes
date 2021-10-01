@@ -17,7 +17,6 @@
 
 MODULE easifemClasses
 USE ExceptionHandler_Class
-USE FPL
 USE FPL_Method
 USE Files
 USE ElementFactory
