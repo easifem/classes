@@ -18,7 +18,7 @@
 MODULE ElementFactory
 USE BaseType
 USE GlobalData
-USE FPL
+USE FPL, ONLY: ParameterList_
 USE Element_Class
 USE FacetElement_Class
 IMPLICIT NONE
