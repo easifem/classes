@@ -1,5 +1,6 @@
 ! This module is modified from the ExceptionHandler in FUtility library
-! which is maintained by Futility Development Group. https://github.com/CASL/Futility
+! which is maintained by Futility Development Group.
+! https://github.com/CASL/Futility
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	3 April 2021
@@ -7,7 +8,8 @@
 !
 !### Introduction
 !
-! More details about this module is avaiable at https://github.com/CASL/Futility
+! More details about this module is avaiable at
+! https://github.com/CASL/Futility
 !
 ! This module provides a Fortran 2003 object for basic exception handling
 ! and error reporting. It defines 5 types of exceptions. The defined
@@ -19,7 +21,9 @@
 ! - WARNING: this exception is for providing a warning to the user.
 !    Warnings cannot stop execution. They can be reported to the log file or
 !    standard error.
-! - ERROR: this exception is for reporting errors. If the option stopOnError is false then execution will continue, otherwise it will be halted.
+! - ERROR: this exception is for reporting errors. If the option
+! stopOnError is false then execution will continue, otherwise it
+! will be halted.
 ! - FATAL ERROR: this exception is for reporting fatal errors. It is
 !    assumed that the program cannot recover from a fatal error so this
 !    exception will always halt program execution.

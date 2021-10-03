@@ -3,13 +3,14 @@
     "src",
     "tests"
     ],
-  "excl_suffixes": ["_skip.F90"],
-  "pp_suffixes": [".F90", ".inc", ".part"],
+  "excl_suffixes": ["_skip.F90", ".bk", ".ignore"],
+  "pp_suffixes": [".F90", ".inc", ".part", ".f90"],
   "pp_defs": {},
-  "include_dirs": [
-    "/Users/vikassharma/.easifem/vscode/include/"
-    ],
-  "ext_source_dirs": [],
+  "include_dirs": [],
+  "ext_source_dirs": [
+    "/home/vikassharma/Dropbox/easifem-base/src",
+  ],
   "lowercase_intrinsics": false,
-  "debug_log": false
+  "debug_log": false,
+  "disable_diagnostics": false
 }
