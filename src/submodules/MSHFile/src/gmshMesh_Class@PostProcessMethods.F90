@@ -1,4 +1,4 @@
-SUBMODULE( gmshMesh_Class ) PostProcessMethods
+SUBMODULE(gmshMesh_Class) PostProcessMethods
 USE BaseMethod
 IMPLICIT NONE
 

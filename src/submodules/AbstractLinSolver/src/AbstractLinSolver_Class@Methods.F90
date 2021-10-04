@@ -16,7 +16,7 @@
 !
 
 
-SUBMODULE ( AbstractLinSolver_Class ) Methods
+SUBMODULE ( AbstractLinSolver_Class) Methods
 IMPLICIT NONE
 CONTAINS
 

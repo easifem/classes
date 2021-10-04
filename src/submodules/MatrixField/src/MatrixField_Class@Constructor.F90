@@ -18,7 +18,7 @@
 ! date: 16 July 2021
 ! summary: This module contains constructor method for [[MatrixField_]]
 
-SUBMODULE( MatrixField_Class ) Constructor
+SUBMODULE(MatrixField_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

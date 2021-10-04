@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( FortranFile_Class ) Methods
+SUBMODULE(FortranFile_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 CHARACTER(LEN=maxStrLen) :: emesg, iomsg

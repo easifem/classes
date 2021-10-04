@@ -1,4 +1,4 @@
-SUBMODULE( Material_Class ) Methods
+SUBMODULE(Material_Class) Methods
 !! This submodule implements the type bound procedure of [[material_]]
 USE BaseMethod
 IMPLICIT NONE

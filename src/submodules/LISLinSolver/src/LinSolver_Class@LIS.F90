@@ -1,4 +1,4 @@
-SUBMODULE( LinSolver_Class ) LIS
+SUBMODULE(LinSolver_Class) LIS
 USE BaseMethod
 IMPLICIT NONE
 

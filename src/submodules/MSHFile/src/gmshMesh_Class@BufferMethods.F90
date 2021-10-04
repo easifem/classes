@@ -1,4 +1,4 @@
-SUBMODULE( gmshMesh_Class ) BufferMethods
+SUBMODULE(gmshMesh_Class) BufferMethods
 USE BaseMethod
 IMPLICIT NONE
 

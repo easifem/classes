@@ -19,7 +19,7 @@
 ! date: 16 July 2021
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
-SUBMODULE( MatrixField_Class ) PreconditionMethods
+SUBMODULE(MatrixField_Class) PreconditionMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

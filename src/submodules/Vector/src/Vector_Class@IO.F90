@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Vector_Class ) IO
+SUBMODULE(Vector_Class) IO
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

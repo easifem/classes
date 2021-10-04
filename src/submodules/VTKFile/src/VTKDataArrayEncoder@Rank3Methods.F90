@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VTKDataArrayEncoder ) Rank3Methods
+SUBMODULE(VTKDataArrayEncoder ) Rank3Methods
 USE PENF
 USE BeFoR64
 IMPLICIT NONE

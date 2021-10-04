@@ -1,5 +1,5 @@
-set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
+SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/VTKDataArrayEncoder@Rank1Methods.F90
   ${src_path}/VTKDataArrayEncoder@Rank2Methods.F90

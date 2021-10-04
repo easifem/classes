@@ -1,4 +1,4 @@
-SUBMODULE( gmshMesh_Class ) ElementsMethods
+SUBMODULE(gmshMesh_Class) ElementsMethods
 USE BaseMethod
 IMPLICIT NONE
 

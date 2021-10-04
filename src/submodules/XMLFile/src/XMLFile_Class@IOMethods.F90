@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( XMLFile_Class ) IOMethods
+SUBMODULE(XMLFile_Class) IOMethods
 USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: IOSTAT_END, IOSTAT_EOR
 USE BaseMethod
 IMPLICIT NONE

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( HDF5File_Class ) ReadBool
+SUBMODULE(HDF5File_Class) ReadBool
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

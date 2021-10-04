@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( XMLFile_Class ) ConstructorMethods
+SUBMODULE(XMLFile_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

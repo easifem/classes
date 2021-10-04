@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VTKFile_Class ) PieceMethods
+SUBMODULE(VTKFile_Class) PieceMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

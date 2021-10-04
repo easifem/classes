@@ -16,7 +16,7 @@
 !
 
 
-SUBMODULE ( AbstractMatrixField_Class ) Methods
+SUBMODULE ( AbstractMatrixField_Class) Methods
 IMPLICIT NONE
 CONTAINS
 

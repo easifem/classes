@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( ExceptionHandler_Class ) raiseMethod
+SUBMODULE(ExceptionHandler_Class) raiseMethod
 IMPLICIT NONE
 CONTAINS
 

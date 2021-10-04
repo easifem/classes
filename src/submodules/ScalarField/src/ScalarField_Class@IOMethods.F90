@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( ScalarField_Class ) IOMethods
+SUBMODULE(ScalarField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
 IMPLICIT NONE

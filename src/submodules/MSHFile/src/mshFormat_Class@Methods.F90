@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( mshFormat_Class ) Methods
+SUBMODULE(mshFormat_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

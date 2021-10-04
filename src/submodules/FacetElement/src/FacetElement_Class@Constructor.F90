@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( FacetElement_Class ) Constructor
+SUBMODULE(FacetElement_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

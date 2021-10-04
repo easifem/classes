@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( XMLTag_Class ) ConstructorMethods
+SUBMODULE(XMLTag_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -155,7 +155,7 @@ MODULE PROCEDURE xmlTag_DeallocateData
     ENDDO
     DEALLOCATE(obj%children)
   ENDIF
-  NULLIFY(obj%parent)  
+  NULLIFY(obj%parent)
   obj%tAttributes=0
 END PROCEDURE xmlTag_DeallocateData
 
@@ -168,7 +168,7 @@ MODULE PROCEDURE xmlTag_Final
 END PROCEDURE xmlTag_Final
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

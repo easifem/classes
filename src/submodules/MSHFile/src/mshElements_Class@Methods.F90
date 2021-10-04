@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( mshElements_Class ) Methods
+SUBMODULE(mshElements_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

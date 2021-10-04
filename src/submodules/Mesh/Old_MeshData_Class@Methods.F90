@@ -1,4 +1,4 @@
-SUBMODULE( MeshData_Class ) Methods
+SUBMODULE(MeshData_Class) Methods
   !! This module contains type bound procedures of [[MeshData_]]
 USE BaseMethod
 IMPLICIT NONE

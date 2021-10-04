@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( STVectorField_Class ) Constructor
+SUBMODULE(STVectorField_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

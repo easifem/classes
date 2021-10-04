@@ -1,4 +1,4 @@
-SUBMODULE( VolHeatCapModel_Class ) MixModel
+SUBMODULE(VolHeatCapModel_Class) MixModel
 USE stdMaterials
 IMPLICIT NONE
 

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( LinSolver_Class ) Constructor
+SUBMODULE(LinSolver_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

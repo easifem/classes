@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( HDF5File_Class ) ReadInt32
+SUBMODULE(HDF5File_Class) ReadInt32
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

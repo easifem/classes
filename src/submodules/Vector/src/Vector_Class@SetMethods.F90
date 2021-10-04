@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Vector_Class ) SetMethods
+SUBMODULE(Vector_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

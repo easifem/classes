@@ -19,7 +19,7 @@
 ! date: 	4 April 2021
 ! summary: 	Constructor method for [[ExceptionHandler_]]
 
-SUBMODULE( ExceptionHandler_Class ) Constructor
+SUBMODULE(ExceptionHandler_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

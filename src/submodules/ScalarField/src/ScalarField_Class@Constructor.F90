@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( ScalarField_Class ) Constructor
+SUBMODULE(ScalarField_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

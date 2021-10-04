@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Mesh_Class ) ConstructorMethods
+SUBMODULE(Mesh_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
