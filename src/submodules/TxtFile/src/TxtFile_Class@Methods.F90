@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( TxtFile_Class ) Methods
+SUBMODULE(TxtFile_Class) Methods
 USE ISO_FORTRAN_ENV, ONLY: IOSTAT_EOR, IOSTAT_END
 USE BaseMethod
 IMPLICIT NONE

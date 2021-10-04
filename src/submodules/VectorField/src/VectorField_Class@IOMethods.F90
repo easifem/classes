@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VectorField_Class ) IOMethods
+SUBMODULE(VectorField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
 IMPLICIT NONE

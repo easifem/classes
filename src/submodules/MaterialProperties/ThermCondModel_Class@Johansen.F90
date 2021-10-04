@@ -1,4 +1,4 @@
-SUBMODULE( ThermCondModel_Class ) Johansen
+SUBMODULE(ThermCondModel_Class) Johansen
 USE stdMaterials
 IMPLICIT NONE
 

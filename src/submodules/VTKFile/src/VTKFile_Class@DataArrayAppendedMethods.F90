@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VTKFile_Class ) DataArrayAppendedMethods
+SUBMODULE(VTKFile_Class) DataArrayAppendedMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

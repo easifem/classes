@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE( BlockNodeField_Class ) ConstructorMethods
+SUBMODULE(BlockNodeField_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

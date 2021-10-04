@@ -19,7 +19,7 @@
 ! date: 	24 March 2021
 ! summary: 	IO methods for FacetElement
 
-SUBMODULE( FacetElement_Class ) IO
+SUBMODULE(FacetElement_Class) IO
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( HDF5File_Class ) WriteReal64
+SUBMODULE(HDF5File_Class) WriteReal64
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

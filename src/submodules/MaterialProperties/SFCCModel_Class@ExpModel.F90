@@ -1,4 +1,4 @@
-SUBMODULE( SFCCModel_Class ) ExpModel
+SUBMODULE(SFCCModel_Class) ExpModel
   IMPLICIT NONE
   CONTAINS
 

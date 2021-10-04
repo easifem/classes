@@ -20,7 +20,7 @@
 ! summary: 	Constructor methods for [[Element_]]
 
 
-SUBMODULE( Element_Class ) Constructor
+SUBMODULE(Element_Class) Constructor
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

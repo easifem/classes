@@ -15,7 +15,7 @@
 ! along with obj program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( HDF5File_Class ) ReadAttribute
+SUBMODULE(HDF5File_Class) ReadAttribute
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

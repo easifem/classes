@@ -18,7 +18,7 @@
 ! date: 16 July 2021
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
-SUBMODULE( MatrixField_Class ) MatVecMethods
+SUBMODULE(MatrixField_Class) MatVecMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

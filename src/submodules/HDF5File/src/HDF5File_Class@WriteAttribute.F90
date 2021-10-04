@@ -15,7 +15,7 @@
 ! along with obj program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( HDF5File_Class ) WriteAttribute
+SUBMODULE(HDF5File_Class) WriteAttribute
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

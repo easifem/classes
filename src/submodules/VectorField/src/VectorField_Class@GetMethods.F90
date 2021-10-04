@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VectorField_Class ) GetMethods
+SUBMODULE(VectorField_Class) GetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

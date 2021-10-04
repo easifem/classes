@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Domain_Class ) setMethods
+SUBMODULE(Domain_Class) setMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

@@ -19,7 +19,7 @@
 ! date: 16 July 2021
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
-SUBMODULE( MatrixField_Class ) LUSolveMethods
+SUBMODULE(MatrixField_Class) LUSolveMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Mesh_Class ) MeshDataMethods
+SUBMODULE(Mesh_Class) MeshDataMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

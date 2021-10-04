@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( VTKFile_Class ) IOMethods
+SUBMODULE(VTKFile_Class) IOMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

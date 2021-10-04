@@ -1,4 +1,4 @@
-SUBMODULE( QuadratureVariables_Class ) Methods
+SUBMODULE(QuadratureVariables_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 

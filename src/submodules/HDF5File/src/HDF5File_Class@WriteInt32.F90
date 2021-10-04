@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( HDF5File_Class ) WriteInt32
+SUBMODULE(HDF5File_Class) WriteInt32
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

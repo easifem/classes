@@ -1,4 +1,4 @@
-SUBMODULE( VolHeatCapModel_Class ) User
+SUBMODULE(VolHeatCapModel_Class) User
 IMPLICIT NONE
 CONTAINS
 

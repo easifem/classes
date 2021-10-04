@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( XMLFile_Class ) SetMethods
+SUBMODULE(XMLFile_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

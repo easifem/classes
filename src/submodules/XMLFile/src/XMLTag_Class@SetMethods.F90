@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( XMLTag_Class ) SetMethods
+SUBMODULE(XMLTag_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

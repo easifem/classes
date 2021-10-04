@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( InputFile_Class ) Methods
+SUBMODULE(InputFile_Class) Methods
 USE ISO_FORTRAN_ENV, ONLY: IOSTAT_EOR, IOSTAT_END
 USE BaseMethod
 IMPLICIT NONE

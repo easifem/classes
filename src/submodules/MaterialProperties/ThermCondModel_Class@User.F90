@@ -1,4 +1,4 @@
-SUBMODULE( ThermCondModel_Class ) User
+SUBMODULE(ThermCondModel_Class) User
 IMPLICIT NONE
 CONTAINS
 

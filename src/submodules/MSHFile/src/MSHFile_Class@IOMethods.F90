@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( MSHFile_Class ) IOMethods
+SUBMODULE(MSHFile_Class) IOMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

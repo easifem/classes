@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( MSHFile_Class ) Methods
+SUBMODULE(MSHFile_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

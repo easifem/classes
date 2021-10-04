@@ -1,4 +1,4 @@
-SUBMODULE( LinSolver_Class ) Sparsekit
+SUBMODULE(LinSolver_Class) Sparsekit
 USE BaseMethod
 IMPLICIT NONE
 

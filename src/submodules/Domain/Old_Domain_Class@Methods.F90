@@ -1,4 +1,4 @@
-SUBMODULE( Domain_Class ) Methods
+SUBMODULE(Domain_Class) Methods
   !! Contains methods related to [[Domain_]] or collection of [[Mesh_]]
 USE BaseMethod
 IMPLICIT NONE

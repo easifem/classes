@@ -1,4 +1,4 @@
-SUBMODULE( Material_Class ) Soil
+SUBMODULE(Material_Class) Soil
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

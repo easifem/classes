@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( STScalarField_Class ) SetMethods
+SUBMODULE(STScalarField_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

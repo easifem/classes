@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Element_Class ) IO
+SUBMODULE(Element_Class) IO
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

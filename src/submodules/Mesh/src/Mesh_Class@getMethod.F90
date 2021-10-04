@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( Mesh_Class ) getMethod
+SUBMODULE(Mesh_Class) getMethod
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS

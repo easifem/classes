@@ -1,4 +1,4 @@
-SUBMODULE( MeshConnectivity_Class ) Methods
+SUBMODULE(MeshConnectivity_Class) Methods
   !! This module contains type bound procedures of [[MeshConnectivity_]]
 USE BaseMethod
 IMPLICIT NONE

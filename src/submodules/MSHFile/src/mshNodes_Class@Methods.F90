@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE( mshNodes_Class ) Methods
+SUBMODULE(mshNodes_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 
