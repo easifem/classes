@@ -295,12 +295,14 @@ END PROCEDURE setLinSolverParam
 MODULE PROCEDURE getLinSolverParam
   INTEGER( I4B ) :: ierr
   ierr = param%get( key="LinSolver/solverName", value=solverName )
-  ierr = param%get( key="LinSolver/preconditionOption", value=preconditionOption )
+  ierr = param%get( key="LinSolver/preconditionOption", &
+    & value=preconditionOption )
   ierr = param%get( key="LinSolver/convergenceIn", value=convergenceIn )
   ierr = param%get( key="LinSolver/convergenceType", value=convergenceType )
   ierr = param%get( key="LinSolver/maxIter", value=maxIter )
   ierr = param%get( key="LinSolver/relativeToRHS", value=relativeToRHS )
-  ierr = param%get( key="LinSolver/KrylovSubspaceSize", value=KrylovSubspaceSize )
+  ierr = param%get( key="LinSolver/KrylovSubspaceSize", &
+    & value=KrylovSubspaceSize )
   ierr = param%get( key="LinSolver/rtol", value=rtol )
   ierr = param%get( key="LinSolver/atol", value=atol )
 END PROCEDURE getLinSolverParam
@@ -355,7 +357,7 @@ END PROCEDURE ls_checkEssentialParam
 
 MODULE PROCEDURE ls_Initiate
   INTEGER( I4B ) :: solverName, preconditionOption, convergenceIn, &
-    & convergenceType, maxIter, KrylovSubspaceSize, relativeToRHS
+    & convergenceType, maxIter, KrylovSubspaceSize
   REAL( DFP ) :: rtol, atol
   LOGICAL( LGT ) :: relativeToRHS
   CALL obj%checkEssentialParam(param)
