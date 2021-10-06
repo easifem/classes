@@ -108,7 +108,7 @@ PUBLIC :: distVec_checkEssentialParam
 ! date: 25 June 2021
 ! summary: This subroutine initiates the vector_ object
 !
-!### Introduction
+!# Introduction
 ! This routine initiate the vector object.
 ! `param` contains the information of parameters required to initiate the
 ! vector. There are essential and optional information.

@@ -41,7 +41,7 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "LINSOLVER_CLASS_EXCEPTION.txt"
 ! date: 16 July 2021
 ! summary: Native linear solver
 !
-!### Introduction
+!# Introduction
 !
 ! [[LinSolver_]] data type is a container around Yusef Saad's SparseKit
 ! lib. It is used to solve the linear system with sparse matrices

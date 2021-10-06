@@ -115,7 +115,7 @@ PUBLIC :: XMLTagPointer_
 ! date: 8 Sept 2021
 ! summary: This routine adds surrogate to the module
 !
-!### Introduction
+!# Introduction
 ! This routine adds surrogate to the module
 
 INTERFACE
@@ -133,7 +133,7 @@ END INTERFACE
 ! date: 8 Sept 2021
 ! summary: This routine initializes an instance of XMLTag_ class
 !
-!### Introduction
+!# Introduction
 ! This routine initializes an instance of XMLTag_ class
 
 
@@ -206,7 +206,7 @@ END INTERFACE
 ! date: 4 Sept 2021
 ! summary: Get the name of an XML tag
 !
-!### Introduction
+!# Introduction
 ! Get the name of an XML tag.
 ! This routine is modified from the following library
 ! [https://github.com/CASL/Futility/blob/master/src/FileType_XML.F90](https://github.com/CASL/Futility/blob/master/src/FileType_XML.F90)
@@ -254,7 +254,7 @@ PUBLIC :: ConvertCharArrayToStr
 ! date: 8 Sept 2021
 ! summary: For a given XML element extract the tag information
 !
-!### Introduction
+!# Introduction
 !
 ! This routine extracts the tag information from a given XML element
 !
@@ -291,7 +291,7 @@ PUBLIC :: parseTagAttributes
 ! date: 8 Sept 2021
 ! summary: Determines the number of child elements fora  given XML element
 !
-!### Introduction
+!# Introduction
 !
 ! This routine determines the number of child elements for a  given XML
 ! element
@@ -337,7 +337,7 @@ END INTERFACE
 ! date: 8 sept 2021
 ! summary: This routine returns true if the object is empty
 !
-!### Introduction
+!# Introduction
 ! This routine returns true if the object is empty.
 ! The xmltag is empty when there is no content and no children.
 

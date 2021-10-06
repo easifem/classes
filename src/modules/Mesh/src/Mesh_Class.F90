@@ -87,7 +87,7 @@ END TYPE ElemData_
 ! date: 	13 June 2021
 ! summary: 	This datatype contains the meta data of a mesh
 !
-!### Introduction
+!# Introduction
 !
 ! This datatype contains the mesh data. To be added.
 
@@ -340,7 +340,7 @@ PUBLIC :: addSurrogate_Mesh
 ! date: 	25 March 2021
 ! summary: Allocate the size of the mesh
 !
-!### Introduction
+!# Introduction
 !
 ! This routine initiate the the mesh by reading the data stored inside
 ! the HDF5 file.
@@ -418,7 +418,7 @@ PUBLIC :: Mesh_Pointer
 ! date: 	25 March 2021
 ! summary: Free up the memory stored in [[mesh_]]
 !
-!### Introduction
+!# Introduction
 !
 ! Free up the memory stored in [[mesh_]] data type
 !
@@ -459,7 +459,7 @@ END INTERFACE
 ! summary: This routine reads the mesh from a meshFile which is an hdf5
 ! file
 !
-!### Introduction
+!# Introduction
 !
 ! This routine reads the following
 !
@@ -487,7 +487,7 @@ END INTERFACE
 ! date: 21 Sept 2021
 ! summary: Reads hdf5File for nodecoord of the mesh
 !
-!### Introduction
+!# Introduction
 !
 ! This routine reads [[HDFFile_]] instance for constructing nodeCoord of mesh
 !
@@ -517,7 +517,7 @@ END INTERFACE
 ! date: 	18 June 2021
 ! summary: This routine exports the mesh to a hdf5 file
 !
-!### Introduction
+!# Introduction
 
 INTERFACE
 MODULE SUBROUTINE mesh_Export( obj, hdf5, group )
@@ -556,7 +556,7 @@ END INTERFACE
 ! date: 	12 June 2021
 ! summary: 	Displays the content of [[mesh_]] datatype
 !
-!### Introduction
+!# Introduction
 ! 	This routine displays the content of [[mesh_]] datatype
 !
 !### Usage
@@ -593,7 +593,7 @@ PUBLIC :: Display
 ! date: 12 June 2021
 ! summary: Returns total elements in the mesh
 !
-!### Introduction
+!# Introduction
 !
 ! Returns the total number of elements in the mesh.
 !
@@ -649,7 +649,7 @@ END INTERFACE
 ! date: 21 June 2021
 ! summary: Returns the vector of global node numbers
 !
-!### Introduction
+!# Introduction
 ! This vector returns a vector of global node numbers
 !
 !### Usage
@@ -687,7 +687,7 @@ END INTERFACE
 ! date: 21 June 2021
 ! summary: Returns the vector of global node numbers of internal nodes
 !
-!### Introduction
+!# Introduction
 ! This vector returns a vector of global node numbers of internal nodes
 !
 !### Usage
@@ -725,7 +725,7 @@ END INTERFACE
 ! date: 21 June 2021
 ! summary: Returns the vector of global node numbers of boundary nodes
 !
-!### Introduction
+!# Introduction
 ! This vector returns a vector of global node numbers of boundary nodes
 !
 !### Usage
@@ -811,7 +811,7 @@ END INTERFACE
 ! date: 17 June 2021
 ! summary: Returns true if an global element number is a boundary element
 !
-!### Introduction
+!# Introduction
 ! This routine returns true if a global element number is a boundary element.
 ! A boundary element is one which contains a boundary node.
 
@@ -923,7 +923,7 @@ END INTERFACE
 ! date: 14 June 2021
 ! summary: This function returns the local node number from global node num
 !
-!### Introduction
+!# Introduction
 !
 ! This function returns the local node numbers from global node numbers.
 
@@ -1055,7 +1055,7 @@ END INTERFACE
 ! date: 	15 June 2021
 ! summary: Returns the element numbers which are connected to the a global node
 !
-!### Introduction
+!# Introduction
 ! This function returns the elements containing the global node number `GlobalNode`
 ! The element number are global element numbers
 !
@@ -1108,7 +1108,7 @@ END INTERFACE
 ! date: 15 June 2021
 ! summary: 	Returns the node surrounding a node
 !
-!### Introduction
+!# Introduction
 ! This fucntion returns the vector of node numbers which surrounds a given
 ! node number `GlobalNode`.
 ! - If `IncludeSelf` is true then, in the returned vector of integer, node number GlobalNode is also present
@@ -1161,7 +1161,7 @@ END INTERFACE
 ! date: 16 June 2021
 ! summary: Returns element to element connectivity information
 !
-!### Introduction
+!# Introduction
 ! This routine returns element to element connectivity information for a given global element number `globalElemNumber`
 !
 ! If `OnlyElements` is absent or it is set to FALSE then, this routine returns the **full information** about elements surrounding the global element `globalElemNumber`. In this case,
@@ -1198,7 +1198,7 @@ END INTERFACE
 ! date: 22 July 2021
 ! summary: This routine returns the boundary element data
 !
-!### Introduction
+!# Introduction
 ! This routine returns the boundry element data. It contains the local index of facet element which is boundary
 !
 !
@@ -1244,7 +1244,7 @@ END INTERFACE
 ! date: 	15 June 2021
 ! summary: 	generate Elements surrounding a node mapping
 !
-!### Introduction
+!# Introduction
 !
 ! - This subroutine generates Elements surrounding a node mapping.
 ! - Elements numbers are global element number.
@@ -1280,7 +1280,7 @@ END INTERFACE
 ! date: 	15 June 2021
 ! summary: 	Initiate node to node connectivity data
 !
-!### Introduction
+!# Introduction
 ! This routine generate the node to nodes mapping
 ! This mapping is stored inside `obj%nodeData%globalNodeNum`
 !

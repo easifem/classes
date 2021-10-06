@@ -32,14 +32,14 @@ MODULE PROCEDURE meshSelect_Import
   INTEGER( I4B ) :: ierr
   INTEGER( I4B ), ALLOCATABLE :: intvec( : )
   !> check
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Importing Mesh Selection")
   IF( obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The object is already initiated, deallocate first!')
   END IF
   obj%isInitiated = .TRUE.
-  !> print info
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "IMPORTING MESH SELECTION")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName// &
@@ -154,6 +154,9 @@ MODULE PROCEDURE meshSelect_Import
     obj%NodeNum=intvec
     obj%isSelectionByNodeNum =.TRUE.
   END IF
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Importing Mesh Selection [OK!]")
 END PROCEDURE meshSelect_Import
 
 !----------------------------------------------------------------------------
@@ -165,14 +168,14 @@ MODULE PROCEDURE meshSelect_Export
   TYPE( String ) :: dsetname, strval
   INTEGER( I4B ) :: ierr
   INTEGER( I4B ), ALLOCATABLE :: intvec( : )
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Exporting Mesh Selection")
   !> check
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The object is not initiated, allocate first!')
   END IF
-  !> print info
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "EXPORTING MESH SELECTION")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName// &
@@ -262,6 +265,9 @@ MODULE PROCEDURE meshSelect_Export
     CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
       & vals=intvec)
   END IF
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Exporting Mesh Selection [OK!]")
 END PROCEDURE meshSelect_Export
 
 !----------------------------------------------------------------------------

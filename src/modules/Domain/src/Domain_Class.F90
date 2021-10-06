@@ -319,7 +319,7 @@ END INTERFACE
 ! date: 28 June 2021
 ! summary: Returns the total number of nodes in the domain
 !
-!### Introduction
+!# Introduction
 !
 ! This function returns the total number of nodes in a given mesh entity
 ! The mesh entity is given by its ID and its dimension.
@@ -347,7 +347,7 @@ END INTERFACE
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
 !
-!### Introduction
+!# Introduction
 !
 ! This function returns the local node number of a global node number.
 
@@ -368,7 +368,7 @@ END INTERFACE
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
 !
-!### Introduction
+!# Introduction
 !
 ! This function returns the local node number of a global node number.
 
@@ -388,7 +388,7 @@ END INTERFACE
 ! date: 21 Sept 2021
 ! summary: This function returns the total number of mesh
 !
-!### Introduction
+!# Introduction
 !
 ! This function returns the total number of mesh
 !
@@ -413,7 +413,7 @@ END INTERFACE
 ! date: 23 July 2021
 ! summary: This rotuine returns mesh pointer
 !
-!### Introduction
+!# Introduction
 !
 ! This returns the mesh Entity pointer.
 ! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point, curve, surface, volume meshes.
@@ -436,7 +436,7 @@ END INTERFACE
 ! date: 23 July 2021
 ! summary: This routine returns the nodal coordinates
 !
-!### Introduction
+!# Introduction
 ! - This routine returns the nodal coordinates in the form of rank2 array.
 ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
 ! - If `dim` and `tag` are absent then this routine returns the nodal coordinates of the entire domain
@@ -459,7 +459,7 @@ END INTERFACE
 ! date: 23 July 2021
 ! summary: This routine returns the pointer to nodal coordinates
 !
-!### Introduction
+!# Introduction
 ! - This routine returns the pointer to nodal coordinates in the form of rank2 array.
 ! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
 
@@ -478,7 +478,7 @@ END INTERFACE
 ! date: 2 Sept 2021
 ! summary: this routine returns the global node number
 !
-!### Introduction
+!# Introduction
 ! This routine returns the global node number
 ! xidim is the dimension of the mesh
 

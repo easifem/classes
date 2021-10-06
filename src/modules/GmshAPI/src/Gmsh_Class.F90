@@ -119,7 +119,7 @@ CONTAINS
 ! date: 23 Sept 2021
 ! summary: This function will start the Gmsh engine
 !
-!### Introduction
+!# Introduction
 !
 ! This function will start the Gmsh engine, and it allocates
 ! the pointer fields.
@@ -189,7 +189,7 @@ END FUNCTION Gmsh_initialize
 ! date: 23 Sept 2021
 ! summary: This function will start the Gmsh engine
 !
-!### Introduction
+!# Introduction
 !
 ! This function will start the Gmsh engine.
 !
@@ -211,7 +211,7 @@ END SUBROUTINE GMSH_INIT
 ! date: 23 Sept 2021
 ! summary: This function will stop the Gmsh engine
 !
-!### Introduction
+!# Introduction
 ! This function will stop the Gmsh engine
 !
 !### Usage
@@ -259,7 +259,7 @@ END FUNCTION Gmsh_finalize
 ! date: 23 Sept 2021
 ! summary: This function will stop the Gmsh engine
 !
-!### Introduction
+!# Introduction
 ! This function will stop the Gmsh engine
 !
 !### Usage
@@ -290,7 +290,7 @@ END SUBROUTINE Gmsh_finalize_
 ! date: 23 Sept 2021
 ! summary:  Open a file.
 !
-!### Introduction
+!# Introduction
 !
 ! Open a file. Equivalent to the `File->Open` menu in the Gmsh app. Handling
 ! of the file depends on its extension and/or its contents: opening a file
@@ -330,7 +330,7 @@ END FUNCTION Gmsh_Open
 ! date: 23 Sept 2021
 ! summary: Merge a file
 !
-!### Introduction
+!# Introduction
 !
 ! Merge a file. Equivalent to the `File->Merge` menu in the Gmsh app.
 ! Handling of the file depends on its extension and/or its contents. Merging
@@ -369,7 +369,7 @@ END FUNCTION Gmsh_Merge
 ! date: 23 Sept 2021
 ! summary: Write a file
 !
-!### Introduction
+!# Introduction
 !
 ! Write a file. The export format is determined by the file extension.
 !
@@ -409,7 +409,7 @@ END FUNCTION Gmsh_Write
 ! date: 23 Sept 2021
 ! summary: Clear all loaded models
 !
-!### Introduction
+!# Introduction
 !
 ! Clear all loaded models and post-processing data, and add a new empty
 ! model.

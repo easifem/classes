@@ -23,7 +23,7 @@
 ! date: 23 Sept 2021
 ! summary: Initialize Gmsh API.
 !
-!### Introduction
+!# Introduction
 ! Initialize Gmsh API. This must be called before any call to the other
 ! functions in the API. If `argc' and `argv' (or just `argv' in Python or
 ! Julia) are provided, they will be handled in the same way as the command
@@ -60,7 +60,7 @@ PUBLIC :: gmshInitialize
 ! date: 23 Sept 2021
 ! summary: Finalize the Gmsh API. This must be called when you are done using the Gmsh API.
 !
-!### Introduction
+!# Introduction
 ! Finalize the Gmsh API. This must be called when you are done using the Gmsh API.
 !
 !### CInterface
@@ -86,7 +86,7 @@ PUBLIC :: gmshFinalize
 ! date: 23 Sept 2021
 ! summary:  Open a file.
 !
-!### Introduction
+!# Introduction
 !
 ! Open a file. Equivalent to the `File->Open` menu in the Gmsh app. Handling
 ! of the file depends on its extension and/or its contents: opening a file
@@ -119,7 +119,7 @@ PUBLIC :: gmshOpen
 ! date: 23 Sept 2021
 ! summary: Merge a file
 !
-!### Introduction
+!# Introduction
 !
 ! Merge a file. Equivalent to the `File->Merge` menu in the Gmsh app.
 ! Handling of the file depends on its extension and/or its contents. Merging
@@ -147,7 +147,7 @@ PUBLIC :: gmshMerge
 ! date: 23 Sept 2021
 ! summary: Write a file
 !
-!### Introduction
+!# Introduction
 !
 ! Write a file. The export format is determined by the file extension.
 !
@@ -178,7 +178,7 @@ PUBLIC :: gmshWrite
 ! date: 23 Sept 2021
 ! summary: Clear all loaded models
 !
-!### Introduction
+!# Introduction
 !
 ! Clear all loaded models and post-processing data, and add a new empty
 ! model.
