@@ -44,7 +44,7 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! date: 13 June 2021
 ! summary: User data type for handling the preconditioning of MatrixField_
 !
-!### Introduction
+!# Introduction
 !
 ! This is a data type for storing the the precondition matrix.
 ! The storage pattern of the precondition matrix depends upon the type of
@@ -92,7 +92,7 @@ END TYPE MatrixFieldPrecondition_
 ! date: 15 July 2021
 ! summary: This datatype can handle the finite element matrix field. This is a native implementation of finite element tangent matrices.
 !
-!### Introduction
+!# Introduction
 !
 ! This datatype is native implementation of finite element tangent matrix. This data type is sequential, and it uses Sparsekit library for sparse matrix manipulations.
 !
@@ -215,7 +215,7 @@ PUBLIC :: DeallocateData
 ! date: 25 June 2021
 ! summary: This routine check the essential parameters in param.
 !
-!### Introduction
+!# Introduction
 ! This routine check the essential parameters required to the initiate the
 ! [[MatrixField_]] data type.
 
@@ -236,7 +236,7 @@ PUBLIC :: mField_checkEssentialParam
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 !
-!### Introduction
+!# Introduction
 ! This routine initiates the the matrix field. It uses parameter list, and dom.
 ! - Param contains both essential and optional parameters which are used in constructing the matrix field
 ! - dom is a pointer to a domain, where we are interested in constructing the matrix
@@ -298,7 +298,7 @@ END INTERFACE
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 !
-!### Introduction
+!# Introduction
 ! This routine initiates the `obj` by copying contents from `obj2`. In this way we try to minimize the computation effort.
 !
 ! Default behavior:
@@ -458,7 +458,7 @@ END INTERFACE
 ! summary: This routine returns the row of a sparse matrix in rank1 fortran
 ! vector
 !
-!### Introduction
+!# Introduction
 ! This routine returns the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
@@ -488,7 +488,7 @@ END INTERFACE
 ! summary: This routine returns the column of a sparse matrix
 ! vector
 !
-!### Introduction
+!# Introduction
 ! This routine returns the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
@@ -517,7 +517,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine returns the maxtrix vector multiplication
 !
-!### Introduction
+!# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
 ! is a native fortran vector. The output vector is also a native fortran vector. It should be noted that the output vector should be allocated outside and it should have same length as the input vector.
@@ -542,7 +542,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine returns the maxtrix vector multiplication
 !
-!### Introduction
+!# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
 ! is a native fortran vector. The output vector is also a native fortran vector. It should be noted that the output vector should be allocated outside and it should have same length as the input vector.
@@ -566,7 +566,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine solves (LU) sol = rhs
 !
-!### Introduction
+!# Introduction
 !
 ! This routine solves (LU) sol = rhs
 ! sol and rhs are fortran real vector
@@ -597,7 +597,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine solves (LU) sol = rhs
 !
-!### Introduction
+!# Introduction
 !
 ! - This routine solves (LU) sol = rhs
 ! - sol and rhs are [[AbstractNodeField_]]
@@ -627,7 +627,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine sets the precondition
 !
-!### Introduction
+!# Introduction
 ! This routine sets the preconditioning
 !
 ! The parameters inside the param depends upon the type of preconditioners
@@ -669,7 +669,7 @@ END INTERFACE
 ! date: 20 July 2021
 ! summary: This routine fix the solution
 !
-!### Introduction
+!# Introduction
 ! In sparse solver, it is common to use row or column permutations. This is done to improve the sparsity of ILU decomposition.
 ! In case of column permutation, the solution needs to be permutated
 ! In case of row permulation, the rhs needs to be permutated
@@ -690,7 +690,7 @@ END INTERFACE
 ! date: 25 July 2021
 ! summary: This routine sets data to matrix field
 !
-!### Introduction
+!# Introduction
 ! IF `addContribution` and `scale` is absent then:
 !
 ! - This subroutine sets a block of data to matrix.
@@ -726,7 +726,7 @@ END INTERFACE
 ! date: 25 July 2021
 ! summary: This routine sets data to matrix field
 !
-!### Introduction
+!# Introduction
 ! IF `addContribution` and `scale` is absent then:
 ! This subroutine sets a scalar value `val` to all or selected the entries of the matrix.
 ! If `globalNode` is present then this routine sets a scalar value `val` to selected the entries of the matrix. These entries are spacified by the `globalNode(:)` vector, which denotes the global node numbers. symbolically it does the following: `obj(glocalNode)=val`
@@ -759,7 +759,7 @@ END INTERFACE
 ! date: 25 July 2021
 ! summary: This routine sets data to matrix field
 !
-!### Introduction
+!# Introduction
 ! If addContribution and scale not present then:
 ! This subroutine sets a scalar value `val` to a single entry of the matrix. This entry is specified by the `rowNodeNum` and `colNodeNum`.
 ! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`, `colNodeNum` and `colDOF`.
@@ -791,7 +791,7 @@ END INTERFACE
 ! date: 24 July 2021
 ! summary: This routine set the row of a sparse matrix
 !
-!### Introduction
+!# Introduction
 ! This routine sets the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
@@ -819,7 +819,7 @@ END INTERFACE
 ! date: 24 July 2021
 ! summary: This routine set the column of a sparse matrix
 !
-!### Introduction
+!# Introduction
 ! This routine sets the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number

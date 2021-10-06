@@ -45,7 +45,7 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! date: 16 July 2021
 ! summary: Native linear solver
 !
-!### Introduction
+!# Introduction
 !
 ! This data type defines a native linear solver, It uses LinSolvert library.
 ! [[LinSolver_]] data type is a container around Yusef Saad's LinSolver
@@ -236,7 +236,7 @@ PUBLIC :: ls_checkEssentialParam
 ! date: 16 July 2021
 ! summary: This subroutine initiate the [[LinSolver_]] object
 !
-!### Introduction
+!# Introduction
 !
 ! This subroutine initiate the [[LinSolver_]] object
 !
@@ -283,7 +283,7 @@ END INTERFACE
 ! date: 25 Aug 2021
 ! summary: 	This routine solves the system of linear equation
 !
-!### Introduction
+!# Introduction
 ! This routine solves the system of linear equation
 ! On entry `sol` can contain the initial guess
 

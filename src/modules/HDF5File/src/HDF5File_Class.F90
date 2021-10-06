@@ -259,7 +259,7 @@ END INTERFACE
 ! date: 	8 May 2021
 ! summary: 	Initializes an HDF5 file object.
 !
-!### Introduction
+!# Introduction
 ! This routine initializes an HDF5 file object by setting the objects
 ! attributes, initializing the HDF5 library interface and calling the @c open
 ! routine.
@@ -378,7 +378,7 @@ END INTERFACE
 ! date: 	8 may 2021
 ! summary: List the contents of a group
 !
-!### Introduction
+!# Introduction
 !
 ! This routine is useful for discovering the contents of an HDF5 file. A path
 ! to a group in the file is provided in the subroutine call and the names of
@@ -402,7 +402,7 @@ END INTERFACE
 ! date: 	8 May 2021
 ! summary: Creates a new group in the HDF file.
 !
-!### Introduction
+!# Introduction
 !
 ! This routine is used to create a new group in an HDF5 file. It can only be
 ! called if the file has write access
@@ -422,7 +422,7 @@ END INTERFACE
 ! date: 	8 may 2021
 ! summary:
 !
-!### Introduction
+!# Introduction
 ! This routine is used to create a new group in an HDF5 file. It can only be
 ! called if the file has write access.
 
@@ -505,7 +505,7 @@ END INTERFACE
 ! date: 	9 May 2021
 ! summary: 	Returns the chunk size of a dataset
 !
-!### Introduction
+!# Introduction
 ! If a dataset does not have chunking or does not exist, then cdims is
 ! returned unallocated.
 
@@ -583,7 +583,7 @@ END INTERFACE
 ! date: 	9 May 2021
 ! summary: Computes the optimal chunk size for a data set for writing with compression
 !
-!### Introduction
+!# Introduction
 ! Choosing the chunk size is EXTREMELY important to managing the memory
 ! overhead of the HDF5 library when using compression. A detailed discussion
 ! can be found on the HDF5 website:
@@ -631,7 +631,7 @@ END INTERFACE
 ! date: 	7 June 2021
 ! summary: Write double precision scalar data
 !
-!### Introduction
+!# Introduction
 !
 ! This routine writes a Real64 datatype scalar to a dataset of name and path which is specified by `dsetname` by using the shape specified by `gdims_in`, if present.
 

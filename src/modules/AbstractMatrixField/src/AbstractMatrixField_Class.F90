@@ -36,7 +36,7 @@ PRIVATE
 ! date: 16 July 2021
 ! summary: This abstract class is defined to handle the finite element matrix
 !
-!### Introduction
+!# Introduction
 ! This abstract class is designed to handle the global tangent matrices
 ! defined for a computation domain. This abstract class will be extended to
 !
@@ -120,7 +120,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine returns the maxtrix vector multiplication
 !
-!### Introduction
+!# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
 ! is a native fortran vector. The output vector is also a native fortran vector. It should be noted that the output vector should be allocated outside and it should have same length as the input vector.
@@ -146,7 +146,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine returns the maxtrix vector multiplication
 !
-!### Introduction
+!# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
 ! is an abstract node field.
@@ -173,7 +173,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine solves (LU) sol = rhs
 !
-!### Introduction
+!# Introduction
 !
 ! If transp is absent or it is false then:
 ! This routine solves (LU) sol = rhs
@@ -205,7 +205,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine solves (LU) sol = rhs
 !
-!### Introduction
+!# Introduction
 !
 ! If transp is not present or it is false then:
 ! This routine solves (LU) sol = rhs
@@ -267,7 +267,7 @@ END INTERFACE
 ! date: 18 July 2021
 ! summary: This routine fix the solution
 !
-!### Introduction
+!# Introduction
 ! In sparse solver, it is common to use row or column permutations. This is done to improve the sparsity of ILU decomposition.
 ! In case of column permutation, the solution needs to be permutated
 ! In case of row permulation, the rhs needs to be permutated
@@ -340,7 +340,7 @@ END INTERFACE
 ! date: 24 July 2021
 ! summary: This routine set the row of a sparse matrix
 !
-!### Introduction
+!# Introduction
 ! This routine sets the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
@@ -369,7 +369,7 @@ END INTERFACE
 ! date: 24 July 2021
 ! summary: This routine set the column of a sparse matrix
 !
-!### Introduction
+!# Introduction
 ! This routine sets the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
@@ -399,7 +399,7 @@ END INTERFACE
 ! summary: This routine returns the row of a sparse matrix in rank1 fortran
 ! vector
 !
-!### Introduction
+!# Introduction
 ! This routine returns the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
@@ -430,7 +430,7 @@ END INTERFACE
 ! summary: This routine returns the column of a sparse matrix
 ! vector
 !
-!### Introduction
+!# Introduction
 ! This routine returns the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number

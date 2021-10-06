@@ -19,7 +19,7 @@
 ! date: 23 Sept 2021
 ! summary: Set one or more parameters in the ONELAB database, encoded in `format'.
 !
-!### Introduction
+!# Introduction
 !
 ! Set one or more parameters in the ONELAB database, encoded in `format'.
 !
@@ -52,7 +52,7 @@ PUBLIC :: gmshOnelabSet
 ! date: 23 Sept 2021
 ! summary: Get all the parameters from the ONELAB database
 !
-!### Introduction
+!# Introduction
 !
 ! Get all the parameters (or a single one if `name` is specified) from the
 ! ONELAB database, encoded in `format'.
@@ -88,7 +88,7 @@ PUBLIC :: gmshOnelabGet
 ! date: 23 Sept 2021
 ! summary: Get the names of the parameters in the ONELAB database
 !
-!### Introduction
+!# Introduction
 !
 !  Get the names of the parameters in the ONELAB database matching the
 !  `search` regular expression. If `search` is empty, return all the names.
@@ -124,7 +124,7 @@ PUBLIC :: gmshOnelabGetNames
 ! date: 23 Sept 2021
 ! summary:
 !
-!### Introduction
+!# Introduction
 !
 ! Get the value of the number parameter `name` from the ONELAB database.
 !  Return an empty vector if the parameter does not exist.
@@ -158,7 +158,7 @@ PUBLIC :: gmshOnelabGetNumber
 ! date: 23 Sept 2021
 ! summary:
 !
-!### Introduction
+!# Introduction
 ! Set the value of the string parameter `name` in the ONELAB database. Create
 ! the parameter if it does not exist; update the value if the parameter
 ! exists.
@@ -192,7 +192,7 @@ PUBLIC :: gmshOnelabSetString
 ! date: 23 Sept 2021
 ! summary: Get the value of the string parameter `name`
 !
-!### Introduction
+!# Introduction
 !
 !  Get the value of the string parameter `name` from the ONELAB database.
 !  Return an empty vector if the parameter does not exist.

@@ -234,7 +234,7 @@ PUBLIC :: Display
 ! date: 	10 June 2021
 ! summary: This function returns total number of physical entities
 !
-!### Introduction
+!# Introduction
 ! 	Following usage
 !
 !### Usage
@@ -359,7 +359,7 @@ END INTERFACE
 ! date: 	20 June 2021
 ! summary: 	 This function returns index of a given physical name
 !
-!### Introduction
+!# Introduction
 ! This function returns index of a given physical name
 !
 ! - `dim` denotes the XiDImension of physical entity
@@ -385,7 +385,7 @@ END INTERFACE
 ! date: 	20 June 2021
 ! summary: 	This function returns index of a given physical name
 !
-!### Introduction
+!# Introduction
 !
 ! This function returns index of a given physical name
 !
@@ -411,7 +411,7 @@ END INTERFACE
 ! date: 	20 June 2021
 ! summary: 	 This function returns index of a given physical name
 !
-!### Introduction
+!# Introduction
 ! This function returns index of a given physical name
 !
 ! - `dim` denotes the XiDImension of physical entity

@@ -6,7 +6,7 @@
 ! date: 	3 April 2021
 ! summary: Simple error and exception handling
 !
-!### Introduction
+!# Introduction
 !
 ! More details about this module is avaiable at
 ! https://github.com/CASL/Futility

@@ -28,7 +28,7 @@ CONTAINS
 ! date: 16 July 2021
 ! summary: This subroutine allocates the workspace required for the linear solver
 !
-!### Introduction
+!# Introduction
 !
 ! This routine allocates the workspace required for the linear solver
 
