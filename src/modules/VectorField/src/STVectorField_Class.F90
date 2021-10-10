@@ -82,7 +82,6 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
     !! set values to a STvector by using triplet
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
     & set7, set8, set9, set10, set11, set12
-
   PROCEDURE, PASS( obj ) :: get1 => stvField_get1
   PROCEDURE, PASS( obj ) :: get2 => stvField_get2
   PROCEDURE, PASS( obj ) :: get3 => stvField_get3
@@ -93,13 +92,15 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   PROCEDURE, PASS( obj ) :: get8 => stvField_get8
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7, get8
     !! get the entries of STVector field
-  PROCEDURE, PASS( obj ) :: getPointerOfComponent => stvField_getPointerOfComponent
+  PROCEDURE, PASS( obj ) :: getPointerOfComponent =>  &
+    & stvField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => stvField_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => stvField_Export
 END TYPE STVectorField_
 
 PUBLIC :: STVectorField_
-TYPE( STVectorField_ ), PARAMETER, PUBLIC :: Type = STVectorField_()
+TYPE( STVectorField_ ), PARAMETER, PUBLIC :: TypeSTVectorField =  &
+  & STVectorField_(domains=NULL())
 
 !---------------------------------------------------------------------------
 !                                                     STVectorFieldPointer_

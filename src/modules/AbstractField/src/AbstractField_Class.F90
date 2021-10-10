@@ -17,16 +17,19 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
-! summary: Abstract field is designed to handle fields over finite element meshes
+! summary: Abstract field is designed to handle fields in FEM
 !
 !# Introduction
-! - In FEM, we use variables of different ranks. These varibles will be designated as the field. These fields can be defined at:
+! - In FEM, we use variables of different ranks. These varibles will be
+! designated as the field. These fields can be defined at:
 !   - Spatial-temporal nodal points
 !   - Quadrature points inside the element
 ! - In addition, global matrices can also be described as the field.
 ! - In this way, Fields are high level objects in finite element modeling.
 !
-! [[AbstractField_]] defines an abstract class. This class will be extended to [[AbstractNodeField_]], [[AbstractElementField_]], [[AbstractMatrixField_]].
+! [[AbstractField_]] defines an abstract class. This class will be extended
+! to [[AbstractNodeField_]], [[AbstractElementField_]],
+! [[AbstractMatrixField_]].
 
 MODULE AbstractField_Class
 USE GlobalData
@@ -55,16 +58,9 @@ CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
-! summary: Abstract field is designed to handle fields over finite element meshes
+! summary: Abstract field is designed to handle fields in FEM
 !
-!# Introduction
-! - In FEM, we use variables of different ranks. These varibles will be designated as the field. These fields can be defined at:
-!   - Spatial-temporal nodal points
-!   - Quadrature points inside the element
-! - In addition, global matrices can also be described as the field.
-! - In this way, Fields are high level objects in finite element modeling.
-!
-! [[AbstractField_]] defines an abstract class. This class will be extended to [[AbstractNodeField_]], [[AbstractElementField_]], [[AbstractMatrixField_]].
+!{!page/AbstractField_.md!}
 
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL( LGT ) :: isInitiated = .FALSE.
@@ -73,6 +69,10 @@ TYPE, ABSTRACT :: AbstractField_
     !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE( Domain_ ), POINTER :: domain => NULL()
     !! Domain contains the information of the finite element meshes.
+  TYPE( DomainPointer_ ), ALLOCATABLE :: domains( : )
+    !! Domain for each physical variables
+    !! The size of `domains` should be equal to the total number of
+    !! physical variables.
   TYPE( String ) :: name
     !! name of the field
   TYPE( String ) :: engine
@@ -80,9 +80,11 @@ TYPE, ABSTRACT :: AbstractField_
     !! NATIVE_MPI, PETSC, LIS_SERIAL, LIS_OMP, LIS_MPI
   CONTAINS
   PRIVATE
-    PROCEDURE(aField_addSurrogate), DEFERRED, PUBLIC, PASS( obj ) :: addSurrogate
+    PROCEDURE(aField_addSurrogate), DEFERRED, PUBLIC, PASS( obj ) :: &
+      & addSurrogate
       !! check essential parameters
-    PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS( obj ) :: checkEssentialParam
+    PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS( obj ) :: &
+      & checkEssentialParam
       !! check essential parameters
     PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS( obj ) :: Initiate1
       !! Initiate the field by reading param and given domain
@@ -92,7 +94,8 @@ TYPE, ABSTRACT :: AbstractField_
       !! Initiate  block fields (different physical variables) defined
       !! over different order of meshes.
     GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-    PROCEDURE(aField_DeallocateData), DEFERRED, PUBLIC, PASS( obj ) :: DeallocateData
+    PROCEDURE(aField_DeallocateData), DEFERRED, PUBLIC, PASS( obj ) :: &
+      & DeallocateData
       !! Deallocate the field
     PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
       !! Display the field
@@ -179,7 +182,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
-! summary: Initiate by copying other fields, and different options
+! summary: Initiate by reading options from [[ParameterList_]]
 
 ABSTRACT INTERFACE
 SUBROUTINE aField_Initiate3( obj, param, dom )

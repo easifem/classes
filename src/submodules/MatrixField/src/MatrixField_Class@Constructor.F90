@@ -31,9 +31,12 @@ MODULE PROCEDURE setMatrixFieldParam
   INTEGER( I4B ) :: ierr
   ierr = param%set( key="MatrixField/name", value=TRIM(name) )
   ierr = param%set( key="MatrixField/matrixProp", value=TRIM(matrixProp) )
-  ierr = param%set( key="MatrixField/spaceCompo", value=INPUT( option=spaceCompo, default=1 ) )
-  ierr = param%set( key="MatrixField/timeCompo", value=INPUT( option=timeCompo, default=1 ) )
-  ierr = param%set( key="MatrixField/fieldType", value=INPUT( option=fieldType, default=FIELD_TYPE_NORMAL ) )
+  ierr = param%set( key="MatrixField/spaceCompo",  &
+    &  value=INPUT( option=spaceCompo, default=1 ) )
+  ierr = param%set( key="MatrixField/timeCompo",  &
+    & value=INPUT( option=timeCompo, default=1 ) )
+  ierr = param%set( key="MatrixField/fieldType", value=INPUT(  &
+    & option=fieldType, default=FIELD_TYPE_NORMAL ) )
 END PROCEDURE setMatrixFieldParam
 
 !----------------------------------------------------------------------------
@@ -66,62 +69,62 @@ END PROCEDURE mField_checkEssentialParam
 
 MODULE PROCEDURE mField_Initiate1
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_Initiate1"
-  INTEGER( I4B ) :: ierr, nrow, ncol, storageFMT, tNodes( 1 ), &
+  INTEGER( I4B ) :: ierror, nrow, ncol, storageFMT, tNodes( 1 ), &
     & timeCompo( 1 ), spaceCompo(1)
   CHARACTER( LEN=: ), ALLOCATABLE :: char_var
   CHARACTER( LEN=1 ) :: names_char( 1 )
   TYPE( DOF_ ) :: dofobj
-
   !> main program
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Matrix field object is already initiated')
   CALL obj%checkEssentialParam(param)
-  !-----------------------------------------------------------------------!
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="MatrixField/name" ) ) :: char_var )
-  ierr = param%get( key="MatrixField/name", value=char_var )
+  !> name
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes(  &
+    & key="MatrixField/name" ) ) :: char_var )
+  ierror = param%get( key="MatrixField/name", value=char_var )
   obj%name = char_var
   names_char(1)(1:1) = char_var(1:1)
-  !-----------------------------------------------------------------------!
+  DEALLOCATE( char_var )
+  !> fieldType
   IF( param%isPresent(key="MatrixField/fieldType") ) THEN
-    ierr = param%get( key="MatrixField/fieldType", value=obj%fieldType )
+    ierror = param%get( key="MatrixField/fieldType", value=obj%fieldType )
   ELSE
     obj%fieldType = FIELD_TYPE_NORMAL
   END IF
-  !-----------------------------------------------------------------------!
+  !> spaceCompo
   IF( param%isPresent(key="MatrixField/spaceCompo") ) THEN
-    ierr = param%get( key="MatrixField/spaceCompo", value=spaceCompo(1) )
+    ierror = param%get( key="MatrixField/spaceCompo", value=spaceCompo(1) )
   ELSE
     spaceCompo(1) = 1
   END IF
-  !-----------------------------------------------------------------------!
+  !> timeCompo
   IF( param%isPresent(key="MatrixField/timeCompo") ) THEN
-    ierr = param%get( key="MatrixField/timeCompo", value=timeCompo(1) )
+    ierror = param%get( key="MatrixField/timeCompo", value=timeCompo(1) )
   ELSE
     timeCompo(1) = 1
   END IF
-  !-----------------------------------------------------------------------!
+  !> storage format
   storageFMT = FMT_NODES
   tNodes = dom%getTotalNodes()
-  !-----------------------------------------------------------------------!
+  !> make [[DOF_]]
   CALL initiate( obj=dofobj, tNodes=tNodes, names=names_char, &
     & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
-  !-----------------------------------------------------------------------!
-  DEALLOCATE( char_var )
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="MatrixField/matrixProp" ) ) :: char_var )
-  ierr = param%get( key="MatrixField/matrixProp", value=char_var )
-  !-----------------------------------------------------------------------!
+  !> matrixProp
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes(  &
+    & key="MatrixField/matrixProp" ) ) :: char_var )
+  ierror = param%get( key="MatrixField/matrixProp", value=char_var )
   nrow = tNodes(1) * spaceCompo(1) * timeCompo(1)
   ncol = nrow
   obj%domain => dom
   CALL initiate( obj=obj%mat, nrow=nrow, ncol=ncol, dof=dofobj, &
-  & matrixProp=char_var )
-  !-----------------------------------------------------------------------!
+    & matrixProp=char_var )
+  DEALLOCATE( char_var )
   obj%isInitiated = .TRUE.
   obj%isPmatInitiated = .FALSE.
-  !-----------------------------------------------------------------------!
   !> setting the sparsity
   CALL obj%domain%setSparsity( mat=obj%mat )
+  CALL DeallocateData( dofobj )
 END PROCEDURE mField_Initiate1
 
 !----------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
-! summary: This module defines an abstract class for finite element matrix field.
+! summary: This module defines an abstract class for tangent matrix field.
 
 MODULE AbstractMatrixField_Class
 USE GlobalData
@@ -36,16 +36,7 @@ PRIVATE
 ! date: 16 July 2021
 ! summary: This abstract class is defined to handle the finite element matrix
 !
-!# Introduction
-! This abstract class is designed to handle the global tangent matrices
-! defined for a computation domain. This abstract class will be extended to
-!
-! - [[MatrixField_]]
-! - [[MPIMatrixField_]]
-! - [[PetscMatrixField_]]
-! - [[LISMatrixField_]]
-! - [[OMPMatrixField_]]
-! - [[ACCMatrixField_]]
+!{!page/AbstractMatrixField_.md!}
 
 TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
   LOGICAL( LGT ) :: isPmatInitiated = .FALSE.
@@ -68,21 +59,22 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
   PROCEDURE, PUBLIC, PASS( obj ) :: isPreconditionSet => &
     & amField_isPreconditionSet
     !! True if prcondition is set
-  PROCEDURE( amField_setPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: setPrecondition
+  PROCEDURE( amField_setPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: &
+    & setPrecondition
     !! Build precondition matrix
-  PROCEDURE( amField_getPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: getPrecondition
+  PROCEDURE( amField_getPrecondition ), DEFERRED, PUBLIC, PASS( obj ) :: &
+    & getPrecondition
     !! Get the precondition matrix
-  PROCEDURE( amField_reversePermutation ), DEFERRED, PUBLIC, PASS( obj ) :: reversePermutation
+  PROCEDURE( amField_reversePermutation ), DEFERRED, PUBLIC, PASS( obj ) :: &
+    & reversePermutation
   PROCEDURE( amField_set1 ), DEFERRED, PASS( obj ) :: set1
   PROCEDURE( amField_set2 ), DEFERRED, PASS( obj ) :: set2
   PROCEDURE( amField_set3 ), DEFERRED, PASS( obj ) :: set3
   GENERIC, PUBLIC :: set => set1, set2, set3
-
   PROCEDURE( amField_setRow ), PUBLIC, DEFERRED, PASS( obj ) :: setRow
   PROCEDURE( amField_setColumn ), PUBLIC, DEFERRED, PASS( obj ) :: setColumn
   PROCEDURE( amField_getRow ), PUBLIC, DEFERRED, PASS( obj ) :: getRow
   PROCEDURE( amField_getColumn ), PUBLIC, DEFERRED, PASS( obj ) :: getColumn
-
 END TYPE AbstractMatrixField_
 
 PUBLIC :: AbstractMatrixField_
@@ -123,7 +115,9 @@ END INTERFACE
 !# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
-! is a native fortran vector. The output vector is also a native fortran vector. It should be noted that the output vector should be allocated outside and it should have same length as the input vector.
+! is a native fortran vector. The output vector is also a native fortran
+! vector. It should be noted that the output vector should be allocated
+! outside and it should have same length as the input vector.
 
 ABSTRACT INTERFACE
 SUBROUTINE amField_Matvec1( obj, x, y, transp )
@@ -179,11 +173,13 @@ END INTERFACE
 ! This routine solves (LU) sol = rhs
 ! sol and rhs are fortran real vector
 ! The LU decomposition is stored inside the AbstractMatrixField_.
-! Note that sol should be allocated by the user, and size of sol should be same as the size of rhs
+! Note that sol should be allocated by the user, and size of sol should be
+! same as the size of rhs
 !
 ! If transp is present and it is true then:
 !
-! If transp is present and it is true then this subroutine solves (LU)^T sol = rhs
+! If transp is present and it is true then this subroutine solves
+! (LU)^T sol = rhs
 
 ABSTRACT INTERFACE
 SUBROUTINE amField_LUSOLVE1( obj, sol, rhs, transp )
@@ -212,7 +208,8 @@ END INTERFACE
 ! sol and rhs are [[AbstractNodeField_]]
 ! The LU decomposition is stored inside the AbstractMatrixField_.
 !
-! If transp is present and it is true then this subroutine solves (LU)^T sol = rhs
+! If transp is present and it is true then this subroutine solves
+! (LU)^T sol = rhs
 
 
 ABSTRACT INTERFACE
@@ -268,7 +265,8 @@ END INTERFACE
 ! summary: This routine fix the solution
 !
 !# Introduction
-! In sparse solver, it is common to use row or column permutations. This is done to improve the sparsity of ILU decomposition.
+! In sparse solver, it is common to use row or column permutations.
+! This is done to improve the sparsity of ILU decomposition.
 ! In case of column permutation, the solution needs to be permutated
 ! In case of row permulation, the rhs needs to be permutated
 
@@ -341,11 +339,15 @@ END INTERFACE
 ! summary: This routine set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to this vector value
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
@@ -370,11 +372,16 @@ END INTERFACE
 ! summary: This routine set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to this vector value
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
@@ -400,7 +407,8 @@ END INTERFACE
 ! vector
 !
 !# Introduction
-! This routine returns the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
 !
@@ -431,12 +439,14 @@ END INTERFACE
 ! vector
 !
 !# Introduction
-! This routine returns the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
 !
 ! If `val` is present then the vector is returned inside the rank 1 vector
-! If `nodeFieldVal` is present then the column is returned inside the node field
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
 
 ABSTRACT INTERFACE
 SUBROUTINE amField_getColumn( obj, globalNode, idof, val, nodeFieldVal, &

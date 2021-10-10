@@ -83,7 +83,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
 END TYPE ScalarField_
 
 PUBLIC :: ScalarField_
-TYPE( ScalarField_ ), PARAMETER, PUBLIC :: Type = ScalarField_()
+TYPE( ScalarField_ ), PARAMETER, PUBLIC :: Type = ScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       ScalarFieldPointer_
