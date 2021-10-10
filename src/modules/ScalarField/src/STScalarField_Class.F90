@@ -96,10 +96,11 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
 END TYPE STScalarField_
 
 PUBLIC :: STScalarField_
-TYPE( STScalarField_ ), PARAMETER, PUBLIC :: Type = STScalarField_()
+TYPE( STScalarField_ ), PARAMETER, PUBLIC :: TypeScalarField = &
+  & STScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
-!                                                             STScalarFieldPointer_
+!                                                     STScalarFieldPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: STScalarFieldPointer_

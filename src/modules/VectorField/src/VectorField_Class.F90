@@ -99,7 +99,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
 END TYPE VectorField_
 
 PUBLIC :: VectorField_
-TYPE( VectorField_ ), PARAMETER, PUBLIC :: Type = VectorField_()
+TYPE( VectorField_ ), PARAMETER, PUBLIC :: TypeVectorField =  &
+  & VectorField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       VectorFieldPointer_

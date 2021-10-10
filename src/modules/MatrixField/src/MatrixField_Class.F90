@@ -16,8 +16,21 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
-! summary: This module defines a concretre class called MatrixField_, which can handle the finite element matrix field. This is a native implementation of finite element tangent matrices.
-
+! summary: This module defines [[MatrixField_]] class
+!
+!# Introduction
+!
+! - This module defines [[MatrixField_]] class
+! - It is designed for handling the tangent matrix in FEM
+!
+!@note
+! [[MatrixField_]] uses `NATIVE_SERIAL` engine for handling the
+! global tangent matrices.
+!@endnote
+!
+!@todo
+! Add getting-started manual
+!@endtodo
 MODULE MatrixField_Class
 USE GlobalData
 USE BaseType
@@ -42,15 +55,20 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 June 2021
-! summary: User data type for handling the preconditioning of MatrixField_
+! summary: User data type for handling the preconditioning of [[MatrixField_]]
 !
 !# Introduction
 !
 ! This is a data type for storing the the precondition matrix.
 ! The storage pattern of the precondition matrix depends upon the type of
-! preconditioning. For example, ILU type preconditioners are stored in modified sparse row by sparseKit library. In this way, storage also depends upon the linear solver library. That is why it is better to hide the preconditioner from user. More details about the MSR format is given as follows.
+! preconditioning. For example, ILU type preconditioners are stored in
+! modified sparse row by sparseKit library. In this way, storage also depends
+! upon the linear solver library. That is why it is better to hide the
+! preconditioner from user. More details about the MSR format is given as
+! follows.
 !
-! We have used Modified Sparse Row, which is used by Sparsekit lib to store the precondition matrix, this data type is meant to be used internally only.
+! We have used Modified Sparse Row, which is used by Sparsekit lib to store
+! the precondition matrix, this data type is meant to be used internally only.
 ! The precondition matrix that will be stored inside it is mainly ILUT.
 ! User should not worry about this data type.
 !
@@ -60,9 +78,12 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! ```
 !
 ! - `A(1:n)` contains the diagonal of the matrix.
-! - `A(n+2:nnz)` contains the nondiagonal elements of the matrix, stored ROWWISE.
+! - `A(n+2:nnz)` contains the nondiagonal elements of the matrix, stored
+! ROWWISE.
 ! - `JA(n+2:nnz)`  contains their column indices
-! - `JA(1:n+1)` Contains the pointer array for the nondiagonal, elements in A(n+1:nnz) and JA(n+2:nnz), i.e., for `i .LE. n+1` `JA(i)` points to beginning of row i in arrays A, JA.
+! - `JA(1:n+1)` Contains the pointer array for the nondiagonal, elements in
+! A(n+1:nnz) and JA(n+2:nnz), i.e., for `i .LE. n+1` `JA(i)` points to
+! beginning of row i in arrays A, JA.
 ! - Here, nnz = number of nonzero elements+1
 
 TYPE :: MatrixFieldPrecondition_
@@ -90,12 +111,9 @@ END TYPE MatrixFieldPrecondition_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
-! summary: This datatype can handle the finite element matrix field. This is a native implementation of finite element tangent matrices.
+! summary: This is native implementation of finite element tangent matrices.
 !
-!# Introduction
-!
-! This datatype is native implementation of finite element tangent matrix. This data type is sequential, and it uses Sparsekit library for sparse matrix manipulations.
-!
+!{!page/MatrixField_.md!}
 
 TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
   TYPE( CSRMatrix_ ) :: mat
@@ -103,7 +121,8 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
   CONTAINS
   PRIVATE
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mField_addSurrogate
-    PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => mField_checkEssentialParam
+    PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+      & mField_checkEssentialParam
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate1 => mField_Initiate1
       !! Initiate from the parameter list
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate2 => mField_Initiate2
@@ -132,11 +151,14 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
       !! Solve (LU) sol = rhs
     PROCEDURE, PASS( obj ) :: LUSOLVE2 => mField_LUSOLVE2
       !! Solve (LU) sol = rhs
-    PROCEDURE, PUBLIC, PASS( obj ) :: setPrecondition => mField_setPrecondition
+    PROCEDURE, PUBLIC, PASS( obj ) :: setPrecondition => &
+      & mField_setPrecondition
       !! Building precondition matrix
-    PROCEDURE, PUBLIC, PASS( obj ) :: getPrecondition => mField_getPrecondition
+    PROCEDURE, PUBLIC, PASS( obj ) :: getPrecondition => &
+      & mField_getPrecondition
       !! Get the precondition matrix
-    PROCEDURE, PUBLIC, PASS( obj ) :: reversePermutation => mField_reversePermutation
+    PROCEDURE, PUBLIC, PASS( obj ) :: reversePermutation => &
+      & mField_reversePermutation
     PROCEDURE, PASS( obj ) :: set1 => mField_set1
     PROCEDURE, PASS( obj ) :: set2 => mField_set2
     PROCEDURE, PASS( obj ) :: set3 => mField_set3
@@ -148,6 +170,8 @@ END TYPE MatrixField_
 
 PUBLIC :: MatrixField_
 
+TYPE( MatrixField_ ), PARAMETER, PUBLIC :: TypeMatrixField = &
+  & MatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                 addSurrogate@Constructor
@@ -155,7 +179,7 @@ PUBLIC :: MatrixField_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
+! summary: This routine add surrogate to module [[ExceptionHandler_]]
 
 INTERFACE
 MODULE SUBROUTINE mField_addSurrogate( obj, UserObj )
@@ -176,10 +200,15 @@ INTERFACE
 MODULE SUBROUTINE setMatrixFieldParam( param, name, matrixProp, spaceCompo, &
   & timeCompo, fieldType )
   TYPE( ParameterList_ ), INTENT( INOUT ) :: param
+    !! Options to create [[MatrixField_]] will be stored in this
   CHARACTER( LEN = * ), INTENT( IN ) :: name
+    !! Name of the matrix field
   CHARACTER( LEN = * ), INTENT( IN ) :: matrixProp
+    !! Matrix property, "SYM" or "UNSYM"
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: spaceCompo
+    !! Number of space-components, see [[DOF_]]
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: timeCompo
+    !! Number of time-components, see [[DOF_]]
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
     !! fieldType can be following
     !! FIELD_TYPE_NORMAL
@@ -194,6 +223,10 @@ PUBLIC :: setMatrixFieldParam
 !----------------------------------------------------------------------------
 !                                                 DeallocateData@Constructor
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 9 Oct 2021
+! summary: Deallocates the data stored inside [[MatrixFieldPrecondition_]]
 
 INTERFACE
 MODULE SUBROUTINE Pmat_DeallocateData( obj )
@@ -216,6 +249,7 @@ PUBLIC :: DeallocateData
 ! summary: This routine check the essential parameters in param.
 !
 !# Introduction
+!
 ! This routine check the essential parameters required to the initiate the
 ! [[MatrixField_]] data type.
 
@@ -237,11 +271,19 @@ PUBLIC :: mField_checkEssentialParam
 ! summary: This routine initiates the Matrix Field
 !
 !# Introduction
-! This routine initiates the the matrix field. It uses parameter list, and dom.
-! - Param contains both essential and optional parameters which are used in constructing the matrix field
-! - dom is a pointer to a domain, where we are interested in constructing the matrix
 !
-! ESSENTIAL PARAMETERS
+! This routine initiates an instance of [[MatrixField_]].
+! The options/arguments to initiate the matrix field are
+! contained inside param, which is an instance of [[ParameterList_]].
+! In addition, [[Domain_]] `dom` is target to the pointer
+! [[AbstractField_:domain]]
+!
+! - Param contains both essential and optional parameters which are used in
+! constructing the matrix field
+! - dom is a pointer to a domain, where we are interested in constructing the
+! matrix
+!
+! ESSENTIAL PARAMETERS are
 !
 ! - `name` This is name of field (char)
 ! - `matrixProp`, UNSYM, SYM (char)
@@ -255,31 +297,31 @@ PUBLIC :: mField_checkEssentialParam
 !### Usage
 !
 !```fortran
-  ! type( domain_ ) :: dom
-  ! type( MatrixField_ ) :: obj
-  ! type( HDF5File_ ) :: meshfile, hdf5
-  ! type( ParameterList_ ) :: param
-  ! integer( i4b ) :: ierr, tnodes
-  ! call display( "TESTING INITIATE AND DEALLOCATEDATA" )
-  ! CALL FPL_INIT()
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call dom%initiate( meshfile )
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
-  ! tnodes = dom%getTotalNodes()
-  ! call param%initiate()
-  ! call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
-  ! call obj%initiate( param, dom )
-  ! CALL hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
-  ! CALL hdf5%open()
-  ! CALL obj%export(hdf5=hdf5,group='')
-  ! CALL hdf5%close()
-  ! CALL hdf5%deallocateData()
-  ! call obj%deallocateData()
-  ! call dom%deallocateData()
-  ! call param%deallocateData()
-  ! call FPL_FINALIZE()
+! type( domain_ ) :: dom
+! type( MatrixField_ ) :: obj
+! type( HDF5File_ ) :: meshfile, hdf5
+! type( ParameterList_ ) :: param
+! integer( i4b ) :: ierr, tnodes
+! call display( "TESTING INITIATE AND DEALLOCATEDATA" )
+! CALL FPL_INIT()
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call dom%initiate( meshfile )
+! call meshfile%close()
+! call meshfile%deallocateData()
+! tnodes = dom%getTotalNodes()
+! call param%initiate()
+! call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
+! call obj%initiate( param, dom )
+! CALL hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
+! CALL hdf5%open()
+! CALL obj%export(hdf5=hdf5,group='')
+! CALL hdf5%close()
+! CALL hdf5%deallocateData()
+! call obj%deallocateData()
+! call dom%deallocateData()
+! call param%deallocateData()
+! call FPL_FINALIZE()
 !```
 
 INTERFACE
@@ -299,20 +341,35 @@ END INTERFACE
 ! summary: This routine initiates the Matrix Field
 !
 !# Introduction
-! This routine initiates the `obj` by copying contents from `obj2`. In this way we try to minimize the computation effort.
 !
-! Default behavior:
+! This routine initiates the `obj` [[MatrixField_]] by copying contents
+! from `obj2`, an instance of chid class of [[AbstractField_]].
+! In this way we try to minimize the computation effort.
 !
-! - If `copyFull, copyStructure, usePointer` are absent then this subroutine, copy the value of the matrix, however, it will be not allocate the [[CSRSparsity_]] field of [[CSRMatrix_]]. Instead, it will use pointer reference to the obj2%mat%csr. In this way, we do not have to create multiple sparsity patterns on the same domain.
+!@note
+! If `copyFull, copyStructure, usePointer` are absent then this subroutine,
+! copies the value of the matrix from obj2 to obj.
+!@endnote
 !
-! - `copyFull=.TRUE., copyStructure=.TRUE., usePointer=.TRUE.`, then default behavior
+!@note
+! However, in [[MatrixField_:mat]], it will not allocate space for
+! [[CSRSparsity_]] field of
+! [[CSRMatrix_]], that is [[CSRMatrix_:CSR]] field of [[MatrixField_:mat]].
+! Instead, it will use the obj2%mat%csr as the target for the pointer
+! obj%mat%csr.
+! In this way, there is no need to create multiple sparsity patterns
+! for the same domain.
+!@endnote
 !
-! Other type of behaviors can be included in the future
-!
-!
+!@todo
+! At present, the routine works for `copyFull=.TRUE., copyStructure=.TRUE.,
+! usePointer=.TRUE.`, which equivalent to the default behavior.
+! Add functionality for other options too.
+!@endtodo
 
 INTERFACE
-MODULE SUBROUTINE mField_Initiate2( obj, obj2, copyFull, copyStructure, usePointer )
+MODULE SUBROUTINE mField_Initiate2( obj, obj2, copyFull, copyStructure, &
+  & usePointer )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull

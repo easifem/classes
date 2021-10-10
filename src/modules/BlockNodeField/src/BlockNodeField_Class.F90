@@ -47,10 +47,6 @@ TYPE( ExceptionHandler_ ) :: e
 ! freedom.
 
 TYPE, EXTENDS( AbstractNodeField_ ) :: BlockNodeField_
-  TYPE( DomainPointer_ ), ALLOCATABLE :: domains( : )
-    !! Domain for each physical variables
-    !! The size of `domains` should be equal to the total number of
-    !! physical variables.
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => Block_addSurrogate
@@ -66,6 +62,9 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: BlockNodeField_
 END TYPE BlockNodeField_
 
 PUBLIC :: BlockNodeField_
+
+TYPE( BlockNodeField_ ), PARAMETER, PUBLIC :: TypeBlockNodeField = &
+  & BlockNodeField_( domains=NULL() )
 
 !----------------------------------------------------------------------------
 !                                                    BlockNodeFieldPointer_
