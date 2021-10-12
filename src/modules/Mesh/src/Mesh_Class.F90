@@ -16,7 +16,7 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 March 2021
-! summary: `Mesh_Class` module contains data type for handling the mesh.
+! summary: [[Mesh_Class]] module contains data type for handling the mesh.
 
 MODULE Mesh_Class
 USE BaseType
@@ -28,7 +28,7 @@ USE HDF5File_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "MESH_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "Mesh_Class"
 TYPE( ExceptionHandler_ ) :: e
   !! Exception handler
 INTEGER( I4B ), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
@@ -63,19 +63,21 @@ TYPE :: ElemData_
   INTEGER( I4B ) :: localElemNum = 0
   INTEGER( I4B ), ALLOCATABLE :: globalNodes(:)
   INTEGER( I4B ), ALLOCATABLE :: globalElements(:)
-    !! Contains the information about the element surrounding an element
-    !! Lets us say that globalElem1, globalElem2, globalElem3 surrounds a
-    !! local element ielem (its global element number is globalElem), then
-    !! globalElements( [1,2,3] ) contains globalElem1, pFace, nFace
-    !! globalElements( [4,5,6] ) contains globalElem2, pFace, nFace
-    !! globalElements( [7,8,9] ) contains globalElem3, pFace, nFace
-    !! Here, pFace is the local facet number of parent element globalElem (ielem) which is connected to the nFace of the neighbor element
-    !! All element numbers are global element number
+  !! Contains the information about the element surrounding an element
+  !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
+  !! surrounds a local element ielem (its global element number is
+  !! globalElem), then globalElements( [1,2,3] ) contains globalElem1,
+  !! pFace, nFace, globalElements( [4,5,6] ) contains globalElem2,
+  !! pFace, nFace, globalElements( [7,8,9] ) contains globalElem3,
+  !! pFace, nFace. Here, pFace is the local facet number of parent element
+  !! globalElem (ielem) which is connected to the nFace of the neighbor
+  !! element
+  !! All element numbers are global element number
   INTEGER( I4B ), ALLOCATABLE :: boundaryData(:)
-    !! If `iel` is boundary element;
-    !! then `Vec=BoundaryData( LBndyIndex(iel) ) `
-    !! contains boundary data, where `vec(1)` is equal to `iel`, and
-    !! `vec(2:)` are ids of local facets which are boundaries of mesh
+  !! If `iel` is boundary element;
+  !! then `Vec=BoundaryData( LBndyIndex(iel) ) `
+  !! contains boundary data, where `vec(1)` is equal to `iel`, and
+  !! `vec(2:)` are ids of local facets which are boundaries of mesh
   INTEGER( I4B ) :: elementType = INTERNAL_ELEMENT
 END TYPE ElemData_
 
@@ -87,9 +89,7 @@ END TYPE ElemData_
 ! date: 	13 June 2021
 ! summary: 	This datatype contains the meta data of a mesh
 !
-!# Introduction
-!
-! This datatype contains the mesh data. To be added.
+!{!pages/Mesh_.md!}
 
 TYPE :: Mesh_
   PRIVATE
@@ -177,7 +177,6 @@ TYPE :: Mesh_
       !! mesh finalizer
     PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mesh_DeallocateData
       !! Deallocate memory occupied by the mesh instance
-    !
     ! @IOMethods
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => mesh_Import
       !! Read mesh from hdf5 file
@@ -189,7 +188,6 @@ TYPE :: Mesh_
       !! Export mesh to a VTKfile
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => mesh_display
       !! Display the mesh
-    !
     ! @getMethod
     PROCEDURE, PASS( obj ) :: InitiateNodeToElements => &
       & mesh_InitiateNodeToElements
@@ -217,7 +215,8 @@ TYPE :: Mesh_
       !! Returns true if a given element number is present
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => mesh_size
       !! Returns the size of the mesh
-    PROCEDURE, PUBLIC, PASS( obj ) :: getRefElemPointer => mesh_getRefElemPointer
+    PROCEDURE, PUBLIC, PASS( obj ) :: getRefElemPointer =>  &
+      & mesh_getRefElemPointer
       !! Returns pointer to the reference element
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalElements => mesh_size
       !! Returns the size of the mesh
@@ -232,13 +231,16 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: getBoundaryNptrs => &
       & mesh_getBoundaryNptrs
       !! Returns a vector of boundary node numbers
-    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalNodes => mesh_getTotalInternalNodes
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalNodes => &
+      & mesh_getTotalInternalNodes
       !! Returns the total number of internal nodes
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalNodes => mesh_getTotalNodes
       !! Returns the total number of nodes
-    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundaryNodes => mesh_getTotalBoundaryNodes
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundaryNodes =>  &
+      & mesh_getTotalBoundaryNodes
       !! Returns the total number of boundary nodes
-    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundaryElements => mesh_getTotalBoundaryElements
+    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundaryElements => &
+      & mesh_getTotalBoundaryElements
       !! Returns the total number of boundary element
     PROCEDURE, PUBLIC, PASS( obj ) :: getBoundingBox => mesh_getBoundingBox
       !! Returns the bounding box of the mesh
@@ -284,7 +286,10 @@ TYPE :: Mesh_
       !! Returns boundary element data
     PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity1 => mesh_setSparsity1
     PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity2 => mesh_setSparsity2
-    GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2
+    PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity3 => mesh_setSparsity3
+    PROCEDURE, PRIVATE, PASS( obj ) :: setSparsity4 => mesh_setSparsity4
+    GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2,  &
+      & setSparsity3, setSparsity4
 END TYPE Mesh_
 
 !----------------------------------------------------------------------------
@@ -300,8 +305,7 @@ PUBLIC :: Mesh_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 Sept 2021
-! summary: This is a userdefine datatype which contains the pointer to
-! a mesh
+! summary: Userdefine datatype which contains the pointer to a mesh
 
 TYPE :: MeshPointer_
   TYPE( Mesh_ ), POINTER :: Ptr => NULL( )
@@ -356,7 +360,7 @@ PUBLIC :: addSurrogate_Mesh
 
 INTERFACE
 MODULE SUBROUTINE mesh_initiate( obj, hdf5, group )
-  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! mesh object
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
     !! Mesh file
@@ -430,7 +434,7 @@ PUBLIC :: Mesh_Pointer
 
 INTERFACE
 MODULE SUBROUTINE mesh_DeallocateData( obj )
-  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE mesh_DeallocateData
 END INTERFACE
 
@@ -1324,20 +1328,24 @@ END SUBROUTINE mesh_InitiateBoundaryData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    setSparsity@setMethod
+!                                                      setSparsity@setMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
 ! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
 MODULE SUBROUTINE mesh_setSparsity1( obj, mat, localNodeNumber, lbound, &
   & ubound )
-  CLASS( Mesh_ ), INTENT( INOUT) :: obj
-    !! Mesh_ class
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    !! [[Mesh_]] class
   TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
-    !! CSRMatrix object
+    !! [[CSRMatrix_]] object
   INTEGER( I4B ), INTENT( IN ) :: lbound
   INTEGER( I4B ), INTENT( IN ) :: ubound
   INTEGER( I4B ), INTENT( IN ) :: LocalNodeNumber( lbound:ubound )
@@ -1350,16 +1358,75 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
+! date: 16 Oct 2021
 ! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
 
 INTERFACE
 MODULE SUBROUTINE mesh_setSparsity2( obj, mat )
-  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! Mesh_ class
   TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
     !! CSRMatrix object
 END SUBROUTINE mesh_setSparsity2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      setSparsity@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
+
+INTERFACE
+MODULE SUBROUTINE mesh_setSparsity3( obj, colMesh, mat, ivar, jvar)
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+  !! [[Mesh_]] class
+  CLASS( Mesh_ ), INTENT( INOUT ) :: colMesh
+  !! [[Mesh_]] class
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+  !! [[CSRMatrix_]] object
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+END SUBROUTINE mesh_setSparsity3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      setSparsity@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+!
+!# Introduction
+!
+! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
+
+INTERFACE
+MODULE SUBROUTINE mesh_setSparsity4( obj, colMesh, mat, rowLocalNodeNumber, &
+  & rowLBOUND, rowUBOUND, colLocalNodeNumber, colLBOUND, colUBOUND,  &
+  & ivar, jvar )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    !! [[Mesh_]] class
+  CLASS( Mesh_ ), INTENT( INOUT ) :: colMesh
+    !! [[Mesh_]] class
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+    !! [[CSRMatrix_]] object
+  INTEGER( I4B ), INTENT( IN ) :: rowLBOUND
+  INTEGER( I4B ), INTENT( IN ) :: rowUBOUND
+  INTEGER( I4B ), INTENT( IN ) :: rowLocalNodeNumber( rowLBOUND:rowUBOUND )
+    !! Global to local node number map
+  INTEGER( I4B ), INTENT( IN ) :: colLBOUND
+  INTEGER( I4B ), INTENT( IN ) :: colUBOUND
+  INTEGER( I4B ), INTENT( IN ) :: colLocalNodeNumber( colLBOUND:colUBOUND )
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+END SUBROUTINE mesh_setSparsity4
 END INTERFACE
 
 !----------------------------------------------------------------------------

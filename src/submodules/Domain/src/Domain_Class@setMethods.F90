@@ -24,14 +24,14 @@ CONTAINS
 !                                                               setSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Domain_setSparsity
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_setSparsity"
+MODULE PROCEDURE Domain_setSparsity1
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_setSparsity1"
   INTEGER( I4B ) :: imesh, dim, tmesh, lb, ub
   CLASS( Mesh_ ), POINTER :: meshobj
   ! main
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
-      & "Mesh data is not initiated, first initiate")
+      & "Domain is not initiated, first initiate")
   END IF
   meshobj => NULL()
   lb = LBOUND(obj%local_nptrs, 1)
@@ -47,7 +47,72 @@ MODULE PROCEDURE Domain_setSparsity
   END DO
   CALL setSparsity( mat )
   NULLIFY( meshobj )
-END PROCEDURE Domain_setSparsity
+END PROCEDURE Domain_setSparsity1
+
+!----------------------------------------------------------------------------
+!                                                               setSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setSparsity2
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_setSparsity2"
+  INTEGER( I4B ) :: rowMeshID, colMeshID, rowMeshSize, colMeshSize,  &
+    & ivar, jvar, nsd( SIZE(domains ) )
+  CLASS( Mesh_ ), POINTER :: rowMesh, colMesh
+  CLASS( Domain_ ), POINTER :: rowDomain, colDomain
+  ! main
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "This routine is under construction, &
+    & I am currently working on domain connectivity part." )
+  !> check
+  DO ivar = 1, SIZE( domains )
+    IF( .NOT. ASSOCIATED(domains(ivar)%ptr) ) THEN
+      CALL e%raiseError(modName//"::"//myName//" - "// &
+        & 'DOMAINS( ' // TOSTRING(ivar) // ' ) NOT ASSOCIATED')
+    ELSE
+      IF( .NOT. domains(ivar)%ptr%isInitiated )  &
+        & CALL e%raiseError(modName//"::"//myName//" - "// &
+        & 'DOMAINS( ' // TOSTRING(ivar) // ' )%ptr NOT INITIATED')
+    END IF
+    nsd( ivar ) = domains( ivar )%ptr%getNSD()
+  END DO
+  !> check
+  IF( ANY( nsd .NE. nsd( 1 ) ) ) &
+    & CALL e%raiseError(modName//"::"//myName//" - "// &
+    & 'It seems that NSD (number of spatial dimensions) of domains are &
+    & not identical' )
+  !> nullify first for safety
+  rowMesh => NULL(); colMesh => NULL(); rowDomain=>NULL(); colDomain=>NULL()
+  DO ivar = 1, SIZE( domains )
+    rowDomain => domains( ivar )%ptr
+    rowMeshSize=rowDomain%getTotalMesh( dim=nsd( ivar ) )
+    DO jvar = 1, SIZE( domains )
+      colDomain => domains( jvar )%ptr
+      colMeshSize=colDomain%getTotalMesh( dim=nsd( jvar ) )
+      !>
+      DO rowMeshID = 1, rowMeshSize
+          rowMesh => rowDomain%getMeshPointer( dim=nsd(ivar), &
+            & entityNum=rowMeshID )
+          IF( .NOT. ASSOCIATED( rowMesh ) ) CYCLE
+        DO colMeshID = 1, colMeshSize
+          colMesh => colDomain%getMeshPointer( dim=nsd(jvar), &
+            & entityNum=colMeshID )
+          IF( ASSOCIATED( colMesh ) ) &
+            & CALL rowMesh%SetSparsity( mat=mat, &
+            & colMesh=colMesh, &
+            & rowLocalNodeNumber = rowDomain%local_nptrs, &
+            & rowLBOUND = LBOUND(rowDomain%local_nptrs,1), &
+            & rowUBOUND = UBOUND(rowDomain%local_nptrs,1), &
+            & colLocalNodeNumber = colDomain%local_nptrs, &
+            & colLBOUND = LBOUND(colDomain%local_nptrs,1), &
+            & colUBOUND = UBOUND(colDomain%local_nptrs,1), &
+            & ivar=ivar, jvar=jvar )
+        END DO
+      END DO
+    END DO
+  END DO
+  CALL setSparsity( mat )
+  NULLIFY( rowMesh, colMesh, rowDomain, colDomain )
+END PROCEDURE Domain_setSparsity2
 
 !----------------------------------------------------------------------------
 !

@@ -130,7 +130,9 @@ TYPE :: Domain_
       & Domain_getNptrs
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
       !! Returns the spatial dimension of each physical entities
-    PROCEDURE, PUBLIC, PASS( obj ) :: setSparsity => Domain_setSparsity
+    PROCEDURE, PASS( obj ) :: setSparsity1 => Domain_setSparsity1
+    PROCEDURE, NOPASS :: setSparsity2 => Domain_setSparsity2
+    GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2
 END TYPE Domain_
 
 !----------------------------------------------------------------------------
@@ -510,14 +512,34 @@ END INTERFACE
 !                                                     setSparsity@setMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Set sparsity in [[CSRMatrix_]] from [[Domain_]]
+
 INTERFACE
-MODULE SUBROUTINE Domain_setSparsity( obj, mat )
+MODULE SUBROUTINE Domain_setSparsity1( obj, mat )
   CLASS( Domain_ ), INTENT( IN ) :: obj
   TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
-END SUBROUTINE Domain_setSparsity
+END SUBROUTINE Domain_setSparsity1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     setSparsity@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Set sparsity in [[CSRMatrix_]] from [[Domain_]]
+
+INTERFACE
+MODULE SUBROUTINE Domain_setSparsity2( domains, mat )
+  CLASS( DomainPointer_  ), INTENT( IN ) :: domains( : )
+  TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
+END SUBROUTINE Domain_setSparsity2
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
 END MODULE Domain_Class
