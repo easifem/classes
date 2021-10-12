@@ -27,19 +27,20 @@ CONTAINS
 MODULE PROCEDURE mesh_setSparsity1
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity1"
   INTEGER( I4B ) :: i, j, k
-  INTEGER( I4B ), allocatable :: n2n( : )
-
+  INTEGER( I4B ), ALLOCATABLE :: n2n( : )
+  !> main
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
+  !> main
   DO i = 1, obj%tNodes
     j = obj%getGlobalNodeNumber( LocalNode = i )
     k = localNodeNumber( j )
     IF( k .NE. 0 ) THEN
       n2n = localNodeNumber( &
         & obj%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. ) )
-      CALL setSparsity( obj = Mat, Row = k, Col = n2n )
+      CALL SetSparsity( obj = Mat, Row = k, Col = n2n )
     END IF
   END DO
   IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
@@ -51,9 +52,9 @@ END PROCEDURE mesh_setSparsity1
 
 MODULE PROCEDURE mesh_setSparsity2
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity2"
-  INTEGER( I4B ) :: i, j, idof, k
-  INTEGER( I4B ), allocatable :: n2n( : )
-
+  INTEGER( I4B ) :: i, j
+  INTEGER( I4B ), ALLOCATABLE :: n2n( : )
+  !> main
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
@@ -61,9 +62,68 @@ MODULE PROCEDURE mesh_setSparsity2
   DO i = 1, obj%tNodes
     j = obj%getGlobalNodeNumber( LocalNode = i )
     n2n = obj%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. )
-    CALL setSparsity( obj = Mat, Row = j, Col = n2n )
+    CALL SetSparsity( obj = Mat, Row = j, Col = n2n )
   END DO
   IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
 END PROCEDURE mesh_setSparsity2
+
+!----------------------------------------------------------------------------
+!                                                               SetSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_SetSparsity3
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity3"
+  INTEGER( I4B ) :: i, j
+  INTEGER( I4B ), ALLOCATABLE :: n2n( : )
+  !> main
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "This routine is under construction." )
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Mesh data is not initiated, first initiate")
+  END IF
+  DO i = 1, obj%tNodes
+    j = obj%getGlobalNodeNumber( LocalNode = i )
+    IF( colMesh%isNodePresent( GlobalNode=j ) ) THEN
+      n2n = colMesh%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. )
+      CALL SetSparsity( obj = Mat, Row = j, Col = n2n, ivar=ivar,  &
+        & jvar=jvar )
+    END IF
+  END DO
+  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
+END PROCEDURE mesh_SetSparsity3
+
+!----------------------------------------------------------------------------
+!                                                                setSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setSparsity4
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity4"
+  INTEGER( I4B ) :: i, j, k
+  INTEGER( I4B ), ALLOCATABLE :: n2n( : )
+  !> main
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "This routine is under construction, &
+    & I am currently working on domain connectivity part." )
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Mesh data is not initiated, first initiate")
+  END IF
+  !> main
+  DO i = 1, obj%tNodes
+    !! get global node number for row mesh
+    j = obj%getGlobalNodeNumber( LocalNode = i )
+    !! get local node number for row mesh
+    k = rowLocalNodeNumber( j )
+    IF( k .NE. 0 ) THEN
+      !! get node to node for col mesh
+      n2n = colLocalNodeNumber( &
+        & colMesh%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. ) )
+      CALL SetSparsity( obj = Mat, Row = k, Col = n2n, ivar=ivar,  &
+        & jvar=jvar )
+    END IF
+  END DO
+  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
+END PROCEDURE mesh_setSparsity4
 
 END SUBMODULE setMethod
