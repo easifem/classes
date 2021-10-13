@@ -144,7 +144,7 @@ INTERFACE
 ! Deallocate data stored in [[Domain_]] object
 !
 MODULE PURE SUBROUTINE deallocate_obj( obj )
-  CLASS( Domain_ ), INTENT( INOUT) :: obj
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
     !! Domain object
 END SUBROUTINE deallocate_obj
 END INTERFACE
@@ -184,7 +184,7 @@ INTERFACE
 ! ```
 
 MODULE SUBROUTINE mc_connect_facet_cell( Dom, OmegaIndx, BoundaryIndx )
-  CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
+  CLASS( Domain_ ), INTENT( INOUT ), TARGET :: Dom
   INTEGER( I4B ), INTENT( IN ) :: OmegaIndx
   INTEGER( I4B ), INTENT( IN ) :: BoundaryIndx
 END SUBROUTINE mc_connect_facet_cell

@@ -146,7 +146,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE pn_deallocatedata( obj )
-  CLASS( mshPhysicalNames_ ), INTENT( INOUT) :: obj
+  CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE pn_deallocatedata
 END INTERFACE
 

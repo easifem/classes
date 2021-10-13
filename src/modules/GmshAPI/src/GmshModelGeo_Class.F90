@@ -18,7 +18,7 @@
 #ifdef USE_GMSH_SDK
 MODULE GmshModelGeo_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
-USE Utility, ONLY: Reallocate
+USE Utility, ONLY: Reallocate, Input
 USE GmshInterface
 USE GmshModelGeoMesh_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
@@ -53,7 +53,8 @@ TYPE :: GmshModelGeo_
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddBezier => geo_AddBezier
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddPolyline => geo_AddPolyline
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddCompoundSpline => geo_AddCompoundSpline
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCompoundBSpline => geo_AddCompoundBSpline
+  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCompoundBSpline => &
+    & geo_AddCompoundBSpline
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddCurveLoop => geo_AddCurveLoop
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddCurveLoops => geo_AddCurveLoops
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddPlaneSurface => geo_AddPlaneSurface
@@ -63,7 +64,8 @@ TYPE :: GmshModelGeo_
   PROCEDURE, PUBLIC, PASS( Obj ) :: Extrude => geo_Extrude
   PROCEDURE, PUBLIC, PASS( Obj ) :: Revolve => geo_GeoRevolve
   PROCEDURE, PUBLIC, PASS( Obj ) :: Twist => geo_Twist
-  PROCEDURE, PUBLIC, PASS( Obj ) :: ExtrudeBoundaryLayer => geo_ExtrudeBoundaryLayer
+  PROCEDURE, PUBLIC, PASS( Obj ) :: ExtrudeBoundaryLayer => &
+    & geo_ExtrudeBoundaryLayer
   PROCEDURE, PUBLIC, PASS( Obj ) :: GeoTranslate => geo_GeoTranslate
   PROCEDURE, PUBLIC, PASS( Obj ) :: GeoRotate => geo_GeoRotate
   PROCEDURE, PUBLIC, PASS( Obj ) :: GeoDilate => geo_GeoDilate
@@ -71,12 +73,14 @@ TYPE :: GmshModelGeo_
   PROCEDURE, PUBLIC, PASS( Obj ) :: Symmetrize => geo_Symmetrize
   PROCEDURE, PUBLIC, PASS( Obj ) :: Copy => geo_Copy
   PROCEDURE, PUBLIC, PASS( Obj ) :: Remove => geo_Remove
-  PROCEDURE, PUBLIC, PASS( Obj ) :: RemoveAllDuplicates => geo_RemoveAllDuplicates
+  PROCEDURE, PUBLIC, PASS( Obj ) :: RemoveAllDuplicates => &
+    & geo_RemoveAllDuplicates
   PROCEDURE, PUBLIC, PASS( Obj ) :: SplitCurve => geo_SplitCurve
   PROCEDURE, PUBLIC, PASS( Obj ) :: GetMaxTag => geo_GetMaxTag
   PROCEDURE, PUBLIC, PASS( Obj ) :: SetMaxTag => geo_SetMaxTag
   PROCEDURE, PUBLIC, PASS( Obj ) :: AddPhysicalGroup => geo_AddPhysicalGroup
-  PROCEDURE, PUBLIC, PASS( Obj ) :: RemovePhysicalGroups => geo_RemovePhysicalGroups
+  PROCEDURE, PUBLIC, PASS( Obj ) :: RemovePhysicalGroups => &
+    & geo_RemovePhysicalGroups
   PROCEDURE, PUBLIC, PASS( Obj ) :: Synchronize => geo_Synchronize
 END TYPE GmshModelGeo_
 
@@ -120,12 +124,13 @@ END SUBROUTINE geo_Initiate
 !----------------------------------------------------------------------------
 
 FUNCTION geo_AddPoint(obj, x, y, z, meshSize, tag) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT) :: obj
+  CLASS( _DT_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: x, y, z, meshSize
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: ans
   ! Internal variable
-  ans = gmshModelGeoAddPoint(x,y,z,meshSize, tag, ierr)
+  ans = gmshModelGeoAddPoint(x,y,z,meshSize, INPUT(default=-1, option=tag), &
+    & ierr )
 END FUNCTION geo_AddPoint
 
 !----------------------------------------------------------------------------
@@ -134,9 +139,11 @@ END FUNCTION geo_AddPoint
 
 FUNCTION geo_AddLine(obj, startTag, endTag, tag) RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, tag
+  INTEGER( I4B ), INTENT( IN ) :: startTag, endTag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddLine(startTag, endTag, tag, ierr)
+  Ans = gmshModelGeoAddLine(startTag, endTag, INPUT(default=-1,option=tag), &
+    & ierr)
 END FUNCTION geo_AddLine
 
 !----------------------------------------------------------------------------
@@ -146,10 +153,12 @@ END FUNCTION geo_AddLine
 FUNCTION geo_AddCircleArc(obj,startTag, centerTag, endTag, tag, nx, ny, &
   & nz ) RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, tag, centerTag
+  INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, centerTag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   REAL( DFP ), INTENT( IN ) ::  nx, ny, nz
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddCircleArc(startTag, centerTag, endTag, tag, nx, &
+  Ans = gmshModelGeoAddCircleArc(startTag, centerTag, endTag, &
+    & INPUT(default=-1, option=tag), nx, &
     & ny, nz, ierr)
 END FUNCTION geo_AddCircleArc
 
@@ -160,11 +169,12 @@ END FUNCTION geo_AddCircleArc
 FUNCTION geo_AddEllipseArc(obj, startTag, centerTag, majorTag, endTag, &
   & tag, nx, ny, nz ) RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) ::  startTag, centerTag, majorTag, endTag, tag
+  INTEGER( I4B ), INTENT( IN ) ::  startTag, centerTag, majorTag, endTag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   REAL( DFP ), INTENT( IN ) ::  nx, ny, nz
   INTEGER( I4B ) :: Ans
   Ans = gmshModelGeoAddEllipseArc( startTag, centerTag, majorTag, &
-    & endTag, tag, nx, ny, nz, ierr )
+    & endTag, input(default=-1, option=tag), nx, ny, nz, ierr )
 END FUNCTION geo_AddEllipseArc
 
 !----------------------------------------------------------------------------
@@ -175,10 +185,12 @@ FUNCTION geo_AddSpline(obj, pointTags, tag) &
   & RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
   ! internal
-  Ans = gmshModelGeoAddSpline(pointTags, INT(SIZE(pointTags), KIND=C_SIZE_T), tag,ierr)
+  Ans = gmshModelGeoAddSpline(pointTags,  &
+    & INT(SIZE(pointTags), KIND=C_SIZE_T),  &
+    & INPUT(default=-1,option=tag), ierr)
 END FUNCTION geo_AddSpline
 
 !----------------------------------------------------------------------------
@@ -189,10 +201,10 @@ FUNCTION geo_AddBSpline(obj, pointTags, tag) &
   & RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
   Ans = gmshModelGeoAddBSpline(pointTags, &
-    & INT(SIZE(pointTags),KIND=C_SIZE_T), tag, ierr)
+    & INT(SIZE(pointTags),KIND=C_SIZE_T), INPUT(default=-1,option=tag), ierr)
 END FUNCTION geo_AddBSpline
 
 !----------------------------------------------------------------------------
@@ -203,10 +215,10 @@ FUNCTION geo_AddBezier(obj, pointTags, tag) &
   & RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
   Ans = gmshModelGeoAddBezier(pointTags, &
-    & INT(SIZE(pointTags),KIND=C_SIZE_T), tag, ierr)
+    & INT(SIZE(pointTags),KIND=C_SIZE_T), INPUT(default=-1,option=tag), ierr)
 END FUNCTION geo_AddBezier
 
 !----------------------------------------------------------------------------
@@ -218,10 +230,10 @@ FUNCTION geo_AddPolyline(obj, pointTags, tag) &
   & RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
   Ans = gmshModelGeoAddPolyline(pointTags, &
-    & INT(SIZE(pointTags),KIND=C_SIZE_T), tag, ierr)
+    & INT(SIZE(pointTags),KIND=C_SIZE_T), INPUT(default=-1,option=tag), ierr)
 END FUNCTION geo_AddPolyline
 
 !----------------------------------------------------------------------------
@@ -232,9 +244,12 @@ FUNCTION geo_AddCompoundSpline(obj,curveTags, &
   & numIntervals, tag) RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: numIntervals, tag
+  INTEGER( I4B ), INTENT( IN ) :: numIntervals
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddCompoundSpline(curveTags, INT(SIZE(curveTags), KIND=C_SIZE_T), numIntervals, tag, ierr)
+  Ans = gmshModelGeoAddCompoundSpline(curveTags, &
+    & INT(SIZE(curveTags), KIND=C_SIZE_T), &
+      & numIntervals, INPUT(default=-1,option=tag), ierr)
 END FUNCTION geo_AddCompoundSpline
 
 !----------------------------------------------------------------------------
@@ -245,9 +260,12 @@ FUNCTION geo_AddCompoundBSpline(obj,curveTags, &
   & numIntervals, tag) RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: numIntervals, tag
+  INTEGER( I4B ), INTENT( IN ) :: numIntervals
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddCompoundBSpline(curveTags, INT(SIZE(curveTags), KIND=C_SIZE_T), numIntervals, tag, ierr)
+  Ans = gmshModelGeoAddCompoundBSpline(curveTags, &
+    & INT(SIZE(curveTags), KIND=C_SIZE_T), &
+    & numIntervals, INPUT(default=-1,option=tag), ierr)
 END FUNCTION geo_AddCompoundBSpline
 
 !----------------------------------------------------------------------------
@@ -258,13 +276,15 @@ FUNCTION geo_AddCurveLoop(obj,curveTags, tag, reorient) &
   & RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), INTENT( IN ) ::  tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) ::  tag
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: reorient
   INTEGER( I4B ) :: Ans
   !
   INTEGER( I4B ) :: reorient_
   reorient_ = 1; IF( PRESENT( reorient ) ) reorient_ = reorient
-  Ans = gmshModelGeoAddCurveLoop(curveTags, INT(SIZE(curveTags), C_SIZE_T), tag, reorient_, ierr)
+  Ans = gmshModelGeoAddCurveLoop(curveTags, &
+    & INT(SIZE(curveTags), C_SIZE_T),  &
+    & INPUT(default=-1,option=tag), reorient_, ierr)
 END FUNCTION geo_AddCurveLoop
 
 !----------------------------------------------------------------------------
@@ -285,7 +305,8 @@ FUNCTION geo_AddCurveLoops(obj, curveTags, tags ) &
   TYPE( C_PTR ) :: cptr
   INTEGER( C_SIZE_T ) :: tags_n
 
-  CALL gmshModelGeoAddCurveLoops(curveTags, INT(SIZE(curveTags), C_SIZE_T), cptr, tags_n, ierr)
+  CALL gmshModelGeoAddCurveLoops(curveTags, &
+    & INT(SIZE(curveTags), C_SIZE_T), cptr, tags_n, ierr)
   ans = INT(ierr, I4B)
   IF( ALLOCATED( tags ) ) DEALLOCATE( tags )
   ALLOCATE( tags( tags_n ) )
@@ -300,9 +321,10 @@ FUNCTION geo_AddPlaneSurface(obj,wireTags, tag) &
   & RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: wireTags( : )
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddPlaneSurface(wireTags, INT(SIZE(wireTags), C_SIZE_T), tag, ierr)
+  Ans = gmshModelGeoAddPlaneSurface(wireTags, &
+    & INT(SIZE(wireTags), C_SIZE_T), input(default=-1, option=tag), ierr)
 END FUNCTION geo_AddPlaneSurface
 
 !----------------------------------------------------------------------------
@@ -313,10 +335,12 @@ FUNCTION geo_AddSurfaceFilling(obj, wireTags, tag, &
   & sphereCenterTag) RESULT( Ans )
   CLASS( _DT_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: wireTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
   INTEGER( I4B ), INTENT( IN ) :: sphereCenterTag
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddSurfaceFilling(wireTags, INT(SIZE(wireTags), C_SIZE_T), tag, sphereCenterTag, ierr)
+  Ans = gmshModelGeoAddSurfaceFilling(wireTags,  &
+    & INT(SIZE(wireTags), C_SIZE_T), &
+      & input(default=-1, option=tag), sphereCenterTag, ierr)
 END FUNCTION geo_AddSurfaceFilling
 
 !----------------------------------------------------------------------------
@@ -330,7 +354,8 @@ FUNCTION geo_AddSurfaceLoop(obj,surfaceTags, tag ) &
   INTEGER( I4B ), INTENT( IN ) ::  tag
   INTEGER( I4B ) :: Ans
 
-  Ans = gmshModelGeoAddSurfaceLoop(surfaceTags, INT(SIZE(surfaceTags), C_SIZE_T), tag, ierr)
+  Ans = gmshModelGeoAddSurfaceLoop(surfaceTags,  &
+    & INT(SIZE(surfaceTags), C_SIZE_T), tag, ierr)
 END FUNCTION geo_AddsurfaceLoop
 
 !----------------------------------------------------------------------------
@@ -343,7 +368,8 @@ FUNCTION geo_AddVolume(obj, shellTags, tag) &
   INTEGER( I4B ), INTENT( IN ) ::  shellTags(:)
   INTEGER( I4B ), INTENT( IN ) :: tag
   INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddVolume(shellTags, INT(SIZE(shellTags), C_SIZE_T), tag, ierr)
+  Ans = gmshModelGeoAddVolume(shellTags,  &
+    & INT(SIZE(shellTags), C_SIZE_T), tag, ierr)
 END FUNCTION geo_AddVolume
 
 !----------------------------------------------------------------------------
@@ -465,7 +491,8 @@ FUNCTION geo_GeoTranslate(obj, dimTags, dx, dy, dz) &
   INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
   REAL( DFP ), INTENT( IN ) :: dx, dy, dz
   INTEGER( I4B ) :: ans
-  CALL gmshModelGeoTranslate(dimTags, size(dimTags, kind=c_size_t), dx, dy, dz, ierr)
+  CALL gmshModelGeoTranslate(dimTags, &
+    & size(dimTags, kind=c_size_t), dx, dy, dz, ierr)
   ans = INT(ierr, I4B)
 END FUNCTION geo_GeoTranslate
 

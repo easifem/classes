@@ -41,10 +41,14 @@ TYPE :: GmshModelMesh_
   PROCEDURE, PUBLIC, PASS( Obj ) :: Partition => mesh_Partition
   PROCEDURE, PUBLIC, PASS( Obj ) :: Unpartition => mesh_Unpartition
   PROCEDURE, PUBLIC, PASS( Obj ) :: Optimize => mesh_Optimize
+  PROCEDURE, PUBLIC, PASS( obj ) :: Recombine => mesh_Recombine
+  PROCEDURE, PUBLIC, PASS( obj ) :: Refine => mesh_Refine
+  PROCEDURE, PUBLIC, PASS( obj ) :: SetOrder => mesh_SetOrder
 END TYPE GmshModelMesh_
 
 PUBLIC :: GmshModelMesh_
-TYPE( GmshModelMesh_ ), PUBLIC, PARAMETER :: TypeGmshModelMesh = GmshModelMesh_()
+TYPE( GmshModelMesh_ ), PUBLIC, PARAMETER :: TypeGmshModelMesh = &
+  & GmshModelMesh_()
 
 !----------------------------------------------------------------------------
 !
@@ -80,7 +84,7 @@ FUNCTION mesh_Generate(obj, dim) RESULT( ans )
   INTEGER( I4B ) :: ans
   !
   CALL gmshModelMeshGenerate(dim, ierr)
-  ans = int(ierr, i4b)
+  ans = INT(ierr, I4B)
 END FUNCTION mesh_Generate
 
 !----------------------------------------------------------------------------
@@ -93,7 +97,7 @@ FUNCTION mesh_Partition(obj, numPart) &
   INTEGER( I4B ), INTENT( IN ) :: numPart
   INTEGER( I4B ) :: ans
   CALL gmshModelMeshPartition(numPart, ierr)
-  ans = int(ierr, i4b)
+  ans = INT(ierr, I4B)
 END FUNCTION mesh_Partition
 
 !----------------------------------------------------------------------------
@@ -104,7 +108,7 @@ FUNCTION mesh_Unpartition(obj) RESULT( ans )
   CLASS( GmshModelMesh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ) :: ans
   CALL gmshModelMeshUnpartition( ierr )
-  ans = int(ierr, i4b)
+  ans = INT(ierr, I4B)
 END FUNCTION mesh_Unpartition
 
 !----------------------------------------------------------------------------
@@ -123,7 +127,43 @@ FUNCTION mesh_Optimize(obj, method, force, niter, dimTags ) &
   method_ = TRIM(method) // C_NULL_CHAR
   CALL gmshModelMeshOptimize(C_LOC(method_), force, niter, &
     & dimTags, SIZE(dimTags, KIND=C_SIZE_T), ierr)
+  ans = INT(ierr, I4B)
 END FUNCTION mesh_Optimize
+
+!----------------------------------------------------------------------------
+!                                                                 Recombine
+!----------------------------------------------------------------------------
+
+FUNCTION mesh_Recombine( obj ) RESULT( ans )
+  CLASS( GmshModelMesh_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ) :: ans
+  CALL gmshModelMeshRecombine( ierr )
+  ans = INT(ierr, I4B)
+END FUNCTION mesh_Recombine
+
+!----------------------------------------------------------------------------
+!                                                                 Refine
+!----------------------------------------------------------------------------
+
+FUNCTION mesh_Refine( obj ) RESULT( ans )
+  CLASS( GmshModelMesh_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ) :: ans
+  CALL gmshModelMeshRefine( ierr )
+  ans = INT(ierr, I4B)
+END FUNCTION mesh_Refine
+
+!----------------------------------------------------------------------------
+!                                                                 SetOrder
+!----------------------------------------------------------------------------
+
+FUNCTION mesh_SetOrder( obj, order ) RESULT( ans )
+  CLASS( GmshModelMesh_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: order
+  INTEGER( I4B ) :: ans
+  !> main
+  CALL gmshModelMeshSetOrder( order, ierr )
+  ans = INT(ierr, I4B)
+END FUNCTION mesh_SetOrder
 
 END MODULE GmshModelMesh_Class
 #endif

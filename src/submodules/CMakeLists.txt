@@ -24,6 +24,8 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 # Domain
 include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
+#DomainConnectivity
+include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 # Vector

@@ -249,7 +249,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_set_precon( obj, precondtype, ipar, fpar )
   IMPORT :: LinSolver_, DFP, I4B
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -263,7 +263,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_set_sparsity( From, To )
   IMPORT :: LinSolver_, SparseMatrix_
-  CLASS( LinSolver_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE ls_set_sparsity
 END INTERFACE
@@ -275,7 +275,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_set_dbc_1(  obj, Nptrs, dofs )
   IMPORT :: LinSolver_, I4B
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : ), dofs( : )
 END SUBROUTINE ls_set_dbc_1
 END INTERFACE
@@ -283,7 +283,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_set_dbc_2(  obj, Nptrs, dofs )
   IMPORT :: LinSolver_, IntVector_, I4B
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE ls_set_dbc_2
@@ -296,7 +296,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_set_matrix( From, To )
   IMPORT :: LinSolver_, SparseMatrix_
-  CLASS( LinSolver_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE ls_set_matrix
 END INTERFACE
@@ -309,8 +309,8 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_solve( obj, sol, rhs )
   IMPORT :: LinSolver_, DFP
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
-  REAL( DFP ), INTENT( INOUT) :: sol( : )
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( INOUT ) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE ls_solve
 END INTERFACE
@@ -348,7 +348,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE ls_deallocate( obj )
   IMPORT :: LinSolver_
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE ls_deallocate
 END INTERFACE
 
@@ -418,7 +418,7 @@ INTERFACE
 !   - `fpar(3)` denotes permutation tolerance
 
 MODULE SUBROUTINE skit_setprecond( obj, precondtype, ipar, fpar )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -437,7 +437,7 @@ INTERFACE
 ! This subroutine set the sparsity pattern in [[sparsekit_]]
 
 MODULE SUBROUTINE skit_set_sparsity( From, To )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE skit_set_sparsity
 END INTERFACE
@@ -457,7 +457,7 @@ INTERFACE
 ! `storageFMT` can be `DOF_FMT` or `Nodes_FMT`
 
 MODULE SUBROUTINE skit_setDBC_1(  obj, Nptrs, dofs )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_1
@@ -467,7 +467,7 @@ INTERFACE
 !! set Dirichlet boundary condition information
 
 MODULE SUBROUTINE skit_setDBC_2(  obj, Nptrs, dofs )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE skit_setDBC_2
@@ -480,7 +480,7 @@ END INTERFACE
 INTERFACE
 !! set Matrix
 MODULE SUBROUTINE skit_setmatrix( From, To )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: To
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE skit_setmatrix
 END INTERFACE
@@ -492,8 +492,8 @@ END INTERFACE
 ! sol contains the initial guess
 INTERFACE
 MODULE SUBROUTINE skit_solve( obj, sol, rhs )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
-  REAL( DFP ), INTENT( INOUT) :: sol( : )
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( INOUT ) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE skit_solve
 END INTERFACE
@@ -534,7 +534,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE skit_deallocatedata( obj )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE skit_deallocatedata
 END INTERFACE
 
@@ -573,7 +573,7 @@ END INTERFACE Initiate
 
 INTERFACE
 MODULE SUBROUTINE lis_setprecond( obj, precondtype,  ipar, fpar )
-  CLASS( LIS_ ), INTENT( INOUT) :: obj
+  CLASS( LIS_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
@@ -590,7 +590,7 @@ END INTERFACE
 !<--- set csr
 INTERFACE
 MODULE SUBROUTINE lis_set_sparsity( From, To )
-  CLASS( LIS_ ), INTENT( INOUT) :: To
+  CLASS( LIS_ ), INTENT( INOUT ) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE lis_set_sparsity
 END INTERFACE
@@ -610,7 +610,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE lis_setDBC_2(  obj, Nptrs, dofs )
-  CLASS( LIS_ ), INTENT( INOUT) :: obj
+  CLASS( LIS_ ), INTENT( INOUT ) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 END SUBROUTINE lis_setDBC_2
@@ -622,7 +622,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE lis_setmatrix( From, To )
-  CLASS( LIS_ ), INTENT( INOUT) :: To
+  CLASS( LIS_ ), INTENT( INOUT ) :: To
   TYPE( SparseMatrix_ ), INTENT( IN ), TARGET :: From
 END SUBROUTINE lis_setmatrix
 END INTERFACE
@@ -634,8 +634,8 @@ END INTERFACE
 ! sol contains the initial guess
 INTERFACE
 MODULE SUBROUTINE lis_solve_1( obj, sol, rhs )
-  CLASS( LIS_ ), INTENT( INOUT) :: obj
-  REAL( DFP ), INTENT( INOUT) :: sol( : )
+  CLASS( LIS_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( INOUT ) :: sol( : )
   REAL( DFP ), INTENT( INOUT ) :: rhs( : )
 END SUBROUTINE lis_solve_1
 END INTERFACE
@@ -674,7 +674,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE lis_deallocatedata( obj )
-  CLASS( LIS_ ), INTENT( INOUT) :: obj
+  CLASS( LIS_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE lis_deallocatedata
 END INTERFACE
 

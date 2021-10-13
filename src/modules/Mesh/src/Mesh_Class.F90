@@ -242,8 +242,20 @@ TYPE :: Mesh_
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundaryElements => &
       & mesh_getTotalBoundaryElements
       !! Returns the total number of boundary element
-    PROCEDURE, PUBLIC, PASS( obj ) :: getBoundingBox => mesh_getBoundingBox
+    PROCEDURE, PASS( obj ) :: getBoundingBox1 => mesh_getBoundingBox1
       !! Returns the bounding box of the mesh
+    PROCEDURE, PASS( obj ) :: getBoundingBox2 => mesh_getBoundingBox2
+      !! Return the bounding box from the given nodes, and local_nptrs
+    GENERIC, PUBLIC :: getBoundingBox => getBoundingBox1,  &
+      & getBoundingBox2
+      !! Return the bounding box
+    PROCEDURE, PASS( obj ) :: setBoundingBox1 => mesh_setBoundingBox1
+      !! Set the bounding box of the mesh
+    PROCEDURE, PASS( obj ) :: setBoundingBox2 => mesh_setBoundingBox2
+      !! Set the bounding box from the given nodes, and local_nptrs
+    GENERIC, PUBLIC :: setBoundingBox => setBoundingBox1,  &
+      & setBoundingBox2
+      !! Set the bounding box
     PROCEDURE, PUBLIC, PASS( obj ) :: getConnectivity => &
       & mesh_getConnectivity
       !! Returns  node numbers in an element
@@ -467,7 +479,11 @@ END INTERFACE
 !
 ! This routine reads the following
 !
-! meshdata%uid,  meshdata%xidim, meshData%elemType, meshData%minX, meshData%minY, meshData%minZ, meshData%maxX, meshData%maxY, meshData%maxZ, meshData%X,meshData%Y, meshData%Z, meshData%tElements, meshData%tIntNodes,  meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber, meshData%connectivity, meshData%boundingEntity
+! meshdata%uid,  meshdata%xidim, meshData%elemType, meshData%minX,
+! meshData%minY, meshData%minZ, meshData%maxX, meshData%maxY, meshData%maxZ,
+! meshData%X,meshData%Y, meshData%Z, meshData%tElements, meshData%tIntNodes,
+! meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber,
+! meshData%connectivity, meshData%boundingEntity
 !
 ! This routine initiate the local_nptrs data in mesh.
 ! This routine also sets the number of nodes in the mesh (tNodes)
@@ -501,7 +517,11 @@ END INTERFACE
 ! nodes present in the mesh object.
 !
 !@note
-! The nodeCoord returned by this routine should be used by the mesh object itselt. This is because, in nodeCoords the nodes are arranged locally. However, if you wish to use nodeCoord, then get the localNodeNumber of a global node by calling the mesh methods, and use this localNodeNumber to extract the coordinates.
+! The nodeCoord returned by this routine should be used by the mesh object
+! itselt. This is because, in nodeCoords the nodes are arranged locally.
+! However, if you wish to use nodeCoord, then get the localNodeNumber of a
+! global node by calling the mesh methods, and use this localNodeNumber to
+! extract the coordinates.
 !@endnote
 
 INTERFACE
@@ -659,21 +679,22 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! type( mesh_ ) :: obj
-  ! integer( I4B ) :: ierr, ii
-  ! type( HDF5File_ ) :: meshfile
-  ! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
-  !   & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :', color_fg='blue', &
-  !   & style='underline_on') )
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
-  ! call display( obj%getNptrs(), "getNptrs = ")
-  ! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
-  ! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
-  ! call obj%deallocateData()
-  ! call meshfile%close()
-  ! call meshfile%deallocateData()
+! type( mesh_ ) :: obj
+! integer( I4B ) :: ierr, ii
+! type( HDF5File_ ) :: meshfile
+! call display( colorize('TEST:', color_fg='pink', style='underline_on') &
+!   & // colorize('getNptrs, getInternalNptrs, getBoundaryNptrs :',
+!color_fg='blue', &
+!   & style='underline_on') )
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call obj%initiate(hdf5=meshfile, group="/surfaceEntities_1" )
+! call display( obj%getNptrs(), "getNptrs = ")
+! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
+! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
+! call obj%deallocateData()
+! call meshfile%close()
+! call meshfile%deallocateData()
 !```
 
 INTERFACE
@@ -897,10 +918,29 @@ END INTERFACE
 ! summary: returns bounding box of the mesh
 
 INTERFACE
-MODULE PURE FUNCTION mesh_getBoundingBox( obj ) RESULT( Ans )
+MODULE PURE FUNCTION mesh_getBoundingBox1( obj ) RESULT( Ans )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   TYPE( BoundingBox_ ) :: ans
-END FUNCTION mesh_getBoundingBox
+END FUNCTION mesh_getBoundingBox1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getBoundingBox@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 July 2021
+! summary: returns bounding box of the mesh
+
+INTERFACE
+MODULE PURE FUNCTION mesh_getBoundingBox2( obj, nodes, local_nptrs )  &
+  & RESULT( Ans )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: nodes( :, : )
+    !! Nodal coordinates in XiJ format
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: local_nptrs( : )
+  TYPE( BoundingBox_ ) :: ans
+END FUNCTION mesh_getBoundingBox2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1325,6 +1365,37 @@ MODULE SUBROUTINE mesh_InitiateBoundaryData( obj )
   CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! mesh data
 END SUBROUTINE mesh_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            setBoundingBox@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 July 2021
+! summary: returns bounding box of the mesh
+
+INTERFACE
+MODULE PURE SUBROUTINE mesh_setBoundingBox1( obj, box )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+  TYPE( BoundingBox_ ), INTENT( IN ) :: box
+END SUBROUTINE mesh_setBoundingBox1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  setBoundingBox@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 July 2021
+! summary: returns bounding box of the mesh
+
+INTERFACE
+MODULE PURE SUBROUTINE mesh_setBoundingBox2( obj, nodes, local_nptrs )
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( IN ) :: nodes( :, : )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: local_nptrs( : )
+END SUBROUTINE mesh_setBoundingBox2
 END INTERFACE
 
 !----------------------------------------------------------------------------

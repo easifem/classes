@@ -25,9 +25,99 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_display
-  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_display"
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-      & "This routine has not been implemented yet.")
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL Display( "Mesh object is empty, noting to display", msg, &
+      & unitNo=unitNo )
+  END IF
+  CALL Display( msg, unitNo=unitNo)
+  CALL Display( obj%readFromFile, "# readFromFile : ", UnitNo=UnitNo)
+  CALL Display( obj%isNodeToElementsInitiated,  &
+    & "# isNodeToElementsInitiated : ", UnitNo=UnitNo)
+  CALL Display( obj%isNodeToNodesInitiated,  &
+    & "# isNodeToNodesInitiated : ", UnitNo=UnitNo)
+  CALL Display( obj%isElementToElementsInitiated,  &
+    & "# isElementToElementsInitiated : ", UnitNo=UnitNo)
+  CALL Display( obj%isBoundaryDataInitiated,  &
+    & "# isBoundaryDataInitiated : ", UnitNo=UnitNo)
+  CALL Display( obj%uid,  &
+    & "# uid : ", UnitNo=UnitNo)
+  CALL Display( obj%xidim,  &
+    & "# xidim : ", UnitNo=UnitNo)
+  CALL Display( obj%elemType,  &
+    & "# elemType : ", UnitNo=UnitNo)
+  CALL Display( obj%nsd,  &
+    & "# nsd : ", UnitNo=UnitNo)
+  CALL Display( obj%maxNptrs,  &
+    & "# maxNptrs : ", UnitNo=UnitNo)
+  CALL Display( obj%minNptrs,  &
+    & "# minNptrs : ", UnitNo=UnitNo)
+  CALL Display( obj%maxElemNum,  &
+    & "# maxElemNum : ", UnitNo=UnitNo)
+  CALL Display( obj%minElemNum,  &
+    & "# minElemNum : ", UnitNo=UnitNo)
+  CALL Display( obj%tNodes,  &
+    & "# tNodes : ", UnitNo=UnitNo)
+  CALL Display( obj%tIntNodes,  &
+    & "# tIntNodes : ", UnitNo=UnitNo)
+  CALL Display( obj%tElements,  &
+    & "# tElements : ", UnitNo=UnitNo)
+  CALL Display( obj%minX,  &
+    & "# minX : ", UnitNo=UnitNo)
+  CALL Display( obj%maxX,  &
+    & "# maxX : ", UnitNo=UnitNo)
+  CALL Display( obj%minY,  &
+    & "# minY : ", UnitNo=UnitNo)
+  CALL Display( obj%maxY,  &
+    & "# maxY : ", UnitNo=UnitNo)
+  CALL Display( obj%minZ,  &
+    & "# minZ : ", UnitNo=UnitNo)
+  CALL Display( obj%maxZ,  &
+    & "# maxZ : ", UnitNo=UnitNo)
+  CALL Display( obj%X,  &
+    & "# X : ", UnitNo=UnitNo)
+  CALL Display( obj%Y,  &
+    & "# Y : ", UnitNo=UnitNo)
+  CALL Display( obj%Z,  &
+    & "# Z : ", UnitNo=UnitNo)
+  IF( ALLOCATED( obj%physicalTag ) ) THEN
+    CALL Display( obj%physicalTag,  &
+      & "# physicalTag : ", UnitNo=UnitNo)
+  ELSE
+    CALL Display( "# physicalTag : NOT ALLOCATED", &
+      & UnitNo=UnitNo )
+  END IF
+  IF( ALLOCATED( obj%physicalTag ) ) THEN
+    CALL Display( obj%physicalTag,  &
+      & "# physicalTag : ", UnitNo=UnitNo)
+  ELSE
+    CALL Display( "# physicalTag : NOT ALLOCATED", &
+      & UnitNo=UnitNo )
+  END IF
+  IF( ALLOCATED( obj%Local_Nptrs ) ) THEN
+    CALL Display( obj%Local_Nptrs,  &
+      & "# Local_Nptrs : ", UnitNo=UnitNo)
+  ELSE
+    CALL Display( "# Local_Nptrs : NOT ALLOCATED", &
+      & UnitNo=UnitNo )
+  END IF
+  IF( ASSOCIATED( obj%refElem ) ) THEN
+    CALL Display( "# refElem : ASSOCIATED", UnitNo=UnitNo)
+  ELSE
+    CALL Display( "# refElem : NOT ASSOCIATED", &
+      & UnitNo=UnitNo )
+  END IF
+  IF( ALLOCATED( obj%nodeData ) ) THEN
+    CALL Display( "# nodeData : ALLOCATED", UnitNo=UnitNo)
+  ELSE
+    CALL Display( "# nodeData : NOT ALLOCATED", &
+      & UnitNo=UnitNo )
+  END IF
+  IF( ALLOCATED( obj%elementData ) ) THEN
+    CALL Display( "# elementData : ALLOCATED", UnitNo=UnitNo)
+  ELSE
+    CALL Display( "# elementData : NOT ALLOCATED", &
+      & UnitNo=UnitNo )
+  END IF
 END PROCEDURE mesh_display
 
 !----------------------------------------------------------------------------

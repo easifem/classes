@@ -760,7 +760,7 @@ INTERFACE
 MODULE PURE SUBROUTINE init_node_elements( obj, Meshobj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
-  CLASS( Mesh_ ), INTENT( INOUT) :: Meshobj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
 END SUBROUTINE init_node_elements
 END INTERFACE
@@ -811,7 +811,7 @@ INTERFACE
 MODULE PURE SUBROUTINE init_node_nodes( obj, Meshobj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
-  CLASS( Mesh_ ),INTENT( INOUT) :: Meshobj
+  CLASS( Mesh_ ),INTENT( INOUT ) :: Meshobj
     !! mesh object
 END SUBROUTINE init_node_nodes
 END INTERFACE
@@ -863,7 +863,7 @@ INTERFACE
 MODULE PURE SUBROUTINE init_element_elements( obj, Meshobj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
-  CLASS( Mesh_ ), INTENT( INOUT) :: Meshobj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
 END SUBROUTINE init_element_elements
 END INTERFACE
@@ -958,7 +958,7 @@ INTERFACE
 MODULE PURE SUBROUTINE init_elem_nodes( obj, Meshobj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
-  CLASS( Mesh_ ), INTENT( INOUT) :: Meshobj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
 END SUBROUTINE init_elem_nodes
 END INTERFACE
@@ -1008,9 +1008,9 @@ INTERFACE
 ! ```
 
 MODULE PURE SUBROUTINE init_bndy_data( obj, Meshobj )
-  CLASS( MeshData_ ), INTENT( INOUT) :: obj
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
-  CLASS( Mesh_ ), INTENT( INOUT) :: Meshobj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
 END SUBROUTINE init_bndy_data
 END INTERFACE
@@ -1089,7 +1089,7 @@ INTERFACE
 ! ```
 
 MODULE PURE SUBROUTINE init_int_nptrs( obj, Meshobj )
-  CLASS( MeshData_ ), INTENT( INOUT) :: obj
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
   CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
@@ -1104,8 +1104,8 @@ INTERFACE
 !! Initiate internal boundary data
 
 MODULE PURE SUBROUTINE init_int_bndydata( obj, Meshobj )
-  CLASS( MeshData_ ), INTENT( INOUT) :: obj
-  CLASS( Mesh_ ), INTENT( INOUT) :: Meshobj
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: Meshobj
 END SUBROUTINE init_int_bndydata
 END INTERFACE
 
@@ -1126,9 +1126,9 @@ INTERFACE
 ! ```
 
 MODULE PURE SUBROUTINE setSparsity_1( obj, Meshobj, Mat, map )
-  CLASS( MeshData_ ), INTENT( INOUT) :: obj
+  CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data
-  TYPE( Mesh_ ), INTENT( INOUT) :: Meshobj
+  TYPE( Mesh_ ), INTENT( INOUT ) :: Meshobj
     !! mesh object
   TYPE( SparseMatrix_ ), INTENT( INOUT ) :: Mat
     !! sparsematrix object
@@ -1158,11 +1158,11 @@ INTERFACE
 ! `obj`
 
 MODULE SUBROUTINE get_facet_elements( mdobj, obj, facetmesh, feobj )
-  CLASS( MeshData_ ), INTENT( INOUT) :: mdobj
+  CLASS( MeshData_ ), INTENT( INOUT ) :: mdobj
     !! Mesh data of parent mesh
-  CLASS( Mesh_ ), INTENT( INOUT) :: obj
+  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! Parent mesh
-  CLASS( Mesh_ ), INTENT( INOUT) :: facetmesh
+  CLASS( Mesh_ ), INTENT( INOUT ) :: facetmesh
     !! facet mesh to be constructed
   CLASS( Element_ ), INTENT( IN ) :: feobj
     !! Finite element
@@ -1188,7 +1188,7 @@ INTERFACE
 ! ```
 
 MODULE PURE SUBROUTINE mc_connect_facet_cell(CellMeshData,CellMesh,FacetMesh)
-  CLASS( MeshData_ ), INTENT( INOUT) :: CellMeshData
+  CLASS( MeshData_ ), INTENT( INOUT ) :: CellMeshData
     !! Mesh data of cell mesh
   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: CellMesh
     !! Mesh of  cell elements
@@ -1204,7 +1204,7 @@ END INTERFACE
 INTERFACE
 MODULE FUNCTION md_quality( obj, Meshobj, Nodes, Measure ) RESULT( ans )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
-  CLASS( Mesh_ ), TARGET, INTENT( INOUT) :: Meshobj
+  CLASS( Mesh_ ), TARGET, INTENT( INOUT ) :: Meshobj
   REAL( DFP ) , INTENT( IN ) :: Nodes(:,:)
   INTEGER( I4B ), INTENT( IN ) :: Measure
   REAL( DFP ), ALLOCATABLE :: ans(:)

@@ -241,7 +241,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_NewDefault(obj)
-  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT) :: obj
+  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT ) :: obj
   CALL obj%DeallocateData()
   ALLOCATE(obj%storage(0))
   CALL obj%FixValuePtrs()
@@ -252,7 +252,7 @@ END SUBROUTINE T_NewDefault
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_NewCopyOther(obj, anotherObj)
-  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT) :: obj
+  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT ) :: obj
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(IN) :: anotherObj
   ! Internal variables
   INTEGER( I4B ) :: ii, n
@@ -271,7 +271,7 @@ END SUBROUTINE T_NewCopyOther
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_NewFill(obj, n, val)
-  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT) :: obj
+  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: n
   FTL_TEMPLATE_TYPE_WRAP, OPTIONAL, INTENT( IN ) :: val
   ! internal variable
@@ -293,7 +293,7 @@ END SUBROUTINE T_NewFill
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_NewFromArray(obj, array)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: array(:)
   ! Internal variables
   INTEGER( I4B ) :: ii,n
@@ -313,7 +313,7 @@ END SUBROUTINE T_NewFromArray
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_DeallocateData( obj )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   ! CALL obj%clear(freeMem=.TRUE.)
   obj%psize = 0
   IF(ALLOCATED(obj%storage)) THEN
@@ -908,7 +908,7 @@ END SUBROUTINE T_IncreaseCapacity
 !----------------------------------------------------------------------------
 
 SUBROUTINE TriggerFinalizer(obj, freeMem)
-  FTL_TEMPLATE_TYPE_WRAP, INTENT( INOUT) :: obj
+  FTL_TEMPLATE_TYPE_WRAP, INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
   IF( PRESENT(freeMem) )THEN
     IF( freeMem ) THEN

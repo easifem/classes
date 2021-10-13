@@ -222,7 +222,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewDefault( obj )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT), TARGET :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ), TARGET :: obj
   CALL obj%Delete()
   obj%sentinel%next => obj%sentinel
   obj%sentinel%prev => obj%sentinel
@@ -233,7 +233,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 IMPURE ELEMENTAL SUBROUTINE NewCopyOther(obj, other)
-  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(INOUT) :: obj
+  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(INOUT ) :: obj
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(IN) :: other
 
   ! Internal variable
@@ -253,7 +253,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewFill( obj, n, val )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: n
   FTL_TEMPLATE_TYPE_WRAP , TARGET, OPTIONAL, INTENT( IN ) :: val
 
@@ -394,7 +394,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 FUNCTION PopFront( obj ) RESULT( ans )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT), TARGET :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ), TARGET :: obj
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
   FTL_TEMPLATE_TYPE_WRAP, POINTER :: ans
 #else
@@ -428,7 +428,7 @@ END FUNCTION
 !----------------------------------------------------------------------------
 
 FUNCTION PopBack(obj) RESULT( ans )
-  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(INOUT), TARGET :: obj
+  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)), INTENT(INOUT ), TARGET :: obj
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
   FTL_TEMPLATE_TYPE_WRAP, POINTER :: ans
 #else
@@ -461,7 +461,7 @@ END FUNCTION
 !----------------------------------------------------------------------------
 
 IMPURE ELEMENTAL SUBROUTINE Delete_obj( obj )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT), TARGET :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ), TARGET :: obj
 
   ! Internal variables
   CLASS( ListNode_ ), POINTER :: walker, deletor
@@ -633,7 +633,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE InsertArray( obj, position, array )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: position
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN )    :: array(:)
 
@@ -674,7 +674,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE EraseSingle( obj, position )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: position
 
   CALL UnlinkNode(position%node)
@@ -778,7 +778,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE ftlMoveList( src, dest )
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT) :: src
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT(INOUT ) :: src
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( OUT ), TARGET :: dest
 
   dest%psize = src%psize
@@ -798,7 +798,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewItDefault(self)
-  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT(INOUT) :: self
+  CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT(INOUT ) :: self
   NULLIFY( self%node )
   NULLIFY( self%value )
 END SUBROUTINE
@@ -826,7 +826,7 @@ END SUBROUTINE
 ! check the bounds
 ! if bounds are crossed raise error
 RECURSIVE SUBROUTINE Inc(obj, n)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT(INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT(INOUT ) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
 
   ! Define internal variables
@@ -852,7 +852,7 @@ END SUBROUTINE
 ! check the bounds
 ! if bounds are crossed raise error
 RECURSIVE SUBROUTINE Dec(obj, n)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT(INOUT) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT(INOUT ) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
 
   ! Define internal variable

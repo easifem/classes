@@ -79,9 +79,7 @@ MODULE PROCEDURE Domain_getLocalNodeNumber1
   IF( obj%isNodePresent( globalNode ) ) THEN
     ans = obj%local_nptrs( globalNode )
   ELSE
-    CALL e%raiseError(modName//'::'//myName//'-'// &
-    & "globalNode="// trim(str(globalNode, .true.)) // &
-    & " is not present inside the domain" )
+    ans = 0
   END IF
 END PROCEDURE Domain_getLocalNodeNumber1
 
@@ -95,6 +93,30 @@ MODULE PROCEDURE Domain_getLocalNodeNumber2
     ans( ii ) = Domain_getLocalNodeNumber1( obj, globalNode(ii))
   END DO
 END PROCEDURE Domain_getLocalNodeNumber2
+
+!----------------------------------------------------------------------------
+!                                                       getGlobalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getGlobalNodeNumber1
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getGlobalNodeNumber"
+  IF( localNode .LE. obj%tNodes ) THEN
+    ans = getIndex( obj%local_nptrs, localNode )
+  ELSE
+    ans = 0
+  END IF
+END PROCEDURE Domain_getGlobalNodeNumber1
+
+!----------------------------------------------------------------------------
+!                                                         getGlobalNodeNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getGlobalNodeNumber2
+  INTEGER( I4B ) :: ii
+  DO ii = 1, SIZE( localNode )
+    ans( ii ) = Domain_getGlobalNodeNumber1( obj, localNode(ii))
+  END DO
+END PROCEDURE Domain_getGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
 !                                                              getTotalMesh
@@ -171,6 +193,14 @@ END PROCEDURE Domain_getNodeCoord
 MODULE PROCEDURE Domain_getNodeCoordPointer
   ans => obj%nodeCoord
 END PROCEDURE Domain_getNodeCoordPointer
+
+!----------------------------------------------------------------------------
+!                                            getGlobalToLocalNodeNumPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getGlobalToLocalNodeNumPointer
+  ans => obj%local_nptrs
+END PROCEDURE Domain_getGlobalToLocalNodeNumPointer
 
 !----------------------------------------------------------------------------
 !                                                                   getNptrs

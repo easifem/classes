@@ -244,7 +244,7 @@ END INTERFACE
 
 INTERFACE
 MODULE PURE SUBROUTINE initCounter( obj )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT) :: obj
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE initCounter
 END INTERFACE
 
@@ -258,7 +258,7 @@ END INTERFACE
 
 INTERFACE
 MODULE PURE SUBROUTINE reset( obj )
-  CLASS( ExceptionHandler_ ), INTENT( INOUT) :: obj
+  CLASS( ExceptionHandler_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE reset
 END INTERFACE
 

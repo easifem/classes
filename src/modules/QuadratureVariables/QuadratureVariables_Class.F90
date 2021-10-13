@@ -91,7 +91,7 @@ INTERFACE
 ! - If `names` are not present then variables will be named as `V1, V2,...`
 
 MODULE PURE SUBROUTINE elem_var_initiate( obj, tprop, tpoint, telem, names )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
+  CLASS( QuadratureVariables_ ), INTENT( INOUT ) :: obj
     !! Instance
   INTEGER( I4B ), INTENT( IN ) :: tprop
     !! Total number of properties
@@ -124,7 +124,7 @@ INTERFACE
 ! - `obj % Val( i_s:i_e, ipoint, icol) = Val( : )`
 
 MODULE PURE SUBROUTINE elem_var_set_value( obj, ipoint, elemnum, Val, is, ie )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
+  CLASS( QuadratureVariables_ ), INTENT( INOUT ) :: obj
     !! Instance of [[quadraturevariables_]]
   INTEGER( I4B ), INTENT( IN ) :: ipoint
     !! Quadrature point number
@@ -152,7 +152,7 @@ INTERFACE
 
 MODULE PURE SUBROUTINE elem_var_add_val( obj, ipoint, elemnum, Scale, Val, &
   & is, ie )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
+  CLASS( QuadratureVariables_ ), INTENT( INOUT ) :: obj
     !! Instance of [[quadraturevariables_]]
   INTEGER( I4B ), INTENT( IN ) :: elemnum
     !! It represents id of element or material depending on storage type
@@ -217,7 +217,7 @@ INTERFACE
 !! Deallocat data stored inside [[quadraturevariables_]] object
 
 MODULE PURE SUBROUTINE elem_var_deallocate_data( obj )
-  CLASS( QuadratureVariables_ ), INTENT( INOUT) :: obj
+  CLASS( QuadratureVariables_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE elem_var_deallocate_data
 END INTERFACE
 

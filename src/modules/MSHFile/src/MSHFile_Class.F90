@@ -177,7 +177,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE msh_Read(obj, error )
   CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( INOUT ) :: error
+  INTEGER( I4B ), OPTIONAL, INTENT( INOUT ) :: error
 END SUBROUTINE msh_Read
 END INTERFACE
 
@@ -257,7 +257,7 @@ END INTERFACE
 ! ! This will add mesh generation command to .geo file
 
 ! MODULE FUNCTION mesh_generate( obj, dim ) RESULT( ans )
-!   CLASS( MSHFile_ ), INTENT( INOUT) :: obj
+!   CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
 !   INTEGER( I4B ), INTENT( IN ) :: dim
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION mesh_generate
@@ -275,7 +275,7 @@ END INTERFACE
 ! ! This function will dump the buffer content in to a file
 
 ! MODULE FUNCTION mesh_write( obj, UnitNo ) RESULT( ans )
-!   CLASS( MSHFile_ ), INTENT( INOUT) :: obj
+!   CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
 !   INTEGER( I4B ), INTENT( IN ) :: UnitNo
 !   INTEGER( I4B ) :: ans
 ! END FUNCTION mesh_write
@@ -452,7 +452,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_getelements_1( obj, Meshobj, FEobj )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
+!   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: Meshobj
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
 ! END SUBROUTINE msh_getelements_1
 ! END INTERFACE
@@ -480,7 +480,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_getelements_2( obj,Meshobj, XiDim, FEobj, Offset )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
+!   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: Meshobj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
 !   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
@@ -511,7 +511,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE msh_getelements_2c( obj, Dom,indx,XiDim,FEobj,Offset )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
+!   CLASS( Domain_ ), INTENT( INOUT ), TARGET :: Dom
 !   INTEGER( I4B ), INTENT( IN ) :: indx
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
@@ -546,7 +546,7 @@ END INTERFACE
 ! MODULE SUBROUTINE msh_getelements_3( obj, Meshobj, XiDim, Tag, FEobj,&
 !   & Offset )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
+!   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: Meshobj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim, Tag( : )
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
 !   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
@@ -584,7 +584,7 @@ END INTERFACE
 ! MODULE SUBROUTINE msh_getelements_3c( obj, Dom, Indx, XiDim, Tag, &
 !   & FEobj, Offset )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
+!   CLASS( Domain_ ), INTENT( INOUT ), TARGET :: Dom
 !   INTEGER( I4B ), INTENT( IN ) :: Indx
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim, Tag( : )
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
@@ -619,7 +619,7 @@ END INTERFACE
 ! MODULE SUBROUTINE msh_getelements_4( obj, Meshobj, XiDim, TagNames, &
 !   & FEobj, Offset )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Mesh_ ), INTENT( INOUT), TARGET :: Meshobj
+!   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: Meshobj
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   TYPE( String ), INTENT( IN ) :: TagNames( : )
 !   CLASS( Element_ ), INTENT( IN ) :: FEobj
@@ -657,7 +657,7 @@ END INTERFACE
 ! MODULE SUBROUTINE msh_getelements_4c( obj, Dom, Indx, XiDim, TagNames, &
 !   & FEobj, Offset )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: obj
-!   CLASS( Domain_ ), INTENT( INOUT), TARGET :: Dom
+!   CLASS( Domain_ ), INTENT( INOUT ), TARGET :: Dom
 !   INTEGER( I4B ), INTENT( IN ) :: Indx
 !   INTEGER( I4B ), INTENT( IN ) :: XiDim
 !   TYPE( String ), INTENT( IN ) :: TagNames( : )
@@ -683,7 +683,7 @@ END INTERFACE
 
 ! MODULE SUBROUTINE dom_init_from_gmshMesh( mshobj, obj, facetmesh )
 !   CLASS( MSHFile_ ), INTENT( IN ) :: mshobj
-!   CLASS( Domain_ ), INTENT( INOUT) :: obj
+!   CLASS( Domain_ ), INTENT( INOUT ) :: obj
 !   TYPE( String ), OPTIONAL, INTENT( IN ) ::  facetmesh( :, : )
 ! END SUBROUTINE dom_init_from_gmshMesh
 ! END INTERFACE

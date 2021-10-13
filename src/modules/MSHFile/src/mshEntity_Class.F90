@@ -173,7 +173,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ent_deallocatedata( obj )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE ent_deallocatedata
 END INTERFACE
 
@@ -211,7 +211,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE ent_Write( obj, mshFile, StartStr, EndStr )
   CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: StartStr, EndStr
 END SUBROUTINE ent_Write
 END INTERFACE
@@ -266,8 +266,8 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ReadPointEntity( obj, mshFile, readTag, error )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
   LOGICAL( LGT ), INTENT( IN ) :: readTag
 END SUBROUTINE ReadPointEntity
@@ -283,8 +283,8 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ReadCurveEntity( obj, mshFile, readTag, error )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
   LOGICAL( LGT ), INTENT( IN ) :: readTag
 END SUBROUTINE ReadCurveEntity
@@ -300,8 +300,8 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ReadSurfaceEntity( obj, mshFile, readTag, error )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
   LOGICAL( LGT ), INTENT( IN ) :: readTag
 END SUBROUTINE ReadSurfaceEntity
@@ -317,8 +317,8 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ReadVolumeEntity( obj, mshFile, readTag, error )
-  CLASS( mshEntity_ ), INTENT( INOUT) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
   LOGICAL( LGT ), INTENT( IN ) :: readTag
 END SUBROUTINE ReadVolumeEntity

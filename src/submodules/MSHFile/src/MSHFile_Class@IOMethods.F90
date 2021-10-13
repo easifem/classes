@@ -299,7 +299,7 @@ END SUBROUTINE getNodeCoord
 MODULE PROCEDURE msh_Read
   ! Define internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName = "msh_Read"
-  INTEGER( I4B ) :: unitNo, tp, tc, ts, tv
+  INTEGER( I4B ) :: unitNo, tp, tc, ts, tv, error0
   !> main
   !> check
   IF( .NOT. obj%isOpen() ) THEN
@@ -316,8 +316,8 @@ MODULE PROCEDURE msh_Read
   !> reading mesh format
   CALL e%raiseDebug(modName//'::'//myName//' - '// &
     & 'READING: meshFormat')
-  CALL obj%Format%Read( mshFile=obj, error=error)
-  IF( error .NE. 0 ) THEN
+  CALL obj%Format%Read( mshFile=obj, error=error0)
+  IF( error0 .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Failed in Reading mesh format')
   ELSE
@@ -327,7 +327,7 @@ MODULE PROCEDURE msh_Read
   !> reading physical group information
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'READING: physicalNames')
-  CALL obj%PhysicalNames%Read( mshFile=obj, error=error )
+  CALL obj%PhysicalNames%Read( mshFile=obj, error=error0 )
   IF( obj%PhysicalNames%isInitiated ) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'READING: physicalNames [OK!]')
@@ -338,8 +338,8 @@ MODULE PROCEDURE msh_Read
   !> Entities
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'LOCATING: $Entities')
-  CALL TypemshEntity%GotoTag( mshFile=obj, error=error )
-  IF( error .NE. 0 ) THEN
+  CALL TypemshEntity%GotoTag( mshFile=obj, error=error0 )
+  IF( error0 .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'LOCATING: $Entities [NOT FOUND!]')
   ELSE
@@ -366,6 +366,7 @@ MODULE PROCEDURE msh_Read
   CALL obj%ReadElements( )
   !> nodes in physical regions
   CALL setNumNodesInPhysicalNames( obj )
+  IF( PRESENT( error ) ) error=error0
 END PROCEDURE msh_Read
 
 !----------------------------------------------------------------------------

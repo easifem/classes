@@ -117,6 +117,12 @@ TYPE :: Domain_
     PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber2
     GENERIC, PUBLIC :: getLocalNodeNumber => Domain_getLocalNodeNumber1, &
       & Domain_getLocalNodeNumber2
+    PROCEDURE, PASS( obj ) :: domain_getGlobalNodeNumber1
+      !! Returns the global node number of a local node number
+    PROCEDURE, PASS( obj ) :: domain_getGlobalNodeNumber2
+      !! Returns the global node number of a local node number
+    GENERIC, PUBLIC :: getGlobalNodeNumber => domain_getGlobalNodeNumber1, &
+      & domain_getGlobalNodeNumber2
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMesh => Domain_getTotalMesh
       !! This routine returns total number of meshes of given dimension
     PROCEDURE, PUBLIC, PASS( obj ) :: getMeshPointer => Domain_getMeshPointer
@@ -126,6 +132,8 @@ TYPE :: Domain_
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeCoordPointer => &
       & Domain_getNodeCoordPointer
       !! This routine returns the pointer to nodal coordinate
+    PROCEDURE, PUBLIC, PASS( obj ) :: getGlobalToLocalNodeNumPointer => &
+      & Domain_getGlobalToLocalNodeNumPointer
     PROCEDURE, PUBLIC, PASS( obj ) :: getNptrs => &
       & Domain_getNptrs
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
@@ -211,7 +219,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE Domain_DeallocateData( obj )
-  CLASS( Domain_ ), INTENT( INOUT) :: obj
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
     !! Domain object
 END SUBROUTINE Domain_DeallocateData
 END INTERFACE
@@ -383,6 +391,47 @@ END FUNCTION Domain_getLocalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                             getGlobalNodeNumber@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+!
+!# Introduction
+!
+! This function returns the local node number of a global node number.
+
+
+INTERFACE
+MODULE FUNCTION Domain_getGlobalNodeNumber1( obj, localNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: localNode
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getGlobalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getGlobalNodeNumber@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+!
+!# Introduction
+!
+! This function returns the local node number of a global node number.
+
+INTERFACE
+MODULE FUNCTION Domain_getGlobalNodeNumber2( obj, localNode ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: localNode( : )
+  INTEGER( I4B ) :: ans( SIZE( localNode ) )
+END FUNCTION Domain_getGlobalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                    getTotalMesh@getMethods
 !----------------------------------------------------------------------------
 
@@ -440,9 +489,12 @@ END INTERFACE
 !
 !# Introduction
 ! - This routine returns the nodal coordinates in the form of rank2 array.
-! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
-! - If `dim` and `tag` are absent then this routine returns the nodal coordinates of the entire domain
-! - If `dim` and `tag` are present then the routine selects the mesh and returns its nodal coordinates
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+! - If `dim` and `tag` are absent then this routine returns the nodal
+! coordinates of the entire domain
+! - If `dim` and `tag` are present then the routine selects the mesh and
+! returns its nodal coordinates
 
 INTERFACE
 MODULE SUBROUTINE Domain_getNodeCoord( obj, nodeCoord, dim, entityNum )
@@ -462,14 +514,37 @@ END INTERFACE
 ! summary: This routine returns the pointer to nodal coordinates
 !
 !# Introduction
-! - This routine returns the pointer to nodal coordinates in the form of rank2 array.
-! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node number, and the rows correspond to the component.
+! - This routine returns the pointer to nodal coordinates in the form of
+! rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
 
 INTERFACE
 MODULE FUNCTION Domain_getNodeCoordPointer( obj ) RESULT( ans )
   CLASS( Domain_ ), TARGET, INTENT( IN ) :: obj
   REAL( DFP ), POINTER :: ans( :, : )
 END FUNCTION Domain_getNodeCoordPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  getGlobalToLocalNodeNumPointer@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the pointer to nodal coordinates
+!
+!# Introduction
+! - This routine returns the pointer to nodal coordinates in the form of
+! rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+
+INTERFACE
+MODULE FUNCTION Domain_getGlobalToLocalNodeNumPointer( obj ) RESULT( ans )
+  CLASS( Domain_ ), TARGET, INTENT( IN ) :: obj
+  INTEGER( I4B ), POINTER :: ans( : )
+END FUNCTION Domain_getGlobalToLocalNodeNumPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

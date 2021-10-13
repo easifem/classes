@@ -172,7 +172,7 @@ CONTAINS
 !> @param tagEnd the index of the end tag for the element
 !>
 RECURSIVE SUBROUTINE init_XMLElementType(thisXMLE,cachedFile,itag,lines,tagBegin,tagEnd)
-  CLASS(XMLElementType),TARGET,INTENT(INOUT) :: thisXMLE
+  CLASS(XMLElementType),TARGET,INTENT(INOUT ) :: thisXMLE
   CHARACTER(LEN=1),INTENT(IN) :: cachedFile(:)
   INTEGER(SIK),INTENT(IN) :: itag(:,:)
   INTEGER(SIK),INTENT(IN) :: lines(:)
@@ -378,7 +378,7 @@ ENDSUBROUTINE write_XMLElementType
 !> @param thisXMLE the XML element object
 !>
 RECURSIVE SUBROUTINE clear_XMLElementType(thisXMLE)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
   INTEGER(SIK) :: i
 
   IF(ASSOCIATED(thisXMLE%children)) THEN
@@ -430,8 +430,8 @@ ENDFUNCTION hasParent_XMLElementType
 !> @param parent the parent XML element object
 !>
 PURE SUBROUTINE getParent_XMLElementType(thisXMLE,parent)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
-  TYPE(XMLElementType),POINTER,INTENT(INOUT) :: parent
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
+  TYPE(XMLElementType),POINTER,INTENT(INOUT ) :: parent
   NULLIFY(parent)
   parent => thisXMLE%parent
 ENDSUBROUTINE getParent_XMLElementType
@@ -454,8 +454,8 @@ ENDFUNCTION hasChildren_XMLElementType
 !> @param children a pointer to the XML elements children
 !>
 PURE SUBROUTINE getChildren_XMLElementType(thisXMLE,children)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
-  TYPE(XMLElementType),POINTER,INTENT(INOUT) :: children(:)
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
+  TYPE(XMLElementType),POINTER,INTENT(INOUT ) :: children(:)
   NULLIFY(children)
   children => thisXMLE%children
 ENDSUBROUTINE getChildren_XMLElementType
@@ -467,9 +467,9 @@ ENDSUBROUTINE getChildren_XMLElementType
 !> @param values the values of all the attributes
 !>
 PURE SUBROUTINE getAttributes_XMLElementType(thisXMLE,names,values)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
-  TYPE(StringType),ALLOCATABLE,INTENT(INOUT) :: names(:)
-  TYPE(StringType),ALLOCATABLE,INTENT(INOUT) :: values(:)
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
+  TYPE(StringType),ALLOCATABLE,INTENT(INOUT ) :: names(:)
+  TYPE(StringType),ALLOCATABLE,INTENT(INOUT ) :: values(:)
   INTEGER(SIK) :: i
 
   IF(ALLOCATED(names)) DEALLOCATE(names)
@@ -489,7 +489,7 @@ ENDSUBROUTINE getAttributes_XMLElementType
 !> @param val the value of the attribute with name
 !>
 PURE SUBROUTINE getAttributeValue_XMLElementType(thisXMLE,name,val)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
   TYPE(StringType),INTENT(IN) :: name
   TYPE(StringType),INTENT(OUT) :: val
   INTEGER(SIK) :: i
@@ -520,7 +520,7 @@ ENDFUNCTION getContent_XMLElementType
 !> @param the new name
 !>
 SUBROUTINE setName_XMLElementType(thisXMLE,name)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
   TYPE(StringType),INTENT(IN) :: name
   thisXMLE%name=TRIM(name)
 ENDSUBROUTINE setName_XMLElementType
@@ -531,8 +531,8 @@ ENDSUBROUTINE setName_XMLElementType
 !> @param children the array of children element types
 !>
 SUBROUTINE setChildren_XMLElementType(thisXMLE,children)
-  CLASS(XMLElementType),TARGET,INTENT(INOUT) :: thisXMLE
-  TYPE(XMLElementType),POINTER,INTENT(INOUT) :: children(:)
+  CLASS(XMLElementType),TARGET,INTENT(INOUT ) :: thisXMLE
+  TYPE(XMLElementType),POINTER,INTENT(INOUT ) :: children(:)
   INTEGER(SIK) :: i,nChildren
 
   !if thisXMLE already has children, clear and deallocate them first
@@ -561,7 +561,7 @@ ENDSUBROUTINE setChildren_XMLElementType
 !> @param the value of the attribute(always a string for XML)
 !>
 SUBROUTINE setAttribute_XMLElementType(thisXMLE,name,value)
-  CLASS(XMLElementType),INTENT(INOUT) :: thisXMLE
+  CLASS(XMLElementType),INTENT(INOUT ) :: thisXMLE
   TYPE(StringType),INTENT(IN) :: name,value
 
   INTEGER(SIK) :: i
@@ -614,7 +614,7 @@ ENDSUBROUTINE setAttribute_XMLElementType
 !>
 SUBROUTINE init_XMLFileType(thisXMLFile,fname,lread)
   CHARACTER(LEN=*),PARAMETER :: myName='init_XMLFileType'
-  CLASS(XMLFileType),INTENT(INOUT) :: thisXMLFile
+  CLASS(XMLFileType),INTENT(INOUT ) :: thisXMLFile
   CHARACTER(LEN=*) :: fname
   LOGICAL(SBK) :: lread
   CHARACTER(LEN=LEN(fname)) :: fpath,fnm,fext
@@ -641,7 +641,7 @@ ENDSUBROUTINE init_XMLFileType
 !> @param thisXMLFile the XML file object
 !>
 SUBROUTINE clear_XMLFileType(thisXMLFile)
-  CLASS(XMLFileType),INTENT(INOUT) :: thisXMLFile
+  CLASS(XMLFileType),INTENT(INOUT ) :: thisXMLFile
   IF(ASSOCIATED(thisXMLFile%root)) THEN
     CALL thisXMLFile%root%clear()
     DEALLOCATE(thisXMLFile%root)
@@ -665,7 +665,7 @@ ENDSUBROUTINE clear_XMLFileType
 !>
 SUBROUTINE fopen_XMLFileType(file)
   CHARACTER(LEN=*),PARAMETER :: myName='fopen_XMLFileType'
-  CLASS(XMLFileType),INTENT(INOUT) :: file
+  CLASS(XMLFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK) :: lopen
   INTEGER(SIK) :: funit,ierr
   TYPE(StringType) :: fname
@@ -712,7 +712,7 @@ ENDSUBROUTINE fopen_XMLFileType
 !>
 SUBROUTINE fclose_XMLFileType(file)
   CHARACTER(LEN=*),PARAMETER :: myName='fclose_XMLFileType'
-  CLASS(XMLFileType),INTENT(INOUT) :: file
+  CLASS(XMLFileType),INTENT(INOUT ) :: file
   INTEGER(SIK) :: ierr
   IF(file%isOpen()) THEN
     CLOSE(file%unitNo,IOSTAT=ierr)
@@ -731,7 +731,7 @@ ENDSUBROUTINE fclose_XMLFileType
 !>
 SUBROUTINE fdelete_XMLFileType(file)
   CHARACTER(LEN=*),PARAMETER :: myName='fdelete_XMLFileType'
-  CLASS(XMLFileType),INTENT(INOUT) :: file
+  CLASS(XMLFileType),INTENT(INOUT ) :: file
   INTEGER(SIK) :: ierr
   IF(file%isOpen()) THEN
     CLOSE(file%unitNo,STATUS='DELETE',IOSTAT=ierr)
@@ -754,7 +754,7 @@ ENDSUBROUTINE fdelete_XMLFileType
 !>
 SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
   CHARACTER(LEN=*),PARAMETER :: myName='importFromDisk_XMLFileType'
-  CLASS(XMLFileType),INTENT(INOUT) :: thisXMLFile
+  CLASS(XMLFileType),INTENT(INOUT ) :: thisXMLFile
   CHARACTER(LEN=*),INTENT(IN),OPTIONAL :: fname
 
   CHARACTER(LEN=1),ALLOCATABLE :: cachedFile(:)
@@ -906,7 +906,7 @@ ENDSUBROUTINE importFromDisk_XMLFileType
 !> @param fname the file name to use on disk
 !>
 SUBROUTINE exportToDisk_XMLFileType(thisXMLFile,fname)
-  CLASS(XMLFileType),INTENT(INOUT) :: thisXMLFile
+  CLASS(XMLFileType),INTENT(INOUT ) :: thisXMLFile
   CHARACTER(LEN=*),INTENT(IN),OPTIONAL :: fname
   CHARACTER(LEN=4) :: version
   INTEGER(SIK) :: ierr
@@ -943,7 +943,7 @@ ENDSUBROUTINE exportToDisk_XMLFileType
 SUBROUTINE processXMLDecl(thisXMLFile)
   CHARACTER(LEN=*),PARAMETER :: myName='processXMLDecl'
   INTEGER(SIK),PARAMETER :: maxbuf=512
-  CLASS(XMLFileType),INTENT(INOUT) :: thisXMLFile
+  CLASS(XMLFileType),INTENT(INOUT ) :: thisXMLFile
 
   CHARACTER(LEN=1) :: tmpChar
   CHARACTER(LEN=7) :: fencoding,curEncoding
@@ -1113,9 +1113,9 @@ ENDSUBROUTINE processXMLDecl
 !> If the file has more than 1 million characters it will not be cached.
 !>
 SUBROUTINE cacheXMLFile(thisXMLFile,nchars,fileCache)
-  TYPE(XMLFileType),INTENT(INOUT) :: thisXMLFile
+  TYPE(XMLFileType),INTENT(INOUT ) :: thisXMLFile
   INTEGER(SIK),INTENT(OUT) :: nchars
-  CHARACTER(LEN=1),ALLOCATABLE,INTENT(INOUT) :: fileCache(:)
+  CHARACTER(LEN=1),ALLOCATABLE,INTENT(INOUT ) :: fileCache(:)
   CHARACTER(LEN=1024) :: tmpChar
   INTEGER(SIK) :: i,j,ierr
 
@@ -1175,8 +1175,8 @@ ENDSUBROUTINE cacheXMLFile
 !>
 SUBROUTINE getTagName(fullTag,ierr,sname)
   CHARACTER(LEN=1),INTENT(IN) :: fullTag(:)
-  INTEGER(SIK),INTENT(INOUT) :: ierr
-  TYPE(StringType),INTENT(INOUT) :: sname
+  INTEGER(SIK),INTENT(INOUT ) :: ierr
+  TYPE(StringType),INTENT(INOUT ) :: sname
   CHARACTER(LEN=3) :: xml
   INTEGER(SIK) :: nchar,istp,inamechar,i,charval,istt
   sname=''
@@ -1254,8 +1254,8 @@ ENDSUBROUTINE getTagName
 SUBROUTINE processTagAttributes(elStartTag,nattr,anames,avalues,ierr)
   CHARACTER(LEN=*),INTENT(IN) :: elStartTag
   INTEGER(SIK),INTENT(OUT) :: nattr
-  TYPE(StringType),ALLOCATABLE,INTENT(INOUT) :: anames(:)
-  TYPE(StringType),ALLOCATABLE,INTENT(INOUT) :: avalues(:)
+  TYPE(StringType),ALLOCATABLE,INTENT(INOUT ) :: anames(:)
+  TYPE(StringType),ALLOCATABLE,INTENT(INOUT ) :: avalues(:)
   INTEGER(SIK),INTENT(OUT) :: ierr
 
   CHARACTER(LEN=1) :: quote
@@ -1379,7 +1379,7 @@ PURE SUBROUTINE DetermineNChildren(tagBegin,tagEnd,iTag,nChildren,childTags,ierr
   INTEGER(SIK),INTENT(IN) :: tagEnd
   INTEGER(SIK),INTENT(IN) :: iTag(:,:)
   INTEGER(SIK),INTENT(OUT) :: nChildren
-  INTEGER(SIK),ALLOCATABLE,INTENT(INOUT) :: childTags(:,:)
+  INTEGER(SIK),ALLOCATABLE,INTENT(INOUT ) :: childTags(:,:)
   INTEGER(SIK),INTENT(OUT) :: ierr
 
   INTEGER(SIK) :: nTagRemain,iLevel,i,iChild
@@ -1436,7 +1436,7 @@ ENDSUBROUTINE DetermineNChildren
 !>
 PURE SUBROUTINE charArryToStr(charry, s)
   CHARACTER(LEN=1),INTENT(IN) :: charry(:)
-  TYPE(StringType),INTENT(INOUT) :: s
+  TYPE(StringType),INTENT(INOUT ) :: s
   CHARACTER(LEN=SIZE(charry)) :: tmpChar
   INTEGER(SIK) :: i
   DO i=1,SIZE(charry)

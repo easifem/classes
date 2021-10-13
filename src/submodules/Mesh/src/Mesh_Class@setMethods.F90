@@ -15,10 +15,34 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Mesh_Class) setMethod
+SUBMODULE(Mesh_Class) setMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setBoundingBox1
+  obj%minX= (.Xmin. box)
+  obj%minY= (.Ymin. box)
+  obj%minZ= (.Zmin. box)
+  obj%maxX= (.Xmax. box)
+  obj%maxY= (.Ymax. box)
+  obj%maxZ= (.Zmax. box)
+END PROCEDURE mesh_setBoundingBox1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setBoundingBox2
+  TYPE( BoundingBox_ ) :: box
+  Box = obj%getBoundingBox( nodes=nodes, local_nptrs=local_nptrs )
+  CALL obj%setBoundingBox( box=box )
+  CALL DeallocateData(box)
+END PROCEDURE mesh_setBoundingBox2
 
 !----------------------------------------------------------------------------
 !                                                                setSparsity
@@ -126,4 +150,4 @@ MODULE PROCEDURE mesh_setSparsity4
   IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
 END PROCEDURE mesh_setSparsity4
 
-END SUBMODULE setMethod
+END SUBMODULE setMethods

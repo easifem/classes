@@ -31,7 +31,7 @@
 
 INTERFACE
 MODULE SUBROUTINE ls_setPrecondition( obj, precondtype, ipar, fpar )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: precondtype
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: ipar( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: fpar( : )
