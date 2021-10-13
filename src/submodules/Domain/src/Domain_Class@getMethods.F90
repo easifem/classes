@@ -28,14 +28,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_isNodePresent
+  ans=.TRUE.
   IF( globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs ) THEN
     ans=.FALSE.
-  ELSE
-    IF( obj%local_nptrs(globalNode) .EQ. 0 ) THEN
-      ans=.FALSE.
-    ELSE
-      ans=.TRUE.
-    END IF
+  ELSE IF( obj%local_nptrs(globalNode) .EQ. 0 ) THEN
+    ans=.FALSE.
   END IF
 END PROCEDURE Domain_isNodePresent
 !----------------------------------------------------------------------------
@@ -231,6 +228,21 @@ END PROCEDURE Domain_getNptrs
 MODULE PROCEDURE Domain_getNSD
   ans = obj%NSD
 END PROCEDURE Domain_getNSD
+
+!----------------------------------------------------------------------------
+!                                                            getBoundingBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getBoundingBox
+  REAL( DFP ) :: lim( 6 )
+  INTEGER( I4B ) :: nsd
+  !> main
+  lim = 0.0_DFP
+  nsd = SIZE( obj%nodeCoord, 1 )
+  lim(1:nsd*2:2) = MINVAL(obj%nodeCoord(1:nsd,  :), dim=2)
+  lim(2:nsd*2:2) = MAXVAL( obj%nodeCoord(1:nsd, :), dim=2)
+  CALL Initiate( obj = ans, nsd = 3_I4B, lim = lim )
+END PROCEDURE Domain_getBoundingBox
 
 !----------------------------------------------------------------------------
 !

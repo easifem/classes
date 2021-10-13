@@ -42,7 +42,7 @@ MODULE PROCEDURE dc_InitiateNodeToNodeData1
   CALL Reallocate( obj%NodeToNode, mesh1%maxNptrs )
   !> make intersection box
   IF( (mesh1%GetBoundingBox()) .isIntersect. (mesh2%GetBoundingBox()) ) THEN
-    Box = (mesh1%GetBoundingBox()) .INTERSECTION. (mesh1%GetBoundingBox())
+    Box = (mesh1%GetBoundingBox()) .INTERSECTION. (mesh2%GetBoundingBox())
   ELSE
     CALL e%RaiseError(modName//"::"//myName//" - "// &
     & 'The two mesh does not overlap each other.' )
@@ -67,6 +67,52 @@ MODULE PROCEDURE dc_InitiateNodeToNodeData1
   IF( ALLOCATED( nptrs2 ) ) DEALLOCATE( nptrs2 )
   NULLIFY( node1, node2, mesh1, mesh2 )
 END PROCEDURE dc_InitiateNodeToNodeData1
+
+!----------------------------------------------------------------------------
+!                                                          setNodeToNodeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE dc_InitiateNodeToNodeData2
+  CHARACTER( LEN = * ), PARAMETER :: myName="dc_InitiateNodeToNodeData2"
+  TYPE( BoundingBox_ ) :: Box
+  INTEGER( I4B ), ALLOCATABLE :: nptrs1( : ), nptrs2( : )
+  INTEGER( I4B ) :: ii, jj, nsd
+  REAL( DFP ) :: X( 3 )
+  REAL( DFP ), POINTER :: node1( :, : )
+  REAL( DFP ), POINTER :: node2( :, : )
+  !> main
+  !> check domain1 initiated
+  !> check domain2 initiated
+  CALL Reallocate( obj%NodeToNode, domain1%maxNptrs )
+  !> make intersection box
+  IF( (domain1%GetBoundingBox()) &
+    & .isIntersect.  &
+    & (domain2%GetBoundingBox()) ) THEN
+    Box=(domain1%GetBoundingBox()) .INTERSECTION. (domain2%GetBoundingBox())
+  ELSE
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & 'The two domain does not overlap each other.' )
+  END IF
+  ! now we get Nptrs in Box for node1, node2
+  node1=>domain1%GetNodeCoordPointer()
+  node2=>domain2%GetNodeCoordPointer()
+  nptrs1 = Box .Nptrs. node1; nptrs2 = Box .Nptrs. node2
+  !! Note nptrs1 and nptrs2 are local node numbers in domain1 and domain2
+  nsd = SIZE(node1,1)
+  DO ii = 1, SIZE(nptrs1)
+    X( 1:nsd ) =  node1( 1:nsd, nptrs1(ii) )
+    DO jj = 1, SIZE(nptrs2)
+      IF( ALL(X(1:nsd) .APPROXEQ. node2(1:nsd, nptrs2(jj))) ) THEN
+        obj%NodeToNode( domain1%GetGlobalNodeNumber(nptrs1(ii)) )  &
+          & = domain2%GetGlobalNodeNumber(nptrs2(jj))
+        EXIT
+      END IF
+    END DO
+  END DO
+  IF( ALLOCATED( nptrs1 ) ) DEALLOCATE( nptrs1 )
+  IF( ALLOCATED( nptrs2 ) ) DEALLOCATE( nptrs2 )
+  NULLIFY( node1, node2 )
+END PROCEDURE dc_InitiateNodeToNodeData2
 
 !----------------------------------------------------------------------------
 !                                                       getNodeToNodePointer

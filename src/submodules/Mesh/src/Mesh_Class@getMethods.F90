@@ -111,12 +111,11 @@ END PROCEDURE mesh_isBoundaryNode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isNodePresent
-  IF( GlobalNode .GT. obj%MaxNptrs &
-    & .OR. GlobalNode .LT. obj%MinNptrs &
-    & .OR. obj%Local_Nptrs( GlobalNode ) .EQ. 0 ) THEN
-    ans = .FALSE.
-  ELSE
-    ans = .TRUE.
+  ans=.TRUE.
+  IF( globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs ) THEN
+    ans=.FALSE.
+  ELSE IF( obj%local_nptrs(globalNode) .EQ. 0 ) THEN
+    ans=.FALSE.
   END IF
 END PROCEDURE mesh_isNodePresent
 

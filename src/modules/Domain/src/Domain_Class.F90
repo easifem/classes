@@ -54,9 +54,9 @@ TYPE :: Domain_
     !! Version  MajorVersion.MinorVersion
   INTEGER( I4B ) :: nsd = 0_I4B
     !! number of spatial dimension
-  INTEGER( I4B ) :: maxNptrs = 0
+  INTEGER( I4B ), PUBLIC :: maxNptrs = 0
     !! Largest node number in the domain
-  INTEGER( I4B ) :: minNptrs = 0
+  INTEGER( I4B ), PUBLIC :: minNptrs = 0
     !! Smallest node number in the domain
   INTEGER( I4B ) :: tNodes = 0
     !! Total number of nodes in the mesh
@@ -136,6 +136,8 @@ TYPE :: Domain_
       & Domain_getGlobalToLocalNodeNumPointer
     PROCEDURE, PUBLIC, PASS( obj ) :: getNptrs => &
       & Domain_getNptrs
+    PROCEDURE, PUBLIC, PASS( obj ) :: getBoundingBox => Domain_getBoundingBox
+      !! returns bounding box
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
       !! Returns the spatial dimension of each physical entities
     PROCEDURE, PASS( obj ) :: setSparsity1 => Domain_setSparsity1
@@ -581,6 +583,21 @@ MODULE PURE FUNCTION Domain_getNSD( obj ) RESULT( Ans )
   CLASS( Domain_ ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: ans
 END FUNCTION Domain_getNSD
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  getBoundingBox@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Oct 2021
+! summary: Returns bounding box
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getBoundingBox( obj ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  TYPE( BoundingBox_ ):: ans
+END FUNCTION Domain_getBoundingBox
 END INTERFACE
 
 !----------------------------------------------------------------------------

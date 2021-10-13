@@ -121,9 +121,11 @@ TYPE :: DomainConnectivity_
       & dc_FacetLocalID2
     !! Return the facet local id in cell element
     PROCEDURE, PASS( obj ) :: dc_InitiateNodeToNodeData1
+    PROCEDURE, PASS( obj ) :: dc_InitiateNodeToNodeData2
     !! Initiate the node to node connectivity between two meshes
     GENERIC, PUBLIC :: InitiateNodeToNodeData => &
-      & dc_InitiateNodeToNodeData1
+      & dc_InitiateNodeToNodeData1, &
+      & dc_InitiateNodeToNodeData2
     PROCEDURE, PUBLIC, PASS( obj ) :: getNodeToNodePointer => &
       & dc_getNodeToNodePointer
 END TYPE DomainConnectivity_
@@ -383,6 +385,21 @@ MODULE SUBROUTINE dc_InitiateNodeToNodeData1( obj, domain1, domain2, &
   INTEGER( I4B ), INTENT( IN ) :: entityNum2
     !! entity num of mesh in domain-2
 END SUBROUTINE dc_InitiateNodeToNodeData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateNodeToNodeData@NodeToNodeMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE dc_InitiateNodeToNodeData2( obj, domain1, domain2 )
+  CLASS( DomainConnectivity_ ), INTENT( INOUT ) :: obj
+    !! mesh connectivity object
+  CLASS( Domain_ ), INTENT( IN ) :: domain1
+    !! Domain1
+  CLASS( Domain_ ), INTENT( IN ) :: domain2
+    !! domain2
+END SUBROUTINE dc_InitiateNodeToNodeData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
