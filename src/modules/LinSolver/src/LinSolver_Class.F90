@@ -260,7 +260,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ls_DeallocateData( obj )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE ls_DeallocateData
 END INTERFACE
 
@@ -270,7 +270,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ls_Set( obj, Amat )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractMatrixField_ ), TARGET, INTENT( INOUT ) :: Amat
 END SUBROUTINE ls_Set
 END INTERFACE
@@ -289,9 +289,9 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE ls_Solve( obj, sol, rhs )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT) :: sol
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT) :: rhs
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
+  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: sol
+  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: rhs
 END SUBROUTINE ls_Solve
 END INTERFACE
 

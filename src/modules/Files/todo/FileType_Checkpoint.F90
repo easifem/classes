@@ -164,7 +164,7 @@ ENDTYPE CheckpointFileType
 ABSTRACT INTERFACE
   SUBROUTINE CheckPointFileType_absintfc(thisCPF)
     IMPORT :: CheckpointFileType
-    CLASS(CheckpointFileType),INTENT(INOUT) :: thisCPF
+    CLASS(CheckpointFileType),INTENT(INOUT ) :: thisCPF
   ENDSUBROUTINE CheckPointFileType_absintfc
 ENDINTERFACE
 !
@@ -181,7 +181,7 @@ CONTAINS
 !>
 SUBROUTINE init_CheckPointFileType(thisCPF,myBaseFile)
   CHARACTER(LEN=*),PARAMETER :: myName='init_CheckPointFileType'
-  CLASS(CheckPointFileType),INTENT(INOUT) :: thisCPF
+  CLASS(CheckPointFileType),INTENT(INOUT ) :: thisCPF
   CLASS(BaseFileType),POINTER,INTENT(IN) :: myBaseFile
   INTEGER(SIK) :: nerror
   TYPE(DA32FileType),POINTER :: myDA32File
@@ -239,7 +239,7 @@ ENDSUBROUTINE init_CheckPointFileType
 !>
 SUBROUTINE setInterruptFile(thisCPF,fname)
   CHARACTER(LEN=*),PARAMETER :: myName='setInterruptFile'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: thisCPF
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: thisCPF
   CHARACTER(LEN=*),INTENT(IN) :: fname
   IF(thisCPF%isInit) THEN
     thisCPF%interrupt_file=fname
@@ -258,7 +258,7 @@ ENDSUBROUTINE setInterruptFile
 !>
 SUBROUTINE setExportOnInterrupt(thisCPF,bool)
   CHARACTER(LEN=*),PARAMETER :: myName='setExportOnInterrupt'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: thisCPF
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: thisCPF
   LOGICAL(SBK),INTENT(IN) :: bool
   IF(thisCPF%isInit) THEN
     thisCPF%export_on_interrupt=bool
@@ -274,7 +274,7 @@ ENDSUBROUTINE setExportOnInterrupt
 !> @param thisCPF the checkpoint file object
 !>
 SUBROUTINE checkForFileInterrupt(thisCPF)
-  CLASS(CheckpointFileType),INTENT(INOUT) :: thisCPF
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: thisCPF
   LOGICAL(SBK) :: file_exists
   IF(thisCPF%export_on_interrupt .AND. thisCPF%isInit) THEN
     file_exists=.FALSE.
@@ -305,7 +305,7 @@ ENDFUNCTION calledFromInterrupt
 !> @param thisCPF the checkpoint file object
 !>
 SUBROUTINE clear_CheckpointFileType(thisCPF)
-  CLASS(CheckpointFileType),INTENT(INOUT) :: thisCPF
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: thisCPF
 
   IF(ASSOCIATED(thisCPF%h5f)) CALL thisCPF%h5f%clear()
   IF(ASSOCIATED(thisCPF%daf)) CALL thisCPF%daf%clear()
@@ -328,7 +328,7 @@ ENDSUBROUTINE clear_CheckpointFileType
 !>
 SUBROUTINE fopen_CheckpointFileType(file)
   CHARACTER(LEN=*),PARAMETER :: myName='fopen_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   IF(file%isInit) THEN
     CALL file%basefile%fopen()
   ELSE
@@ -343,7 +343,7 @@ ENDSUBROUTINE fopen_CheckpointFileType
 !>
 SUBROUTINE fclose_CheckpointFileType(file)
   CHARACTER(LEN=*),PARAMETER :: myName='fclose_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   IF(file%isInit) THEN
     CALL file%basefile%fclose()
   ELSE
@@ -358,7 +358,7 @@ ENDSUBROUTINE fclose_CheckpointFileType
 !>
 SUBROUTINE fdelete_CheckpointFileType(file)
   CHARACTER(LEN=*),PARAMETER :: myName='fdelete_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   IF(file%isInit) THEN
     CALL file%basefile%fdelete()
   ELSE
@@ -374,7 +374,7 @@ ENDSUBROUTINE fdelete_CheckpointFileType
 !>
 SUBROUTINE setFilePath_CheckpointFileType(file,pathstr)
   CHARACTER(LEN=*),PARAMETER :: myName='setFilePath_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   CHARACTER(LEN=*),INTENT(IN) :: pathstr
   IF(file%isInit) THEN
     CALL file%basefile%setFilePath(pathstr)
@@ -392,7 +392,7 @@ ENDSUBROUTINE setFilePath_CheckpointFileType
 !>
 SUBROUTINE setFileName_CheckpointFileType(file,namestr)
   CHARACTER(LEN=*),PARAMETER :: myName='setFileName_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   CHARACTER(LEN=*),INTENT(IN) :: namestr
   IF(file%isInit) THEN
     CALL file%basefile%setFileName(namestr)
@@ -410,7 +410,7 @@ ENDSUBROUTINE setFileName_CheckpointFileType
 !>
 SUBROUTINE setFileExt_CheckpointFileType(file,extstr)
   CHARACTER(LEN=*),PARAMETER :: myName='setFileExt_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   CHARACTER(LEN=*),INTENT(IN) :: extstr
   IF(file%isInit) THEN
     CALL file%basefile%setFileExt(extstr)
@@ -441,7 +441,7 @@ ENDSUBROUTINE setFileExt_CheckpointFileType
 !> is an empty string.
 !>
 SUBROUTINE getFileParts_CheckpointFileType(file,path,fname,ext)
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   TYPE(StringType),INTENT(OUT) :: path
   TYPE(StringType),INTENT(OUT) :: fname
   TYPE(StringType),INTENT(OUT) :: ext
@@ -505,7 +505,7 @@ ENDFUNCTION getFileExt_CheckpointFileType
 !>
 SUBROUTINE setEOFstat_CheckpointFileType(file,bool)
   CHARACTER(LEN=*),PARAMETER :: myName='setEOFstat_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK),INTENT(IN) :: bool
   IF(file%isInit) THEN
     CALL file%basefile%setEOFstat(bool)
@@ -524,7 +524,7 @@ ENDSUBROUTINE setEOFstat_CheckpointFileType
 !>
 SUBROUTINE setOpenStat_CheckpointFileType(file,bool)
   CHARACTER(LEN=*),PARAMETER :: myName='setReadStat_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK),INTENT(IN) :: bool
   IF(file%isInit) THEN
     CALL file%basefile%setOpenStat(bool)
@@ -542,7 +542,7 @@ ENDSUBROUTINE setOpenStat_CheckpointFileType
 !>
 SUBROUTINE setReadStat_CheckpointFileType(file,bool)
   CHARACTER(LEN=*),PARAMETER :: myName='setReadStat_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK),INTENT(IN) :: bool
   IF(file%isInit) THEN
     CALL file%basefile%setReadstat(bool)
@@ -560,7 +560,7 @@ ENDSUBROUTINE setReadStat_CheckpointFileType
 !>
 SUBROUTINE setWriteStat_CheckpointFileType(file,bool)
   CHARACTER(LEN=*),PARAMETER :: myName='setWriteStat_CheckpointFileType'
-  CLASS(CheckpointFileType),INTENT(INOUT) :: file
+  CLASS(CheckpointFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK),INTENT(IN) :: bool
   IF(file%isInit) THEN
     CALL file%basefile%setWritestat(bool)

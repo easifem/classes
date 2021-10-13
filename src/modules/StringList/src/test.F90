@@ -275,7 +275,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewDefault( Obj )
-  CLASS( StringList_ ), INTENT(INOUT), TARGET :: Obj
+  CLASS( StringList_ ), INTENT(INOUT ), TARGET :: Obj
   CALL Obj%Delete()
   Obj%sentinel%next => Obj%sentinel
   Obj%sentinel%prev => Obj%sentinel
@@ -286,7 +286,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 IMPURE ELEMENTAL SUBROUTINE NewCopyOther(Obj, other)
-  CLASS(StringList_), INTENT(INOUT) :: Obj
+  CLASS(StringList_), INTENT(INOUT ) :: Obj
   TYPE(StringList_), INTENT(IN) :: other
 
   ! Internal variable
@@ -306,7 +306,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewFill( Obj, n, val )
-  CLASS( StringList_ ), INTENT(INOUT) :: Obj
+  CLASS( StringList_ ), INTENT(INOUT ) :: Obj
   INTEGER( I4B ), INTENT( IN ) :: n
   TYPE(String) , TARGET, OPTIONAL, INTENT( IN ) :: val
 
@@ -447,7 +447,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 FUNCTION PopFront( Obj ) RESULT( Ans )
-  CLASS( StringList_ ), INTENT(INOUT), TARGET :: Obj
+  CLASS( StringList_ ), INTENT(INOUT ), TARGET :: Obj
 
 
 
@@ -481,7 +481,7 @@ END FUNCTION
 !----------------------------------------------------------------------------
 
 FUNCTION PopBack(Obj) RESULT( Ans )
-  CLASS(StringList_), INTENT(INOUT), TARGET :: Obj
+  CLASS(StringList_), INTENT(INOUT ), TARGET :: Obj
 
 
 
@@ -514,7 +514,7 @@ END FUNCTION
 !----------------------------------------------------------------------------
 
 IMPURE ELEMENTAL SUBROUTINE Delete_Obj( Obj )
-  CLASS( StringList_ ), INTENT(INOUT), TARGET :: Obj
+  CLASS( StringList_ ), INTENT(INOUT ), TARGET :: Obj
 
   ! Internal variables
   CLASS( ListNode_ ), POINTER :: walker, deletor
@@ -686,7 +686,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE InsertArray( Obj, position, array )
-  CLASS( StringList_ ), INTENT(INOUT) :: Obj
+  CLASS( StringList_ ), INTENT(INOUT ) :: Obj
   TYPE( StringListIterator_ ) :: position
   TYPE(String), INTENT( IN )    :: array(:)
 
@@ -727,7 +727,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE EraseSingle( Obj, position )
-  CLASS( StringList_ ), INTENT(INOUT) :: Obj
+  CLASS( StringList_ ), INTENT(INOUT ) :: Obj
   TYPE( StringListIterator_ ) :: position
 
   CALL UnlinkNode(position%node)
@@ -831,7 +831,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE ftlMoveList( src, dest )
-  TYPE( StringList_ ), INTENT(INOUT) :: src
+  TYPE( StringList_ ), INTENT(INOUT ) :: src
   TYPE( StringList_ ), INTENT( OUT ), TARGET :: dest
 
   dest%psize = src%psize
@@ -851,7 +851,7 @@ END SUBROUTINE
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewItDefault(self)
-  CLASS(StringListIterator_), INTENT(INOUT) :: self
+  CLASS(StringListIterator_), INTENT(INOUT ) :: self
   NULLIFY( self%node )
   NULLIFY( self%value )
 END SUBROUTINE
@@ -879,7 +879,7 @@ END SUBROUTINE
 ! check the bounds
 ! if bounds are crossed raise error
 RECURSIVE SUBROUTINE Inc(Obj, n)
-  CLASS( StringListIterator_ ), INTENT(INOUT) :: Obj
+  CLASS( StringListIterator_ ), INTENT(INOUT ) :: Obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
 
   ! Define internal variables
@@ -905,7 +905,7 @@ END SUBROUTINE
 ! check the bounds
 ! if bounds are crossed raise error
 RECURSIVE SUBROUTINE Dec(Obj, n)
-  CLASS( StringListIterator_ ), INTENT(INOUT) :: Obj
+  CLASS( StringListIterator_ ), INTENT(INOUT ) :: Obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: n
 
   ! Define internal variable

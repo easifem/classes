@@ -49,7 +49,9 @@ MODULE PROCEDURE mesh_initiate
   CALL obj%Import(hdf5, group)
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'Mesh imported' )
-  IF( obj%elemType .NE. 0 .OR. obj%elemType .EQ. Point1 ) THEN
+  IF( obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1 ) THEN
+    RETURN
+  ELSE
     CALL e%raiseInformation(modName//'::'//myName// " - "// &
       & 'Initiating node to elements mapping' )
     CALL obj%InitiateNodeToElements()

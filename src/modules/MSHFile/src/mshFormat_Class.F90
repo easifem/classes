@@ -219,8 +219,8 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE fmt_Read( obj, mshFile, error )
-  CLASS( mshFormat_ ), INTENT( INOUT) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT) :: mshFile
+  CLASS( mshFormat_ ), INTENT( INOUT ) :: obj
+  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
   INTEGER( I4B ), INTENT( INOUT ) :: error
 END SUBROUTINE fmt_Read
 END INTERFACE
@@ -267,7 +267,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE fmt_Finalize( obj )
-  CLASS( mshFormat_ ), INTENT( INOUT) :: obj
+  CLASS( mshFormat_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE fmt_Finalize
 END INTERFACE
 

@@ -103,7 +103,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE el_DeallocateData( obj )
-  CLASS( mshElements_ ), INTENT( INOUT) :: obj
+  CLASS( mshElements_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE el_DeallocateData
 END INTERFACE
 

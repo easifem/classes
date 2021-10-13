@@ -173,7 +173,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE als_DeallocateData( obj )
   IMPORT :: AbstractLinSolver_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE als_DeallocateData
 END INTERFACE
 
@@ -184,7 +184,7 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE als_Set( obj, Amat )
   IMPORT :: AbstractLinSolver_, AbstractMatrixField_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractMatrixField_ ), TARGET, INTENT( INOUT ) :: Amat
 END SUBROUTINE als_Set
 END INTERFACE
@@ -197,9 +197,9 @@ END INTERFACE
 ABSTRACT INTERFACE
 SUBROUTINE als_Solve( obj, sol, rhs )
   IMPORT :: AbstractLinSolver_, AbstractNodeField_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT) :: obj
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT) :: sol
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT) :: rhs
+  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
+  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: sol
+  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: rhs
 END SUBROUTINE als_Solve
 END INTERFACE
 

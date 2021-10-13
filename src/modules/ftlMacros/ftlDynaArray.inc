@@ -269,7 +269,7 @@ contains
 
 
    elemental subroutine Delete(self)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
 
       self%psize = 0
       if (allocated(self%storage)) deallocate(self%storage)
@@ -280,7 +280,7 @@ contains
    end subroutine
    !
    elemental subroutine Finalizer(self)
-      type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
 
       call self%Delete()
 
@@ -289,7 +289,7 @@ contains
 
 
    subroutine AssignArray(self, array)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       FTL_TEMPLATE_TYPE_WRAP                        , intent(in)    :: array(:)
 
       integer :: i
@@ -312,7 +312,7 @@ contains
    end subroutine
    !
    impure elemental subroutine AssignOther(self, other)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
        type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(in)    :: other
 
       if (.not.allocated(other%storage)) then
@@ -387,7 +387,7 @@ contains
 
 
    subroutine Reserve(self, n)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: n
 
       if (n > self%Capacity()) call self%ChangeCapacity(n)
@@ -398,7 +398,7 @@ contains
 
 
    subroutine ShrinkToFit(self)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
 
       call self%ChangeCapacity(self%psize)
       call self%FixValuePtrs()
@@ -412,7 +412,7 @@ contains
 
 
    subroutine ResizeStandard(self, n, val)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout)        :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT )        :: self
       integer                                       , intent(in)           :: n
       FTL_TEMPLATE_TYPE_WRAP                        , intent(in), optional :: val
 
@@ -437,7 +437,7 @@ contains
 
 
    subroutine PushBackStandard(self, val)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       FTL_TEMPLATE_TYPE_WRAP                        , intent(in)    :: val
 
       if (self%psize + 1 > self%Capacity()) call self%IncreaseCapacity()
@@ -450,7 +450,7 @@ contains
 
 
    FTL_TEMPLATE_TYPE_WRAP function PopBack(self)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
 
 #ifdef FTL_TEMPLATE_TYPE_PROVIDES_FTLMOVE
       call ftlMove(self%storage(self%psize), PopBack)
@@ -466,7 +466,7 @@ contains
 
 
    subroutine InsertSingleAtIndex(self, position, val)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: position
       FTL_TEMPLATE_TYPE_WRAP                        , intent(in)    :: val
 
@@ -478,7 +478,7 @@ contains
    end subroutine
    !
    subroutine InsertSingle(self, position, val)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: position
       FTL_TEMPLATE_TYPE_WRAP                                 , intent(in)    :: val
 
@@ -487,7 +487,7 @@ contains
    end subroutine
    !
    subroutine InsertFillAtIndex(self, position, n, val)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: position
       integer                                       , intent(in)    :: n
       FTL_TEMPLATE_TYPE_WRAP                        , intent(in)    :: val
@@ -505,7 +505,7 @@ contains
    end subroutine
    !
    subroutine InsertFill(self, position, n, val)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: position
       integer                                                , intent(in)    :: n
       FTL_TEMPLATE_TYPE_WRAP                                 , intent(in)    :: val
@@ -515,7 +515,7 @@ contains
    end subroutine
    !
    subroutine InsertArrayAtIndex(self, position, array)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: position
       FTL_TEMPLATE_TYPE_WRAP                        , intent(in)    :: array(:)
 
@@ -532,7 +532,7 @@ contains
    end subroutine
    !
    subroutine InsertArray(self, position, array)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: position
       FTL_TEMPLATE_TYPE_WRAP                                 , intent(in)    :: array(:)
 
@@ -541,7 +541,7 @@ contains
    end subroutine
    !
    subroutine InsertIteratorPairAtIndex(self, position, first, last)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       integer                                                , intent(in)    :: position
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: first
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: last
@@ -551,7 +551,7 @@ contains
    end subroutine
    !
    subroutine InsertIteratorPair(self, position, first, last)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: position
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: first
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: last
@@ -563,7 +563,7 @@ contains
 
 
    subroutine EraseSingle(self, position)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: position
 
       call self%EraseIndexPair(position%index, position%index+1)
@@ -571,7 +571,7 @@ contains
    end subroutine
    !
    subroutine EraseSingleIndex(self, position)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: position
 
       call self%EraseIndexPair(position, position+1)
@@ -579,7 +579,7 @@ contains
    end subroutine
    !
    subroutine EraseIndexPair(self, first, last)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: first
       integer                                       , intent(in)    :: last
 
@@ -604,7 +604,7 @@ contains
    end subroutine
    !
    subroutine EraseIteratorPair(self, first, last)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME))         , intent(INOUT ) :: self
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: first
       type(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(in)    :: last
 
@@ -615,7 +615,7 @@ contains
 
 
    subroutine Clear(self)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
 
       call self%EraseIndexPair(1, self%psize+1)
 
@@ -627,7 +627,7 @@ contains
 
 
    subroutine FixValuePtrs(self)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout), target :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ), target :: self
 
       if (allocated(self%storage)) then
          self%data => self%storage(1:self%psize)
@@ -647,7 +647,7 @@ contains
 
 
    subroutine ShiftByN(self, from, n)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: from
       integer                                       , intent(in)    :: n
 
@@ -672,7 +672,7 @@ contains
 
 
    subroutine ChangeCapacity(self, n)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
       integer                                       , intent(in)    :: n
 
       FTL_TEMPLATE_TYPE_WRAP, allocatable :: newstorage(:)
@@ -701,7 +701,7 @@ contains
 
 
    subroutine IncreaseCapacity(self)
-      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: self
+      class(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: self
 
       call self%changeCapacity(max(2 * self%Capacity(), 1))
 
@@ -725,7 +725,7 @@ contains
 
 
    subroutine ftlSwapDynArray(dArr1, dArr2)
-      type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: dArr1, dArr2
+      type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: dArr1, dArr2
 
       FTL_TEMPLATE_TYPE_WRAP, allocatable :: tmpstorage(:)
       integer :: tmppsize
@@ -746,7 +746,7 @@ contains
 
 
    subroutine ftlMoveDynArray(src, dest)
-      type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(inout) :: src
+      type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(INOUT ) :: src
       type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(out)   :: dest
 
       call move_alloc(src%storage, dest%storage)
@@ -757,7 +757,7 @@ contains
    end subroutine
    !
    subroutine ftlMoveArrayToDynArray(src, dest)
-      FTL_TEMPLATE_TYPE_WRAP, allocatable          , intent(inout) :: src(:)
+      FTL_TEMPLATE_TYPE_WRAP, allocatable          , intent(INOUT ) :: src(:)
       type(CAT(ftlDynArray,FTL_TEMPLATE_TYPE_NAME)), intent(out)   :: dest
 
       call move_alloc(src, dest%storage)
@@ -773,7 +773,7 @@ contains
 
 
    subroutine NewItDefault(self)
-      class(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(inout) :: self
+      class(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(INOUT ) :: self
 
       nullify(self%dynArray)
       self%index = 0
@@ -798,7 +798,7 @@ contains
 
 
    subroutine Inc(self)
-      class(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(inout) :: self
+      class(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(INOUT ) :: self
 
       self%index = self%index + 1
       if (self%index <= self%dynArray%psize) then
@@ -810,7 +810,7 @@ contains
    end subroutine
    !
    subroutine Dec(self)
-      class(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(inout) :: self
+      class(CAT3(ftlDynArray,FTL_TEMPLATE_TYPE_NAME,Iterator)), intent(INOUT ) :: self
 
       self%index = self%index - 1
       if (self%index > 0) then

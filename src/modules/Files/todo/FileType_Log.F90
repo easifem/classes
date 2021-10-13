@@ -122,7 +122,7 @@ CONTAINS
 SUBROUTINE init_log_file(fileobj,unit,file,status,access,form, &
     position,action,pad,recl)
   CHARACTER(LEN=*),PARAMETER :: myName='init_log_file'
-  CLASS(LogFileType),INTENT(INOUT) :: fileobj
+  CLASS(LogFileType),INTENT(INOUT ) :: fileobj
   INTEGER(SIK),OPTIONAL,INTENT(IN) :: unit
   CHARACTER(LEN=*),INTENT(IN) :: file
   CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: status
@@ -166,7 +166,7 @@ ENDSUBROUTINE init_log_file
 !> @param file log file object.
 !>
 SUBROUTINE clear_log_file(file,ldel)
-  CLASS(LogFileType),INTENT(INOUT) :: file
+  CLASS(LogFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK),OPTIONAL,INTENT(IN) :: ldel
   LOGICAL(SBK) :: bool
   bool=.FALSE.
@@ -185,7 +185,7 @@ ENDSUBROUTINE clear_log_file
 !> standard output (e.g. the prompt).
 !>
 SUBROUTINE echo_log_file(file,bool)
-  CLASS(LogFileType),INTENT(INOUT) :: file
+  CLASS(LogFileType),INTENT(INOUT ) :: file
   LOGICAL(SBK),INTENT(IN) :: bool
   file%echostat=bool
 ENDSUBROUTINE echo_log_file
@@ -212,7 +212,7 @@ ENDFUNCTION isecho_log_file
 !>
 SUBROUTINE message_log_file(file,mesg,timestamp,echo)
   CHARACTER(LEN=*),PARAMETER :: myName='MESSAGE_LOG_FILE'
-  CLASS(LogFileType),INTENT(INOUT) :: file
+  CLASS(LogFileType),INTENT(INOUT ) :: file
   CHARACTER(LEN=*),INTENT(IN) :: mesg
   LOGICAL(SBK),OPTIONAL,INTENT(IN) :: timestamp
   LOGICAL(SBK),OPTIONAL,INTENT(IN) :: echo

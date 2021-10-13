@@ -486,7 +486,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE elem_final( obj )
-  TYPE( Element_ ), INTENT( INOUT) :: obj
+  TYPE( Element_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE elem_Final
 END INTERFACE
 
@@ -613,7 +613,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE elem_setRefElemPointer( obj, refelem )
-  CLASS( Element_ ), INTENT( INOUT) :: obj
+  CLASS( Element_ ), INTENT( INOUT ) :: obj
   CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: refelem
 END SUBROUTINE elem_setRefElemPointer
 END INTERFACE

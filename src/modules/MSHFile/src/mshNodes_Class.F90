@@ -101,7 +101,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE n_deallocatedata( obj )
-  CLASS( mshNodes_ ), INTENT( INOUT) :: obj
+  CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE n_deallocatedata
 END INTERFACE
 

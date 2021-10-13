@@ -351,7 +351,7 @@ END FUNCTION Gmsh_Open
 !```
 
 FUNCTION Gmsh_Merge( obj, fileName ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT) :: obj
+  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: fileName
   INTEGER( I4B ) :: ans
   ! Internal variables
@@ -429,7 +429,7 @@ END FUNCTION Gmsh_Write
 !```
 
 FUNCTION Gmsh_Clear( obj ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT) :: obj
+  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ) :: ans
   CALL gmshClear( ierr=ierr )
   ans = INT( ierr, KIND=I4B )

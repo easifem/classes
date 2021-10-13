@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Mesh_Class) getMethod
+SUBMODULE(Mesh_Class) getMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -111,12 +111,11 @@ END PROCEDURE mesh_isBoundaryNode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isNodePresent
-  IF( GlobalNode .GT. obj%MaxNptrs &
-    & .OR. GlobalNode .LT. obj%MinNptrs &
-    & .OR. obj%Local_Nptrs( GlobalNode ) .EQ. 0 ) THEN
-    ans = .FALSE.
-  ELSE
-    ans = .TRUE.
+  ans=.TRUE.
+  IF( globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs ) THEN
+    ans=.FALSE.
+  ELSE IF( obj%local_nptrs(globalNode) .EQ. 0 ) THEN
+    ans=.FALSE.
   END IF
 END PROCEDURE mesh_isNodePresent
 
@@ -184,7 +183,7 @@ END PROCEDURE mesh_getTotalBoundaryElements
 !                                                            getBoundingBox
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getBoundingBox
+MODULE PROCEDURE mesh_getBoundingBox1
   REAL( DFP ) :: lim( 6 )
   lim(1) = obj%minX
   lim(2) = obj%maxX
@@ -193,7 +192,35 @@ MODULE PROCEDURE mesh_getBoundingBox
   lim(5) = obj%minZ
   lim(6) = obj%maxZ
   CALL Initiate( obj = ans, nsd = 3_I4B, lim = lim )
-END PROCEDURE mesh_getBoundingBox
+END PROCEDURE mesh_getBoundingBox1
+
+!----------------------------------------------------------------------------
+!                                                            getBoundingBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getBoundingBox2
+  INTEGER( I4B ) :: nsd
+  REAL( DFP ) :: lim( 6 )
+  !> main
+  lim = 0.0_DFP
+  nsd = SIZE( nodes, 1 )
+  IF( PRESENT( local_nptrs ) ) THEN
+    lim(1:nsd*2:2) = MINVAL(nodes(1:nsd,  &
+      & local_nptrs(obj%getNptrs())),  &
+      & dim=2)
+    lim(2:nsd*2:2) = MAXVAL( nodes(1:nsd,  &
+      & local_nptrs(obj%getNptrs())),  &
+      & dim=2)
+  ELSE
+    lim(1:nsd*2:2) = MINVAL(nodes(1:nsd, &
+      & obj%getNptrs()), &
+      & dim=2)
+    lim(2:nsd*2:2) = MAXVAL(nodes(1:nsd, &
+      & obj%getNptrs()), &
+      & dim=2)
+  END IF
+  CALL Initiate( obj = ans, nsd = nsd, lim = lim )
+END PROCEDURE mesh_getBoundingBox2
 
 !----------------------------------------------------------------------------
 !                                                            getConnectivity
@@ -385,4 +412,4 @@ END PROCEDURE mesh_getBoundaryElementData
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE getMethod
+END SUBMODULE getMethods

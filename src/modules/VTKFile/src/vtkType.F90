@@ -96,7 +96,7 @@ INTERFACE
 
 MODULE SUBROUTINE vtk_init( obj, path, filename, extension, fmt, &
   & meshTopology, indx, nx1, nx2, ny1, ny2, nz1, nz2 )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
     !! [[vtk_]] filename object
   CHARACTER( LEN = * ),  INTENT( IN ) :: path
     !! path of the filename to be created
@@ -132,7 +132,7 @@ INTERFACE
 ! This subroutine close the open vtk file
 
 MODULE SUBROUTINE vtk_final( obj )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE vtk_final
 END INTERFACE
 
@@ -174,7 +174,7 @@ INTERFACE
 !
 ! - This subroutine indicates that we are going to write the mesh information
 MODULE SUBROUTINE vtk_start_write_geo( obj )
-  CLASS( vtk_ ), INTENT( INOUT) ::  obj
+  CLASS( vtk_ ), INTENT( INOUT ) ::  obj
 END SUBROUTINE vtk_start_write_geo
 END INTERFACE
 
@@ -193,7 +193,7 @@ INTERFACE
 ! This subroutine will write `</piece>` tag
 !
 MODULE SUBROUTINE vtk_stop_write_geo( obj )
-  CLASS( vtk_ ), INTENT( INOUT) ::  obj
+  CLASS( vtk_ ), INTENT( INOUT ) ::  obj
 END SUBROUTINE vtk_stop_write_geo
 END INTERFACE
 
@@ -215,7 +215,7 @@ INTERFACE
 ! mesh are subset of `nodes`
 
 MODULE SUBROUTINE vtk_write_mesh_data_1( obj, meshobj, mdobj, nodes )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
     !! [[vtk_]] file
   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: meshobj
     !! [[mesh_]] instance
@@ -240,7 +240,7 @@ INTERFACE
 ! We advise you to avoide using this subroutine as much as possible
 
 MODULE SUBROUTINE vtk_write_mesh_data_2( obj, meshobj, nodes )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
     !! [[vtk_]] file
   CLASS( Mesh_ ), INTENT( INOUT ), TARGET :: meshobj
     !! [[mesh_]] instance
@@ -268,7 +268,7 @@ INTERFACE
 
 MODULE SUBROUTINE vtk_write_mesh_data_3(obj, meshobj, nodes, tag, &
   & local2global, map, lb, ub)
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
     !! [[vtk_]] file
   CLASS( MeshPointer_ ), INTENT( INOUT ), TARGET :: meshobj(:)
     !! [[mesh_]] instance
@@ -286,7 +286,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE vtk_start_write_node_data( obj )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE vtk_start_write_node_data
 END INTERFACE
 
@@ -296,7 +296,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE vtk_stop_write_node_data( obj )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE vtk_stop_write_node_data
 END INTERFACE
 
@@ -318,7 +318,7 @@ INTERFACE
 ! is not present the subroutine writes nothing
 
 MODULE SUBROUTINE vtk_write_node_data_1( obj, x, dofobj, name, prefix )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: x( : )
   TYPE( DOF_ ), INTENT( IN ) :: dofobj
   CHARACTER( LEN = 1 ), INTENT( IN ) :: name
@@ -343,7 +343,7 @@ INTERFACE
 ! - It calls [[vtk_write_node_data_1]] subroutine internally
 
 MODULE SUBROUTINE vtk_write_node_data_2( obj, x, dofobj, prefix )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: x( : )
   TYPE( DOF_ ), INTENT( IN ) :: dofobj
   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: prefix
@@ -356,7 +356,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE vtk_start_write_elem_data( obj )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE vtk_start_write_elem_data
 END INTERFACE
 
@@ -366,7 +366,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE vtk_stop_write_elem_data( obj )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE vtk_stop_write_elem_data
 END INTERFACE
 
@@ -382,7 +382,7 @@ INTERFACE
 ! This subroutine writes the cell data (single scalars) into a vtk file
 
 MODULE SUBROUTINE vtk_write_cell_data_1( obj, val, name )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: val(:)
     !! size(val) should be equal to totol number of cell
   CHARACTER(LEN=*), INTENT( IN ) :: name
@@ -401,7 +401,7 @@ INTERFACE
 ! This subroutine writes the cell data (single vector) into a vtk file
 
 MODULE SUBROUTINE vtk_write_cell_data_2( obj, val, name )
-  CLASS( vtk_ ), INTENT( INOUT) :: obj
+  CLASS( vtk_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: val(:, :)
     !! size(val,2) should be equal to totol number of cell
     !! size(val,1) number of components

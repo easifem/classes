@@ -144,8 +144,8 @@ END MODULE ElementFactory
 ! INTERFACE
 ! MODULE PURE SUBROUTINE elem_get_elemsd_H1_Lagrange( obj, ElemSD, Quad, xiJ, &
 !   & ContinuityType, InterpolType )
-!   CLASS( Element_ ), INTENT( INOUT) :: obj
-!   CLASS( ElemShapeData_ ), INTENT( INOUT) :: ElemSD
+!   CLASS( Element_ ), INTENT( INOUT ) :: obj
+!   CLASS( ElemShapeData_ ), INTENT( INOUT ) :: ElemSD
 !   TYPE( QuadraturePoint_ ), INTENT( IN ) :: Quad
 !   REAL( DFP ), INTENT( IN ) :: xIJ( :, : )
 !   TYPE( H1_ ), INTENT( IN ) :: ContinuityType
@@ -169,8 +169,8 @@ END MODULE ElementFactory
 
 ! INTERFACE
 ! MODULE PURE SUBROUTINE get_elemsd_H1_Lagrange( obj, ElemSD, Quad, xiJ, ContinuityType, InterpolType )
-!   CLASS( FacetElement_ ), INTENT( INOUT) :: obj
-!   CLASS( ElemShapeData_ ), INTENT( INOUT) :: ElemSD
+!   CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
+!   CLASS( ElemShapeData_ ), INTENT( INOUT ) :: ElemSD
 !   TYPE( QuadraturePoint_ ), INTENT( IN ) :: Quad
 !   REAL( DFP ), INTENT( IN ) :: xIJ( :, : )
 !   TYPE( H1_ ), INTENT( IN ) :: ContinuityType

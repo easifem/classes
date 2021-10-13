@@ -492,7 +492,7 @@ ENDSUBROUTINE writeEmptyBlock
 SUBROUTINE init_DA32_file(fileobj,unit,file,status,access,form, &
     position,action,pad,recl)
   CHARACTER(LEN=*),PARAMETER :: myName='init_DA32_file'
-  CLASS(DA32FileType),INTENT(INOUT) :: fileobj
+  CLASS(DA32FileType),INTENT(INOUT ) :: fileobj
   INTEGER(SIK),OPTIONAL,INTENT(IN) :: unit
   CHARACTER(LEN=*),INTENT(IN) :: file
   CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: status
@@ -560,7 +560,7 @@ SUBROUTINE readdat_basic(funit,iaddr,dat,ioerr,nword)
   INTEGER(SIK),INTENT(IN) :: funit
   INTEGER(SLK),INTENT(IN) :: iaddr
   INTEGER(SIK),INTENT(OUT) :: ioerr
-  INTEGER(SLK),INTENT(INOUT) :: nword
+  INTEGER(SLK),INTENT(INOUT ) :: nword
   INTEGER(SNK),INTENT(OUT) :: dat(*)
   INTEGER(SLK) :: i,irec,istt,istp,iword,nrec,nread
   INTEGER(SNK) :: bufdat(WORDSREC)
@@ -606,7 +606,7 @@ SUBROUTINE writedat_basic(funit,iaddr,dat,ioerr,nword)
   INTEGER(SIK),INTENT(IN) :: funit
   INTEGER(SLK),INTENT(IN) :: iaddr
   INTEGER(SIK),INTENT(OUT) :: ioerr
-  INTEGER(SLK),INTENT(INOUT) :: nword
+  INTEGER(SLK),INTENT(INOUT ) :: nword
   INTEGER(SNK),INTENT(IN) :: dat(*)
   INTEGER(SLK) :: i,irec,istt,istp,iword,nrec,nwrite
   INTEGER(SNK) :: bufdat(WORDSREC)
@@ -659,7 +659,7 @@ ENDSUBROUTINE writedat_basic
 !>        in the file
 !>
 SUBROUTINE writedat_char(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -712,7 +712,7 @@ ENDSUBROUTINE writedat_char
 !>        in the file
 !>
 SUBROUTINE writedat_sbk0(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -743,7 +743,7 @@ ENDSUBROUTINE writedat_sbk0
 !>        in the file
 !>
 SUBROUTINE writedat_snk0(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -774,7 +774,7 @@ ENDSUBROUTINE writedat_snk0
 !>        in the file
 !>
 SUBROUTINE writedat_slk0(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -805,7 +805,7 @@ ENDSUBROUTINE writedat_slk0
 !>        in the file
 !>
 SUBROUTINE writedat_ssk0(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -836,7 +836,7 @@ ENDSUBROUTINE writedat_ssk0
 !>        in the file
 !>
 SUBROUTINE writedat_sdk0(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -867,7 +867,7 @@ ENDSUBROUTINE writedat_sdk0
 !>        in the file
 !>
 SUBROUTINE writedat_sbk1(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -909,7 +909,7 @@ ENDSUBROUTINE writedat_sbk1
 !>        in the file
 !>
 SUBROUTINE writedat_snk1(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -951,7 +951,7 @@ ENDSUBROUTINE writedat_snk1
 !>        in the file
 !>
 SUBROUTINE writedat_slk1(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -994,7 +994,7 @@ ENDSUBROUTINE writedat_slk1
 !>        in the file
 !>
 SUBROUTINE writedat_ssk1(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1036,7 +1036,7 @@ ENDSUBROUTINE writedat_ssk1
 !>        in the file
 !>
 SUBROUTINE writedat_sdk1(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1079,7 +1079,7 @@ ENDSUBROUTINE writedat_sdk1
 !>        in the file
 !>
 SUBROUTINE writedat_sbk2(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1108,7 +1108,7 @@ ENDSUBROUTINE writedat_sbk2
 !>        in the file
 !>
 SUBROUTINE writedat_snk2(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1137,7 +1137,7 @@ ENDSUBROUTINE writedat_snk2
 !>        in the file
 !>
 SUBROUTINE writedat_slk2(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1166,7 +1166,7 @@ ENDSUBROUTINE writedat_slk2
 !>        in the file
 !>
 SUBROUTINE writedat_ssk2(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1195,7 +1195,7 @@ ENDSUBROUTINE writedat_ssk2
 !>        in the file
 !>
 SUBROUTINE writedat_sdk2(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1224,7 +1224,7 @@ ENDSUBROUTINE writedat_sdk2
 !>        in the file
 !>
 SUBROUTINE writedat_sbk3(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1253,7 +1253,7 @@ ENDSUBROUTINE writedat_sbk3
 !>        in the file
 !>
 SUBROUTINE writedat_snk3(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1282,7 +1282,7 @@ ENDSUBROUTINE writedat_snk3
 !>        in the file
 !>
 SUBROUTINE writedat_slk3(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1311,7 +1311,7 @@ ENDSUBROUTINE writedat_slk3
 !>        in the file
 !>
 SUBROUTINE writedat_ssk3(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1340,7 +1340,7 @@ ENDSUBROUTINE writedat_ssk3
 !>        in the file
 !>
 SUBROUTINE writedat_sdk3(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1369,7 +1369,7 @@ ENDSUBROUTINE writedat_sdk3
 !>        in the file
 !>
 SUBROUTINE writedat_sbk4(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1398,7 +1398,7 @@ ENDSUBROUTINE writedat_sbk4
 !>        in the file
 !>
 SUBROUTINE writedat_snk4(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1427,7 +1427,7 @@ ENDSUBROUTINE writedat_snk4
 !>        in the file
 !>
 SUBROUTINE writedat_slk4(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1456,7 +1456,7 @@ ENDSUBROUTINE writedat_slk4
 !>        in the file
 !>
 SUBROUTINE writedat_ssk4(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1485,7 +1485,7 @@ ENDSUBROUTINE writedat_ssk4
 !>        in the file
 !>
 SUBROUTINE writedat_sdk4(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1514,7 +1514,7 @@ ENDSUBROUTINE writedat_sdk4
 !>        in the file
 !>
 SUBROUTINE writedat_sbk5(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1543,7 +1543,7 @@ ENDSUBROUTINE writedat_sbk5
 !>        in the file
 !>
 SUBROUTINE writedat_snk5(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1572,7 +1572,7 @@ ENDSUBROUTINE writedat_snk5
 !>        in the file
 !>
 SUBROUTINE writedat_slk5(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1601,7 +1601,7 @@ ENDSUBROUTINE writedat_slk5
 !>        in the file
 !>
 SUBROUTINE writedat_ssk5(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1630,7 +1630,7 @@ ENDSUBROUTINE writedat_ssk5
 !>        in the file
 !>
 SUBROUTINE writedat_sdk5(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1659,7 +1659,7 @@ ENDSUBROUTINE writedat_sdk5
 !>        in the file
 !>
 SUBROUTINE writedat_sbk6(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1688,7 +1688,7 @@ ENDSUBROUTINE writedat_sbk6
 !>        in the file
 !>
 SUBROUTINE writedat_snk6(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1717,7 +1717,7 @@ ENDSUBROUTINE writedat_snk6
 !>        in the file
 !>
 SUBROUTINE writedat_slk6(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1746,7 +1746,7 @@ ENDSUBROUTINE writedat_slk6
 !>        in the file
 !>
 SUBROUTINE writedat_ssk6(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1775,7 +1775,7 @@ ENDSUBROUTINE writedat_ssk6
 !>        in the file
 !>
 SUBROUTINE writedat_sdk6(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1804,7 +1804,7 @@ ENDSUBROUTINE writedat_sdk6
 !>        in the file
 !>
 SUBROUTINE writedat_sbk7(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1833,7 +1833,7 @@ ENDSUBROUTINE writedat_sbk7
 !>        in the file
 !>
 SUBROUTINE writedat_snk7(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1862,7 +1862,7 @@ ENDSUBROUTINE writedat_snk7
 !>        in the file
 !>
 SUBROUTINE writedat_slk7(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1891,7 +1891,7 @@ ENDSUBROUTINE writedat_slk7
 !>        in the file
 !>
 SUBROUTINE writedat_ssk7(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -1920,7 +1920,7 @@ ENDSUBROUTINE writedat_ssk7
 !>        in the file
 !>
 SUBROUTINE writedat_sdk7(thisDA32,rec,dat,iostat,nrec)
-  CLASS(DA32FileType),INTENT(INOUT) :: thisDA32
+  CLASS(DA32FileType),INTENT(INOUT ) :: thisDA32
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
@@ -2141,7 +2141,7 @@ SUBROUTINE readdat_sbk1(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:)
 
   INTEGER(SNK) :: tmpdat(NBUF)
   INTEGER(SIK) :: ndat,ioerr,istt,istp
@@ -2183,7 +2183,7 @@ SUBROUTINE readdat_snk1(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:)
 
   INTEGER(SNK) :: tmpdat(NBUF)
   INTEGER(SIK) :: ndat,ioerr,istt,istp
@@ -2225,7 +2225,7 @@ SUBROUTINE readdat_slk1(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:)
 
   INTEGER(SNK) :: tmpdat(NBUF)
   INTEGER(SIK) :: ndat,ioerr,istt,istp
@@ -2268,7 +2268,7 @@ SUBROUTINE readdat_ssk1(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:)
 
   INTEGER(SNK) :: tmpdat(NBUF)
   INTEGER(SIK) :: ndat,ioerr,istt,istp
@@ -2310,7 +2310,7 @@ SUBROUTINE readdat_sdk1(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:)
 
   INTEGER(SNK) :: tmpdat(NBUF)
   INTEGER(SIK) :: ndat,ioerr,istt,istp
@@ -2353,7 +2353,7 @@ SUBROUTINE readdat_sbk2(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:,:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2382,7 +2382,7 @@ SUBROUTINE readdat_snk2(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:,:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2411,7 +2411,7 @@ SUBROUTINE readdat_slk2(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:,:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2440,7 +2440,7 @@ SUBROUTINE readdat_ssk2(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:,:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2469,7 +2469,7 @@ SUBROUTINE readdat_sdk2(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:,:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2498,7 +2498,7 @@ SUBROUTINE readdat_sbk3(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:,:,:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2527,7 +2527,7 @@ SUBROUTINE readdat_snk3(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:,:,:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2556,7 +2556,7 @@ SUBROUTINE readdat_slk3(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:,:,:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2585,7 +2585,7 @@ SUBROUTINE readdat_ssk3(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:,:,:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2614,7 +2614,7 @@ SUBROUTINE readdat_sdk3(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:,:,:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2643,7 +2643,7 @@ SUBROUTINE readdat_sbk4(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:,:,:,:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2672,7 +2672,7 @@ SUBROUTINE readdat_snk4(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:,:,:,:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2701,7 +2701,7 @@ SUBROUTINE readdat_slk4(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:,:,:,:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2730,7 +2730,7 @@ SUBROUTINE readdat_ssk4(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:,:,:,:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2759,7 +2759,7 @@ SUBROUTINE readdat_sdk4(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:,:,:,:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2788,7 +2788,7 @@ SUBROUTINE readdat_sbk5(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:,:,:,:,:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2817,7 +2817,7 @@ SUBROUTINE readdat_snk5(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:,:,:,:,:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2846,7 +2846,7 @@ SUBROUTINE readdat_slk5(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:,:,:,:,:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2875,7 +2875,7 @@ SUBROUTINE readdat_ssk5(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:,:,:,:,:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2904,7 +2904,7 @@ SUBROUTINE readdat_sdk5(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:,:,:,:,:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2933,7 +2933,7 @@ SUBROUTINE readdat_sbk6(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:,:,:,:,:,:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2962,7 +2962,7 @@ SUBROUTINE readdat_snk6(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:,:,:,:,:,:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -2991,7 +2991,7 @@ SUBROUTINE readdat_slk6(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:,:,:,:,:,:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3020,7 +3020,7 @@ SUBROUTINE readdat_ssk6(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:,:,:,:,:,:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3049,7 +3049,7 @@ SUBROUTINE readdat_sdk6(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:,:,:,:,:,:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3078,7 +3078,7 @@ SUBROUTINE readdat_sbk7(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  LOGICAL(SBK),INTENT(INOUT) :: dat(:,:,:,:,:,:,:)
+  LOGICAL(SBK),INTENT(INOUT ) :: dat(:,:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3107,7 +3107,7 @@ SUBROUTINE readdat_snk7(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SNK),INTENT(INOUT) :: dat(:,:,:,:,:,:,:)
+  INTEGER(SNK),INTENT(INOUT ) :: dat(:,:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3136,7 +3136,7 @@ SUBROUTINE readdat_slk7(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  INTEGER(SLK),INTENT(INOUT) :: dat(:,:,:,:,:,:,:)
+  INTEGER(SLK),INTENT(INOUT ) :: dat(:,:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3165,7 +3165,7 @@ SUBROUTINE readdat_ssk7(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SSK),INTENT(INOUT) :: dat(:,:,:,:,:,:,:)
+  REAL(SSK),INTENT(INOUT ) :: dat(:,:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 
@@ -3194,7 +3194,7 @@ SUBROUTINE readdat_sdk7(thisDA32,rec,dat,iostat,nrec)
   INTEGER(SLK),INTENT(IN) :: rec
   INTEGER(SIK),INTENT(OUT),OPTIONAL :: iostat
   INTEGER(SLK),INTENT(OUT),OPTIONAL :: nrec
-  REAL(SDK),INTENT(INOUT) :: dat(:,:,:,:,:,:,:)
+  REAL(SDK),INTENT(INOUT ) :: dat(:,:,:,:,:,:,:)
   INTEGER(SIK) :: i,ioerr
   INTEGER(SLK) :: irec,n
 

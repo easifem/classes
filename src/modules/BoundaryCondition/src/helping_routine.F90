@@ -9,7 +9,7 @@
 ! `storageFMT` can be `DOF_FMT` or `Nodes_FMT`
 
 SUBROUTINE ls_setDBC_1( obj, Nptrs, dofs )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 
@@ -93,7 +93,7 @@ END SUBROUTINE ls_setDBC_1
 !! set Dirichlet boundary condition information
 
 MODULE SUBROUTINE ls_setDBC_2( obj, Nptrs, dofs )
-  CLASS( LinSolver_ ), INTENT( INOUT) :: obj
+  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
   TYPE( IntVector_ ), INTENT( IN ) :: Nptrs( : )
   INTEGER( I4B ), INTENT( IN ) :: dofs( : )
 

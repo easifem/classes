@@ -323,7 +323,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE faceElem_deallocateData( obj )
-  TYPE( FacetElement_ ), INTENT( INOUT) :: obj
+  TYPE( FacetElement_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE faceElem_deallocateData
 END INTERFACE
 

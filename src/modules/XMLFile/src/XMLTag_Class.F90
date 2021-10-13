@@ -240,7 +240,7 @@ END INTERFACE
 INTERFACE
 MODULE PURE SUBROUTINE ConvertCharArrayToStr(chars, strobj)
   CHARACTER(LEN=1),INTENT(IN) :: chars( : )
-  TYPE(String),INTENT(INOUT) :: strobj
+  TYPE(String),INTENT(INOUT ) :: strobj
 END SUBROUTINE ConvertCharArrayToStr
 END INTERFACE
 

@@ -3,7 +3,7 @@ TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/Mesh_Class@ConstructorMethods.F90
   ${src_path}/Mesh_Class@IOMethods.F90
-  ${src_path}/Mesh_Class@getMethod.F90
-  ${src_path}/Mesh_Class@setMethod.F90
+  ${src_path}/Mesh_Class@getMethods.F90
+  ${src_path}/Mesh_Class@setMethods.F90
   ${src_path}/Mesh_Class@MeshDataMethods.F90
   )
