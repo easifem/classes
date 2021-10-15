@@ -73,12 +73,8 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
       !! Initiate for block matrices
     PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mField_DeallocateData
       !! Deallocate the field
-    PROCEDURE, PUBLIC, PASS( obj ) :: Display => mField_Display
-      !! Display the field
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => mField_Import
       !! Import from hdf5 file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Export => mField_Export
-      !! export matrix field in hdf5file_
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => mField_Size
       !! Returns the size of the matrix
     PROCEDURE, PUBLIC, PASS( obj ) :: Shape => mField_Shape
@@ -106,7 +102,6 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
     PROCEDURE, PUBLIC, PASS( obj ) :: setColumn => mField_setColumn
     PROCEDURE, PUBLIC, PASS( obj ) :: getRow => mField_getRow
     PROCEDURE, PUBLIC, PASS( obj ) :: getColumn => mField_getColumn
-    PROCEDURE, PUBLIC, PASS( obj ) :: SPY => mField_SPY
       !! SPY
 END TYPE BlockMatrixField_
 
@@ -374,22 +369,6 @@ END SUBROUTINE mField_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine displays the content
-
-INTERFACE
-MODULE SUBROUTINE mField_Display( obj, msg, unitNo )
-  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE mField_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
@@ -404,38 +383,6 @@ MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom )
   CHARACTER( LEN = * ), INTENT( IN ) :: group
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE mField_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Export@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content of matrixfield_ to hdf5 file
-
-INTERFACE
-MODULE SUBROUTINE mField_Export( obj, hdf5, group )
-  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE mField_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             SPY@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content of matrixfield_ to hdf5 file
-
-INTERFACE
-MODULE SUBROUTINE mField_SPY( obj, filename, ext )
-  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: filename
-  CHARACTER( LEN = * ), INTENT( IN ) :: ext
-END SUBROUTINE mField_SPY
 END INTERFACE
 
 !----------------------------------------------------------------------------
