@@ -73,12 +73,11 @@ MODULE PROCEDURE mField_Import
   TYPE( String ) :: strval, dsetname, name, matrixProp, engine
   INTEGER( I4B ), ALLOCATABLE :: timeCompo(:), spaceCompo(:)
   INTEGER( I4B ) :: fieldType
-  LOGICAL( LGT ) :: restart
   TYPE( ParameterList_ ) :: param
   ! main program
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Matrix field object is already initiated')
+    & 'The instance of MatrixField_ is already initiated')
   !> print info
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
     & "Importing an Instance of MatrixField_")
@@ -145,7 +144,8 @@ MODULE PROCEDURE mField_Import
   IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
     CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=timeCompo)
   ELSE
-    timeCompo = [1]
+    timeCompo = spaceCompo
+    timeCompo = 1
   END IF
   CALL FPL_INIT(); CALL param%initiate()
   CALL setMatrixFieldParam( param=param, &

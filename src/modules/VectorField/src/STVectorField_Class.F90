@@ -341,11 +341,12 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE stvField_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE stvField_Import( obj, hdf5, group, dom, domains )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE stvField_Import
 END INTERFACE
 

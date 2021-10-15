@@ -440,11 +440,12 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom, domains )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE mField_Import
 END INTERFACE
 
@@ -457,11 +458,12 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-MODULE SUBROUTINE mField_ImportPmat( obj, hdf5, group, dom )
+MODULE SUBROUTINE mField_ImportPmat( obj, hdf5, group, dom, domains )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE mField_ImportPmat
 END INTERFACE
 
