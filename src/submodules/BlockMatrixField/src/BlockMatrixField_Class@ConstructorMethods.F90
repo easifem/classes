@@ -18,7 +18,7 @@
 ! date: 16 July 2021
 ! summary: This module contains constructor method for [[BlockMatrixField_]]
 
-SUBMODULE(BlockMatrixField_Class) Constructor
+SUBMODULE(BlockMatrixField_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -331,4 +331,4 @@ MODULE PROCEDURE mField_Initiate3
   IF( ALLOCATED( physicalVarNames ) ) DEALLOCATE( physicalVarNames )
 END PROCEDURE mField_Initiate3
 
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods

@@ -153,89 +153,111 @@ MODULE PROCEDURE mField_Export
 
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Matrix field is not initiated')
-  !> check if group exists or not
+    & 'Instnace of MatrixField_ is not initiated')
+  !> print info
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Exporting Instance of MatrixField_")
+  !> check
+  IF( .NOT. hdf5%isOpen() ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'HDF5 file is not opened')
+  END IF
+  !> check
+  IF( .NOT. hdf5%isWrite() ) THEN
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'HDF5 file does not have write permission')
+  END IF
+  !> fieldType
   dname = TRIM( group ) // "/fieldType"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%fieldType )
+  !> name
   dname = TRIM( group ) // "/name"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=trim(obj%name%chars()) )
+  !> engine
+  dname = TRIM( group ) // "/engine"
+  CALL hdf5%write(dsetname=trim(dname%chars()), &
+    & vals=trim(obj%engine%chars()) )
+  !> isPmatInitiated
   dname = TRIM( group ) // "/isPmatInitiated"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%isPmatInitiated )
+  !> mat
   CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM( group ) // "/mat")
+  !> pmat
   IF( obj%isPmatInitiated ) THEN
+    !> pmat/pmatName
     dname = TRIM( group ) // "/pmat/pmatName"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%pmatName )
-
+    !> pmat/nnz
     dname = TRIM( group ) // "/pmat/nnz"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%nnz )
-
+    !> pmat/ncol
     dname = TRIM( group ) // "/pmat/ncol"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%ncol )
-
+    !> pmat/nrow
     dname = TRIM( group ) // "/pmat/nrow"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%nrow )
-
+    !> pmat/isInitiated
     dname = TRIM( group ) // "/pmat/isInitiated"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%isInitiated )
-
+    !> pmat/lfil
     dname = TRIM( group ) // "/pmat/lfil"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%lfil )
-
+    !> pmat/mbloc
     dname = TRIM( group ) // "/pmat/mbloc"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%mbloc )
-
+    !> pmat/alpha
     dname = TRIM( group ) // "/pmat/alpha"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%alpha )
-
+    !> pmat/droptol
     dname = TRIM( group ) // "/pmat/droptol"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%droptol )
-
+    !> pmat/permtol
     dname = TRIM( group ) // "/pmat/permtol"
     CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%pmat%permtol )
-
+    !> pmat/A
     IF( ALLOCATED(obj%pmat%A) ) THEN
       dname = TRIM( group ) // "/pmat/A"
       CALL hdf5%write(dsetname=trim(dname%chars()), &
       & vals=obj%pmat%A )
     END IF
-
+    !> pmat/JA
     IF( ALLOCATED(obj%pmat%JA) ) THEN
       dname = TRIM( group ) // "/pmat/JA"
       CALL hdf5%write(dsetname=trim(dname%chars()), &
       & vals=obj%pmat%JA )
     END IF
-
+    !> pmat/IA
     IF( ALLOCATED(obj%pmat%IA) ) THEN
       dname = TRIM( group ) // "/pmat/IA"
       CALL hdf5%write(dsetname=trim(dname%chars()), &
       & vals=obj%pmat%IA )
     END IF
-
+    !> pmat/JU
     IF( ALLOCATED(obj%pmat%JU) ) THEN
       dname = TRIM( group ) // "/pmat/JU"
       CALL hdf5%write(dsetname=trim(dname%chars()), &
       & vals=obj%pmat%JU )
     END IF
-
+    !> pmat/IPERM
     IF( ALLOCATED(obj%pmat%IPERM) ) THEN
       dname = TRIM( group ) // "/pmat/IPERM"
       CALL hdf5%write(dsetname=trim(dname%chars()), &
       & vals=obj%pmat%IPERM )
     END IF
-
+    !> pmat/LEVS
     IF( ALLOCATED(obj%pmat%LEVS) ) THEN
       dname = TRIM( group ) // "/pmat/LEVS"
       CALL hdf5%write(dsetname=trim(dname%chars()), &
