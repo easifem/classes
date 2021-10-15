@@ -166,6 +166,8 @@ MODULE PROCEDURE mField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Block Matrix field is already initiated')
   CALL obj%checkEssentialParam(param)
+  !>engine
+  obj%engine="NATIVE_SERIAL"
   !> name
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes(  &
     & key="BlockMatrixField/name" ) ) :: char_var )
@@ -256,6 +258,8 @@ MODULE PROCEDURE mField_Initiate3
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Block Matrix field is already initiated')
   CALL obj%checkEssentialParam(param)
+  !> engine
+  obj%engine="NATIVE_SERIAL"
   !> name
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes(  &
     & key="BlockMatrixField/name" ) ) :: char_var )

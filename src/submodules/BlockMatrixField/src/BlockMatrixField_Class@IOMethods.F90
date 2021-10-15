@@ -30,22 +30,38 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Display
-  ! INTEGER( I4B ) :: I
-  ! I = INPUT( option=unitNo, default=stdout )
-  ! IF( .NOT. obj%isInitiated ) THEN
-  !   CALL Display( "Matrix Field is not initiated", unitNo=I )
-  !   RETURN
-  ! END IF
-  ! CALL Display( msg, unitNo = I )
-  ! CALL Display( obj%name//'',  msg="# Field Name : ", unitNo=I )
-  ! CALL Display( obj%fieldType, msg='# Field Type : ', unitNo=I )
-  ! IF( ASSOCIATED( obj%domain ) ) THEN
-  !   CALL Display( "# Domain is associated in Matrix field", unitNo=I )
-  ! ELSE
-  !   CALL Display( "# Domain is NOT associated in Matrix field", unitNo=I )
-  ! END IF
-  ! CALL Display( obj%fieldType, msg='# Field Type : ', unitNo=I )
-  ! CALL Display( obj%mat, msg="SparseMatrix in Matrix Field : ", unitNo=I )
+  INTEGER( I4B ) :: ii
+  !> main
+  IF( .NOT. obj%isInitiated ) THEN
+    CALL Display( "BlockMatrixField is not initiated", unitNo=unitNo )
+    RETURN
+  END IF
+  CALL Display( "#"//TRIM(msg), unitNo=unitNo )
+  CALL Display( obj%name//'',  msg="# name : ", unitNo=unitNo )
+  CALL Display( obj%fieldType, msg='# fieldType : ', unitNo=unitNo )
+  CALL Display( obj%engine, msg='# engine : ', unitNo=unitNo )
+  IF( ASSOCIATED( obj%domain ) ) THEN
+    CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
+  ELSE
+    CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
+  END IF
+  IF( ALLOCATED( obj%domains ) ) THEN
+    CALL Display( "# domains : ALLOCATED [" &
+      & // TOSTRING(SIZE(obj%domains)) &
+      & // "]", unitNo=unitNo )
+    DO ii = 1, SIZE( obj%domains )
+      IF( ASSOCIATED(obj%domains(ii)%ptr) ) THEN
+        CALL Display( "# domains(" // TOSTRING(ii) &
+          & // ")%ptr : ASSOCIATED", unitNo=unitNo )
+      ELSE
+        CALL Display( "# domains(" // TOSTRING(ii)  &
+          & // ")%ptr : NOT ASSOCIATED", unitNo=unitNo )
+      END IF
+    END DO
+  ELSE
+    CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
+  END IF
+  ! CALL Display( obj%mat, msg="# mat : ", unitNo=unitNo )
 END PROCEDURE mField_Display
 
 !----------------------------------------------------------------------------
