@@ -80,7 +80,7 @@ MODULE PROCEDURE mField_Import
     & 'Matrix field object is already initiated')
   !> print info
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "IMPORTING MATRIX FIELD")
+    & "Importing an Instance of MatrixField_")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName// &
@@ -113,15 +113,17 @@ MODULE PROCEDURE mField_Import
   IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
+  ELSE
+    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
   ! READ matrixProp
   dsetname=trim(group)//"/matrixProp"
   IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset matrixProp should be present')
+  ELSE
+    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=matrixProp)
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=matrixProp)
   ! READ spaceCompo
   dsetname=trim(group)//"/spaceCompo"
   IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN

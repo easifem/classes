@@ -191,7 +191,7 @@ SUBROUTINE ExportCSRMatrix( obj, hdf5, group)
   !>
   dsetname = trim(group)//"/matrixProp"
   CALL hdf5%write(dsetname=trim(dsetname%chars()), &
-    & vals=obj%matrixProp )
+    & vals=String(obj%matrixProp) )
   !>
   IF( ALLOCATED(obj%A) ) THEN
     dsetname = trim(group)//"/A"
