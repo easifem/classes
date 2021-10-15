@@ -71,7 +71,8 @@ END PROCEDURE mField_Display
 MODULE PROCEDURE mField_Import
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_Import"
   TYPE( String ) :: strval, dsetname, name, matrixProp, engine
-  INTEGER( I4B ) :: timeCompo, spaceCompo, fieldType
+  INTEGER( I4B ), ALLOCATABLE :: timeCompo(:), spaceCompo(:)
+  INTEGER( I4B ) :: fieldType
   LOGICAL( LGT ) :: restart
   TYPE( ParameterList_ ) :: param
   ! main program
@@ -136,21 +137,22 @@ MODULE PROCEDURE mField_Import
   IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset spaceCompo should be present')
+  ELSE
+    CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=spaceCompo)
   END IF
-  CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=spaceCompo)
   ! timeCompo
   dsetname=TRIM(group)//"/timeCompo"
   IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
     CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=timeCompo)
   ELSE
-    timeCompo = 1
+    timeCompo = [1]
   END IF
   CALL FPL_INIT(); CALL param%initiate()
   CALL setMatrixFieldParam( param=param, &
     & name=TRIM(name%chars()), &
     & matrixProp=TRIM(matrixProp%chars()), &
-    & spaceCompo=spaceCompo, &
-    & timeCompo = timeCompo, &
+    & spaceCompo=spaceCompo(1), &
+    & timeCompo = timeCompo(1), &
     & fieldType = fieldType )
   CALL obj%initiate( param=param, dom=dom )
   CALL param%deallocateData(); CALL FPL_FINALIZE()
