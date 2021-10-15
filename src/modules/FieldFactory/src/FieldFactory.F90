@@ -50,7 +50,7 @@ PUBLIC :: LinSolverFactory
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Aug 2021
-! summary: This function returns child of [[AbstractMatrixField_]] based on engine
+! summary: This function returns child of [[AbstractMatrixField_]]
 
 INTERFACE
 MODULE FUNCTION MatrixFieldFactory( engine ) RESULT( Ans )
@@ -62,12 +62,29 @@ END INTERFACE
 PUBLIC :: MatrixFieldFactory
 
 !----------------------------------------------------------------------------
+!                                                   BlockMatrixFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractMatrixField_]]
+
+INTERFACE
+MODULE FUNCTION BlockMatrixFieldFactory( engine ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: engine
+  CLASS( AbstractMatrixField_ ), POINTER :: ans
+END FUNCTION BlockMatrixFieldFactory
+END INTERFACE
+
+PUBLIC :: BlockMatrixFieldFactory
+
+!----------------------------------------------------------------------------
 !                                                         NodeFieldFactory
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Aug 2021
-! summary: This function returns child of [[AbstractNodeField_]] based on engine
+! summary: This function returns child of [[AbstractNodeField_]]
 
 INTERFACE
 MODULE FUNCTION NodeFieldFactory( engine, datatype ) RESULT( Ans )
@@ -85,7 +102,7 @@ PUBLIC :: NodeFieldFactory
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Aug 2021
-! summary: This function returns child of [[AbstractNodeField_]] based on engine
+! summary: This function returns child of [[AbstractNodeField_]]
 
 INTERFACE
 MODULE FUNCTION VectorFieldFactory( engine ) RESULT( Ans )

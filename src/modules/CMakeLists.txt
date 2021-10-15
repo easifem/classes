@@ -76,6 +76,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 #MatrixField
 include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
+#BlockMatrixField
+include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
 #AbstractLinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 #LinSolver

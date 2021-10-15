@@ -16,22 +16,23 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
-! summary: This module defines [[MatrixField_]] class
+! summary: This module defines [[BlockMatrixField_]] class
 !
 !# Introduction
 !
-! - This module defines [[MatrixField_]] class
-! - It is designed for handling the tangent matrix in FEM
+! - This module defines [[BlockMatrixField_]] class
+! - It is designed for handling the block tangent matrix in FEM
 !
 !@note
-! [[MatrixField_]] uses `NATIVE_SERIAL` engine for handling the
+! [[BlockMatrixField_]] uses `NATIVE_SERIAL` engine for handling the
 ! global tangent matrices.
 !@endnote
 !
 !@todo
 ! Add getting-started manual
 !@endtodo
-MODULE MatrixField_Class
+
+MODULE BlockMatrixField_Class
 USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
@@ -44,10 +45,8 @@ USE AbstractMatrixField_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "MatrixField_Class"
+CHARACTER( LEN = * ), PARAMETER :: modName = "BlockMatrixField_Class"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: IPAR_LENGTH = 14
-INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 
 !----------------------------------------------------------------------------
 !                                                               MSRSparsity_
@@ -55,7 +54,7 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 June 2021
-! summary: User data type for handling the preconditioning of [[MatrixField_]]
+! summary: Data type for preconditioning of [[BlockMatrixField_]]
 !
 !# Introduction
 !
@@ -68,7 +67,8 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! follows.
 !
 ! We have used Modified Sparse Row, which is used by Sparsekit lib to store
-! the precondition matrix, this data type is meant to be used internally only.
+! the precondition matrix, this data type is meant to be used internally
+! only.
 ! The precondition matrix that will be stored inside it is mainly ILUT.
 ! User should not worry about this data type.
 !
@@ -86,7 +86,7 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! beginning of row i in arrays A, JA.
 ! - Here, nnz = number of nonzero elements+1
 
-TYPE :: MatrixFieldPrecondition_
+TYPE :: BlockMatrixFieldPrecondition_
   LOGICAL( LGT ) :: isInitiated = .FALSE.
   INTEGER( I4B ) :: PmatName = 0
   INTEGER( I4B ) :: nnz = 0
@@ -103,21 +103,21 @@ TYPE :: MatrixFieldPrecondition_
   INTEGER( I4B ), ALLOCATABLE :: JU( : )
   INTEGER( I4B ), ALLOCATABLE :: IPERM( : )
   INTEGER( I4B ), ALLOCATABLE :: LEVS( : )
-END TYPE MatrixFieldPrecondition_
+END TYPE BlockMatrixFieldPrecondition_
 
 !----------------------------------------------------------------------------
-!                                                              MatrixField_
+!                                                          BlockMatrixField_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
 ! summary: This is native implementation of finite element tangent matrices.
 !
-!{!pages/MatrixField_.md!}
+!{!pages/BlockMatrixField_.md!}
 
-TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
+TYPE, EXTENDS( AbstractMatrixField_ ) :: BlockMatrixField_
   TYPE( CSRMatrix_ ) :: mat
-  TYPE( MatrixFieldPrecondition_ ) :: Pmat
+  TYPE( BlockMatrixFieldPrecondition_ ) :: Pmat
   CONTAINS
   PRIVATE
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mField_addSurrogate
@@ -165,13 +165,13 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
     PROCEDURE, PUBLIC, PASS( obj ) :: getRow => mField_getRow
     PROCEDURE, PUBLIC, PASS( obj ) :: getColumn => mField_getColumn
     PROCEDURE, PUBLIC, PASS( obj ) :: SPY => mField_SPY
-      !! Get the sparsity pattern in various file formats
-END TYPE MatrixField_
+      !! SPY
+END TYPE BlockMatrixField_
 
-PUBLIC :: MatrixField_
+PUBLIC :: BlockMatrixField_
 
-TYPE( MatrixField_ ), PARAMETER, PUBLIC :: TypeMatrixField = &
-  & MatrixField_(domains=NULL())
+TYPE( BlockMatrixField_ ), PARAMETER, PUBLIC :: TypeBlockMatrixField = &
+  & BlockMatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                 addSurrogate@Constructor
@@ -179,66 +179,87 @@ TYPE( MatrixField_ ), PARAMETER, PUBLIC :: TypeMatrixField = &
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine add surrogate to module [[ExceptionHandler_]]
+! summary: This routine adds surrogate to module's [[ExceptionHandler_]]
 
 INTERFACE
 MODULE SUBROUTINE mField_addSurrogate( obj, UserObj )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
 END SUBROUTINE mField_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            setMatrixFieldParam@Constructor
+!                                      setBlockMatrixFieldParam@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 July 2021
-! summary: This routine sets the parameter for creating MatrixField_
+! summary: This routine sets the parameter for creating [[BlockMatrixField_]]
+!
+!# Introduction
+!
+! - This routine sets the essential parameter for initiating
+! an instance of [[BlockMatrixField_]]
+! - The results will be returned in `param`
+! - After getting `param` user can call [[BlockMatrixField_:Initiate]] method
+!
+!@note
+! The size of `physicalVarNames`, `spaceCompo`, and `timeCompo` should be
+! the same.
+!@endnote
+!
+!
+!## Usage
+!
+!```fortran
+! PROGRAM main
+!   USE easifemBase
+!   USE easifemClasses
+!   IMPLICIT NONE
+!   !
+!   ! [[ParameterList_]], [[BlockMatrixField_]]
+!   !
+!   TYPE( BlockMatrixField_ ) :: obj
+!   TYPE( ParameterList_ ) :: param
+!   !> main
+!   CALL FPL_INIT(); CALL param%Initiate()
+!   ! #BlockMatrixField/SetBlockMatrixFieldParam
+!   CALL SetBlockMatrixFieldParam(param=param, name="K",  &
+!     & physicalVarNames=["V", "P"], spaceCompo=[2, 1], &
+!     & timeCompo=[1,1], fieldType=FIELD_TYPE_NORMAL,  &
+!     & matrixProp="UNSYM" )
+!   ! #BlockMatrixField/CheckEssentialParam
+!   CALL obj%CheckEssentialParam( param )
+!   CALL param%Print()
+!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+! END PROGRAM main
+!```
 
 INTERFACE
-MODULE SUBROUTINE setMatrixFieldParam( param, name, matrixProp, spaceCompo, &
-  & timeCompo, fieldType )
+MODULE SUBROUTINE setBlockMatrixFieldParam( param, name, matrixProp, &
+  & physicalVarNames, spaceCompo, timeCompo, fieldType )
   TYPE( ParameterList_ ), INTENT( INOUT ) :: param
-    !! Options to create [[MatrixField_]] will be stored in this
+    !! Options to create [[BlockMatrixField_]] will be stored in this
   CHARACTER( LEN = * ), INTENT( IN ) :: name
     !! Name of the matrix field
   CHARACTER( LEN = * ), INTENT( IN ) :: matrixProp
     !! Matrix property, "SYM" or "UNSYM"
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: spaceCompo
-    !! Number of space-components, see [[DOF_]]
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: timeCompo
-    !! Number of time-components, see [[DOF_]]
+  CHARACTER( LEN = * ), INTENT( IN ) :: physicalVarNames( : )
+    !! Name of physical variables
+  INTEGER( I4B ), INTENT( IN ) :: spaceCompo( : )
+    !! Number of space-components in each physicalVarNames, see [[DOF_]]
+  INTEGER( I4B ), INTENT( IN ) :: timeCompo( : )
+    !! Number of time-components in each physicalVarNames, see [[DOF_]]
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
     !! fieldType can be following
-    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_NORMAL <-- DEFAULT
     !! FIELD_TYPE_CONSTANT
     !! FIELD_TYPE_CONSTANT_SPACE
     !! FIELD_TYPE_CONSTANT_TIME
-END SUBROUTINE setMatrixFieldParam
+END SUBROUTINE setBlockMatrixFieldParam
 END INTERFACE
 
-PUBLIC :: setMatrixFieldParam
-
-!----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 9 Oct 2021
-! summary: Deallocates the data stored inside [[MatrixFieldPrecondition_]]
-
-INTERFACE
-MODULE SUBROUTINE Pmat_DeallocateData( obj )
-  TYPE( MatrixFieldPrecondition_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Pmat_DeallocateData
-END INTERFACE
-
-INTERFACE DeallocateData
-  MODULE PROCEDURE Pmat_DeallocateData
-END INTERFACE DeallocateData
-
-PUBLIC :: DeallocateData
+PUBLIC :: setBlockMatrixFieldParam
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -251,16 +272,50 @@ PUBLIC :: DeallocateData
 !# Introduction
 !
 ! This routine check the essential parameters required to the initiate the
-! [[MatrixField_]] data type.
+! [[BlockMatrixField_]] data type.
 
 INTERFACE
 MODULE SUBROUTINE mField_checkEssentialParam( obj, param )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
 END SUBROUTINE mField_checkEssentialParam
 END INTERFACE
 
 PUBLIC :: mField_checkEssentialParam
+
+!----------------------------------------------------------------------------
+!                                                 DeallocateData@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 9 Oct 2021
+! summary: Deallocates data stored inside [[BlockMatrixFieldPrecondition_]]
+
+INTERFACE
+MODULE SUBROUTINE Pmat_DeallocateData( obj )
+  TYPE( BlockMatrixFieldPrecondition_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Pmat_DeallocateData
+END INTERFACE
+
+INTERFACE DeallocateData
+  MODULE PROCEDURE Pmat_DeallocateData
+END INTERFACE DeallocateData
+
+PUBLIC :: DeallocateData
+
+!----------------------------------------------------------------------------
+!                                                 DeallocateData@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine deallocates the data stored inside the matrix
+
+INTERFACE
+MODULE SUBROUTINE mField_DeallocateData( obj )
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE mField_DeallocateData
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      Initiate@Constructor
@@ -272,16 +327,15 @@ PUBLIC :: mField_checkEssentialParam
 !
 !# Introduction
 !
-! This routine initiates an instance of [[MatrixField_]].
+! This routine initiates an instance of [[BlockMatrixField_]].
 ! The options/arguments to initiate the matrix field are
 ! contained inside param, which is an instance of [[ParameterList_]].
 ! In addition, [[Domain_]] `dom` is target to the pointer
-! [[AbstractField_:domain]]
+! [[AbstractField_:domain]] and [[AbstractField_::domains]]
 !
-! - Param contains both essential and optional parameters which are used in
+! - `param` contains both essential and optional parameters which are used in
 ! constructing the matrix field
-! - dom is a pointer to a domain, where we are interested in constructing the
-! matrix
+! - `dom` is a pointer to a domain
 !
 ! ESSENTIAL PARAMETERS are
 !
@@ -298,7 +352,7 @@ PUBLIC :: mField_checkEssentialParam
 !
 !```fortran
 ! type( domain_ ) :: dom
-! type( MatrixField_ ) :: obj
+! type( BlockMatrixField_ ) :: obj
 ! type( HDF5File_ ) :: meshfile, hdf5
 ! type( ParameterList_ ) :: param
 ! integer( i4b ) :: ierr, tnodes
@@ -311,7 +365,8 @@ PUBLIC :: mField_checkEssentialParam
 ! call meshfile%deallocateData()
 ! tnodes = dom%getTotalNodes()
 ! call param%initiate()
-! call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
+! call setBlockMatrixFieldParam( param, "K", "UNSYM", 3, 2,
+! FIELD_TYPE_NORMAL )
 ! call obj%initiate( param, dom )
 ! CALL hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
 ! CALL hdf5%open()
@@ -326,7 +381,7 @@ PUBLIC :: mField_checkEssentialParam
 
 INTERFACE
 MODULE SUBROUTINE mField_Initiate1( obj, param, dom )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE mField_Initiate1
@@ -342,7 +397,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! This routine initiates the `obj` [[MatrixField_]] by copying contents
+! This routine initiates the `obj` [[BlockMatrixField_]] by copying contents
 ! from `obj2`, an instance of chid class of [[AbstractField_]].
 ! In this way we try to minimize the computation effort.
 !
@@ -352,9 +407,10 @@ END INTERFACE
 !@endnote
 !
 !@note
-! However, in [[MatrixField_:mat]], it will not allocate space for
+! However, in [[BlockMatrixField_:mat]], it will not allocate space for
 ! [[CSRSparsity_]] field of
-! [[CSRMatrix_]], that is [[CSRMatrix_:CSR]] field of [[MatrixField_:mat]].
+! [[CSRMatrix_]], that is [[CSRMatrix_:CSR]] field of
+! [[BlockMatrixField_:mat]].
 ! Instead, it will use the obj2%mat%csr as the target for the pointer
 ! obj%mat%csr.
 ! In this way, there is no need to create multiple sparsity patterns
@@ -370,7 +426,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_Initiate2( obj, obj2, copyFull, copyStructure, &
   & usePointer )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
@@ -391,24 +447,10 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_Initiate3( obj, param, dom )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
 END SUBROUTINE mField_Initiate3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine deallocates the data stored inside the matrix
-
-INTERFACE
-MODULE SUBROUTINE mField_DeallocateData( obj )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE mField_DeallocateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -421,7 +463,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_Display( obj, msg, unitNo )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
 END SUBROUTINE mField_Display
@@ -437,7 +479,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
@@ -454,7 +496,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_Export( obj, hdf5, group )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE mField_Export
@@ -470,7 +512,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_SPY( obj, filename, ext )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: filename
   CHARACTER( LEN = * ), INTENT( IN ) :: ext
 END SUBROUTINE mField_SPY
@@ -486,7 +528,7 @@ END INTERFACE
 
 INTERFACE
 MODULE FUNCTION mField_Size( obj, dim ) RESULT( ans )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
   INTEGER( I4B ) :: ans
 END FUNCTION mField_Size
@@ -502,7 +544,7 @@ END INTERFACE
 
 INTERFACE
 MODULE FUNCTION mField_Shape( obj ) RESULT( ans )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: ans( 2 )
 END FUNCTION mField_Shape
 END INTERFACE
@@ -527,7 +569,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_getRow( obj, globalNode, idof, val, nodeFieldVal, &
   & scale, addContribution )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: idof
   REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: val( : )
@@ -557,7 +599,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_getColumn( obj, globalNode, idof, val, nodeFieldVal,&
   & scale, addContribution )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: idof
   REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: val( : )
@@ -583,7 +625,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_Matvec1( obj, x, y, transp )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: x( : )
     !! Input vector in y=Ax
   REAL( DFP ), INTENT( INOUT ) :: y( : )
@@ -607,7 +649,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_Matvec2( obj, x, y, transp )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   CLASS( AbstractNodeField_ ), INTENT( IN ) :: x
     !! Input vector in y=Ax
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: y
@@ -629,7 +671,8 @@ END INTERFACE
 ! This routine solves (LU) sol = rhs
 ! sol and rhs are fortran real vector
 ! The LU decomposition is stored inside the AbstractMatrixField_.
-! Note that sol should be allocated by the user, and size of sol should be same as the size of rhs
+! Note that sol should be allocated by the user, and size of sol should be
+! same as the size of rhs
 !
 !@note
 ! LU matrix is stored inside the object in Modified Sparse Row format
@@ -638,7 +681,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_LUSOLVE1( obj, sol, rhs, transp )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( INOUT ) :: sol( : )
     !! Output vector y=Ax
   REAL( DFP ), INTENT( IN ) :: rhs( : )
@@ -668,7 +711,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_LUSOLVE2( obj, sol, rhs, transp )
-  CLASS( MatrixField_ ), INTENT( IN ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: sol
     !! Output vector y=Ax
   CLASS( AbstractNodeField_ ), INTENT( IN ) :: rhs
@@ -699,7 +742,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_setPrecondition( obj, param )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), OPTIONAL, INTENT( IN ) :: param
 END SUBROUTINE mField_setPrecondition
 END INTERFACE
@@ -714,7 +757,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_getPrecondition( obj, Pmat )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: Pmat
 END SUBROUTINE mField_getPrecondition
 END INTERFACE
@@ -734,7 +777,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_reversePermutation( obj, rhs, sol )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: rhs
   CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: sol
 END SUBROUTINE mField_reversePermutation
@@ -767,7 +810,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_set1( obj, globalNode, val, storageFMT, scale, addContribution )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
   REAL( DFP ), INTENT( IN ) :: val(:,:)
   INTEGER( I4B ), INTENT( IN ) :: storageFMT
@@ -801,7 +844,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE mField_set2( obj, globalNode, val, scale, addContribution )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalNode(:)
   REAL( DFP ), INTENT( IN ) :: val
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
@@ -830,7 +873,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_set3( obj, rowNodeNum, colNodeNum, rowDOF, colDOF, &
   & val, scale, addContribution )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: rowNodeNum
   INTEGER( I4B ), INTENT( IN ) :: colNodeNum
   INTEGER( I4B ), INTENT( IN ) :: rowDOF
@@ -860,7 +903,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_setRow( obj, globalNode, idof, scalarVal, vecVal, &
   & nodeFieldVal )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: idof
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
@@ -888,7 +931,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE mField_setColumn( obj, globalNode, idof, scalarVal, &
   & vecVal, nodeFieldVal )
-  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: idof
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
@@ -897,4 +940,4 @@ MODULE SUBROUTINE mField_setColumn( obj, globalNode, idof, scalarVal, &
 END SUBROUTINE mField_setColumn
 END INTERFACE
 
-END MODULE MatrixField_Class
+END MODULE BlockMatrixField_Class

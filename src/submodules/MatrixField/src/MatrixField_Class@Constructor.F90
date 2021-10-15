@@ -161,6 +161,7 @@ END PROCEDURE mField_Initiate3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_DeallocateData
+  INTEGER( I4B ) :: ii
   obj%name = ''
   CALl DeallocateData( obj%mat )
   CALL DeallocateData( obj%Pmat )
@@ -168,6 +169,12 @@ MODULE PROCEDURE mField_DeallocateData
   obj%isPmatInitiated = .FALSE.
   obj%fieldType = 0
   obj%domain => NULL()
+  IF( ALLOCATED( obj%domains ) ) THEN
+    DO ii = 1, SIZE( obj%domains )
+      obj%domains(ii)%ptr => NULL()
+    END DO
+    DEALLOCATE( obj%domains )
+  END IF
 END PROCEDURE mField_DeallocateData
 
 !----------------------------------------------------------------------------
