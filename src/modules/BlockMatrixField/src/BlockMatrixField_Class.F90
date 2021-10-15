@@ -42,68 +42,12 @@ USE ExceptionHandler_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE AbstractMatrixField_Class
+USE MatrixField_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "BlockMatrixField_Class"
 TYPE( ExceptionHandler_ ) :: e
-
-!----------------------------------------------------------------------------
-!                                                               MSRSparsity_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 June 2021
-! summary: Data type for preconditioning of [[BlockMatrixField_]]
-!
-!# Introduction
-!
-! This is a data type for storing the the precondition matrix.
-! The storage pattern of the precondition matrix depends upon the type of
-! preconditioning. For example, ILU type preconditioners are stored in
-! modified sparse row by sparseKit library. In this way, storage also depends
-! upon the linear solver library. That is why it is better to hide the
-! preconditioner from user. More details about the MSR format is given as
-! follows.
-!
-! We have used Modified Sparse Row, which is used by Sparsekit lib to store
-! the precondition matrix, this data type is meant to be used internally
-! only.
-! The precondition matrix that will be stored inside it is mainly ILUT.
-! User should not worry about this data type.
-!
-! ```fortran
-! INTEGER :: JA( : )
-! REAL :: A( : )
-! ```
-!
-! - `A(1:n)` contains the diagonal of the matrix.
-! - `A(n+2:nnz)` contains the nondiagonal elements of the matrix, stored
-! ROWWISE.
-! - `JA(n+2:nnz)`  contains their column indices
-! - `JA(1:n+1)` Contains the pointer array for the nondiagonal, elements in
-! A(n+1:nnz) and JA(n+2:nnz), i.e., for `i .LE. n+1` `JA(i)` points to
-! beginning of row i in arrays A, JA.
-! - Here, nnz = number of nonzero elements+1
-
-TYPE :: BlockMatrixFieldPrecondition_
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
-  INTEGER( I4B ) :: PmatName = 0
-  INTEGER( I4B ) :: nnz = 0
-  INTEGER( I4B ) :: ncol = 0
-  INTEGER( I4B ) :: nrow = 0
-  INTEGER( I4B ) :: lfil = 0
-  INTEGER( I4B ) :: mbloc = 0
-  REAL( DFP ) :: alpha = 0.0_DFP
-  REAL( DFP ) :: droptol = 0.0_DFP
-  REAL( DFP ) :: permtol = 0.0_DFP
-  REAL( DFP ), ALLOCATABLE :: A( : )
-  INTEGER( I4B ), ALLOCATABLE :: JA( : )
-  INTEGER( I4B ), ALLOCATABLE :: IA( : )
-  INTEGER( I4B ), ALLOCATABLE :: JU( : )
-  INTEGER( I4B ), ALLOCATABLE :: IPERM( : )
-  INTEGER( I4B ), ALLOCATABLE :: LEVS( : )
-END TYPE BlockMatrixFieldPrecondition_
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -115,14 +59,12 @@ END TYPE BlockMatrixFieldPrecondition_
 !
 !{!pages/BlockMatrixField_.md!}
 
-TYPE, EXTENDS( AbstractMatrixField_ ) :: BlockMatrixField_
-  TYPE( CSRMatrix_ ) :: mat
-  TYPE( BlockMatrixFieldPrecondition_ ) :: Pmat
+TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
   CONTAINS
   PRIVATE
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => mField_addSurrogate
     PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
-      & mField_checkEssentialParam
+      & bmField_checkEssentialParam
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate1 => mField_Initiate1
       !! Initiate from the parameter list
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate2 => mField_Initiate2
@@ -275,33 +217,11 @@ PUBLIC :: setBlockMatrixFieldParam
 ! [[BlockMatrixField_]] data type.
 
 INTERFACE
-MODULE SUBROUTINE mField_checkEssentialParam( obj, param )
+MODULE SUBROUTINE bmField_checkEssentialParam( obj, param )
   CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE mField_checkEssentialParam
+END SUBROUTINE bmField_checkEssentialParam
 END INTERFACE
-
-PUBLIC :: mField_checkEssentialParam
-
-!----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 9 Oct 2021
-! summary: Deallocates data stored inside [[BlockMatrixFieldPrecondition_]]
-
-INTERFACE
-MODULE SUBROUTINE Pmat_DeallocateData( obj )
-  TYPE( BlockMatrixFieldPrecondition_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Pmat_DeallocateData
-END INTERFACE
-
-INTERFACE DeallocateData
-  MODULE PROCEDURE Pmat_DeallocateData
-END INTERFACE DeallocateData
-
-PUBLIC :: DeallocateData
 
 !----------------------------------------------------------------------------
 !                                          DeallocateData@ConstructorMethods

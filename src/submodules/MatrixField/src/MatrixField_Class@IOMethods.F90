@@ -144,6 +144,14 @@ MODULE PROCEDURE mField_Import
 END PROCEDURE mField_Import
 
 !----------------------------------------------------------------------------
+!                                                                 Import
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_ImportPmat
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_ImportPmat"
+END PROCEDURE mField_ImportPmat
+
+!----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
@@ -186,6 +194,16 @@ MODULE PROCEDURE mField_Export
   !> mat
   CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM( group ) // "/mat")
   !> pmat
+  CALL obj%ExportPmat( hdf5=hdf5, group=group )
+END PROCEDURE mField_Export
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_ExportPmat
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_ExportPmat"
+  TYPE( String ) :: dname
   IF( obj%isPmatInitiated ) THEN
     !> pmat/pmatName
     dname = TRIM( group ) // "/pmat/pmatName"
@@ -264,7 +282,7 @@ MODULE PROCEDURE mField_Export
       & vals=obj%pmat%LEVS )
     END IF
   END IF
-END PROCEDURE mField_Export
+END PROCEDURE mField_ExportPmat
 
 !----------------------------------------------------------------------------
 !                                                                      SPY
