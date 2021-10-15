@@ -184,11 +184,16 @@ MODULE PROCEDURE mField_Export
     CALL e%raiseError(modName//'::'//myName// &
     & 'HDF5 file does not have write permission')
   END IF
-  !> check if group exists or not
+  !> fieldType
   dname = TRIM( group ) // "/fieldType"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%fieldType )
+  !> name
   dname = TRIM( group ) // "/name"
+  CALL hdf5%write(dsetname=trim(dname%chars()), &
+    & vals=trim(obj%name%chars()) )
+  !> engine
+  dname = TRIM( group ) // "/engine"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=trim(obj%name%chars()) )
   dname = TRIM( group ) // "/isPmatInitiated"
