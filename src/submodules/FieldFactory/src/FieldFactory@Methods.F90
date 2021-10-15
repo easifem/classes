@@ -84,6 +84,36 @@ MODULE PROCEDURE MatrixFieldFactory
 END PROCEDURE MatrixFieldFactory
 
 !----------------------------------------------------------------------------
+!                                                   BlockMatrixFieldFactory
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE BlockMatrixFieldFactory
+  CHARACTER( LEN = * ), PARAMETER :: myName = "BlockMatrixFieldFactory"
+  SELECT CASE( TRIM( engine ) )
+  CASE( "NATIVE_SERIAL" )
+    ALLOCATE( BlockMatrixField_:: ans )
+  CASE( "NATIVE_OMP" )
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'NATIVE_OMP engine is not available currently!! We are working on it.')
+  CASE( "NATIVE_MPI" )
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'NATIVE_MPI engine is not available currently!! We are working on it.')
+  CASE( "PETSC" )
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'PETSC engine is not available currently!! We are working on it.')
+  CASE( "LIS_SERIAL" )
+    CALL e%raiseError(modName//'::'//myName// &
+    & 'LIS_SERIAL engine is not available currently!! We are working on it.')
+  CASE( "LIS_OMP" )
+    CALL e%raiseError(modName//'::'//myName// &
+      & 'LIS_OMP engine is not available currently!! We are working on it.')
+  CASE( "LIS_MPI" )
+    CALL e%raiseError(modName//'::'//myName// &
+      & 'LIS_MPI engine is not available currently!! We are working on it.')
+  END SELECT
+END PROCEDURE BlockMatrixFieldFactory
+
+!----------------------------------------------------------------------------
 !                                                         NodeFieldFactory
 !----------------------------------------------------------------------------
 

@@ -157,10 +157,11 @@ MODULE PROCEDURE mesh_setSparsity4
   DO ii = obj%minNptrs, obj%maxNptrs
     jj = nodeToNode(ii)
     kk = rowGlobalToLocalNodeNum( ii )
-    chk = (.NOT. obj%isNodePresent( globalNode=ii ))  &
-      & .OR. (jj .EQ. 0 )  &
-      & .OR. (.NOT. colMesh%isNodePresent( globalNode=jj ))  &
-      & .OR. (kk .EQ. 0)
+    chk = (  &
+      & .NOT. obj%isNodePresent( globalNode=ii ))  &
+      & .OR.  (jj .EQ. 0 )  &
+      & .OR.  (.NOT. colMesh%isNodePresent( globalNode=jj ))  &
+      & .OR.  (kk .EQ. 0)
     IF( chk ) CYCLE
     n2n = colGlobalToLocalNodeNum( &
       & colMesh%getNodeToNodes( GlobalNode = jj, IncludeSelf =.TRUE. ) )

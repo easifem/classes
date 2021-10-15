@@ -26,6 +26,7 @@ USE STScalarField_Class
 USE VectorField_Class
 USE STVectorField_Class
 USE MatrixField_Class
+USE BlockMatrixField_Class
 USE AbstractLinSolver_Class
 USE LinSolver_Class
 END MODULE Field
