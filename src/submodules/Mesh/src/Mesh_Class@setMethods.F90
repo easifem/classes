@@ -97,20 +97,32 @@ END PROCEDURE mesh_setSparsity2
 
 MODULE PROCEDURE mesh_SetSparsity3
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity3"
-  INTEGER( I4B ) :: i, j
+  INTEGER( I4B ) :: ii, jj
   INTEGER( I4B ), ALLOCATABLE :: n2n( : )
   !> main
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "This routine is under construction." )
+  !> check
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
-  DO i = 1, obj%tNodes
-    j = obj%getGlobalNodeNumber( LocalNode = i )
-    IF( colMesh%isNodePresent( GlobalNode=j ) ) THEN
-      n2n = colMesh%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. )
-      CALL SetSparsity( obj = Mat, Row = j, Col = n2n, ivar=ivar,  &
+  !> check
+  IF( .NOT. colMesh%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "colMesh data is not initiated, first initiate")
+  END IF
+  !> check
+  IF( SIZE( nodeToNode ) .NE. obj%maxNptrs ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
+  END IF
+  !>
+  DO ii = obj%minNptrs, obj%maxNptrs
+    IF( .NOT. obj%isNodePresent( globalNode=ii ) ) CYCLE
+    jj = nodeToNode( ii )
+    IF( jj .EQ. 0 ) CYCLE
+    IF( colMesh%isNodePresent( GlobalNode=jj ) ) THEN
+      n2n = colMesh%getNodeToNodes( GlobalNode = jj, IncludeSelf =.TRUE. )
+      CALL SetSparsity( obj = Mat, Row = ii, Col = n2n, ivar=ivar,  &
         & jvar=jvar )
     END IF
   END DO
@@ -123,29 +135,37 @@ END PROCEDURE mesh_SetSparsity3
 
 MODULE PROCEDURE mesh_setSparsity4
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_setSparsity4"
-  INTEGER( I4B ) :: i, j, k
+  INTEGER( I4B ) :: ii, jj, kk
   INTEGER( I4B ), ALLOCATABLE :: n2n( : )
+  LOGICAL( LGT ) :: chk
   !> main
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "This routine is under construction, &
-    & I am currently working on domain connectivity part." )
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
+  !> check
+  IF( .NOT. colMesh%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "colMesh data is not initiated, first initiate")
+  END IF
+  !> check
+  IF( SIZE( nodeToNode ) .NE. obj%maxNptrs ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
+  END IF
   !> main
-  DO i = 1, obj%tNodes
-    !! get global node number for row mesh
-    j = obj%getGlobalNodeNumber( LocalNode = i )
-    !! get local node number for row mesh
-    k = rowLocalNodeNumber( j )
-    IF( k .NE. 0 ) THEN
-      !! get node to node for col mesh
-      n2n = colLocalNodeNumber( &
-        & colMesh%getNodeToNodes( GlobalNode = j, IncludeSelf =.TRUE. ) )
-      CALL SetSparsity( obj = Mat, Row = k, Col = n2n, ivar=ivar,  &
-        & jvar=jvar )
-    END IF
+  DO ii = obj%minNptrs, obj%maxNptrs
+    jj = nodeToNode(ii)
+    kk = rowGlobalToLocalNodeNum( ii )
+    chk = (.NOT. obj%isNodePresent( globalNode=ii ))  &
+      & .OR. (jj .EQ. 0 )  &
+      & .OR. (.NOT. colMesh%isNodePresent( globalNode=jj ))  &
+      & .OR. (kk .EQ. 0)
+    IF( chk ) CYCLE
+    n2n = colGlobalToLocalNodeNum( &
+      & colMesh%getNodeToNodes( GlobalNode = jj, IncludeSelf =.TRUE. ) )
+    CALL SetSparsity( obj = Mat, Row = kk, Col = n2n, ivar=ivar,  &
+      & jvar=jvar )
   END DO
   IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
 END PROCEDURE mesh_setSparsity4

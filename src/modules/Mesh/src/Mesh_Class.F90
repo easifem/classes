@@ -1454,11 +1454,14 @@ END INTERFACE
 ! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-MODULE SUBROUTINE mesh_setSparsity3( obj, colMesh, mat, ivar, jvar)
+MODULE SUBROUTINE mesh_setSparsity3( obj, colMesh, nodeToNode, mat, &
+  & ivar, jvar)
   CLASS( Mesh_ ), INTENT( INOUT ) :: obj
   !! [[Mesh_]] class
   CLASS( Mesh_ ), INTENT( INOUT ) :: colMesh
   !! [[Mesh_]] class
+  INTEGER( I4B ), INTENT( IN ) :: nodeToNode( : )
+  !! Node to node connectivity between obj and colMesh
   TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
   !! [[CSRMatrix_]] object
   INTEGER( I4B ), INTENT( IN ) :: ivar
@@ -1479,22 +1482,26 @@ END INTERFACE
 ! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-MODULE SUBROUTINE mesh_setSparsity4( obj, colMesh, mat, rowLocalNodeNumber, &
-  & rowLBOUND, rowUBOUND, colLocalNodeNumber, colLBOUND, colUBOUND,  &
-  & ivar, jvar )
+MODULE SUBROUTINE mesh_setSparsity4( obj, colMesh, nodeToNode, mat, &
+  & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
+  & colLBOUND, colUBOUND, ivar, jvar )
   CLASS( Mesh_ ), INTENT( INOUT ) :: obj
     !! [[Mesh_]] class
   CLASS( Mesh_ ), INTENT( INOUT ) :: colMesh
     !! [[Mesh_]] class
+  INTEGER( I4B ), INTENT( IN ) :: nodeToNode( : )
+    !! node to node connectivity between obj and colMesh
   TYPE( CSRMatrix_ ), INTENT( INOUT ) :: mat
     !! [[CSRMatrix_]] object
   INTEGER( I4B ), INTENT( IN ) :: rowLBOUND
   INTEGER( I4B ), INTENT( IN ) :: rowUBOUND
-  INTEGER( I4B ), INTENT( IN ) :: rowLocalNodeNumber( rowLBOUND:rowUBOUND )
+  INTEGER( I4B ), INTENT( IN ) :: rowGlobalToLocalNodeNum( &
+    & rowLBOUND:rowUBOUND )
     !! Global to local node number map
   INTEGER( I4B ), INTENT( IN ) :: colLBOUND
   INTEGER( I4B ), INTENT( IN ) :: colUBOUND
-  INTEGER( I4B ), INTENT( IN ) :: colLocalNodeNumber( colLBOUND:colUBOUND )
+  INTEGER( I4B ), INTENT( IN ) :: colGlobalToLocalNodeNum( &
+    & colLBOUND:colUBOUND )
   INTEGER( I4B ), INTENT( IN ) :: ivar
   INTEGER( I4B ), INTENT( IN ) :: jvar
 END SUBROUTINE mesh_setSparsity4

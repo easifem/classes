@@ -68,6 +68,31 @@ MODULE PROCEDURE Domain_getTotalNodes
 END PROCEDURE Domain_getTotalNodes
 
 !----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tNodes1
+  ans = obj%getTotalNodes( dim=opt(1), entityNum=opt(2) )
+END PROCEDURE Domain_tNodes1
+
+!----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tNodes2
+  ans = obj%getTotalNodes( dim=dim )
+END PROCEDURE Domain_tNodes2
+
+
+!----------------------------------------------------------------------------
+!                                                                   tNodes
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tNodes3
+  ans = obj%getTotalNodes( )
+END PROCEDURE Domain_tNodes3
+
+!----------------------------------------------------------------------------
 !                                                         getLocalNodeNumber
 !----------------------------------------------------------------------------
 
