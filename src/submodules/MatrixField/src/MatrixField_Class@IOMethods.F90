@@ -202,12 +202,12 @@ MODULE PROCEDURE mField_Export
   !> engine
   dname = TRIM( group ) // "/engine"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
-    & vals=trim(obj%engine%chars()) )
+    & vals=obj%engine)
   !> isPmatInitiated
   dname = TRIM( group ) // "/isPmatInitiated"
   CALL hdf5%write(dsetname=trim(dname%chars()), &
     & vals=obj%isPmatInitiated )
-  !> mat
+  ! > mat
   CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM( group ) // "/mat")
   !> pmat
   CALL obj%ExportPmat( hdf5=hdf5, group=group )
