@@ -469,9 +469,10 @@ END INTERFACE
 ! summary: This routine Exports the content of matrixfield_ to hdf5 file
 
 INTERFACE
-MODULE SUBROUTINE mField_SPY( obj, filename )
+MODULE SUBROUTINE mField_SPY( obj, filename, ext )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: filename
+  CHARACTER( LEN = * ), INTENT( IN ) :: ext
 END SUBROUTINE mField_SPY
 END INTERFACE
 

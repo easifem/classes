@@ -249,7 +249,7 @@ END PROCEDURE mField_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_SPY
-  CALL SPY( obj=obj%mat, filename=filename )
+  CALL SPY( obj=obj%mat, filename=filename, ext=ext )
 END PROCEDURE mField_SPY
 
 END SUBMODULE IOMethods

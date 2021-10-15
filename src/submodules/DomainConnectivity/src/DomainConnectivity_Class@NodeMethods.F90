@@ -36,7 +36,15 @@ MODULE PROCEDURE dc_InitiateNodeToNodeData1
   REAL( DFP ), POINTER :: node2( :, : )
   !> main
   !> check domain1 initiated
+  IF( .NOT. domain1%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Domain-1 is not initiated, first initiate")
+  END IF
   !> check domain2 initiated
+  IF( .NOT. domain2%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Domain-2 is not initiated, first initiate")
+  END IF
   mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
   mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
   CALL Reallocate( obj%NodeToNode, mesh1%maxNptrs )
@@ -82,7 +90,15 @@ MODULE PROCEDURE dc_InitiateNodeToNodeData2
   REAL( DFP ), POINTER :: node2( :, : )
   !> main
   !> check domain1 initiated
+  IF( .NOT. domain1%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Domain-1 is not initiated, first initiate")
+  END IF
   !> check domain2 initiated
+  IF( .NOT. domain2%isInitiated ) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+      & "Domain-2 is not initiated, first initiate")
+  END IF
   CALL Reallocate( obj%NodeToNode, domain1%maxNptrs )
   !> make intersection box
   IF( (domain1%GetBoundingBox()) &

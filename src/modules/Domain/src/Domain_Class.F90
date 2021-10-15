@@ -42,7 +42,7 @@ TYPE( ExceptionHandler_ ) :: e
 
 TYPE :: Domain_
   PRIVATE
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
+  LOGICAL( LGT ), PUBLIC :: isInitiated = .FALSE.
     !! flag
   TYPE( String ) :: engine
     !! Engine used for generating the meshes
@@ -109,19 +109,31 @@ TYPE :: Domain_
     PROCEDURE, PASS( Obj ) :: Import => Domain_Import
       !! Initiates an instance of domain by importing data from meshfile
     ! @getMethods
-    PROCEDURE, PUBLIC, PASS( obj ) :: isNodePresent => &
+    PROCEDURE, PUBLIC, PASS( obj ) :: &
+      & isNodePresent => &
       & Domain_isNodePresent
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalNodes => Domain_getTotalNodes
       !! returns the total number of nodes in the mesh
+    PROCEDURE, PASS( obj ) :: &
+      & Domain_tNodes1,  &
+      & Domain_tNodes2,  &
+      & Domain_tNodes3
+    GENERIC, PUBLIC :: OPERATOR( .tNodes. ) => &
+      & Domain_tNodes1,  &
+      & Domain_tNodes2,  &
+      & Domain_tNodes3
     PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber1
     PROCEDURE, PASS( obj ) :: Domain_getLocalNodeNumber2
-    GENERIC, PUBLIC :: getLocalNodeNumber => Domain_getLocalNodeNumber1, &
+    GENERIC, PUBLIC :: &
+      & getLocalNodeNumber => &
+      & Domain_getLocalNodeNumber1, &
       & Domain_getLocalNodeNumber2
     PROCEDURE, PASS( obj ) :: domain_getGlobalNodeNumber1
       !! Returns the global node number of a local node number
     PROCEDURE, PASS( obj ) :: domain_getGlobalNodeNumber2
       !! Returns the global node number of a local node number
-    GENERIC, PUBLIC :: getGlobalNodeNumber => domain_getGlobalNodeNumber1, &
+    GENERIC, PUBLIC :: getGlobalNodeNumber => &
+      & domain_getGlobalNodeNumber1, &
       & domain_getGlobalNodeNumber2
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMesh => Domain_getTotalMesh
       !! This routine returns total number of meshes of given dimension
@@ -140,6 +152,7 @@ TYPE :: Domain_
       !! returns bounding box
     PROCEDURE, PUBLIC, PASS( Obj ) :: getNSD => Domain_getNSD
       !! Returns the spatial dimension of each physical entities
+    ! @setMethods
     PROCEDURE, PASS( obj ) :: setSparsity1 => Domain_setSparsity1
     PROCEDURE, NOPASS :: setSparsity2 => Domain_setSparsity2
     GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2
@@ -343,12 +356,88 @@ END INTERFACE
 ! - `entityNum` should not be out of bound
 
 INTERFACE
-MODULE FUNCTION Domain_getTotalNodes( obj, entityNum, dim ) RESULT( Ans )
+MODULE FUNCTION Domain_getTotalNodes( obj, dim, entityNum ) RESULT( Ans )
   CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityNum
   INTEGER( I4B ) :: ans
 END FUNCTION Domain_getTotalNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         tNodes@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+!
+!# Introduction
+!
+! This function returns the total number of nodes in a given mesh entity
+! The mesh entity is given by its ID and its dimension.
+! Here, opt = [dim, entityNum]
+!
+! This function is used for defining an operator [[.tNodes.]]
+!
+!
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+! - `entityNum` should not be out of bound
+
+INTERFACE
+MODULE FUNCTION Domain_tNodes1( obj, opt ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: opt(2)
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_tNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         tNodes@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+!
+!# Introduction
+!
+! This function returns the total number of nodes in a given mesh entity
+! The mesh entity is given by its ID and its dimension.
+!
+! This function is used for defining an operator
+! [[OPERATOR(.tNodes.)]]
+!
+!
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+
+INTERFACE
+MODULE FUNCTION Domain_tNodes2( obj, dim ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: dim
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_tNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          tNodes@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of nodes in the domain
+
+INTERFACE
+MODULE FUNCTION Domain_tNodes3( obj ) RESULT( Ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_tNodes3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -469,7 +558,8 @@ END INTERFACE
 !# Introduction
 !
 ! This returns the mesh Entity pointer.
-! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point, curve, surface, volume meshes.
+! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
+! curve, surface, volume meshes.
 ! - tag, is the number of mesh
 
 INTERFACE

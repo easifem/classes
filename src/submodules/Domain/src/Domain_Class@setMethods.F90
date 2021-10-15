@@ -17,6 +17,7 @@
 
 SUBMODULE(Domain_Class) setMethods
 USE BaseMethod
+USE DomainConnectivity_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -59,10 +60,9 @@ MODULE PROCEDURE Domain_setSparsity2
     & ivar, jvar, nsd( SIZE(domains ) )
   CLASS( Mesh_ ), POINTER :: rowMesh, colMesh
   CLASS( Domain_ ), POINTER :: rowDomain, colDomain
+  TYPE( DomainConnectivity_ ) :: domainConn
+  INTEGER( I4B ), POINTER :: nodeToNode( : )
   ! main
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "This routine is under construction, &
-    & I am currently working on domain connectivity part." )
   !> check
   DO ivar = 1, SIZE( domains )
     IF( .NOT. ASSOCIATED(domains(ivar)%ptr) ) THEN
@@ -87,6 +87,10 @@ MODULE PROCEDURE Domain_setSparsity2
     rowMeshSize=rowDomain%getTotalMesh( dim=nsd( ivar ) )
     DO jvar = 1, SIZE( domains )
       colDomain => domains( jvar )%ptr
+      CALL domainConn%DeallocateData()
+      CALL domainConn%InitiateNodeToNodeData( domain1=rowDomain, &
+        & domain2=colDomain )
+      nodeToNode => domainConn%getNodeToNodePointer()
       colMeshSize=colDomain%getTotalMesh( dim=nsd( jvar ) )
       !>
       DO rowMeshID = 1, rowMeshSize
@@ -99,10 +103,11 @@ MODULE PROCEDURE Domain_setSparsity2
           IF( ASSOCIATED( colMesh ) ) &
             & CALL rowMesh%SetSparsity( mat=mat, &
             & colMesh=colMesh, &
-            & rowLocalNodeNumber = rowDomain%local_nptrs, &
+            & nodeToNode = nodeToNode, &
+            & rowGlobalToLocalNodeNum = rowDomain%local_nptrs, &
             & rowLBOUND = LBOUND(rowDomain%local_nptrs,1), &
             & rowUBOUND = UBOUND(rowDomain%local_nptrs,1), &
-            & colLocalNodeNumber = colDomain%local_nptrs, &
+            & colGlobalToLocalNodeNum = colDomain%local_nptrs, &
             & colLBOUND = LBOUND(colDomain%local_nptrs,1), &
             & colUBOUND = UBOUND(colDomain%local_nptrs,1), &
             & ivar=ivar, jvar=jvar )
@@ -111,7 +116,8 @@ MODULE PROCEDURE Domain_setSparsity2
     END DO
   END DO
   CALL setSparsity( mat )
-  NULLIFY( rowMesh, colMesh, rowDomain, colDomain )
+  NULLIFY( rowMesh, colMesh, rowDomain, colDomain, nodeToNode )
+  CALL domainConn%DeallocateData()
 END PROCEDURE Domain_setSparsity2
 
 !----------------------------------------------------------------------------

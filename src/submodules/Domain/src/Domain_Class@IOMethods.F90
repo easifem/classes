@@ -198,7 +198,8 @@ MODULE PROCEDURE Domain_Import
   ELSE
     CALL hdf5%read( trim(dsetname%chars()), obj%tEntitiesForElements )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
-      & "tEntitiesForElements = "//trim( str(obj%tEntitiesForElements, .true.) ) )
+      & "tEntitiesForElements = "  &
+      & //trim( str(obj%tEntitiesForElements, .true.) ) )
   END IF
   !> numVolumeEntities
   dsetname=trim(group)//"/numVolumeEntities"
