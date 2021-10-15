@@ -70,7 +70,7 @@ END PROCEDURE mField_Display
 
 MODULE PROCEDURE mField_Import
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_Import"
-  TYPE( String ) :: strval, dsetname, name, matrixProp
+  TYPE( String ) :: strval, dsetname, name, matrixProp, engine
   INTEGER( I4B ) :: timeCompo, spaceCompo, fieldType
   LOGICAL( LGT ) :: restart
   TYPE( ParameterList_ ) :: param
@@ -91,10 +91,10 @@ MODULE PROCEDURE mField_Import
     CALL e%raiseError(modName//'::'//myName// &
     & 'HDF5 file does not have read permission')
   END IF
-  ! READ fieldType
-  dsetname=trim(group)//"/fieldType"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-      CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  ! fieldType
+  dsetname=TRIM(group)//"/fieldType"
+  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+      CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=strval)
       SELECT CASE( TRIM(strval%chars()) )
       CASE( "NORMAL" )
         fieldType = FIELD_TYPE_NORMAL
@@ -108,57 +108,52 @@ MODULE PROCEDURE mField_Import
   ELSE
     fieldType = FIELD_TYPE_NORMAL
   END IF
-  ! READ name
-  dsetname=trim(group)//"/name"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  ! name
+  dsetname=TRIM(group)//"/name"
+  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
   ELSE
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
+    CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=name)
   END IF
-  ! READ matrixProp
-  dsetname=trim(group)//"/matrixProp"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  ! engine
+  dsetname=TRIM(group)//"/engine"
+  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+    engine="NATIVE_SERIAL"
+  ELSE
+    CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=engine)
+  END IF
+  ! matrixProp
+  dsetname=TRIM(group)//"/matrixProp"
+  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset matrixProp should be present')
   ELSE
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=matrixProp)
+    CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=matrixProp)
   END IF
-  ! READ spaceCompo
-  dsetname=trim(group)//"/spaceCompo"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  ! spaceCompo
+  dsetname=TRIM(group)//"/spaceCompo"
+  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset spaceCompo should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=spaceCompo)
-  ! READ timeCompo
-  dsetname=trim(group)//"/timeCompo"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=timeCompo)
+  CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=spaceCompo)
+  ! timeCompo
+  dsetname=TRIM(group)//"/timeCompo"
+  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+    CALL hdf5%read(dsetname=TRIM(dsetname%chars()),vals=timeCompo)
   ELSE
     timeCompo = 1
   END IF
-  ! READ restart
-  dsetname=trim(group)//"/restart"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=restart)
-  ELSE
-    restart = .FALSE.
-  END IF
-  IF( .NOT. restart ) THEN
-    CALL FPL_INIT(); CALL param%initiate()
-    CALL setMatrixFieldParam( param=param, &
-      & name=trim(name%chars()), &
-      & matrixProp=trim(matrixProp%chars()), &
-      & spaceCompo=spaceCompo, &
-      & timeCompo = timeCompo, &
-      & fieldType = fieldType )
-    CALL obj%initiate( param=param, dom=dom )
-    CALL param%deallocateData(); CALL FPL_FINALIZE()
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// &
-    & 'At present restart option is not available, we are working on it.' )
-  END IF
+  CALL FPL_INIT(); CALL param%initiate()
+  CALL setMatrixFieldParam( param=param, &
+    & name=TRIM(name%chars()), &
+    & matrixProp=TRIM(matrixProp%chars()), &
+    & spaceCompo=spaceCompo, &
+    & timeCompo = timeCompo, &
+    & fieldType = fieldType )
+  CALL obj%initiate( param=param, dom=dom )
+  CALL param%deallocateData(); CALL FPL_FINALIZE()
 END PROCEDURE mField_Import
 
 !----------------------------------------------------------------------------
@@ -176,6 +171,8 @@ END PROCEDURE mField_ImportPmat
 MODULE PROCEDURE mField_Export
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_Export"
   TYPE( String ) :: dname
+  TYPE( DOF_ ), POINTER :: dofobj
+  INTEGER( I4B ) :: ii
 
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
@@ -195,24 +192,42 @@ MODULE PROCEDURE mField_Export
   END IF
   !> fieldType
   dname = TRIM( group ) // "/fieldType"
-  CALL hdf5%write(dsetname=trim(dname%chars()), &
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%fieldType )
   !> name
   dname = TRIM( group ) // "/name"
-  CALL hdf5%write(dsetname=trim(dname%chars()), &
-    & vals=trim(obj%name%chars()) )
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=TRIM(obj%name%chars()) )
   !> engine
   dname = TRIM( group ) // "/engine"
-  CALL hdf5%write(dsetname=trim(dname%chars()), &
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%engine)
   !> isPmatInitiated
   dname = TRIM( group ) // "/isPmatInitiated"
-  CALL hdf5%write(dsetname=trim(dname%chars()), &
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%isPmatInitiated )
+  !> dofobj
+  dofobj =>NULL()
+  dofobj => getDOFPointer(obj%mat)
+  dname = TRIM( group ) // "/tPhysicalVarNames"
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=(.tNames. dofobj) )
+  DO ii = 1, (.tNames. dofobj)
+    dname= TRIM( group ) // "/physicalVarName"//TOSTRING(ii)
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=STRING(dofobj .Names. ii) )
+  END DO
+  dname = TRIM( group ) // "/spaceCompo"
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=( .SpaceComponents. dofobj) )
+  dname = TRIM( group ) // "/timeCompo"
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=( .TimeComponents. dofobj) )
   ! > mat
   CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM( group ) // "/mat")
   !> pmat
   CALL obj%ExportPmat( hdf5=hdf5, group=group )
+  NULLIFY( dofobj )
 END PROCEDURE mField_Export
 
 !----------------------------------------------------------------------------
@@ -225,78 +240,78 @@ MODULE PROCEDURE mField_ExportPmat
   IF( obj%isPmatInitiated ) THEN
     !> pmat/pmatName
     dname = TRIM( group ) // "/pmat/pmatName"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%pmatName )
     !> pmat/nnz
     dname = TRIM( group ) // "/pmat/nnz"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%nnz )
     !> pmat/ncol
     dname = TRIM( group ) // "/pmat/ncol"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%ncol )
     !> pmat/nrow
     dname = TRIM( group ) // "/pmat/nrow"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%nrow )
     !> pmat/isInitiated
     dname = TRIM( group ) // "/pmat/isInitiated"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%isInitiated )
     !> pmat/lfil
     dname = TRIM( group ) // "/pmat/lfil"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%lfil )
     !> pmat/mbloc
     dname = TRIM( group ) // "/pmat/mbloc"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%mbloc )
     !> pmat/alpha
     dname = TRIM( group ) // "/pmat/alpha"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%alpha )
     !> pmat/droptol
     dname = TRIM( group ) // "/pmat/droptol"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%droptol )
     !> pmat/permtol
     dname = TRIM( group ) // "/pmat/permtol"
-    CALL hdf5%write(dsetname=trim(dname%chars()), &
+    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%permtol )
     !> pmat/A
     IF( ALLOCATED(obj%pmat%A) ) THEN
       dname = TRIM( group ) // "/pmat/A"
-      CALL hdf5%write(dsetname=trim(dname%chars()), &
+      CALL hdf5%write(dsetname=TRIM(dname%chars()), &
       & vals=obj%pmat%A )
     END IF
     !> pmat/JA
     IF( ALLOCATED(obj%pmat%JA) ) THEN
       dname = TRIM( group ) // "/pmat/JA"
-      CALL hdf5%write(dsetname=trim(dname%chars()), &
+      CALL hdf5%write(dsetname=TRIM(dname%chars()), &
       & vals=obj%pmat%JA )
     END IF
     !> pmat/IA
     IF( ALLOCATED(obj%pmat%IA) ) THEN
       dname = TRIM( group ) // "/pmat/IA"
-      CALL hdf5%write(dsetname=trim(dname%chars()), &
+      CALL hdf5%write(dsetname=TRIM(dname%chars()), &
       & vals=obj%pmat%IA )
     END IF
     !> pmat/JU
     IF( ALLOCATED(obj%pmat%JU) ) THEN
       dname = TRIM( group ) // "/pmat/JU"
-      CALL hdf5%write(dsetname=trim(dname%chars()), &
+      CALL hdf5%write(dsetname=TRIM(dname%chars()), &
       & vals=obj%pmat%JU )
     END IF
     !> pmat/IPERM
     IF( ALLOCATED(obj%pmat%IPERM) ) THEN
       dname = TRIM( group ) // "/pmat/IPERM"
-      CALL hdf5%write(dsetname=trim(dname%chars()), &
+      CALL hdf5%write(dsetname=TRIM(dname%chars()), &
       & vals=obj%pmat%IPERM )
     END IF
     !> pmat/LEVS
     IF( ALLOCATED(obj%pmat%LEVS) ) THEN
       dname = TRIM( group ) // "/pmat/LEVS"
-      CALL hdf5%write(dsetname=trim(dname%chars()), &
+      CALL hdf5%write(dsetname=TRIM(dname%chars()), &
       & vals=obj%pmat%LEVS )
     END IF
   END IF

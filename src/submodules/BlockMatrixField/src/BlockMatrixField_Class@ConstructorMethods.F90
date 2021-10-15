@@ -163,7 +163,7 @@ MODULE PROCEDURE mField_Initiate1
       & key="BlockMatrixField/physicalVarName"//TOSTRING(ii)))::char_var )
     ierror = param%get( key="BlockMatrixField/physicalVarName" &
       & //TOSTRING(ii), value=char_var )
-    physicalVarNames(1)(1:1) = char_var(1:1); DEALLOCATE( char_var )
+    physicalVarNames(ii)(1:1) = char_var(1:1); DEALLOCATE( char_var )
   END DO
   !> spaceCompo
   IF( param%isPresent(key="BlockMatrixField/spaceCompo") ) THEN
@@ -266,7 +266,7 @@ MODULE PROCEDURE mField_Initiate3
       & key="BlockMatrixField/physicalVarName"//TOSTRING(ii)))::char_var )
     ierror = param%get( key="BlockMatrixField/physicalVarName" &
       & //TOSTRING(ii), value=char_var )
-    physicalVarNames(1)(1:1) = char_var(1:1); DEALLOCATE( char_var )
+    physicalVarNames(ii)(1:1) = char_var(1:1); DEALLOCATE( char_var )
   END DO
   !> spaceCompo
   IF( param%isPresent(key="BlockMatrixField/spaceCompo") ) THEN
