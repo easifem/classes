@@ -56,6 +56,8 @@ MODULE PROCEDURE mField_Import
   END IF
   ! fieldType
   dsetname=TRIM(group)//"/fieldType"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
   IF( hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
       CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=strval)
       SELECT CASE( TRIM(strval%Chars()) )
@@ -73,6 +75,8 @@ MODULE PROCEDURE mField_Import
   END IF
   ! name
   dsetname=TRIM(group)//"/name"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
     CALL e%RaiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
@@ -81,6 +85,8 @@ MODULE PROCEDURE mField_Import
   END IF
   ! engine
   dsetname=TRIM(group)//"/engine"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
     engine="NATIVE_SERIAL"
   ELSE
@@ -88,14 +94,28 @@ MODULE PROCEDURE mField_Import
   END IF
   ! matrixProp
   dsetname=TRIM(group)//"/matrixProp"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
     CALL e%RaiseError(modName//'::'//myName// &
     & 'The dataset matrixProp should be present')
   ELSE
     CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=matrixProp)
   END IF
+  ! tPhysicalVarNames
+  dsetname=TRIM(group)//"/tPhysicalVarNames"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+      & 'The dataset ' // dsetname%chars() // ' should be present')
+  ELSE
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=tvar)
+  END IF
   ! spaceCompo
   dsetname=TRIM(group)//"/spaceCompo"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
     CALL e%RaiseError(modName//'::'//myName// &
     & 'The dataset spaceCompo should be present')
@@ -104,42 +124,89 @@ MODULE PROCEDURE mField_Import
   END IF
   ! timeCompo
   dsetname=TRIM(group)//"/timeCompo"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
   IF( hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
     CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=timeCompo)
   ELSE
     timeCompo = spaceCompo
     timeCompo = 1
   END IF
-  ! physicalVarNames
-  ALLOCATE( physicalVarNames( SIZE(timeCompo )) )
-  DO ii = 1, SIZE( physicalVarNames )
-    dsetname=TRIM(group)//"/physicalVarName"//TOSTRING(ii)
-    IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
-      CALL e%RaiseError(modName//'::'//myName// &
-      & 'The dataset ' // dsetname%Chars() // ' should be present')
+  !> mat
+  dsetname=TRIM(group)//"/mat"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    obj%engine=engine
+    obj%name=name
+    obj%fieldType=fieldType
+    ALLOCATE( obj%domains(tvar) )
+    IF( PRESENT( dom ) ) THEN
+      obj%domain => dom
+      DO ii = 1, tVar
+        obj%domains(ii)%ptr => dom
+      END DO
+    ELSE IF( PRESENT( domains ) ) THEN
+      obj%domain => NULL()
+      DO ii = 1, tVar
+        obj%domains(ii)%ptr => domains(ii)%ptr
+      END DO
     ELSE
-      CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()), &
-        & vals=physicalVarNames(ii))
+      CALL e%RaiseError(modName//'::'//myName// &
+        & 'Either dom or domains should be present')
     END IF
-  END DO
-  !>
-  CALL FPL_INIT(); CALL param%Initiate()
-  CALL SetBlockMatrixFieldParam( param=param, &
-    & name=TRIM(name%Chars()), &
-    & physicalVarNames = physicalVarNames, &
-    & matrixProp=TRIM(matrixProp%Chars()), &
-    & spaceCompo=spaceCompo, &
-    & timeCompo = timeCompo, &
-    & fieldType = fieldType )
-  IF( PRESENT( dom ) ) THEN
-    CALL obj%Initiate( param=param, dom=dom )
-  ELSE IF( PRESENT( domains ) ) THEN
-    CALL obj%Initiate( param=param, dom=domains )
+    CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
+    obj%isInitiated = .TRUE.
+    obj%isPmatInitiated = .FALSE.
   ELSE
-    CALL e%RaiseError(modName//'::'//myName// &
-      & 'Either dom or domains should be present')
+    ! physicalVarNames
+    ALLOCATE( physicalVarNames( tvar ))
+    DO ii = 1, tvar
+      dsetname=TRIM(group)//"/physicalVarName"//TOSTRING(ii)
+      IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+        CALL e%RaiseError(modName//'::'//myName// &
+        & 'The dataset ' // dsetname%Chars() // ' should be present')
+      ELSE
+        CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+          & "Importing "//dsetname%chars() )
+        CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()), &
+          & vals=strval)
+        physicalVarNames(ii)=strval%chars()
+      END IF
+    END DO
+    !> initiate
+    CALL FPL_INIT(); CALL param%Initiate()
+    CALL SetBlockMatrixFieldParam( param=param, &
+      & name=TRIM(name%Chars()), &
+      & physicalVarNames = physicalVarNames, &
+      & matrixProp=TRIM(matrixProp%Chars()), &
+      & spaceCompo=spaceCompo, &
+      & timeCompo = timeCompo, &
+      & fieldType = fieldType )
+    IF( PRESENT( dom ) ) THEN
+      CALL obj%Initiate( param=param, dom=dom )
+    ELSE IF( PRESENT( domains ) ) THEN
+      CALL obj%Initiate( param=param, dom=domains )
+    ELSE
+      CALL e%RaiseError(modName//'::'//myName// &
+        & 'Either dom or domains should be present')
+    END IF
+    CALL param%DeallocateData(); CALL FPL_FINALIZE()
   END IF
-  CALL param%DeallocateData(); CALL FPL_FINALIZE()
+  !> pmat
+  dsetname=TRIM(group)//"/pmat"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL obj%ImportPmat( hdf5=hdf5, group=group, dom=dom, domains=domains )
+  ELSE
+    CALL e%RaiseDebug(modName//"::"//myName//" - "// &
+      & "This routine needs further attention" )
+  END IF
+  !> cleanup
+  IF( ALLOCATED( spaceCompo ) ) DEALLOCATE( spaceCompo )
+  IF( ALLOCATED( timeCompo ) ) DEALLOCATE( timeCompo )
+  IF( ALLOCATED( physicalVarNames ) ) DEALLOCATE( physicalVarNames )
 END PROCEDURE mField_Import
 
 END SUBMODULE IOMethods

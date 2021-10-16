@@ -148,14 +148,14 @@ MODULE PROCEDURE mField_Import
     timeCompo = 1
   END IF
   CALL FPL_INIT(); CALL param%initiate()
-  CALL setMatrixFieldParam( param=param, &
+  CALL SetMatrixFieldParam( param=param, &
     & name=TRIM(name%chars()), &
     & matrixProp=TRIM(matrixProp%chars()), &
     & spaceCompo=spaceCompo(1), &
     & timeCompo = timeCompo(1), &
     & fieldType = fieldType )
-  CALL obj%initiate( param=param, dom=dom )
-  CALL param%deallocateData(); CALL FPL_FINALIZE()
+  CALL obj%Initiate( param=param, dom=dom )
+  CALL param%DeallocateData(); CALL FPL_FINALIZE()
 END PROCEDURE mField_Import
 
 !----------------------------------------------------------------------------
@@ -195,11 +195,15 @@ MODULE PROCEDURE mField_Export
   !> fieldType
   dname = TRIM( group ) // "/fieldType"
   CALL hdf5%write(dsetname=TRIM(dname%chars()), &
-    & vals=obj%fieldType )
+    & vals=STRING(FIELD_TYPE_NAME(obj%fieldType)) )
   !> name
   dname = TRIM( group ) // "/name"
   CALL hdf5%write(dsetname=TRIM(dname%chars()), &
-    & vals=TRIM(obj%name%chars()) )
+    & vals=obj%name )
+  !> matrixProp
+  dname = TRIM( group ) // "/matrixProp"
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=STRING( .MatrixProp. obj%mat) )
   !> engine
   dname = TRIM( group ) // "/engine"
   CALL hdf5%write(dsetname=TRIM(dname%chars()), &
@@ -225,7 +229,7 @@ MODULE PROCEDURE mField_Export
   dname = TRIM( group ) // "/timeCompo"
   CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=( .TimeComponents. dofobj) )
-  ! > mat
+  !> mat
   CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM( group ) // "/mat")
   !> pmat
   CALL obj%ExportPmat( hdf5=hdf5, group=group )
