@@ -198,7 +198,8 @@ MODULE PROCEDURE mField_Import
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
   IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
-    CALL obj%ImportPmat( hdf5=hdf5, group=group, dom=dom, domains=domains )
+    CALL obj%ImportPmat( hdf5=hdf5, group=dsetname%chars(), &
+      & dom=dom, domains=domains )
   ELSE
     CALL e%RaiseDebug(modName//"::"//myName//" - "// &
       & "This routine needs further attention" )

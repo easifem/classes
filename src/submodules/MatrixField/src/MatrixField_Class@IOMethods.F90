@@ -147,15 +147,44 @@ MODULE PROCEDURE mField_Import
     timeCompo = spaceCompo
     timeCompo = 1
   END IF
-  CALL FPL_INIT(); CALL param%initiate()
-  CALL SetMatrixFieldParam( param=param, &
-    & name=TRIM(name%chars()), &
-    & matrixProp=TRIM(matrixProp%chars()), &
-    & spaceCompo=spaceCompo(1), &
-    & timeCompo = timeCompo(1), &
-    & fieldType = fieldType )
-  CALL obj%Initiate( param=param, dom=dom )
-  CALL param%DeallocateData(); CALL FPL_FINALIZE()
+  !> mat
+  dsetname=TRIM(group)//"/mat"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    obj%engine=engine
+    obj%name=name
+    obj%fieldType=fieldType
+    IF( PRESENT( dom ) ) THEN
+      obj%domain => dom
+    ELSE
+      CALL e%RaiseError(modName//'::'//myName// &
+        & 'Either dom should be present')
+    END IF
+    CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
+    obj%isInitiated = .TRUE.
+    obj%isPmatInitiated = .FALSE.
+  ELSE
+    CALL FPL_INIT(); CALL param%initiate()
+    CALL SetMatrixFieldParam( param=param, &
+      & name=TRIM(name%chars()), &
+      & matrixProp=TRIM(matrixProp%chars()), &
+      & spaceCompo=spaceCompo(1), &
+      & timeCompo = timeCompo(1), &
+      & fieldType = fieldType )
+    CALL obj%Initiate( param=param, dom=dom )
+    CALL param%DeallocateData(); CALL FPL_FINALIZE()
+  END IF
+  dsetname=TRIM(group)//"/pmat"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL obj%ImportPmat( hdf5=hdf5, group=dsetname%chars(), &
+      & dom=dom, domains=domains )
+  ELSE
+    CALL e%RaiseDebug(modName//"::"//myName//" - "// &
+      & "This routine needs further attention" )
+  END IF
 END PROCEDURE mField_Import
 
 !----------------------------------------------------------------------------
@@ -164,6 +193,108 @@ END PROCEDURE mField_Import
 
 MODULE PROCEDURE mField_ImportPmat
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_ImportPmat"
+  TYPE( String ) :: dsetname
+  !> main
+  !> info
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing an Instance of MatrixFieldPrecondition_")
+  obj%isPmatInitiated = .TRUE.
+  !> pmatName
+  dsetname = TRIM( group ) // "/pmatName"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%pmatName )
+  END IF
+  !> nnz
+  dsetname = TRIM( group ) // "/nnz"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%nnz )
+  END IF
+  !> ncol
+  dsetname = TRIM( group ) // "/ncol"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%ncol )
+  END IF
+  !> nrow
+  dsetname = TRIM( group ) // "/nrow"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%nrow )
+  END IF
+  !> isInitiated
+  dsetname = TRIM( group ) // "/isInitiated"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%isInitiated )
+  END IF
+  !> lfil
+  dsetname = TRIM( group ) // "/lfil"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%lfil )
+  END IF
+  !> mbloc
+  dsetname = TRIM( group ) // "/mbloc"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%mbloc )
+  END IF
+  !> alpha
+  dsetname = TRIM( group ) // "/alpha"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%alpha )
+  END IF
+  !> droptol
+  dsetname = TRIM( group ) // "/droptol"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%droptol )
+  END IF
+  !> permtol
+  dsetname = TRIM( group ) // "/permtol"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%permtol )
+  END IF
+  !> A
+  dsetname = TRIM( group ) // "/A"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%A )
+  END IF
+  !> JA
+  dsetname = TRIM( group ) // "/JA"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%JA )
+  END IF
+  !> IA
+  dsetname = TRIM( group ) // "/IA"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%IA )
+  END IF
+  !> JU
+  dsetname = TRIM( group ) // "/JU"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%JU )
+  END IF
+  !> IPERM
+  dsetname = TRIM( group ) // "/IPERM"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%IPERM )
+  END IF
+  !> LEVS
+  dsetname = TRIM( group ) // "/LEVS"
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%chars()), &
+    & vals=obj%pmat%LEVS )
+  END IF
 END PROCEDURE mField_ImportPmat
 
 !----------------------------------------------------------------------------
