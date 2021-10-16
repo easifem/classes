@@ -222,12 +222,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Import( obj, hdf5, group, dom )
-  IMPORT :: AbstractField_, I4B, HDF5File_, Domain_
+SUBROUTINE aField_Import( obj, hdf5, group, dom, domains )
+  IMPORT :: AbstractField_, I4B, HDF5File_, Domain_, DomainPointer_
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE aField_Import
 END INTERFACE
 

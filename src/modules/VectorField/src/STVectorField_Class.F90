@@ -341,11 +341,12 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE stvField_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE stvField_Import( obj, hdf5, group, dom, domains )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE stvField_Import
 END INTERFACE
 
@@ -375,7 +376,11 @@ END INTERFACE
 !
 !# Introduction
 ! This routine sets the single entry of the STvector field. Here,
-! `value` is a two dimensional array of real numbers, denoting the space-time components of the vector. The first index denotes the space components, second index denotes the time-components. As a result, total number of rows and columns in `value` are equal to the total number of spaceCompo and timeCompo.
+! `value` is a two dimensional array of real numbers, denoting the space-time
+! components of the vector. The first index denotes the space components,
+! second index denotes the time-components. As a result, total number of rows
+! and columns in `value` are equal to the total number of spaceCompo and
+! timeCompo.
 !
 ! STvector( :, :, globalNode ) = value( :, : )
 
@@ -397,7 +402,11 @@ END INTERFACE
 !
 !# Introduction
 ! This routine sets all entries of the STvector field. Here,
-! `value` is a two dimensional array of real numbers, denoting the space-time components of the vector. The first index denotes the space components, second index denotes the time-components. As a result, total number of rows and columns in `value` are equal to the total number of spaceCompo and timeCompo.
+! `value` is a two dimensional array of real numbers, denoting the space-time
+! components of the vector. The first index denotes the space components,
+! second index denotes the time-components. As a result, total number of rows
+! and columns in `value` are equal to the total number of spaceCompo and
+! timeCompo.
 !
 ! STvector( :, :, i ) = value( :, : ), for i = 1, tNodes
 

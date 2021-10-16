@@ -135,8 +135,12 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
       !! Display the field
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => mField_Import
       !! Import from hdf5 file
+    PROCEDURE, PUBLIC, PASS( obj ) :: ImportPmat => mField_ImportPmat
+      !! Import from hdf5 file
     PROCEDURE, PUBLIC, PASS( obj ) :: Export => mField_Export
       !! export matrix field in hdf5file_
+    PROCEDURE, PUBLIC, PASS( obj ) :: ExportPmat => mField_ExportPmat
+      !! export PMat
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => mField_Size
       !! Returns the size of the matrix
     PROCEDURE, PUBLIC, PASS( obj ) :: Shape => mField_Shape
@@ -412,7 +416,7 @@ END SUBROUTINE mField_DeallocateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                Display@IO
+!                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -428,7 +432,7 @@ END SUBROUTINE mField_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                Import@IO
+!                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -436,16 +440,35 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom, domains )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE mField_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                Export@IO
+!                                                           Import@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine Imports the content of matrix field from hdf5file
+
+INTERFACE
+MODULE SUBROUTINE mField_ImportPmat( obj, hdf5, group, dom, domains )
+  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
+END SUBROUTINE mField_ImportPmat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Export@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -461,7 +484,23 @@ END SUBROUTINE mField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   SPY@IO
+!                                                       ExportPmat@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine ExportPmats the content of matrixfield_ to hdf5 file
+
+INTERFACE
+MODULE SUBROUTINE mField_ExportPmat( obj, hdf5, group )
+  CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE mField_ExportPmat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              SPY@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

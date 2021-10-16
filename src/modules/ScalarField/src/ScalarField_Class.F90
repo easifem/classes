@@ -292,11 +292,12 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE sField_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE sField_Import( obj, hdf5, group, dom, domains )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE sField_Import
 END INTERFACE
 

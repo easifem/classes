@@ -337,11 +337,12 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE vField_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE vField_Import( obj, hdf5, group, dom, domains )
   CLASS( VectorField_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
+  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
+  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
 END SUBROUTINE vField_Import
 END INTERFACE
 

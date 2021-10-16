@@ -79,6 +79,8 @@ MODULE PROCEDURE mField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Matrix field object is already initiated')
   CALL obj%checkEssentialParam(param)
+  !> engine
+  obj%engine="NATIVE_SERIAL"
   !> name
   ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes(  &
     & key="MatrixField/name" ) ) :: char_var )
@@ -143,6 +145,7 @@ MODULE PROCEDURE mField_Initiate2
     obj%fieldType = obj2%fieldType
     obj%mat = obj2%mat
     obj%isPmatInitiated = .FALSE.
+    obj%engine=obj2%engine
   END SELECT
 END PROCEDURE mField_Initiate2
 
@@ -163,6 +166,7 @@ END PROCEDURE mField_Initiate3
 MODULE PROCEDURE mField_DeallocateData
   INTEGER( I4B ) :: ii
   obj%name = ''
+  obj%engine=""
   CALl DeallocateData( obj%mat )
   CALL DeallocateData( obj%Pmat )
   obj%isInitiated = .FALSE.

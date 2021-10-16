@@ -26,246 +26,188 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_Display
-  INTEGER( I4B ) :: ii
-  !> main
-  IF( .NOT. obj%isInitiated ) THEN
-    CALL Display( "BlockMatrixField is not initiated", unitNo=unitNo )
-    RETURN
-  END IF
-  CALL Display( "#"//TRIM(msg), unitNo=unitNo )
-  CALL Display( obj%name//'',  msg="# name : ", unitNo=unitNo )
-  CALL Display( obj%fieldType, msg='# fieldType : ', unitNo=unitNo )
-  CALL Display( obj%engine, msg='# engine : ', unitNo=unitNo )
-  IF( ASSOCIATED( obj%domain ) ) THEN
-    CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
-  ELSE
-    CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
-  END IF
-  IF( ALLOCATED( obj%domains ) ) THEN
-    CALL Display( "# domains : ALLOCATED [" &
-      & // TOSTRING(SIZE(obj%domains)) &
-      & // "]", unitNo=unitNo )
-    DO ii = 1, SIZE( obj%domains )
-      IF( ASSOCIATED(obj%domains(ii)%ptr) ) THEN
-        CALL Display( "# domains(" // TOSTRING(ii) &
-          & // ")%ptr : ASSOCIATED", unitNo=unitNo )
-      ELSE
-        CALL Display( "# domains(" // TOSTRING(ii)  &
-          & // ")%ptr : NOT ASSOCIATED", unitNo=unitNo )
-      END IF
-    END DO
-  ELSE
-    CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
-  END IF
-  ! CALL Display( obj%mat, msg="# mat : ", unitNo=unitNo )
-END PROCEDURE mField_Display
-
-!----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Import
-  ! CHARACTER( LEN = * ), PARAMETER :: myName="mField_Import"
-  ! TYPE( String ) :: strval, dsetname, name, matrixProp
-  ! INTEGER( I4B ) :: timeCompo, spaceCompo, fieldType
-  ! LOGICAL( LGT ) :: restart
-  ! TYPE( ParameterList_ ) :: param
-  ! ! main program
-  ! IF( obj%isInitiated ) &
-  !   & CALL e%raiseError(modName//'::'//myName// " - "// &
-  !   & 'Matrix field object is already initiated')
-  ! !> print info
-  ! CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  !   & "IMPORTING MATRIX FIELD")
-  ! !> check
-  ! IF( .NOT. hdf5%isOpen() ) THEN
-  !   CALL e%raiseError(modName//'::'//myName// &
-  !   & 'HDF5 file is not opened')
-  ! END IF
-  ! !> check
-  ! IF( .NOT. hdf5%isRead() ) THEN
-  !   CALL e%raiseError(modName//'::'//myName// &
-  !   & 'HDF5 file does not have read permission')
-  ! END IF
-  ! ! READ fieldType
-  ! dsetname=trim(group)//"/fieldType"
-  ! IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-  !     CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
-  !     SELECT CASE( TRIM(strval%chars()) )
-  !     CASE( "NORMAL" )
-  !       fieldType = FIELD_TYPE_NORMAL
-  !     CASE( "CONSTANT" )
-  !       fieldType = FIELD_TYPE_CONSTANT
-  !     CASE( "CONSTANT_SPACE" )
-  !       fieldType = FIELD_TYPE_CONSTANT_SPACE
-  !     CASE( "CONSTANT_TIME" )
-  !       fieldType = FIELD_TYPE_CONSTANT_TIME
-  !     END SELECT
-  ! ELSE
-  !   fieldType = FIELD_TYPE_NORMAL
-  ! END IF
-  ! ! READ name
-  ! dsetname=trim(group)//"/name"
-  ! IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
-  !   CALL e%raiseError(modName//'::'//myName// &
-  !   & 'The dataset name should be present')
-  ! END IF
-  ! CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
-  ! ! READ matrixProp
-  ! dsetname=trim(group)//"/matrixProp"
-  ! IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
-  !   CALL e%raiseError(modName//'::'//myName// &
-  !   & 'The dataset matrixProp should be present')
-  ! END IF
-  ! CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=matrixProp)
-  ! ! READ spaceCompo
-  ! dsetname=trim(group)//"/spaceCompo"
-  ! IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
-  !   CALL e%raiseError(modName//'::'//myName// &
-  !   & 'The dataset spaceCompo should be present')
-  ! END IF
-  ! CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=spaceCompo)
-  ! ! READ timeCompo
-  ! dsetname=trim(group)//"/timeCompo"
-  ! IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-  !   CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=timeCompo)
-  ! ELSE
-  !   timeCompo = 1
-  ! END IF
-  ! ! READ restart
-  ! dsetname=trim(group)//"/restart"
-  ! IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-  !   CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=restart)
-  ! ELSE
-  !   restart = .FALSE.
-  ! END IF
-  ! IF( .NOT. restart ) THEN
-  !   CALL FPL_INIT(); CALL param%initiate()
-  !   CALL setMatrixFieldParam( param=param, &
-  !     & name=trim(name%chars()), &
-  !     & matrixProp=trim(matrixProp%chars()), &
-  !     & spaceCompo=spaceCompo, &
-  !     & timeCompo = timeCompo, &
-  !     & fieldType = fieldType )
-  !   CALL obj%initiate( param=param, dom=dom )
-  !   CALL param%deallocateData(); CALL FPL_FINALIZE()
-  ! ELSE
-  !   CALL e%raiseError(modName//'::'//myName// &
-  !   & 'At present restart option is not available, we are working on it.' )
-  ! END IF
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_Import"
+  TYPE( String ) :: strval, dsetname, name, matrixProp, engine
+  INTEGER( I4B ), ALLOCATABLE :: timeCompo(:), spaceCompo(:)
+  INTEGER( I4B ) :: fieldType, ii, tvar
+  CHARACTER( LEN = 1 ), ALLOCATABLE :: physicalVarNames( : )
+
+  TYPE( ParameterList_ ) :: param
+  ! main program
+  IF( obj%IsInitiated ) &
+    & CALL e%RaiseError(modName//'::'//myName// " - "// &
+    & 'The instance of BloclMatrixField_ is already initiated')
+  !> print info
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing an Instance of BlockMatrixField_")
+  !> check
+  IF( .NOT. hdf5%IsOpen() ) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+    & 'HDF5 file is not opened')
+  END IF
+  !> check
+  IF( .NOT. hdf5%IsRead() ) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+    & 'HDF5 file does not have read permission')
+  END IF
+  ! fieldType
+  dsetname=TRIM(group)//"/fieldType"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+      CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=strval)
+      SELECT CASE( TRIM(strval%Chars()) )
+      CASE( "NORMAL" )
+        fieldType = FIELD_TYPE_NORMAL
+      CASE( "CONSTANT" )
+        fieldType = FIELD_TYPE_CONSTANT
+      CASE( "CONSTANT_SPACE" )
+        fieldType = FIELD_TYPE_CONSTANT_SPACE
+      CASE( "CONSTANT_TIME" )
+        fieldType = FIELD_TYPE_CONSTANT_TIME
+      END SELECT
+  ELSE
+    fieldType = FIELD_TYPE_NORMAL
+  END IF
+  ! name
+  dsetname=TRIM(group)//"/name"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+    & 'The dataset name should be present')
+  ELSE
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=name)
+  END IF
+  ! engine
+  dsetname=TRIM(group)//"/engine"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    engine="NATIVE_SERIAL"
+  ELSE
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=engine)
+  END IF
+  ! matrixProp
+  dsetname=TRIM(group)//"/matrixProp"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+    & 'The dataset matrixProp should be present')
+  ELSE
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=matrixProp)
+  END IF
+  ! tPhysicalVarNames
+  dsetname=TRIM(group)//"/tPhysicalVarNames"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+      & 'The dataset ' // dsetname%chars() // ' should be present')
+  ELSE
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=tvar)
+  END IF
+  ! spaceCompo
+  dsetname=TRIM(group)//"/spaceCompo"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    CALL e%RaiseError(modName//'::'//myName// &
+    & 'The dataset spaceCompo should be present')
+  ELSE
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=spaceCompo)
+  END IF
+  ! timeCompo
+  dsetname=TRIM(group)//"/timeCompo"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=timeCompo)
+  ELSE
+    timeCompo = spaceCompo
+    timeCompo = 1
+  END IF
+  !> mat
+  dsetname=TRIM(group)//"/mat"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    obj%engine=engine
+    obj%name=name
+    obj%fieldType=fieldType
+    ALLOCATE( obj%domains(tvar) )
+    IF( PRESENT( dom ) ) THEN
+      obj%domain => dom
+      DO ii = 1, tVar
+        obj%domains(ii)%ptr => dom
+      END DO
+    ELSE IF( PRESENT( domains ) ) THEN
+      obj%domain => NULL()
+      DO ii = 1, tVar
+        obj%domains(ii)%ptr => domains(ii)%ptr
+      END DO
+    ELSE
+      CALL e%RaiseError(modName//'::'//myName// &
+        & 'Either dom or domains should be present')
+    END IF
+    CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
+    obj%isInitiated = .TRUE.
+    obj%isPmatInitiated = .FALSE.
+  ELSE
+    ! physicalVarNames
+    ALLOCATE( physicalVarNames( tvar ))
+    DO ii = 1, tvar
+      dsetname=TRIM(group)//"/physicalVarName"//TOSTRING(ii)
+      IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+        CALL e%RaiseError(modName//'::'//myName// &
+        & 'The dataset ' // dsetname%Chars() // ' should be present')
+      ELSE
+        CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+          & "Importing "//dsetname%chars() )
+        CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()), &
+          & vals=strval)
+        physicalVarNames(ii)=strval%chars()
+      END IF
+    END DO
+    !> initiate
+    CALL FPL_INIT(); CALL param%Initiate()
+    CALL SetBlockMatrixFieldParam( param=param, &
+      & name=TRIM(name%Chars()), &
+      & physicalVarNames = physicalVarNames, &
+      & matrixProp=TRIM(matrixProp%Chars()), &
+      & spaceCompo=spaceCompo, &
+      & timeCompo = timeCompo, &
+      & fieldType = fieldType )
+    IF( PRESENT( dom ) ) THEN
+      CALL obj%Initiate( param=param, dom=dom )
+    ELSE IF( PRESENT( domains ) ) THEN
+      CALL obj%Initiate( param=param, dom=domains )
+    ELSE
+      CALL e%RaiseError(modName//'::'//myName// &
+        & 'Either dom or domains should be present')
+    END IF
+    CALL param%DeallocateData(); CALL FPL_FINALIZE()
+  END IF
+  !> pmat
+  dsetname=TRIM(group)//"/pmat"
+  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+    & "Importing "//dsetname%chars() )
+  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+    CALL obj%ImportPmat( hdf5=hdf5, group=dsetname%chars(), &
+      & dom=dom, domains=domains )
+  ELSE
+    CALL e%RaiseDebug(modName//"::"//myName//" - "// &
+      & "This routine needs further attention" )
+  END IF
+  !> cleanup
+  IF( ALLOCATED( spaceCompo ) ) DEALLOCATE( spaceCompo )
+  IF( ALLOCATED( timeCompo ) ) DEALLOCATE( timeCompo )
+  IF( ALLOCATED( physicalVarNames ) ) DEALLOCATE( physicalVarNames )
 END PROCEDURE mField_Import
-
-!----------------------------------------------------------------------------
-!                                                                 Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_Export
-  ! CHARACTER( LEN = * ), PARAMETER :: myName="mField_Export"
-  ! TYPE( String ) :: dname
-
-  ! IF( .NOT. obj%isInitiated ) &
-  !   & CALL e%raiseError(modName//'::'//myName// " - "// &
-  !   & 'Matrix field is not initiated')
-  ! !> check if group exists or not
-  ! dname = TRIM( group ) // "/fieldType"
-  ! CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%fieldType )
-  ! dname = TRIM( group ) // "/name"
-  ! CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=trim(obj%name%chars()) )
-  ! dname = TRIM( group ) // "/isPmatInitiated"
-  ! CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%isPmatInitiated )
-  ! CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM( group ) // "/mat")
-  ! IF( obj%isPmatInitiated ) THEN
-  !   dname = TRIM( group ) // "/pmat/pmatName"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%pmatName )
-
-  !   dname = TRIM( group ) // "/pmat/nnz"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%nnz )
-
-  !   dname = TRIM( group ) // "/pmat/ncol"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%ncol )
-
-  !   dname = TRIM( group ) // "/pmat/nrow"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%nrow )
-
-  !   dname = TRIM( group ) // "/pmat/isInitiated"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%isInitiated )
-
-  !   dname = TRIM( group ) // "/pmat/lfil"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%lfil )
-
-  !   dname = TRIM( group ) // "/pmat/mbloc"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%mbloc )
-
-  !   dname = TRIM( group ) // "/pmat/alpha"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%alpha )
-
-  !   dname = TRIM( group ) // "/pmat/droptol"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%droptol )
-
-  !   dname = TRIM( group ) // "/pmat/permtol"
-  !   CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !   & vals=obj%pmat%permtol )
-
-  !   IF( ALLOCATED(obj%pmat%A) ) THEN
-  !     dname = TRIM( group ) // "/pmat/A"
-  !     CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !     & vals=obj%pmat%A )
-  !   END IF
-
-  !   IF( ALLOCATED(obj%pmat%JA) ) THEN
-  !     dname = TRIM( group ) // "/pmat/JA"
-  !     CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !     & vals=obj%pmat%JA )
-  !   END IF
-
-  !   IF( ALLOCATED(obj%pmat%IA) ) THEN
-  !     dname = TRIM( group ) // "/pmat/IA"
-  !     CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !     & vals=obj%pmat%IA )
-  !   END IF
-
-  !   IF( ALLOCATED(obj%pmat%JU) ) THEN
-  !     dname = TRIM( group ) // "/pmat/JU"
-  !     CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !     & vals=obj%pmat%JU )
-  !   END IF
-
-  !   IF( ALLOCATED(obj%pmat%IPERM) ) THEN
-  !     dname = TRIM( group ) // "/pmat/IPERM"
-  !     CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !     & vals=obj%pmat%IPERM )
-  !   END IF
-
-  !   IF( ALLOCATED(obj%pmat%LEVS) ) THEN
-  !     dname = TRIM( group ) // "/pmat/LEVS"
-  !     CALL hdf5%write(dsetname=trim(dname%chars()), &
-  !     & vals=obj%pmat%LEVS )
-  !   END IF
-  ! END IF
-END PROCEDURE mField_Export
-
-!----------------------------------------------------------------------------
-!                                                                      SPY
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_SPY
-  CALL SPY( obj=obj%mat, filename=filename, ext=ext )
-END PROCEDURE mField_SPY
 
 END SUBMODULE IOMethods

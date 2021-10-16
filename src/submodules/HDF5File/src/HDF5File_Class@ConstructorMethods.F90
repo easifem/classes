@@ -250,7 +250,7 @@ MODULE PROCEDURE hdf5_initiate
         & ' - HDF5 file '//filename//' is being opened with '// &
         & 'mode WRITE but does not exist.')
     ENDIF
-  CASE( 'OVERWRITE' )
+  CASE( 'OVERWRITE', 'READWRITE' )
     INQUIRE( FILE=filename, EXIST=exists )
     IF( exists ) THEN
       CALL obj%setWriteStat( .TRUE. )

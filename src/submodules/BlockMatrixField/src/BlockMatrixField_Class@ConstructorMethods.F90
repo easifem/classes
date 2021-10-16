@@ -18,7 +18,7 @@
 ! date: 16 July 2021
 ! summary: This module contains constructor method for [[BlockMatrixField_]]
 
-SUBMODULE(BlockMatrixField_Class) Constructor
+SUBMODULE(BlockMatrixField_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -65,8 +65,8 @@ END PROCEDURE setBlockMatrixFieldParam
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_checkEssentialParam
-  CHARACTER( LEN = * ), PARAMETER :: myName = "mField_checkEssentialParam"
+MODULE PROCEDURE bmField_checkEssentialParam
+  CHARACTER( LEN = * ), PARAMETER :: myName = "bmField_checkEssentialParam"
   INTEGER( I4B ) :: ii, n
   IF( .NOT. param%isPresent(key="BlockMatrixField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
@@ -103,30 +103,7 @@ MODULE PROCEDURE mField_checkEssentialParam
       & // ' should be present in param')
     END IF
   END DO
-END PROCEDURE mField_checkEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                            DeallocateData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Pmat_DeallocateData
-  obj%PmatName = 0
-  IF( ALLOCATED( obj%A ) ) DEALLOCATE( obj%A )
-  IF( ALLOCATED( obj%JA ) ) DEALLOCATE( obj%JA )
-  IF( ALLOCATED( obj%IA ) ) DEALLOCATE( obj%IA )
-  IF( ALLOCATED( obj%JU ) ) DEALLOCATE( obj%JU )
-  IF( ALLOCATED( obj%IPERM ) ) DEALLOCATE( obj%IPERM )
-  IF( ALLOCATED( obj%LEVS ) ) DEALLOCATE( obj%LEVS )
-  obj%nnz = 0
-  obj%ncol = 0
-  obj%nrow = 0
-  obj%isInitiated = .FALSE.
-  obj%lfil = 0
-  obj%mbloc = 0
-  obj%alpha = 0
-  obj%droptol = 0
-  obj%permtol = 0
-END PROCEDURE Pmat_DeallocateData
+END PROCEDURE bmField_checkEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                            DeallocateData
@@ -186,7 +163,7 @@ MODULE PROCEDURE mField_Initiate1
       & key="BlockMatrixField/physicalVarName"//TOSTRING(ii)))::char_var )
     ierror = param%get( key="BlockMatrixField/physicalVarName" &
       & //TOSTRING(ii), value=char_var )
-    physicalVarNames(1)(1:1) = char_var(1:1); DEALLOCATE( char_var )
+    physicalVarNames(ii)(1:1) = char_var(1:1); DEALLOCATE( char_var )
   END DO
   !> spaceCompo
   IF( param%isPresent(key="BlockMatrixField/spaceCompo") ) THEN
@@ -289,7 +266,7 @@ MODULE PROCEDURE mField_Initiate3
       & key="BlockMatrixField/physicalVarName"//TOSTRING(ii)))::char_var )
     ierror = param%get( key="BlockMatrixField/physicalVarName" &
       & //TOSTRING(ii), value=char_var )
-    physicalVarNames(1)(1:1) = char_var(1:1); DEALLOCATE( char_var )
+    physicalVarNames(ii)(1:1) = char_var(1:1); DEALLOCATE( char_var )
   END DO
   !> spaceCompo
   IF( param%isPresent(key="BlockMatrixField/spaceCompo") ) THEN
@@ -331,4 +308,4 @@ MODULE PROCEDURE mField_Initiate3
   IF( ALLOCATED( physicalVarNames ) ) DEALLOCATE( physicalVarNames )
 END PROCEDURE mField_Initiate3
 
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods
