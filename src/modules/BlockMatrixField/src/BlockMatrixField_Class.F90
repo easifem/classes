@@ -75,10 +75,6 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
       !! Deallocate the field
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => mField_Import
       !! Import from hdf5 file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Size => mField_Size
-      !! Returns the size of the matrix
-    PROCEDURE, PUBLIC, PASS( obj ) :: Shape => mField_Shape
-      !! Returns the shape of the matrix
     PROCEDURE, PASS( obj ) :: Matvec1 => mField_Matvec1
       !! Matrix vector multiplication, here vector is fortran array
     PROCEDURE, PASS( obj ) :: Matvec2 => mField_Matvec2
@@ -384,37 +380,6 @@ MODULE SUBROUTINE mField_Import( obj, hdf5, group, dom, domains )
   TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
   TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains( : )
 END SUBROUTINE mField_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Size@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine returns the SIZE of the matrix
-
-INTERFACE
-MODULE FUNCTION mField_Size( obj, dim ) RESULT( ans )
-  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dim
-  INTEGER( I4B ) :: ans
-END FUNCTION mField_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Shape@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine returns the shape of the matrix
-
-INTERFACE
-MODULE FUNCTION mField_Shape( obj ) RESULT( ans )
-  CLASS( BlockMatrixField_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans( 2 )
-END FUNCTION mField_Shape
 END INTERFACE
 
 !----------------------------------------------------------------------------
