@@ -49,7 +49,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => stsField_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => stsField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+    & stsField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stsField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stsField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stsField_Display
@@ -81,7 +82,6 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
     !! set values to a STScalar by using triplet
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
     & set7, set8, set9, set10, set11, set12
-
   PROCEDURE, PASS( obj ) :: get1 => stsField_get1
   PROCEDURE, PASS( obj ) :: get2 => stsField_get2
   PROCEDURE, PASS( obj ) :: get3 => stsField_get3

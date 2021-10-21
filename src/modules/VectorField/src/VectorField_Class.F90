@@ -49,7 +49,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => vField_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => vField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+    & vField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => vField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => vField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => vField_Display

@@ -37,7 +37,8 @@ MODULE PROCEDURE setVectorFieldParam
   INTEGER( I4B ) :: ierr
   ierr = param%set( key="VectorField/name", value=trim(name) )
   ierr = param%set( key="VectorField/spaceCompo", value=spaceCompo )
-  ierr = param%set( key="VectorField/fieldType", value=INPUT(default=FIELD_TYPE_NORMAL, option=fieldType) )
+  ierr = param%set( key="VectorField/fieldType",  &
+    & value=INPUT(default=FIELD_TYPE_NORMAL, option=fieldType) )
 END PROCEDURE setVectorFieldParam
 
 !----------------------------------------------------------------------------
@@ -72,7 +73,8 @@ MODULE PROCEDURE vField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Vector field object is already initiated')
   CALL obj%checkEssentialParam(param)
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="VectorField/name" ) ) :: char_var )
+  ALLOCATE( CHARACTER( LEN = &
+    & param%DataSizeInBytes( key="VectorField/name" ) ) :: char_var )
   ierr = param%get( key="VectorField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
@@ -94,9 +96,9 @@ MODULE PROCEDURE vField_Initiate1
     tNodes = obj%domain%getTotalNodes()
     obj%tSize = tNodes( 1 ) * obj%spaceCompo
   END IF
-  CALL initiate( obj=obj%dof, tNodes=tNodes, names=names_char, &
+  CALL Initiate( obj=obj%dof, tNodes=tNodes, names=names_char, &
     & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
-  CALL initiate( obj%realVec, obj%dof )
+  CALL Initiate( obj%realVec, obj%dof )
   obj%isInitiated = .TRUE.
   IF( ALLOCATED( char_var ) ) DEALLOCATE( char_var )
 END PROCEDURE vField_Initiate1
@@ -116,15 +118,8 @@ END PROCEDURE vField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="vField_DeallocateData"
-  obj%tSize = 0_I4B
-  obj%name = ''
   obj%spaceCompo = 0_I4B
-  obj%isInitiated = .FALSE.
-  obj%fieldType = FIELD_TYPE_CONSTANT
-  CALL DeallocateData( obj%realvec )
-  CALL DeallocateData( obj%dof )
-  NULLIFY( obj%domain )
+  CALL AbstractNodeFieldDeallocateData(obj)
 END PROCEDURE vField_DeallocateData
 
 !----------------------------------------------------------------------------
