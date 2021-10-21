@@ -49,21 +49,23 @@ MODULE PROCEDURE bnField_Display
   ELSE
     CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
   END IF
-  IF( ALLOCATED( obj%domains )  ) THEN
-    CALL Display( "# domains : ALLOCATED", unitNo=unitNo )
-    DO ii = 1, SIZE(obj%domains)
-      IF( ASSOCIATED( obj%domains(ii)%ptr )  ) THEN
-        CALL Display( "# domains("//TOSTRING(ii)//"): ASSOCIATED", &
-          & unitNo=unitNo )
+  IF( ALLOCATED( obj%domains ) ) THEN
+    CALL Display( "# domains : ALLOCATED [" &
+      & // TOSTRING(SIZE(obj%domains)) &
+      & // "]", unitNo=unitNo )
+    DO ii = 1, SIZE( obj%domains )
+      IF( ASSOCIATED(obj%domains(ii)%ptr) ) THEN
+        CALL Display( "# domains(" // TOSTRING(ii) &
+          & // ")%ptr : ASSOCIATED", unitNo=unitNo )
       ELSE
-        CALL Display( "# domains("//TOSTRING(ii)//"): NOT ASSOCIATED", &
-          & unitNo=unitNo )
+        CALL Display( "# domains(" // TOSTRING(ii)  &
+          & // ")%ptr : NOT ASSOCIATED", unitNo=unitNo )
       END IF
     END DO
   ELSE
     CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
   END IF
-  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
+  ! CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
 END PROCEDURE bnField_Display
 
 !----------------------------------------------------------------------------

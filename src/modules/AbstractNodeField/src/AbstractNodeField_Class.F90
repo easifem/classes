@@ -17,7 +17,8 @@
 MODULE AbstractNodeField_Class
 USE GlobalData
 USE BaseType
-USE RealVector_Method, ONLY : getPointer
+USE RealVector_Method, ONLY : getPointer, DeallocateData
+USE DOF_Method, ONLY: DeallocateData
 USE AbstractField_Class
 USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_
@@ -122,6 +123,10 @@ END SUBROUTINE anf_Initiate3
 !----------------------------------------------------------------------------
 !                                                            DeallocateData
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Oct 2021
+! summary: Deallocates data in [[AbstractNodeField_]]
 
 SUBROUTINE anf_DeallocateData( obj )
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj

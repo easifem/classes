@@ -138,7 +138,7 @@ MODULE PROCEDURE bnField_Initiate3
   CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate3"
   CHARACTER( LEN=1 ), ALLOCATABLE :: physicalVarNames( : )
   CHARACTER( LEN=: ), ALLOCATABLE :: char_var
-  INTEGER( I4B ) :: tVar, ii, ierr, storageFMT
+  INTEGER( I4B ) :: tVar, ii, ierror, storageFMT
   INTEGER( I4B ), ALLOCATABLE :: timeCompo(:), spaceCompo(:), tNodes(:)
   !> main
   !> check
