@@ -107,27 +107,6 @@ MODULE PROCEDURE bmField_checkEssentialParam
 END PROCEDURE bmField_checkEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_DeallocateData
-  INTEGER( I4B ) :: ii
-  obj%name = ''
-  CALl DeallocateData( obj%mat )
-  CALL DeallocateData( obj%Pmat )
-  obj%isInitiated = .FALSE.
-  obj%isPmatInitiated = .FALSE.
-  obj%fieldType = 0
-  obj%domain => NULL()
-  IF( ALLOCATED( obj%domains ) ) THEN
-    DO ii = 1, SIZE( obj%domains )
-      obj%domains(ii)%ptr => NULL()
-    END DO
-    DEALLOCATE( obj%domains )
-  END IF
-END PROCEDURE mField_DeallocateData
-
-!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
@@ -251,5 +230,21 @@ MODULE PROCEDURE mField_Initiate3
   IF( ALLOCATED( timeCompo ) ) DEALLOCATE( timeCompo )
   IF( ALLOCATED( physicalVarNames ) ) DEALLOCATE( physicalVarNames )
 END PROCEDURE mField_Initiate3
+
+!----------------------------------------------------------------------------
+!                                                            DeallocateData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_DeallocateData
+  CALL AbstractMatrixFieldDeallocateData(obj)
+END PROCEDURE mField_DeallocateData
+
+!----------------------------------------------------------------------------
+!                                                                Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_Final
+  CALL obj%DeallocateData()
+END PROCEDURE mField_Final
 
 END SUBMODULE ConstructorMethods

@@ -47,7 +47,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => sField_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => sField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+    & sField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => sField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => sField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => sField_Display

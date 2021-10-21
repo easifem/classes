@@ -38,11 +38,13 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
   TYPE( RealVector_ ) :: realVec
     !! Vector of reals to contains the nodes
   TYPE( DOF_ ) :: dof
-    !! Degree of freedom object, which contains the information about how the different components are stored inside the realVec
+    !! Degree of freedom object, which contains the information about
+    !! how the different components are stored inside the realVec
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => anf_getPointer
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => anf_Size
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => anf_Initiate3
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => anf_DeallocateData
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
@@ -57,6 +59,20 @@ END TYPE AbstractNodeFieldPointer_
 
 PUBLIC :: AbstractNodeFieldPointer_
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE AbstractNodeFieldDeallocateData
+  MODULE PROCEDURE anf_DeallocateData
+END INTERFACE AbstractNodeFieldDeallocateData
+
+PUBLIC :: AbstractNodeFieldDeallocateData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -65,7 +81,7 @@ CONTAINS
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 Jul 2021
-! summary: This routine returns the pointer to a fortran real vector stored inside realVec
+! summary: Returns the pointer to a fortran real vector stored inside realVec
 
 FUNCTION anf_getPointer( obj ) RESULT( ans )
   CLASS( AbstractNodeField_ ), TARGET, INTENT( IN ) :: obj
@@ -102,6 +118,19 @@ SUBROUTINE anf_Initiate3( obj, param, dom )
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
 END SUBROUTINE anf_Initiate3
+
+!----------------------------------------------------------------------------
+!                                                            DeallocateData
+!----------------------------------------------------------------------------
+
+SUBROUTINE anf_DeallocateData( obj )
+  CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj
+  !> main
+  obj%tSize = 0
+  CALL AbstractFieldDeallocateData(obj)
+  CALL DeallocateData(obj%realVec)
+  CALL DeallocateData(obj%dof)
+END SUBROUTINE anf_DeallocateData
 
 !----------------------------------------------------------------------------
 !

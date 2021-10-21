@@ -138,9 +138,8 @@ MODULE PROCEDURE bnField_Initiate3
   CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate3"
   CHARACTER( LEN=1 ), ALLOCATABLE :: physicalVarNames( : )
   CHARACTER( LEN=: ), ALLOCATABLE :: char_var
-  INTEGER( I4B ) :: tPhysicalVars, ii, ierr, storageFMT
+  INTEGER( I4B ) :: tVar, ii, ierr, storageFMT
   INTEGER( I4B ), ALLOCATABLE :: timeCompo(:), spaceCompo(:), tNodes(:)
-  TYPE( DOF_ ) :: dofobj
   !> main
   !> check
   IF( obj%isInitiated ) &
@@ -154,72 +153,62 @@ MODULE PROCEDURE bnField_Initiate3
     & key="BlockNodeField/name" ) ) :: char_var )
   ierror = param%get( key="BlockNodeField/name", value=char_var )
   obj%name = char_var; DEALLOCATE( char_var )
-  !> tPhysicalVars
-  ierr = param%get(key="BlockNodeField/tPhysicalVars", value=tPhysicalVars)
-  !> names
-  ALLOCATE( names_char(tPhysicalVars) ); obj%name=""
-  DO ii = 1, tPhysicalVars
-    ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="BlockNodeField/name"//TRIM(STR(ii,.TRUE.)) ) ) :: char_var )
-    ierr = param%get( key="BlockNodeField/name"//TRIM(STR(ii,.TRUE.)), &
-      & value=char_var )
-    obj%name=obj%name//TRIM(char_var)
-    names_char(ii)(1:1)=char_var(1:1)
-    DEALLOCATE( char_var )
-  END DO
-  !> engine
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( &
-    & key="BlockNodeField/engine" ) ) :: char_var )
-  obj%engine=TRIM(char_var); DEALLOCATE( char_var )
-  !> timeCompo
-  CALL Reallocate( timeCompo, tPhysicalVars, spaceCompo, tPhysicalVars )
-  ierr = param%get( key="BlockNodeField/timeCompo", value=timeCompo )
-  !> spaceCompo
-  ierr = param%get( key="BlockNodeField/spaceCompo", value=spaceCompo )
   !> fieldType
-  CALL Reallocate( fieldType, tPhysicalVars, tNodes, tPhysicalVars )
-  ierr = param%get( key="BlockNodeField/fieldType", value=fieldType)
-  !> tNodes
-  obj%tSize=0
-  DO ii = 1, tPhysicalVars
-    obj%tSize=obj%tSize+dom(ii)%ptr%getTotalNodes()*timeCompo(ii)&
-      & * spaceCompo(ii)
-    IF( fieldType(ii) .EQ. FIELD_TYPE_CONSTANT ) THEN
-      tNodes( ii ) = 1
-    ELSE
-      tNodes( ii ) = dom(ii)%ptr%getTotalNodes( )
+  ierror = param%get( key="BlockNodeField/fieldType",  &
+    & value=obj%fieldType )
+  !> tPhysicalVarNames
+  ierror=param%get( key='BlockNodeField/tPhysicalVarNames', value=tVar )
+  !> check
+  IF( SIZE(dom) .NE. tVar ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Size of dom not equal to the total number of physical variables')
+  DO ii = 1, tVar
+    IF( .NOT. ASSOCIATED( dom(ii)%ptr ) ) THEN
+      CALL e%raiseError(modName//'::'//myName// " - "// &
+        & 'dom( '// TOSTRING(ii) // ')%ptr is NOT ASSOCIATED!')
     END IF
   END DO
-  !> dof
-  storageFMT=FMT_DOF
-  CALL initiate( obj=obj%dof, tNodes=tNodes, names=names_char, &
-    & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
-  !> initiate realVec
-  CALL initiate( val=obj%realVec, obj=obj%dof )
-  !> domain
-  IF( SIZE(dom) .NE. tPhysicalVars ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'SIZE of doms should be equal to total physical variables' )
-  IF( ALLOCATED( obj%domains ) ) THEN
-    IF( SIZE(obj%domains) .NE. tPhysicalVars ) &
-      CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'obj%domains is already allocated, and some of the entries &
-        & are already associated!')
-    DO ii = 1, tPhysicalVars
-      IF( ASSOCIATED(obj%domains( ii )%ptr) ) THEN
-        CALL e%raiseError(modName//'::'//myName// " - "// &
-          & 'obj%domains is already allocated, and some of the entries &
-          & are already associated!')
-      ELSE
-        obj%domains(ii)%ptr=>dom(ii)%ptr
-      END IF
-    END DO
-  ELSE
-    ALLOCATE( obj%domains( tPhysicalVars ) )
-    DO ii = 1, tPhysicalVars
-      obj%domains(ii)%ptr=>dom(ii)%ptr
-    END DO
+  !> allocate
+  ALLOCATE( tNodes( tVar ), timeCompo(tVar), spaceCompo(tVar), &
+    & physicalVarNames(tVar) )
+  !> physicalVarName
+  DO ii = 1, tVar
+    ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( &
+      & key="BlockNodeField/physicalVarName"//TOSTRING(ii)))::char_var )
+    ierror = param%get( key="BlockNodeField/physicalVarName" &
+      & //TOSTRING(ii), value=char_var )
+    physicalVarNames(ii)(1:1) = char_var(1:1); DEALLOCATE( char_var )
+  END DO
+  !> spaceCompo
+  IF( param%isPresent(key="BlockNodeField/spaceCompo") ) THEN
+    ierror = param%get( key="BlockNodeField/spaceCompo", value=spaceCompo)
   END IF
+  !> timeCompo
+  IF( param%isPresent(key="BlockNodeField/timeCompo") ) THEN
+    ierror = param%get( key="BlockNodeField/timeCompo", value=timeCompo)
+  END IF
+  !> storage format
+  storageFMT = FMT_DOF
+  !> domains, tNodes
+  ALLOCATE( obj%domains( tvar ) ); obj%tSize=0
+  DO ii = 1, tVar
+    obj%domains(ii)%ptr => dom(ii)%ptr
+    tNodes( ii ) = obj%domains(ii)%ptr%getTotalNodes()
+    obj%tSize=obj%tSize+tNodes(ii)*timeCompo(ii)&
+      & * spaceCompo(ii)
+  END DO
+  !> tNodes for constant field
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) tNodes(:) = 1
+  !> [[DOF_]]
+  CALL Initiate( obj=obj%dof, tNodes=tNodes, names=physicalVarNames, &
+    & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
+  !> realVec
+  CALL Initiate( val=obj%realVec, obj=obj%dof )
   obj%isInitiated = .TRUE.
+  IF( ALLOCATED( tNodes ) ) DEALLOCATE( tNodes )
+  IF( ALLOCATED( spaceCompo ) ) DEALLOCATE( spaceCompo )
+  IF( ALLOCATED( timeCompo ) ) DEALLOCATE( timeCompo )
+  IF( ALLOCATED( physicalVarNames ) ) DEALLOCATE( physicalVarNames )
 END PROCEDURE bnField_Initiate3
 
 !----------------------------------------------------------------------------
@@ -228,20 +217,8 @@ END PROCEDURE bnField_Initiate3
 
 MODULE PROCEDURE bnField_DeallocateData
   CHARACTER( LEN = * ), PARAMETER :: myName="bnField_DeallocateData"
-  INTEGER( I4B ) :: ii
   !> main program
-  obj%tSize=0
-  obj%isInitiated=.FALSE.
-  obj%fieldType=FIELD_TYPE_NORMAL
-  CALL DeallocateData( obj%realVec )
-  CALL DeallocateData( obj%dof )
-  NULLIFY( obj%domain )
-  IF( ALLOCATED( obj%domains ) ) THEN
-    DO  ii=1,SIZE(obj%domains)
-      obj%domains(ii)%ptr=>NULL()
-    END DO
-    DEALLOCATE( obj%domains )
-  END IF
+  CALL AbstractNodeFieldDeallocateData(obj)
 END PROCEDURE bnField_DeallocateData
 
 !----------------------------------------------------------------------------
