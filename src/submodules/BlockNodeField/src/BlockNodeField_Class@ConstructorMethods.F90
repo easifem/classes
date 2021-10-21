@@ -105,23 +105,19 @@ END PROCEDURE bnField_checkEssentialParam
 MODULE PROCEDURE bnField_Initiate1
   CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate1"
   TYPE( DomainPointer_ ), ALLOCATABLE :: domains( : )
-  INTEGER( I4B ) :: tPhysicalVars, ii
+  INTEGER( I4B ) :: tPhysicalVarNames, ii
   !> main program
-  ii=param%get(key="BlockNodeField/tPhysicalVars", &
-    & value=tPhysicalVars)
-  CALL OK( tPhysicalVars == 2, "debug:: "//myName//" :: " )
-  ALLOCATE( domains( tPhysicalVars ) )
-  DO ii = 1, tPhysicalVars
+  ii=param%get(key="BlockNodeField/tPhysicalVarNames", &
+    & value=tPhysicalVarNames)
+  ALLOCATE( domains( tPhysicalVarNames ) )
+  DO ii = 1, tPhysicalVarNames
     domains( ii )%ptr => dom
   END DO
-  CALL obj%initiate(param=param, dom=domains )
-  CALL PASS( "debug:: "//myName )
-
-  DO ii = 1, tPhysicalVars
+  CALL obj%Initiate(param=param, dom=domains )
+  DO ii = 1, tPhysicalVarNames
     domains( ii )%ptr => NULL()
   END DO
-
-  CALL PASS( "debug:: "//myName )
+  IF( ALLOCATED( domains ) ) DEALLOCATE( domains )
 END PROCEDURE bnField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -140,17 +136,24 @@ END PROCEDURE bnField_Initiate2
 
 MODULE PROCEDURE bnField_Initiate3
   CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate3"
+  CHARACTER( LEN=1 ), ALLOCATABLE :: physicalVarNames( : )
   CHARACTER( LEN=: ), ALLOCATABLE :: char_var
-  CHARACTER( LEN=1 ), ALLOCATABLE :: names_char( : )
   INTEGER( I4B ) :: tPhysicalVars, ii, ierr, storageFMT
-  INTEGER( I4B ), ALLOCATABLE :: timeCompo( : ), spaceCompo( : ), &
-    & tNodes(:), fieldType( : )
-  !> main program
+  INTEGER( I4B ), ALLOCATABLE :: timeCompo(:), spaceCompo(:), tNodes(:)
+  TYPE( DOF_ ) :: dofobj
+  !> main
   !> check
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'BlockNodeField object is already initiated')
+    & 'The instance of BlockNodeField_ is already initiated')
   CALL obj%checkEssentialParam( param )
+  !> engine
+  obj%engine="NATIVE_SERIAL"
+  !> name
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes(  &
+    & key="BlockNodeField/name" ) ) :: char_var )
+  ierror = param%get( key="BlockNodeField/name", value=char_var )
+  obj%name = char_var; DEALLOCATE( char_var )
   !> tPhysicalVars
   ierr = param%get(key="BlockNodeField/tPhysicalVars", value=tPhysicalVars)
   !> names

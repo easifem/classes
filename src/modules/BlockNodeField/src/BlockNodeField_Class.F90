@@ -169,7 +169,8 @@ END INTERFACE
 ! `param`.
 !
 !@note
-! `param` should be constructed by calling [[BlockNodeField_Class::setBloclNodeFieldParam]] routine.
+! `param` should be constructed by calling
+! [[BlockNodeField_Class::setBloclNodeFieldParam]] routine.
 !@endnote
 
 INTERFACE
@@ -192,7 +193,8 @@ END INTERFACE
 ! This routine initiate the [[BlockNodeField_]] object by copying
 
 INTERFACE
-MODULE SUBROUTINE bnField_Initiate2( obj, obj2, copyFull, copyStructure, usePointer )
+MODULE SUBROUTINE bnField_Initiate2( obj, obj2, copyFull, copyStructure, &
+  & usePointer )
   CLASS( BlockNodeField_ ), INTENT( INOUT ) :: obj
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
@@ -235,7 +237,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine deallocates the data stored inside the BlockNodeField_ obj
+! summary: Deallocates the data stored inside the [[BlockNodeField_]] obj
 
 INTERFACE
 MODULE SUBROUTINE bnField_DeallocateData( obj )
