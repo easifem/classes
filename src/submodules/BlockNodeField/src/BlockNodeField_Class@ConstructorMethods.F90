@@ -23,78 +23,57 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_addSurrogate
+MODULE PROCEDURE bnField_addSurrogate
   CALL e%addSurrogate( Userobj )
-END PROCEDURE Block_addSurrogate
+END PROCEDURE bnField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                         setBlockNodeField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setBlockNodeFieldParam
-  CHARACTER( LEN = * ), PARAMETER :: myName="setBlockNodeFieldParam"
-  INTEGER( I4B ) :: ierr, tPhysicalVars, ii
-  INTEGER( I4B ) :: spaceCompo_(SIZE(name))
-  INTEGER( I4B ) :: timeCompo_(SIZE(name))
-  INTEGER( I4B ) :: fieldType_(SIZE(name))
-
-  !> tPhysicalVars
-  tPhysicalVars=SIZE(name)
-  DO ii=1, tPhysicalVars
-    ierr = param%set( key="BlockNodeField/name"//TRIM(STR(ii, .TRUE.)), &
-      & value=name(ii)%chars() )
+MODULE PROCEDURE SetBlockNodeFieldParam
+  CHARACTER( LEN = * ), PARAMETER :: myName="SetBlockNodeFieldParam"
+  INTEGER( I4B ) :: ierr0, ii
+  !> main
+  !> check
+  IF( ANY( [SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
+    & .NE. SIZE(physicalVarNames))) THEN
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Size of physicalVarNames, spaceCompo, and timeCompo should be &
+    & same')
+  END IF
+  ierr0 = param%set( key="BlockNodeField/name", value=TRIM(name) )
+  ierr0 = param%set( key="BlockNodeField/tPhysicalVarNames",  &
+    & value=SIZE(physicalVarNames) )
+  DO ii = 1, SIZE( physicalVarNames )
+    ierr0 = param%set( key="BlockNodeField/physicalVarName"//TOSTRING(ii),  &
+      & value=TRIM(physicalVarNames(ii)) )
   END DO
-  ierr = param%set( key="BlockNodeField/tPhysicalVars", value=tPhysicalVars )
-  !>
-  IF( PRESENT( spaceCompo ) ) THEN
-    IF( SIZE( spaceCompo ) .NE. tPhysicalVars ) &
-      & CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Size of spaceCompo should be equal to the total number of physical &
-      & variables.')
-    spaceCompo_ = spaceCompo
-  ELSE
-    spaceCompo_ = 1
-  END IF
-  IF( PRESENT( timeCompo ) ) THEN
-    IF( SIZE( timeCompo ) .NE. tPhysicalVars ) &
-      & CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Size of timeCompo should be equal to the total number of physical &
-      & variables.')
-    timeCompo_ = timeCompo
-  ELSE
-    timeCompo_ = 1
-  END IF
-  IF( PRESENT( fieldType ) ) THEN
-    IF( SIZE( fieldType ) .NE. tPhysicalVars ) &
-      & CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Size of fieldType should be equal to the total number of physical &
-      & variables.')
-    fieldType_ = fieldType
-  ELSE
-    fieldType_ = FIELD_TYPE_NORMAL
-  END IF
-  !>
-  ierr = param%set(key="BlockNodeField/spaceCompo", value=spaceCompo_)
-  ierr = param%set(key="BlockNodeField/timeCompo", value=timeCompo_)
-  ierr = param%set(key="BlockNodeField/fieldType", value=fieldType_)
-  ierr = param%set(key="BlockNodeField/engine", value="NATIVE_SERIAL" )
-END PROCEDURE setBlockNodeFieldParam
+  ierr0 = param%set( key="BlockNodeField/spaceCompo",  &
+    &  value=spaceCompo )
+  ierr0 = param%set( key="BlockNodeField/timeCompo",  &
+    & value=timeCompo )
+  ierr0 = param%set( key="BlockNodeField/fieldType", value=INPUT( &
+    & option=fieldType, default=FIELD_TYPE_NORMAL ) )
+END PROCEDURE SetBlockNodeFieldParam
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_checkEssentialParam
-  CHARACTER( LEN = * ), PARAMETER :: myName = "Block_checkEssentialParam"
-  INTEGER( I4B ) :: tPhysicalVars, ierr, ii
+MODULE PROCEDURE bnField_checkEssentialParam
+  CHARACTER( LEN = * ), PARAMETER :: myName = "bnField_checkEssentialParam"
+  INTEGER( I4B ) :: ii, n
   !> main
-  IF( .NOT. param%isPresent(key="BlockNodeField/engine") ) THEN
+  IF( .NOT. param%isPresent(key="BlockNodeField/name") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'BlockNodeField/engine should be present in param')
+    & 'BlockNodeField/name should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="BlockNodeField/fieldType") ) THEN
+  IF( .NOT. param%isPresent(key="BlockNodeField/tPhysicalVarNames") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'BlockNodeField/fieldType should be present in param')
+    & 'BlockNodeField/tPhysicalVarNames should be present in param')
+  ELSE
+    ii = param%get( key='BlockNodeField/tPhysicalVarNames', value=n )
   END IF
   IF( .NOT. param%isPresent(key="BlockNodeField/spaceCompo") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
@@ -104,26 +83,27 @@ MODULE PROCEDURE Block_checkEssentialParam
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'BlockNodeField/timeCompo should be present in param')
   END IF
-  IF( .NOT. param%isPresent(key="BlockNodeField/tPhysicalVars") ) THEN
+  IF( .NOT. param%isPresent(key="BlockNodeField/fieldType") ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'BlockNodeField/tPhysicalVars should be present in param')
+    & 'BlockNodeField/fieldType should be present in param')
   END IF
-  ierr = param%get( key="BlockNodeField/tPhysicalVars", value=tPhysicalVars )
-  DO ii = 1, tPhysicalVars
-    IF( .NOT. param%isPresent(key="BlockNodeField/name" &
-      & // TRIM(STR(ii, .TRUE.)))) THEN
+  DO ii=1, n
+    IF( .NOT. param%isPresent(key="BlockNodeField/physicalVarName" &
+      & // TOSTRING(ii)) ) THEN
       CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'BlockNodeField/name should be present in param')
+      & 'BlockNodeField/physicalVarName' &
+      & // TOSTRING(ii) &
+      & // ' should be present in param')
     END IF
   END DO
-END PROCEDURE Block_checkEssentialParam
+END PROCEDURE bnField_checkEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Initiate1
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_Initiate1"
+MODULE PROCEDURE bnField_Initiate1
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate1"
   TYPE( DomainPointer_ ), ALLOCATABLE :: domains( : )
   INTEGER( I4B ) :: tPhysicalVars, ii
   !> main program
@@ -142,24 +122,24 @@ MODULE PROCEDURE Block_Initiate1
   END DO
 
   CALL PASS( "debug:: "//myName )
-END PROCEDURE Block_Initiate1
+END PROCEDURE bnField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Initiate2
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_Initiate2"
+MODULE PROCEDURE bnField_Initiate2
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate2"
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'This routine is under condtruction!')
-END PROCEDURE Block_Initiate2
+END PROCEDURE bnField_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Initiate3
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_Initiate3"
+MODULE PROCEDURE bnField_Initiate3
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Initiate3"
   CHARACTER( LEN=: ), ALLOCATABLE :: char_var
   CHARACTER( LEN=1 ), ALLOCATABLE :: names_char( : )
   INTEGER( I4B ) :: tPhysicalVars, ii, ierr, storageFMT
@@ -237,14 +217,14 @@ MODULE PROCEDURE Block_Initiate3
     END DO
   END IF
   obj%isInitiated = .TRUE.
-END PROCEDURE Block_Initiate3
+END PROCEDURE bnField_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                             DeallocateData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_DeallocateData"
+MODULE PROCEDURE bnField_DeallocateData
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_DeallocateData"
   INTEGER( I4B ) :: ii
   !> main program
   obj%tSize=0
@@ -259,14 +239,14 @@ MODULE PROCEDURE Block_DeallocateData
     END DO
     DEALLOCATE( obj%domains )
   END IF
-END PROCEDURE Block_DeallocateData
+END PROCEDURE bnField_DeallocateData
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Final
+MODULE PROCEDURE bnField_Final
   CALL obj%DeallocateData()
-END PROCEDURE Block_Final
+END PROCEDURE bnField_Final
 
 END SUBMODULE ConstructorMethods

@@ -36,28 +36,29 @@ END PROCEDURE mField_addSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setBlockMatrixFieldParam
-  INTEGER( I4B ) :: ierr, ii
+  INTEGER( I4B ) :: ierr0, ii
   CHARACTER( LEN = * ), PARAMETER :: myName="setBlockMatrixFieldParam"
-
+  !> main
+  !> check
   IF( ANY( [SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
     & .NE. SIZE(physicalVarNames))) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Size of physicalVarNames, spaceCompo, and timeCompo should be same')
   END IF
-  ierr = param%set( key="BlockMatrixField/name", value=TRIM(name) )
-  ierr = param%set( key="BlockMatrixField/matrixProp", &
+  ierr0 = param%set( key="BlockMatrixField/name", value=TRIM(name) )
+  ierr0 = param%set( key="BlockMatrixField/matrixProp", &
     & value=TRIM(matrixProp) )
-  ierr = param%set( key="BlockMatrixField/tPhysicalVarNames",  &
+  ierr0 = param%set( key="BlockMatrixField/tPhysicalVarNames",  &
     & value=SIZE(physicalVarNames) )
   DO ii = 1, SIZE( physicalVarNames )
-    ierr = param%set( key="BlockMatrixField/physicalVarName"//TOSTRING(ii),  &
+    ierr0=param%set( key="BlockMatrixField/physicalVarName"//TOSTRING(ii), &
       & value=TRIM(physicalVarNames(ii)) )
   END DO
-  ierr = param%set( key="BlockMatrixField/spaceCompo",  &
+  ierr0 = param%set( key="BlockMatrixField/spaceCompo",  &
     &  value=spaceCompo )
-  ierr = param%set( key="BlockMatrixField/timeCompo",  &
+  ierr0 = param%set( key="BlockMatrixField/timeCompo",  &
     & value=timeCompo )
-  ierr = param%set( key="BlockMatrixField/fieldType", value=INPUT( &
+  ierr0 = param%set( key="BlockMatrixField/fieldType", value=INPUT( &
     & option=fieldType, default=FIELD_TYPE_NORMAL ) )
 END PROCEDURE setBlockMatrixFieldParam
 
