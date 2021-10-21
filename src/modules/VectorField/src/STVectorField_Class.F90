@@ -31,7 +31,7 @@ USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "STVECTORFIELD_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "STVectorField_Class"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
@@ -50,7 +50,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => stvField_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => stvField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+    & stvField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stvField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stvField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stvField_Display
