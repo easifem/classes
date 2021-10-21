@@ -82,7 +82,8 @@ MODULE PROCEDURE sField_Initiate1
   !> check
   CALL obj%checkEssentialParam(param)
   !> READ name
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="ScalarField/name" ) ) :: char_var )
+  ALLOCATE( CHARACTER( LEN = &
+    & param%DataSizeInBytes( key="ScalarField/name" ) ) :: char_var )
   ierr = param%get( key="ScalarField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
@@ -144,13 +145,7 @@ END PROCEDURE sField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_DeallocateData"
-  obj%tSize = 0_I4B
-  obj%isInitiated = .FALSE.
-  obj%fieldType = FIELD_TYPE_NORMAL
-  CALL DeallocateData( obj%realvec )
-  CALL DeallocateData( obj%dof )
-  NULLIFY( obj%domain )
+  CALL AbstractNodeFieldDeallocateData(obj)
 END PROCEDURE sField_DeallocateData
 
 !----------------------------------------------------------------------------
