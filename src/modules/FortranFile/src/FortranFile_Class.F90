@@ -20,20 +20,22 @@
 ! summary: 	module for I/O defines the derived type for a Fortran File object.
 !
 ! The developement of this module is inspired from the
-! `FileType_Fortran.F90` of Futility package. The original source is located at https://github.com/CASL/Futility/blob/master/src/AbstractFile_.F90. The original code has been modified as per the code-standard of easifem library.
+! `FileType_Fortran.F90` of Futility package. The original source is located
+! at https://github.com/CASL/Futility/blob/master/src/AbstractFile_.F90. The
+! original code has been modified as per the code-standard of easifem library.
 !
 ! The Fortan file type is an extension of the abstract `AbstractFile_`
 ! It provides a simplified interface to the native Fortran
 ! file capabilities and includes error checking.
 
 MODULE FortranFile_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr, stdin
-USE BaseType, ONLY : String
+USE GlobalData
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class
 USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*),PARAMETER :: modName='FORTRANFILE_CLASS', hash="#", comma=","
+CHARACTER(LEN=*),PARAMETER :: modName='FortranFile_Class', hash="#", comma=","
 INTEGER(I4B), PARAMETER :: maxStrLen=256
 TYPE(ExceptionHandler_), PRIVATE :: e
 
@@ -64,7 +66,6 @@ TYPE, EXTENDS(AbstractFile_) :: FortranFile_
   CHARACTER( LEN = 1 ) :: comment = hash
   CHARACTER( LEN = 1 ) :: separator = comma
   CHARACTER( LEN = 2 ) :: delimiter = "\n"
-
   !
   CONTAINS
   PRIVATE
@@ -90,7 +91,7 @@ TYPE, EXTENDS(AbstractFile_) :: FortranFile_
 END TYPE FortranFile_
 
 PUBLIC :: FortranFile_
-TYPE( FortranFile_ ), PUBLIC, PARAMETER :: TypeFortranFile=FortranFile_()
+TYPE( FortranFile_ ), PUBLIC, PARAMETER :: TypeFortranFile=FortranFile_( )
 
 TYPE :: FortranFilePointer_
   CLASS( FortranFile_ ), POINTER :: ptr => NULL()

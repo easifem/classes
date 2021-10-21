@@ -17,7 +17,7 @@
 
 MODULE HDF5File_Class
 USE GlobalData
-USE BaseType
+USE String_Class, ONLY: String
 USE HDF5
 ! USE H5LT
 ! USE H5Fortran
@@ -51,8 +51,11 @@ LOGICAL( LGT ), SAVE :: libh5Open=.FALSE.
 ! - 'read'
 ! - 'write'
 ! - 'new'.
-! Read mode opens an existing HDF5 file and allows the client code to interrogate that file and extract data without permissions to alter the file.
-! Write mode opens an existing HDF5 file and allows the client code to alter its contents.
+! Read mode opens an existing HDF5 file and allows the client code to
+! interrogate that file and extract data without permissions to alter the
+! file.
+! Write mode opens an existing HDF5 file and allows the client code to alter
+! its contents.
 ! New mode overwrites any file by the same name and starts from scratch.
 
 TYPE, EXTENDS( AbstractFile_ ) :: HDF5File_
@@ -225,7 +228,8 @@ END INTERFACE
 !
 !# Introduction
 !
-! This routine implements the abstract @c fclose routine in the base file type.
+! This routine implements the abstract @c fclose routine in the base file
+! type.
 
 INTERFACE
 MODULE SUBROUTINE hdf5_close( obj )
@@ -243,7 +247,8 @@ END INTERFACE
 !
 !# Introduction
 ! This routine implements the abstract @c fdelete routine in the base file
-! type. Mimicking FileType_Fortran logical structure.  We do not clear the file after it is deleted.
+! type. Mimicking FileType_Fortran logical structure.  We do not clear the
+! file after it is deleted.
 
 INTERFACE
 MODULE SUBROUTINE hdf5_delete( obj )
@@ -267,7 +272,9 @@ END INTERFACE
 ! Use setOverwriteStat to change the status to 'OVERWRITE'.
 !
 !@note
-! Note that when overwriting datasets, new datasets must be the same type and shape as the existing one being overwritten; otherwise an exception will be thrown.
+! Note that when overwriting datasets, new datasets must be the same type and
+! shape as the existing one being overwritten; otherwise an exception will be
+! thrown.
 !@endnote
 
 INTERFACE
@@ -316,7 +323,8 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	6 June 2021
-! summary: 	Sets the value for the status of whether or not the file will be overwritable.
+! summary: 	Sets the value for the status of whether or not the file will be
+! overwritable.
 
 INTERFACE
 MODULE SUBROUTINE hdf5_setOverwriteStat( obj, bool )

@@ -18,6 +18,7 @@
 MODULE VTKFile_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY:String
 USE VTKDataArrayEncoder
 USE XMLFile_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
@@ -25,7 +26,7 @@ IMPLICIT NONE
 PRIVATE
 !>
 PUBLIC :: encodeVTKDataArray
-CHARACTER( LEN = * ), PARAMETER :: modName="VTKFILE_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName="VTKFile_Class"
 TYPE( ExceptionHandler_ ) :: e
 INTEGER( I4B ), PARAMETER :: MAX_LEN_DATA_STRUCTURENAME = 256
 
@@ -34,13 +35,11 @@ INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_RectilinearGrid = 2
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_StructuredGrid = 3
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_PolyData = 4
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_UnstructuredGrid = 5
-
 INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_ImageData = 6
 INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_RectilinearGrid = 7
 INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_StructuredGrid = 8
 INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_PolyData = 9
 INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_UnstructuredGrid = 10
-
 CHARACTER( LEN=* ), PARAMETER, DIMENSION( 10 ) :: DataStructureName = &
   & [ &
   & "ImageData        ", &
@@ -54,13 +53,11 @@ CHARACTER( LEN=* ), PARAMETER, DIMENSION( 10 ) :: DataStructureName = &
   & "PPolyData        ", &
   & "PUnstructuredGrid"  &
   & ]
-
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_ASCII = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_BINARY = 2
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_APPENDED = 3
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
 INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
-
 CHARACTER( LEN = * ), PARAMETER, DIMENSION( 3 ) :: DataFormatName = &
   & [ &
   & "ascii   ", &

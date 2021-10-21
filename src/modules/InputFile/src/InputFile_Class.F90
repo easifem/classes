@@ -21,7 +21,8 @@
 ! The log file type is an extension of the Fortran file type. Specifically it
 ! is a write-only text file that overwrites any existing file when opened. The
 ! purpose of the log file is to provide a log of the execution of a program or
-! subprogram. It provides additional methods "message" which writes a message to the log file and
+! subprogram. It provides additional methods "message" which writes a message
+! to the log file and
 ! optionally to the prompt. The "setEcho"
 ! method can be used to control echoeing of messages to the prompt, similarly
 ! the "message" method has an optional input to over-ride the value of
@@ -29,7 +30,7 @@
 
 MODULE InputFile_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr, stdin
-USE BaseType, ONLY : String
+USE String_Class, ONLY : String
 USE ExceptionHandler_Class
 USE FortranFile_Class
 IMPLICIT NONE

@@ -20,9 +20,11 @@
 ! summary: 	module for I/O defines the base file type object.
 !
 ! The developement of this module is inspired from the
-! `FileType_Base.F90` of Futility package. The original source is located at https://github.com/CASL/Futility/blob/master/src/FileType_Base.F90.
+! `FileType_Base.F90` of Futility package. The original source is located at
+! https://github.com/CASL/Futility/blob/master/src/FileType_Base.F90.
 !
-! The original code has been modified as per the code-standard of easifem library.
+! The original code has been modified as per the code-standard of easifem
+! library.
 !
 ! This type is an abstract type, so it has no specific implementation. It
 ! exists only to provide a base for the extended types. It specifies the
@@ -35,8 +37,8 @@
 ! one of it's extended types for examples on how it should be used.
 
 MODULE AbstractFile_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE BaseType, ONLY: String
+USE GlobalData
+USE String_Class, ONLY:String
 USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE

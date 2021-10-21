@@ -98,7 +98,6 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
     PROCEDURE, PUBLIC, PASS( obj ) :: setColumn => mField_setColumn
     PROCEDURE, PUBLIC, PASS( obj ) :: getRow => mField_getRow
     PROCEDURE, PUBLIC, PASS( obj ) :: getColumn => mField_getColumn
-      !! SPY
 END TYPE BlockMatrixField_
 
 PUBLIC :: BlockMatrixField_

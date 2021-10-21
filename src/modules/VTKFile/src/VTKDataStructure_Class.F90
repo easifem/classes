@@ -18,6 +18,7 @@
 MODULE VTKDataStructure_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY: String
 IMPLICIT NONE
 PRIVATE
 

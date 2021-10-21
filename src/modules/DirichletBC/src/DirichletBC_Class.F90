@@ -18,6 +18,7 @@
 MODULE DirichletBC_Class
 USE GlobalData
 USE BaseType
+USE String_Class
 USE ExceptionHandler_Class
 USE MeshSelection_Class
 USE Domain_Class

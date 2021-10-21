@@ -20,6 +20,7 @@
 
 MODULE ScalarField_Class
 USE GlobalData
+USE String_Class
 USE BaseType
 USE AbstractField_Class
 USE AbstractNodeField_Class
@@ -29,7 +30,7 @@ USE HDF5File_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "SCALARFIELD_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "ScalarField_Class"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------

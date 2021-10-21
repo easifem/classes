@@ -16,8 +16,9 @@
 !
 
 MODULE ElementFactory
-USE BaseType
 USE GlobalData
+USE BaseType
+USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE Element_Class
 USE FacetElement_Class

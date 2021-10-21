@@ -19,8 +19,9 @@
 ! summary: [[Mesh_Class]] module contains data type for handling the mesh.
 
 MODULE Mesh_Class
-USE BaseType
 USE GlobalData
+USE BaseType
+USE String_Class, ONLY:String
 USE ElementFactory
 USE ExceptionHandler_Class
 USE FPL, ONLY: ParameterList_

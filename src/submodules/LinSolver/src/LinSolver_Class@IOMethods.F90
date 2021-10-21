@@ -88,11 +88,11 @@ MODULE PROCEDURE ls_Import
   END IF
   ! READ engine
   dsetname=trim(group)//"/engine"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset engine should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
   IF( TRIM(strval) .NE. "NATIVE_SERIAL" ) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset engine should be equal to NATIVE_SERIAL')
@@ -100,19 +100,19 @@ MODULE PROCEDURE ls_Import
 
   ! READ solverName
   dsetname=trim(group)//"/solverName"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset solverName should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
   solverName = getLinSolverCodeFromName( trim(strval%chars()) )
   ! READ preconditionOption
   dsetname=trim(group)//"/preconditionOption"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset preconditionOption should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
   SELECT CASE( trim(strval%chars()) )
   CASE( "NONE" )
     preconditionOption = NO_PRECONDITION
@@ -125,11 +125,11 @@ MODULE PROCEDURE ls_Import
   END SELECT
   ! READ convergenceIn
   dsetname=trim(group)//"/convergenceIn"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset convergenceIn should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
   SELECT CASE( trim(strval%chars()) )
   CASE( "RESIDUAL" )
     convergenceIn = convergenceInRes
@@ -138,11 +138,11 @@ MODULE PROCEDURE ls_Import
   END SELECT
   ! READ convergenceType
   dsetname=trim(group)//"/convergenceType"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset convergenceType should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
   SELECT CASE( trim(strval%chars()) )
   CASE( "ABSOLUTE" )
     convergenceType = absoluteConvergence
@@ -152,8 +152,8 @@ MODULE PROCEDURE ls_Import
   ! READ relativeToRHS
   IF( convergenceType .EQ. relativeConvergence ) THEN
     dsetname=trim(group)//"/relativeToRHS"
-    IF( hdf5%pathExists(trim(dsetname%chars())) ) THEN
-      CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=relativeToRHS)
+    IF( hdf5%pathExists(dsetname%chars()) ) THEN
+      CALL hdf5%read(dsetname=dsetname%chars(),vals=relativeToRHS)
     ELSE
       relativeToRHS = .FALSE.
     END IF
@@ -162,32 +162,32 @@ MODULE PROCEDURE ls_Import
   END IF
   ! READ maxIter
   dsetname=trim(group)//"/maxIter"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset maxIter should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=maxIter)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=maxIter)
   ! READ KrylovSubspaceSize
   dsetname=trim(group)//"/KrylovSubspaceSize"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=KrylovSubspaceSize)
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(),vals=KrylovSubspaceSize)
   ELSE
     KrylovSubspaceSize = 20
   END IF
   ! READ relativeTolerance
   dsetname=trim(group)//"/relativeTolerance"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset relativeTolerance should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=relativeTolerance)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=relativeTolerance)
   ! READ absoluteTolerance
   dsetname=trim(group)//"/absoluteTolerance"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset absoluteTolerance should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=absoluteTolerance)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=absoluteTolerance)
 
   CALL FPL_INIT; CALL param%initiate()
   CALL setLinSolverParam( &
@@ -233,11 +233,11 @@ MODULE PROCEDURE ls_Export
   END IF
   ! WRITE engine
   dsetname=trim(group)//"/engine"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%engine)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%engine)
   ! WRITE solverName
   dsetname=trim(group)//"/solverName"
   strval = getLinSolverNameFromCode( obj%solverName )
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
   ! WRITE preconditionOption
   dsetname=trim(group)//"/preconditionOption"
   SELECT CASE( obj%preconditionOption )
@@ -250,7 +250,7 @@ MODULE PROCEDURE ls_Export
   CASE( LEFT_RIGHT_PRECONDITION )
     strval = "LEFT_RIGHT"
   END SELECT
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
   ! WRITE convergenceIn
   dsetname=trim(group)//"/convergenceIn"
   SELECT CASE( obj%convergenceIn )
@@ -259,7 +259,7 @@ MODULE PROCEDURE ls_Export
   CASE( convergenceInSol )
     strval="SOLUTION"
   END SELECT
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
   ! WRITE convergenceType
   dsetname=trim(group)//"/convergenceType"
   SELECT CASE( obj%convergenceType )
@@ -268,22 +268,22 @@ MODULE PROCEDURE ls_Export
   CASE( relativeConvergence )
     strval = "RELATIVE"
   END SELECT
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
   ! WRITE relativeToRHS
   dsetname=trim(group)//"/relativeToRHS"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%relativeToRHS)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%relativeToRHS)
   ! WRITE maxIter
   dsetname=trim(group)//"/maxIter"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%maxIter)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%maxIter)
   ! WRITE KrylovSubspaceSize
   dsetname=trim(group)//"/KrylovSubspaceSize"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%KrylovSubspaceSize)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%KrylovSubspaceSize)
   ! WRITE relativeTolerance
   dsetname=trim(group)//"/relativeTolerance"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%rtol)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%rtol)
   ! WRITE absoluteTolerance
   dsetname=trim(group)//"/absoluteTolerance"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%atol)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%atol)
 END PROCEDURE ls_Export
 
 !----------------------------------------------------------------------------

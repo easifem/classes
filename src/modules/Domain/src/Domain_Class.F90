@@ -21,6 +21,7 @@
 
 MODULE Domain_Class
 USE BaseType
+USE String_Class
 USE GlobalData
 USE Mesh_Class
 USE MeshPointerVector_Class

@@ -21,6 +21,7 @@
 MODULE BlockNodeField_Class
 USE GlobalData
 USE BaseType
+USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_

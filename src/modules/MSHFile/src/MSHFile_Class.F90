@@ -17,6 +17,7 @@
 
 MODULE MSHFile_Class
 USE BaseType
+USE String_Class, ONLY:String
 USE GlobalData
 USE TxtFile_Class
 USE ExceptionHandler_Class

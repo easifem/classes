@@ -147,12 +147,12 @@ MODULE PROCEDURE mesh_Import
       & 'HDF5 file does not have read permission')
   END IF
   !>check
-  IF( .NOT. hdf5%isGroup(TRIM(dsetname%chars())) ) THEN
+  IF( .NOT. hdf5%isGroup(dsetname%chars()) ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & TRIM(dsetname) // ' is not a group; it should be a group which contains the meshEntity' )
   END IF
   !>check
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars())) ) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars()) ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & TRIM(dsetname) // ' path does not exists' )
   END IF
@@ -472,11 +472,11 @@ MODULE PROCEDURE mesh_getNodeCoord
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'HDF5 file does not have read permission')
   !>check
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars())) ) &
+  IF( .NOT. hdf5%pathExists(dsetname%chars()) ) &
     & CALL e%raiseError(modName//'::'//myName// " - " // &
     & TRIM(dsetname) // ' path does not exists' )
   !> build nodeCoord
-  CALL hdf5%read( TRIM(dsetname%chars()), xij )
+  CALL hdf5%read( dsetname%chars(), xij )
   CALL Reallocate( nodeCoord, 3_I4B, obj%getTotalNodes() )
   jj = SIZE( xij, 1 )
   DO ii = 1, SIZE( nodeCoord, 2 )

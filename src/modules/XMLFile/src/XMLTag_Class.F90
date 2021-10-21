@@ -17,7 +17,7 @@
 
 MODULE XMLTag_Class
 USE GlobalData
-USE BaseType
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
 PRIVATE

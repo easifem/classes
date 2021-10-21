@@ -21,6 +21,7 @@
 MODULE VectorField_Class
 USE GlobalData
 USE BaseType
+USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_

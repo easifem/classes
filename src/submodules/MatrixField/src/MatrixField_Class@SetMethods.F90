@@ -29,8 +29,17 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set1
-  INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_set1"
+  INTEGER( I4B ) :: localNode( SIZE( globalNode ) ), nn
   REAL( DFP ) ::  alpha
+  !> main
+  nn = (.tdof. obj%mat%csr%dof)*SIZE(globalNode)
+  !> check
+  IF( SIZE( val, 1 ) .NE. SIZE( val, 2 )  &
+    & .OR. SIZE( val,1 ) .NE. nn ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'val is not square matrix, or its shape is inconsistent &
+    & with the degree of freedom stored in MatrixField')
   localNode = obj%domain%getLocalNodeNumber(globalNode)
   IF( PRESENT( addContribution ) ) THEN
     alpha = INPUT( default=1.0_DFP, option=scale )
@@ -47,15 +56,15 @@ END PROCEDURE mField_set1
 
 MODULE PROCEDURE mField_set2
   INTEGER( I4B ), ALLOCATABLE :: localNode( : )
-  REAL( DFP ) :: alpha
   IF( PRESENT( addContribution ) ) THEN
-    alpha = INPUT( default=1.0_DFP, option=scale )
     IF( PRESENT( globalNode ) ) THEN
       localNode = obj%domain%getLocalNodeNumber( globalNode )
-      CALL add( obj=obj%mat, nptrs=localNode, scale=alpha, val=val )
+      CALL add( obj=obj%mat, nptrs=localNode, &
+        & scale=INPUT( default=1.0_DFP, option=scale ), val=val )
       DEALLOCATE( localNode )
     ELSE
-      CALL add( obj=obj%mat, val=val, scale=alpha )
+      CALL add( obj=obj%mat, val=val,  &
+        & scale=INPUT( default=1.0_DFP, option=scale ) )
     END IF
   ELSE
     IF( PRESENT( globalNode ) ) THEN

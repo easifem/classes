@@ -34,6 +34,7 @@
 MODULE AbstractField_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY:String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY : HDF5File_
 USE ExceptionHandler_Class, ONLY : ExceptionHandler_

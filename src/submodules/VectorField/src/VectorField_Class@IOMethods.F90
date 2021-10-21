@@ -81,8 +81,8 @@ MODULE PROCEDURE vField_Import
   END IF
   ! READ fieldType
   dsetname=trim(group)//"/fieldType"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
     SELECT CASE( TRIM(strval%chars()) )
     CASE( "NORMAL" )
       obj%fieldType = FIELD_TYPE_NORMAL
@@ -98,42 +98,42 @@ MODULE PROCEDURE vField_Import
   END IF
   ! READ name
   dsetname=trim(group)//"/name"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=obj%name)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%name)
   ! READ engine
   dsetname=trim(group)//"/engine"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset engine should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=obj%engine)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%engine)
   ! READ tSize
   dsetname=trim(group)//"/tSize"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset tSize should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=obj%tSize)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%tSize)
   ! READ spaceCompo
   dsetname=trim(group)//"/spaceCompo"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset spaceCompo should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=obj%spaceCompo)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%spaceCompo)
   ! READ dof
   dsetname=trim(group)//"/dof"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset dof should be present')
   END IF
   CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=TRIM( dsetname%chars()) )
   ! READ realVec
   dsetname=trim(group)//"/realVec"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars())) ) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars()) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset realVec should be present')
   END IF
@@ -179,19 +179,19 @@ MODULE PROCEDURE vField_Export
   CASE( FIELD_TYPE_CONSTANT_TIME )
     strval = "CONSTANT_TIME"
   END SELECT
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
   ! WRITE name
   dsetname=trim(group)//"/name"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%name)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%name)
   ! WRITE engine
   dsetname=trim(group)//"/engine"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%engine)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%engine)
   ! WRITE tSize
   dsetname=trim(group)//"/tSize"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%tSize)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%tSize)
   ! WRITE spaceCompo
   dsetname=trim(group)//"/spaceCompo"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%spaceCompo)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%spaceCompo)
   ! WRITE dof
   dsetname=trim(group)//"/dof"
   CALL ExportDOF( obj=obj%dof, hdf5=hdf5, group=TRIM( dsetname%chars()) )
