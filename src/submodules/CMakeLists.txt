@@ -42,14 +42,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 # BlockMatrixField
 include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
+#FieldFactory
+include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
 #AbstractLinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 #LinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
-
-#FieldFactory
-include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
+#LinSolverFactory
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
 
 #DirichletBC
 include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)

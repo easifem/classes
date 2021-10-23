@@ -149,9 +149,9 @@ MODULE PROCEDURE mesh_setSparsity4
       & "colMesh data is not initiated, first initiate")
   END IF
   !> check
-  IF( SIZE( nodeToNode ) .NE. obj%maxNptrs ) THEN
+  IF( SIZE( nodeToNode ) .LT. obj%maxNptrs ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
-      & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
+      & "SIZE( nodeToNode ) .LT. obj%maxNptrs [easifemClasses ISSUE#63]")
   END IF
   !> main
   DO ii = obj%minNptrs, obj%maxNptrs

@@ -26,10 +26,10 @@ USE String_Class, ONLY:String
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE HDF5File_Class
-USE AbstractNodeField_Class
-USE AbstractMatrixField_Class
+USE Field
 IMPLICIT NONE
 PRIVATE
+
 !----------------------------------------------------------------------------
 !                                                        AbstractLinSolver_
 !----------------------------------------------------------------------------
