@@ -73,6 +73,7 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
       !! Initiate for block matrices
     PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mField_DeallocateData
       !! Deallocate the field
+    FINAL :: mField_Final
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => mField_Import
       !! Import from hdf5 file
     PROCEDURE, PASS( obj ) :: Matvec1 => mField_Matvec1
@@ -98,7 +99,6 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
     PROCEDURE, PUBLIC, PASS( obj ) :: setColumn => mField_setColumn
     PROCEDURE, PUBLIC, PASS( obj ) :: getRow => mField_getRow
     PROCEDURE, PUBLIC, PASS( obj ) :: getColumn => mField_getColumn
-      !! SPY
 END TYPE BlockMatrixField_
 
 PUBLIC :: BlockMatrixField_
@@ -226,6 +226,16 @@ INTERFACE
 MODULE SUBROUTINE mField_DeallocateData( obj )
   CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE mField_DeallocateData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   Final@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE mField_Final( obj )
+  TYPE( BlockMatrixField_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE mField_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -52,29 +52,29 @@ MODULE PROCEDURE dbc_Import
   END IF
   ! READ name
   dsetname=TRIM(group)//"/name"
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The dataset name should be present')
   ELSE
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%name)
   END IF
   ! READ idof
   dsetname=TRIM(group)//"/idof"
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The dataset idof should be present')
   ELSE
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%idof)
   END IF
   ! READ nodalValueType
   dsetname=TRIM(group)//"/nodalValueType"
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The dataset nodalValueType should be present')
   ELSE
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=strval)
   END IF
   SELECT CASE( TRIM( strval%chars() ) )
@@ -89,41 +89,41 @@ MODULE PROCEDURE dbc_Import
   END SELECT
   ! READ useFunction
   dsetname=TRIM(group)//"/useFunction"
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The dataset useFunction should be present')
   ELSE
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%useFunction)
   END IF
   ! READ Boundary
   dsetname=TRIM(group)//"/Boundary"
-  IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'The dataset Boundary, which is a group, should be present')
   ELSE
-    CALL obj%boundary%import( hdf5=hdf5, group=TRIM(dsetname%chars()))
+    CALL obj%boundary%import( hdf5=hdf5, group=dsetname%chars())
   END IF
   ! Read nodalValue
   IF( .NOT. obj%UseFunction ) THEN
     dsetname=TRIM(group)//"/NodalValue"
-    IF( .NOT. hdf5%pathExists(TRIM(dsetname%chars()))) THEN
+    IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
       CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'The dataset NodalValue should be present')
     END IF
     SELECT CASE( obj%nodalValueType )
     CASE( Constant )
-      CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+      CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=real0)
       CALL Reallocate( obj%NodalValue, 1, 1 )
       obj%NodalValue = real0
     CASE( Space, Time )
-      CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+      CALL hdf5%read(dsetname=dsetname%chars(), &
         & vals=real1)
       CALL Reallocate( obj%nodalValue, SIZE( real1), 1 )
       obj%NodalValue( :, 1 ) = real1
     CASE( SpaceTime )
-      CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+      CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=real2)
       obj%NodalValue = real2
     END SELECT
@@ -163,11 +163,11 @@ MODULE PROCEDURE dbc_Export
   END IF
   ! WRITE name
   dsetname=TRIM(group)//"/name"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%name)
   ! WRITE idof
   dsetname=TRIM(group)//"/idof"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%idof)
   ! WRITE nodalValueType
   dsetname=TRIM(group)//"/nodalValueType"
@@ -181,15 +181,15 @@ MODULE PROCEDURE dbc_Export
   CASE( SpaceTime )
     strval = "SPACETIME"
   END SELECT
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=strval)
   ! WRITE useFunction
   dsetname=TRIM(group)//"/useFunction"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%useFunction)
   ! WRITE Boundary
   dsetname=TRIM(group)//"/Boundary"
-  CALL obj%boundary%export( hdf5=hdf5, group=TRIM(dsetname%chars()))
+  CALL obj%boundary%export( hdf5=hdf5, group=dsetname%chars())
   ! Read nodalValue
   IF( .NOT. obj%UseFunction ) THEN
     dsetname=TRIM(group)//"/NodalValue"
@@ -200,15 +200,15 @@ MODULE PROCEDURE dbc_Export
     SELECT CASE( obj%nodalValueType )
     CASE( Constant )
       real0 = obj%NodalValue(1,1)
-      CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+      CALL hdf5%write(dsetname=dsetname%chars(), &
         & vals=real0)
     CASE( Space, Time )
       real1 = obj%NodalValue(:,1)
-      CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+      CALL hdf5%write(dsetname=dsetname%chars(), &
         & vals=real1)
     CASE( SpaceTime )
       real2 = obj%NodalValue
-      CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+      CALL hdf5%write(dsetname=dsetname%chars(), &
         & vals=real2)
     END SELECT
   END IF

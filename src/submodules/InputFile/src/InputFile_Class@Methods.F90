@@ -52,7 +52,7 @@ MODULE PROCEDURE inp_initiate
     & ' - Optional input "RECL" is being ignored. File is "SEQUENTIAL".')
 
   !Initialize the input file
-  CALL InitiateFortranFile(obj=obj, unit=unit, file=file, &
+  CALL InitiateFortranFile(obj=obj, unit=unit, filename=filename, &
     &  status='OLD', access='SEQUENTIAL', form='FORMATTED', &
     & position = 'REWIND', action = 'READ')
 END PROCEDURE inp_initiate

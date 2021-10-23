@@ -34,6 +34,7 @@
 MODULE MatrixField_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY:String
 USE FPL, ONLY: ParameterList_
 USE FPL_Method
 USE HDF5File_Class
@@ -301,31 +302,42 @@ PUBLIC :: mField_checkEssentialParam
 !### Usage
 !
 !```fortran
-! type( domain_ ) :: dom
-! type( MatrixField_ ) :: obj
-! type( HDF5File_ ) :: meshfile, hdf5
-! type( ParameterList_ ) :: param
-! integer( i4b ) :: ierr, tnodes
-! call display( "TESTING INITIATE AND DEALLOCATEDATA" )
-! CALL FPL_INIT()
-! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-! call meshfile%open()
-! call dom%initiate( meshfile )
-! call meshfile%close()
-! call meshfile%deallocateData()
-! tnodes = dom%getTotalNodes()
-! call param%initiate()
-! call setMatrixFieldParam( param, "K", "UNSYM", 3, 2, FIELD_TYPE_NORMAL )
-! call obj%initiate( param, dom )
-! CALL hdf5%initiate(filename="./matrixField.h5", mode="NEW" )
-! CALL hdf5%open()
-! CALL obj%export(hdf5=hdf5,group='')
-! CALL hdf5%close()
-! CALL hdf5%deallocateData()
-! call obj%deallocateData()
-! call dom%deallocateData()
-! call param%deallocateData()
-! call FPL_FINALIZE()
+! ! [[Domain_]], [[MatrixField_]], [[ParameterList_]],
+! ! [[HDF5File_]]
+! PROGRAM main
+!   USE easifemBase
+!   USE easifemClasses
+!   IMPLICIT NONE
+!   TYPE( Domain_ ) :: dom
+!   TYPE( MatrixField_ ) :: obj
+!   TYPE( HDF5File_ ) :: meshfile, hdf5file
+!   TYPE( ParameterList_ ) :: param
+!   INTEGER( I4B ) :: ierr
+!   !> main
+!   CALL FPL_INIT(); CALL param%Initiate()
+!   ! #HDF5File/Initiate
+!   CALL meshfile%Initiate( filename="./mesh.h5", mode="READ" )
+!   ! #HDF5File/Open
+!   CALL meshfile%Open()
+!   ! #Domain/Initiate
+!   CALL dom%Initiate( meshfile, "" ); CALL meshfile%Close()
+!   CALL meshfile%DeallocateData()
+!   ! #SetMatrixFieldParam
+!   CALL SetMatrixFieldParam( param=param, name="K", matrixProp="UNSYM", &
+!     & spaceCompo=2, timeCompo=1, fieldType=FIELD_TYPE_NORMAL )
+!   ! #MatrixField/Initiate
+!   CALL obj%Initiate( param, dom )
+!   ! #HDF5File/Initiate
+!   CALL hdf5file%Initiate( filename="./matrixField.h5", mode="NEW" )
+!   CALL hdf5file%Open()
+!   ! #MatrixField/Export
+!   CALL obj%Export(hdf5=hdf5file,group='')
+!   CALL hdf5file%DeallocateData()
+!   ! #MatrixField/DeallocateData
+!   CALL obj%DeallocateData()
+!   CALL dom%DeallocateData()
+!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+! END PROGRAM main
 !```
 
 INTERFACE
@@ -370,6 +382,50 @@ END INTERFACE
 ! usePointer=.TRUE.`, which equivalent to the default behavior.
 ! Add functionality for other options too.
 !@endtodo
+!
+!
+!## Usage
+!
+!```fortran
+! ! [[Domain_]], [[MatrixField_]], [[ParameterList_]],
+! ! [[HDF5File_]]
+! PROGRAM main
+!   USE easifemBase
+!   USE easifemClasses
+!   IMPLICIT NONE
+!   TYPE( Domain_ ) :: dom
+!   TYPE( MatrixField_ ) :: obj, obj2
+!   TYPE( HDF5File_ ) :: meshfile, hdf5file
+!   TYPE( ParameterList_ ) :: param
+!   INTEGER( I4B ) :: ierr
+!   !> main
+!   CALL FPL_INIT(); CALL param%Initiate()
+!   ! #HDF5File/Initiate
+!   CALL meshfile%Initiate( filename="./mesh.h5", mode="READ" )
+!   ! #HDF5File/Open
+!   CALL meshfile%Open()
+!   ! #Domain/Initiate
+!   CALL dom%Initiate( meshfile, "" ); CALL meshfile%Close()
+!   CALL meshfile%DeallocateData()
+!   ! #SetMatrixFieldParam
+!   CALL SetMatrixFieldParam( param=param, name="K", matrixProp="UNSYM", &
+!     & spaceCompo=2, timeCompo=1, fieldType=FIELD_TYPE_NORMAL )
+!   ! #MatrixField/Initiate
+!   CALL obj%Initiate( param, dom )
+!   ! #HDF5File/Initiate
+!   CALL hdf5file%Initiate( filename="./matrixField.h5", mode="NEW" )
+!   CALL hdf5file%Open()
+!   CALL obj2%Initiate( obj )
+!   ! #MatrixField/Export
+!   CALL obj2%Export(hdf5=hdf5file,group='')
+!   CALL hdf5file%DeallocateData()
+!   ! #MatrixField/DeallocateData
+!   CALL obj%DeallocateData()
+!   CALL obj2%DeallocateData()
+!   CALL dom%DeallocateData()
+!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+! END PROGRAM main
+!```
 
 INTERFACE
 MODULE SUBROUTINE mField_Initiate2( obj, obj2, copyFull, copyStructure, &
@@ -474,6 +530,48 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
 ! summary: This routine Exports the content of matrixfield_ to hdf5 file
+!
+!
+!## Usage
+!
+!```fortran
+! ! [[Domain_]], [[MatrixField_]], [[ParameterList_]],
+! ! [[HDF5File_]]
+! PROGRAM main
+!   USE easifemBase
+!   USE easifemClasses
+!   IMPLICIT NONE
+!   TYPE( Domain_ ) :: dom
+!   TYPE( MatrixField_ ) :: obj
+!   TYPE( HDF5File_ ) :: meshfile, hdf5file
+!   TYPE( ParameterList_ ) :: param
+!   INTEGER( I4B ) :: ierr
+!   !> main
+!   CALL FPL_INIT(); CALL param%Initiate()
+!   ! #HDF5File/Initiate
+!   CALL meshfile%Initiate( filename="./mesh.h5", mode="READ" )
+!   ! #HDF5File/Open
+!   CALL meshfile%Open()
+!   ! #Domain/Initiate
+!   CALL dom%Initiate( meshfile, "" ); CALL meshfile%Close()
+!   CALL meshfile%DeallocateData()
+!   ! #SetMatrixFieldParam
+!   CALL SetMatrixFieldParam( param=param, name="K", matrixProp="UNSYM", &
+!     & spaceCompo=2, timeCompo=1, fieldType=FIELD_TYPE_NORMAL )
+!   ! #MatrixField/Initiate
+!   CALL obj%Initiate( param, dom )
+!   ! #HDF5File/Initiate
+!   CALL hdf5file%Initiate( filename="./matrixField.h5", mode="NEW" )
+!   CALL hdf5file%Open()
+!   ! #MatrixField/Export
+!   CALL obj%Export(hdf5=hdf5file,group='')
+!   CALL hdf5file%DeallocateData()
+!   ! #MatrixField/DeallocateData
+!   CALL obj%DeallocateData()
+!   CALL dom%DeallocateData()
+!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+! END PROGRAM main
+!```
 
 INTERFACE
 MODULE SUBROUTINE mField_Export( obj, hdf5, group )
@@ -556,12 +654,15 @@ END INTERFACE
 ! vector
 !
 !# Introduction
-! This routine returns the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
-! `globalNode` is the global node number
-! `idof` is the degree of freedom number
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
 !
-! If `val` is present then the vector is returned inside the rank 1 vector
-! If `nodeFieldVal` is present then the row is returned inside the node field
+! - `globalNode` is the global node number of mesh
+! - `idof` is the degree of freedom number
+!
+! - If `val` is present then the vector is returned inside the rank 1 vector
+! - If `nodeFieldVal` is present then the row is returned inside the
+! node field
 
 INTERFACE
 MODULE SUBROUTINE mField_getRow( obj, globalNode, idof, val, nodeFieldVal, &
@@ -583,15 +684,16 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
 ! summary: This routine returns the column of a sparse matrix
-! vector
 !
 !# Introduction
-! This routine returns the column of a sparse matrix. The column index is calculated using the `globalNode` and `idof`.
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
 !
 ! If `val` is present then the vector is returned inside the rank 1 vector
-! If `nodeFieldVal` is present then the column is returned inside the node field
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
 
 INTERFACE
 MODULE SUBROUTINE mField_getColumn( obj, globalNode, idof, val, nodeFieldVal,&
@@ -617,7 +719,9 @@ END INTERFACE
 !# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
-! is a native fortran vector. The output vector is also a native fortran vector. It should be noted that the output vector should be allocated outside and it should have same length as the input vector.
+! is a native fortran vector. The output vector is also a native fortran
+! vector. It should be noted that the output vector should be allocated
+! outside and it should have same length as the input vector.
 !
 
 INTERFACE
@@ -642,7 +746,9 @@ END INTERFACE
 !# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
-! is a native fortran vector. The output vector is also a native fortran vector. It should be noted that the output vector should be allocated outside and it should have same length as the input vector.
+! is a native fortran vector. The output vector is also a native fortran
+! vector. It should be noted that the output vector should be allocated
+! outside and it should have same length as the input vector.
 
 INTERFACE
 MODULE SUBROUTINE mField_Matvec2( obj, x, y, transp )
@@ -668,11 +774,13 @@ END INTERFACE
 ! This routine solves (LU) sol = rhs
 ! sol and rhs are fortran real vector
 ! The LU decomposition is stored inside the AbstractMatrixField_.
-! Note that sol should be allocated by the user, and size of sol should be same as the size of rhs
+! Note that sol should be allocated by the user, and size of sol should be
+! same as the size of rhs
 !
 !@note
 ! LU matrix is stored inside the object in Modified Sparse Row format
-! This form of matrix is obtained by incomplete LU decomposition type precodnitioners
+! This form of matrix is obtained by incomplete LU decomposition type
+! precodnitioners
 !@endnote
 
 INTERFACE
@@ -702,7 +810,8 @@ END INTERFACE
 !
 !@note
 ! LU matrix is stored inside the object in Modified Sparse Row format
-! This form of matrix is obtained by incomplete LU decomposition type precodnitioners
+! This form of matrix is obtained by incomplete LU decomposition type
+! precodnitioners
 !@endnote
 
 INTERFACE
@@ -767,7 +876,8 @@ END INTERFACE
 ! summary: This routine fix the solution
 !
 !# Introduction
-! In sparse solver, it is common to use row or column permutations. This is done to improve the sparsity of ILU decomposition.
+! In sparse solver, it is common to use row or column permutations. This is
+! done to improve the sparsity of ILU decomposition.
 ! In case of column permutation, the solution needs to be permutated
 ! In case of row permulation, the rhs needs to be permutated
 
@@ -788,24 +898,29 @@ END INTERFACE
 ! summary: This routine sets data to matrix field
 !
 !# Introduction
+!
 ! IF `addContribution` and `scale` is absent then:
 !
 ! - This subroutine sets a block of data to matrix.
 ! - This block data is contained in `val(:,:)`
-! - The sized of val should be tdof * size( globalNode )
+! - The sized of val should be tdof * size( globalNode ), where
+! `tdof` is the total degrees of freedom
 ! - `globalNode` contains the node number
-! - storageFMT is the storage format of val(:,:), it can be DOF_FMT, or NODES_FMT.
+! - storageFMT is the storage format of val(:,:), it can be DOF_FMT, or
+! `FMT_NODES`.
 !
 ! If `addContribution` and `scale` are present  then:
 ! This subroutine adds a block of data to matrix.
 ! This block data is contained in `val(:,:)`
 ! The sized of val should be tdof * size( globalNode )
 ! `globalNode` contains the node number
-! storageFMT is the storage format of val(:,:), it can be DOF_FMT, or NODES_FMT.
+! storageFMT is the storage format of val(:,:), it can be DOF_FMT, or
+! `FMT_NODES`.
 ! scale is scaling used for val.
 
 INTERFACE
-MODULE SUBROUTINE mField_set1( obj, globalNode, val, storageFMT, scale, addContribution )
+MODULE SUBROUTINE mField_set1( obj, globalNode, val, storageFMT, scale,  &
+  & addContribution )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
   REAL( DFP ), INTENT( IN ) :: val(:,:)
@@ -825,16 +940,23 @@ END INTERFACE
 !
 !# Introduction
 ! IF `addContribution` and `scale` is absent then:
-! This subroutine sets a scalar value `val` to all or selected the entries of the matrix.
-! If `globalNode` is present then this routine sets a scalar value `val` to selected the entries of the matrix. These entries are spacified by the `globalNode(:)` vector, which denotes the global node numbers. symbolically it does the following: `obj(glocalNode)=val`
-! If `globalNode` is absent then all entries are set to the scalar values. Symbolically it does the following: `obj=val`
+! This subroutine sets a scalar value `val` to all or selected the entries of
+! the matrix.
+! If `globalNode` is present then this routine sets a scalar value `val` to
+! selected the entries of the matrix. These entries are spacified by the
+! `globalNode(:)` vector, which denotes the global node numbers. symbolically
+! it does the following: `obj(glocalNode)=val`
+! If `globalNode` is absent then all entries are set to the scalar values.
+! Symbolically it does the following: `obj=val`
 !
 ! IF `addContribution` and `scale` not present:
 ! IF globalNode is not present then:
 ! This subroutine adds a scalar value `val` to all the entries of the matrix
 ! symbolically it does the following: `obj=obj+scale*val`
 ! If globalNode is present then:
-! This subroutine adds a scalar value `val` to selected the entries of the matrix. These entries are spacified by the `globalNode(:)` vector, which denotes the global node numbers.
+! This subroutine adds a scalar value `val` to selected the entries of the
+! matrix. These entries are spacified by the `globalNode(:)` vector, which
+! denotes the global node numbers.
 ! symbolically it does the following:
 ! `obj(glocalNode)=obj(globalNode)+scale*val`
 
@@ -858,13 +980,17 @@ END INTERFACE
 !
 !# Introduction
 ! If addContribution and scale not present then:
-! This subroutine sets a scalar value `val` to a single entry of the matrix. This entry is specified by the `rowNodeNum` and `colNodeNum`.
-! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`, `colNodeNum` and `colDOF`.
+! This subroutine sets a scalar value `val` to a single entry of the matrix.
+! This entry is specified by the `rowNodeNum` and `colNodeNum`.
+! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
+! `colNodeNum` and `colDOF`.
 !
 ! If addContribution and scale present then:
 !
-! This subroutine adds a scalar value `val` to a single entry of the matrix. This entry is specified by the `rowNodeNum` and `colNodeNum`.
-! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`, `colNodeNum` and `colDOF`.
+! This subroutine adds a scalar value `val` to a single entry of the matrix.
+! This entry is specified by the `rowNodeNum` and `colNodeNum`.
+! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
+! `colNodeNum` and `colDOF`.
 
 INTERFACE
 MODULE SUBROUTINE mField_set3( obj, rowNodeNum, colNodeNum, rowDOF, colDOF, &
@@ -889,11 +1015,14 @@ END INTERFACE
 ! summary: This routine set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated using the `globalNode` and `idof`.
+! This routine sets the row of a sparse matrix. The row index is calculated /
+! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to this vector value
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE

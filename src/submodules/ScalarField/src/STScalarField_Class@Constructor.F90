@@ -75,7 +75,8 @@ MODULE PROCEDURE stsField_Initiate1
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'STScalar field object is already initiated')
   CALL obj%checkEssentialParam(param)
-  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( key="STScalarField/name" ) ) :: char_var )
+  ALLOCATE( CHARACTER( LEN = param%DataSizeInBytes( &
+    & key="STScalarField/name" ) ) :: char_var )
   ierr = param%get( key="STScalarField/name", value=char_var )
   obj%name = char_var
   names_char( 1 )(1:1) = char_var( 1:1 )
@@ -120,15 +121,8 @@ END PROCEDURE stsField_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_DeallocateData"
-  obj%tSize = 0_I4B
-  obj%name = ''
   obj%timeCompo = 0_I4B
-  obj%isInitiated = .FALSE.
-  obj%fieldType = FIELD_TYPE_CONSTANT
-  CALL DeallocateData( obj%realvec )
-  CALL DeallocateData( obj%dof )
-  NULLIFY( obj%domain )
+  CALL AbstractNodeFieldDeallocateData(obj)
 END PROCEDURE stsField_DeallocateData
 
 !----------------------------------------------------------------------------

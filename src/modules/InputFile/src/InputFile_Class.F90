@@ -21,7 +21,8 @@
 ! The log file type is an extension of the Fortran file type. Specifically it
 ! is a write-only text file that overwrites any existing file when opened. The
 ! purpose of the log file is to provide a log of the execution of a program or
-! subprogram. It provides additional methods "message" which writes a message to the log file and
+! subprogram. It provides additional methods "message" which writes a message
+! to the log file and
 ! optionally to the prompt. The "setEcho"
 ! method can be used to control echoeing of messages to the prompt, similarly
 ! the "message" method has an optional input to over-ride the value of
@@ -29,12 +30,12 @@
 
 MODULE InputFile_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr, stdin
-USE BaseType, ONLY : String
+USE String_Class, ONLY : String
 USE ExceptionHandler_Class
 USE FortranFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*),PARAMETER :: modName='INPUTFILE_CLASS'
+CHARACTER(LEN=*),PARAMETER :: modName='InputFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen=256
 TYPE(ExceptionHandler_), PRIVATE :: e
 
@@ -108,10 +109,10 @@ END INTERFACE
 ! - `recl` Optional input is not used by this routine.
 
 INTERFACE
-MODULE SUBROUTINE inp_initiate(obj,file,unit,status,access,form, &
+MODULE SUBROUTINE inp_initiate(obj,filename,unit,status,access,form, &
   & position,action,pad,recl, comment, separator, delimiter)
   CLASS( InputFile_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: file
+  CHARACTER( LEN = * ), INTENT( IN ) :: filename
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unit
   CHARACTER( LEN=* ), OPTIONAL, INTENT( IN ) :: status
   CHARACTER( LEN=* ), OPTIONAL, INTENT( IN ) :: access

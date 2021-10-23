@@ -78,8 +78,8 @@ MODULE PROCEDURE sField_Import
   END IF
   ! READ fieldType
   dsetname=trim(group)//"/fieldType"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-      CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+      CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
       SELECT CASE( TRIM(strval%chars()) )
       CASE( "NORMAL" )
         fieldType = FIELD_TYPE_NORMAL
@@ -95,18 +95,18 @@ MODULE PROCEDURE sField_Import
   END IF
   ! READ name
   dsetname=trim(group)//"/name"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
   ! READ engine
   dsetname=trim(group)//"/engine"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset named engine should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=engine)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=engine)
   ! Construct the base
   CALL FPL_INIT(); CALL param%initiate()
   CALL setScalarFieldParam( param=param, &
@@ -116,14 +116,14 @@ MODULE PROCEDURE sField_Import
   CALL param%deallocateData(); CALL FPL_FINALIZE()
   ! READ dof
   dsetname=trim(group)//"/dof"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=trim(dsetname%chars()))
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
   END IF
   ! READ realVec
   dsetname=trim(group)//"/realVec"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( hdf5%pathExists(dsetname%chars())) THEN
     CALL ImportRealVector( obj=obj%realVec, hdf5=hdf5, &
-      & group=trim(dsetname%chars()) )
+      & group=dsetname%chars() )
   END IF
 END PROCEDURE sField_Import
 
@@ -154,20 +154,20 @@ MODULE PROCEDURE sField_Export
   ! WRITE fieldType
   dsetname=trim(group)//"/fieldType"
   strval = FIELD_TYPE_NAME( obj%fieldType )
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=strval)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
   ! WRITE name
   dsetname=trim(group)//"/name"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%name)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%name)
   ! WRITE engine
   dsetname=trim(group)//"/engine"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()),vals=obj%engine)
+  CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%engine)
   ! WRITE dof
   dsetname=trim(group)//"/dof"
-  CALL ExportDOF( obj=obj%dof, hdf5=hdf5, group=trim(dsetname%chars()))
+  CALL ExportDOF( obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
   ! WRITE realVec
   dsetname=trim(group)//"/realVec"
   CALL ExportRealVector( obj=obj%realVec, hdf5=hdf5, &
-    & group=trim(dsetname%chars()) )
+    & group=dsetname%chars() )
 END PROCEDURE sField_Export
 
 END SUBMODULE IOMethods

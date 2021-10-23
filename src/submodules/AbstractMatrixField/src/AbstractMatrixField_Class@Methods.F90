@@ -20,6 +20,11 @@ SUBMODULE ( AbstractMatrixField_Class) Methods
 IMPLICIT NONE
 CONTAINS
 
+MODULE PROCEDURE amField_DeallocateData
+  CALL AbstractFieldDeallocateData(obj)
+  obj%isPmatInitiated = .FALSE.
+END PROCEDURE amField_DeallocateData
+
 !----------------------------------------------------------------------------
 !                                                   isPreconditionSet
 !----------------------------------------------------------------------------

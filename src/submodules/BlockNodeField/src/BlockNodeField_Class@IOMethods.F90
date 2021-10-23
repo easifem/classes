@@ -23,7 +23,7 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Display
+MODULE PROCEDURE bnField_Display
   INTEGER( I4B ) :: ii
   IF( LEN_TRIM( msg) .NE. 0 ) THEN
     CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
@@ -49,41 +49,43 @@ MODULE PROCEDURE Block_Display
   ELSE
     CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
   END IF
-  IF( ALLOCATED( obj%domains )  ) THEN
-    CALL Display( "# domains : ALLOCATED", unitNo=unitNo )
-    DO ii = 1, SIZE(obj%domains)
-      IF( ASSOCIATED( obj%domains(ii)%ptr )  ) THEN
-        CALL Display( "# domains("//TOSTRING(ii)//"): ASSOCIATED", &
-          & unitNo=unitNo )
+  IF( ALLOCATED( obj%domains ) ) THEN
+    CALL Display( "# domains : ALLOCATED [" &
+      & // TOSTRING(SIZE(obj%domains)) &
+      & // "]", unitNo=unitNo )
+    DO ii = 1, SIZE( obj%domains )
+      IF( ASSOCIATED(obj%domains(ii)%ptr) ) THEN
+        CALL Display( "# domains(" // TOSTRING(ii) &
+          & // ")%ptr : ASSOCIATED", unitNo=unitNo )
       ELSE
-        CALL Display( "# domains("//TOSTRING(ii)//"): NOT ASSOCIATED", &
-          & unitNo=unitNo )
+        CALL Display( "# domains(" // TOSTRING(ii)  &
+          & // ")%ptr : NOT ASSOCIATED", unitNo=unitNo )
       END IF
     END DO
   ELSE
     CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
   END IF
-  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
-END PROCEDURE Block_Display
+  ! CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
+END PROCEDURE bnField_Display
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Import
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_Import"
+MODULE PROCEDURE bnField_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Import"
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'This routine is under condtruction!')
-END PROCEDURE Block_Import
+END PROCEDURE bnField_Import
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Block_Export
-  CHARACTER( LEN = * ), PARAMETER :: myName="Block_Export"
+MODULE PROCEDURE bnField_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Export"
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'This routine is under condtruction!')
-END PROCEDURE Block_Export
+END PROCEDURE bnField_Export
 
 END SUBMODULE IOMethods

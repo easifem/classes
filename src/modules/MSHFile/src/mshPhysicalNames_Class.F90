@@ -21,6 +21,7 @@
 
 MODULE mshPhysicalNames_Class
 USE BaseType
+USE String_Class
 USE GlobalData
 USE TxtFile_Class
 USE ExceptionHandler_Class

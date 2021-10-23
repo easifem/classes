@@ -164,21 +164,9 @@ END PROCEDURE mField_Initiate3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_DeallocateData
-  INTEGER( I4B ) :: ii
-  obj%name = ''
-  obj%engine=""
   CALl DeallocateData( obj%mat )
   CALL DeallocateData( obj%Pmat )
-  obj%isInitiated = .FALSE.
-  obj%isPmatInitiated = .FALSE.
-  obj%fieldType = 0
-  obj%domain => NULL()
-  IF( ALLOCATED( obj%domains ) ) THEN
-    DO ii = 1, SIZE( obj%domains )
-      obj%domains(ii)%ptr => NULL()
-    END DO
-    DEALLOCATE( obj%domains )
-  END IF
+  CALL AbstractMatrixFieldDeallocateData(obj)
 END PROCEDURE mField_DeallocateData
 
 !----------------------------------------------------------------------------

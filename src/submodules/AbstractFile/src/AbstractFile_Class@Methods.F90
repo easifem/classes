@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractFile_Class) Methods
-USE StringiFor
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

@@ -21,6 +21,7 @@
 MODULE VectorField_Class
 USE GlobalData
 USE BaseType
+USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_
@@ -48,7 +49,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => vField_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => vField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+    & vField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => vField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => vField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => vField_Display
@@ -93,7 +95,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PASS( obj ) :: get7 => vField_get7
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
     !! get the entries of Vector field
-  PROCEDURE, PASS( obj ) :: getPointerOfComponent => vField_getPointerOfComponent
+  PROCEDURE, PASS( obj ) :: getPointerOfComponent => &
+    & vField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => vField_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => vField_Export
 END TYPE VectorField_
@@ -133,7 +136,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 July 2021
-! summary: This routine set the essential and optional parameters for creating the vector field
+! summary: Sets parameters for creating the vector field
 !
 INTERFACE
 MODULE SUBROUTINE setVectorFieldParam( param, name, spaceCompo, fieldType )

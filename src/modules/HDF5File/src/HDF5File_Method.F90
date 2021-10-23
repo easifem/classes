@@ -20,11 +20,10 @@
 ! summary: Some additional methods for HDF5File
 
 MODULE HDF5File_Method
-USE BaseMethod
 USE BaseType
+USE BaseMethod
 USE HDF5File_Class
 IMPLICIT NONE
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -38,18 +37,18 @@ SUBROUTINE ExportDOF( obj, hdf5, group )
   ! Internal variable
   TYPE(String) :: dsetname
   dsetname = trim(group)//"/storageFMT"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%storageFMT )
   !>
   IF( ALLOCATED(obj%map) ) THEN
     dsetname = trim(group)//"/map"
-    CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=obj%map )
   END IF
   !>
   IF( ALLOCATED(obj%valMap) ) THEN
     dsetname = trim(group)//"/valMap"
-    CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=obj%valMap )
   END IF
 END SUBROUTINE ExportDOF
@@ -65,16 +64,16 @@ SUBROUTINE ImportDOF( obj, hdf5, group )
   ! Internal variable
   TYPE(String) :: dsetname
   dsetname = trim(group)//"/storageFMT"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%storageFMT )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%storageFMT )
   !> Map
   dsetname = trim(group)//"/map"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%map )
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%map )
   END IF
   !> valmap
   dsetname = trim(group)//"/valMap"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%valMap )
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%valMap )
   END IF
 END SUBROUTINE ImportDOF
 
@@ -90,40 +89,40 @@ SUBROUTINE ExportCSRSparsity( obj, hdf5, group)
   TYPE(String) :: dsetname
 
   dsetname = trim(group)//"/nnz"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%nnz )
   !>
   dsetname = trim(group)//"/ncol"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%ncol )
   !>
   dsetname = trim(group)//"/nrow"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%nrow )
   !>
   dsetname = trim(group)//"/isSorted"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSorted )
   !>
   dsetname = trim(group)//"/isInitiated"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isInitiated )
   !>
   dsetname = trim(group)//"/isSparsityLock"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSparsityLock )
   !>
   CALL ExportDOF( obj=obj%dof, hdf5=hdf5, group=trim(group)//"/dof" )
   !>
   IF( ALLOCATED(obj%IA) ) THEN
     dsetname = trim(group)//"/IA"
-    CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=obj%IA )
   END IF
   !>
   IF( ALLOCATED(obj%JA) ) THEN
     dsetname = trim(group)//"/JA"
-    CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=obj%JA )
   END IF
 END SUBROUTINE ExportCSRSparsity
@@ -140,33 +139,33 @@ SUBROUTINE ImportCSRSparsity( obj, hdf5, group)
   TYPE(String) :: dsetname
   !> nnzz
   dsetname = trim(group)//"/nnz"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%nnz )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%nnz )
   !> ncol
   dsetname = trim(group)//"/ncol"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%ncol )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%ncol )
   !> nrow
   dsetname = trim(group)//"/nrow"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%nrow )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%nrow )
   !> isSorted
   dsetname = trim(group)//"/isSorted"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%isSorted )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%isSorted )
   !> isInitiated
   dsetname = trim(group)//"/isInitiated"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%isInitiated )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%isInitiated )
   !> isSparsityLock
   dsetname = trim(group)//"/isSparsityLock"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%isSparsityLock )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%isSparsityLock )
   !> dof
   CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=trim(group)//"/dof" )
   !> IA
   dsetname = trim(group)//"/IA"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%IA )
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%IA )
   END IF
   !> JA
   dsetname = trim(group)//"/JA"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%JA )
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%JA )
   END IF
 END SUBROUTINE ImportCSRSparsity
 
@@ -182,20 +181,20 @@ SUBROUTINE ExportCSRMatrix( obj, hdf5, group)
   TYPE(String) :: dsetname
   !>
   dsetname = trim(group)//"/csrOwnership"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%csrOwnership )
   !>
   dsetname = trim(group)//"/tDimension"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%tDimension )
   !>
   dsetname = trim(group)//"/matrixProp"
-  CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=String(obj%matrixProp) )
   !>
   IF( ALLOCATED(obj%A) ) THEN
     dsetname = trim(group)//"/A"
-    CALL hdf5%write(dsetname=trim(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=obj%A )
   END IF
   !>
@@ -217,25 +216,25 @@ SUBROUTINE ImportCSRMatrix( obj, hdf5, group)
   !> main
   !> csrOwnership
   dsetname = trim(group)//"/csrOwnership"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%csrOwnership )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%csrOwnership )
   !> tDimension
   dsetname = trim(group)//"/tDimension"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%tDimension )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%tDimension )
   !> matrixProp
   dsetname = trim(group)//"/matrixProp"
-  CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=strval )
+  CALL hdf5%read(dsetname=dsetname%chars(), vals=strval )
   obj%matrixProp = strval%chars()
   !>
   dsetname = trim(group)//"/A"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()), vals=obj%A )
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%A )
   END IF
   !>
   dsetname = trim(group)//"/csr"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( hdf5%pathExists(dsetname%chars())) THEN
     ALLOCATE( obj%csr )
     CALL ImportCSRSparsity(obj=obj%csr, hdf5=hdf5, &
-      & group=trim(dsetname%chars()) )
+      & group=dsetname%chars() )
   END IF
 END SUBROUTINE ImportCSRMatrix
 
@@ -251,10 +250,10 @@ SUBROUTINE ExportRealVector( obj, hdf5, group )
   TYPE( String ) :: dsetname
   !> tDimension
   dsetname = trim(group)//"/tDimension"
-  CALL hdf5%write( dsetname=trim(dsetname%chars()), vals=obj%tDimension )
+  CALL hdf5%write( dsetname=dsetname%chars(), vals=obj%tDimension )
   !> Val
   dsetname = trim(group)//"/Val"
-  CALL hdf5%write( dsetname=trim(dsetname%chars()), vals=obj%Val )
+  CALL hdf5%write( dsetname=dsetname%chars(), vals=obj%Val )
 END SUBROUTINE ExportRealVector
 
 !----------------------------------------------------------------------------
@@ -269,10 +268,10 @@ SUBROUTINE ImportRealVector( obj, hdf5, group )
   TYPE( String ) :: dsetname
   !> tDimension
   dsetname = trim(group)//"/tDimension"
-  CALL hdf5%read( dsetname=trim(dsetname%chars()), vals=obj%tDimension )
+  CALL hdf5%read( dsetname=dsetname%chars(), vals=obj%tDimension )
   !> Val
   dsetname = trim(group)//"/Val"
-  CALL hdf5%read( dsetname=trim(dsetname%chars()), vals=obj%Val )
+  CALL hdf5%read( dsetname=dsetname%chars(), vals=obj%Val )
 END SUBROUTINE ImportRealVector
 
 !----------------------------------------------------------------------------
@@ -287,10 +286,10 @@ SUBROUTINE ExportIntVector( obj, hdf5, group )
   TYPE( String ) :: dsetname
   !> tDimension
   dsetname = trim(group)//"/tDimension"
-  CALL hdf5%write( dsetname=trim(dsetname%chars()), vals=obj%tDimension )
+  CALL hdf5%write( dsetname=dsetname%chars(), vals=obj%tDimension )
   !> Val
   dsetname = trim(group)//"/Val"
-  CALL hdf5%write( dsetname=trim(dsetname%chars()), vals=obj%Val )
+  CALL hdf5%write( dsetname=dsetname%chars(), vals=obj%Val )
 END SUBROUTINE ExportIntVector
 
 !----------------------------------------------------------------------------
@@ -305,10 +304,10 @@ SUBROUTINE ImportIntVector( obj, hdf5, group )
   TYPE( String ) :: dsetname
   !> tDimension
   dsetname = trim(group)//"/tDimension"
-  CALL hdf5%read( dsetname=trim(dsetname%chars()), vals=obj%tDimension )
+  CALL hdf5%read( dsetname=dsetname%chars(), vals=obj%tDimension )
   !> Val
   dsetname = trim(group)//"/Val"
-  CALL hdf5%read( dsetname=trim(dsetname%chars()), vals=obj%Val )
+  CALL hdf5%read( dsetname=dsetname%chars(), vals=obj%Val )
 END SUBROUTINE ImportIntVector
 
 !----------------------------------------------------------------------------

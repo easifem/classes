@@ -19,6 +19,7 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE (MeshSelection_Class) ConstructorMethods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

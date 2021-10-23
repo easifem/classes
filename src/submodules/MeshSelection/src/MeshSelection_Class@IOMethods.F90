@@ -19,6 +19,7 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE (MeshSelection_Class) IOMethods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -52,104 +53,104 @@ MODULE PROCEDURE meshSelect_Import
   END IF
   ! READ isSelectionByMeshID
   dsetname=TRIM(group)//"/isSelectionByMeshID"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%isSelectionByMeshID)
   ELSE
     obj%isSelectionByMeshID=.FALSE.
   END IF
   ! READ isSelectionByElemNum
   dsetname=TRIM(group)//"/isSelectionByElemNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%isSelectionByElemNum)
   ELSE
     obj%isSelectionByElemNum=.FALSE.
   END IF
   ! READ isSelectionByNodeNum
   dsetname=TRIM(group)//"/isSelectionByNodeNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%isSelectionByNodeNum)
   ELSE
     obj%isSelectionByNodeNum=.FALSE.
   END IF
   ! READ isSelectionByBox
   dsetname=TRIM(group)//"/isSelectionByBox"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=obj%isSelectionByBox)
   ELSE
     obj%isSelectionByBox=.FALSE.
   END IF
   ! READ PointMeshID
   dsetname=TRIM(group)//"/PointMeshID"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%PointMeshID=intvec
     obj%isSelectionByMeshID=.TRUE.
   END IF
   ! READ CurveMeshID
   dsetname=TRIM(group)//"/CurveMeshID"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%CurveMeshID=intvec
     obj%isSelectionByMeshID=.TRUE.
   END IF
   ! READ SurfaceMeshID
   dsetname=TRIM(group)//"/SurfaceMeshID"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%SurfaceMeshID=intvec
     obj%isSelectionByMeshID=.TRUE.
   END IF
   ! READ VolumeMeshID
   dsetname=TRIM(group)//"/VolumeMeshID"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%VolumeMeshID=intvec
     obj%isSelectionByMeshID=.TRUE.
   END IF
   ! READ PointElemNum
   dsetname=TRIM(group)//"/PointElemNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%PointElemNum=intvec
     obj%isSelectionByElemNum=.TRUE.
   END IF
   ! READ CurveElemNum
   dsetname=TRIM(group)//"/CurveElemNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%CurveElemNum=intvec
     obj%isSelectionByElemNum=.TRUE.
   END IF
   ! READ SurfaceElemNum
   dsetname=TRIM(group)//"/SurfaceElemNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%SurfaceElemNum=intvec
     obj%isSelectionByElemNum=.TRUE.
   END IF
   ! READ VolumeElemNum
   dsetname=TRIM(group)//"/VolumeElemNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%VolumeElemNum=intvec
     obj%isSelectionByElemNum=.TRUE.
   END IF
   ! READ NodeNum
   dsetname=TRIM(group)//"/NodeNum"
-  IF( hdf5%pathExists(TRIM(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=TRIM(dsetname%chars()), &
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(), &
       & vals=intvec)
     obj%NodeNum=intvec
     obj%isSelectionByNodeNum =.TRUE.
@@ -188,81 +189,81 @@ MODULE PROCEDURE meshSelect_Export
   END IF
   ! READ isSelectionByMeshID
   dsetname=TRIM(group)//"/isSelectionByMeshID"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSelectionByMeshID)
   ! READ isSelectionByElemNum
   dsetname=TRIM(group)//"/isSelectionByElemNum"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSelectionByElemNum)
   ! READ isSelectionByNodeNum
   dsetname=TRIM(group)//"/isSelectionByNodeNum"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSelectionByNodeNum)
   ! READ isSelectionByBox
   dsetname=TRIM(group)//"/isSelectionByBox"
-  CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+  CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSelectionByBox)
   ! READ PointMeshID
   IF( isAllocated(obj%PointMeshID) ) THEN
     dsetname=TRIM(group)//"/PointMeshID"
     intvec=obj%PointMeshID
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ CurveMeshID
   IF( isAllocated(obj%CurveMeshID) ) THEN
     dsetname=TRIM(group)//"/CurveMeshID"
     intvec=obj%CurveMeshID
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ SurfaceMeshID
   IF( isAllocated(obj%SurfaceMeshID) ) THEN
     dsetname=TRIM(group)//"/SurfaceMeshID"
     intvec=obj%SurfaceMeshID
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ VolumeMeshID
   IF( isAllocated(obj%VolumeMeshID) ) THEN
     dsetname=TRIM(group)//"/VolumeMeshID"
     intvec=obj%VolumeMeshID
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ PointElemNum
   IF( isAllocated(obj%PointElemNum) ) THEN
     dsetname=TRIM(group)//"/PointElemNum"
     intvec=obj%PointElemNum
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ CurveElemNum
   IF( isAllocated(obj%CurveElemNum) ) THEN
     dsetname=TRIM(group)//"/CurveElemNum"
     intvec=obj%CurveElemNum
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ SurfaceElemNum
   IF( isAllocated(obj%SurfaceElemNum) ) THEN
     dsetname=TRIM(group)//"/SurfaceElemNum"
     intvec=obj%SurfaceElemNum
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ VolumeElemNum
   IF( isAllocated(obj%VolumeElemNum) ) THEN
     dsetname=TRIM(group)//"/VolumeElemNum"
     intvec=obj%VolumeElemNum
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   ! READ NodeNum
   IF( isAllocated(obj%NodeNum) ) THEN
     dsetname=TRIM(group)//"/NodeNum"
     intvec=obj%NodeNum
-    CALL hdf5%write(dsetname=TRIM(dsetname%chars()), &
+    CALL hdf5%write(dsetname=dsetname%chars(), &
       & vals=intvec)
   END IF
   !> print info

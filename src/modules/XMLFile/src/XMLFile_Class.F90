@@ -17,7 +17,7 @@
 
 MODULE XMLFile_Class
 USE GlobalData
-USE BaseType
+USE String_Class, ONLY:String
 USE AbstractFile_Class
 USE XMLTag_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_

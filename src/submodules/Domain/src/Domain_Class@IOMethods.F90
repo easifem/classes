@@ -54,102 +54,102 @@ MODULE PROCEDURE Domain_Import
   END IF
   !> read engine
   dsetname=trim(group)//"/engine"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // 'path does not exists' )
+      & dsetname%chars() // 'path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%engine )
+    CALL hdf5%read( dsetname%chars(), obj%engine )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
     & "engine = "//trim(obj%engine) )
   END IF
   !> read majorversion
   dsetname=trim(group)//"/majorVersion"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%majorVersion )
+    CALL hdf5%read( dsetname%chars(), obj%majorVersion )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "majorVersion = "//trim( str(obj%majorVersion, .true.) ) )
   END IF
   !> read minor version
   dsetname=trim(group)//"/minorVersion"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%minorVersion )
+    CALL hdf5%read( dsetname%chars(), obj%minorVersion )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "minorVersion = "//trim( str(obj%minorVersion, .true.) ) )
   END IF
   !> read version
   dsetname=trim(group)//"/version"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%version )
+    CALL hdf5%read( dsetname%chars(), obj%version )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "version = "//trim( str(obj%version) ) )
   END IF
   !> read NSD
   dsetname=trim(group)//"/NSD"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%NSD )
+    CALL hdf5%read( dsetname%chars(), obj%NSD )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "NSD = "//trim( str(obj%NSD, .true.) ) )
   END IF
   !> maxNptrs
   dsetname=trim(group)//"/maxNptrs"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%maxNptrs )
+    CALL hdf5%read( dsetname%chars(), obj%maxNptrs )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "maxNptrs = "//trim( str(obj%maxNptrs, .true.) ) )
   END IF
   !> minNptrs
   dsetname=trim(group)//"/minNptrs"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%minNptrs )
+    CALL hdf5%read( dsetname%chars(), obj%minNptrs )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "minNptrs = "//trim( str(obj%minNptrs, .true.) ) )
   END IF
   !> tNodes
   dsetname=trim(group)//"/tNodes"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tNodes )
+    CALL hdf5%read( dsetname%chars(), obj%tNodes )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "tNodes = "//trim( str(obj%tNodes, .true.) ) )
   END IF
   !> nodeCoord
   dsetname=trim(group)//"/nodeCoord"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%nodeCoord )
+    CALL hdf5%read( dsetname%chars(), obj%nodeCoord )
     IF( e%isLogActive() ) &
       & CALL Display( obj%nodeCoord, 'nodeCoord = ', &
       & unitNo = e%getLogFileUnit() )
   END IF
   !> local_nptrs
   dsetname=trim(group)//"/local_nptrs"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%local_nptrs )
+    CALL hdf5%read( dsetname%chars(), obj%local_nptrs )
     IF( e%isLogActive() ) &
       & CALL Display( obj%local_nptrs, 'local_nptrs = ', &
       & unitNo = e%getLogFileUnit() )
@@ -162,82 +162,82 @@ MODULE PROCEDURE Domain_Import
   END IF
   !> maxElemNum
   dsetname=trim(group)//"/maxElemNum"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%maxElemNum )
+    CALL hdf5%read( dsetname%chars(), obj%maxElemNum )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "maxElemNum = "//trim( str(obj%maxElemNum, .true.) ) )
   END IF
   !> minElemNum
   dsetname=trim(group)//"/minElemNum"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%minElemNum )
+    CALL hdf5%read( dsetname%chars(), obj%minElemNum )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "minElemNum = "//trim( str(obj%minElemNum, .true.) ) )
   END IF
   !> tEntitiesForNodes
   dsetname=trim(group)//"/tEntitiesForNodes"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tEntitiesForNodes )
+    CALL hdf5%read( dsetname%chars(), obj%tEntitiesForNodes )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "tEntitiesForNodes = "//trim( str(obj%tEntitiesForNodes, .true.) ) )
   END IF
   !> tEntitiesForElements
   dsetname=trim(group)//"/tEntitiesForElements"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tEntitiesForElements )
+    CALL hdf5%read( dsetname%chars(), obj%tEntitiesForElements )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "tEntitiesForElements = "  &
       & //trim( str(obj%tEntitiesForElements, .true.) ) )
   END IF
   !> numVolumeEntities
   dsetname=trim(group)//"/numVolumeEntities"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tEntities( 3 ) )
+    CALL hdf5%read( dsetname%chars(), obj%tEntities( 3 ) )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "numVolumeEntites = "//trim( str(obj%tEntities( 3 ), .true.) ) )
   END IF
   !> numSurfaceEntities
   dsetname=trim(group)//"/numSurfaceEntities"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tEntities( 2 ) )
+    CALL hdf5%read( dsetname%chars(), obj%tEntities( 2 ) )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "numSurfaceEntites = "//trim( str(obj%tEntities( 2 ), .true.) ) )
   END IF
   !> numCurveEntities
   dsetname=trim(group)//"/numCurveEntities"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tEntities( 1 ) )
+    CALL hdf5%read( dsetname%chars(), obj%tEntities( 1 ) )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "numCurveEntites = "//trim( str(obj%tEntities( 1 ), .true.) ) )
   END IF
   !> numPointEntities
   dsetname=trim(group)//"/numPointEntities"
-  IF( .NOT. hdf5%pathExists( trim(dsetname%chars()) ) ) THEN
+  IF( .NOT. hdf5%pathExists( dsetname%chars() ) ) THEN
     CALL e%raiseError(modName//'::'//myName// &
-      & trim(dsetname%chars()) // ' path does not exists' )
+      & dsetname%chars() // ' path does not exists' )
   ELSE
-    CALL hdf5%read( trim(dsetname%chars()), obj%tEntities( 0 ) )
+    CALL hdf5%read( dsetname%chars(), obj%tEntities( 0 ) )
     CALL e%raiseInformation( modName//"::"//myName//" - "// &
       & "numPointEntites = "//trim( str(obj%tEntities( 0 ), .true.) ) )
   END IF
@@ -265,7 +265,7 @@ MODULE PROCEDURE Domain_Import
       CASE( 3 )
       dsetname = trim(group)//"/volumeEntities_"//TRIM(str(ii, .true.) )
       END SELECT
-      meshObj%ptr => Mesh_Pointer(hdf5=hdf5, group=trim(dsetname%chars()))
+      meshObj%ptr => Mesh_Pointer(hdf5=hdf5, group=dsetname%chars())
       IF( .NOT. ASSOCIATED( meshObj%ptr ) ) &
         & CALL e%raiseError(modName//'::'//myName// &
         & 'some of the mesh entities are not associated' )

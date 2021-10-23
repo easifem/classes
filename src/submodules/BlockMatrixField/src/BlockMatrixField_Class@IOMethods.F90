@@ -58,8 +58,8 @@ MODULE PROCEDURE mField_Import
   dsetname=TRIM(group)//"/fieldType"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
-      CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=strval)
+  IF( hdf5%PathExists(dsetname%chars())) THEN
+      CALL hdf5%Read(dsetname=dsetname%chars(),vals=strval)
       SELECT CASE( TRIM(strval%Chars()) )
       CASE( "NORMAL" )
         fieldType = FIELD_TYPE_NORMAL
@@ -77,57 +77,57 @@ MODULE PROCEDURE mField_Import
   dsetname=TRIM(group)//"/name"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+  IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
   ELSE
-    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=name)
+    CALL hdf5%Read(dsetname=dsetname%chars(),vals=name)
   END IF
   ! engine
   dsetname=TRIM(group)//"/engine"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+  IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
     engine="NATIVE_SERIAL"
   ELSE
-    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=engine)
+    CALL hdf5%Read(dsetname=dsetname%chars(),vals=engine)
   END IF
   ! matrixProp
   dsetname=TRIM(group)//"/matrixProp"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+  IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName// &
     & 'The dataset matrixProp should be present')
   ELSE
-    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=matrixProp)
+    CALL hdf5%Read(dsetname=dsetname%chars(),vals=matrixProp)
   END IF
   ! tPhysicalVarNames
   dsetname=TRIM(group)//"/tPhysicalVarNames"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+  IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName// &
       & 'The dataset ' // dsetname%chars() // ' should be present')
   ELSE
-    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=tvar)
+    CALL hdf5%Read(dsetname=dsetname%chars(),vals=tvar)
   END IF
   ! spaceCompo
   dsetname=TRIM(group)//"/spaceCompo"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+  IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName// &
     & 'The dataset spaceCompo should be present')
   ELSE
-    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=spaceCompo)
+    CALL hdf5%Read(dsetname=dsetname%chars(),vals=spaceCompo)
   END IF
   ! timeCompo
   dsetname=TRIM(group)//"/timeCompo"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
-    CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()),vals=timeCompo)
+  IF( hdf5%PathExists(dsetname%chars())) THEN
+    CALL hdf5%Read(dsetname=dsetname%chars(),vals=timeCompo)
   ELSE
     timeCompo = spaceCompo
     timeCompo = 1
@@ -136,7 +136,7 @@ MODULE PROCEDURE mField_Import
   dsetname=TRIM(group)//"/mat"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+  IF( hdf5%PathExists(dsetname%chars()) ) THEN
     obj%engine=engine
     obj%name=name
     obj%fieldType=fieldType
@@ -163,13 +163,13 @@ MODULE PROCEDURE mField_Import
     ALLOCATE( physicalVarNames( tvar ))
     DO ii = 1, tvar
       dsetname=TRIM(group)//"/physicalVarName"//TOSTRING(ii)
-      IF( .NOT. hdf5%PathExists(TRIM(dsetname%Chars()))) THEN
+      IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
         CALL e%RaiseError(modName//'::'//myName// &
         & 'The dataset ' // dsetname%Chars() // ' should be present')
       ELSE
         CALL e%RaiseInformation(modName//"::"//myName//" - "// &
           & "Importing "//dsetname%chars() )
-        CALL hdf5%Read(dsetname=TRIM(dsetname%Chars()), &
+        CALL hdf5%Read(dsetname=dsetname%chars(), &
           & vals=strval)
         physicalVarNames(ii)=strval%chars()
       END IF
@@ -197,7 +197,7 @@ MODULE PROCEDURE mField_Import
   dsetname=TRIM(group)//"/pmat"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
-  IF( hdf5%PathExists(TRIM(dsetname%Chars())) ) THEN
+  IF( hdf5%PathExists(dsetname%chars()) ) THEN
     CALL obj%ImportPmat( hdf5=hdf5, group=dsetname%chars(), &
       & dom=dom, domains=domains )
   ELSE

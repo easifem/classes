@@ -22,6 +22,7 @@
 MODULE LinSolver_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE AbstractNodeField_Class

@@ -19,7 +19,9 @@
 ! summary: This module defines a data type for mesh selection
 
 MODULE MeshSelection_Class
-USE easifemBase
+USE GlobalData
+USE BaseType
+USE String_Class, ONLY:String
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE HDF5File_Class, ONLY: HDF5File_
 USE Domain_Class, ONLY: Domain_

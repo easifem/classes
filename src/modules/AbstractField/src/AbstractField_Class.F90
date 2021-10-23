@@ -34,6 +34,7 @@
 MODULE AbstractField_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY:String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY : HDF5File_
 USE ExceptionHandler_Class, ONLY : ExceptionHandler_
@@ -94,8 +95,7 @@ TYPE, ABSTRACT :: AbstractField_
       !! Initiate  block fields (different physical variables) defined
       !! over different order of meshes.
     GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-    PROCEDURE(aField_DeallocateData), DEFERRED, PUBLIC, PASS( obj ) :: &
-      & DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => aField_DeallocateData
       !! Deallocate the field
     PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
       !! Display the field
@@ -207,17 +207,6 @@ END SUBROUTINE aField_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-SUBROUTINE aField_DeallocateData( obj )
-  IMPORT :: AbstractField_
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE aField_DeallocateData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                                 IMPORT
 !----------------------------------------------------------------------------
 
@@ -245,8 +234,37 @@ SUBROUTINE aField_Export( obj, hdf5, group )
 END SUBROUTINE aField_Export
 END INTERFACE
 
+INTERFACE AbstractFieldDeallocateData
+  MODULE PROCEDURE aField_DeallocateData
+END INTERFACE AbstractFieldDeallocateData
+
+PUBLIC :: AbstractFieldDeallocateData
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             DeallocateData
+!----------------------------------------------------------------------------
+
+SUBROUTINE aField_DeallocateData( obj )
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+  !> internal variables
+  INTEGER( I4B ) :: ii
+  obj%name=""
+  obj%engine=""
+  obj%isInitiated=.FALSE.
+  obj%fieldType=0
+  obj%domain => NULL()
+  IF( ALLOCATED( obj%domains ) ) THEN
+    DO ii = 1, SIZE( obj%domains )
+      obj%domains(ii)%ptr => NULL()
+    END DO
+    DEALLOCATE( obj%domains )
+  END IF
+END SUBROUTINE aField_DeallocateData
 
 END MODULE AbstractField_Class

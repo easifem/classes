@@ -21,7 +21,6 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: encodeVTKDataArray
 
-
 INTERFACE PACK_DATA
   MODULE PROCEDURE Pack_Data_Int32
 END INTERFACE PACK_DATA
@@ -791,8 +790,6 @@ INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Int64
 END INTERFACE encodeVTKDataArray
 #endif
-
-
 
 !----------------------------------------------------------------------------
 !

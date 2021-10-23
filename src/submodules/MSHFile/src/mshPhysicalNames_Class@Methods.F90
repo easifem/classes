@@ -128,7 +128,7 @@ MODULE PROCEDURE pn_Write
   !> Main
   IF( obj%isInitiated ) THEN
     CALL mshFile%getFileParts(path, filename, ext)
-    CALL outFile%initiate(file = path // filename // &
+    CALL outFile%initiate(filename = path // filename // &
       & "_PhysicalNames" // ext, action = "WRITE" )
     CALL outFile%open()
     unitNo = outFile%getUnitNo()

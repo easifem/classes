@@ -81,8 +81,8 @@ MODULE PROCEDURE stsField_Import
   END IF
   ! READ fieldType
   dsetname=trim(group)//"/fieldType"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-      CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=strval)
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+      CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
       SELECT CASE( TRIM(strval%chars()) )
       CASE( "NORMAL" )
         fieldType = FIELD_TYPE_NORMAL
@@ -98,22 +98,22 @@ MODULE PROCEDURE stsField_Import
   END IF
   ! READ name
   dsetname=trim(group)//"/name"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset name should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=name)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
   ! READ timeCompo
   dsetname=trim(group)//"/timeCompo"
-  IF( .NOT. hdf5%pathExists(trim(dsetname%chars()))) THEN
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName// &
     & 'The dataset timeCompo should be present')
   END IF
-  CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=timeCompo)
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=timeCompo)
   ! READ restart
   dsetname=trim(group)//"/restart"
-  IF( hdf5%pathExists(trim(dsetname%chars()))) THEN
-    CALL hdf5%read(dsetname=trim(dsetname%chars()),vals=restart)
+  IF( hdf5%pathExists(dsetname%chars())) THEN
+    CALL hdf5%read(dsetname=dsetname%chars(),vals=restart)
   ELSE
     restart = .FALSE.
   END IF

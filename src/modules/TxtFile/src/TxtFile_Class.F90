@@ -14,13 +14,14 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
-
 !> authors: Vikas Sharma, Ph. D.
 ! date: 	2 May 2021
 ! summary: 	module for I/O defines the derived type for a Fortran File object.
 !
 ! The developement of this module is inspired from the
-! `FileType_Fortran.F90` of Futility package. The original source is located at https://github.com/CASL/Futility/blob/master/src/AbstractFile_.F90. The original code has been modified as per the code-standard of easifem library.
+! `FileType_Fortran.F90` of Futility package. The original source is located
+! at https://github.com/CASL/Futility/blob/master/src/AbstractFile_.F90. The
+! original code has been modified as per the code-standard of easifem library.
 !
 ! The Fortan file type is an extension of the abstract `AbstractFile_`
 ! It provides a simplified interface to the native Fortran
@@ -28,7 +29,7 @@
 
 MODULE TxtFile_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr, stdin
-USE BaseType, ONLY : String
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class
 USE FortranFile_Class
 IMPLICIT NONE
@@ -84,10 +85,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE txt_initiate(obj,file,unit,status,access,form, &
+MODULE SUBROUTINE txt_initiate(obj,filename,unit,status,access,form, &
   & position,action,pad,recl, comment, separator, delimiter)
   CLASS( TxtFile_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: file
+  CHARACTER( LEN = * ), INTENT( IN ) :: filename
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unit
     !! User specified unit number, it should  not be equal to `stdout, stdin, stderr`
   CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: status

@@ -43,6 +43,7 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
     !! True if precondition matrix is initiated
   CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => amField_DeallocateData
   PROCEDURE( amField_Size ), DEFERRED, PUBLIC, PASS( obj ) :: Size
   PROCEDURE( amField_Shape ), DEFERRED, PUBLIC, PASS( obj ) :: Shape
   PROCEDURE( amField_Matvec1 ), DEFERRED, PASS( obj ) :: Matvec1
@@ -78,6 +79,22 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
 END TYPE AbstractMatrixField_
 
 PUBLIC :: AbstractMatrixField_
+
+!----------------------------------------------------------------------------
+!                                                            DeallocateData
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE amField_DeallocateData( obj )
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE amField_DeallocateData
+END INTERFACE
+
+INTERFACE AbstractMatrixFieldDeallocateData
+  MODULE PROCEDURE amField_DeallocateData
+END INTERFACE AbstractMatrixFieldDeallocateData
+
+PUBLIC :: AbstractMatrixFieldDeallocateData
 
 !----------------------------------------------------------------------------
 !                                                                      SIZE
@@ -473,6 +490,5 @@ MODULE PURE FUNCTION amField_isPreconditionSet( obj ) RESULT( Ans )
   LOGICAL( LGT ) :: ans
 END FUNCTION amField_isPreconditionSet
 END INTERFACE
-
 
 END MODULE AbstractMatrixField_Class
