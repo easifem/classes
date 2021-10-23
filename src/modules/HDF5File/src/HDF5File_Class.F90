@@ -85,7 +85,8 @@ TYPE, EXTENDS( AbstractFile_ ) :: HDF5File_
     PROCEDURE, PUBLIC, PASS( Obj ) :: delete => hdf5_delete
     PROCEDURE, PUBLIC, PASS( Obj ) :: initiate => hdf5_initiate
     PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => hdf5_clear
-    PROCEDURE, PUBLIC, PASS( Obj ) :: setOverwriteStat => hdf5_setOverwriteStat
+    PROCEDURE, PUBLIC, PASS( Obj ) :: setOverwriteStat => &
+      & hdf5_setOverwriteStat
     PROCEDURE, PUBLIC, PASS( Obj ) :: getUnitNo => hdf5_getUnitNo
     PROCEDURE, PUBLIC, PASS( Obj ) :: isNew => hdf5_isNew
     PROCEDURE, PUBLIC, PASS( Obj ) :: setNewStat => hdf5_setNewStat

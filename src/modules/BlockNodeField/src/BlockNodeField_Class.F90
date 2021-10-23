@@ -41,11 +41,7 @@ TYPE( ExceptionHandler_ ) :: e
 ! date: 25 June 2021
 ! summary: This nodal field is designed for the multiphysics applications
 !
-!# Introduction
-!
-! [[BlockBlockNodeField_]] is a child of [[AbstractNodeField_]] class. This
-! nodal field considers each component of the field as a nodal degree of
-! freedom.
+!{!pages/BlockNodeField_.md}
 
 TYPE, EXTENDS( AbstractNodeField_ ) :: BlockNodeField_
   CONTAINS

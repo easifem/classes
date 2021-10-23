@@ -86,7 +86,8 @@ IF( ${PROJECT_NAME} MATCHES "easifemKernels" )
 ENDIF()
 
 # STDarcyBrinkmann
-IF( ${PROJECT_NAME} MATCHES "STDarcyBrinkmann" )
+SET( APPEND DUMMY_LIST "easifemBase" "easifemClasses" "easifemMaterials" "easifemKernels" )
+IF( NOT ${PROJECT_NAME} IN_LIST DUMMY_LIST )
   LINK_INTER_EASIFEM_KERNELS_DEPENDENCY()
   FIND_EASIFEM_DEPENDENCY("easifemKernels")
   LINK_EASIFEM_DEPENDENCY("easifemKernels" "${PROJECT_NAME}")

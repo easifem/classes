@@ -95,7 +95,8 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PASS( obj ) :: get7 => vField_get7
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
     !! get the entries of Vector field
-  PROCEDURE, PASS( obj ) :: getPointerOfComponent => vField_getPointerOfComponent
+  PROCEDURE, PASS( obj ) :: getPointerOfComponent => &
+    & vField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => vField_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => vField_Export
 END TYPE VectorField_
@@ -135,7 +136,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 July 2021
-! summary: This routine set the essential and optional parameters for creating the vector field
+! summary: Sets parameters for creating the vector field
 !
 INTERFACE
 MODULE SUBROUTINE setVectorFieldParam( param, name, spaceCompo, fieldType )
