@@ -85,10 +85,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE txt_initiate(obj,file,unit,status,access,form, &
+MODULE SUBROUTINE txt_initiate(obj,filename,unit,status,access,form, &
   & position,action,pad,recl, comment, separator, delimiter)
   CLASS( TxtFile_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: file
+  CHARACTER( LEN = * ), INTENT( IN ) :: filename
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unit
     !! User specified unit number, it should  not be equal to `stdout, stdin, stderr`
   CHARACTER( LEN = * ), OPTIONAL,INTENT( IN ) :: status

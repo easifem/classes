@@ -46,7 +46,7 @@ MODULE PROCEDURE txt_initiate
   IF(PRESENT(recl)) CALL e%raiseDebug(modName//'::'//myName// &
     & ' - Optional input "RECL" is being ignored. File is "SEQUENTIAL".')
   !Initialize the input file
-  CALL InitiateFortranFile(obj=obj, unit=unit, file=file, &
+  CALL InitiateFortranFile(obj=obj, unit=unit, filename=filename, &
     & status=status, access='SEQUENTIAL', form='FORMATTED', &
     & position = 'ASIS', action = action )
 END PROCEDURE txt_initiate

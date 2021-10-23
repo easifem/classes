@@ -51,23 +51,19 @@ MODULE PROCEDURE ff_initiate
   formval=''
   actionval=''
   padval=''
-
   oldcnt=e%getCounter(EXCEPTION_ERROR)
-
   IF(obj%initstat) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Fortran file has already been initialized!')
   ELSE
     !Initialize the file
-    file_ = string(trim(file))
+    file_ = string(trim(filename))
     fpath = file_%basedir() // '/'
     fext = file_%extension()
     fname = file_%basename(extension=fext%chars())
-
     CALL obj%setFilePath(fpath)
     CALL obj%setFileName(fname)
     CALL obj%setFileExt(fext)
-
     IF(PRESENT(unit)) THEN
       IF(unit == stdout) THEN
         CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
@@ -95,7 +91,6 @@ MODULE PROCEDURE ff_initiate
     ELSE
       obj%getNewUnit = .TRUE.
     ENDIF
-
     !STATUS clause for OPEN statement
     IF(PRESENT(status)) THEN
       SELECT CASE(status)
@@ -127,7 +122,6 @@ MODULE PROCEDURE ff_initiate
       statusval='REPLACE'
       ierr  = system_mkdir(fpath//'', RWX_U)
     ENDIF
-
     !ACCESS clause for OPEN statement
     IF(PRESENT(access)) THEN
       SELECT CASE(access)
@@ -148,7 +142,6 @@ MODULE PROCEDURE ff_initiate
       !Default value
       accessval='SEQUENTIAL'
     ENDIF
-
     !FORM clause for OPEN statement
     IF(PRESENT(form)) THEN
       SELECT CASE(form)
@@ -166,7 +159,6 @@ MODULE PROCEDURE ff_initiate
       !Default value
       formval='FORMATTED'
     ENDIF
-
     !POSITION clause for OPEN statement
     IF(PRESENT(position)) THEN
       SELECT CASE(position)
@@ -186,7 +178,6 @@ MODULE PROCEDURE ff_initiate
     ELSE
       obj%posopt = 'ASIS'
     ENDIF
-
     !ACTION clause for OPEN statement
     IF(PRESENT(action)) THEN
       SELECT CASE(action)
@@ -204,7 +195,6 @@ MODULE PROCEDURE ff_initiate
       !Default value
       actionval='READWRITE'
     ENDIF
-
     IF(PRESENT(pad)) THEN
       SELECT CASE(pad)
       CASE('YES') !File is padded
@@ -219,7 +209,6 @@ MODULE PROCEDURE ff_initiate
       !Fortran default value
       padval='YES'
     ENDIF
-
     IF(PRESENT(recl)) THEN
       IF(recl < 1) THEN
         CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
@@ -228,19 +217,15 @@ MODULE PROCEDURE ff_initiate
         obj%reclval=recl
       ENDIF
     ENDIF
-
     IF( PRESENT( comment ) ) THEN
       obj%comment = comment
     END IF
-
     IF( PRESENT( separator ) ) THEN
       obj%separator = separator
     END IF
-
     IF( PRESENT( delimiter ) ) THEN
       obj%delimiter = delimiter
     END IF
-
     IF(TRIM(statusval) /= 'OLD') THEN
       obj%newstat=.TRUE.
       obj%overwrite=(TRIM(statusval) == 'REPLACE')
@@ -253,7 +238,6 @@ MODULE PROCEDURE ff_initiate
         & myName//' - Record length must be set to greater than 0 for '// &
         & 'direct access files!')
     ENDIF
-
     IF(TRIM(actionval) == 'READ') THEN
       CALL obj%setReadStat(.TRUE.)
       IF(obj%newstat) CALL e%raiseError(modName//'::'// &
@@ -264,7 +248,6 @@ MODULE PROCEDURE ff_initiate
       CALL obj%setReadStat(.TRUE.)
       CALL obj%setWriteStat(.TRUE.)
     ENDIF
-
     IF(oldcnt < e%getCounter(EXCEPTION_ERROR)) THEN
       CALL e%raiseError(modName//'::'//myName//' - Exceptions '// &
           'during file initialization! File not initialized!')
@@ -307,7 +290,6 @@ MODULE PROCEDURE ff_clear
       CALL obj%close()
     ENDIF
   ENDIF
-
   !Set FortranFileType attributes to defaults
   obj%initstat=.FALSE.
   obj%unitno=-1

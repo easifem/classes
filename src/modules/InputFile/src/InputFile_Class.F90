@@ -35,7 +35,7 @@ USE ExceptionHandler_Class
 USE FortranFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*),PARAMETER :: modName='INPUTFILE_CLASS'
+CHARACTER(LEN=*),PARAMETER :: modName='InputFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen=256
 TYPE(ExceptionHandler_), PRIVATE :: e
 
@@ -109,10 +109,10 @@ END INTERFACE
 ! - `recl` Optional input is not used by this routine.
 
 INTERFACE
-MODULE SUBROUTINE inp_initiate(obj,file,unit,status,access,form, &
+MODULE SUBROUTINE inp_initiate(obj,filename,unit,status,access,form, &
   & position,action,pad,recl, comment, separator, delimiter)
   CLASS( InputFile_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: file
+  CHARACTER( LEN = * ), INTENT( IN ) :: filename
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unit
   CHARACTER( LEN=* ), OPTIONAL, INTENT( IN ) :: status
   CHARACTER( LEN=* ), OPTIONAL, INTENT( IN ) :: access

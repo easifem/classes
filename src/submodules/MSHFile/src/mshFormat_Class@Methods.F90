@@ -95,7 +95,8 @@ MODULE PROCEDURE fmt_Read
     READ( unitNo, * ) obj%version, obj%fileType, obj%dataSize
     obj%majorVersion = INT(obj%version)
     obj%minorVersion = INT( 10*(obj%version - obj%majorVersion) )
-    obj%meshFormat = TRIM(str( obj%majorVersion, .TRUE. )) // "." // TRIM(str(obj%minorVersion, .TRUE.)) // " " // &
+    obj%meshFormat = TRIM(str( obj%majorVersion, .TRUE. )) // "."  &
+      & // TRIM(str(obj%minorVersion, .TRUE.)) // " " // &
       & TRIM( INT2STR( obj%fileType ) ) // " " &
       & // TRIM( INT2STR( obj%dataSize ) )
     IF( obj%fileType .EQ. 1 ) THEN
@@ -120,7 +121,8 @@ MODULE PROCEDURE fmt_Write
   INTEGER( I4B ) :: unitNo
 
   CALL mshFile%getFileParts(path, filename, ext)
-  CALL outFile%initiate(file = path // filename // "_Format" // ext, action = "WRITE" )
+  CALL outFile%initiate(filename = path // filename // "_Format" // ext, &
+    & action = "WRITE" )
   CALL outFile%open()
   unitNo = outFile%getUnitNo()
   IF( PRESENT( Str ) ) THEN
