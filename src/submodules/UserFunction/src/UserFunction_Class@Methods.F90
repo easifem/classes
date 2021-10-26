@@ -1,0 +1,153 @@
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+
+SUBMODULE(UserFunction_Class) Methods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                      SetUserFunctionParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetUserFunctionParam
+  INTEGER( I4B ) :: ierr
+  !> main
+  ierr = param%set( key="UserFunction/returnType", &
+    & value=returnType )
+  ierr = param%set( key="UserFunction/argType", &
+    & value=argType )
+END PROCEDURE SetUserFunctionParam
+
+
+
+!----------------------------------------------------------------------------
+!                                                        CheckEssentiaParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_CheckEssentialParam
+  CHARACTER( LEN = * ), PARAMETER :: myName="auf_CheckEssentialParam"
+  INTEGER( I4B ) :: ii
+  INTEGER( I4B ), PARAMETER :: maxEssentialParam = 2
+  TYPE( String ) :: essentialParam( maxEssentialParam )
+  !> main
+  essentialParam(1) = "UserFunction/argType"
+  essentialParam(2) = "UserFunction/returnType"
+  DO ii = 1, maxEssentialParam
+    IF( .NOT. param%isPresent(key=TRIM(essentialParam(ii)%chars()))) THEN
+      CALL e%raiseError(modName//'::'//myName// " - "// &
+        & TRIM(essentialParam(ii)%chars()) // ' should be present in param')
+    END IF
+  END DO
+END PROCEDURE auf_CheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                                             DeallocateData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_DeallocateData
+  !> main
+  obj%returnType = 0
+  obj%argType = 0
+  obj%isUserFunctionSet = .FALSE.
+END PROCEDURE auf_DeallocateData
+
+!----------------------------------------------------------------------------
+!                                                             DeallocateData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_Final
+  CALL obj%DeallocateData()
+END PROCEDURE auf_Final
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_Initiate
+  obj%returnType = returnType
+  obj%argType = argType
+END PROCEDURE auf_Initiate
+
+!----------------------------------------------------------------------------
+!                                                                       SET
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_Set1
+  !> main
+  obj%isUserFunctionSet = .TRUE.
+  obj%userFunction => anotherobj
+END PROCEDURE auf_Set1
+
+!----------------------------------------------------------------------------
+!                                                                        get
+!----------------------------------------------------------------------------
+
+
+MODULE PROCEDURE auf_getScalarValue
+  IF( obj%isUserFunctionSet .AND. ASSOCIATED( obj%userFunction ) ) THEN
+    CALL obj%userFunction%Get( args=args, val=val )
+  ELSE
+    val = 0.0_DFP
+  END IF
+END PROCEDURE auf_getScalarValue
+
+!----------------------------------------------------------------------------
+!                                                                        get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_getVectorValue
+  IF( obj%isUserFunctionSet .AND. ASSOCIATED( obj%userFunction ) ) THEN
+    CALL obj%userFunction%Get( args=args, val=val )
+  ELSE
+    ALLOCATE( val( 0 )  )
+  END IF
+END PROCEDURE auf_getVectorValue
+
+!----------------------------------------------------------------------------
+!                                                                        get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_getMatrixValue
+  IF( obj%isUserFunctionSet .AND. ASSOCIATED( obj%userFunction ) ) THEN
+    CALL obj%userFunction%Get( args=args, val=val )
+  ELSE
+    ALLOCATE( val( 0, 0 )  )
+  END IF
+END PROCEDURE auf_getMatrixValue
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_getArgType
+  ans = obj%argType
+END PROCEDURE auf_getArgType
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_getReturnType
+  ans = obj%returnType
+END PROCEDURE auf_getReturnType
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END SUBMODULE Methods

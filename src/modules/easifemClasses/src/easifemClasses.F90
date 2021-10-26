@@ -56,6 +56,7 @@ USE LinSolverFactory
 USE AbstractBC_Class
 USE DirichletBC_Class
 
-  ! USE vtkType
+USE UserFunction_Class
+
   ! USE ogpf
 END MODULE easifemClasses

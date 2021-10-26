@@ -88,14 +88,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 #LinSolverFactory
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
-
-
 #Boundary condition
 #AbstractBC
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
 #DirichletBC
 include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
-
+#UserFunction
+include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
 #easifemClasses
 include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
