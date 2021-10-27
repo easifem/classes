@@ -49,18 +49,14 @@ USE Vector_Class
 
 USE Field
 USE FieldFactory
+USE AbstractLinSolver_Class
+USE LinSolver_Class
+USE LinSolverFactory
 
 USE AbstractBC_Class
 USE DirichletBC_Class
 
-  ! USE vtkType
-
-
-  ! USE Material_Class
-  ! USE stdMaterials
-  ! USE ThermCondModel_Class
-  ! USE VolHeatCapModel_Class
-  ! USE SFCCModel_Class
+USE UserFunction_Class
 
   ! USE ogpf
 END MODULE easifemClasses

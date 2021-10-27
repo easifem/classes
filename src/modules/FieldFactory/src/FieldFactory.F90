@@ -28,23 +28,6 @@ CHARACTER( LEN = * ), PARAMETER :: modName="FieldFactory"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
-!                                                         LinSolverFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Aug 2021
-! summary: Returns child of [[AbstractLinSolver_]] based on engine
-
-INTERFACE
-MODULE FUNCTION LinSolverFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( AbstractLinSolver_ ), POINTER :: ans
-END FUNCTION LinSolverFactory
-END INTERFACE
-
-PUBLIC :: LinSolverFactory
-
-!----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory
 !----------------------------------------------------------------------------
 

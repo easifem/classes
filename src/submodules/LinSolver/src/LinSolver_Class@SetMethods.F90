@@ -76,6 +76,8 @@ MODULE PROCEDURE ls_Set
   SELECT TYPE( Amat )
   TYPE IS ( MatrixField_ )
     s = Amat%SHAPE()
+  TYPE IS ( BlockMatrixField_ )
+    s = Amat%SHAPE()
   CLASS DEFAULT
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Type of Amat cannot be recognized, it should be MatrixField_ ')
