@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(UserFunction_Class) Methods
+SUBMODULE(UserFunction_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -32,8 +32,6 @@ MODULE PROCEDURE SetUserFunctionParam
   ierr = param%set( key="UserFunction/argType", &
     & value=argType )
 END PROCEDURE SetUserFunctionParam
-
-
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentiaParam
@@ -84,70 +82,7 @@ MODULE PROCEDURE auf_Initiate
 END PROCEDURE auf_Initiate
 
 !----------------------------------------------------------------------------
-!                                                                       SET
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_Set1
-  !> main
-  obj%isUserFunctionSet = .TRUE.
-  obj%userFunction => anotherobj
-END PROCEDURE auf_Set1
-
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-
-MODULE PROCEDURE auf_getScalarValue
-  IF( obj%isUserFunctionSet .AND. ASSOCIATED( obj%userFunction ) ) THEN
-    CALL obj%userFunction%Get( args=args, val=val )
-  ELSE
-    val = 0.0_DFP
-  END IF
-END PROCEDURE auf_getScalarValue
-
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_getVectorValue
-  IF( obj%isUserFunctionSet .AND. ASSOCIATED( obj%userFunction ) ) THEN
-    CALL obj%userFunction%Get( args=args, val=val )
-  ELSE
-    ALLOCATE( val( 0 )  )
-  END IF
-END PROCEDURE auf_getVectorValue
-
-!----------------------------------------------------------------------------
-!                                                                        get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_getMatrixValue
-  IF( obj%isUserFunctionSet .AND. ASSOCIATED( obj%userFunction ) ) THEN
-    CALL obj%userFunction%Get( args=args, val=val )
-  ELSE
-    ALLOCATE( val( 0, 0 )  )
-  END IF
-END PROCEDURE auf_getMatrixValue
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_getArgType
-  ans = obj%argType
-END PROCEDURE auf_getArgType
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_getReturnType
-  ans = obj%returnType
-END PROCEDURE auf_getReturnType
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-END SUBMODULE Methods
+END SUBMODULE ConstructorMethods

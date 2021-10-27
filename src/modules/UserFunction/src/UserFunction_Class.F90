@@ -17,12 +17,28 @@
 MODULE UserFunction_Class
 USE GlobalData
 USE FPL, ONLY: ParameterList_
+USE HDF5File_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
 PRIVATE
 
 TYPE( ExceptionHandler_ ) :: e
 CHARACTER( LEN = * ), PARAMETER :: modName = "UserFunction_Class"
+CHARACTER( LEN = * ), PARAMETER :: NAME_RETURN_TYPE(3) =  &
+  & [ &
+  & "Scalar", &
+  & "Vector", &
+  & "Matrix"  &
+  & ]
+CHARACTER( LEN = * ), PARAMETER :: NAME_ARG_TYPE(5) =  &
+  & [ &
+  & "Constant         ", &
+  & "Time             ", &
+  & "Space            ",  &
+  & "SpaceTime        ",  &
+  & "SolutionDependent"  &
+  & ]
+
 
 !----------------------------------------------------------------------------
 !
@@ -32,6 +48,9 @@ TYPE :: UserFunction_
   INTEGER( I4B ) :: returnType=0
   INTEGER( I4B ) :: argType=0
   LOGICAL :: isUserFunctionSet = .FALSE.
+  REAL( DFP ) :: scalarValue = 0.0
+  REAL( DFP ), ALLOCATABLE :: vectorValue( : )
+  REAL( DFP ), ALLOCATABLE :: matrixValue( :, : )
   CLASS( UserFunction_ ), POINTER :: userFunction => NULL()
   CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
@@ -39,19 +58,24 @@ TYPE :: UserFunction_
   PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => auf_DeallocateData
   FINAL :: auf_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => auf_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Set => auf_Set1
+  PROCEDURE, PUBLIC, PASS( obj ) :: Set1 => auf_Set1
+  PROCEDURE, PUBLIC, PASS( obj ) :: Set2 => auf_Set2
+  GENERIC, PUBLIC :: Set => Set1, Set2
   PROCEDURE, PUBLIC, PASS( obj ) :: getScalarValue => auf_getScalarValue
   PROCEDURE, PUBLIC, PASS( obj ) :: getVectorValue => auf_getVectorValue
   PROCEDURE, PUBLIC, PASS( obj ) :: getMatrixValue => auf_getMatrixValue
   GENERIC, PUBLIC :: get => getScalarValue, getVectorValue, getMatrixValue
   PROCEDURE, PUBLIC, PASS( obj ) :: getArgType => auf_getArgType
   PROCEDURE, PUBLIC, PASS( obj ) :: getReturnType => auf_getReturnType
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => auf_Display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Import => auf_Import
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => auf_Export
 END TYPE UserFunction_
 
 PUBLIC :: UserFunction_
 
 !----------------------------------------------------------------------------
-!                                                CheckEssentialParam@Methods
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -66,7 +90,7 @@ END SUBROUTINE auf_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                setUserFunctionParam@Methods
+!                                    setUserFunctionParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -84,7 +108,7 @@ END INTERFACE
 PUBLIC :: setUserFunctionParam
 
 !----------------------------------------------------------------------------
-!                                                    DeallocateData@Methods
+!                                          DeallocateData@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -98,7 +122,7 @@ END SUBROUTINE auf_DeallocateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Final@Methods
+!                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -112,7 +136,7 @@ END SUBROUTINE auf_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Initiate@Methods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -129,7 +153,7 @@ END SUBROUTINE auf_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                Set@Methods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -144,7 +168,24 @@ END SUBROUTINE auf_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               Get@Methods
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Sets the user function
+
+INTERFACE
+MODULE SUBROUTINE auf_Set2( obj, scalarValue, vectorValue, matrixValue )
+  CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarValue
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vectorValue(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: matrixValue(:,:)
+END SUBROUTINE auf_Set2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -160,7 +201,7 @@ END SUBROUTINE auf_getScalarValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               Get@Methods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -176,7 +217,7 @@ END SUBROUTINE auf_getVectorValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               Get@Methods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -192,7 +233,7 @@ END SUBROUTINE auf_getMatrixValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        getArgType@Methods
+!                                                      getArgType@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -219,6 +260,42 @@ MODULE PURE FUNCTION auf_getReturnType(obj) RESULT( ans )
   CLASS( UserFunction_ ), INTENT( IN ) :: obj
   INTEGER( I4B ) :: ans
 END FUNCTION auf_getReturnType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE auf_Display( obj, msg, unitNo )
+  CLASS( UserFunction_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
+END SUBROUTINE auf_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Import@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE auf_Import( obj, hdf5, group )
+  CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
+  TYPE( HDF5File_ ), INTENT( IN ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE auf_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Export@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE auf_Export( obj, hdf5, group )
+  CLASS( UserFunction_ ), INTENT( IN ) :: obj
+  TYPE( HDF5File_ ), INTENT( IN ) :: hdf5
+  CHARACTER( LEN = * ), INTENT( IN ) :: group
+END SUBROUTINE auf_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
