@@ -43,12 +43,12 @@ MODULE PROCEDURE meshSelect_Import
   obj%isInitiated = .TRUE.
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! READ isSelectionByMeshID
@@ -179,12 +179,12 @@ MODULE PROCEDURE meshSelect_Export
   END IF
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
   ! READ isSelectionByMeshID

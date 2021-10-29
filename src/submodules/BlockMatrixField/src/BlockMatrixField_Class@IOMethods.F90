@@ -46,12 +46,12 @@ MODULE PROCEDURE mField_Import
     & "Importing an Instance of BlockMatrixField_")
   !> check
   IF( .NOT. hdf5%IsOpen() ) THEN
-    CALL e%RaiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%IsRead() ) THEN
-    CALL e%RaiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! fieldType
@@ -78,7 +78,7 @@ MODULE PROCEDURE mField_Import
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
   ELSE
     CALL hdf5%Read(dsetname=dsetname%chars(),vals=name)
@@ -97,7 +97,7 @@ MODULE PROCEDURE mField_Import
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset matrixProp should be present')
   ELSE
     CALL hdf5%Read(dsetname=dsetname%chars(),vals=matrixProp)
@@ -107,7 +107,7 @@ MODULE PROCEDURE mField_Import
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'The dataset ' // dsetname%chars() // ' should be present')
   ELSE
     CALL hdf5%Read(dsetname=dsetname%chars(),vals=tvar)
@@ -117,7 +117,7 @@ MODULE PROCEDURE mField_Import
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &
     & "Importing "//dsetname%chars() )
   IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset spaceCompo should be present')
   ELSE
     CALL hdf5%Read(dsetname=dsetname%chars(),vals=spaceCompo)
@@ -152,7 +152,7 @@ MODULE PROCEDURE mField_Import
         obj%domains(ii)%ptr => domains(ii)%ptr
       END DO
     ELSE
-      CALL e%RaiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Either dom or domains should be present')
     END IF
     CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
@@ -164,7 +164,7 @@ MODULE PROCEDURE mField_Import
     DO ii = 1, tvar
       dsetname=TRIM(group)//"/physicalVarName"//TOSTRING(ii)
       IF( .NOT. hdf5%PathExists(dsetname%chars())) THEN
-        CALL e%RaiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'The dataset ' // dsetname%Chars() // ' should be present')
       ELSE
         CALL e%RaiseInformation(modName//"::"//myName//" - "// &
@@ -188,7 +188,7 @@ MODULE PROCEDURE mField_Import
     ELSE IF( PRESENT( domains ) ) THEN
       CALL obj%Initiate( param=param, dom=domains )
     ELSE
-      CALL e%RaiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Either dom or domains should be present')
     END IF
     CALL param%DeallocateData(); CALL FPL_FINALIZE()

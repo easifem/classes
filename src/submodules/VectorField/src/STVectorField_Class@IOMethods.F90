@@ -71,12 +71,12 @@ MODULE PROCEDURE stvField_Import
     & "IMPORTING SPACE TIME VECTOR FIELD")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! READ fieldType
@@ -99,21 +99,21 @@ MODULE PROCEDURE stvField_Import
   ! READ name
   dsetname=trim(group)//"/name"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
   ! READ spaceCompo
   dsetname=trim(group)//"/spaceCompo"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset spaceCompo should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=spaceCompo)
   ! READ timeCompo
   dsetname=trim(group)//"/timeCompo"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset timeCompo should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=timeCompo)
@@ -131,7 +131,7 @@ MODULE PROCEDURE stvField_Import
     CALL obj%initiate( param=param, dom=dom )
     CALL param%deallocateData(); CALL FPL_FINALIZE()
   ELSE
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'At present restart option is not available, we are working on it.' )
   END IF
 END PROCEDURE stvField_Import

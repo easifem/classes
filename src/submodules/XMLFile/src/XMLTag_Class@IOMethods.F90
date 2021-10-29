@@ -266,7 +266,7 @@ MODULE PROCEDURE xmltag_Write
     & onlyEnd=onlyEnd) // endRecord_
   !>
   IF( iostat .NE. 0 ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Error has occured while writing header info in VTKFile &
       & iostat = ' // trim(str(iostat, .true.)) // ' error msg :: ' // &
       & TRIM( iomsg ) )

@@ -33,21 +33,20 @@ CHARACTER( LEN = * ), PARAMETER :: NAME_RETURN_TYPE(3) =  &
 CHARACTER( LEN = * ), PARAMETER :: NAME_ARG_TYPE(5) =  &
   & [ &
   & "Constant         ", &
-  & "Time             ", &
   & "Space            ",  &
+  & "Time             ", &
   & "SpaceTime        ",  &
   & "SolutionDependent"  &
   & ]
-
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: UserFunction_
+  LOGICAL :: isUserFunctionSet = .FALSE.
   INTEGER( I4B ) :: returnType=0
   INTEGER( I4B ) :: argType=0
-  LOGICAL :: isUserFunctionSet = .FALSE.
   REAL( DFP ) :: scalarValue = 0.0
   REAL( DFP ), ALLOCATABLE :: vectorValue( : )
   REAL( DFP ), ALLOCATABLE :: matrixValue( :, : )
@@ -73,6 +72,40 @@ TYPE :: UserFunction_
 END TYPE UserFunction_
 
 PUBLIC :: UserFunction_
+
+!----------------------------------------------------------------------------
+!                                   getReturnTypeFromName@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Oct 2021
+! summary: Returns the Integer corresponding to name
+
+INTERFACE
+MODULE PURE FUNCTION UserFunctionGetReturnType( name ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  INTEGER( I4B ) :: ans
+END FUNCTION UserFunctionGetReturnType
+END INTERFACE
+
+PUBLIC :: UserFunctionGetReturnType
+
+!----------------------------------------------------------------------------
+!                                      etArgTypeFromName@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Oct 2021
+! summary: Returns the integer for arg type
+
+INTERFACE
+MODULE PURE FUNCTION UserFunctionGetArgType( name ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  INTEGER( I4B ) :: ans
+END FUNCTION UserFunctionGetArgType
+END INTERFACE
+
+PUBLIC :: UserFunctionGetArgType
 
 !----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods
@@ -281,7 +314,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE auf_Import( obj, hdf5, group )
   CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( IN ) :: hdf5
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE auf_Import
 END INTERFACE
@@ -293,7 +326,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE auf_Export( obj, hdf5, group )
   CLASS( UserFunction_ ), INTENT( IN ) :: obj
-  TYPE( HDF5File_ ), INTENT( IN ) :: hdf5
+  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
 END SUBROUTINE auf_Export
 END INTERFACE

@@ -107,7 +107,7 @@ MODULE PROCEDURE xmlFile_Import
   END IF
   !>
   IF( .NOT. obj%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - xmlFile does not have read access!')
   END IF
   !> deallocate the root
@@ -125,7 +125,7 @@ MODULE PROCEDURE xmlFile_Import
   END DO
   !>
   IF( nopen .NE. nclose) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - mismatched markup characters!')
   END IF
   !> Store the locations of all the markup characters "<" and ">" lines
@@ -150,7 +150,7 @@ MODULE PROCEDURE xmlFile_Import
   !> Verify that they are all matching (interleaved)
   DO i=1,nTags
     IF(itag(1,i) > itag(2,i)) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - mismatched markup characters!' )
       EXIT
     END IF
@@ -188,7 +188,7 @@ MODULE PROCEDURE xmlFile_Import
       END IF
     END IF
     IF(itag(3,i) .EQ. BAD_TAG) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - Unrecognizable markup in "'//tagStr//'"!' )
     END IF
   END DO
@@ -199,7 +199,7 @@ MODULE PROCEDURE xmlFile_Import
       EXIT
     ELSE IF(itag(3,i) .EQ. END_TAG .OR. &
       & (itag(3,i) .EQ. EMPTY_ELEMENT_TAG .AND. i < nTags)) THEN
-        CALL e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName//" - "// &
         ' - Could not locate start of root element!')
     END IF
   ENDDO
@@ -213,7 +213,7 @@ MODULE PROCEDURE xmlFile_Import
       & (itag(3,i) .EQ. EMPTY_ELEMENT_TAG &
       & .AND. i < nTags) .OR. &
       & itag(3,i) .EQ. DECLARATION_TAG) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - Could not locate end of root element!')
     END IF
   ENDDO
@@ -248,7 +248,7 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
     READ(obj%unitNo,'(a1)',ADVANCE='NO',IOSTAT=ierr) tmpChar
     IF(ierr .EQ. IOSTAT_EOR) tmpChar=CHAR(10)
     IF(ierr .EQ. IOSTAT_END) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - Reached end of file before finding start of first tag "<"!')
       EXIT
     END IF
@@ -272,7 +272,7 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
         tagStr=tagStr//ioBuffer(1:ibuf)
       ELSE
         !Throw an exception end of file before end marker
-        CALL e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName//" - "// &
           & ' - Reached end of file before finding closing marker'// &
           & ' ">" for XML tag!')
       END IF
@@ -281,7 +281,7 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
       !Insure that only whitespace was read
       IF(.NOT.(SCAN(tmpChar,CHAR_SPACE//CHAR_CR//CHAR_LF//CHAR_TAB) > 0)) THEN
         !Throw an exception, illegal characters
-        CALL e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName//" - "// &
           & ' - Illegal characters between XML tags!')
         EXIT
       END IF
@@ -311,13 +311,13 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
               & obj%version=version
           ELSE
             !Illegal value for version
-            CALL e%raiseError(modName//'::'//myName// &
+            CALL e%raiseError(modName//'::'//myName//" - "// &
               & ' - XML Version "'//avalues(1)//'" is not &
               & supported!')
           END IF
         ELSE
           !first attribute must be 'version'!
-          CALL e%raiseError(modName//'::'//myName// &
+          CALL e%raiseError(modName//'::'//myName//" - "// &
             & ' - The first attribute must be the XML version!')
         END IF
         !Check other attributes
@@ -332,7 +332,7 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
                 & .OR. avalues(i) .EQ. 'us-ascii') THEN
                 obj%encoding='US-ASCII'
               ELSE
-                CALL e%raiseError(modName//'::'//myName// &
+                CALL e%raiseError(modName//'::'//myName//" - "// &
                   & ' - File encoding "'//avalues(i)%TRIM()//'" is not &
                   & supported!')
               END IF
@@ -349,13 +349,13 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
                 obj%standalone=.FALSE.
               ELSE
                 !Illegal value for 'standalone' attribute
-                CALL e%raiseError(modName//'::'//myName// &
+                CALL e%raiseError(modName//'::'//myName//" - "// &
                   & ' - illegal value "'// avalues(i)%TRIM()// &
                   & '" for "standalone" attribute in XML declaration.')
               END IF
             ELSE
               !Illegal attribute
-              CALL e%raiseError(modName//'::'//myName// &
+              CALL e%raiseError(modName//'::'//myName//" - "// &
                 & ' - illegal attribute "'//anames(i)%TRIM()// &
                 & '" for XML declaration.')
             END IF
@@ -363,12 +363,12 @@ MODULE PROCEDURE xmlFile_parseXMLDeclaration
         END IF
       ELSE
         !Illegal number of attributes in declaration
-        CALL e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName//" - "// &
           & ' - illegal  number of attributes in XML declaration.')
       END IF
     ELSE
       !Failed to process attributes for XMLDecl
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - Failed to process attributes in XML declaration.')
     END IF
   END IF
@@ -389,7 +389,7 @@ MODULE PROCEDURE xmlFile_BuildCache
   IF( ALLOCATED(fileCache) ) DEALLOCATE(fileCache)
   REWIND(obj%unitNo, IOSTAT=ierr )
   IF( ierr .NE. 0 ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Some error has occured while rewinding.')
   END IF
   ierr=0; nchars=0

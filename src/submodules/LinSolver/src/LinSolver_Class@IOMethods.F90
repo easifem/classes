@@ -79,29 +79,29 @@ MODULE PROCEDURE ls_Import
     & "IMPORTING LINEAR SOLVER")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! READ engine
   dsetname=trim(group)//"/engine"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset engine should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
   IF( TRIM(strval) .NE. "NATIVE_SERIAL" ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset engine should be equal to NATIVE_SERIAL')
   END IF
 
   ! READ solverName
   dsetname=trim(group)//"/solverName"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset solverName should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
@@ -109,7 +109,7 @@ MODULE PROCEDURE ls_Import
   ! READ preconditionOption
   dsetname=trim(group)//"/preconditionOption"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset preconditionOption should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
@@ -126,7 +126,7 @@ MODULE PROCEDURE ls_Import
   ! READ convergenceIn
   dsetname=trim(group)//"/convergenceIn"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset convergenceIn should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
@@ -139,7 +139,7 @@ MODULE PROCEDURE ls_Import
   ! READ convergenceType
   dsetname=trim(group)//"/convergenceType"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset convergenceType should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
@@ -163,7 +163,7 @@ MODULE PROCEDURE ls_Import
   ! READ maxIter
   dsetname=trim(group)//"/maxIter"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset maxIter should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=maxIter)
@@ -177,14 +177,14 @@ MODULE PROCEDURE ls_Import
   ! READ relativeTolerance
   dsetname=trim(group)//"/relativeTolerance"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset relativeTolerance should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=relativeTolerance)
   ! READ absoluteTolerance
   dsetname=trim(group)//"/absoluteTolerance"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset absoluteTolerance should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=absoluteTolerance)
@@ -224,11 +224,11 @@ MODULE PROCEDURE ls_Export
     & "EXPORTING LINEAR SOLVER")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   IF( .NOT. hdf5%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
   ! WRITE engine

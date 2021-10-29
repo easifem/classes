@@ -71,12 +71,12 @@ MODULE PROCEDURE vField_Import
     & "IMPORTING VECTOR FIELD")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! READ fieldType
@@ -99,42 +99,42 @@ MODULE PROCEDURE vField_Import
   ! READ name
   dsetname=trim(group)//"/name"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%name)
   ! READ engine
   dsetname=trim(group)//"/engine"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset engine should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%engine)
   ! READ tSize
   dsetname=trim(group)//"/tSize"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset tSize should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%tSize)
   ! READ spaceCompo
   dsetname=trim(group)//"/spaceCompo"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset spaceCompo should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%spaceCompo)
   ! READ dof
   dsetname=trim(group)//"/dof"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset dof should be present')
   END IF
   CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=TRIM( dsetname%chars()) )
   ! READ realVec
   dsetname=trim(group)//"/realVec"
   IF( .NOT. hdf5%pathExists(dsetname%chars()) ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset realVec should be present')
   END IF
   CALL ImportRealVector( obj=obj%realVec, hdf5=hdf5, &
@@ -159,12 +159,12 @@ MODULE PROCEDURE vField_Export
     & "EXPORTING VECTOR FIELD")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
   ! WRITE fieldType

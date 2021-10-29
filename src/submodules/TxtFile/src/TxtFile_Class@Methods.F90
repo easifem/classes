@@ -91,7 +91,7 @@ MODULE PROCEDURE txt_readLine
           IF(eioerr /= 0) THEN
             WRITE(sioerr,'(i4)') eioerr; sioerr=ADJUSTL(sioerr)
             WRITE(sunit,'(i4)') obj%echounit; sunit=ADJUSTL(sunit)
-            CALL e%raiseError(modName//'::'//myName// &
+            CALL e%raiseError(modName//'::'//myName//" - "// &
               &' - Error echoing line to UNIT='//TRIM(sunit) //' (IOSTAT='//&
               & TRIM(sioerr)//')!')
           ENDIF
@@ -100,7 +100,7 @@ MODULE PROCEDURE txt_readLine
       ELSEIF(ioerr < IOSTAT_EOR) THEN
         !Error reading line from input file
         WRITE(sioerr,'(i4)') ioerr; sioerr=ADJUSTL(sioerr)
-        CALL e%raiseError(modName//'::'//myName// &
+        CALL e%raiseError(modName//'::'//myName//" - "// &
           & ' - Error reading one line from input file (IOSTAT='// &
           & TRIM(sioerr)//')!')
       ELSE
