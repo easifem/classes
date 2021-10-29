@@ -39,7 +39,7 @@ MODULE PROCEDURE xmlFile_Initiate
   LOGICAL( LGT ) :: exists
   !>
   IF( obj%isInitiated ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - xmlFile '//obj%getFileName()// &
       & ' is already initialized!')
     RETURN
@@ -63,7 +63,7 @@ MODULE PROCEDURE xmlFile_Initiate
       CALL obj%setWriteStat(.FALSE.)
       CALL obj%setReadStat(.TRUE.)
     ELSE
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - XML file '//filename//' is being opened with '// &
         & 'mode READ but does not exist.' )
     END IF
@@ -94,7 +94,7 @@ MODULE PROCEDURE xmlFile_Initiate
     CALL obj%setNewStat( .TRUE. )
     CALL obj%setOverwriteStat( .TRUE. )
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unrecognized access mode.')
   END SELECT
   obj%fullname=trim(filename)
@@ -160,12 +160,12 @@ MODULE PROCEDURE xmlFile_Open
   INTEGER( I4B ) :: ierr
   !>
   IF( .NOT. obj%isInitiated ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - The xmlFile is not initiated.')
   END IF
   !>
   IF( obj%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       ' - File is already open!')
   END IF
   !>
@@ -204,7 +204,7 @@ MODULE PROCEDURE xmlFile_Open
   IF(ierr == 0) THEN
     CALL obj%setOpenStat(.TRUE.)
   ELSE
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Trouble opening file!')
     CALL obj%setOpenStat(.FALSE.)
   ENDIF
@@ -223,7 +223,7 @@ MODULE PROCEDURE xmlFile_Close
     IF(ierr .EQ. 0) THEN
       CALL obj%setOpenStat(.FALSE.)
     ELSE
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - trouble closing file!')
     END IF
   END IF
@@ -246,7 +246,7 @@ MODULE PROCEDURE xmlFile_Delete
   IF(ierr == 0) THEN
     CALL obj%setOpenStat(.FALSE.)
   ELSE
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - trouble closing file!')
   ENDIF
 END PROCEDURE xmlFile_Delete

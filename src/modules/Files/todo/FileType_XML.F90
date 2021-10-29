@@ -631,7 +631,7 @@ SUBROUTINE init_XMLFileType(thisXMLFile,fname,lread)
     ALLOCATE(thisXMLFile%root)
     thisXMLFile%isInit=.TRUE.
   ELSE
-    CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+    CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
         ' - File is already initialized!')
   ENDIF
 ENDSUBROUTINE init_XMLFileType
@@ -696,12 +696,12 @@ SUBROUTINE fopen_XMLFileType(file)
     IF(ierr == 0) THEN
       CALL file%setOpenStat(.TRUE.)
     ELSE
-      CALL file%e%raiseError(modName//'::'//myName// &
+      CALL file%e%raiseError(modName//'::'//myName//" - "// &
           ' - Trouble opening file!')
       CALL file%setOpenStat(.FALSE.)
     ENDIF
   ELSE
-    CALL file%e%raiseError(modName//'::'//myName// &
+    CALL file%e%raiseError(modName//'::'//myName//" - "// &
         ' - File is already open!')
   ENDIF
 ENDSUBROUTINE fopen_XMLFileType
@@ -719,7 +719,7 @@ SUBROUTINE fclose_XMLFileType(file)
     IF(ierr == 0) THEN
       CALL file%setOpenStat(.FALSE.)
     ELSE
-      CALL file%e%raiseError(modName//'::'//myName// &
+      CALL file%e%raiseError(modName//'::'//myName//" - "// &
           ' - trouble closing file!')
     ENDIF
   ENDIF
@@ -742,7 +742,7 @@ SUBROUTINE fdelete_XMLFileType(file)
   IF(ierr == 0) THEN
     CALL file%setOpenStat(.FALSE.)
   ELSE
-    CALL file%e%raiseError(modName//'::'//myName// &
+    CALL file%e%raiseError(modName//'::'//myName//" - "// &
         ' - trouble closing file!')
   ENDIF
 ENDSUBROUTINE fdelete_XMLFileType
@@ -791,7 +791,7 @@ SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
         IF(cachedFile(ic) == LF) nlines=nlines+1
       ENDDO
       IF(nopen /= nclose) THEN
-        CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+        CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
             ' - mismatched markup characters!')
       ELSE
         !Store the locations of all the markup characters "<" and ">" lines
@@ -819,7 +819,7 @@ SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
         !Verify that they are all matching (interleaved)
         DO i=1,nTags
           IF(itag(1,i) > itag(2,i)) THEN
-            CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+            CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
                 ' - mismatched markup characters!')
             EXIT
           ENDIF
@@ -856,7 +856,7 @@ SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
             ENDIF
           ENDIF
           IF(itag(3,i) == BAD_TAG) THEN
-            CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+            CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
                 ' - Unrecognizable markup in "'//tagStr//'"!')
           ENDIF
         ENDDO
@@ -868,7 +868,7 @@ SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
             EXIT
           ELSEIF(itag(3,i) == END_TAG .OR. &
               (itag(3,i) == EMPTY_ELEMENT_TAG .AND. i < nTags)) THEN
-              CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+              CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
               ' - Could not locate start of root element!')
           ENDIF
         ENDDO
@@ -881,7 +881,7 @@ SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
           ELSEIF(itag(3,i) == START_TAG .OR. &
               (itag(3,i) == EMPTY_ELEMENT_TAG .AND. i < nTags) .OR. &
               itag(3,i) == DECLARATION_TAG) THEN
-              CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+              CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
               ' - Could not locate end of root element!')
           ENDIF
         ENDDO
@@ -891,11 +891,11 @@ SUBROUTINE importFromDisk_XMLFileType(thisXMLFile,fname)
             rootTagEnd)
       ENDIF
     ELSE
-      CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+      CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
           ' - XML File could not be opened for reading!')
     ENDIF
   ELSE
-    CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+    CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
         ' - XML File could not be initialized!')
   ENDIF
 ENDSUBROUTINE importFromDisk_XMLFileType
@@ -968,7 +968,7 @@ SUBROUTINE processXMLDecl(thisXMLFile)
     READ(thisXMLFile%unitNo,'(a1)',ADVANCE='NO',IOSTAT=ierr) tmpChar
     IF(ierr == IOSTAT_EOR) tmpChar=CHAR(10)
     IF(ierr == IOSTAT_END) THEN
-      CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+      CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
           ' - Reached end of file before finding start of first tag "<"!')
       EXIT !No more tags
     ENDIF
@@ -994,7 +994,7 @@ SUBROUTINE processXMLDecl(thisXMLFile)
         tagStr=tagStr//ioBuffer(1:ibuf)
       ELSE
         !Throw an exception end of file before end marker
-        CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+        CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
             ' - Reached end of file before finding closing marker'// &
             ' ">" for XML tag!')
       ENDIF
@@ -1003,7 +1003,7 @@ SUBROUTINE processXMLDecl(thisXMLFile)
       !Insure that only whitespace was read
       IF(.NOT.(SCAN(tmpChar,SP//CR//LF//TB) > 0)) THEN
         !Throw an exception, illegal characters
-        CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+        CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
             ' - Illegal characters between XML tags!')
         EXIT
       ENDIF
@@ -1032,12 +1032,12 @@ SUBROUTINE processXMLDecl(thisXMLFile)
                 thisXMLFile%version=version
           ELSE
             !Illegal value for version
-            CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+            CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
                 ' - XML Version "'//TRIM(avalues(1))//'" is not supported!')
           ENDIF
         ELSE
           !first attribute must be 'version'!
-          CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+          CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
               ' - The first attribute must be the XML version!')
         ENDIF
 
@@ -1052,7 +1052,7 @@ SUBROUTINE processXMLDecl(thisXMLFile)
               ELSEIF(avalues(i) == 'US-ASCII' .OR. avalues(i) == 'us-ascii') THEN
                 thisXMLFile%encoding='US-ASCII'
               ELSE
-                CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+                CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
                     ' - File encoding "'//TRIM(avalues(i))//'" is not supported!')
               ENDIF
 
@@ -1078,13 +1078,13 @@ SUBROUTINE processXMLDecl(thisXMLFile)
                 thisXMLFile%standalone=.FALSE.
               ELSE
                 !Illegal value for 'standalone' attribute
-                CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+                CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
                     ' - illegal value "'//TRIM(avalues(i))// &
                     '" for "standalone" attribute in XML declaration.')
               ENDIF
             ELSE
               !Illegal attribute
-              CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+              CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
                   ' - illegal attribute "'//TRIM(anames(i))// &
                   '" for XML declaration.')
             ENDIF
@@ -1092,12 +1092,12 @@ SUBROUTINE processXMLDecl(thisXMLFile)
         ENDIF
       ELSE
         !Illegal number of attributes in declaration
-        CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+        CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
             ' - illegal  number of attributes in XML declaration.')
       ENDIF
     ELSE
       !Failed to process attributes for XMLDecl
-      CALL thisXMLFile%e%raiseError(modName//'::'//myName// &
+      CALL thisXMLFile%e%raiseError(modName//'::'//myName//" - "// &
           ' - Failed to process attributes in XML declaration.')
     ENDIF
   ENDIF

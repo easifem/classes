@@ -21,6 +21,38 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                  UserFunctionGetReturnType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE UserFunctionGetReturnType
+  SELECT CASE( TRIM(name) )
+  CASE( "Scalar")
+    ans = Scalar
+  CASE( "Vector")
+    ans = Vector
+  CASE( "Matrix")
+    ans = Matrix
+  END SELECT
+END PROCEDURE UserFunctionGetReturnType
+
+!----------------------------------------------------------------------------
+!                                                  UserFunctionGetArgType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE UserFunctionGetArgType
+  SELECT CASE( TRIM(name) )
+  CASE( "Constant")
+    ans = Constant
+  CASE( "Space")
+    ans = Space
+  CASE( "SpaceTime")
+    ans = SpaceTime
+  CASE( "SolutionDependent")
+    ans = SolutionDependent
+  END SELECT
+END PROCEDURE UserFunctionGetArgType
+
+!----------------------------------------------------------------------------
 !                                                      SetUserFunctionParam
 !----------------------------------------------------------------------------
 

@@ -32,7 +32,7 @@ MODULE PROCEDURE VTKFile_WritePiece_1
   SELECT CASE( obj%DataStructureType )
   CASE( PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid )
     IF( .NOT. PRESENT( srcFileName ) ) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Source file name should be present!')
     END IF
     n = 2
@@ -47,7 +47,7 @@ MODULE PROCEDURE VTKFile_WritePiece_1
     values( 2 ) = '"' // TRIM(ADJUSTL(srcFileName)) // '"'
   CASE( PARALLEL_VTK_UnstructuredGrid, PARALLEL_VTK_PolyData )
     IF( .NOT. PRESENT( srcFileName ) ) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Source file name should be present!')
     END IF
     n = 1
@@ -63,7 +63,7 @@ MODULE PROCEDURE VTKFile_WritePiece_1
                     & // TRIM(str(n=extent(5))) // CHAR_SPACE &
                     & // TRIM(str(n=extent(6))) // '"'
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
   CALL obj%WriteStartTag(name=String('Piece'), attrNames=names(1:n), &
@@ -87,7 +87,7 @@ MODULE PROCEDURE VTKFile_WritePiece_2
     values( 1 ) = '"' // TRIM( str(nPoints) ) // '"'
     values( 2 ) = '"' // TRIM( str(nCells) ) // '"'
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
   CALL obj%WriteStartTag(name=String('Piece'), attrNames=names(1:n), &
@@ -117,7 +117,7 @@ MODULE PROCEDURE VTKFile_WritePiece_3
     values( 4 ) = '"' // TRIM( str(nStrips) ) // '"'
     values( 5 ) = '"' // TRIM( str(nPolys) ) // '"'
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
   CALL obj%WriteStartTag(name=String('Piece'), attrNames=names(1:n), &

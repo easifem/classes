@@ -35,7 +35,7 @@ MODULE PROCEDURE open_object
   !Check for expected links between object, and File
   CALL h5lexists_f(obj%file_id,path,dset_exists,ierr)
   IF( .NOT. dset_exists ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     ' - Incorrect path to object.')
     RETURN
   ENDIF
@@ -43,7 +43,7 @@ MODULE PROCEDURE open_object
   !Open the object
   CALL h5Oopen_f(obj%file_id, path, obj_id, ierr)
   IF(ierr .NE. 0) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     ' - Failed to open object.')
     RETURN
   ENDIF
@@ -57,7 +57,7 @@ MODULE PROCEDURE close_object
   CHARACTER( LEN=* ), PARAMETER :: myName='close_object_HDF5FileType'
   CALL h5Oclose_f(obj_id,ierr)
   IF (ierr .NE. 0) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     ' - Failed to close objectt.')
     RETURN
   ENDIF
@@ -78,12 +78,12 @@ MODULE PROCEDURE createAttribute
   IF(obj%overwriteStat .AND. attr_exists) THEN
     ! Open the attribute
     CALL h5aopen_f(obj_id,attr_name,attr_id,error)
-    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unable to open attribute.')
   ELSE
     ! Create the attribute
     CALL h5acreate_f(obj_id,attr_name,atype_id,dspace_id,attr_id,error)
-    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName// &
+    IF(error .NE. 0) CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unable to create attribute.')
   ENDIF
 END PROCEDURE createAttribute
@@ -104,7 +104,7 @@ MODULE PROCEDURE open_attribute
   !Check that the named attribute exists
   CALL h5aexists_f(obj_id,attr_name,attr_exists,error)
   IF (.NOT. attr_exists) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     ' - Attribute does not exist for object.')
     RETURN
   ENDIF
@@ -112,7 +112,7 @@ MODULE PROCEDURE open_attribute
   !Open the Attribute
   CALL h5aopen_f(obj_id,attr_name,attr_id,error)
   IF(error /= 0) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     ' - Failed to open attribute.')
     RETURN
   ENDIF
@@ -133,7 +133,7 @@ MODULE PROCEDURE close_attribute
 
   CALL h5aclose_f(attr_id,error)
   IF (error .NE. 0) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Failed to close objectt.')
     RETURN
   ENDIF

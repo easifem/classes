@@ -40,7 +40,7 @@ MODULE PROCEDURE VTKFile_WritePoints_1
     CALL obj%WriteEndTag(name=String('Points'))
 
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_1
@@ -66,7 +66,7 @@ MODULE PROCEDURE VTKFile_WritePoints_2
     CALL obj%WriteEndTag(name=String('Points'))
 
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_2
@@ -90,7 +90,7 @@ MODULE PROCEDURE VTKFile_WritePoints_3
     CALL obj%WriteDataArray(name=String('Points'), x=x)
     CALL obj%WriteEndTag(name=String('Points'))
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_3
@@ -114,7 +114,7 @@ MODULE PROCEDURE VTKFile_WritePoints_4
     CALL obj%WriteDataArray(name=String('Points'), x=x)
     CALL obj%WriteEndTag(name=String('Points'))
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_4
@@ -132,7 +132,7 @@ MODULE PROCEDURE VTKFile_WritePoints_5
     CALL obj%WriteDataArray(name=String('Points'), x=x, y=y, z=z)
     CALL obj%WriteEndTag(name=String('Points'))
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_5
@@ -150,7 +150,7 @@ MODULE PROCEDURE VTKFile_WritePoints_6
     CALL obj%WriteDataArray(name=String('Points'), x=x, y=y, z=z)
     CALL obj%WriteEndTag(name=String('Points'))
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_6
@@ -168,7 +168,7 @@ MODULE PROCEDURE VTKFile_WritePoints_7
     CALL obj%WriteDataArray(name=String('Points'), x=x )
     CALL obj%WriteEndTag(name=String('Points'))
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_7
@@ -186,7 +186,7 @@ MODULE PROCEDURE VTKFile_WritePoints_8
     CALL obj%WriteDataArray(name=String('Points'), x=x )
     CALL obj%WriteEndTag(name=String('Points'))
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')
   END SELECT
 END PROCEDURE VTKFile_WritePoints_8

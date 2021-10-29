@@ -68,12 +68,12 @@ MODULE PROCEDURE sField_Import
     & "IMPORTING SCALAR FIELD")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! READ fieldType
@@ -96,14 +96,14 @@ MODULE PROCEDURE sField_Import
   ! READ name
   dsetname=trim(group)//"/name"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
   ! READ engine
   dsetname=trim(group)//"/engine"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset named engine should be present')
   END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=engine)
@@ -143,12 +143,12 @@ MODULE PROCEDURE sField_Export
     & "EXPORTING SCALAR FIELD")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
   ! WRITE fieldType

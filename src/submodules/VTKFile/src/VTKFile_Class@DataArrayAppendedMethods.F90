@@ -72,7 +72,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
       RETURN
     ELSE
       IF( iostat .NE. 0 ) &
-      & CALL e%raiseError(modName//'::'//myName// &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Some error has occured while reading scratch file')
     END IF
     !> select case
@@ -108,7 +108,7 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
 
     CASE DEFAULT
       iostat = 1
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Bad dataarray_type = ' // dataarray_type // &
         & ' bytes = ' // TRIM( str(nByte, .true.) ) // &
         & ' dataarray dimension = ' // TRIM( str(dataarray_dim, .true.)))

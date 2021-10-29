@@ -7,9 +7,7 @@
   "pp_suffixes": [".F90", ".inc", ".part", ".f90"],
   "pp_defs": {},
   "include_dirs": [],
-  "ext_source_dirs": [
-    "/home/vikassharma/Dropbox/easifem-base/src",
-  ],
+  "ext_source_dirs": [],
   "lowercase_intrinsics": false,
   "debug_log": false,
   "disable_diagnostics": false

@@ -33,22 +33,22 @@ MODULE PROCEDURE MatrixFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( MatrixField_:: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE MatrixFieldFactory
@@ -63,22 +63,22 @@ MODULE PROCEDURE BlockMatrixFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( BlockMatrixField_:: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE BlockMatrixFieldFactory
@@ -103,22 +103,22 @@ MODULE PROCEDURE NodeFieldFactory
       ALLOCATE( BlockNodeField_:: ans )
     END IF
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE NodeFieldFactory
@@ -133,22 +133,22 @@ MODULE PROCEDURE BlockNodeFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( BlockNodeField_ :: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE BlockNodeFieldFactory
@@ -163,22 +163,22 @@ MODULE PROCEDURE ScalarFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( ScalarField_ :: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE ScalarFieldFactory
@@ -193,22 +193,22 @@ MODULE PROCEDURE VectorFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( VectorField_:: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE VectorFieldFactory
@@ -223,22 +223,22 @@ MODULE PROCEDURE STVectorFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( STVectorField_:: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE STVectorFieldFactory
@@ -253,22 +253,22 @@ MODULE PROCEDURE STScalarFieldFactory
   CASE( "NATIVE_SERIAL" )
     ALLOCATE( STScalarField_ :: ans )
   CASE( "NATIVE_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!! We are working on it.')
   CASE( "NATIVE_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!! We are working on it.')
   CASE( "PETSC" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!! We are working on it.')
   CASE( "LIS_SERIAL" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'LIS_SERIAL engine is not available currently!! We are working on it.')
   CASE( "LIS_OMP" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_OMP engine is not available currently!! We are working on it.')
   CASE( "LIS_MPI" )
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'LIS_MPI engine is not available currently!! We are working on it.')
   END SELECT
 END PROCEDURE STScalarFieldFactory

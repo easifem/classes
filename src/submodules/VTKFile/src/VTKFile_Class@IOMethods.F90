@@ -31,17 +31,17 @@ MODULE PROCEDURE VTKFile_WriteRootTag
   INTEGER( I4B ) :: ierr
 
   IF( .NOT. obj%isInitiated ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile is not initiated!')
   END IF
 
   IF( .NOT. obj%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile is not open')
   END IF
 
   IF( .NOT. obj%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile does not have write permission')
   END IF
 
@@ -57,7 +57,7 @@ MODULE PROCEDURE VTKFile_WriteRootTag
   obj%indent = 2
 
   IF( ierr .NE. 0 ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Error has occured while writing header info in VTKFile &
       & iostat = ' // trim(str(ierr, .true.)) // ' error msg :: ' // &
       & TRIM( ioerrmsg ) )
@@ -118,7 +118,7 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
   SELECT CASE( obj%DataStructureType )
   CASE( PARALLEL_VTK_RectilinearGrid )
     IF( .NOT. PRESENT( meshDataFormat )) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - meshDataFormat should be present for PARALLEL_VTK_RECTILINEAR')
     END IF
     !> Write <PCoordinates>
@@ -136,7 +136,7 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
   !> case of structured grid and unstructured parallel grids
   CASE ( PARALLEL_VTK_StructuredGrid, PARALLEL_VTK_UnstructuredGrid )
     IF( .NOT. PRESENT( meshDataFormat )) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - meshDataFormat should be present for PARALLEL CASE')
     END IF
     CALL obj%WriteStartTag(name=String('PPoints'))

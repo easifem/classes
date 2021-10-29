@@ -42,12 +42,12 @@ MODULE PROCEDURE dbc_Import
     & "IMPORTING DIRICHLET BOUNDARY CONDITION" )
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! READ name
@@ -153,12 +153,12 @@ MODULE PROCEDURE dbc_Export
     & "EXPORTING DIRICHLET BOUNDARY CONDITION" )
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
   ! WRITE name
@@ -194,7 +194,7 @@ MODULE PROCEDURE dbc_Export
   IF( .NOT. obj%UseFunction ) THEN
     dsetname=TRIM(group)//"/NodalValue"
     IF( .NOT. ALLOCATED( obj%NodalValue ) ) THEN
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'NodalValue is not allocated, it seems NodalValue is not set')
     END IF
     SELECT CASE( obj%nodalValueType )

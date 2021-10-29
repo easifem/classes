@@ -510,7 +510,7 @@ SUBROUTINE setEOFstat_CheckpointFileType(file,bool)
   IF(file%isInit) THEN
     CALL file%basefile%setEOFstat(bool)
   ELSE
-    CALL file%e%raiseError(modName//'::'//myName// &
+    CALL file%e%raiseError(modName//'::'//myName//" - "// &
         ' - EOF status cannot be changed for uninitialized checkpoint file!')
   ENDIF
 ENDSUBROUTINE setEOFstat_CheckpointFileType
@@ -529,7 +529,7 @@ SUBROUTINE setOpenStat_CheckpointFileType(file,bool)
   IF(file%isInit) THEN
     CALL file%basefile%setOpenStat(bool)
   ELSE
-    CALL file%e%raiseError(modName//'::'//myName// &
+    CALL file%e%raiseError(modName//'::'//myName//" - "// &
         ' - Open status cannot be changed for uninitialized checkpoint file!')
   ENDIF
 ENDSUBROUTINE setOpenStat_CheckpointFileType
@@ -547,7 +547,7 @@ SUBROUTINE setReadStat_CheckpointFileType(file,bool)
   IF(file%isInit) THEN
     CALL file%basefile%setReadstat(bool)
   ELSE
-    CALL file%e%raiseError(modName//'::'//myName// &
+    CALL file%e%raiseError(modName//'::'//myName//" - "// &
         ' - Read status cannot be changed for uninitialized checkpoint file!')
   ENDIF
 ENDSUBROUTINE setReadStat_CheckpointFileType
@@ -565,7 +565,7 @@ SUBROUTINE setWriteStat_CheckpointFileType(file,bool)
   IF(file%isInit) THEN
     CALL file%basefile%setWritestat(bool)
   ELSE
-    CALL file%e%raiseError(modName//'::'//myName// &
+    CALL file%e%raiseError(modName//'::'//myName//" - "// &
         ' - Write status cannot be changed for uninitialized checkpoint file!')
   ENDIF
 ENDSUBROUTINE setWriteStat_CheckpointFileType

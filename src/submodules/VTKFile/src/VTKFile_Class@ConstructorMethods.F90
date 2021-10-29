@@ -28,7 +28,7 @@ MODULE PROCEDURE InitiateVTKFile
   CHARACTER( LEN = * ), PARAMETER :: myName = "InitiateVTKFile"
   !> main
   IF( obj%isInitiated ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile is already initiated, use DeallocateData() first')
   END IF
   !>
@@ -53,7 +53,7 @@ MODULE PROCEDURE InitiateVTKFile
     & PARALLEL_VTK_StructuredGrid )
     obj%isStructured = .TRUE.
     IF( .NOT. PRESENT( WholeExtent ) ) &
-      &  CALL e%raiseError(modName//'::'//myName// &
+      &  CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - In case of structured data set WholeExtent should be given')
   !> Unstructured case
   CASE( VTK_PolyData, VTK_UnstructuredGrid, PARALLEL_VTK_PolyData, &
@@ -61,7 +61,7 @@ MODULE PROCEDURE InitiateVTKFile
     obj%isStructured = .FALSE.
   !> Default case prints error
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Cannot recognize DataStructureType')
   END SELECT
   !> Handle appended case
@@ -165,7 +165,7 @@ MODULE PROCEDURE  VTKFile_OpenScratchFile
       & status='SCRATCH', &
       & iostat=iostat )
     IF( iostat .NE. 0 ) &
-      & CALL e%raiseError(modName//'::'//myName// &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Some error has occured while opening scratch file')
   END IF
 END PROCEDURE VTKFile_OpenScratchFile
@@ -180,7 +180,7 @@ MODULE PROCEDURE VTKFile_CloseScratchFile
   IF( obj%DataFormat .EQ. VTK_APPENDED ) THEN
     CLOSE(unit=obj%scratch, iostat=iostat )
     IF( iostat .NE. 0 ) &
-      & CALL e%raiseError(modName//'::'//myName// &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Some error has occured while closing scratch file')
   END IF
 END PROCEDURE VTKFile_CloseScratchFile

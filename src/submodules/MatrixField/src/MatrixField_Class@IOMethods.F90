@@ -83,12 +83,12 @@ MODULE PROCEDURE mField_Import
     & "Importing an Instance of MatrixField_")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
   END IF
   ! fieldType
@@ -111,7 +111,7 @@ MODULE PROCEDURE mField_Import
   ! name
   dsetname=TRIM(group)//"/name"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
   ELSE
     CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
@@ -126,7 +126,7 @@ MODULE PROCEDURE mField_Import
   ! matrixProp
   dsetname=TRIM(group)//"/matrixProp"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset matrixProp should be present')
   ELSE
     CALL hdf5%read(dsetname=dsetname%chars(),vals=matrixProp)
@@ -134,7 +134,7 @@ MODULE PROCEDURE mField_Import
   ! spaceCompo
   dsetname=TRIM(group)//"/spaceCompo"
   IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset spaceCompo should be present')
   ELSE
     CALL hdf5%read(dsetname=dsetname%chars(),vals=spaceCompo)
@@ -158,7 +158,7 @@ MODULE PROCEDURE mField_Import
     IF( PRESENT( dom ) ) THEN
       obj%domain => dom
     ELSE
-      CALL e%RaiseError(modName//'::'//myName// &
+      CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Either dom should be present')
     END IF
     CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
@@ -315,12 +315,12 @@ MODULE PROCEDURE mField_Export
     & "Exporting Instance of MatrixField_")
   !> check
   IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
   !> check
   IF( .NOT. hdf5%isWrite() ) THEN
-    CALL e%raiseError(modName//'::'//myName// &
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
   !> fieldType
