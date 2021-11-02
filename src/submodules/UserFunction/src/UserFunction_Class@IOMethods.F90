@@ -36,16 +36,23 @@ MODULE PROCEDURE auf_Display
       & unitNo=unitNo )
     CALL Display(NAME_ARG_TYPE(obj%argType), "# argType: ",  &
       & unitNo=unitNo )
-    CALL Display( obj%scalarValue, "# scalarValue: ", unitNo=unitNo )
-    IF( ALLOCATED(obj%vectorValue )) THEN
-      CALL Display( obj%vectorValue, "# vectorValue: ", unitNo=unitNo )
-    ELSE
-      CALL Display( "# vectorValue: NOT ALLOCATED", unitNo=unitNo)
-    END IF
-    IF( ALLOCATED(obj%matrixValue )) THEN
-      CALL Display( obj%matrixValue, "# matrixValue: ", unitNo=unitNo )
-    ELSE
-      CALL Display( "# matrixValue: NOT ALLOCATED", unitNo=unitNo)
+    IF( obj%argType .EQ. CONSTANT ) THEN
+      SELECT CASE( obj%returnType )
+      CASE( Scalar )
+        CALL Display( obj%scalarValue, "# scalarValue: ", unitNo=unitNo )
+      CASE( Vector )
+        IF( ALLOCATED(obj%vectorValue )) THEN
+          CALL Display( obj%vectorValue, "# vectorValue: ", unitNo=unitNo )
+        ELSE
+          CALL Display( "# vectorValue: NOT ALLOCATED", unitNo=unitNo)
+        END IF
+      CASE( Matrix )
+        IF( ALLOCATED(obj%matrixValue )) THEN
+          CALL Display( obj%matrixValue, "# matrixValue: ", unitNo=unitNo )
+        ELSE
+          CALL Display( "# matrixValue: NOT ALLOCATED", unitNo=unitNo)
+        END IF
+      END SELECT
     END IF
   END IF
 END PROCEDURE auf_Display
@@ -173,22 +180,28 @@ MODULE PROCEDURE auf_Export
     dsetname=trim(group)//"/argType"
     strval = NAME_ARG_TYPE(obj%argType)
     CALL hdf5%write(dsetname=dsetname%chars(), vals=strval)
-    SELECT CASE( obj%returnType )
-    CASE( SCALAR )
-      !> scalarValue
-      dsetname=trim(group)//"/scalarValue"
-      CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%scalarValue)
-    CASE( VECTOR )
-      !> vectorValue
-      dsetname=trim(group)//"/vectorValue"
-      IF( ALLOCATED(obj%vectorValue)) &
-        & CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%vectorValue)
-    CASE( MATRIX )
-      !> matrixValue
-      dsetname=trim(group)//"/matrixValue"
-      IF( ALLOCATED(obj%matrixValue)) &
-        & CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%matrixValue)
-    END SELECT
+    !>
+    IF( obj%argType .EQ. CONSTANT ) THEN
+      SELECT CASE( obj%returnType )
+      CASE( SCALAR )
+        !> scalarValue
+        dsetname=trim(group)//"/scalarValue"
+        CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%scalarValue)
+      CASE( VECTOR )
+        !> vectorValue
+        dsetname=trim(group)//"/vectorValue"
+        IF( ALLOCATED(obj%vectorValue)) &
+          & CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%vectorValue)
+      CASE( MATRIX )
+        !> matrixValue
+        dsetname=trim(group)//"/matrixValue"
+        IF( ALLOCATED(obj%matrixValue)) &
+          & CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%matrixValue)
+      END SELECT
+    ELSE
+      CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'Currently, EASIFEM Supports import of constant userFunction.')
+    END IF
   END IF
 END PROCEDURE auf_Export
 
