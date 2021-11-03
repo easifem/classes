@@ -91,9 +91,17 @@ END PROCEDURE auf_CheckEssentialParam
 
 MODULE PROCEDURE auf_DeallocateData
   !> main
+  obj%isInitiated = .TRUE.
   obj%returnType = 0
   obj%argType = 0
   obj%isUserFunctionSet = .FALSE.
+  obj%scalarValue = 0.0_DFP
+  IF(ALLOCATED(obj%vectorValue)) DEALLOCATE(obj%vectorValue)
+  IF(ALLOCATED(obj%matrixValue)) DEALLOCATE(obj%matrixValue)
+  IF(ASSOCIATED(obj%userFunction)) THEN
+    CALL obj%userFunction%DeallocateData()
+  END IF
+  obj%userFunction=>NULL()
 END PROCEDURE auf_DeallocateData
 
 !----------------------------------------------------------------------------
@@ -111,6 +119,7 @@ END PROCEDURE auf_Final
 MODULE PROCEDURE auf_Initiate
   obj%returnType = returnType
   obj%argType = argType
+  obj%isInitiated = .TRUE.
 END PROCEDURE auf_Initiate
 
 !----------------------------------------------------------------------------

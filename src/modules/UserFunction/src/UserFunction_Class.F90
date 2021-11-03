@@ -44,7 +44,8 @@ CHARACTER( LEN = * ), PARAMETER :: NAME_ARG_TYPE(5) =  &
 !----------------------------------------------------------------------------
 
 TYPE :: UserFunction_
-  LOGICAL :: isUserFunctionSet = .FALSE.
+  LOGICAL( LGT ) :: isInitiated = .FALSE.
+  LOGICAL( LGT ) :: isUserFunctionSet = .FALSE.
   INTEGER( I4B ) :: returnType=0
   INTEGER( I4B ) :: argType=0
   REAL( DFP ) :: scalarValue = 0.0
@@ -176,8 +177,8 @@ END INTERFACE
 ! date: 26 Oct 2021
 ! summary: Initiate the user function
 
-INTERFACE
-MODULE SUBROUTINE auf_Initiate( obj,argType, returnType, param )
+  INTERFACE
+  MODULE SUBROUTINE auf_Initiate( obj,argType, returnType, param )
   CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: argType
   INTEGER( I4B ), INTENT( IN ) :: returnType
@@ -228,7 +229,7 @@ END INTERFACE
 INTERFACE
 MODULE RECURSIVE SUBROUTINE auf_getScalarValue(obj, val, args)
   CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( OUT ) :: val
+  REAL( DFP ), INTENT( INOUT ) :: val
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: args( : )
 END SUBROUTINE auf_getScalarValue
 END INTERFACE
@@ -244,7 +245,7 @@ END INTERFACE
 INTERFACE
 MODULE RECURSIVE SUBROUTINE auf_getVectorValue(obj, val, args)
   CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( OUT ) :: val( : )
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: val( : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: args( : )
 END SUBROUTINE auf_getVectorValue
 END INTERFACE
@@ -260,7 +261,7 @@ END INTERFACE
 INTERFACE
 MODULE RECURSIVE SUBROUTINE auf_getMatrixValue(obj, val, args)
   CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( OUT ) :: val( :, : )
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: val( :, : )
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: args( : )
 END SUBROUTINE auf_getMatrixValue
 END INTERFACE
