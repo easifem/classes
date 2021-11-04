@@ -92,7 +92,8 @@ TYPE :: ExceptionHandler_
     GENERIC, PUBLIC :: setCounter => setCounter_all,setCounter_eCode
     GENERIC, PUBLIC :: setVerboseMode => setVerboseMode_all,&
       & setVerboseMode_eCode, setVerboseMode_array
-    GENERIC, PUBLIC :: setQuietMode => setQuietMode_all,setQuietMode_eCode, setQuietMode_array
+    GENERIC, PUBLIC :: setQuietMode => setQuietMode_all, &
+      & setQuietMode_eCode, setQuietMode_array
     GENERIC, PUBLIC :: isQuietMode => isQuietMode_all,isQuietMode_eCode
     GENERIC, PUBLIC :: isVerboseMode => isVerboseMode_all,isVerboseMode_eCode
 

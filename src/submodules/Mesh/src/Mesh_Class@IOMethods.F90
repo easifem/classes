@@ -442,14 +442,10 @@ IF (hdf5%pathExists(TRIM(dsetname)//"/boundingEntity")) THEN
   END IF
 END IF
 !> set Reference Element
-CALL Display("[Before START]LINUX CRASHING ISUSUE AT SETTING REFERENCE ELEMENT")
 CALL e%raiseInformation(modName//'::'//myName//" - " &
   & //"setting reference element")
-CALL Display("[START]LINUX CRASHING ISUSUE AT SETTING REFERENCE ELEMENT")
 obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, nsd=obj%nsd, &
   & elemType=obj%elemType)
-CALL Display("[END]LINUX CRASHING ISUSUE AT SETTING REFERENCE ELEMENT")
-
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
 IF (ALLOCATED(InternalNptrs)) DEALLOCATE (InternalNptrs)

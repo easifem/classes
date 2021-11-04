@@ -89,6 +89,8 @@ MODULE PROCEDURE pn_Read
   ! Go to $PhysicalNames
   CALL obj%GotoTag( mshFile, error )
   IF( error .EQ. 0 ) THEN
+    CALL e%raiseInformation(modName//'::'//myName//' - '// &
+      & 'PhysicalNames FOUND in the mshFile!')
     CALL Obj%DeallocateData()
     obj%isInitiated = .TRUE.
     unitNo = mshFile%getUnitNo()
