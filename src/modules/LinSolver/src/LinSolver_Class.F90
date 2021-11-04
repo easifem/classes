@@ -17,7 +17,7 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 July 2021
-! summary: This module defines a native linear solver, It uses LinSolvert library
+! summary: Native linear solver
 
 MODULE LinSolver_Class
 USE GlobalData
@@ -31,10 +31,10 @@ USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER( LEN = * ), PARAMETER :: modName="LINSOLVER_CLASS"
-TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: IPAR_LENGTH = 14
-INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
+CHARACTER(LEN=*), PARAMETER :: modName = "Linsolver_Class"
+TYPE(ExceptionHandler_) :: e
+INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
+INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 
 !----------------------------------------------------------------------------
 !                                                                LinSolver_
@@ -53,11 +53,10 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! - Reference : https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
 ! - This class interface LinSolver and `EASIFEM`
 !
-!
 !### Usage
 !
-! ```fortran
-!	CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
+!```fortran
+! CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
 !    & <, diagScale, ipar, fpar> )
 ! CALL obj % setPrecondition( obj, precondtype <,ipar, fpar> )
 ! CALL obj % setSparsity( From )
@@ -67,13 +66,12 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! CALL obj % Display( msg <,unitno > )
 ! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
 ! CALL obj % DeallocateData( )
-! ```
+!```
 !
 !### Solver name
 !
 !
 !### Precondition Name
-!
 !
 !### Todo
 !
@@ -81,38 +79,48 @@ INTEGER( I4B ), PARAMETER :: FPAR_LENGTH = 14
 ! - Implement `ilutp` ans `iludp` preconditioners
 !@endtodo
 
-TYPE, EXTENDS( AbstractLinSolver_ ) :: LinSolver_
+TYPE, EXTENDS(AbstractLinSolver_) :: LinSolver_
   PRIVATE
-  INTEGER( I4B ) :: ipar( IPAR_LENGTH ) = 0
-  REAL( DFP ) :: fpar( FPAR_LENGTH ) = 0.0_DFP
-  REAL( DFP ), ALLOCATABLE :: W( : )
-  CONTAINS
+  INTEGER(I4B) :: ipar(IPAR_LENGTH) = 0
+  REAL(DFP) :: fpar(FPAR_LENGTH) = 0.0_DFP
+  REAL(DFP), ALLOCATABLE :: W(:)
+CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => ls_addSurrogate
-    !! add surrogate to the module exception handler
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => ls_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => ls_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => ls_addSurrogate
+    !! Add surrogate to the module exception handler
+  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
+    & ls_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => ls_deallocatedata
+  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateData => ls_deallocatedata
     !! DeallocateData
-  PROCEDURE, PUBLIC, PASS( obj ) :: Set => ls_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => ls_Set
     !! Set the matrix and preconditioning matrix
-  PROCEDURE, PUBLIC, PASS( obj ) :: Solve => ls_solve
+  PROCEDURE, PUBLIC, PASS(obj) :: Solve => ls_solve
     !! Solve the system of linear equation
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => ls_display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => ls_display
     !! Display the contents
-  PROCEDURE, PUBLIC, PASS( obj ) :: Import => ls_Import
-    !! importing linsolver from external file
-  PROCEDURE, PUBLIC, PASS( obj ) :: Export => ls_Export
-    !! exporting linsolver from external file
+  PROCEDURE, PUBLIC, PASS(obj) :: Import => ls_Import
+    !! Importing linsolver from external file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => ls_Export
+    !! Exporting linsolver from external file
 END TYPE LinSolver_
 
 PUBLIC :: LinSolver_
 
-TYPE( LinSolver_ ), PUBLIC, PARAMETER :: TypeLinSolver = LinSolver_( RES=NULL(), W=NULL() )
+!----------------------------------------------------------------------------
+!                                                              TypeLinSolver
+!----------------------------------------------------------------------------
+
+TYPE(LinSolver_), PUBLIC, PARAMETER :: TypeLinSolver = &
+    & LinSolver_(RES=NULL(), W=NULL())
+
+!----------------------------------------------------------------------------
+!                                                         LinSolverPointer_
+!----------------------------------------------------------------------------
 
 TYPE :: LinSolverPointer_
-  CLASS( LinSolver_ ), POINTER :: Ptr => NULL( )
+  CLASS(LinSolver_), POINTER :: Ptr => NULL()
 END TYPE LinSolverPointer_
 
 PUBLIC :: LinSolverPointer_
@@ -122,10 +130,10 @@ PUBLIC :: LinSolverPointer_
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION getLinSolverCodeFromName( name ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ) :: ans
-END FUNCTION getLinSolverCodeFromName
+  MODULE PURE FUNCTION getLinSolverCodeFromName(name) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: name
+    INTEGER(I4B) :: ans
+  END FUNCTION getLinSolverCodeFromName
 END INTERFACE
 
 PUBLIC :: getLinSolverCodeFromName
@@ -135,10 +143,10 @@ PUBLIC :: getLinSolverCodeFromName
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION getLinSolverNameFromCode( name ) RESULT( Ans )
-  INTEGER( I4B ), INTENT( IN ) :: name
-  CHARACTER( LEN = 15 ) :: ans
-END FUNCTION getLinSolverNameFromCode
+  MODULE PURE FUNCTION getLinSolverNameFromCode(name) RESULT(Ans)
+    INTEGER(I4B), INTENT(IN) :: name
+    CHARACTER(LEN=15) :: ans
+  END FUNCTION getLinSolverNameFromCode
 END INTERFACE
 
 PUBLIC :: getLinSolverNameFromCode
@@ -149,13 +157,13 @@ PUBLIC :: getLinSolverNameFromCode
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 Aug 2021
-! summary: 	Add surrogate to the module [[ExceptionHandler_]]
+! summary:         Add surrogate to the module [[ExceptionHandler_]]
 
 INTERFACE
-MODULE SUBROUTINE ls_addSurrogate( obj, UserObj )
-  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE ls_addSurrogate
+  MODULE SUBROUTINE ls_addSurrogate(obj, UserObj)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
+  END SUBROUTINE ls_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -167,20 +175,20 @@ END INTERFACE
 ! summary: Set linear solver parameters
 
 INTERFACE
-MODULE SUBROUTINE setLinSolverParam( param, solverName, preconditionOption, &
-  & convergenceIn, convergenceType, maxIter, relativeToRHS, &
-  & KrylovSubspaceSize, rtol, atol )
-  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
-  INTEGER( I4B ), INTENT( IN ) :: solverName
-  INTEGER( I4B ), INTENT( IN ) :: preconditionOption
-  INTEGER( I4B ), INTENT( IN ) :: convergenceIn
-  INTEGER( I4B ), INTENT( IN ) :: convergenceType
-  INTEGER( I4B ), INTENT( IN ) :: maxIter
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: relativeToRHS
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: KrylovSubspaceSize
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: rtol
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: atol
-END SUBROUTINE setLinSolverParam
+  MODULE SUBROUTINE setLinSolverParam(param, solverName, preconditionOption, &
+    & convergenceIn, convergenceType, maxIter, relativeToRHS, &
+    & KrylovSubspaceSize, rtol, atol)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    INTEGER(I4B), INTENT(IN) :: solverName
+    INTEGER(I4B), INTENT(IN) :: preconditionOption
+    INTEGER(I4B), INTENT(IN) :: convergenceIn
+    INTEGER(I4B), INTENT(IN) :: convergenceType
+    INTEGER(I4B), INTENT(IN) :: maxIter
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: relativeToRHS
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: KrylovSubspaceSize
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+  END SUBROUTINE setLinSolverParam
 END INTERFACE
 
 PUBLIC :: setLinSolverParam
@@ -194,20 +202,20 @@ PUBLIC :: setLinSolverParam
 ! summary: Returns the linear solver parameters
 
 INTERFACE
-MODULE SUBROUTINE getLinSolverParam( param, solverName, preconditionOption, &
-  & convergenceIn, convergenceType, maxIter, relativeToRHS, &
-  & KrylovSubspaceSize, rtol, atol )
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  INTEGER( I4B ), INTENT( OUT ) :: solverName
-  INTEGER( I4B ), INTENT( OUT ) :: preconditionOption
-  INTEGER( I4B ), INTENT( OUT ) :: convergenceIn
-  INTEGER( I4B ), INTENT( OUT ) :: convergenceType
-  INTEGER( I4B ), INTENT( OUT ) :: maxIter
-  LOGICAL( LGT ), INTENT( OUT ) :: relativeToRHS
-  INTEGER( I4B ), INTENT( OUT ) :: KrylovSubspaceSize
-  REAL( DFP ), INTENT( OUT ) :: rtol
-  REAL( DFP ), INTENT( OUT ) :: atol
-END SUBROUTINE getLinSolverParam
+  MODULE SUBROUTINE getLinSolverParam(param, solverName, preconditionOption, &
+    & convergenceIn, convergenceType, maxIter, relativeToRHS, &
+    & KrylovSubspaceSize, rtol, atol)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    INTEGER(I4B), INTENT(OUT) :: solverName
+    INTEGER(I4B), INTENT(OUT) :: preconditionOption
+    INTEGER(I4B), INTENT(OUT) :: convergenceIn
+    INTEGER(I4B), INTENT(OUT) :: convergenceType
+    INTEGER(I4B), INTENT(OUT) :: maxIter
+    LOGICAL(LGT), INTENT(OUT) :: relativeToRHS
+    INTEGER(I4B), INTENT(OUT) :: KrylovSubspaceSize
+    REAL(DFP), INTENT(OUT) :: rtol
+    REAL(DFP), INTENT(OUT) :: atol
+  END SUBROUTINE getLinSolverParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -219,10 +227,10 @@ END INTERFACE
 ! summary: This routine checks the essential parameters
 
 INTERFACE
-MODULE SUBROUTINE ls_checkEssentialParam( obj, param )
-  CLASS( LinSolver_ ), INTENT( IN ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE ls_checkEssentialParam
+  MODULE SUBROUTINE ls_checkEssentialParam(obj, param)
+    CLASS(LinSolver_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE ls_checkEssentialParam
 END INTERFACE
 
 PUBLIC :: ls_checkEssentialParam
@@ -247,10 +255,10 @@ PUBLIC :: ls_checkEssentialParam
 ! these algorithms. Default value is set to 20.
 
 INTERFACE
-MODULE SUBROUTINE ls_Initiate( obj, param )
-  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE ls_Initiate
+  MODULE SUBROUTINE ls_Initiate(obj, param)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE ls_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -258,9 +266,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE ls_DeallocateData( obj )
-  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE ls_DeallocateData
+  MODULE SUBROUTINE ls_DeallocateData(obj)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+  END SUBROUTINE ls_DeallocateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -268,10 +276,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE ls_Set( obj, Amat )
-  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractMatrixField_ ), TARGET, INTENT( INOUT ) :: Amat
-END SUBROUTINE ls_Set
+  MODULE SUBROUTINE ls_Set(obj, Amat)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: Amat
+  END SUBROUTINE ls_Set
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -280,18 +288,18 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 Aug 2021
-! summary: 	This routine solves the system of linear equation
+! summary:         This routine solves the system of linear equation
 !
 !# Introduction
 ! This routine solves the system of linear equation
 ! On entry `sol` can contain the initial guess
 
 INTERFACE
-MODULE SUBROUTINE ls_Solve( obj, sol, rhs )
-  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: sol
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: rhs
-END SUBROUTINE ls_Solve
+  MODULE SUBROUTINE ls_Solve(obj, sol, rhs)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
+  END SUBROUTINE ls_Solve
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -303,11 +311,11 @@ END INTERFACE
 ! summary: This routine displays the content of linear solver
 
 INTERFACE
-MODULE SUBROUTINE ls_Display( obj, msg, unitno )
-  CLASS( LinSolver_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Unitno
-END SUBROUTINE ls_Display
+  MODULE SUBROUTINE ls_Display(obj, msg, unitno)
+    CLASS(LinSolver_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: Unitno
+  END SUBROUTINE ls_Display
 END INTERFACE
 
 INTERFACE Display
@@ -325,11 +333,11 @@ PUBLIC :: Display
 ! summary: This routine intiates the linear solver from import
 
 INTERFACE
-MODULE SUBROUTINE ls_Import( obj, hdf5, group )
-  CLASS( LinSolver_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE ls_Import
+  MODULE SUBROUTINE ls_Import(obj, hdf5, group)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE ls_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -341,11 +349,11 @@ END INTERFACE
 ! summary: This routine exports the linear solver to external file
 
 INTERFACE
-MODULE SUBROUTINE ls_Export( obj, hdf5, group )
-  CLASS( LinSolver_ ), INTENT( IN ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE ls_Export
+  MODULE SUBROUTINE ls_Export(obj, hdf5, group)
+    CLASS(LinSolver_), INTENT(IN) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE ls_Export
 END INTERFACE
 
 END MODULE LinSolver_Class

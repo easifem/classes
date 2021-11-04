@@ -42,7 +42,8 @@ TYPE, ABSTRACT :: AbstractBC_
   CLASS( Domain_ ), POINTER :: dom => NULL()
   CONTAINS
   PRIVATE
-  PROCEDURE( abc_checkEssentialParam ), DEFERRED, PUBLIC, PASS( obj ) :: checkEssentialParam
+  PROCEDURE( abc_checkEssentialParam ), DEFERRED, PUBLIC, PASS( obj ) ::  &
+    & checkEssentialParam
   PROCEDURE( abc_addSurrogate ), DEFERRED, PUBLIC, PASS( obj ) :: addSurrogate
   PROCEDURE( abc_Initiate ), DEFERRED, PUBLIC, PASS( obj ) :: Initiate
   PROCEDURE( abc_DeallocateData ), DEFERRED, PUBLIC, PASS( obj ) :: &
