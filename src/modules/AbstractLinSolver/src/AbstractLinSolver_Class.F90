@@ -17,7 +17,7 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
-! summary: This module defines an abstract class for solving system of linear equation.
+! summary: An abstract class for solving system of linear equation.
 
 MODULE AbstractLinSolver_Class
 USE GlobalData
@@ -40,7 +40,8 @@ PRIVATE
 !
 !# Introduction
 !
-! [[AbstractLinSolver_]] is an abstract class for solving system of linear equation
+! [[AbstractLinSolver_]] is an abstract class for solving system of linear
+! equation
 !
 ! @note
 ! It is important to node that [[AbstractLinSolver_]] is created to build an
@@ -91,7 +92,8 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   CONTAINS
   PROCEDURE( als_addSurrogate ), PUBLIC, DEFERRED, PASS( obj ) :: addSurrogate
     !! add surrogate to the module exception handler
-  PROCEDURE( als_checkEssentialParam ), PUBLIC, DEFERRED, PASS( obj ) :: checkEssentialParam
+  PROCEDURE( als_checkEssentialParam ), PUBLIC, DEFERRED, PASS( obj ) :: &
+    & checkEssentialParam
   PROCEDURE( als_initiate ), PUBLIC, DEFERRED, PASS( obj ) :: Initiate
     !! Initiate the object
   PROCEDURE( als_set ), PUBLIC, DEFERRED, PASS( obj ) :: set
