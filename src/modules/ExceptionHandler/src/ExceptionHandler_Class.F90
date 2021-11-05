@@ -167,7 +167,8 @@ PUBLIC :: exceptionStop
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE exceptionMessage( eCode, isQuiet, isLogActive, logUnit, mesg )
+MODULE SUBROUTINE exceptionMessage( eCode, isQuiet, isLogActive, logUnit, &
+  & mesg )
   INTEGER( I4B ), INTENT( IN ) :: eCode
   LOGICAL( LGT ), INTENT( INOUT ) :: isQuiet
   LOGICAL( LGT ), INTENT( IN ) :: isLogActive
