@@ -1,5 +1,7 @@
 #ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
+#CommandLineArg
+include(${CMAKE_CURRENT_LIST_DIR}/CommandLineArg/CMakeLists.txt)
 #AbstractFile
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFile/CMakeLists.txt)
 #FortranFile

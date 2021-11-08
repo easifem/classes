@@ -24,7 +24,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     getMeshID
+!                                                                 getMeshID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_getMeshID
@@ -41,7 +41,7 @@ MODULE PROCEDURE meshSelect_getMeshID
 END PROCEDURE meshSelect_getMeshID
 
 !----------------------------------------------------------------------------
-!                                                       getElemNum
+!                                                                getElemNum
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_getElemNum
@@ -58,7 +58,7 @@ MODULE PROCEDURE meshSelect_getElemNum
 END PROCEDURE meshSelect_getElemNum
 
 !----------------------------------------------------------------------------
-!                                                       getNodeNum
+!                                                                getNodeNum
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_getNodeNum
@@ -83,7 +83,7 @@ MODULE PROCEDURE meshSelect_isMeshIDAllocated
 END PROCEDURE meshSelect_isMeshIDAllocated
 
 !----------------------------------------------------------------------------
-!                                                     isElemNumAllocated
+!                                                         isElemNumAllocated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_isElemNumAllocated
