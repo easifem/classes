@@ -16,6 +16,7 @@
 !
 
 MODULE easifemClasses
+USE CommandLine_Method
 USE ExceptionHandler_Class
 USE FPL_Method
 USE Files

@@ -23,7 +23,7 @@
 MODULE CommandLineArg_Class
 USE FACE, ONLY: colorize
 USE AbstractCommandLine_Class, ONLY: AbstractCommandLineArg_
-USE FLAP_UTILS_M
+USE CommandLineArg_Utils
 USE PENF
 IMPLICIT NONE
 PRIVATE

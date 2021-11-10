@@ -60,6 +60,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(Obj) :: getEchoUnit => txt_getEchoUnit
   PROCEDURE, PUBLIC, PASS(Obj) :: convertMarkdownToSource => &
        & txt_convertMarkDownToSource
+  PROCEDURE, PUBLIC, PASS(Obj) :: getTotalRecords => txt_getTotalRecords
 END TYPE TxtFile_
 
 PUBLIC :: TxtFile_
@@ -146,9 +147,11 @@ PUBLIC :: DeallocateTxtFile
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_readLine(obj, line)
+  MODULE SUBROUTINE txt_readLine(obj, line, iostat, iomsg)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(OUT) :: line
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
+    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
   END SUBROUTINE txt_readLine
 END INTERFACE
 
@@ -207,9 +210,36 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_convertMarkdownToSource(obj, outfile)
-    CLASS(TxtFile_), INTENT(IN) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(TxtFile_), INTENT(INOUT) :: outfile
   END SUBROUTINE txt_convertMarkdownToSource
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            getTotalRecords
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-09
+! update: 2021-11-09
+! summary: Returns the total number of records in a file
+!
+!
+!# Introduction
+!
+! This function returns the total number of records in a file
+! If `ignoreComment=.TRUE.`, then the comments are ignored
+! If `ignoreComment` is true, then `commentSymbol` should be given
+
+INTERFACE
+  MODULE FUNCTION txt_getTotalRecords(obj, ignoreComment, ignoreBlank, &
+       & commentSymbol) RESULT(Ans)
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
+    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
+    INTEGER(I4B) :: ans
+  END FUNCTION txt_getTotalRecords
 END INTERFACE
 
 END MODULE TxtFile_Class

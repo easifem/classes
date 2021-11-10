@@ -23,13 +23,13 @@
 ! summary: Fortran command Line Arguments Parset for poor People
 
 MODULE CommandLine_Method
-USE flap_command_line_argument_t, ONLY: command_line_argument
-USE flap_command_line_arguments_group_t, ONLY: command_line_arguments_group
-USE flap_command_line_interface_t, ONLY : command_line_interface, ERROR_UNKNOWN_CLAS_IGNORED
+USE CommandLineArg_Class, ONLY: CommandLineArg_
+USE CommandLineGroupArg_Class, only: CommandLineGroupArg_
+USE CommandLineInterface_Class, only: CommandLineInterface_, ERROR_UNKNOWN_CLAS_IGNORED
 IMPLICIT NONE
 PRIVATE
-PUBLIC :: command_line_argument
-PUBLIC :: command_line_arguments_group
-PUBLIC :: command_line_interface
+PUBLIC :: CommandLineArg_
+PUBLIC :: CommandLineGroupArg_
+PUBLIC :: CommandLineInterface_
 PUBLIC :: ERROR_UNKNOWN_CLAS_IGNORED
 ENDMODULE CommandLine_Method

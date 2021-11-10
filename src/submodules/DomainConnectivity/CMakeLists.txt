@@ -4,6 +4,6 @@ TARGET_SOURCES(
   ${src_path}/DomainConnectivity_Class@ConstructorMethods.F90
   # ${src_path}/DomainConnectivity_Class@IOMethods.F90
   ${src_path}/DomainConnectivity_Class@FacetMethods.F90
-  ${src_path}/DomainConnectivity_Class@ElementMethods.F90
+  ${src_path}/DomainConnectivity_Class@CellMethods.F90
   ${src_path}/DomainConnectivity_Class@NodeMethods.F90
 )

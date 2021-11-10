@@ -109,6 +109,8 @@ IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
     END IF
   END DO
 END IF
+IF (PRESENT(iostat)) iostat = eioerr
+IF (PRESENT(iomsg)) iomsg = TRIM(sioerr)
 END PROCEDURE txt_readLine
 
 !----------------------------------------------------------------------------
@@ -159,6 +161,7 @@ TYPE(String) :: aline
 INTEGER(I4B) :: iostat
 INTEGER(I4B) :: inUnit
 INTEGER(I4B) :: outUnit
+INTEGER(I4B) :: tagcount
 LOGICAL(LGT) :: insideCodeBlock
 CHARACTER(len=100) :: iomsg
 !
@@ -186,32 +189,69 @@ IF (.NOT. outfile%isWrite()) &
 inUnit = obj%getUnitNo()
 outUnit = outfile%getUnitNo()
 insideCodeBlock = .FALSE.
+tagcount = 0
 DO
-  ! REVIEW In future This call will be replaced with
-  ! obj%readLine(aline)
-  CALL aline%read_line(unit=inUnit, iostat=iostat, iomsg=iomsg)
-  IF (IS_IOSTAT_END(iostat)) THEN
-    EXIT
-  ELSE IF (iostat .GT. 0) THEN
-    CALL e%raiseError(modName//"::"//myName//" - "// &
-    & 'Error while reading a line from Markdown file'// &
-    & ' iostat='//tostring(iostat)//' iomsg='//TRIM(iomsg))
-  END IF
-  IF (aline%slice(1, 3) .EQ. '```') THEN
-    aline = ""
+  !! REVIEW I have replaced
+  !! CALL aline%read_line(unit=inUnit, iostat=iostat, iomsg=iomsg)
+  !! with the following line, testing is necessary TODO
+  !!
+  CALL obj%readLine(line=aline, iostat=iostat, iomsg=iomsg)
+  IF (obj%isEOF()) EXIT
+  IF (len_TRIM(aline) .NE. 0) THEN
+    IF (aline%slice(1, 3) .EQ. '```') THEN
+      aline = ""; tagcount = tagcount + 1
+      IF (MOD(tagcount, 2) .EQ. 0) THEN
+        insideCodeBlock = .FALSE.
+      ELSE
+        insideCodeBlock = .TRUE.
+      END IF
+    END IF
     IF (insideCodeBlock) THEN
-      insideCodeBlock = .FALSE.
-    ELSE
-      insideCodeBlock = .true.
+      WRITE (outUnit, "(a)") aline%chars()
     END IF
   END IF
   !
-  IF (insideCodeBlock) THEN
-    WRITE (outUnit, "(a)") aline%chars()
+END DO
+END PROCEDURE txt_convertMarkdownToSource
+
+!----------------------------------------------------------------------------
+!                                                            GetTotalRecords
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_getTotalRecords
+TYPE(String) :: aline
+LOGICAL(LGT) :: ignoreComment0
+LOGICAL(LGT) :: ignoreBlank0
+CHARACTER(LEN=1) :: asymb
+!> main
+!> check
+IF (.NOT. obj%isInit() .OR. &
+     & .NOT. obj%isOpen() .OR. &
+     & .NOT. obj%isRead()) THEN
+  ans = 0; RETURN
+END IF
+!> main program
+ignoreBlank0 = Input(option=ignoreBlank, default=.FALSE.)
+ignoreComment0 = Input(option=ignoreComment, default=.FALSE.)
+ans = 0
+asymb = "#"
+IF (PRESENT(commentSymbol)) asymb = commentSymbol
+CALL obj%REWIND()
+DO WHILE (.NOT. obj%isEOF())
+  CALL obj%readLine(line=aline)
+  IF (aline%LEN_TRIM() .EQ. 0) THEN
+    IF (.NOT. ignoreBlank0) ans = ans + 1
+  ELSE
+    aline = TRIM(ADJUSTL(aline%chars()))
+    IF (aline%slice(1, 1) .EQ. asymb(1:1)) THEN
+      IF (.NOT. ignoreComment0) ans = ans + 1
+    ELSE
+      ans = ans + 1
+    END IF
   END IF
 END DO
-
-END PROCEDURE txt_convertMarkdownToSource
+CALL obj%REWIND()
+END PROCEDURE txt_getTotalRecords
 
 !----------------------------------------------------------------------------
 !
