@@ -27,18 +27,25 @@ CONTAINS
 MODULE PROCEDURE dc_initiateCellToCellData1
 CHARACTER(LEN=*), PARAMETER :: myName = "dc_initiateCellToCellData1"
 CLASS(Mesh_), POINTER :: mesh1 => NULL()
+  !! mesh1 in domain1 (low order mesh)
 CLASS(Mesh_), POINTER :: mesh2 => NULL()
-TYPE(BoundingBox_) :: Box
-CLASS(ReferenceElement_), POINTER :: refelem1 => null()
-CLASS(ReferenceElement_), POINTER :: refelem2 => null()
-INTEGER(I4B), ALLOCATABLE :: nptrs1(:), nptrs2(:)
-INTEGER(I4B) :: ii, jj, nsd, order1, order2
-REAL(DFP) :: X(3)
-REAL(DFP), POINTER :: node1(:, :)
-REAL(DFP), POINTER :: node2(:, :)
+  !! mesh2 in domain2 (high order mesh)
+CLASS(ReferenceElement_), POINTER :: refelem1 => NULL()
+  !! reference element in mesh1
+CLASS(ReferenceElement_), POINTER :: refelem2 => NULL()
+  !! refelem in mesh2
+INTEGER(I4B) :: ii, jj, nsd, order1, order2, iel1, iel2
+  !! some counters and indices
+INTEGER(I4B), ALLOCATABLE :: nptrs1(:)
+  !! node number in mesh1
+INTEGER(I4B), ALLOCATABLE :: nptrs2(:), nptrs(:)
+  !! node number in mesh2
+INTEGER(I4B), ALLOCATABLE :: elem2(:)
+  !! element numbers in mesh2
+INTEGER(I4B), POINTER :: nodeToNode(:)
 !> main
 !> check
-if (.not. obj%isNodeToNode) &
+IF (.NOT. obj%isNodeToNode) &
      & CALL e%raiseError(modName//"::"//myName//" - "// &
      & 'NodeToNode data is not initiated!')
 !> check
@@ -56,16 +63,74 @@ CALL Reallocate(obj%cellToCell, mesh1%maxElemNum)
 obj%isCellToCell = .TRUE.
 refelem1 => mesh1%getRefElemPointer()
 refelem2 => mesh2%getRefElemPointer()
-IF (ElementTopology(refelem1) .ne. ElementTopology(refelem2)) &
+IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
      & CALL e%raiseError(modName//"::"//myName//" - "// &
      & 'Topology of mesh element is not the same.')
-
 order1 = elementOrder(refelem1)
 order2 = elementOrder(refelem2)
-
-IF (order1 .LE. order2) then
-else
-end if
+!>
+!! NOTE
+!! The size of nptrs1 and nptrs2 are the same.
+!! When order1 > order2, some of the entries in nptrs2
+!! will be zero. In this case size(nptrs2) .gt. size(nptrs)
+!!
+!! when order1 < order2, then size(nptrs) .gt. size(nptrs2)
+!! in this case we should use (nptrs2 .in nptrs)
+!!
+nodeToNode => obj%getNodeToNodePointer()
+IF (order1 .GE. order2) THEN
+  DO iel1 = mesh1%minElemNum, mesh1%maxElemNum
+    IF (.NOT. mesh1%isElementPresent(globalElement=iel1)) CYCLE
+    nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+    nptrs2 = nodeToNode(nptrs1)
+    !> Now we get the list of all elements in mesh2 which are
+    ! connected/contains node number in nptrs2
+    elem2 = mesh2%getNodeToElements(GlobalNode=nptrs2)
+    !> now we are ready to search iel2 in elem2 which
+    ! contains all nptrs2
+    DO ii = 1, SIZE(elem2)
+      iel2 = elem2(ii)
+      nptrs = mesh2%getConnectivity(globalElemNumber=iel2)
+      IF (nptrs.in.nptrs2) THEN
+        obj%cellToCell(iel1) = iel2
+        EXIT
+      END IF
+    END DO
+  END DO
+ELSE
+  DO iel1 = mesh1%minElemNum, mesh1%maxElemNum
+    IF (.NOT. mesh1%isElementPresent(globalElement=iel1)) CYCLE
+    nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+    nptrs2 = nodeToNode(nptrs1)
+    !> Now we get the list of all elements in mesh2 which are
+    ! connected/contains node number in nptrs2
+    elem2 = mesh2%getNodeToElements(GlobalNode=nptrs2)
+    !> now we are ready to search iel2 in elem2 which
+    ! contains all nptrs2
+    DO ii = 1, SIZE(elem2)
+      iel2 = elem2(ii)
+      nptrs = mesh2%getConnectivity(globalElemNumber=iel2)
+      IF (nptrs2.in.nptrs) THEN
+        obj%cellToCell(iel1) = iel2
+        EXIT
+      END IF
+    END DO
+  END DO
+END IF
+!> cleanup
+NULLIFY (mesh1, mesh2, refelem1, refelem2)
+IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
+IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
 END PROCEDURE dc_initiateCellToCellData1
+
+!----------------------------------------------------------------------------
+!                                                      getCellToCellPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE dc_getCellToCellPointer
+ans => obj%cellTocell
+END PROCEDURE dc_getCellToCellPointer
 
 END SUBMODULE CellMethods

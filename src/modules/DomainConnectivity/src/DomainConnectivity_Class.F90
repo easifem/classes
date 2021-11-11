@@ -108,8 +108,28 @@ CONTAINS
     !! Add surrogate to the module error handler
   PROCEDURE, PUBLIC, PASS(obj) :: deallocateData => dc_deallocateData
     !! Deallocate data stored in the object
+    !! TODO change DeallocateData --> Deallocate
   FINAL :: dc_Final
     !! finalizer
+  PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData1
+    !! Initiate [[DomainConnectivity_:nodeToNode]]
+  PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData2
+    !! Initiate [[DomainConnectivity_:nodeToNode]]
+  GENERIC, PUBLIC :: initiateNodeToNodeData => &
+    & dc_initiateNodeToNodeData1, &
+    & dc_initiateNodeToNodeData2
+    !! Initiate [[DomainConnectivity_:nodeToNode]]
+  PROCEDURE, PUBLIC, PASS(obj) :: getNodeToNodePointer => &
+    & dc_getNodeToNodePointer
+    !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
+  PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData1
+  ! PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
+  GENERIC, PUBLIC :: initiateCellToCellData => &
+       & dc_initiateCellToCellData1 !, &
+  ! & dc_initiateCellToCellData2
+  PROCEDURE, PUBLIC, PASS(obj) :: getCellToCellPointer => &
+    & dc_getCellToCellPointer
+    !! Return pointer to the [[DomainConnectivity_:CellToCell]]
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData1
     !! Initiate facet to cell connectivity [[DomainConnectivity_:facetToCell]]
   GENERIC, PUBLIC :: initiateFacetToCellData1 =>  &
@@ -131,22 +151,6 @@ CONTAINS
     & dc_facetLocalID1, &
     & dc_facetLocalID2
     !! Return the facet local id in cell element
-  PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData1
-    !! Initiate [[DomainConnectivity_:nodeToNode]]
-  PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData2
-    !! Initiate [[DomainConnectivity_:nodeToNode]]
-  GENERIC, PUBLIC :: initiateNodeToNodeData => &
-    & dc_initiateNodeToNodeData1, &
-    & dc_initiateNodeToNodeData2
-    !! Initiate [[DomainConnectivity_:nodeToNode]]
-  PROCEDURE, PUBLIC, PASS(obj) :: getNodeToNodePointer => &
-    & dc_getNodeToNodePointer
-    !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
-  PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData1
-  ! PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
-  generic, public :: initiateCellToCellData => &
-       & dc_initiateCellToCellData1 !, &
-  ! & dc_initiateCellToCellData2
 END TYPE DomainConnectivity_
 
 PUBLIC :: DomainConnectivity_
@@ -210,6 +214,228 @@ INTERFACE
   MODULE SUBROUTINE dc_Final(obj)
     TYPE(DomainConnectivity_), INTENT(INOUT) :: obj
   END SUBROUTINE dc_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateNodeToNodeData@NodeToNodeMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Generate node to node connectivity
+!
+!# Introduction
+!
+!  This subroutine generates the node to node connectivity between two meshes
+!
+! - `obj%nodeToNode` will be initiated
+! - `domain1` main domain
+! - `domain2` secondary domain
+! - `dim1, entitynum1` dimension and entity number of mesh in `domain1`
+! - `dim2, entitynum2` dimension and entity number of mesh in `domain2`
+!
+!@warn
+!In this case bounds of [[DomainConnectivity_:nodeToNode]] will be from
+!1 to mesh1%maxNptrs.
+!@endwarn
+
+INTERFACE
+  MODULE SUBROUTINE dc_InitiateNodeToNodeData1(obj, domain1, domain2, &
+    & dim1, dim2, entityNum1, entityNum2)
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity object,
+    !! [[DomainConnectivity:nodeToNode]] will be initiated
+    CLASS(Domain_), INTENT(IN) :: domain1
+    !! Primary domain, in nodeToNode(i), i denotes the
+    !! global node number in domain1 domain.
+    CLASS(Domain_), INTENT(IN) :: domain2
+    !! secondary domain, => nodeToNode(i) denotes the
+    !! global node number in `domain2` domain.
+    INTEGER(I4B), INTENT(IN) :: dim1
+    !! dimension of mesh in domain1
+    INTEGER(I4B), INTENT(IN) :: dim2
+    !! dimension of mesh in domain2
+    INTEGER(I4B), INTENT(IN) :: entityNum1
+    !! entity num of mesh in domain1
+    INTEGER(I4B), INTENT(IN) :: entityNum2
+    !! entity num of mesh in domain2
+  END SUBROUTINE dc_InitiateNodeToNodeData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         InitiateNodeToNodeData@NodeMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Generate node to node connectivity
+!
+!# Introduction
+!
+!  This subroutine generates the node to node connectivity between two domains
+!
+!@note
+!In this routine nodeToNode connectivity info of all meshes in domain1 to
+!all meshes in the domain2 will be generated!
+!@endnote
+!
+! - `obj%nodeToNode` will be initiated
+! - `domain1` main domain
+! - `domain2` secondary domain
+
+INTERFACE
+  MODULE SUBROUTINE dc_InitiateNodeToNodeData2(obj, domain1, domain2)
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity object
+    CLASS(Domain_), INTENT(IN) :: domain1
+    !! Primary domain, in nodeToNode(i), i denotes the
+    !! global node number in domain1 domain.
+    CLASS(Domain_), INTENT(IN) :: domain2
+    !! Secondary domain => nodeToNode(i) denotes the
+    !! global node number in domain2 domain.
+  END SUBROUTINE dc_InitiateNodeToNodeData2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           getNodeToNodePointer@NodeMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Returns the node to node connectivity info
+!
+!# Introduction
+!
+!  This function returns the pointer
+!  to [[DomainConnectivity_:nodeToNode]]
+!
+
+INTERFACE
+  MODULE FUNCTION dc_getNodeToNodePointer(obj) RESULT(Ans)
+    CLASS(DomainConnectivity_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), POINTER :: ans(:)
+  END FUNCTION dc_getNodeToNodePointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         InitiateCellToCellData@CellMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Generate cell to cell connectivity
+!
+!# Introduction
+!
+!This subroutine generates the cell to cell connectivity between
+!two meshes
+!
+! - `obj%cellToCell` will be initiated
+! - `domain1` main domain
+! - `domain2` secondary domain
+! - `dim1, entitynum1` dimension and entity number of mesh in `domain1`
+! - `dim2, entitynum2` dimension and entity number of mesh in `domain2`
+!
+! Following points should be noted
+!
+! - The topology of elements in both meshes should be the same, this
+! means that if one mesh is triangle then other mesh should be a triangle
+! - The xidim of the elements in both meshes should be the same, this means
+! that if the mesh1 is surface mesh then mesh2 should be a surface mesh
+! - This routine needs [[DomainConnectivity_:nodeToNode]] information, so
+! make sure it is initiated before calling this routine.
+
+INTERFACE
+  MODULE SUBROUTINE dc_initiateCellToCellData1(obj, domain1, domain2, &
+    & dim1, dim2, entityNum1, entityNum2)
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity object,
+    !! [[DomainConnectivity:cellToCell]] will be initiated
+    CLASS(Domain_), INTENT(IN) :: domain1
+    !! Primary domain, in cellToCell(i), i denotes the
+    !! global element number in domain1 domain.
+    CLASS(Domain_), INTENT(IN) :: domain2
+    !! secondary domain, => cellToCell(i) denotes the
+    !! global cell number in `domain2` domain.
+    INTEGER(I4B), INTENT(IN) :: dim1
+    !! dimension of mesh in domain1
+    INTEGER(I4B), INTENT(IN) :: dim2
+    !! dimension of mesh in domain2
+    INTEGER(I4B), INTENT(IN) :: entityNum1
+    !! entity num of mesh in domain1
+    INTEGER(I4B), INTENT(IN) :: entityNum2
+    !! entity num of mesh in domain2
+  END SUBROUTINE dc_initiateCellToCellData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        InitiateCellToCellData@NodeMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Generate cell to cell connectivity
+!
+!# Introduction
+!
+!This subroutine generates the cell to cell connectivity between
+!two domains. This means that all the elements in domain-1 will be
+!mapped to elements in domain-2.
+!
+!If cellToCell(iel) is equal to zero then it means there is
+!no element found in domain-2 corresponding to element number
+!iel in domain-1.
+!
+!@note
+!In this case the size of [[DomainConnectivity_:cellToCell]]
+!is the largest element number present in domain1.
+!@endnote
+!
+!TODO : Currently, lowerbound and upper bound of cellToCell is 1 and
+!domain1%maxElemNumber. In future it the lower bound will be
+!domain1%minElemNumber.
+!
+! - `obj%cellToCell` will be initiated
+! - `domain1` main domain
+! - `domain2` secondary domain
+
+INTERFACE
+  MODULE SUBROUTINE dc_InitiateCellToCellData2(obj, domain1, domain2)
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity object
+    CLASS(Domain_), INTENT(IN) :: domain1
+    !! Primary domain, in CellToCell(i), i denotes the
+    !! global element number in domain1 domain.
+    CLASS(Domain_), INTENT(IN) :: domain2
+    !! Secondary domain => CellToCell(i) denotes the
+    !! global element number in domain2 domain.
+  END SUBROUTINE dc_InitiateCellToCellData2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           getCellToCellPointer@CellMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Returns pointer to  cell-to-cell data
+!
+!# Introduction
+!
+!  This function returns the pointer
+!  to [[DomainConnectivity_:CellToCell]]
+
+INTERFACE
+  MODULE FUNCTION dc_getCellToCellPointer(obj) RESULT(Ans)
+    CLASS(DomainConnectivity_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), POINTER :: ans(:)
+  END FUNCTION dc_getCellToCellPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -371,161 +597,6 @@ INTERFACE
   END FUNCTION dc_FacetLocalID2
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                  InitiateNodeToNodeData@NodeToNodeMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-10
-! update: 2021-11-10
-! summary: Generate node to node connectivity
-!
-!# Introduction
-!
-!  This subroutine generates the node to node connectivity between two meshes
-!
-! - `obj%nodeToNode` will be initiated
-! - `domain1` main domain
-! - `domain2` secondary domain
-! - `dim1, entitynum1` dimension and entity number of mesh in `domain1`
-! - `dim2, entitynum2` dimension and entity number of mesh in `domain2`
-!
-!@warn
-!In this case bounds of [[DomainConnectivity_:nodeToNode]] will be from
-!1 to mesh1%maxNptrs.
-!@endwarn
-
-INTERFACE
-  MODULE SUBROUTINE dc_InitiateNodeToNodeData1(obj, domain1, domain2, &
-    & dim1, dim2, entityNum1, entityNum2)
-    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
-    !! Domain connectivity object,
-    !! [[DomainConnectivity:nodeToNode]] will be initiated
-    CLASS(Domain_), INTENT(IN) :: domain1
-    !! Primary domain, in nodeToNode(i), i denotes the
-    !! global node number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
-    !! secondary domain, => nodeToNode(i) denotes the
-    !! global node number in `domain2` domain.
-    INTEGER(I4B), INTENT(IN) :: dim1
-    !! dimension of mesh in domain1
-    INTEGER(I4B), INTENT(IN) :: dim2
-    !! dimension of mesh in domain2
-    INTEGER(I4B), INTENT(IN) :: entityNum1
-    !! entity num of mesh in domain1
-    INTEGER(I4B), INTENT(IN) :: entityNum2
-    !! entity num of mesh in domain2
-  END SUBROUTINE dc_InitiateNodeToNodeData1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  InitiateNodeToNodeData@NodeToNodeMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-10
-! update: 2021-11-10
-! summary: Generate node to node connectivity
-!
-!# Introduction
-!
-!  This subroutine generates the node to node connectivity between two domains
-!
-!@note
-!In this routine nodeToNode connectivity info of all meshes in domain1 to
-!all meshes in the domain2 will be generated!
-!@endnote
-!
-! - `obj%nodeToNode` will be initiated
-! - `domain1` main domain
-! - `domain2` secondary domain
-
-INTERFACE
-  MODULE SUBROUTINE dc_InitiateNodeToNodeData2(obj, domain1, domain2)
-    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
-    !! Domain connectivity object
-    CLASS(Domain_), INTENT(IN) :: domain1
-    !! Primary domain, in nodeToNode(i), i denotes the
-    !! global node number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
-    !! Secondary domain => nodeToNode(i) denotes the
-    !! global node number in domain2 domain.
-  END SUBROUTINE dc_InitiateNodeToNodeData2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           getNodeToNodePointer@NodeMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-10
-! update: 2021-11-10
-! summary: Returns the node to node connectivity info
-!
-!# Introduction
-!
-!  This function returns the pointer
-!  to [[DomainConnectivity_:nodeToNode]]
-!
-
-INTERFACE
-  MODULE FUNCTION dc_getNodeToNodePointer(obj) RESULT(Ans)
-    CLASS(DomainConnectivity_), TARGET, INTENT(IN) :: obj
-    INTEGER(I4B), POINTER :: ans(:)
-  END FUNCTION dc_getNodeToNodePointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         InitiateCellToCellData@CellMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-10
-! update: 2021-11-10
-! summary: Generate cell to cell connectivity
-!
-!# Introduction
-!
-!This subroutine generates the cell to cell connectivity between
-!two meshes
-!
-! - `obj%cellToCell` will be initiated
-! - `domain1` main domain
-! - `domain2` secondary domain
-! - `dim1, entitynum1` dimension and entity number of mesh in `domain1`
-! - `dim2, entitynum2` dimension and entity number of mesh in `domain2`
-!
-! Following points should be noted
-!
-! - The topology of elements in both meshes should be the same, this
-! means that if one mesh is triangle then other mesh should be a triangle
-! - The xidim of the elements in both meshes should be the same, this means
-! that if the mesh1 is surface mesh then mesh2 should be a surface mesh
-! - This routine needs [[DomainConnectivity_:nodeToNode]] information, so
-! make sure it is initiated before calling this routine.
-
-INTERFACE
-  MODULE SUBROUTINE dc_initiateCellToCellData1(obj, domain1, domain2, &
-    & dim1, dim2, entityNum1, entityNum2)
-    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
-    !! Domain connectivity object,
-    !! [[DomainConnectivity:cellToCell]] will be initiated
-    CLASS(Domain_), INTENT(IN) :: domain1
-    !! Primary domain, in cellToCell(i), i denotes the
-    !! global element number in domain1 domain.
-    CLASS(Domain_), INTENT(IN) :: domain2
-    !! secondary domain, => cellToCell(i) denotes the
-    !! global cell number in `domain2` domain.
-    INTEGER(I4B), INTENT(IN) :: dim1
-    !! dimension of mesh in domain1
-    INTEGER(I4B), INTENT(IN) :: dim2
-    !! dimension of mesh in domain2
-    INTEGER(I4B), INTENT(IN) :: entityNum1
-    !! entity num of mesh in domain1
-    INTEGER(I4B), INTENT(IN) :: entityNum2
-    !! entity num of mesh in domain2
-  END SUBROUTINE dc_initiateCellToCellData1
-END INTERFACE
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
