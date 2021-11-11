@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_AddSurrogate
-  CALL e%addSurrogate( userObj )
+CALL e%addSurrogate(userObj)
 END PROCEDURE dc_AddSurrogate
 
 !----------------------------------------------------------------------------
@@ -33,13 +33,14 @@ END PROCEDURE dc_AddSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_DeallocateData
-  obj%isInitiated = .FALSE.
-  obj%isFacetToCell = .FALSE.
-  obj%isNodeToNode = .FALSE.
-  obj%isElemToElem = .FALSE.
-  IF( ALLOCATED( obj%FacetToCell ) ) DEALLOCATE( obj%FacetToCell )
-  IF( ALLOCATED( obj%NodeToNode ) ) DEALLOCATE( obj%NodeToNode )
-  IF( ALLOCATED( obj%ElemToElem ) )  DEALLOCATE( obj%ElemToElem )
+obj%isInitiated = .FALSE.
+obj%isFacetToCell = .FALSE.
+obj%isNodeToNode = .FALSE.
+obj%isCellToCell = .FALSE.
+IF (ALLOCATED(obj%facetToCell)) DEALLOCATE (obj%facetToCell)
+IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE (obj%nodeToNode)
+IF (ALLOCATED(obj%cellToCell)) DEALLOCATE (obj%cellToCell)
+IF (ALLOCATED(obj%elemToElem)) DEALLOCATE (obj%elemToElem)
 END PROCEDURE dc_DeallocateData
 
 !----------------------------------------------------------------------------
@@ -47,7 +48,7 @@ END PROCEDURE dc_DeallocateData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Final
-  CALL obj%DeallocateData()
+CALL obj%DeallocateData()
 END PROCEDURE dc_Final
 
 !----------------------------------------------------------------------------

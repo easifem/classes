@@ -23,7 +23,6 @@ CONTAINS
 !                                                           raiseInformation
 !----------------------------------------------------------------------------
 
-
 MODULE PROCEDURE raiseInformation
   LOGICAL( LGT ) :: toLog
   IF( ASSOCIATED( obj%surrogate ) ) THEN
@@ -53,7 +52,6 @@ END PROCEDURE raiseInformation
 !----------------------------------------------------------------------------
 !                                                               raiseWarning
 !----------------------------------------------------------------------------
-
 
 MODULE PROCEDURE raiseWarning
   LOGICAL( LGT ) :: toLog
@@ -85,7 +83,6 @@ END PROCEDURE raiseWarning
 !                                                                 raiseDebug
 !----------------------------------------------------------------------------
 
-
 MODULE PROCEDURE raiseDebug
   LOGICAL( LGT ) :: toLog
   IF( ASSOCIATED( obj%surrogate ) ) THEN
@@ -115,7 +112,6 @@ END PROCEDURE raiseDebug
 !----------------------------------------------------------------------------
 !                                                                 raiseError
 !----------------------------------------------------------------------------
-
 
 MODULE PROCEDURE raiseError
   LOGICAL( LGT ) :: toLog
