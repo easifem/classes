@@ -227,7 +227,7 @@ END PROCEDURE mesh_getBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getConnectivity
-ans = obj%elementData(obj%getLocalElemNumber(globalElemNumber))%globalNodes
+ans = obj%elementData(obj%getLocalElemNumber(globalElement))%globalNodes
 END PROCEDURE mesh_getConnectivity
 
 !----------------------------------------------------------------------------
@@ -401,7 +401,7 @@ INTEGER(I4B) :: tSize, iel
 
 onlyElem = .FALSE.
 IF (PRESENT(onlyElements)) onlyElem = onlyElements
-iel = obj%getLocalElemNumber(globalElemNumber)
+iel = obj%getLocalElemNumber(globalElement)
 IF (onlyElem) THEN
   Indx = obj%elementData(iel)%globalElements
   ALLOCATE (ans(SIZE(Indx) / 3, 1))
@@ -420,8 +420,8 @@ END PROCEDURE mesh_getElementToElements
 MODULE PROCEDURE mesh_getBoundaryElementData
 ! Define internal variables
 INTEGER(I4B) :: iel
-IF (obj%isBoundaryElement(globalElemNumber)) THEN
-  iel = obj%getLocalElemNumber(globalElemNumber)
+IF (obj%isBoundaryElement(globalElement)) THEN
+  iel = obj%getLocalElemNumber(globalElement)
   ans = obj%elementData(iel)%boundaryData
 ELSE
   ALLOCATE (ans(0))

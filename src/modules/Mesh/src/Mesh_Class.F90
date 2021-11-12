@@ -956,9 +956,9 @@ END INTERFACE
 ! summary: This routine returns global node numbers in a given global elem
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getConnectivity(obj, globalElemNumber) RESULT(Ans)
+  MODULE PURE FUNCTION mesh_getConnectivity(obj, globalElement) RESULT(Ans)
     CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElemNumber
+    INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: Ans(:)
   END FUNCTION mesh_getConnectivity
 END INTERFACE
@@ -1191,24 +1191,24 @@ END INTERFACE
 ! summary: Returns element to element connectivity information
 !
 !# Introduction
-! This routine returns element to element connectivity information for a given global element number `globalElemNumber`
+! This routine returns element to element connectivity information for a given global element number `globalElement`
 !
-! If `OnlyElements` is absent or it is set to FALSE then, this routine returns the **full information** about elements surrounding the global element `globalElemNumber`. In this case,
+! If `OnlyElements` is absent or it is set to FALSE then, this routine returns the **full information** about elements surrounding the global element `globalElement`. In this case,
 !
-! - Each Row of `ans` denotes the element to which `globalElemNumber` is connected to
+! - Each Row of `ans` denotes the element to which `globalElement` is connected to
 ! - Column-1 of `ans` denotes global element number of the neighbour
-! - Column-2 denotes the local face number of element `globalElemNumber`
+! - Column-2 denotes the local face number of element `globalElement`
 ! - Column-3 denotes the local face number of global element given by the column number 1 (same row)
 !
-! If `OnlyElements` is present and it is TRUE then, this routine returns only the global element numbers surrouding the given element `globalElemNumber`
+! If `OnlyElements` is present and it is TRUE then, this routine returns only the global element numbers surrouding the given element `globalElement`
 !
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getElementToElements(obj, globalElemNumber, &
+  MODULE PURE FUNCTION mesh_getElementToElements(obj, globalElement, &
     & onlyElements) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     !! mesh data
-    INTEGER(I4B), INTENT(IN) :: globalElemNumber
+    INTEGER(I4B), INTENT(IN) :: globalElement
     !! Global element number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyElements
     !! If onlyElements is absent or it is FALSE then full information about the elements connected to element iel is given
@@ -1256,10 +1256,10 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getBoundaryElementData(obj, globalElemNumber) &
+  MODULE PURE FUNCTION mesh_getBoundaryElementData(obj, globalElement) &
     & RESULT(Ans)
     CLASS(Mesh_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalElemNumber
+    INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION mesh_getBoundaryElementData
 END INTERFACE
