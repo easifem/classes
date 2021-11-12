@@ -109,6 +109,10 @@ IF (.NOT. domain2%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-2 is not initiated, first initiate")
 END IF
+!> check
+IF (obj%isNodeToNode) &
+     & CALL e%raiseWarning(modName//"::"//myName//" - "// &
+     & 'NodeToNode data is already initiated!')
 !! TODO
 !! is it possible to have bounds of obj%NodeToNode from
 !! domain1%minNptrs to domain1%maxNptrs, it will save the space
