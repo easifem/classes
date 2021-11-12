@@ -124,6 +124,91 @@ IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
 END PROCEDURE dc_initiateCellToCellData1
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE dc_InitiateCellToCellData2
+CHARACTER(LEN=*), PARAMETER :: myName = "dc_InitiateCellToCellData2"
+CLASS(Mesh_), POINTER :: mesh1 => NULL()
+  !! mesh1 in domain1 (low order mesh)
+CLASS(Mesh_), POINTER :: mesh2 => NULL()
+  !! mesh2 in domain2 (high order mesh)
+CLASS(ReferenceElement_), POINTER :: refelem1 => NULL()
+  !! reference element in mesh1
+CLASS(ReferenceElement_), POINTER :: refelem2 => NULL()
+  !! refelem in mesh2
+INTEGER(I4B) :: ii, jj, nsd, order1, order2, iel1, iel2
+  !! some counters and indices
+INTEGER(I4B), ALLOCATABLE :: nptrs1(:)
+  !! node number in mesh1
+INTEGER(I4B), ALLOCATABLE :: nptrs2(:), nptrs(:)
+  !! node number in mesh2
+INTEGER(I4B), ALLOCATABLE :: elem2(:)
+  !! element numbers in mesh2
+INTEGER(I4B), POINTER :: nodeToNode(:)
+!> main
+!> check
+IF (.NOT. domain1%isInitiated) THEN
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "Domain-1 is not initiated, first initiate")
+END IF
+!> check
+IF (.NOT. domain2%isInitiated) THEN
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "Domain-2 is not initiated, first initiate")
+END IF
+!> check
+IF (.NOT. obj%isNodeToNode) &
+     & CALL e%raiseError(modName//"::"//myName//" - "// &
+     & 'NodeToNode data is not initiated!')
+!> check
+IF (obj%isCellToCell) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "It seems, obj%cellToCell data is already initiated")
+END IF
+!! TODO
+!! is it possible to have bounds of obj%cellToCell from
+!! domain1%minElemNum to domain1%maxElemNum,
+!! it will save the space
+CALL Reallocate(obj%cellToCell, domain1%maxElemNum)
+obj%isCellToCell = .TRUE.
+nodeToNode => obj%getNodeToNodePointer()
+!> get mesh pointer
+DO iel1 = domain1%minElemNum, domain1%maxElemNum
+  IF (.NOT. domain1%isElementPresent(globalElement=iel1)) CYCLE
+  mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
+  mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
+  refelem1 => mesh1%getRefElemPointer()
+  refelem2 => mesh2%getRefElemPointer()
+  IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
+       & CALL e%raiseError(modName//"::"//myName//" - "// &
+       & 'Topology of mesh element is not the same.')
+  order1 = elementOrder(refelem1)
+  order2 = elementOrder(refelem2)
+  nptrs1 = domain1%getConnectivity(globalElemNumber=iel1)
+  nptrs2 = nodeToNode(nptrs1)
+  !> Now we get the list of all elements in mesh2 which are
+  ! connected/contains node number in nptrs2
+  elem2 = domain2%getNodeToElements(GlobalNode=nptrs2)
+  !> now we are ready to search iel2 in elem2 which
+  ! contains all nptrs2
+  DO ii = 1, SIZE(elem2)
+    iel2 = elem2(ii)
+    nptrs = domain2%getConnectivity(globalElemNumber=iel2)
+    IF (nptrs.in.nptrs2) THEN
+      obj%cellToCell(iel1) = iel2
+      EXIT
+    END IF
+  END DO
+END DO
+!> cleanup
+NULLIFY (mesh1, mesh2, refelem1, refelem2)
+IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
+IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
+END PROCEDURE dc_InitiateCellToCellData2
 
 !----------------------------------------------------------------------------
 !                                                      getCellToCellPointer

@@ -36,10 +36,9 @@
 ! is assumed, so a log file is not active by default also.
 
 MODULE ExceptionHandler_Class
-USE GlobalData !, ONLY: stdout, stdin, stderr, I4B, DFP, LGT
+USE GlobalData
 IMPLICIT NONE
 PRIVATE
-
 INTEGER( I4B ),PARAMETER, PUBLIC :: EXCEPTION_OK=0
   !! OK condition
 INTEGER( I4B ), PARAMETER, PUBLIC :: EXCEPTION_INFORMATION=1
@@ -96,7 +95,6 @@ TYPE :: ExceptionHandler_
       & setQuietMode_eCode, setQuietMode_array
     GENERIC, PUBLIC :: isQuietMode => isQuietMode_all,isQuietMode_eCode
     GENERIC, PUBLIC :: isVerboseMode => isVerboseMode_all,isVerboseMode_eCode
-
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate
     PROCEDURE, PUBLIC, PASS( obj ) :: getSurrogate
     PROCEDURE, PUBLIC, PASS( obj ) :: initCounter
@@ -196,8 +194,8 @@ PUBLIC :: copyFromSurrogate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	4 April 2021
-! summary: 	copy a [[ExceptionHandler_]] instance into another instance
+! date: 4 April 2021
+! summary: copy a [[ExceptionHandler_]] instance into another instance
 
 INTERFACE
 MODULE SUBROUTINE obj_assign_obj(obj1, obj2)

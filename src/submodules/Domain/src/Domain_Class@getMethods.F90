@@ -28,43 +28,80 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_isNodePresent
-  ans=.TRUE.
-  IF( globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs ) THEN
-    ans=.FALSE.
-  ELSE IF( obj%local_nptrs(globalNode) .EQ. 0 ) THEN
-    ans=.FALSE.
-  END IF
+ans = .TRUE.
+IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
+  ans = .FALSE.
+ELSE IF (obj%local_nptrs(globalNode) .EQ. 0) THEN
+  ans = .FALSE.
+END IF
 END PROCEDURE Domain_isNodePresent
+
+!----------------------------------------------------------------------------
+!                                                          isElementPresent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_isElementPresent
+CLASS(Mesh_), POINTER :: meshptr
+INTEGER(I4B) :: dim, entityNum
+!> main
+ans = .FALSE.
+dimloop: DO dim = 0, obj%nsd
+  DO entityNum = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+    ans = meshptr%isElementPresent(globalElement=globalElement)
+    IF (ans) EXIT dimloop
+  END DO
+END DO dimloop
+NULLIFY (meshptr)
+END PROCEDURE Domain_isElementPresent
+
+!----------------------------------------------------------------------------
+!                                                          getConnectivity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getConnectivity
+CLASS(Mesh_), POINTER :: meshptr
+!> main
+meshptr => NULL()
+meshptr => obj%getMeshPointer(globalElement=globalElement)
+IF (ASSOCIATED(meshptr)) THEN
+  ans = meshptr%getConnectivity(globalElement)
+ELSE
+  ALLOCATE (ans(0))
+END IF
+NULLIFY (meshptr)
+END PROCEDURE Domain_getConnectivity
+
 !----------------------------------------------------------------------------
 !                                                             getTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getTotalNodes
-  CHARACTER( LEN = * ), PARAMETER :: myName = "Domain_getTotalNodes"
-  CLASS( Mesh_ ), POINTER :: meshPtr
-  !>
-  IF( PRESENT( entityNum ) .AND. PRESENT( dim ) ) THEN
-    IF(obj%meshList(dim)%isEmpty()) &
-      & CALL e%raiseError(modName//'::'//myName//'-'// &
-      & 'The mesh of enitityNum='// TRIM(str(entityNum, .true.)) // &
-      & " and dimension=" // TRIM(str(dim, .true.)) // " is empty." )
-    IF( entityNum .GT. obj%meshList( dim )%size() ) &
-      & CALL e%raiseError(modName//'::'//myName//'-'// &
-      & 'The the enitityNum='// TRIM(str(entityNum, .true.)) &
-      & // " for dimension=" // TRIM(str(dim, .true.)) // &
-      & " is out of bound." )
-    meshPtr => NULL()
-    meshPtr => obj%getMeshPointer( dim=dim, entityNum=entityNum )
-    IF( .NOT. ASSOCIATED( meshPtr ) ) THEN
-      CALL e%raiseError(modName//'::'//myName//'-'// &
-      & 'There is some issue in getting pointer to mesh' )
-    ELSE
-      ans = meshPtr%getTotalNodes()
-      NULLIFY( meshPtr )
-    END IF
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getTotalNodes"
+CLASS(Mesh_), POINTER :: meshPtr
+!>
+IF (PRESENT(entityNum) .AND. PRESENT(dim)) THEN
+  IF (obj%meshList(dim)%isEmpty()) &
+    & CALL e%raiseError(modName//'::'//myName//'-'// &
+    & 'The mesh of enitityNum='//TRIM(str(entityNum, .TRUE.))// &
+    & " and dimension="//TRIM(str(dim, .TRUE.))//" is empty.")
+  IF (entityNum .GT. obj%meshList(dim)%SIZE()) &
+    & CALL e%raiseError(modName//'::'//myName//'-'// &
+    & 'The the enitityNum='//TRIM(str(entityNum, .TRUE.)) &
+    & //" for dimension="//TRIM(str(dim, .TRUE.))// &
+    & " is out of bound.")
+  meshPtr => NULL()
+  meshPtr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+  IF (.NOT. ASSOCIATED(meshPtr)) THEN
+    CALL e%raiseError(modName//'::'//myName//'-'// &
+    & 'There is some issue in getting pointer to mesh')
   ELSE
-    ans = obj%tNodes
+    ans = meshPtr%getTotalNodes()
+    NULLIFY (meshPtr)
   END IF
+ELSE
+  ans = obj%tNodes
+END IF
 END PROCEDURE Domain_getTotalNodes
 
 !----------------------------------------------------------------------------
@@ -72,7 +109,7 @@ END PROCEDURE Domain_getTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_tNodes1
-  ans = obj%getTotalNodes( dim=opt(1), entityNum=opt(2) )
+ans = obj%getTotalNodes(dim=opt(1), entityNum=opt(2))
 END PROCEDURE Domain_tNodes1
 
 !----------------------------------------------------------------------------
@@ -80,16 +117,15 @@ END PROCEDURE Domain_tNodes1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_tNodes2
-  ans = obj%getTotalNodes( dim=dim )
+ans = obj%getTotalNodes(dim=dim)
 END PROCEDURE Domain_tNodes2
-
 
 !----------------------------------------------------------------------------
 !                                                                   tNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_tNodes3
-  ans = obj%getTotalNodes( )
+ans = obj%getTotalNodes()
 END PROCEDURE Domain_tNodes3
 
 !----------------------------------------------------------------------------
@@ -97,12 +133,12 @@ END PROCEDURE Domain_tNodes3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getLocalNodeNumber1
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getLocalNodeNumber"
-  IF( obj%isNodePresent( globalNode ) ) THEN
-    ans = obj%local_nptrs( globalNode )
-  ELSE
-    ans = 0
-  END IF
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getLocalNodeNumber"
+IF (obj%isNodePresent(globalNode)) THEN
+  ans = obj%local_nptrs(globalNode)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE Domain_getLocalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -110,10 +146,10 @@ END PROCEDURE Domain_getLocalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getLocalNodeNumber2
-  INTEGER( I4B ) :: ii
-  DO ii = 1, SIZE( globalNode )
-    ans( ii ) = Domain_getLocalNodeNumber1( obj, globalNode(ii))
-  END DO
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(globalNode)
+  ans(ii) = Domain_getLocalNodeNumber1(obj, globalNode(ii))
+END DO
 END PROCEDURE Domain_getLocalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -121,12 +157,12 @@ END PROCEDURE Domain_getLocalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getGlobalNodeNumber1
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getGlobalNodeNumber"
-  IF( localNode .LE. obj%tNodes ) THEN
-    ans = getIndex( obj%local_nptrs, localNode )
-  ELSE
-    ans = 0
-  END IF
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getGlobalNodeNumber"
+IF (localNode .LE. obj%tNodes) THEN
+  ans = getIndex(obj%local_nptrs, localNode)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE Domain_getGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -134,10 +170,10 @@ END PROCEDURE Domain_getGlobalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getGlobalNodeNumber2
-  INTEGER( I4B ) :: ii
-  DO ii = 1, SIZE( localNode )
-    ans( ii ) = Domain_getGlobalNodeNumber1( obj, localNode(ii))
-  END DO
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(localNode)
+  ans(ii) = Domain_getGlobalNodeNumber1(obj, localNode(ii))
+END DO
 END PROCEDURE Domain_getGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -145,67 +181,88 @@ END PROCEDURE Domain_getGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getTotalMesh
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getTotalMesh"
-  IF( dim .LT. 0 .OR. dim .GT. 3 ) THEN
-    CALL e%raiseError( modName//"::"//myName//" - "// &
-      & "dim of the mesh should be in [0,1,2,3]" )
-  END IF
-  IF( obj%meshList( dim )%isEmpty() ) THEN
-    ans=0
-  ELSE
-    ans = obj%meshList( dim )%size()
-  END IF
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getTotalMesh"
+IF (dim .LT. 0 .OR. dim .GT. 3) THEN
+  CALL e%raiseError(modName//"::"//myName//" - "// &
+    & "dim of the mesh should be in [0,1,2,3]")
+END IF
+IF (obj%meshList(dim)%isEmpty()) THEN
+  ans = 0
+ELSE
+  ans = obj%meshList(dim)%SIZE()
+END IF
 END PROCEDURE Domain_getTotalMesh
 
 !----------------------------------------------------------------------------
 !                                                             getMeshPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Domain_getMeshPointer
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getMeshPointer"
-  INTEGER( I4B ) :: tsize, imesh
-  TYPE( MeshPointerIterator_ ) :: iterator
-  !> main
-  iterator%value%ptr => NULL()
-  tsize = obj%getTotalMesh( dim=dim )
-  IF( entityNum .GT. tsize ) THEN
-    CALL e%raiseInformation( modName//"::"//myName//" - "// &
-      & "entityNum are out of bound" )
-  END IF
-  iterator = obj%meshList( dim )%Begin()
-  DO imesh = 2, entityNum
-    CALL iterator%Inc()
+MODULE PROCEDURE Domain_getMeshPointer1
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getMeshPointer"
+INTEGER(I4B) :: tsize, imesh
+TYPE(MeshPointerIterator_) :: iterator
+!> main
+iterator%VALUE%ptr => NULL()
+tsize = obj%getTotalMesh(dim=dim)
+IF (entityNum .GT. tsize) THEN
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "entityNum are out of bound")
+END IF
+iterator = obj%meshList(dim)%Begin()
+DO imesh = 2, entityNum
+  CALL iterator%Inc()
+END DO
+ans => iterator%VALUE%ptr
+CALL iterator%DeallocateData()
+END PROCEDURE Domain_getMeshPointer1
+
+!----------------------------------------------------------------------------
+!                                                             getMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getMeshPointer2
+CHARACTER(len=*), PARAMETER :: myname = "Domain_getMeshPointer2"
+INTEGER(i4b) :: dim, entityNum
+!> main
+ans => NULL()
+dimloop: DO dim = 0, obj%nsd
+  DO entityNum = 1, obj%getTotalMesh(dim=dim)
+    ans => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+    IF (ans%isElementPresent(globalElement=globalElement)) THEN
+      EXIT dimloop
+    ELSE
+      ans => NULL()
+    END IF
   END DO
-  ans => iterator%value%ptr
-  CALL iterator%DeallocateData()
-END PROCEDURE Domain_getMeshPointer
+END DO dimloop
+END PROCEDURE Domain_getMeshPointer2
 
 !----------------------------------------------------------------------------
 !                                                               getNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNodeCoord
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_getNodeCoord"
-  CLASS( Mesh_ ), POINTER :: meshPtr
-  INTEGER( I4B ) :: np, ii, jj
-  !> main, check
-  IF( .NOT. ALLOCATED( obj%nodeCoord ) ) &
-    & CALL e%raiseError( modName//"::"//myName//" - "// &
-    & "Nodecoord is not allocated." )
-  IF( PRESENT( dim ) .AND. PRESENT( entityNum ) ) THEN
-    meshPtr => obj%getMeshPointer( dim=dim, entityNum=entityNum )
-    np = meshPtr%getTotalNodes()
-    CALL Reallocate( nodeCoord, 3_I4B, np )
-    jj = SIZE( nodeCoord, 1 )
-    DO ii = 1, np
-      nodeCoord( 1:jj, ii ) = obj%nodeCoord( 1:jj, &
-        & obj%getLocalNodeNumber( globalNode = &
-        & meshPtr%getGlobalNodeNumber( localNode=ii ) ) )
-    END DO
-    NULLIFY( meshPtr )
-  ELSE
-    nodeCoord = obj%nodeCoord
-  END IF
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getNodeCoord"
+CLASS(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: np, ii, jj
+!> main, check
+IF (.NOT. ALLOCATED(obj%nodeCoord)) &
+  & CALL e%raiseError(modName//"::"//myName//" - "// &
+  & "Nodecoord is not allocated.")
+IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
+  meshPtr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+  np = meshPtr%getTotalNodes()
+  CALL Reallocate(nodeCoord, 3_I4B, np)
+  jj = SIZE(nodeCoord, 1)
+  DO ii = 1, np
+    nodeCoord(1:jj, ii) = obj%nodeCoord(1:jj, &
+      & obj%getLocalNodeNumber(globalNode= &
+      & meshPtr%getGlobalNodeNumber(localNode=ii)))
+  END DO
+  NULLIFY (meshPtr)
+ELSE
+  nodeCoord = obj%nodeCoord
+END IF
 END PROCEDURE Domain_getNodeCoord
 
 !----------------------------------------------------------------------------
@@ -213,7 +270,7 @@ END PROCEDURE Domain_getNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNodeCoordPointer
-  ans => obj%nodeCoord
+ans => obj%nodeCoord
 END PROCEDURE Domain_getNodeCoordPointer
 
 !----------------------------------------------------------------------------
@@ -221,7 +278,7 @@ END PROCEDURE Domain_getNodeCoordPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getGlobalToLocalNodeNumPointer
-  ans => obj%local_nptrs
+ans => obj%local_nptrs
 END PROCEDURE Domain_getGlobalToLocalNodeNumPointer
 
 !----------------------------------------------------------------------------
@@ -229,21 +286,21 @@ END PROCEDURE Domain_getGlobalToLocalNodeNumPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNptrs
-  INTEGER( I4B ) :: ii
-  CLASS( Mesh_ ), POINTER :: meshptr
-  TYPE( IntVector_ ) :: intvec
-  !>
-  meshptr => NULL()
-  DO ii = 1, SIZE( meshID )
-    meshptr => obj%GetMeshPointer( dim=xidim, entityNum=meshID( ii ) )
-    IF( ASSOCIATED( meshptr )  ) THEN
-      CALL APPEND( intvec, meshptr%getNptrs() )
-    END IF
-  END DO
-  CALL RemoveDuplicates( intvec )
-  ans = intvec
-  CALL DeallocateData( intvec )
-  NULLIFY( meshptr )
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+TYPE(IntVector_) :: intvec
+!>
+meshptr => NULL()
+DO ii = 1, SIZE(meshID)
+  meshptr => obj%GetMeshPointer(dim=xidim, entityNum=meshID(ii))
+  IF (ASSOCIATED(meshptr)) THEN
+    CALL APPEND(intvec, meshptr%getNptrs())
+  END IF
+END DO
+CALL RemoveDuplicates(intvec)
+ans = intvec
+CALL DeallocateData(intvec)
+NULLIFY (meshptr)
 END PROCEDURE Domain_getNptrs
 
 !----------------------------------------------------------------------------
@@ -251,7 +308,7 @@ END PROCEDURE Domain_getNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNSD
-  ans = obj%NSD
+ans = obj%NSD
 END PROCEDURE Domain_getNSD
 
 !----------------------------------------------------------------------------
@@ -259,14 +316,14 @@ END PROCEDURE Domain_getNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getBoundingBox
-  REAL( DFP ) :: lim( 6 )
-  INTEGER( I4B ) :: nsd
-  !> main
-  lim = 0.0_DFP
-  nsd = SIZE( obj%nodeCoord, 1 )
-  lim(1:nsd*2:2) = MINVAL(obj%nodeCoord(1:nsd,  :), dim=2)
-  lim(2:nsd*2:2) = MAXVAL( obj%nodeCoord(1:nsd, :), dim=2)
-  CALL Initiate( obj = ans, nsd = 3_I4B, lim = lim )
+REAL(DFP) :: lim(6)
+INTEGER(I4B) :: nsd
+!> main
+lim = 0.0_DFP
+nsd = SIZE(obj%nodeCoord, 1)
+lim(1:nsd * 2:2) = MINVAL(obj%nodeCoord(1:nsd, :), dim=2)
+lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
+CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
 END PROCEDURE Domain_getBoundingBox
 
 !----------------------------------------------------------------------------

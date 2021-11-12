@@ -460,11 +460,6 @@ END INTERFACE
 !  in the `FacetMesh`
 !  - if an element of `FacetMesh` is orphan then its corresponding entry
 !  is set to zero in `obj % CellFacet` matrix
-!
-!### Usage
-!
-!```fortran
-!```
 
 INTERFACE
   MODULE SUBROUTINE dc_InitiateFacetToCellData1(obj, Facet, Cell)
