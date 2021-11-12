@@ -81,7 +81,7 @@ nodeToNode => obj%getNodeToNodePointer()
 IF (order1 .GE. order2) THEN
   DO iel1 = mesh1%minElemNum, mesh1%maxElemNum
     IF (.NOT. mesh1%isElementPresent(globalElement=iel1)) CYCLE
-    nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+    nptrs1 = mesh1%getConnectivity(globalElement=iel1)
     nptrs2 = nodeToNode(nptrs1)
     !> Now we get the list of all elements in mesh2 which are
     ! connected/contains node number in nptrs2
@@ -90,7 +90,7 @@ IF (order1 .GE. order2) THEN
     ! contains all nptrs2
     DO ii = 1, SIZE(elem2)
       iel2 = elem2(ii)
-      nptrs = mesh2%getConnectivity(globalElemNumber=iel2)
+      nptrs = mesh2%getConnectivity(globalElement=iel2)
       IF (nptrs.in.nptrs2) THEN
         obj%cellToCell(iel1) = iel2
         EXIT
@@ -100,7 +100,7 @@ IF (order1 .GE. order2) THEN
 ELSE
   DO iel1 = mesh1%minElemNum, mesh1%maxElemNum
     IF (.NOT. mesh1%isElementPresent(globalElement=iel1)) CYCLE
-    nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+    nptrs1 = mesh1%getConnectivity(globalElement=iel1)
     nptrs2 = nodeToNode(nptrs1)
     !> Now we get the list of all elements in mesh2 which are
     ! connected/contains node number in nptrs2
@@ -109,7 +109,7 @@ ELSE
     ! contains all nptrs2
     DO ii = 1, SIZE(elem2)
       iel2 = elem2(ii)
-      nptrs = mesh2%getConnectivity(globalElemNumber=iel2)
+      nptrs = mesh2%getConnectivity(globalElement=iel2)
       IF (nptrs2.in.nptrs) THEN
         obj%cellToCell(iel1) = iel2
         EXIT
@@ -181,7 +181,7 @@ MODULE PROCEDURE dc_InitiateCellToCellData2
 !   mesh1 => domain1%GetMeshPointer(globalElement=iel1)
 !   refelem1 => mesh1%getRefElemPointer()
 !   order1 = elementOrder(refelem1)
-!   nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+!   nptrs1 = mesh1%getConnectivity(globalElement=iel1)
 !   mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
 !   refelem2 => mesh2%getRefElemPointer()
 !   IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
@@ -196,7 +196,7 @@ MODULE PROCEDURE dc_InitiateCellToCellData2
 !   ! contains all nptrs2
 !   DO ii = 1, SIZE(elem2)
 !     iel2 = elem2(ii)
-!     nptrs = domain2%getConnectivity(globalElemNumber=iel2)
+!     nptrs = domain2%getConnectivity(globalElement=iel2)
 !     IF (nptrs.in.nptrs2) THEN
 !       obj%cellToCell(iel1) = iel2
 !       EXIT
