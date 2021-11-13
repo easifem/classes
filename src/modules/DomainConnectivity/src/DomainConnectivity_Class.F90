@@ -123,18 +123,20 @@ CONTAINS
     & dc_getNodeToNodePointer
     !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData1
-  ! PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
+  PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
   GENERIC, PUBLIC :: initiateCellToCellData => &
-       & dc_initiateCellToCellData1 !, &
-  ! & dc_initiateCellToCellData2
+       & dc_initiateCellToCellData1, &
+       & dc_initiateCellToCellData2
   PROCEDURE, PUBLIC, PASS(obj) :: getCellToCellPointer => &
     & dc_getCellToCellPointer
     !! Return pointer to the [[DomainConnectivity_:CellToCell]]
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData1
-    !! Initiate facet to cell connectivity [[DomainConnectivity_:facetToCell]]
+    !! Initiate facet to cell connectivity
+    !! [[DomainConnectivity_:facetToCell]]
   GENERIC, PUBLIC :: initiateFacetToCellData1 =>  &
     & dc_initiateFacetToCellData1
-    !! Initiate facet to cell connectivity [[DomainConnectivity_:facetToCell]]
+    !! Initiate facet to cell connectivity
+    !! [[DomainConnectivity_:facetToCell]]
   PROCEDURE, PASS(obj) :: dc_cellNumber1
     !! Return the cell number of a given facet
   PROCEDURE, PASS(obj) :: dc_cellNumber2

@@ -21,8 +21,6 @@
 !   - 12 Nov 2021
 ! summary: This module contains methods for domain data type
 
-!! TODO add getNodeToElements
-
 MODULE Domain_Class
 USE BaseType
 USE String_Class
@@ -128,6 +126,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: &
        & getConnectivity => &
        & Domain_getConnectivity
+  PROCEDURE, PASS(obj) :: Domain_getNodeToElements1
+  PROCEDURE, PASS(obj) :: Domain_getNodeToElements2
+  GENERIC, PUBLIC :: getNodeToElements => &
+       & Domain_getNodeToElements1, &
+       & Domain_getNodeToElements2
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalNodes => Domain_getTotalNodes
       !! returns the total number of nodes in the mesh
   PROCEDURE, PASS(obj) :: &
@@ -384,9 +387,43 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION Domain_getConnectivity(obj, globalElement) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(in) :: globalElement
+    INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION Domain_getConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               getNodeToElements@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE FUNCTION Domain_getNodeToElements1(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_getNodeToElements1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               getNodeToElements@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-12
+! update: 2021-11-12
+! summary: returns the elements connected to a node
+
+INTERFACE
+  MODULE FUNCTION Domain_getNodeToElements2(obj, globalNode) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_getNodeToElements2
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -117,6 +117,7 @@ IF (obj%isNodeToNode) &
 !! is it possible to have bounds of obj%NodeToNode from
 !! domain1%minNptrs to domain1%maxNptrs, it will save the space
 CALL Reallocate(obj%NodeToNode, domain1%maxNptrs)
+obj%isNodeToNode = .TRUE.
 !> make intersection box
 IF ((domain1%GetBoundingBox()) &
   & .isIntersect.  &

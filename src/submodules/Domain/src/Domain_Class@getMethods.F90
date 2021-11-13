@@ -73,6 +73,49 @@ NULLIFY (meshptr)
 END PROCEDURE Domain_getConnectivity
 
 !----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getNodeToElements1
+CLASS(Mesh_), POINTER :: meshptr
+INTEGER(I4B) :: dim, entityNum
+INTEGER(I4B), ALLOCATABLE :: ivec(:)
+!> main
+meshptr => NULL()
+IF (obj%isNodePresent(globalNode=globalNode)) THEN
+  dimloop: DO dim = 0, obj%nsd
+    DO entityNum = 1, obj%getTotalMesh(dim=dim)
+      meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+      ivec = meshptr%GetNodeToElements(globalNode=globalNode)
+      CALL Append(ans, ivec)
+    END DO
+  END DO dimloop
+END IF
+IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+meshptr => NULL()
+END PROCEDURE Domain_getNodeToElements1
+
+!----------------------------------------------------------------------------
+!                                                         getNodeToElements
+!----------------------------------------------------------------------------
+
+module procedure Domain_getNodeToElements2
+TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: ivec(:)
+INTEGER(I4B) :: ii
+!> main
+DO ii = 1, SIZE(GlobalNode)
+  ivec = obj%getNodeToElements(GlobalNode=GlobalNode(ii))
+  IF (ALLOCATED(ivec)) THEN
+    IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
+  END IF
+END DO
+ans = intvec
+CALL Deallocate (intvec)
+IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+end procedure Domain_getNodeToElements2
+
+!----------------------------------------------------------------------------
 !                                                             getTotalNodes
 !----------------------------------------------------------------------------
 

@@ -358,7 +358,7 @@ DO ii = 1, SIZE(GlobalNode)
   END IF
 END DO
 ans = intvec
-CALL DeallocateData(intvec)
+CALL Deallocate (intvec)
 IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
 END PROCEDURE mesh_getNodeToElements2
 
