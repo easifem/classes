@@ -174,35 +174,44 @@ END IF
 !! it will save the space
 CALL Reallocate(obj%cellToCell, domain1%maxElemNum)
 obj%isCellToCell = .TRUE.
+nsd = domain1%getNSD()
 nodeToNode => obj%getNodeToNodePointer()
 !> get mesh pointer
+CALL PASS(myname//"--debug--"//tostring(__LINE__))
 DO iel1 = domain1%minElemNum, domain1%maxElemNum
   IF (.NOT. domain1%isElementPresent(globalElement=iel1)) CYCLE
-  CALL PASS("--debug-1")
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
   mesh1 => domain1%GetMeshPointer(globalElement=iel1)
-  CALL PASS("--debug-2")
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
   refelem1 => mesh1%getRefElemPointer()
-  call display(refelem1, "--debug-2 refelem1=")
-  stop
-  CALL PASS("--debug-3")
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
+  !! NOTE
+  !! if the reference element is not a cell then
+  !! dont skip it. We want to consider only the
+  !! cells, i.e xidim == dim
+  IF (refelem1%xidimension .NE. nsd) CYCLE
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
   order1 = elementOrder(refelem1)
-  CALL PASS("--debug-4")
   nptrs1 = mesh1%getConnectivity(globalElement=iel1)
-  call display(nptrs1, "--debug-4 nptrs1 = ", orient="row")
-  CALL PASS("--debug-5")
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
   nptrs2 = nodeToNode(nptrs1)
-  CALL PASS("--debug-6")
-  call display(nptrs2, "--debug-6 nptrs2 = ", orient="row")
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
+  !! Now we get the list of all elements in domain2
+  !! which are connected/contains node number in nptrs2
+  !! NOTE
+  !! some of these elements in elem2 may not be cell
+  !! elements, i.e. xidim .ne. nsd
+  !! we should skip such elements.
   elem2 = domain2%getNodeToElements(GlobalNode=nptrs2)
-  CALL PASS("--debug-7")
-  !> Now we get the list of all elements in mesh2 which are
-  ! connected/contains node number in nptrs2
-  !> now we are ready to search iel2 in elem2 which
-  ! contains all nptrs2
+  !! now we are ready to search iel2 in elem2 which
+  !! contains all nptrs2
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
   DO ii = 1, SIZE(elem2)
     iel2 = elem2(ii)
     mesh2 => domain2%GetMeshPointer(globalElement=iel2)
     refelem2 => mesh2%getRefElemPointer()
+    !! skip those elements which are not cells
+    IF (refelem2%xidimension .NE. nsd) CYCLE
     order2 = elementOrder(refelem2)
     nptrs = mesh2%getConnectivity(globalElement=iel2)
     IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
@@ -220,7 +229,7 @@ DO iel1 = domain1%minElemNum, domain1%maxElemNum
       END IF
     END IF
   END DO
-  CALL PASS("--debug-8")
+  CALL PASS(myname//"--debug--"//tostring(__LINE__))
 END DO
 !> cleanup
 NULLIFY (mesh1, mesh2, refelem1, refelem2)

@@ -90,30 +90,30 @@ IF (obj%isNodePresent(globalNode=globalNode)) THEN
       CALL Append(ans, ivec)
     END DO
   END DO dimloop
+  meshptr => NULL()
+  IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+ELSE
+  ALLOCATE (ans(0))
 END IF
-IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-meshptr => NULL()
 END PROCEDURE Domain_getNodeToElements1
 
 !----------------------------------------------------------------------------
 !                                                         getNodeToElements
 !----------------------------------------------------------------------------
 
-module procedure Domain_getNodeToElements2
+MODULE PROCEDURE Domain_getNodeToElements2
 TYPE(IntVector_) :: intvec
 INTEGER(I4B), ALLOCATABLE :: ivec(:)
 INTEGER(I4B) :: ii
 !> main
 DO ii = 1, SIZE(GlobalNode)
   ivec = obj%getNodeToElements(GlobalNode=GlobalNode(ii))
-  IF (ALLOCATED(ivec)) THEN
-    IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
-  END IF
+  CALL append(intvec, ivec)
 END DO
 ans = intvec
-CALL Deallocate (intvec)
+CALL DEALLOCATE (intvec)
 IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
-end procedure Domain_getNodeToElements2
+END PROCEDURE Domain_getNodeToElements2
 
 !----------------------------------------------------------------------------
 !                                                             getTotalNodes

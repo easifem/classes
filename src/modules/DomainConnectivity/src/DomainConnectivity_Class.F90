@@ -123,10 +123,13 @@ CONTAINS
     & dc_getNodeToNodePointer
     !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData1
+    !! Initiates [[DomainConnectivity_:cellToCell]] data
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
+    !! Initiates [[DomainConnectivity_:cellToCell]] data
   GENERIC, PUBLIC :: initiateCellToCellData => &
        & dc_initiateCellToCellData1, &
        & dc_initiateCellToCellData2
+    !! Initiates [[DomainConnectivity_:cellToCell]] data
   PROCEDURE, PUBLIC, PASS(obj) :: getCellToCellPointer => &
     & dc_getCellToCellPointer
     !! Return pointer to the [[DomainConnectivity_:CellToCell]]
@@ -386,25 +389,47 @@ END INTERFACE
 !# Introduction
 !
 !This subroutine generates the cell to cell connectivity between
-!two domains. This means that all the elements in domain-1 will be
-!mapped to elements in domain-2.
-!
-!If cellToCell(iel) is equal to zero then it means there is
-!no element found in domain-2 corresponding to element number
-!iel in domain-1.
-!
-!@note
-!In this case the size of [[DomainConnectivity_:cellToCell]]
-!is the largest element number present in domain1.
-!@endnote
-!
-!TODO : Currently, lowerbound and upper bound of cellToCell is 1 and
-!domain1%maxElemNumber. In future it the lower bound will be
-!domain1%minElemNumber.
+!two domains.
 !
 ! - `obj%cellToCell` will be initiated
 ! - `domain1` main domain
 ! - `domain2` secondary domain
+!
+!@note
+!All **CELL** elements in domain-1 will be mapped to **CELL**
+!elements in domain-2.
+!@endnote
+!
+!@note
+!If cellToCell(iel) is equal to zero then it means there is
+!no element found in domain-2 corresponding to element number
+!iel in domain-1.
+!@endnote
+!
+!@note
+!The size of [[DomainConnectivity_:cellToCell]] is the largest
+!element number present in domain1.
+!@endnote
+!
+!@todo
+!TODO
+!Currently, lowerbound and upper bound of cellToCell is 1 and
+!domain1%maxElemNumber. In future it the lower bound will be
+!domain1%minElemNumber.
+!@endtodo
+!
+!@note
+!Following points should be noted before calling this routine
+!
+! - This routine provides map between cell elements
+!of one domain to cell elements of another domain.
+! - The topology of the both elements should be the same
+! - There is one to one mapping between elements of domain 1
+! and elements of domain2
+! - This routine works well for two domains of same region
+! with same/different order. For example, domain of tri3 and domain
+! of tri6 elements.
+!@endnote
 
 INTERFACE
   MODULE SUBROUTINE dc_InitiateCellToCellData2(obj, domain1, domain2)
@@ -430,8 +455,7 @@ END INTERFACE
 !
 !# Introduction
 !
-!  This function returns the pointer
-!  to [[DomainConnectivity_:CellToCell]]
+! This function returns the pointer to [[DomainConnectivity_:CellToCell]]
 
 INTERFACE
   MODULE FUNCTION dc_getCellToCellPointer(obj) RESULT(Ans)
