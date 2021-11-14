@@ -81,7 +81,7 @@ nodeToNode => obj%getNodeToNodePointer()
 IF (order1 .GE. order2) THEN
   DO iel1 = mesh1%minElemNum, mesh1%maxElemNum
     IF (.NOT. mesh1%isElementPresent(globalElement=iel1)) CYCLE
-    nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+    nptrs1 = mesh1%getConnectivity(globalElement=iel1)
     nptrs2 = nodeToNode(nptrs1)
     !> Now we get the list of all elements in mesh2 which are
     ! connected/contains node number in nptrs2
@@ -90,7 +90,7 @@ IF (order1 .GE. order2) THEN
     ! contains all nptrs2
     DO ii = 1, SIZE(elem2)
       iel2 = elem2(ii)
-      nptrs = mesh2%getConnectivity(globalElemNumber=iel2)
+      nptrs = mesh2%getConnectivity(globalElement=iel2)
       IF (nptrs.in.nptrs2) THEN
         obj%cellToCell(iel1) = iel2
         EXIT
@@ -100,7 +100,7 @@ IF (order1 .GE. order2) THEN
 ELSE
   DO iel1 = mesh1%minElemNum, mesh1%maxElemNum
     IF (.NOT. mesh1%isElementPresent(globalElement=iel1)) CYCLE
-    nptrs1 = mesh1%getConnectivity(globalElemNumber=iel1)
+    nptrs1 = mesh1%getConnectivity(globalElement=iel1)
     nptrs2 = nodeToNode(nptrs1)
     !> Now we get the list of all elements in mesh2 which are
     ! connected/contains node number in nptrs2
@@ -109,7 +109,7 @@ ELSE
     ! contains all nptrs2
     DO ii = 1, SIZE(elem2)
       iel2 = elem2(ii)
-      nptrs = mesh2%getConnectivity(globalElemNumber=iel2)
+      nptrs = mesh2%getConnectivity(globalElement=iel2)
       IF (nptrs2.in.nptrs) THEN
         obj%cellToCell(iel1) = iel2
         EXIT
@@ -124,6 +124,7 @@ IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
 END PROCEDURE dc_initiateCellToCellData1
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -173,32 +174,51 @@ END IF
 !! it will save the space
 CALL Reallocate(obj%cellToCell, domain1%maxElemNum)
 obj%isCellToCell = .TRUE.
+nsd = domain1%getNSD()
 nodeToNode => obj%getNodeToNodePointer()
 !> get mesh pointer
 DO iel1 = domain1%minElemNum, domain1%maxElemNum
   IF (.NOT. domain1%isElementPresent(globalElement=iel1)) CYCLE
-  mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
-  mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
+  mesh1 => domain1%GetMeshPointer(globalElement=iel1)
   refelem1 => mesh1%getRefElemPointer()
-  refelem2 => mesh2%getRefElemPointer()
-  IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
-       & CALL e%raiseError(modName//"::"//myName//" - "// &
-       & 'Topology of mesh element is not the same.')
+  !! NOTE
+  !! if the reference element is not a cell then
+  !! dont skip it. We want to consider only the
+  !! cells, i.e xidim == dim
+  IF (refelem1%xidimension .NE. nsd) CYCLE
   order1 = elementOrder(refelem1)
-  order2 = elementOrder(refelem2)
-  nptrs1 = domain1%getConnectivity(globalElemNumber=iel1)
+  nptrs1 = mesh1%getConnectivity(globalElement=iel1)
   nptrs2 = nodeToNode(nptrs1)
-  !> Now we get the list of all elements in mesh2 which are
-  ! connected/contains node number in nptrs2
+  !! Now we get the list of all elements in domain2
+  !! which are connected/contains node number in nptrs2
+  !! NOTE
+  !! some of these elements in elem2 may not be cell
+  !! elements, i.e. xidim .ne. nsd
+  !! we should skip such elements.
   elem2 = domain2%getNodeToElements(GlobalNode=nptrs2)
-  !> now we are ready to search iel2 in elem2 which
-  ! contains all nptrs2
+  !! now we are ready to search iel2 in elem2 which
+  !! contains all nptrs2
   DO ii = 1, SIZE(elem2)
     iel2 = elem2(ii)
-    nptrs = domain2%getConnectivity(globalElemNumber=iel2)
-    IF (nptrs.in.nptrs2) THEN
-      obj%cellToCell(iel1) = iel2
-      EXIT
+    mesh2 => domain2%GetMeshPointer(globalElement=iel2)
+    refelem2 => mesh2%getRefElemPointer()
+    !! skip those elements which are not cells
+    IF (refelem2%xidimension .NE. nsd) CYCLE
+    order2 = elementOrder(refelem2)
+    nptrs = mesh2%getConnectivity(globalElement=iel2)
+    IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
+         & CALL e%raiseError(modName//"::"//myName//" - "// &
+         & 'Topology of mesh element is not the same.')
+    IF (order1 .GE. order2) THEN
+      IF (nptrs.in.nptrs2) THEN
+        obj%cellToCell(iel1) = iel2
+        EXIT
+      END IF
+    ELSE
+      IF (nptrs2.in.nptrs) THEN
+        obj%cellToCell(iel1) = iel2
+        EXIT
+      END IF
     END IF
   END DO
 END DO

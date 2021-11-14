@@ -36,53 +36,92 @@ TYPE(ExceptionHandler_) :: e
 !> authors: Vikas Sharma, Ph. D.
 ! date: Nov 7 2021
 ! summary: Datatype for selecting mesh (group of elements) in domain
+!
+!{!pages/MeshSelection_.md!}
 
 TYPE :: MeshSelection_
   PRIVATE
   LOGICAL(LGT), PUBLIC :: isInitiated = .FALSE.
+    !!  True if the instance is initiated
   LOGICAL(LGT), PUBLIC :: isSelectionByMeshID = .FALSE.
+    !! True if selection by mesh id
   LOGICAL(LGT), PUBLIC :: isSelectionByElemNum = .FALSE.
+    !! True if selection by element number
   LOGICAL(LGT), PUBLIC :: isSelectionByBox = .FALSE.
+    !! True if selection by box
   LOGICAL(LGT), PUBLIC :: isSelectionByNodeNum = .FALSE.
-  TYPE(IntVector_) :: PointMeshID
+    !! True if selection by node number
+  TYPE(IntVector_) :: pointMeshID
     !! It denotes the IDs of mesh which has xidim = 0 (point-mesh)
-  TYPE(IntVector_) :: CurveMeshID
+  TYPE(IntVector_) :: curveMeshID
     !! It denotes the IDs of mesh which has xidim = 1 (curve-mesh)
-  TYPE(IntVector_) :: SurfaceMeshID
+  TYPE(IntVector_) :: surfaceMeshID
     !! It denotes the IDs of mesh which has xidim = 2 (surface-mesh)
-  TYPE(IntVector_) :: VolumeMeshID
+  TYPE(IntVector_) :: volumeMeshID
     !! It denotes the IDs of mesh which has xidim = 3 (volume-mesh)
-  TYPE(IntVector_) :: PointElemNum
-  TYPE(IntVector_) :: CurveElemNum
-  TYPE(IntVector_) :: SurfaceElemNum
-  TYPE(IntVector_) :: VolumeElemNum
-    !! Element number sorted based on xiDim of mesh
-  TYPE(IntVector_) :: NodeNum
-    !! Global Node number
+  TYPE(IntVector_) :: pointElemNum
+    !! Element number in mesh of points
+  TYPE(IntVector_) :: curveElemNum
+    !! Element number in mesh of curves
+  TYPE(IntVector_) :: surfaceElemNum
+    !! Element number in mesh of surfaces
+  TYPE(IntVector_) :: volumeElemNum
+    !! Element number in mesh of volume
+  TYPE(IntVector_) :: nodeNum
+    !! Global Node numbers
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => meshSelect_addSurrogate
+    !! add surrogates to the module's [[ExceptionHandler_]]
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => meshSelect_Initiate
+    !! Initiates an instance of [[MeshSelection_]]
   PROCEDURE, PASS(obj) :: Copy => meshSelect_Copy
     !! This routine copies object
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
-  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateData => &
+    !! Assignment operator
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => &
     & meshSelect_DeallocateData
+    !! Deallocate Data
+    !! TODO change DeallocateData to Deallocate
   FINAL :: meshSelect_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Add => meshSelect_Add
+    !! Add a new region to mesh selection
   PROCEDURE, PUBLIC, PASS(obj) :: Set => meshSelect_Set
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => meshSelect_Import
+    !! This routine should be called when we are done
+    !! setting the regions in the instance
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => meshSelect_Import
+    !! Import from the hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => meshSelect_Export
+    !! Export to the HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Display => meshSelect_Display
+    !! Displays the content
   PROCEDURE, PUBLIC, PASS(obj) :: getMeshID => meshSelect_getMeshID
-  PROCEDURE, PUBLIC, PASS(obj) :: getElemNum => meshSelect_getElemNum
+    !! Returns the mesh id if available
+  PROCEDURE, PASS(obj) :: meshSelect_getElemNum1
+    !! Returns the element numbers if available
+  PROCEDURE, PASS(obj) :: meshSelect_getElemNum2
+    !! Returns the element numbers if available
+  PROCEDURE, PASS(obj) :: meshSelect_getElemNum3
+    !! Returns the element numbers if available
+  PROCEDURE, PASS(obj) :: meshSelect_getElemNum4
+    !! Returns the element numbers if available
+  GENERIC, PUBLIC :: getElemNum => &
+       & meshSelect_getElemNum1, &
+       & meshSelect_getElemNum2, &
+       & meshSelect_getElemNum3, &
+       & meshSelect_getElemNum4
+    !! Returns the element numbers if available
   PROCEDURE, PUBLIC, PASS(obj) :: getNodeNum => meshSelect_getNodeNum
+    !! Returns the node number if available
   PROCEDURE, PUBLIC, PASS(obj) :: isMeshIDAllocated => &
     & meshSelect_isMeshIDAllocated
+    !! returns true if selection by meshID is allocated
   PROCEDURE, PUBLIC, PASS(obj) :: isElemNumAllocated => &
     & meshSelect_isElemNumAllocated
+    !! returns true if element numbers are allocated
   PROCEDURE, PUBLIC, PASS(obj) :: isNodeNumAllocated => &
     & meshSelect_isNodeNumAllocated
+    !! returns true if the node numbers are allocated
 END TYPE MeshSelection_
 
 PUBLIC :: MeshSelection_
@@ -110,7 +149,7 @@ PUBLIC :: MeshSelectionPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 28 Aug 2021
-! summary: Add surrogate to the module exceptionHandler_
+! summary: Adds surrogate to the module exceptionHandler_
 
 INTERFACE
   MODULE SUBROUTINE meshSelect_addSurrogate(obj, UserObj)
@@ -190,11 +229,11 @@ END INTERFACE
 ! summary: This routine adds data to the meshSelection
 
 INTERFACE
-  MODULE SUBROUTINE meshSelect_Add(obj, dom, xidim, meshID, box, elemNum, &
+  MODULE SUBROUTINE meshSelect_Add(obj, dom, dim, meshID, box, elemNum, &
     & nodeNum)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: xidim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshID(:)
     TYPE(BoundingBox_), OPTIONAL, INTENT(IN) :: box
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemNum(:)
@@ -274,9 +313,9 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION meshSelect_getMeshID(obj, xidim) RESULT(Ans)
+  MODULE PURE FUNCTION meshSelect_getMeshID(obj, dim) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: xidim
+    INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION meshSelect_getMeshID
 END INTERFACE
@@ -287,14 +326,82 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
-! summary: This routine returns MeshID
+! summary: Returns element number if isSelectionByElemNum is true
 
 INTERFACE
-  MODULE PURE FUNCTION meshSelect_getElemNum(obj, xidim) RESULT(Ans)
+  MODULE FUNCTION meshSelect_getElemNum1(obj, dim) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: xidim
+    INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getElemNum
+  END FUNCTION meshSelect_getElemNum1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getElemNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Nov 2021
+! summary: Returns element number
+!
+!
+!# Introduction
+!
+! This function returns the element number. It works when
+!
+! - [x] isSelectionByMeshID
+! - [x] isSelectionByElemNum
+! - [  ] isSelectionByNodeNum
+! - [  ] isSelectionByBox
+
+INTERFACE
+  MODULE FUNCTION meshSelect_getElemNum2(obj, dim, domain) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    CLASS(Domain_), INTENT(IN) :: domain
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getElemNum2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getElemNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: Returns element number if isSelectionByElemNum is true
+
+INTERFACE
+  MODULE FUNCTION meshSelect_getElemNum3(obj) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getElemNum3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getElemNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Nov 2021
+! summary: Returns element number
+!
+!
+!# Introduction
+!
+! This function returns the element number. It works when
+!
+! - [x] isSelectionByMeshID
+! - [x] isSelectionByElemNum
+! - [  ] isSelectionByNodeNum
+! - [  ] isSelectionByBox
+
+INTERFACE
+  MODULE FUNCTION meshSelect_getElemNum4(obj, domain) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    CLASS(Domain_), INTENT(IN) :: domain
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getElemNum4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -321,9 +428,9 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION meshSelect_isMeshIDAllocated(obj, xidim) RESULT(Ans)
+  MODULE PURE FUNCTION meshSelect_isMeshIDAllocated(obj, dim) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: xidim
+    INTEGER(I4B), INTENT(IN) :: dim
     LOGICAL(LGT) :: ans
   END FUNCTION meshSelect_isMeshIDAllocated
 END INTERFACE
@@ -337,9 +444,9 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION meshSelect_isElemNumAllocated(obj, xidim) RESULT(Ans)
+  MODULE PURE FUNCTION meshSelect_isElemNumAllocated(obj, dim) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: xidim
+    INTEGER(I4B), INTENT(IN) :: dim
     LOGICAL(LGT) :: ans
   END FUNCTION meshSelect_isElemNumAllocated
 END INTERFACE

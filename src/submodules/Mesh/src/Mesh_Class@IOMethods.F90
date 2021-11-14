@@ -547,7 +547,7 @@ IF (Content_) THEN
     IF (obj%isElementPresent(ii)) THEN
       jj = jj + 1
       localNptrs = obj%getLocalNodeNumber( &
-        & obj%getConnectivity(globalElemNumber=ii))
+        & obj%getConnectivity(globalElement=ii))
      connectivity(offsets(jj) - nne + 1:offsets(jj)) = localNptrs(vtkIndx) - 1
     END IF
   END DO

@@ -18,7 +18,7 @@
 ! date: 28 Aug 2021
 ! summary: This module defines a data type for mesh selection
 
-SUBMODULE (MeshSelection_Class) ConstructorMethods
+SUBMODULE(MeshSelection_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -28,7 +28,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_addSurrogate
-  CALL e%addSurrogate( UserObj )
+CALL e%addSurrogate(UserObj)
 END PROCEDURE meshSelect_addSurrogate
 
 !----------------------------------------------------------------------------
@@ -36,42 +36,42 @@ END PROCEDURE meshSelect_addSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Initiate
-  IF( .NOT. obj%isInitiated ) THEN
-    obj%isInitiated = .TRUE.
-    IF( PRESENT( isSelectionByMeshID ) ) THEN
-      obj%isSelectionByMeshID = isSelectionByMeshID
-    ELSE
-      obj%isSelectionByMeshID = .FALSE.
-    END IF
-    IF( PRESENT( isSelectionByElemNum ) ) THEN
-      obj%isSelectionByElemNum = isSelectionByElemNum
-    ELSE
-      obj%isSelectionByElemNum = .FALSE.
-    END IF
-    IF( PRESENT( isSelectionByNodeNum ) ) THEN
-      obj%isSelectionByNodeNum = isSelectionByNodeNum
-    ELSE
-      obj%isSelectionByNodeNum = .FALSE.
-    END IF
-    IF( PRESENT( isSelectionByBox ) ) THEN
-      obj%isSelectionByBox = isSelectionByBox
-    ELSE
-      obj%isSelectionByBox = .FALSE.
-    END IF
+IF (.NOT. obj%isInitiated) THEN
+  obj%isInitiated = .TRUE.
+  IF (PRESENT(isSelectionByMeshID)) THEN
+    obj%isSelectionByMeshID = isSelectionByMeshID
   ELSE
-    IF( PRESENT( isSelectionByMeshID ) ) THEN
-      obj%isSelectionByMeshID = isSelectionByMeshID
-    END IF
-    IF( PRESENT( isSelectionByElemNum ) ) THEN
-      obj%isSelectionByElemNum = isSelectionByElemNum
-    END IF
-    IF( PRESENT( isSelectionByNodeNum ) ) THEN
-      obj%isSelectionByNodeNum = isSelectionByNodeNum
-    END IF
-    IF( PRESENT( isSelectionByBox ) ) THEN
-      obj%isSelectionByBox = isSelectionByBox
-    END IF
+    obj%isSelectionByMeshID = .FALSE.
   END IF
+  IF (PRESENT(isSelectionByElemNum)) THEN
+    obj%isSelectionByElemNum = isSelectionByElemNum
+  ELSE
+    obj%isSelectionByElemNum = .FALSE.
+  END IF
+  IF (PRESENT(isSelectionByNodeNum)) THEN
+    obj%isSelectionByNodeNum = isSelectionByNodeNum
+  ELSE
+    obj%isSelectionByNodeNum = .FALSE.
+  END IF
+  IF (PRESENT(isSelectionByBox)) THEN
+    obj%isSelectionByBox = isSelectionByBox
+  ELSE
+    obj%isSelectionByBox = .FALSE.
+  END IF
+ELSE
+  IF (PRESENT(isSelectionByMeshID)) THEN
+    obj%isSelectionByMeshID = isSelectionByMeshID
+  END IF
+  IF (PRESENT(isSelectionByElemNum)) THEN
+    obj%isSelectionByElemNum = isSelectionByElemNum
+  END IF
+  IF (PRESENT(isSelectionByNodeNum)) THEN
+    obj%isSelectionByNodeNum = isSelectionByNodeNum
+  END IF
+  IF (PRESENT(isSelectionByBox)) THEN
+    obj%isSelectionByBox = isSelectionByBox
+  END IF
+END IF
 END PROCEDURE meshSelect_Initiate
 
 !----------------------------------------------------------------------------
@@ -79,20 +79,20 @@ END PROCEDURE meshSelect_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_DeallocateData
-  obj%isInitiated = .FALSE.
-  obj%isSelectionByElemNum = .FALSE.
-  obj%isSelectionByNodeNum = .FALSE.
-  obj%isSelectionByMeshID = .FALSE.
-  obj%isSelectionByBox = .FALSE.
-  CALL DeallocateData( obj%PointMeshID )
-  CALL DeallocateData( obj%CurveMeshID )
-  CALL DeallocateData( obj%SurfaceMeshID )
-  CALL DeallocateData( obj%VolumeMeshID )
-  CALL DeallocateData( obj%PointElemNum )
-  CALL DeallocateData( obj%CurveElemNum )
-  CALL DeallocateData( obj%SurfaceElemNum )
-  CALL DeallocateData( obj%VolumeElemNum )
-  CALL DeallocateData( obj%NodeNum )
+obj%isInitiated = .FALSE.
+obj%isSelectionByElemNum = .FALSE.
+obj%isSelectionByNodeNum = .FALSE.
+obj%isSelectionByMeshID = .FALSE.
+obj%isSelectionByBox = .FALSE.
+CALL DeallocateData(obj%PointMeshID)
+CALL DeallocateData(obj%CurveMeshID)
+CALL DeallocateData(obj%SurfaceMeshID)
+CALL DeallocateData(obj%VolumeMeshID)
+CALL DeallocateData(obj%PointElemNum)
+CALL DeallocateData(obj%CurveElemNum)
+CALL DeallocateData(obj%SurfaceElemNum)
+CALL DeallocateData(obj%VolumeElemNum)
+CALL DeallocateData(obj%NodeNum)
 END PROCEDURE meshSelect_DeallocateData
 
 !----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ END PROCEDURE meshSelect_DeallocateData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Final
-  CALL obj%DeallocateData()
+CALL obj%Deallocate()
 END PROCEDURE meshSelect_Final
 
 !----------------------------------------------------------------------------
@@ -108,23 +108,23 @@ END PROCEDURE meshSelect_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Copy
-  obj%isInitiated = obj2%isInitiated
-  obj%isSelectionByMeshID = obj2%isSelectionByMeshID
-  obj%isSelectionByElemNum = obj2%isSelectionByElemNum
-  obj%isSelectionByNodeNum = obj2%isSelectionByNodeNum
-  obj%isSelectionByBox = obj2%isSelectionByBox
-  !>
-  IF( isAllocated( obj2%PointMeshID ) ) obj%PointMeshID = obj2%PointMeshID
-  IF( isAllocated( obj2%CurveMeshID ) ) obj%CurveMeshID = obj2%CurveMeshID
-  IF( isAllocated( obj2%SurfaceMeshID ) ) obj%SurfaceMeshID = obj2%SurfaceMeshID
-  IF( isAllocated( obj2%VolumeMeshID ) ) obj%VolumeMeshID = obj2%VolumeMeshID
-  !>
-  IF( isAllocated( obj2%PointElemNum ) ) obj%PointElemNum = obj2%PointElemNum
-  IF( isAllocated( obj2%CurveElemNum ) ) obj%CurveElemNum = obj2%CurveElemNum
-  IF( isAllocated( obj2%SurfaceElemNum ) ) obj%SurfaceElemNum = obj2%SurfaceElemNum
-  IF( isAllocated( obj2%VolumeElemNum ) ) obj%VolumeElemNum = obj2%VolumeElemNum
-  !>
-  IF( isAllocated( obj2%NodeNum ) ) obj%NodeNum = obj2%NodeNum
+obj%isInitiated = obj2%isInitiated
+obj%isSelectionByMeshID = obj2%isSelectionByMeshID
+obj%isSelectionByElemNum = obj2%isSelectionByElemNum
+obj%isSelectionByNodeNum = obj2%isSelectionByNodeNum
+obj%isSelectionByBox = obj2%isSelectionByBox
+!>
+IF (isAllocated(obj2%PointMeshID)) obj%PointMeshID = obj2%PointMeshID
+IF (isAllocated(obj2%CurveMeshID)) obj%CurveMeshID = obj2%CurveMeshID
+IF (isAllocated(obj2%SurfaceMeshID)) obj%SurfaceMeshID = obj2%SurfaceMeshID
+IF (isAllocated(obj2%VolumeMeshID)) obj%VolumeMeshID = obj2%VolumeMeshID
+!>
+IF (isAllocated(obj2%PointElemNum)) obj%PointElemNum = obj2%PointElemNum
+IF (isAllocated(obj2%CurveElemNum)) obj%CurveElemNum = obj2%CurveElemNum
+IF (isAllocated(obj2%SurfaceElemNum)) obj%SurfaceElemNum = obj2%SurfaceElemNum
+IF (isAllocated(obj2%VolumeElemNum)) obj%VolumeElemNum = obj2%VolumeElemNum
+!>
+IF (isAllocated(obj2%NodeNum)) obj%NodeNum = obj2%NodeNum
 END PROCEDURE meshSelect_Copy
 
 END SUBMODULE ConstructorMethods

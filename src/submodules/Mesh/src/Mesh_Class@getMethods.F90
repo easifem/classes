@@ -29,6 +29,19 @@ ans = obj%tElements
 END PROCEDURE mesh_size
 
 !----------------------------------------------------------------------------
+!                                                                getElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getElemNum
+INTEGER(I4B) :: ii
+!! main
+CALL Reallocate(ans, obj%getTotalElements())
+DO ii = 1, SIZE(ans)
+  ans(ii) = obj%getGlobalElemNumber(localElem=ii)
+END DO
+END PROCEDURE mesh_getElemNum
+
+!----------------------------------------------------------------------------
 !                                                          getRefElemPointer
 !----------------------------------------------------------------------------
 
@@ -227,7 +240,7 @@ END PROCEDURE mesh_getBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getConnectivity
-ans = obj%elementData(obj%getLocalElemNumber(globalElemNumber))%globalNodes
+ans = obj%elementData(obj%getLocalElemNumber(globalElement))%globalNodes
 END PROCEDURE mesh_getConnectivity
 
 !----------------------------------------------------------------------------
@@ -358,7 +371,7 @@ DO ii = 1, SIZE(GlobalNode)
   END IF
 END DO
 ans = intvec
-CALL DeallocateData(intvec)
+CALL DEALLOCATE (intvec)
 IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
 END PROCEDURE mesh_getNodeToElements2
 
@@ -401,7 +414,7 @@ INTEGER(I4B) :: tSize, iel
 
 onlyElem = .FALSE.
 IF (PRESENT(onlyElements)) onlyElem = onlyElements
-iel = obj%getLocalElemNumber(globalElemNumber)
+iel = obj%getLocalElemNumber(globalElement)
 IF (onlyElem) THEN
   Indx = obj%elementData(iel)%globalElements
   ALLOCATE (ans(SIZE(Indx) / 3, 1))
@@ -420,8 +433,8 @@ END PROCEDURE mesh_getElementToElements
 MODULE PROCEDURE mesh_getBoundaryElementData
 ! Define internal variables
 INTEGER(I4B) :: iel
-IF (obj%isBoundaryElement(globalElemNumber)) THEN
-  iel = obj%getLocalElemNumber(globalElemNumber)
+IF (obj%isBoundaryElement(globalElement)) THEN
+  iel = obj%getLocalElemNumber(globalElement)
   ans = obj%elementData(iel)%boundaryData
 ELSE
   ALLOCATE (ans(0))

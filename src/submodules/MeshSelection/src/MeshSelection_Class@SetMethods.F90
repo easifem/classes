@@ -18,7 +18,7 @@
 ! date: 28 Aug 2021
 ! summary: This module defines a data type for mesh selection
 
-SUBMODULE (MeshSelection_Class) SetMethods
+SUBMODULE(MeshSelection_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -28,43 +28,43 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Add
-  CHARACTER( LEN = * ), PARAMETER :: myName="meshSelect_Add"
-  IF( PRESENT( xidim ) .AND. PRESENT( meshID ) ) THEN
-    obj%isSelectionByMeshID = .TRUE.
-    SELECT CASE( xidim )
-    CASE( 0 )
-      CALL APPEND( obj%PointMeshID, meshID )
-    CASE( 1 )
-      CALL APPEND( obj%CurveMeshID, meshID )
-    CASE( 2 )
-      CALL APPEND( obj%SurfaceMeshID, meshID )
-    CASE( 3 )
-      CALL APPEND( obj%VolumeMeshID, meshID )
-    END SELECT
-    RETURN
-  END IF
-  IF( PRESENT( xidim ) .AND. PRESENT( elemNum ) ) THEN
-    obj%isSelectionByElemNum = .TRUE.
-    SELECT CASE( xidim )
-    CASE( 0 )
-      CALL APPEND( obj%PointElemNum, elemNum )
-    CASE( 1 )
-      CALL APPEND( obj%CurveElemNum, elemNum )
-    CASE( 2 )
-      CALL APPEND( obj%SurfaceElemNum, elemNum )
-    CASE( 3 )
-      CALL APPEND( obj%VolumeElemNum, elemNum )
-    END SELECT
-    RETURN
-  END IF
-  IF( PRESENT( nodeNum ) ) THEN
-    obj%isSelectionByNodeNum = .TRUE.
-    CALL APPEND( obj%NodeNum, nodeNum )
-    RETURN
-  END IF
-  CALL e%raiseError( modName//'::'//myName//'-'// &
-    & 'Currently mesh selection is possible through (xidim, meshID), &
-    & and (xidim, elemNum). We are working on it' )
+CHARACTER(LEN=*), PARAMETER :: myName = "meshSelect_Add"
+IF (PRESENT(dim) .AND. PRESENT(meshID)) THEN
+  obj%isSelectionByMeshID = .TRUE.
+  SELECT CASE (dim)
+  CASE (0)
+    CALL APPEND(obj%PointMeshID, meshID)
+  CASE (1)
+    CALL APPEND(obj%CurveMeshID, meshID)
+  CASE (2)
+    CALL APPEND(obj%SurfaceMeshID, meshID)
+  CASE (3)
+    CALL APPEND(obj%VolumeMeshID, meshID)
+  END SELECT
+  RETURN
+END IF
+IF (PRESENT(dim) .AND. PRESENT(elemNum)) THEN
+  obj%isSelectionByElemNum = .TRUE.
+  SELECT CASE (dim)
+  CASE (0)
+    CALL APPEND(obj%PointElemNum, elemNum)
+  CASE (1)
+    CALL APPEND(obj%CurveElemNum, elemNum)
+  CASE (2)
+    CALL APPEND(obj%SurfaceElemNum, elemNum)
+  CASE (3)
+    CALL APPEND(obj%VolumeElemNum, elemNum)
+  END SELECT
+  RETURN
+END IF
+IF (PRESENT(nodeNum)) THEN
+  obj%isSelectionByNodeNum = .TRUE.
+  CALL APPEND(obj%NodeNum, nodeNum)
+  RETURN
+END IF
+CALL e%raiseError(modName//'::'//myName//'-'// &
+  & 'Currently mesh selection is possible through (xidim, meshID), &
+  & and (xidim, elemNum). We are working on it')
 END PROCEDURE meshSelect_Add
 
 !----------------------------------------------------------------------------
@@ -72,33 +72,33 @@ END PROCEDURE meshSelect_Add
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Set
-  IF( isAllocated( obj%PointMeshID ) ) THEN
-    CALL RemoveDuplicates( obj%PointMeshID )
-  END IF
-  IF( isAllocated( obj%CurveMeshID ) ) THEN
-    CALL RemoveDuplicates( obj%CurveMeshID )
-  END IF
-  IF( isAllocated( obj%SurfaceMeshID ) ) THEN
-    CALL RemoveDuplicates( obj%SurfaceMeshID )
-  END IF
-  IF( isAllocated( obj%VolumeMeshID ) ) THEN
-    CALL RemoveDuplicates( obj%VolumeMeshID )
-  END IF
-  IF( isAllocated( obj%PointElemNum ) ) THEN
-    CALL RemoveDuplicates( obj%PointElemNum )
-  END IF
-  IF( isAllocated( obj%CurveElemNum ) ) THEN
-    CALL RemoveDuplicates( obj%CurveElemNum )
-  END IF
-  IF( isAllocated( obj%SurfaceElemNum ) ) THEN
-    CALL RemoveDuplicates( obj%SurfaceElemNum )
-  END IF
-  IF( isAllocated( obj%VolumeElemNum ) ) THEN
-    CALL RemoveDuplicates( obj%VolumeElemNum )
-  END IF
-  IF( isAllocated( obj%NodeNum ) ) THEN
-    CALL RemoveDuplicates( obj%NodeNum )
-  END IF
+IF (isAllocated(obj%PointMeshID)) THEN
+  CALL RemoveDuplicates(obj%PointMeshID)
+END IF
+IF (isAllocated(obj%CurveMeshID)) THEN
+  CALL RemoveDuplicates(obj%CurveMeshID)
+END IF
+IF (isAllocated(obj%SurfaceMeshID)) THEN
+  CALL RemoveDuplicates(obj%SurfaceMeshID)
+END IF
+IF (isAllocated(obj%VolumeMeshID)) THEN
+  CALL RemoveDuplicates(obj%VolumeMeshID)
+END IF
+IF (isAllocated(obj%PointElemNum)) THEN
+  CALL RemoveDuplicates(obj%PointElemNum)
+END IF
+IF (isAllocated(obj%CurveElemNum)) THEN
+  CALL RemoveDuplicates(obj%CurveElemNum)
+END IF
+IF (isAllocated(obj%SurfaceElemNum)) THEN
+  CALL RemoveDuplicates(obj%SurfaceElemNum)
+END IF
+IF (isAllocated(obj%VolumeElemNum)) THEN
+  CALL RemoveDuplicates(obj%VolumeElemNum)
+END IF
+IF (isAllocated(obj%NodeNum)) THEN
+  CALL RemoveDuplicates(obj%NodeNum)
+END IF
 END PROCEDURE meshSelect_Set
 
 END SUBMODULE SetMethods
