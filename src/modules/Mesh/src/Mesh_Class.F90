@@ -216,6 +216,8 @@ CONTAINS
       !! Returns true if a given element number is present
   PROCEDURE, PUBLIC, PASS(obj) :: Size => mesh_size
       !! Returns the size of the mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: getElemNum => mesh_getElemNum
+      !! returns global element number in the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: getRefElemPointer =>  &
     & mesh_getRefElemPointer
       !! Returns pointer to the reference element
@@ -620,16 +622,6 @@ PUBLIC :: Display
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 June 2021
 ! summary: Returns total elements in the mesh
-!
-!# Introduction
-!
-! Returns the total number of elements in the mesh.
-!
-!### Usage
-!
-!```fortran
-!        telem = obj % SIZE( obj )
-!```
 
 INTERFACE
   MODULE FUNCTION mesh_size(obj) RESULT(ans)
@@ -637,6 +629,22 @@ INTERFACE
     !! mesh object
     INTEGER(I4B) :: ans
   END FUNCTION mesh_size
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getElemNum@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-14
+! update: 2021-11-14
+! summary: Returns the global element numbers present in the mesh
+
+INTERFACE
+  MODULE FUNCTION mesh_getElemNum(obj) RESULT(Ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION mesh_getElemNum
 END INTERFACE
 
 !----------------------------------------------------------------------------
