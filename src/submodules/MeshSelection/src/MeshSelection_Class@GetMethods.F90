@@ -61,6 +61,17 @@ END SELECT
 END PROCEDURE meshSelect_getElemNum1
 
 !----------------------------------------------------------------------------
+!                                                                getElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshSelect_getElemNum3
+INTEGER(I4B) :: ii
+DO ii = 0, 3
+  CALL append(ans, obj%getElemNum(dim=ii))
+END DO
+END PROCEDURE meshSelect_getElemNum3
+
+!----------------------------------------------------------------------------
 !                                                                 getElemNum
 !----------------------------------------------------------------------------
 

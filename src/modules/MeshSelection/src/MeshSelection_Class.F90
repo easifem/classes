@@ -357,20 +357,20 @@ INTERFACE
   END FUNCTION meshSelect_getElemNum2
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                                      getElemNum@getMethods
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                      getElemNum@getMethods
+!----------------------------------------------------------------------------
 
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 31 Aug 2021
-! ! summary: Returns element number if isSelectionByElemNum is true
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: Returns element number if isSelectionByElemNum is true
 
-! INTERFACE
-!   MODULE PURE FUNCTION meshSelect_getElemNum3(obj) RESULT(Ans)
-!     CLASS(MeshSelection_), INTENT(IN) :: obj
-!     INTEGER(I4B), ALLOCATABLE :: ans(:)
-!   END FUNCTION meshSelect_getElemNum3
-! END INTERFACE
+INTERFACE
+  MODULE FUNCTION meshSelect_getElemNum3(obj) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getElemNum3
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      getNodeNum@getMethods
