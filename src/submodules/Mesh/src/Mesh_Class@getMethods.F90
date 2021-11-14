@@ -29,6 +29,19 @@ ans = obj%tElements
 END PROCEDURE mesh_size
 
 !----------------------------------------------------------------------------
+!                                                                getElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getElemNum
+INTEGER(I4B) :: ii
+!! main
+CALL Reallocate(ans, obj%getTotalElements())
+DO ii = 1, SIZE(ans)
+  ans(ii) = obj%getGlobalElemNumber(localElem=ii)
+END DO
+END PROCEDURE mesh_getElemNum
+
+!----------------------------------------------------------------------------
 !                                                          getRefElemPointer
 !----------------------------------------------------------------------------
 
@@ -358,7 +371,7 @@ DO ii = 1, SIZE(GlobalNode)
   END IF
 END DO
 ans = intvec
-CALL Deallocate (intvec)
+CALL DEALLOCATE (intvec)
 IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
 END PROCEDURE mesh_getNodeToElements2
 
