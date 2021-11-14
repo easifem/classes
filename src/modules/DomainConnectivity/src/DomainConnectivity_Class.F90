@@ -197,12 +197,6 @@ END INTERFACE
 !
 ! This subroutine deallocate the data stored in [[DomainConnectivity_]]
 !
-!# Usage
-!
-!```fortran
-!call DeallocateData( obj )
-!call obj%DeallocateData()
-!```
 
 INTERFACE
   MODULE PURE SUBROUTINE dc_DeallocateData(obj)
