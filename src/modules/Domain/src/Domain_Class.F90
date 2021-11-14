@@ -129,18 +129,32 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Domain_getNodeToElements1
   PROCEDURE, PASS(obj) :: Domain_getNodeToElements2
   GENERIC, PUBLIC :: getNodeToElements => &
-       & Domain_getNodeToElements1, &
-       & Domain_getNodeToElements2
+    & Domain_getNodeToElements1, &
+    & Domain_getNodeToElements2
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalNodes => Domain_getTotalNodes
-      !! returns the total number of nodes in the mesh
-  PROCEDURE, PASS(obj) :: &
-    & Domain_tNodes1,  &
-    & Domain_tNodes2,  &
-    & Domain_tNodes3
+      !! returns the total number of nodes in the domain, mesh, or part of mesh
+  PROCEDURE, PASS(obj) :: Domain_tNodes1
+    !! Returns the total nodes in domain
+  PROCEDURE, PASS(obj) :: Domain_tNodes2
+    !! Returns the total nodes in a dimension
+  PROCEDURE, PASS(obj) :: Domain_tNodes3
+    !! REturns the total nodes in a given mesh
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
     & Domain_tNodes1,  &
     & Domain_tNodes2,  &
     & Domain_tNodes3
+  PROCEDURE, PUBLIC, PASS(obj) :: getTotalElements => Domain_getTotalElements
+      !! returns the total number of Elements in domain, mesh, or part of mesh
+  PROCEDURE, PASS(obj) :: &
+    & Domain_tElements1,  &
+    & Domain_tElements2,  &
+    & Domain_tElements3
+      !! returns total number of elements in domain, mesh, or part of domain
+  GENERIC, PUBLIC :: OPERATOR(.tElements.) => &
+    & Domain_tElements1,  &
+    & Domain_tElements2,  &
+    & Domain_tElements3
+    !! return total number of elements in domain, mesh, or part of domain
   PROCEDURE, PASS(obj) :: Domain_getLocalNodeNumber1
   PROCEDURE, PASS(obj) :: Domain_getLocalNodeNumber2
   GENERIC, PUBLIC :: &
@@ -531,16 +545,98 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                getTotalElements@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 June 2021
+! summary: Returns the total number of elements in the domain
+!
+!# Introduction
+!
+! This function returns the total number of elements in
+!
+! - entire Domain
+! - selected region of domain
+! - The mesh selection can be made by specifying the `dim` and `entityNum`
+!
+!@note
+! - `dim=0` denotes mesh of point entities
+! - `dim=1` denotes mesh of curve entities
+! - `dim=2` denotes mesh of surface entities
+! - `dim=3` denotes mesh of volume entities
+!@endnote
+!
+!@warn
+! `entityNum` should not be out of bound
+!@endwarn
+
+INTERFACE
+  MODULE FUNCTION Domain_getTotalElements(obj, dim, entityNum) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_getTotalElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns total elements in domain
+
+INTERFACE
+  MODULE FUNCTION Domain_tElements1(obj) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tElements1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns total elements in given dimension
+
+INTERFACE
+  MODULE FUNCTION Domain_tElements2(obj, dim) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tElements2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      tElements@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-13
+! update: 2021-11-13
+! summary: Returns the total elements in a given mesh
+
+INTERFACE
+  MODULE FUNCTION Domain_tElements3(obj, opt) RESULT(Ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: opt(2)
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_tElements3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             getLocalNodeNumber@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
-!
-!# Introduction
-!
-! This function returns the local node number of a global node number.
 
 INTERFACE
   MODULE FUNCTION Domain_getLocalNodeNumber1(obj, globalNode) RESULT(Ans)
@@ -557,10 +653,6 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
-!
-!# Introduction
-!
-! This function returns the local node number of a global node number.
 
 INTERFACE
   MODULE FUNCTION Domain_getLocalNodeNumber2(obj, globalNode) RESULT(Ans)
@@ -577,10 +669,6 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
-!
-!# Introduction
-!
-! This function returns the local node number of a global node number.
 
 INTERFACE
   MODULE FUNCTION Domain_getGlobalNodeNumber1(obj, localNode) RESULT(Ans)
@@ -597,10 +685,6 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Sept 2021
 ! summary: Returns local node number of a global node number
-!
-!# Introduction
-!
-! This function returns the local node number of a global node number.
 
 INTERFACE
   MODULE FUNCTION Domain_getGlobalNodeNumber2(obj, localNode) RESULT(Ans)
