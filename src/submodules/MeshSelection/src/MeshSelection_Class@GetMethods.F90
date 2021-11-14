@@ -39,6 +39,7 @@ CASE (2)
 CASE (3)
   IF (isAllocated(obj%VolumeMeshID)) ans = obj%VolumeMeshID
 END SELECT
+IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
 END PROCEDURE meshSelect_getMeshID
 
 !----------------------------------------------------------------------------
@@ -55,10 +56,57 @@ CASE (2)
   IF (isAllocated(obj%SurfaceElemNum)) ans = obj%SurfaceElemNum
 CASE (3)
   IF (isAllocated(obj%VolumeElemNum)) ans = obj%VolumeElemNum
-CASE DEFAULT
-  ALLOCATE (ans(0))
 END SELECT
+IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
 END PROCEDURE meshSelect_getElemNum1
+
+!----------------------------------------------------------------------------
+!                                                                 getElemNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshSelect_getElemNum2
+CHARACTER(len=*), PARAMETER :: myname = "meshSelect_getElemNum2"
+CLASS(Mesh_), POINTER :: meshptr
+INTEGER(I4B) :: ii
+!! isSelectionByElemNum
+IF (obj%isSelectionByElemNum) THEN
+  ans = obj%getElemNum(dim=dim)
+END IF
+!! isSelectionByMeshID
+IF (obj%isSelectionByMeshID) THEN
+  meshptr => NULL()
+  SELECT CASE (dim)
+  CASE (0)
+    DO ii = 1, SIZE(obj%pointMeshID)
+      meshptr => domain%getMeshPointer(dim=dim, &
+           & entityNum=obj%pointMeshID%val(ii))
+      CALL append(ans, meshptr%getElemNum())
+    END DO
+  CASE (1)
+    DO ii = 1, SIZE(obj%curveMeshID)
+      meshptr => domain%getMeshPointer(dim=dim, &
+           & entityNum=obj%curveMeshID%val(ii))
+      CALL append(ans, meshptr%getElemNum())
+    END DO
+  CASE (2)
+    DO ii = 1, SIZE(obj%surfaceMeshID)
+      meshptr => domain%getMeshPointer(dim=dim, &
+           & entityNum=obj%surfaceMeshID%val(ii))
+      CALL append(ans, meshptr%getElemNum())
+    END DO
+  CASE (3)
+    DO ii = 1, SIZE(obj%volumeMeshID)
+      meshptr => domain%getMeshPointer(dim=dim, &
+           & entityNum=obj%volumeMeshID%val(ii))
+      CALL append(ans, meshptr%getElemNum())
+    END DO
+  END SELECT
+END IF
+!!
+IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
+! TODO isSelectionByNodeNum
+! TODO isSelectionByBox
+END PROCEDURE meshSelect_getElemNum2
 
 !----------------------------------------------------------------------------
 !                                                                getElemNum
@@ -72,47 +120,18 @@ END DO
 END PROCEDURE meshSelect_getElemNum3
 
 !----------------------------------------------------------------------------
-!                                                                 getElemNum
+!                                                                getElemNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_getElemNum2
-CHARACTER(len=*), PARAMETER :: myname = "meshSelect_getElemNum2"
-CLASS(Mesh_), POINTER :: meshptr
+MODULE PROCEDURE meshSelect_getElemNum4
 INTEGER(I4B) :: ii
-!! isMeshSelectionByElemNum
-IF (obj%isSelectionByElemNum) THEN
-  ans = obj%getElemNum(dim=dim)
-END IF
-
-IF (obj%isSelectionByMeshID) THEN
-  meshptr => NULL()
-!! isMeshSelectionByMeshID
-  SELECT CASE (dim)
-  CASE (0)
-    DO ii = 1, SIZE(obj%pointMeshID)
-      meshptr => domain%getMeshPointer(dim=dim, entityNum=ii)
-      CALL append(ans, meshptr%getElemNum())
-    END DO
-  CASE (1)
-    DO ii = 1, SIZE(obj%curveMeshID)
-      meshptr => domain%getMeshPointer(dim=dim, entityNum=ii)
-      CALL append(ans, meshptr%getElemNum())
-    END DO
-  CASE (2)
-    DO ii = 1, SIZE(obj%surfaceMeshID)
-      meshptr => domain%getMeshPointer(dim=dim, entityNum=ii)
-      CALL append(ans, meshptr%getElemNum())
-    END DO
-  CASE (3)
-    DO ii = 1, SIZE(obj%volumeMeshID)
-      meshptr => domain%getMeshPointer(dim=dim, entityNum=ii)
-      CALL append(ans, meshptr%getElemNum())
-    END DO
-  END SELECT
-END IF
-! TODO isSelectionByNodeNum
-! TODO isSelectionByBox
-END PROCEDURE meshSelect_getElemNum2
+INTEGER(I4B), ALLOCATABLE :: intvec(:)
+!> main
+DO ii = 0, 3
+  intvec = obj%getElemNum(dim=ii, domain=domain)
+  CALL append(ans, intvec)
+END DO
+END PROCEDURE meshSelect_getElemNum4
 
 !----------------------------------------------------------------------------
 !                                                                getNodeNum

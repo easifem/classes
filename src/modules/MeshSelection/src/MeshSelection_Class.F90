@@ -101,9 +101,15 @@ CONTAINS
     !! Returns the element numbers if available
   PROCEDURE, PASS(obj) :: meshSelect_getElemNum2
     !! Returns the element numbers if available
+  PROCEDURE, PASS(obj) :: meshSelect_getElemNum3
+    !! Returns the element numbers if available
+  PROCEDURE, PASS(obj) :: meshSelect_getElemNum4
+    !! Returns the element numbers if available
   GENERIC, PUBLIC :: getElemNum => &
        & meshSelect_getElemNum1, &
-       & meshSelect_getElemNum2
+       & meshSelect_getElemNum2, &
+       & meshSelect_getElemNum3, &
+       & meshSelect_getElemNum4
     !! Returns the element numbers if available
   PROCEDURE, PUBLIC, PASS(obj) :: getNodeNum => meshSelect_getNodeNum
     !! Returns the node number if available
@@ -370,6 +376,32 @@ INTERFACE
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION meshSelect_getElemNum3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getElemNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Nov 2021
+! summary: Returns element number
+!
+!
+!# Introduction
+!
+! This function returns the element number. It works when
+!
+! - [x] isSelectionByMeshID
+! - [x] isSelectionByElemNum
+! - [  ] isSelectionByNodeNum
+! - [  ] isSelectionByBox
+
+INTERFACE
+  MODULE FUNCTION meshSelect_getElemNum4(obj, domain) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    CLASS(Domain_), INTENT(IN) :: domain
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getElemNum4
 END INTERFACE
 
 !----------------------------------------------------------------------------
