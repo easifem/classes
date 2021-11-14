@@ -122,6 +122,7 @@ END PROCEDURE Domain_getNodeToElements2
 MODULE PROCEDURE Domain_getTotalNodes
 CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getTotalNodes"
 CLASS(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: ii
 !>
 IF (PRESENT(entityNum) .AND. PRESENT(dim)) THEN
   IF (obj%meshList(dim)%isEmpty()) &
@@ -142,6 +143,13 @@ IF (PRESENT(entityNum) .AND. PRESENT(dim)) THEN
     ans = meshPtr%getTotalNodes()
     NULLIFY (meshPtr)
   END IF
+ELSEIF (PRESENT(dim) .AND. .NOT. PRESENT(entityNum)) THEN
+  ans = 0
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshPtr => obj%getMeshPointer(dim=dim, entityNum=ii)
+    ans = ans + meshPtr%getTotalNodes()
+  END DO
+  meshPtr => NULL()
 ELSE
   ans = obj%tNodes
 END IF
@@ -170,6 +178,48 @@ END PROCEDURE Domain_tNodes2
 MODULE PROCEDURE Domain_tNodes3
 ans = obj%getTotalNodes()
 END PROCEDURE Domain_tNodes3
+
+!----------------------------------------------------------------------------
+!                                                           getTotalElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getTotalElements
+CLASS(Mesh_), POINTER :: meshptr
+!! main
+IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
+  meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+  ans = meshptr%getTotalElements()
+  meshptr => NULL()
+ELSE IF (PRESENT(dim) .AND. .NOT. PRESENT(entityNum)) THEN
+  ans = obj%tElements(dim)
+ELSE
+  ans = SUM(obj%tElements)
+END IF
+END PROCEDURE Domain_getTotalElements
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tElements1
+ans = obj%getTotalElements()
+END PROCEDURE Domain_tElements1
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tElements2
+ans = obj%getTotalElements(dim=dim)
+END PROCEDURE Domain_tElements2
+
+!----------------------------------------------------------------------------
+!                                                                  tElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_tElements3
+ans = obj%getTotalElements(dim=opt(1), entityNum=opt(2))
+END PROCEDURE Domain_tElements3
 
 !----------------------------------------------------------------------------
 !                                                         getLocalNodeNumber
