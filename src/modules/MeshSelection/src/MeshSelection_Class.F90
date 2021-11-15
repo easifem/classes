@@ -69,6 +69,9 @@ TYPE :: MeshSelection_
     !! Element number in mesh of volume
   TYPE(IntVector_) :: nodeNum
     !! Global Node numbers
+  !! TODO add BoundingBox to MeshSelection_
+  !! type(BoundingBoxPointer_), allocatable :: bbox(:)
+  !! Accordingly, modify the initiate method.
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => meshSelect_addSurrogate
@@ -82,7 +85,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => &
     & meshSelect_DeallocateData
     !! Deallocate Data
-    !! TODO change DeallocateData to Deallocate
   FINAL :: meshSelect_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Add => meshSelect_Add
     !! Add a new region to mesh selection
