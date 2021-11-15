@@ -104,8 +104,8 @@ IF (obj%isSelectionByMeshID) THEN
 END IF
 !!
 IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
-! TODO isSelectionByNodeNum
-! TODO isSelectionByBox
+! TODO enhance getElemNum in [[MeshSelection_]] so that it works
+! when isSelectionByNodeNum and isSelectionByBox is true.
 END PROCEDURE meshSelect_getElemNum2
 
 !----------------------------------------------------------------------------
