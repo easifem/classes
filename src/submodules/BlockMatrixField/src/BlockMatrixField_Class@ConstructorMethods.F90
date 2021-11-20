@@ -224,7 +224,7 @@ MODULE PROCEDURE mField_Initiate3
   obj%isPmatInitiated = .FALSE.
   !> setting the sparsity
   CALL obj%domains(1)%ptr%SetSparsity( mat=obj%mat, domains=obj%domains )
-  CALL DeallocateData( dofobj )
+  CALL Deallocate( dofobj )
   IF( ALLOCATED( tNodes ) ) DEALLOCATE( tNodes )
   IF( ALLOCATED( spaceCompo ) ) DEALLOCATE( spaceCompo )
   IF( ALLOCATED( timeCompo ) ) DEALLOCATE( timeCompo )
@@ -232,19 +232,19 @@ MODULE PROCEDURE mField_Initiate3
 END PROCEDURE mField_Initiate3
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
+!                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_DeallocateData
-  CALL AbstractMatrixFieldDeallocateData(obj)
-END PROCEDURE mField_DeallocateData
+MODULE PROCEDURE mField_Deallocate
+  CALL AbstractMatrixFieldDeallocate(obj)
+END PROCEDURE mField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE mField_Final
 
 END SUBMODULE ConstructorMethods

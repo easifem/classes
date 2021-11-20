@@ -54,7 +54,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stsField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stsField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stsField_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => stsField_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => stsField_Deallocate
   FINAL :: stsField_Final
   PROCEDURE, PASS( obj ) :: set1 => stsField_set1
     !! set single entry
@@ -238,7 +238,7 @@ END SUBROUTINE stsField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -246,16 +246,16 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the STScalarField_ obj
 
 INTERFACE
-MODULE SUBROUTINE stsField_DeallocateData( obj )
+MODULE SUBROUTINE stsField_Deallocate( obj )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE stsField_DeallocateData
+END SUBROUTINE stsField_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE stsField_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE stsField_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -537,7 +537,7 @@ END INTERFACE
   ! call obj%set( value=scalarObj, timeCompo=2 )
   ! call obj%display( "test-6: STScalar field = ")
   ! ierr = param%set( key="fieldType", value=FIELD_TYPE_CONSTANT)
-  ! call scalarObj%deallocateData()
+  ! call scalarObj%Deallocate()
   ! call scalarObj%initiate( param, dom )
   ! call scalarObj%set( value=10.0_DFP )
   ! call obj%set( value=scalarObj, timeCompo=1 )

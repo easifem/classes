@@ -83,7 +83,7 @@ CONTAINS
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
     !! Assignment operator
   PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => &
-    & meshSelect_DeallocateData
+    & meshSelect_Deallocate
     !! Deallocate Data
   FINAL :: meshSelect_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Add => meshSelect_Add
@@ -195,7 +195,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        DeallocateData@ConstructorMethods
+!                                        Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -203,9 +203,9 @@ END INTERFACE
 ! summary: This routine deallocates data stored inside [[MeshSelection_]]
 
 INTERFACE
-  MODULE SUBROUTINE meshSelect_DeallocateData(obj)
+  MODULE SUBROUTINE meshSelect_Deallocate(obj)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
-  END SUBROUTINE meshSelect_DeallocateData
+  END SUBROUTINE meshSelect_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -91,7 +91,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => ff_addSurrogate
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => ff_initiate
   PROCEDURE, PUBLIC, PASS(Obj) :: clear => ff_clear
-  PROCEDURE, PUBLIC, PASS(Obj) :: DeallocateData => ff_clear
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => ff_clear
   PROCEDURE, PUBLIC, PASS(Obj) :: open => ff_open
   PROCEDURE, PUBLIC, PASS(Obj) :: close => ff_close
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => ff_delete

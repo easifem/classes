@@ -80,7 +80,7 @@ TYPE :: mshFormat_
       !! Write content to a file
     PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => fmt_GotoTag
       !! Goto a tag
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => fmt_Finalize
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => fmt_Finalize
       !! Finalize
 END TYPE mshFormat_
 
@@ -258,7 +258,7 @@ END SUBROUTINE fmt_GotoTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    DeallocateData@mshFormat
+!                                                    Deallocate@mshFormat
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -271,11 +271,11 @@ MODULE SUBROUTINE fmt_Finalize( obj )
 END SUBROUTINE fmt_Finalize
 END INTERFACE
 
-INTERFACE DeallocateData
+INTERFACE Deallocate
   MODULE PROCEDURE fmt_Finalize
-END INTERFACE DeallocateData
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !

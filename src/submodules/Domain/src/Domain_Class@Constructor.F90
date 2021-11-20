@@ -56,11 +56,11 @@ MODULE PROCEDURE Domain_Initiate
 END PROCEDURE Domain_Initiate
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Domain_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_DeallocateData"
+MODULE PROCEDURE Domain_Deallocate
+  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_Deallocate"
   INTEGER( I4B ) :: ii, jj
   obj%isInitiated = .FALSE.
   obj%engine = ''
@@ -84,14 +84,14 @@ MODULE PROCEDURE Domain_DeallocateData
   IF( ALLOCATED( obj%meshList ) ) DEALLOCATE( obj%meshList )
   IF( ALLOCATED( obj%nodeCoord ) ) DEALLOCATE( obj%nodeCoord )
   IF( ALLOCATED( obj%local_nptrs ) ) DEALLOCATE( obj%local_nptrs )
-END PROCEDURE Domain_DeallocateData
+END PROCEDURE Domain_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                              Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Final
-  CALL Obj%DeallocateData()
+  CALL Obj%Deallocate()
 END PROCEDURE Domain_Final
 
 !----------------------------------------------------------------------------

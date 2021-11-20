@@ -136,11 +136,11 @@ MODULE SUBROUTINE vtk_final( obj )
 END SUBROUTINE vtk_final
 END INTERFACE
 
-INTERFACE DeallocateData
+INTERFACE Deallocate
   MODULE PROCEDURE vtk_final
-END INTERFACE DeallocateData
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Display

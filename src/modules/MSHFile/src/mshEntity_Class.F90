@@ -80,7 +80,7 @@ TYPE :: mshEntity_
     PRIVATE
     FINAL :: ent_Final
       !! Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => ent_deallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => ent_Deallocate
       !! To deallocate data
     PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => ent_GotoTag
       !! To find tag
@@ -164,7 +164,7 @@ END SUBROUTINE ent_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    DeallocateData
+!                                                    Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -172,16 +172,16 @@ END INTERFACE
 ! summary: This subroutine deallocate the data from [[mshentity_]]
 
 INTERFACE
-MODULE SUBROUTINE ent_deallocatedata( obj )
+MODULE SUBROUTINE ent_Deallocate( obj )
   CLASS( mshEntity_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE ent_deallocatedata
+END SUBROUTINE ent_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE ent_deallocatedata
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE ent_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         GotoTag

@@ -176,7 +176,7 @@ CONTAINS
       !! Allocate size of a mesh
   FINAL :: mesh_final
       !! mesh finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateData => mesh_DeallocateData
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => mesh_Deallocate
       !! Deallocate memory occupied by the mesh instance
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mesh_Import
@@ -433,7 +433,7 @@ END INTERFACE Mesh_Pointer
 PUBLIC :: Mesh_Pointer
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -447,20 +447,20 @@ PUBLIC :: Mesh_Pointer
 !### Usage
 !
 !```fortran
-!call obj%deallocateData( )
+!call obj%Deallocate( )
 !```end fortran
 
 INTERFACE
-  MODULE SUBROUTINE mesh_DeallocateData(obj)
+  MODULE SUBROUTINE mesh_Deallocate(obj)
     CLASS(Mesh_), INTENT(INOUT) :: obj
-  END SUBROUTINE mesh_DeallocateData
+  END SUBROUTINE mesh_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE mesh_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE mesh_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !
@@ -704,9 +704,9 @@ END INTERFACE
 ! call display( obj%getNptrs(), "getNptrs = ")
 ! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
 ! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
-! call obj%deallocateData()
+! call obj%Deallocate()
 ! call meshfile%close()
-! call meshfile%deallocateData()
+! call meshfile%Deallocate()
 !```
 
 INTERFACE
@@ -742,9 +742,9 @@ END INTERFACE
 ! call display( obj%getNptrs(), "getNptrs = ")
 ! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
 ! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
-! call obj%deallocateData()
+! call obj%Deallocate()
 ! call meshfile%close()
-! call meshfile%deallocateData()
+! call meshfile%Deallocate()
 !```
 
 INTERFACE
@@ -780,9 +780,9 @@ END INTERFACE
 ! call display( obj%getNptrs(), "getNptrs = ")
 ! call display( obj%getInternalNptrs(), "getInternalNptrs = ")
 ! call display( obj%getBoundaryNptrs(), "getBoundaryNptrs = ")
-! call obj%deallocateData()
+! call obj%Deallocate()
 ! call meshfile%close()
-! call meshfile%deallocateData()
+! call meshfile%Deallocate()
 !```
 
 INTERFACE
@@ -1258,9 +1258,9 @@ END INTERFACE
 !     & // ' is connected to global elements = ' )
 !   end if
 ! end do
-! call obj%deallocateData()
+! call obj%Deallocate()
 ! call meshfile%close()
-! call meshfile%deallocateData()
+! call meshfile%Deallocate()
 !```
 
 INTERFACE

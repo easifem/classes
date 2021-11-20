@@ -55,7 +55,7 @@ TYPE :: UserFunction_
   CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
     & auf_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => auf_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => auf_Deallocate
   FINAL :: auf_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => auf_Initiate
   PROCEDURE, PUBLIC, PASS( obj ) :: Set1 => auf_Set1
@@ -142,7 +142,7 @@ END INTERFACE
 PUBLIC :: setUserFunctionParam
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
+!                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -150,9 +150,9 @@ PUBLIC :: setUserFunctionParam
 ! summary: Deallocate the data in [[Userfunction_]]
 
 INTERFACE
-MODULE SUBROUTINE auf_DeallocateData(obj)
+MODULE SUBROUTINE auf_Deallocate(obj)
   CLASS( UserFunction_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE auf_DeallocateData
+END SUBROUTINE auf_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

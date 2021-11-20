@@ -70,7 +70,7 @@ TYPE :: XMLTag_
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => xmlTag_Initiate
   PROCEDURE, PUBLIC, PASS( obj ) :: set => xmlTag_set
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => xmlTag_Export
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => xmlTag_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => xmlTag_Deallocate
   FINAL :: xmlTag_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: isEmpty => xmlTag_isEmpty
 
@@ -179,13 +179,13 @@ END SUBROUTINE xmlTag_set
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         DeallocateData@ConstructorMethods
+!                                         Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE xmlTag_DeallocateData( obj )
+MODULE SUBROUTINE xmlTag_Deallocate( obj )
   CLASS( XMLTag_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE xmlTag_DeallocateData
+END SUBROUTINE xmlTag_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

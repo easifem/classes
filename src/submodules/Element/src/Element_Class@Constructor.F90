@@ -117,18 +117,18 @@ END PROCEDURE elem_getMaterialType
 !                                                           DeallocatetDatat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE elem_deallocateData
+MODULE PROCEDURE elem_Deallocate
   IF( ALLOCATED( obj%nptrs ) ) DEALLOCATE( obj%nptrs )
   obj%MAT_Type = 0
   obj%refelem => NULL( )
-END PROCEDURE elem_deallocateData
+END PROCEDURE elem_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE elem_final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE elem_final
 
 !----------------------------------------------------------------------------

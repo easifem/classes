@@ -727,10 +727,10 @@ CALL CloseFile( aFile )
 
 END PROCEDURE skit_write_res_his
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE skit_deallocatedata
+MODULE PROCEDURE skit_Deallocate
   IF( ALLOCATED( obj % dbcnptrs ) ) DEALLOCATE( obj % dbcnptrs )
   IF( ALLOCATED( obj % dbcIndx ) ) DEALLOCATE( obj % dbcIndx )
   IF( ALLOCATED( obj % dbcJA ) ) DEALLOCATE( obj % dbcJA )
@@ -748,6 +748,6 @@ MODULE PROCEDURE skit_deallocatedata
   obj % ipar = 0
   obj % fpar = 0
   obj % ierr = 0
-END PROCEDURE skit_deallocatedata
+END PROCEDURE skit_Deallocate
 
 END SUBMODULE Sparsekit

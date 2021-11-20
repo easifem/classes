@@ -76,10 +76,10 @@ MODULE PROCEDURE meshdata_1
 END PROCEDURE meshdata_1
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshData_DeallocateData
+MODULE PROCEDURE meshData_Deallocate
   IF( ALLOCATED( obj%NodeToElem ) ) DEALLOCATE( obj%NodeToElem )
   IF( ALLOCATED( obj%ElemToElem ) ) DEALLOCATE( obj%ElemToElem )
   IF( ALLOCATED( obj%NTN ) ) DEALLOCATE( obj%NTN )
@@ -100,7 +100,7 @@ MODULE PROCEDURE meshData_DeallocateData
   obj%tNodes = 0_I4B
   obj%MaxNptrs = 0_I4B
   obj%MinNptrs = 0_I4B
-END PROCEDURE meshData_DeallocateData
+END PROCEDURE meshData_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                            getTotalNodes

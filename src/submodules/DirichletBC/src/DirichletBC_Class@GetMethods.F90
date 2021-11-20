@@ -59,7 +59,7 @@ IF (obj%UseFunction) THEN
       & 'It seems Dirichlet node number are empty')
   ELSE
     NodeNum = aIntVec
-    CALL DeallocateData(aIntVec)
+    CALL Deallocate(aIntVec)
   END IF
   !> SpaceFunction
   xij = obj%dom%getNodeCoordPointer()
@@ -180,7 +180,7 @@ ELSE
       & 'It seems Dirichlet node number are empty')
     ELSE
       NodeNum = aIntVec
-      CALL DeallocateData(aIntVec)
+      CALL Deallocate(aIntVec)
     END IF
     IF (obj%nodalValueType .EQ. Constant) THEN
       IF (PRESENT(times)) THEN

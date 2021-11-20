@@ -75,7 +75,7 @@ TYPE, EXTENDS(AbstractCommandLineArg_) :: CommandLineInterface_
   !! Error trapping flag for unknown CLAs.
 CONTAINS
   ! public methods
-  PROCEDURE, PUBLIC :: DeallocateData => free
+  PROCEDURE, PUBLIC :: Deallocate => free
   !! Free dynamic memory.
   PROCEDURE, PUBLIC :: Initiate => init
   !! Initialize CLI.
@@ -258,7 +258,7 @@ SUBROUTINE init(self, progname, version, help, description, license, &
   INTEGER(I4P) :: retrieval_status
   !! Retrieval status.
   !> main
-  CALL self%DeallocateData()
+  CALL self%Deallocate()
   IF (PRESENT(progname)) THEN
     self%progname = progname
   ELSE
@@ -2060,6 +2060,6 @@ END SUBROUTINE cli_assign_cli
 ELEMENTAL SUBROUTINE finalize(self)
   !< Free dynamic memory when finalizing.
   TYPE(CommandLineInterface_), INTENT(inout) :: self !< CLI data.
-  CALL self%DeallocateData()
+  CALL self%Deallocate()
 END SUBROUTINE finalize
 ENDMODULE CommandLineInterface_Class

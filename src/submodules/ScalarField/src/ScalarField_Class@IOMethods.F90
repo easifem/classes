@@ -113,7 +113,7 @@ MODULE PROCEDURE sField_Import
     & name=trim(name%chars()), &
     & fieldType = fieldType )
   CALL obj%initiate( param=param, dom=dom )
-  CALL param%deallocateData(); CALL FPL_FINALIZE()
+  CALL param%Deallocate(); CALL FPL_FINALIZE()
   ! READ dof
   dsetname=trim(group)//"/dof"
   IF( hdf5%pathExists(dsetname%chars())) THEN

@@ -191,10 +191,10 @@ MODULE PROCEDURE aFile_setWriteStat
 END PROCEDURE aFile_setWriteStat
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_deallocateData
+MODULE PROCEDURE aFile_Deallocate
   obj%path=''
   obj%fileName=''
   obj%ext=''
@@ -205,6 +205,6 @@ MODULE PROCEDURE aFile_deallocateData
   obj%EOFstat=.FALSE.
   obj%readstat=.FALSE.
   obj%writestat=.FALSE.
-END PROCEDURE aFile_deallocateData
+END PROCEDURE aFile_Deallocate
 
 END SUBMODULE Methods

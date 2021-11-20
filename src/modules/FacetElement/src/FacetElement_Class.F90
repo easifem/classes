@@ -57,8 +57,8 @@ TYPE, EXTENDS( Element_ ) :: FacetElement_
   PROCEDURE, PUBLIC, PASS( obj ) :: setFacetLocalID => faceElem_setFacetLocalID
   PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalNptrs => faceElem_getFacetLocalNptrs
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => faceElem_display
-  FINAL :: faceElem_deallocatedata
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => elem_deallocateData
+  FINAL :: faceElem_Deallocate
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => elem_Deallocate
 END TYPE FacetElement_
 
 !----------------------------------------------------------------------------
@@ -300,7 +300,7 @@ END INTERFACE
 PUBLIC :: FacetElement_Pointer
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -308,9 +308,9 @@ PUBLIC :: FacetElement_Pointer
 ! summary: 	Deallocate the memeory occupied by [[FacetElement_]]
 
 INTERFACE
-MODULE PURE SUBROUTINE elem_deallocateData( obj )
+MODULE PURE SUBROUTINE elem_Deallocate( obj )
   CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE elem_deallocateData
+END SUBROUTINE elem_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -322,9 +322,9 @@ END INTERFACE
 ! summary: 	finalizer for [[FacetElement_]]
 
 INTERFACE
-MODULE SUBROUTINE faceElem_deallocateData( obj )
+MODULE SUBROUTINE faceElem_Deallocate( obj )
   TYPE( FacetElement_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE faceElem_deallocateData
+END SUBROUTINE faceElem_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

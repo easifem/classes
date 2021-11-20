@@ -56,7 +56,7 @@ TYPE, EXTENDS( AbstractFile_ ) :: XMLFile_
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => xmlFile_addSurrogate
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => xmlFile_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => xmlFile_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => xmlFile_Deallocate
   FINAL :: xmlFile_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: Open => xmlFile_Open
   PROCEDURE, PUBLIC, PASS( obj ) :: Close => xmlFile_Close
@@ -121,17 +121,17 @@ END SUBROUTINE xmlFile_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        DeallocateData@ConstructorMethods
+!                                        Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE xmlFile_DeallocateData( obj, delete )
+MODULE SUBROUTINE xmlFile_Deallocate( obj, delete )
   CLASS( xmlFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
-END SUBROUTINE xmlFile_DeallocateData
+END SUBROUTINE xmlFile_Deallocate
 END INTERFACE
 
-PUBLIC :: xmlFile_DeallocateData
+PUBLIC :: xmlFile_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods

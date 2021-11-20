@@ -55,7 +55,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stvField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stvField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stvField_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => stvField_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => stvField_Deallocate
   FINAL :: stvField_Final
   PROCEDURE, PASS( obj ) :: set1 => stvField_set1
     !! set single entry
@@ -195,7 +195,7 @@ PUBLIC :: stvField_checkEssentialParam
   ! type( HDF5File_ ) :: meshfile
   ! type( ParameterList_ ) :: param
   ! integer( i4b ) :: ierr
-  ! call display( "Testing Initiate and DeallocateData for normal data" )
+  ! call display( "Testing Initiate and Deallocate for normal data" )
   ! call FPL_INIT()
   ! call param%initiate()
   ! ierr = param%set(key="name", value="U" )
@@ -207,11 +207,11 @@ PUBLIC :: stvField_checkEssentialParam
   ! call dom%initiate( meshfile )
   ! call obj%initiate( param, dom )
   ! call obj%display( "space-time vector field = ")
-  ! call obj%deallocateData()
-  ! call dom%deallocateData()
+  ! call obj%Deallocate()
+  ! call dom%Deallocate()
   ! call meshfile%close()
-  ! call meshfile%deallocateData()
-  ! call param%deallocateData()
+  ! call meshfile%Deallocate()
+  ! call param%Deallocate()
   ! call FPL_FINALIZE()
 !```
 INTERFACE
@@ -244,7 +244,7 @@ END SUBROUTINE stvField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -252,16 +252,16 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the STVectorField_ obj
 
 INTERFACE
-MODULE SUBROUTINE stvField_DeallocateData( obj )
+MODULE SUBROUTINE stvField_Deallocate( obj )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE stvField_DeallocateData
+END SUBROUTINE stvField_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE stvField_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE stvField_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor

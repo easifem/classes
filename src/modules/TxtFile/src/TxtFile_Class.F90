@@ -52,7 +52,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => txt_addSurrogate
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => txt_initiate
   PROCEDURE, PUBLIC, PASS(Obj) :: clear => txt_clear
-  PROCEDURE, PUBLIC, PASS(Obj) :: DeallocateData => txt_clear
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => txt_clear
   PROCEDURE, PUBLIC, PASS(Obj) :: readLine => txt_readLine
   PROCEDURE, PUBLIC, PASS(Obj) :: setEchoStat => txt_setEchoStat
   PROCEDURE, PUBLIC, PASS(Obj) :: getEchoStat => txt_getEchoStat

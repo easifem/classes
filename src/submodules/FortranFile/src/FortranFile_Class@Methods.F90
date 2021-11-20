@@ -305,7 +305,7 @@ obj%separator = comma
 obj%delimiter = '\n'
 obj%getNewUnit = .FALSE.
 !Set BaseFileType attributes to default
-CALL aFile_DeallocateData(obj)
+CALL aFile_Deallocate(obj)
 END PROCEDURE ff_clear
 
 !----------------------------------------------------------------------------

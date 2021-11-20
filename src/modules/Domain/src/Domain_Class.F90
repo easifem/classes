@@ -106,9 +106,9 @@ CONTAINS
       !! Add surrogate to the module error handler
   PROCEDURE, PUBLIC, PASS(Obj) :: Initiate => Domain_Initiate
       !! Initiate an instance of domain
-  PROCEDURE, PUBLIC, PASS(Obj) :: DeallocateData => Domain_DeallocateData
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => Domain_Deallocate
       !! Deallocate data stored inside an instance of domain
-      !! TODO Rename Deallocatedata to Deallocate
+      !! TODO Rename Deallocate to Deallocate
   FINAL :: Domain_Final
       !! Finalizer for domain
   ! @IOMethods
@@ -262,7 +262,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
+!                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -270,17 +270,17 @@ END INTERFACE
 ! summary: Deallocate data stored in Domain object
 
 INTERFACE
-  MODULE SUBROUTINE Domain_DeallocateData(obj)
+  MODULE SUBROUTINE Domain_Deallocate(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
     !! Domain object
-  END SUBROUTINE Domain_DeallocateData
+  END SUBROUTINE Domain_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE Domain_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE Domain_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods

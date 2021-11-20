@@ -126,21 +126,21 @@ MODULE PROCEDURE stvField_Initiate2
 END PROCEDURE stvField_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_DeallocateData
+MODULE PROCEDURE stvField_Deallocate
   obj%spaceCompo = 0_I4B
   obj%timeCompo = 0_I4B
-  CALL AbstractNodeFieldDeallocateData(obj)
-END PROCEDURE stvField_DeallocateData
+  CALL AbstractNodeFieldDeallocate(obj)
+END PROCEDURE stvField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE stvField_Final
 
 !----------------------------------------------------------------------------

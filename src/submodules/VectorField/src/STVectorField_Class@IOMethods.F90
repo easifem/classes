@@ -129,7 +129,7 @@ MODULE PROCEDURE stvField_Import
     CALL setSTVectorFieldParam( param=param, name=trim(name%chars()), &
       & fieldType = fieldType, spaceCompo=spaceCompo, timeCompo=timeCompo )
     CALL obj%initiate( param=param, dom=dom )
-    CALL param%deallocateData(); CALL FPL_FINALIZE()
+    CALL param%Deallocate(); CALL FPL_FINALIZE()
   ELSE
     CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'At present restart option is not available, we are working on it.' )

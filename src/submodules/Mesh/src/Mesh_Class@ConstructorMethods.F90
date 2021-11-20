@@ -85,10 +85,10 @@ MODULE PROCEDURE mesh_Constructor_1
 END PROCEDURE mesh_Constructor_1
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
+!                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DeallocateData
+MODULE PROCEDURE mesh_Deallocate
   obj%readFromFile = .FALSE.
   obj%isInitiated = .FALSE.
   obj%isNodeToElementsInitiated = .FALSE.
@@ -123,14 +123,14 @@ MODULE PROCEDURE mesh_DeallocateData
   IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
   ! CALL e%reset()
-END PROCEDURE mesh_DeallocateData
+END PROCEDURE mesh_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE mesh_final
 
 END SUBMODULE ConstructorMethods

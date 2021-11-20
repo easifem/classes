@@ -75,25 +75,25 @@ END IF
 END PROCEDURE meshSelect_Initiate
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_DeallocateData
+MODULE PROCEDURE meshSelect_Deallocate
 obj%isInitiated = .FALSE.
 obj%isSelectionByElemNum = .FALSE.
 obj%isSelectionByNodeNum = .FALSE.
 obj%isSelectionByMeshID = .FALSE.
 obj%isSelectionByBox = .FALSE.
-CALL DeallocateData(obj%PointMeshID)
-CALL DeallocateData(obj%CurveMeshID)
-CALL DeallocateData(obj%SurfaceMeshID)
-CALL DeallocateData(obj%VolumeMeshID)
-CALL DeallocateData(obj%PointElemNum)
-CALL DeallocateData(obj%CurveElemNum)
-CALL DeallocateData(obj%SurfaceElemNum)
-CALL DeallocateData(obj%VolumeElemNum)
-CALL DeallocateData(obj%NodeNum)
-END PROCEDURE meshSelect_DeallocateData
+CALL Deallocate(obj%PointMeshID)
+CALL Deallocate(obj%CurveMeshID)
+CALL Deallocate(obj%SurfaceMeshID)
+CALL Deallocate(obj%VolumeMeshID)
+CALL Deallocate(obj%PointElemNum)
+CALL Deallocate(obj%CurveElemNum)
+CALL Deallocate(obj%SurfaceElemNum)
+CALL Deallocate(obj%VolumeElemNum)
+CALL Deallocate(obj%NodeNum)
+END PROCEDURE meshSelect_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final

@@ -53,7 +53,7 @@ MODULE PROCEDURE mat_get_prop
 END PROCEDURE mat_get_prop
 
 !----------------------------------------------------------------------------
-!                                                              DeallocateData
+!                                                              Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mat_deallocate

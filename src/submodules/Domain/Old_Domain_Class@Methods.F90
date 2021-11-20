@@ -68,7 +68,7 @@ MODULE PROCEDURE Initiate_obj
 END PROCEDURE Initiate_obj
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE deallocate_obj

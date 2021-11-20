@@ -66,7 +66,7 @@ TYPE, EXTENDS( TxtFile_ ) :: MSHFile_
     PRIVATE
     FINAL :: msh_Final
       !! Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => msh_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => msh_Deallocate
       !! deallocate the data
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => msh_Import
       !! Read the file and initiate the object
@@ -115,7 +115,7 @@ END SUBROUTINE msh_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
+!                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -123,17 +123,17 @@ END INTERFACE
 ! summary:  This will deallocate data
 
 INTERFACE
-MODULE SUBROUTINE msh_DeallocateData( obj, Delete )
+MODULE SUBROUTINE msh_Deallocate( obj, Delete )
   CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: Delete
-END SUBROUTINE msh_DeallocateData
+END SUBROUTINE msh_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE msh_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE msh_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods

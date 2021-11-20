@@ -202,7 +202,7 @@ MODULE PROCEDURE ls_Import
     & rtol=relativeTolerance, &
     & atol=absoluteTolerance )
   CALL obj%Initiate(param)
-  CALL param%DeallocateData(); CALL FPL_FINALIZE
+  CALL param%Deallocate(); CALL FPL_FINALIZE
 END PROCEDURE ls_Import
 
 !----------------------------------------------------------------------------

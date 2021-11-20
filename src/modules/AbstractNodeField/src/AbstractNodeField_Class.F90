@@ -17,8 +17,8 @@
 MODULE AbstractNodeField_Class
 USE GlobalData
 USE BaseType
-USE RealVector_Method, ONLY : getPointer, DeallocateData
-USE DOF_Method, ONLY: DeallocateData
+USE RealVector_Method, ONLY : getPointer, Deallocate
+USE DOF_Method, ONLY: Deallocate
 USE AbstractField_Class
 USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_
@@ -45,7 +45,7 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
     PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => anf_getPointer
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => anf_Size
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => anf_Initiate3
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => anf_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => anf_Deallocate
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
@@ -64,11 +64,11 @@ PUBLIC :: AbstractNodeFieldPointer_
 !
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractNodeFieldDeallocateData
-  MODULE PROCEDURE anf_DeallocateData
-END INTERFACE AbstractNodeFieldDeallocateData
+INTERFACE AbstractNodeFieldDeallocate
+  MODULE PROCEDURE anf_Deallocate
+END INTERFACE AbstractNodeFieldDeallocate
 
-PUBLIC :: AbstractNodeFieldDeallocateData
+PUBLIC :: AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
 !
@@ -121,21 +121,21 @@ SUBROUTINE anf_Initiate3( obj, param, dom )
 END SUBROUTINE anf_Initiate3
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
+!                                                            Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractNodeField_]]
 
-SUBROUTINE anf_DeallocateData( obj )
+SUBROUTINE anf_Deallocate( obj )
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj
   !> main
   obj%tSize = 0
-  CALL AbstractFieldDeallocateData(obj)
-  CALL DeallocateData(obj%realVec)
-  CALL DeallocateData(obj%dof)
-END SUBROUTINE anf_DeallocateData
+  CALL AbstractFieldDeallocate(obj)
+  CALL Deallocate(obj%realVec)
+  CALL Deallocate(obj%dof)
+END SUBROUTINE anf_Deallocate
 
 !----------------------------------------------------------------------------
 !

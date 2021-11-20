@@ -36,7 +36,7 @@ PRIVATE
 ! call obj % initiate( tprop = 3, tpoint = 1, telem=100, names=names )
 ! call obj %  setValue( ipoint, elemnum, Val, is, ie )
 ! Val = obj % Value( ColIndx = 1 )
-! call deallocateData( obj )
+! call Deallocate( obj )
 ! ```
 !
 ! @note
@@ -210,7 +210,7 @@ END INTERFACE Display
 PUBLIC :: Display
 
 !----------------------------------------------------------------------------
-!                                                     DeallocateData@Method
+!                                                     Deallocate@Method
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -222,11 +222,11 @@ END SUBROUTINE elem_var_deallocate_data
 END INTERFACE
 
 !> genenric interface for deallocating data in [[quadraturevariables_]]
-INTERFACE DeallocateData
+INTERFACE Deallocate
   MODULE PROCEDURE elem_var_deallocate_data
-END INTERFACE DeallocateData
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                QuadratureVariablesPointer_

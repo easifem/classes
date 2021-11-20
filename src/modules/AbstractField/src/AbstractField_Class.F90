@@ -95,7 +95,7 @@ TYPE, ABSTRACT :: AbstractField_
       !! Initiate  block fields (different physical variables) defined
       !! over different order of meshes.
     GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => aField_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => aField_Deallocate
       !! Deallocate the field
     PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
       !! Display the field
@@ -234,11 +234,11 @@ SUBROUTINE aField_Export( obj, hdf5, group )
 END SUBROUTINE aField_Export
 END INTERFACE
 
-INTERFACE AbstractFieldDeallocateData
-  MODULE PROCEDURE aField_DeallocateData
-END INTERFACE AbstractFieldDeallocateData
+INTERFACE AbstractFieldDeallocate
+  MODULE PROCEDURE aField_Deallocate
+END INTERFACE AbstractFieldDeallocate
 
-PUBLIC :: AbstractFieldDeallocateData
+PUBLIC :: AbstractFieldDeallocate
 
 !----------------------------------------------------------------------------
 !
@@ -247,10 +247,10 @@ PUBLIC :: AbstractFieldDeallocateData
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-SUBROUTINE aField_DeallocateData( obj )
+SUBROUTINE aField_Deallocate( obj )
   CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
   !> internal variables
   INTEGER( I4B ) :: ii
@@ -265,6 +265,6 @@ SUBROUTINE aField_DeallocateData( obj )
     END DO
     DEALLOCATE( obj%domains )
   END IF
-END SUBROUTINE aField_DeallocateData
+END SUBROUTINE aField_Deallocate
 
 END MODULE AbstractField_Class

@@ -173,7 +173,7 @@ TYPE, PUBLIC :: StringList_
     GENERIC, PUBLIC :: Insert => InsertSingle, InsertFill, InsertArray, InsertIteratorPair
     GENERIC, PUBLIC :: Add => PushBack
     GENERIC, PUBLIC :: Append => PushBack
-    GENERIC, PUBLIC :: DeallocateData => Delete
+    GENERIC, PUBLIC :: Deallocate => Delete
     GENERIC, PUBLIC :: Erase => EraseSingle, EraseIteratorPair
 
     PROCEDURE, PASS( Obj ) :: NewDefault

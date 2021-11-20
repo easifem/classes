@@ -29,7 +29,7 @@ MODULE PROCEDURE InitiateVTKFile
   !> main
   IF( obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & ' - VTKFile is already initiated, use DeallocateData() first')
+      & ' - VTKFile is already initiated, use Deallocate() first')
   END IF
   !>
   obj%DataFormat = DataFormat
@@ -94,11 +94,11 @@ MODULE PROCEDURE VTKFile_AddSurrogate
 END PROCEDURE VTKFile_AddSurrogate
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE VTKFile_DeallocateData
-  CALL xmlFile_DeallocateData( obj, Delete )
+MODULE PROCEDURE VTKFile_Deallocate
+  CALL xmlFile_Deallocate( obj, Delete )
   obj%isStructured=.FALSE.
   obj%DataStructureType = 0
   obj%DataStructureName = ''
@@ -111,14 +111,14 @@ MODULE PROCEDURE VTKFile_DeallocateData
   obj%offset=0
   obj%isVolatile = .FALSE.
   obj%VolatileBuffer = ''
-END PROCEDURE VTKFile_DeallocateData
+END PROCEDURE VTKFile_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE VTKFile_Final
 
 !----------------------------------------------------------------------------

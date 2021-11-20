@@ -152,23 +152,23 @@ MODULE PROCEDURE vec_Initiate
 END PROCEDURE vec_Initiate
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vec_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="vec_DeallocateData"
+MODULE PROCEDURE vec_Deallocate
+  CHARACTER( LEN = * ), PARAMETER :: myName="vec_Deallocate"
   obj%tSize = 0_I4B
   obj%isInitiated = .FALSE.
-  CALL DeallocateData( obj%realvec )
-  CALL DeallocateData( obj%dof )
-END PROCEDURE vec_DeallocateData
+  CALL Deallocate( obj%realvec )
+  CALL Deallocate( obj%dof )
+END PROCEDURE vec_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vec_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE vec_Final
 
 !----------------------------------------------------------------------------

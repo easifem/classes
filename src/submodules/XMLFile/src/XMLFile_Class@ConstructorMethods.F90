@@ -103,14 +103,14 @@ MODULE PROCEDURE xmlFile_Initiate
 END PROCEDURE xmlFile_Initiate
 
 !----------------------------------------------------------------------------
-!                                                           DeallocateData
+!                                                           Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE xmlFile_DeallocateData
+MODULE PROCEDURE xmlFile_Deallocate
   LOGICAL( LGT ) :: bool
   !>
   IF( ASSOCIATED(obj%root) ) THEN
-    CALL obj%root%DeallocateData()
+    CALL obj%root%Deallocate()
     DEALLOCATE(obj%root)
   END IF
   !>
@@ -134,16 +134,16 @@ MODULE PROCEDURE xmlFile_DeallocateData
     obj%overwriteStat = .FALSE.
     obj%version=1.0
     obj%encoding='UTF-8'
-    CALL aFile_DeallocateData( obj )
+    CALL aFile_Deallocate( obj )
   END IF
-END PROCEDURE xmlFile_DeallocateData
+END PROCEDURE xmlFile_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlFile_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE xmlFile_Final
 
 !----------------------------------------------------------------------------

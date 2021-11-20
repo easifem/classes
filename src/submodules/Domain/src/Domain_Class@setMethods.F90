@@ -87,7 +87,7 @@ MODULE PROCEDURE Domain_setSparsity2
     rowMeshSize=rowDomain%getTotalMesh( dim=nsd( ivar ) )
     DO jvar = 1, SIZE( domains )
       colDomain => domains( jvar )%ptr
-      CALL domainConn%DeallocateData()
+      CALL domainConn%Deallocate()
       CALL domainConn%InitiateNodeToNodeData( domain1=rowDomain, &
         & domain2=colDomain )
       nodeToNode => domainConn%getNodeToNodePointer()
@@ -117,7 +117,7 @@ MODULE PROCEDURE Domain_setSparsity2
   END DO
   CALL setSparsity( mat )
   NULLIFY( rowMesh, colMesh, rowDomain, colDomain, nodeToNode )
-  CALL domainConn%DeallocateData()
+  CALL domainConn%Deallocate()
 END PROCEDURE Domain_setSparsity2
 
 !----------------------------------------------------------------------------

@@ -25,14 +25,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE ent_Final
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ent_deallocatedata
+MODULE PROCEDURE ent_Deallocate
   obj%uid = 0
   obj%xiDim = 0
   obj%elemType = 0
@@ -51,7 +51,7 @@ MODULE PROCEDURE ent_deallocatedata
   IF( ALLOCATED( obj%Connectivity ) ) DEALLOCATE( obj%Connectivity )
   IF( ALLOCATED( obj%BoundingEntity ) ) DEALLOCATE( obj%BoundingEntity )
   IF( ALLOCATED( obj%NodeCoord ) ) DEALLOCATE( obj%NodeCoord )
-END PROCEDURE ent_deallocatedata
+END PROCEDURE ent_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                               gotoEntities

@@ -59,7 +59,7 @@ TYPE :: mshPhysicalNames_
     PRIVATE
     FINAL :: pn_final
       !! Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => pn_deallocatedata
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => pn_Deallocate
       !! To deallocate data
     PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => pn_GotoTag
       !! Search tag for physical group in mesh file
@@ -138,7 +138,7 @@ END SUBROUTINE pn_final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -146,16 +146,16 @@ END INTERFACE
 ! summary: 	This subroutine deallocates the data stored in [[mshPhysicalNames_]]
 
 INTERFACE
-MODULE SUBROUTINE pn_deallocatedata( obj )
+MODULE SUBROUTINE pn_Deallocate( obj )
   CLASS( mshPhysicalNames_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE pn_deallocatedata
+END SUBROUTINE pn_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE pn_deallocatedata
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE pn_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    GotoTag
