@@ -130,7 +130,7 @@ TYPE, EXTENDS( AbstractMatrixField_ ) :: MatrixField_
       !! Initiate by copying other object
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => mField_Initiate3
       !! Initiate for block matrices
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mField_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => mField_Deallocate
       !! Deallocate the field
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => mField_Display
       !! Display the field
@@ -226,7 +226,7 @@ END INTERFACE
 PUBLIC :: setMatrixFieldParam
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -234,16 +234,16 @@ PUBLIC :: setMatrixFieldParam
 ! summary: Deallocates the data stored inside [[MatrixFieldPrecondition_]]
 
 INTERFACE
-MODULE SUBROUTINE Pmat_DeallocateData( obj )
+MODULE SUBROUTINE Pmat_Deallocate( obj )
   TYPE( MatrixFieldPrecondition_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Pmat_DeallocateData
+END SUBROUTINE Pmat_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE Pmat_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE Pmat_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -321,7 +321,7 @@ PUBLIC :: mField_checkEssentialParam
 !   CALL meshfile%Open()
 !   ! #Domain/Initiate
 !   CALL dom%Initiate( meshfile, "" ); CALL meshfile%Close()
-!   CALL meshfile%DeallocateData()
+!   CALL meshfile%Deallocate()
 !   ! #SetMatrixFieldParam
 !   CALL SetMatrixFieldParam( param=param, name="K", matrixProp="UNSYM", &
 !     & spaceCompo=2, timeCompo=1, fieldType=FIELD_TYPE_NORMAL )
@@ -332,11 +332,11 @@ PUBLIC :: mField_checkEssentialParam
 !   CALL hdf5file%Open()
 !   ! #MatrixField/Export
 !   CALL obj%Export(hdf5=hdf5file,group='')
-!   CALL hdf5file%DeallocateData()
-!   ! #MatrixField/DeallocateData
-!   CALL obj%DeallocateData()
-!   CALL dom%DeallocateData()
-!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+!   CALL hdf5file%Deallocate()
+!   ! #MatrixField/Deallocate
+!   CALL obj%Deallocate()
+!   CALL dom%Deallocate()
+!   CALL param%Deallocate(); CALL FPL_FINALIZE()
 ! END PROGRAM main
 !```
 
@@ -406,7 +406,7 @@ END INTERFACE
 !   CALL meshfile%Open()
 !   ! #Domain/Initiate
 !   CALL dom%Initiate( meshfile, "" ); CALL meshfile%Close()
-!   CALL meshfile%DeallocateData()
+!   CALL meshfile%Deallocate()
 !   ! #SetMatrixFieldParam
 !   CALL SetMatrixFieldParam( param=param, name="K", matrixProp="UNSYM", &
 !     & spaceCompo=2, timeCompo=1, fieldType=FIELD_TYPE_NORMAL )
@@ -418,12 +418,12 @@ END INTERFACE
 !   CALL obj2%Initiate( obj )
 !   ! #MatrixField/Export
 !   CALL obj2%Export(hdf5=hdf5file,group='')
-!   CALL hdf5file%DeallocateData()
-!   ! #MatrixField/DeallocateData
-!   CALL obj%DeallocateData()
-!   CALL obj2%DeallocateData()
-!   CALL dom%DeallocateData()
-!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+!   CALL hdf5file%Deallocate()
+!   ! #MatrixField/Deallocate
+!   CALL obj%Deallocate()
+!   CALL obj2%Deallocate()
+!   CALL dom%Deallocate()
+!   CALL param%Deallocate(); CALL FPL_FINALIZE()
 ! END PROGRAM main
 !```
 
@@ -458,7 +458,7 @@ END SUBROUTINE mField_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -466,9 +466,9 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the matrix
 
 INTERFACE
-MODULE SUBROUTINE mField_DeallocateData( obj )
+MODULE SUBROUTINE mField_Deallocate( obj )
   CLASS( MatrixField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE mField_DeallocateData
+END SUBROUTINE mField_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -554,7 +554,7 @@ END INTERFACE
 !   CALL meshfile%Open()
 !   ! #Domain/Initiate
 !   CALL dom%Initiate( meshfile, "" ); CALL meshfile%Close()
-!   CALL meshfile%DeallocateData()
+!   CALL meshfile%Deallocate()
 !   ! #SetMatrixFieldParam
 !   CALL SetMatrixFieldParam( param=param, name="K", matrixProp="UNSYM", &
 !     & spaceCompo=2, timeCompo=1, fieldType=FIELD_TYPE_NORMAL )
@@ -565,11 +565,11 @@ END INTERFACE
 !   CALL hdf5file%Open()
 !   ! #MatrixField/Export
 !   CALL obj%Export(hdf5=hdf5file,group='')
-!   CALL hdf5file%DeallocateData()
-!   ! #MatrixField/DeallocateData
-!   CALL obj%DeallocateData()
-!   CALL dom%DeallocateData()
-!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+!   CALL hdf5file%Deallocate()
+!   ! #MatrixField/Deallocate
+!   CALL obj%Deallocate()
+!   CALL dom%Deallocate()
+!   CALL param%Deallocate(); CALL FPL_FINALIZE()
 ! END PROGRAM main
 !```
 

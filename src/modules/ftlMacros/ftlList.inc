@@ -120,7 +120,7 @@ TYPE, PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)
     GENERIC, PUBLIC :: Insert => InsertSingle, InsertFill, InsertArray, InsertIteratorPair
     GENERIC, PUBLIC :: Add => PushBack
     GENERIC, PUBLIC :: Append => PushBack
-    GENERIC, PUBLIC :: DeallocateData => Delete
+    GENERIC, PUBLIC :: Deallocate => Delete
     GENERIC, PUBLIC :: Erase => EraseSingle, EraseIteratorPair
 
     PROCEDURE, PASS( obj ) :: NewDefault

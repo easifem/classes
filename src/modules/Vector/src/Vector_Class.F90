@@ -47,7 +47,7 @@ TYPE, EXTENDS( AbstractVector_ ) :: Vector_
   PROCEDURE, PASS( obj ) :: checkEssentialParam => vec_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate => vec_initiate
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => vec_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => vec_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => vec_Deallocate
   FINAL :: vec_Final
   PROCEDURE, PASS( obj ) :: set1 => vec_set1
   PROCEDURE, PASS( obj ) :: set2 => vec_set2
@@ -128,7 +128,7 @@ END SUBROUTINE vec_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -136,16 +136,16 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the Vector_ obj
 
 INTERFACE
-MODULE SUBROUTINE vec_DeallocateData( obj )
+MODULE SUBROUTINE vec_Deallocate( obj )
   CLASS( Vector_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE vec_DeallocateData
+END SUBROUTINE vec_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE vec_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE vec_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor

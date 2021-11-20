@@ -117,20 +117,20 @@ MODULE PROCEDURE stsField_Initiate2
 END PROCEDURE stsField_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_DeallocateData
+MODULE PROCEDURE stsField_Deallocate
   obj%timeCompo = 0_I4B
-  CALL AbstractNodeFieldDeallocateData(obj)
-END PROCEDURE stsField_DeallocateData
+  CALL AbstractNodeFieldDeallocate(obj)
+END PROCEDURE stsField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE stsField_Final
 
 !----------------------------------------------------------------------------

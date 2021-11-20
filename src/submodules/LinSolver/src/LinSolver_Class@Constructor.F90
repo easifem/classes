@@ -392,10 +392,10 @@ MODULE PROCEDURE ls_Initiate
 END PROCEDURE ls_Initiate
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
+!                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_DeallocateData
+MODULE PROCEDURE ls_Deallocate
   obj%engine=''
   obj%IPAR=0
   obj%FPAR=0.0_DFP
@@ -418,6 +418,6 @@ MODULE PROCEDURE ls_DeallocateData
   IF( ALLOCATED( obj%RES ) ) DEALLOCATE( obj%RES )
   IF( ALLOCATED( obj%W ) ) DEALLOCATE( obj%W )
   NULLIFY( obj%Amat )
-END PROCEDURE ls_DeallocateData
+END PROCEDURE ls_Deallocate
 
 END SUBMODULE Constructor

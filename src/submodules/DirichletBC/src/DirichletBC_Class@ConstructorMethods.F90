@@ -116,10 +116,10 @@ END IF
 END PROCEDURE dbc_Initiate
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
+!                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dbc_DeallocateData
+MODULE PROCEDURE dbc_Deallocate
 obj%isInitiated = .FALSE.
 obj%name = ''
 CALL obj%boundary%Deallocate()
@@ -128,14 +128,14 @@ obj%idof = 0
 obj%nodalValueType = -1
 obj%useFunction = .FALSE.
 IF (ALLOCATED(obj%NodalValue)) DEALLOCATE (obj%NodalValue)
-END PROCEDURE dbc_DeallocateData
+END PROCEDURE dbc_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                            Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dbc_Final
-CALL obj%DeallocateData()
+CALL obj%Deallocate()
 END PROCEDURE dbc_Final
 
 END SUBMODULE ConstructorMethods

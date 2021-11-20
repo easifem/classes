@@ -71,8 +71,8 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)
   PROCEDURE, PASS( obj ) :: T_NewCopyOther
   PROCEDURE, PASS( obj ) :: T_NewFill
   PROCEDURE, PASS( obj ) :: T_NewFromArray
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => T_DeallocateData
-  PROCEDURE, PASS( obj ) :: Delete => T_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => T_Deallocate
+  PROCEDURE, PASS( obj ) :: Delete => T_Deallocate
   FINAL :: T_Finalizer
 
   PROCEDURE, PUBLIC, PASS( obj ) :: Begin => T_Begin
@@ -187,7 +187,7 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
   FTL_TEMPLATE_TYPE_WRAP, PUBLIC :: value
   CONTAINS
   PRIVATE
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => T_Iter_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => T_Iter_Deallocate
     FINAL :: T_Iter_Final
     PROCEDURE, PASS( obj ) :: T_Iter_NewItDefault
     PROCEDURE, PASS( obj ) :: T_Iter_NewItCopyOther
@@ -242,7 +242,7 @@ CONTAINS
 
 SUBROUTINE T_NewDefault(obj)
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(INOUT ) :: obj
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
   ALLOCATE(obj%storage(0))
   CALL obj%FixValuePtrs()
 END SUBROUTINE T_NewDefault
@@ -256,7 +256,7 @@ SUBROUTINE T_NewCopyOther(obj, anotherObj)
   TYPE(CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)), INTENT(IN) :: anotherObj
   ! Internal variables
   INTEGER( I4B ) :: ii, n
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
   n = anotherObj%psize
   ALLOCATE( obj%storage(n) )
   DO ii = 1, n
@@ -277,7 +277,7 @@ SUBROUTINE T_NewFill(obj, n, val)
   ! internal variable
   INTEGER( I4B ) :: ii
 
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
   ALLOCATE( obj%storage(n) )
   IF( PRESENT( val ) ) THEN
     DO ii = 1, n
@@ -298,7 +298,7 @@ SUBROUTINE T_NewFromArray(obj, array)
   ! Internal variables
   INTEGER( I4B ) :: ii,n
 
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
   n = SIZE( array )
   ALLOCATE( obj%storage(n) )
   DO ii = 1, n
@@ -312,7 +312,7 @@ END SUBROUTINE T_NewFromArray
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE T_DeallocateData( obj )
+SUBROUTINE T_Deallocate( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
   ! CALL obj%clear(freeMem=.TRUE.)
   obj%psize = 0
@@ -322,7 +322,7 @@ SUBROUTINE T_DeallocateData( obj )
   NULLIFY(obj%data)
   NULLIFY(obj%front)
   NULLIFY(obj%back)
-END SUBROUTINE T_DeallocateData
+END SUBROUTINE T_Deallocate
 
 !----------------------------------------------------------------------------
 !
@@ -330,7 +330,7 @@ END SUBROUTINE T_DeallocateData
 
 SUBROUTINE T_Finalizer( obj )
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END SUBROUTINE T_Finalizer
 
 !----------------------------------------------------------------------------
@@ -988,12 +988,12 @@ END SUBROUTINE T_Display
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE T_Iter_DeallocateData(obj)
+SUBROUTINE T_Iter_Deallocate(obj)
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( INOUT ) :: obj
   obj%dynArray => NULL()
   obj%index = 0
   obj%value%ptr => NULL()
-END SUBROUTINE T_Iter_DeallocateData
+END SUBROUTINE T_Iter_Deallocate
 
 !----------------------------------------------------------------------------
 !
@@ -1001,7 +1001,7 @@ END SUBROUTINE T_Iter_DeallocateData
 
 SUBROUTINE T_Iter_Final(obj)
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( INOUT ) :: obj
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END SUBROUTINE T_Iter_Final
 
 !----------------------------------------------------------------------------

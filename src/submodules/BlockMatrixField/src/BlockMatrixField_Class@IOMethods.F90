@@ -191,7 +191,7 @@ MODULE PROCEDURE mField_Import
       CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Either dom or domains should be present')
     END IF
-    CALL param%DeallocateData(); CALL FPL_FINALIZE()
+    CALL param%Deallocate(); CALL FPL_FINALIZE()
   END IF
   !> pmat
   dsetname=TRIM(group)//"/pmat"

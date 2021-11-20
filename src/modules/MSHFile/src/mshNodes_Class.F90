@@ -53,8 +53,8 @@ TYPE :: mshNodes_
 
   CONTAINS
     FINAL :: n_Final
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => n_deallocateData
-      !! DeallocateData From the object
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => n_Deallocate
+      !! Deallocate From the object
     PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => n_GotoTag
       !! Go to the node tag in mesh file
     PROCEDURE, PUBLIC, PASS( obj ) :: Read => n_Read
@@ -92,7 +92,7 @@ END SUBROUTINE n_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -100,16 +100,16 @@ END INTERFACE
 ! summary: This subroutine deallocate the data form the instance
 
 INTERFACE
-MODULE SUBROUTINE n_deallocatedata( obj )
+MODULE SUBROUTINE n_Deallocate( obj )
   CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE n_deallocatedata
+END SUBROUTINE n_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE n_deallocatedata
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE n_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                   GotoTag

@@ -96,7 +96,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
   PRIVATE
   PROCEDURE, PUBLIC, PASS( obj ) :: InitiateVTKFile
   PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => VTKFile_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => VTKFile_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => VTKFile_Deallocate
   FINAL :: VTKFile_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: WriteRootTag => VTKFile_WriteRootTag
   PROCEDURE, PUBLIC, PASS( obj ) :: WriteDataStructureTag => &
@@ -397,7 +397,7 @@ END SUBROUTINE VTKFile_AddSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         DeallocateData@ConstructorMethods
+!                                         Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -405,10 +405,10 @@ END INTERFACE
 ! summary: Deallocates the content of VTKFile
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_DeallocateData( obj, delete )
+MODULE SUBROUTINE VTKFile_Deallocate( obj, delete )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
-END SUBROUTINE VTKFile_DeallocateData
+END SUBROUTINE VTKFile_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

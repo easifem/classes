@@ -51,7 +51,7 @@ TYPE, EXTENDS( Vector_ ) :: DistributedVector_
   PROCEDURE, PASS( obj ) :: checkEssentialParam => distVec_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate => distVec_initiate
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => distVec_initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => distVec_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => distVec_Deallocate
   FINAL :: distVec_Final
   PROCEDURE, PASS( obj ) :: set1 => distVec_set1
   PROCEDURE, PASS( obj ) :: set2 => distVec_set2
@@ -133,7 +133,7 @@ END SUBROUTINE distVec_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -141,16 +141,16 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the Vector_ obj
 
 INTERFACE
-MODULE SUBROUTINE distVec_DeallocateData( obj )
+MODULE SUBROUTINE distVec_Deallocate( obj )
   CLASS( DistributedVector_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE distVec_DeallocateData
+END SUBROUTINE distVec_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE distVec_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE distVec_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor

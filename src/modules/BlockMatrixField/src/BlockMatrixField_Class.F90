@@ -71,7 +71,7 @@ TYPE, EXTENDS( MatrixField_ ) :: BlockMatrixField_
       !! Initiate by copying other object
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => mField_Initiate3
       !! Initiate for block matrices
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => mField_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => mField_Deallocate
       !! Deallocate the field
     FINAL :: mField_Final
     PROCEDURE, PUBLIC, PASS( obj ) :: Import => mField_Import
@@ -164,7 +164,7 @@ END INTERFACE
 !   ! #BlockMatrixField/CheckEssentialParam
 !   CALL obj%CheckEssentialParam( param )
 !   CALL param%Print()
-!   CALL param%DeallocateData(); CALL FPL_FINALIZE()
+!   CALL param%Deallocate(); CALL FPL_FINALIZE()
 ! END PROGRAM main
 !```
 
@@ -215,7 +215,7 @@ END SUBROUTINE bmField_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
+!                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -223,9 +223,9 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the matrix
 
 INTERFACE
-MODULE SUBROUTINE mField_DeallocateData( obj )
+MODULE SUBROUTINE mField_Deallocate( obj )
   CLASS( BlockMatrixField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE mField_DeallocateData
+END SUBROUTINE mField_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -277,13 +277,13 @@ END INTERFACE
 ! type( HDF5File_ ) :: meshfile, hdf5
 ! type( ParameterList_ ) :: param
 ! integer( i4b ) :: ierr, tnodes
-! call display( "TESTING INITIATE AND DEALLOCATEDATA" )
+! call display( "TESTING INITIATE AND Deallocate" )
 ! CALL FPL_INIT()
 ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
 ! call meshfile%open()
 ! call dom%initiate( meshfile )
 ! call meshfile%close()
-! call meshfile%deallocateData()
+! call meshfile%Deallocate()
 ! tnodes = dom%getTotalNodes()
 ! call param%initiate()
 ! call setBlockMatrixFieldParam( param, "K", "UNSYM", 3, 2,
@@ -293,10 +293,10 @@ END INTERFACE
 ! CALL hdf5%open()
 ! CALL obj%export(hdf5=hdf5,group='')
 ! CALL hdf5%close()
-! CALL hdf5%deallocateData()
-! call obj%deallocateData()
-! call dom%deallocateData()
-! call param%deallocateData()
+! CALL hdf5%Deallocate()
+! call obj%Deallocate()
+! call dom%Deallocate()
+! call param%Deallocate()
 ! call FPL_FINALIZE()
 !```
 

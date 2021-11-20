@@ -132,10 +132,10 @@ MODULE PROCEDURE xmlTag_Initiate
 END PROCEDURE xmlTag_Initiate
 
 !----------------------------------------------------------------------------
-!                                                         DeallocateData
+!                                                         Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE xmlTag_DeallocateData
+MODULE PROCEDURE xmlTag_Deallocate
   INTEGER( I4B ) :: i
   !>
   obj%name=''
@@ -151,20 +151,20 @@ MODULE PROCEDURE xmlTag_DeallocateData
   !>
   IF(ASSOCIATED(obj%children)) THEN
     DO i=SIZE(obj%children),1,-1
-      CALL obj%children(i)%DeallocateData()
+      CALL obj%children(i)%Deallocate()
     ENDDO
     DEALLOCATE(obj%children)
   ENDIF
   NULLIFY(obj%parent)
   obj%tAttributes=0
-END PROCEDURE xmlTag_DeallocateData
+END PROCEDURE xmlTag_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlTag_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE xmlTag_Final
 
 !----------------------------------------------------------------------------

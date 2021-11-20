@@ -141,19 +141,19 @@ MODULE PROCEDURE sField_Initiate2
 END PROCEDURE sField_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_DeallocateData
-  CALL AbstractNodeFieldDeallocateData(obj)
-END PROCEDURE sField_DeallocateData
+MODULE PROCEDURE sField_Deallocate
+  CALL AbstractNodeFieldDeallocate(obj)
+END PROCEDURE sField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE sField_Final
 
 !----------------------------------------------------------------------------

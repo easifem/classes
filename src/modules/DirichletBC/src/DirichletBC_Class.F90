@@ -56,7 +56,7 @@ TYPE, EXTENDS( AbstractBC_ ) :: DirichletBC_
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
     & dbc_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => dbc_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => dbc_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => dbc_Deallocate
   FINAL :: dbc_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => dbc_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => dbc_Export
@@ -143,13 +143,13 @@ END SUBROUTINE dbc_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
+!                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_DeallocateData( obj )
+MODULE SUBROUTINE dbc_Deallocate( obj )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE dbc_DeallocateData
+END SUBROUTINE dbc_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

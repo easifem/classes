@@ -173,7 +173,7 @@ MODULE PROCEDURE mField_Import
       & timeCompo = timeCompo(1), &
       & fieldType = fieldType )
     CALL obj%Initiate( param=param, dom=dom )
-    CALL param%DeallocateData(); CALL FPL_FINALIZE()
+    CALL param%Deallocate(); CALL FPL_FINALIZE()
   END IF
   dsetname=TRIM(group)//"/pmat"
   CALL e%RaiseInformation(modName//"::"//myName//" - "// &

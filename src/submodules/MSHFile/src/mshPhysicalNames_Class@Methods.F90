@@ -25,14 +25,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE pn_final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE pn_final
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE pn_deallocatedata
+MODULE PROCEDURE pn_Deallocate
   IF( ALLOCATED( obj%NSD ) ) DEALLOCATE( obj%NSD )
   IF( ALLOCATED( obj%Tag ) ) DEALLOCATE( obj%Tag )
   IF( ALLOCATED( obj%numElements ) ) DEALLOCATE( obj%numElements )
@@ -40,7 +40,7 @@ MODULE PROCEDURE pn_deallocatedata
   IF( ALLOCATED( obj%Entities ) ) DEALLOCATE( obj%Entities )
   IF( ALLOCATED( obj%PhysicalName ) ) DEALLOCATE( obj%PhysicalName )
   obj%isInitiated = .FALSE.
-END PROCEDURE pn_deallocatedata
+END PROCEDURE pn_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                          GotoTag
@@ -91,7 +91,7 @@ MODULE PROCEDURE pn_Read
   IF( error .EQ. 0 ) THEN
     CALL e%raiseInformation(modName//'::'//myName//' - '// &
       & 'PhysicalNames FOUND in the mshFile!')
-    CALL Obj%DeallocateData()
+    CALL Obj%Deallocate()
     obj%isInitiated = .TRUE.
     unitNo = mshFile%getUnitNo()
     READ( UnitNo, * ) tp
@@ -151,7 +151,7 @@ MODULE PROCEDURE pn_Write
       WRITE( UnitNo, "(A)" ) TRIM( EndStr )
     END IF
     CALL outFile%close()
-    CALL outFile%DeallocateData()
+    CALL outFile%Deallocate()
   END IF
 END PROCEDURE pn_Write
 

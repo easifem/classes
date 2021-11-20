@@ -41,7 +41,7 @@ MODULE PROCEDURE mesh_setBoundingBox2
   TYPE( BoundingBox_ ) :: box
   Box = obj%getBoundingBox( nodes=nodes, local_nptrs=local_nptrs )
   CALL obj%setBoundingBox( box=box )
-  CALL DeallocateData(box)
+  CALL Deallocate(box)
 END PROCEDURE mesh_setBoundingBox2
 
 !----------------------------------------------------------------------------

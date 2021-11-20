@@ -68,7 +68,7 @@ TYPE :: MeshData_
     !! To do
 
   CONTAINS
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => meshData_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => meshData_Deallocate
       !! Deallocate mesh data
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => meshData_Initiate
       !! Initiate mesh data
@@ -287,7 +287,7 @@ END INTERFACE MeshData_Pointer
 PUBLIC :: MeshData_Pointer
 
 !----------------------------------------------------------------------------
-!                                             DeallocateData@MeshDataMethods
+!                                             Deallocate@MeshDataMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -300,22 +300,22 @@ INTERFACE
 !### Usage
 !
 ! ```fortran
-!	call deallocateData( obj )
+!	call Deallocate( obj )
 ! ```
 
-MODULE SUBROUTINE meshData_DeallocateData( obj )
+MODULE SUBROUTINE meshData_Deallocate( obj )
   CLASS( MeshData_ ), INTENT( INOUT ) :: obj
     !! mesh data object
-END SUBROUTINE meshData_DeallocateData
+END SUBROUTINE meshData_Deallocate
 END INTERFACE
 
 !>
 ! Generic subroutine to deallocate data stored inside [[MeshData_]]
-INTERFACE DeallocateData
-  MODULE PROCEDURE meshData_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE meshData_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                 TotalNodes@MeshDataMethods

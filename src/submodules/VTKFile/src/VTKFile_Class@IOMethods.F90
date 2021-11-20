@@ -160,7 +160,7 @@ MODULE PROCEDURE VTKFile_WriteStartTag
   CALL tag%write( unitNo=obj%unitNo, isIndented=.TRUE., endRecord= CHAR_LF, &
     & onlyStart = .TRUE. )
   obj%Indent = obj%Indent + 2
-  CALL tag%DeallocateData()
+  CALL tag%Deallocate()
 END PROCEDURE VTKFile_WriteStartTag
 
 !----------------------------------------------------------------------------
@@ -172,7 +172,7 @@ MODULE PROCEDURE VTKFile_WriteEndTag
   CALL tag%set( name=name, indent=obj%indent)
   CALL tag%write(unitNo=obj%unitNo, isIndented=.TRUE., endRecord=CHAR_LF, &
     & onlyEnd=.TRUE. )
-  CALL tag%DeallocateData()
+  CALL tag%Deallocate()
 END PROCEDURE VTKFile_WriteEndTag
 
 !----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ MODULE PROCEDURE VTKFile_WriteSelfClosingTag
   CALL tag%set( name=name, attrNames=attrNames, attrValues=attrValues, &
     & indent=obj%Indent, isSelfClosing=.TRUE. )
   CALL tag%write(unitNo=obj%unitNo, isIndented=.TRUE., endRecord=CHAR_LF)
-  CALL tag%DeallocateData()
+  CALL tag%Deallocate()
 END PROCEDURE VTKFile_WriteSelfClosingTag
 
 !----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ MODULE PROCEDURE VTKFile_WriteTag
     & content=content, Indent=obj%Indent )
   CALL tag%write(unitNo=obj%unitNo, isIndented=.TRUE., &
     & isContentIndented=.TRUE., endRecord=CHAR_LF )
-  CALL tag%DeallocateData()
+  CALL tag%Deallocate()
 END PROCEDURE VTKFile_WriteTag
 
 !----------------------------------------------------------------------------

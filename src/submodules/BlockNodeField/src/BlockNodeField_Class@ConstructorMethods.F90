@@ -212,21 +212,21 @@ MODULE PROCEDURE bnField_Initiate3
 END PROCEDURE bnField_Initiate3
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_DeallocateData
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_DeallocateData"
+MODULE PROCEDURE bnField_Deallocate
+  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Deallocate"
   !> main program
-  CALL AbstractNodeFieldDeallocateData(obj)
-END PROCEDURE bnField_DeallocateData
+  CALL AbstractNodeFieldDeallocate(obj)
+END PROCEDURE bnField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE bnField_Final
 
 END SUBMODULE ConstructorMethods

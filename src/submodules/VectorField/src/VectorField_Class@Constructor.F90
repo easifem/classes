@@ -114,20 +114,20 @@ MODULE PROCEDURE vField_Initiate2
 END PROCEDURE vField_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_DeallocateData
+MODULE PROCEDURE vField_Deallocate
   obj%spaceCompo = 0_I4B
-  CALL AbstractNodeFieldDeallocateData(obj)
-END PROCEDURE vField_DeallocateData
+  CALL AbstractNodeFieldDeallocate(obj)
+END PROCEDURE vField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE vField_Final
 
 !----------------------------------------------------------------------------

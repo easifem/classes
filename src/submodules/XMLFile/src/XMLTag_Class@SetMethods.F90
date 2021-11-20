@@ -61,7 +61,7 @@ MODULE PROCEDURE xmlTag_setChildren
   !if thisXMLE already has children, clear and deallocate them first
   IF(obj%hasChildren()) THEN
     DO i=SIZE(obj%children),1,-1
-      CALL obj%children(i)%DeallocateData()
+      CALL obj%children(i)%Deallocate()
     ENDDO
     DEALLOCATE(obj%children)
   ENDIF

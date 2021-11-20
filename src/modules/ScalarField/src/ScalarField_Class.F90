@@ -52,7 +52,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => sField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => sField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => sField_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => sField_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => sField_Deallocate
   FINAL :: sField_Final
   PROCEDURE, PASS( obj ) :: set1 => sField_set1
     !! set single entry
@@ -195,7 +195,7 @@ END SUBROUTINE sField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -204,16 +204,16 @@ END INTERFACE
 ! `ScalarField_` obj
 
 INTERFACE
-MODULE SUBROUTINE sField_DeallocateData( obj )
+MODULE SUBROUTINE sField_Deallocate( obj )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE sField_DeallocateData
+END SUBROUTINE sField_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE sField_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE sField_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor

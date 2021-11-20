@@ -66,9 +66,9 @@ TYPE :: Element_
     !! Set Material Type
   PROCEDURE, PUBLIC, PASS( obj ) :: getMaterialType => elem_getMaterialType
     !! Set Material Type
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => elem_deallocateData
-  PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateElement => elem_deallocateData
-    !! DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => elem_Deallocate
+  PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateElement => elem_Deallocate
+    !! Deallocate
   FINAL :: elem_final
     !! Finalize for element
   PROCEDURE, PUBLIC, PASS( obj ) :: isBoundaryElement => elem_isBoundaryElement
@@ -461,7 +461,7 @@ END FUNCTION elem_getMaterialType
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                DeallocateData@Constructor
+!                                                Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -472,9 +472,9 @@ END INTERFACE
 ! 	Deallocate Data
 
 INTERFACE
-MODULE PURE SUBROUTINE elem_deallocateData( obj )
+MODULE PURE SUBROUTINE elem_Deallocate( obj )
   CLASS( Element_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE elem_deallocateData
+END SUBROUTINE elem_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

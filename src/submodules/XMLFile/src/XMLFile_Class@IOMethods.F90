@@ -47,7 +47,7 @@ MODULE PROCEDURE xmlFile_Export
     END IF
     !Write the XML Elements
     CALL obj%root%export( unitNo=tmpFile%unitNo, nindent=0 )
-    CALL tmpFile%DeallocateData()
+    CALL tmpFile%Deallocate()
   END IF
 END PROCEDURE xmlFile_Export
 
@@ -111,7 +111,7 @@ MODULE PROCEDURE xmlFile_Import
       & ' - xmlFile does not have read access!')
   END IF
   !> deallocate the root
-  CALL obj%root%DeallocateData()
+  CALL obj%root%Deallocate()
   CALL obj%ParseXMLDeclaration()
   SELECT TYPE(obj); TYPE IS( XMLFile_ )
     CALL obj%BuildCache( nchars=nchars, fileCache=cachedFile )

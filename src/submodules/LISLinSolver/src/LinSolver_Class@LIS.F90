@@ -578,7 +578,7 @@ MODULE PROCEDURE lis_write_res_his
 END PROCEDURE lis_write_res_his
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Dr. Vikas Sharma
@@ -587,8 +587,8 @@ END PROCEDURE lis_write_res_his
 ! To be implemented soon
 ! @endtodo
 
-MODULE PROCEDURE lis_deallocatedata
-END PROCEDURE lis_deallocatedata
+MODULE PROCEDURE lis_Deallocate
+END PROCEDURE lis_Deallocate
 
 !----------------------------------------------------------------------------
 !

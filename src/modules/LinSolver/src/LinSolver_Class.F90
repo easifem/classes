@@ -65,7 +65,7 @@ INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 ! CALL obj % solve( sol, rhs )
 ! CALL obj % Display( msg <,unitno > )
 ! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL obj % DeallocateData( )
+! CALL obj % Deallocate( )
 !```
 !
 !### Solver name
@@ -92,8 +92,8 @@ CONTAINS
     & ls_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateData => ls_deallocatedata
-    !! DeallocateData
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => ls_Deallocate
+    !! Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Set => ls_Set
     !! Set the matrix and preconditioning matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Solve => ls_solve
@@ -262,13 +262,13 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE ls_DeallocateData(obj)
+  MODULE SUBROUTINE ls_Deallocate(obj)
     CLASS(LinSolver_), INTENT(INOUT) :: obj
-  END SUBROUTINE ls_DeallocateData
+  END SUBROUTINE ls_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

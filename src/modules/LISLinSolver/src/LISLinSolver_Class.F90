@@ -61,7 +61,7 @@ CHARACTER(LEN=*), PARAMETER :: eLogFile = "LINSOLVER_CLASS_EXCEPTION.txt"
 ! CALL obj % solve( sol, rhs )
 ! CALL obj % Display( msg <,unitno > )
 ! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL obj % DeallocateData( )
+! CALL obj % Deallocate( )
 !```
 !
 !### Solver name
@@ -135,8 +135,8 @@ CONTAINS
     !! Display the contents
   PROCEDURE, PUBLIC, PASS(obj) :: writeResidueHistory => skit_write_res_his
     !! Output the residue history
-  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateData => skit_deallocatedata
-    !! DeallocateData
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => skit_Deallocate
+    !! Deallocate
 END TYPE LinSolver_
 
 PUBLIC :: LinSolver_
@@ -203,7 +203,7 @@ CONTAINS
     !! Display the contents
   PROCEDURE, PUBLIC, PASS(obj) :: writeResidueHistory => lis_write_res_his
     !! Output the residue history
-  PROCEDURE, PUBLIC, PASS(obj) :: DeallocateData => lis_deallocatedata
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => lis_Deallocate
     !! Deallocate Data
 END TYPE LIS_
 
@@ -342,7 +342,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
@@ -529,20 +529,20 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   DeallocateData@Sparsekit
+!                                                   Deallocate@Sparsekit
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE skit_deallocatedata(obj)
+  MODULE SUBROUTINE skit_Deallocate(obj)
     CLASS(LinSolver_), INTENT(INOUT) :: obj
-  END SUBROUTINE skit_deallocatedata
+  END SUBROUTINE skit_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE skit_deallocatedata
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE skit_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                        Initiate@Sparsekitt
@@ -668,17 +668,17 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      DeallocateData@Methods
+!                                                      Deallocate@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE lis_deallocatedata(obj)
+  MODULE SUBROUTINE lis_Deallocate(obj)
     CLASS(LIS_), INTENT(INOUT) :: obj
-  END SUBROUTINE lis_deallocatedata
+  END SUBROUTINE lis_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE lis_deallocatedata
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE lis_Deallocate
+END INTERFACE Deallocate
 
 END MODULE SparsekitLinSolver_Class

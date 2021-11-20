@@ -86,10 +86,10 @@ MODULE PROCEDURE auf_CheckEssentialParam
 END PROCEDURE auf_CheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_DeallocateData
+MODULE PROCEDURE auf_Deallocate
   !> main
   obj%isInitiated = .TRUE.
   obj%returnType = 0
@@ -99,17 +99,17 @@ MODULE PROCEDURE auf_DeallocateData
   IF(ALLOCATED(obj%vectorValue)) DEALLOCATE(obj%vectorValue)
   IF(ALLOCATED(obj%matrixValue)) DEALLOCATE(obj%matrixValue)
   IF(ASSOCIATED(obj%userFunction)) THEN
-    CALL obj%userFunction%DeallocateData()
+    CALL obj%userFunction%Deallocate()
   END IF
   obj%userFunction=>NULL()
-END PROCEDURE auf_DeallocateData
+END PROCEDURE auf_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE auf_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE auf_Final
 
 !----------------------------------------------------------------------------

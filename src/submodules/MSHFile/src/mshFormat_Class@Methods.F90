@@ -133,7 +133,7 @@ MODULE PROCEDURE fmt_Write
     WRITE( unitNo, "( A )") TRIM( EndStr )
   END IF
   CALL outFile%close()
-  CALL outFile%DeallocateData()
+  CALL outFile%Deallocate()
 END PROCEDURE fmt_Write
 
 !----------------------------------------------------------------------------
@@ -174,7 +174,7 @@ MODULE PROCEDURE fmt_GotoTag
 END PROCEDURE fmt_GotoTag
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_Finalize

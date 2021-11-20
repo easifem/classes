@@ -55,23 +55,23 @@ MODULE PROCEDURE Constructor_2
 END PROCEDURE Constructor_2
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE elem_deallocateData
+MODULE PROCEDURE elem_Deallocate
   CALL obj%DeallocateElement()
   obj%LocalId = 0
   obj%Cell => NULL( )
   obj%OuterCell => NULL( )
-END PROCEDURE elem_deallocateData
+END PROCEDURE elem_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                             Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE faceElem_deallocateData
-  CALL obj%DeallocateData()
-END PROCEDURE faceElem_deallocateData
+MODULE PROCEDURE faceElem_Deallocate
+  CALL obj%Deallocate()
+END PROCEDURE faceElem_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                               getCellNptrs

@@ -46,8 +46,8 @@ TYPE, ABSTRACT :: AbstractBC_
     & checkEssentialParam
   PROCEDURE( abc_addSurrogate ), DEFERRED, PUBLIC, PASS( obj ) :: addSurrogate
   PROCEDURE( abc_Initiate ), DEFERRED, PUBLIC, PASS( obj ) :: Initiate
-  PROCEDURE( abc_DeallocateData ), DEFERRED, PUBLIC, PASS( obj ) :: &
-    & DeallocateData
+  PROCEDURE( abc_Deallocate ), DEFERRED, PUBLIC, PASS( obj ) :: &
+    & Deallocate
   PROCEDURE( abc_Import ), DEFERRED, PUBLIC, PASS( obj ) :: Import
   PROCEDURE( abc_Export ), DEFERRED, PUBLIC, PASS( obj ) :: Export
   PROCEDURE( abc_Display ), DEFERRED, PUBLIC, PASS( obj ) :: Display
@@ -107,10 +107,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE abc_DeallocateData( obj )
+SUBROUTINE abc_Deallocate( obj )
   IMPORT
   CLASS( AbstractBC_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE abc_DeallocateData
+END SUBROUTINE abc_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

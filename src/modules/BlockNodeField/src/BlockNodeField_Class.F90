@@ -53,7 +53,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: BlockNodeField_
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => bnField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate3 => bnField_initiate3
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => bnField_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => bnField_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => bnField_Deallocate
   FINAL :: bnField_Final
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => bnField_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => bnField_Export
@@ -228,7 +228,7 @@ END SUBROUTINE bnField_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           DeallocateData@ConstructorMethod
+!                                           Deallocate@ConstructorMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -236,16 +236,16 @@ END INTERFACE
 ! summary: Deallocates the data stored inside the [[BlockNodeField_]] obj
 
 INTERFACE
-MODULE SUBROUTINE bnField_DeallocateData( obj )
+MODULE SUBROUTINE bnField_Deallocate( obj )
   CLASS( BlockNodeField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE bnField_DeallocateData
+END SUBROUTINE bnField_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE bnField_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE bnField_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethod

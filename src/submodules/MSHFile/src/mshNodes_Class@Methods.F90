@@ -26,19 +26,19 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE n_Final
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE n_deallocatedata
+MODULE PROCEDURE n_Deallocate
 SELECT TYPE (obj)
 TYPE IS (mshNodes_)
   obj = TypeMSHNodes
 END SELECT
-END PROCEDURE n_deallocatedata
+END PROCEDURE n_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    GotoTag

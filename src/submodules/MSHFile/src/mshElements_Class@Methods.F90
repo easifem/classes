@@ -25,19 +25,19 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE el_Final
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE el_DeallocateData
+MODULE PROCEDURE el_Deallocate
 SELECT TYPE( obj )
 TYPE IS (mshElements_)
   obj = TypemshElements
 END SELECT
-END PROCEDURE el_DeallocateData
+END PROCEDURE el_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 GotoTag

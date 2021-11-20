@@ -107,7 +107,7 @@ MODULE PROCEDURE elem_var_disp
 END PROCEDURE elem_var_disp
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE elem_var_deallocate_data

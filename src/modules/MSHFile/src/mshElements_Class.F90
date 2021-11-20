@@ -49,7 +49,7 @@ TYPE :: mshElements_
     PRIVATE
     FINAL :: el_Final
       !! Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => el_DeallocateData
+    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => el_Deallocate
       !! deallocate data
     PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => el_GotoTag
       !! go to the tag
@@ -94,7 +94,7 @@ END INTERFACE
 
 
 !----------------------------------------------------------------------------
-!                                                            DeallocateData
+!                                                            Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -102,16 +102,16 @@ END INTERFACE
 ! summary: This subroutine deallocates the data from obj
 
 INTERFACE
-MODULE SUBROUTINE el_DeallocateData( obj )
+MODULE SUBROUTINE el_Deallocate( obj )
   CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE el_DeallocateData
+END SUBROUTINE el_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE el_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE el_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                   GotoTag

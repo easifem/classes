@@ -106,9 +106,9 @@ CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => dc_addSurrogate
     !! Add surrogate to the module error handler
-  PROCEDURE, PUBLIC, PASS(obj) :: deallocateData => dc_deallocateData
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => dc_Deallocate
     !! Deallocate data stored in the object
-    !! TODO change DeallocateData --> Deallocate
+    !! TODO change Deallocate --> Deallocate
   FINAL :: dc_Final
     !! finalizer
   PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData1
@@ -186,7 +186,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DeallocateData@ConstructorMethods
+!                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -199,10 +199,10 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE PURE SUBROUTINE dc_DeallocateData(obj)
+  MODULE PURE SUBROUTINE dc_Deallocate(obj)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Mesh connectivity object
-  END SUBROUTINE dc_DeallocateData
+  END SUBROUTINE dc_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -306,7 +306,7 @@ DO imesh = 2, entityNum
   CALL iterator%Inc()
 END DO
 ans => iterator%VALUE%ptr
-CALL iterator%DeallocateData()
+CALL iterator%Deallocate()
 END PROCEDURE Domain_getMeshPointer1
 
 !----------------------------------------------------------------------------
@@ -392,7 +392,7 @@ DO ii = 1, SIZE(meshID)
 END DO
 CALL RemoveDuplicates(intvec)
 ans = intvec
-CALL DeallocateData(intvec)
+CALL Deallocate(intvec)
 NULLIFY (meshptr)
 END PROCEDURE Domain_getNptrs
 

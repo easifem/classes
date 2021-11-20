@@ -25,18 +25,18 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_Final
-  CALL obj%DeallocateData()
+  CALL obj%Deallocate()
 END PROCEDURE msh_Final
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE msh_deallocatedata
-  CALL obj%Format%DeallocateData()
-  CALL obj%PhysicalNames%DeallocateData()
-  CALL obj%Nodes%DeallocateData()
-  CALL obj%Elements%DeallocateData()
+MODULE PROCEDURE msh_Deallocate
+  CALL obj%Format%Deallocate()
+  CALL obj%PhysicalNames%Deallocate()
+  CALL obj%Nodes%Deallocate()
+  CALL obj%Elements%Deallocate()
   IF( ALLOCATED( obj%PointEntities ) ) DEALLOCATE( obj%PointEntities )
   IF( ALLOCATED( obj%CurveEntities ) ) DEALLOCATE( obj%CurveEntities )
   IF( ALLOCATED( obj%SurfaceEntities ) ) DEALLOCATE( obj%SurfaceEntities )
@@ -45,7 +45,7 @@ MODULE PROCEDURE msh_deallocatedata
   IF( ASSOCIATED( obj % buffer ) ) DEALLOCATE( obj%buffer )
   NULLIFY( obj%buffer )
   CALL DeallocateTxtFile( obj, Delete )
-END PROCEDURE msh_deallocatedata
+END PROCEDURE msh_Deallocate
 
 ! !----------------------------------------------------------------------------
 ! !                                                                        msh4

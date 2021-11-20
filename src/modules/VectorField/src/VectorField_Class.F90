@@ -54,7 +54,7 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => vField_initiate1
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => vField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => vField_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: DeallocateData => vField_DeallocateData
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => vField_Deallocate
   FINAL :: vField_Final
   PROCEDURE, PASS( obj ) :: set1 => vField_set1
     !! set single entry
@@ -242,7 +242,7 @@ END SUBROUTINE vField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 DeallocateData@Constructor
+!                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -250,16 +250,16 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the VectorField_ obj
 
 INTERFACE
-MODULE SUBROUTINE vField_DeallocateData( obj )
+MODULE SUBROUTINE vField_Deallocate( obj )
   CLASS( VectorField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE vField_DeallocateData
+END SUBROUTINE vField_Deallocate
 END INTERFACE
 
-INTERFACE DeallocateData
-  MODULE PROCEDURE vField_DeallocateData
-END INTERFACE DeallocateData
+INTERFACE Deallocate
+  MODULE PROCEDURE vField_Deallocate
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -541,7 +541,7 @@ END INTERFACE
   ! call obj%set( value=scalarObj, spaceCompo=2 )
   ! call obj%display( "test-6: vector field = ")
   ! ierr = param%set( key="fieldType", value=FIELD_TYPE_CONSTANT)
-  ! call scalarObj%deallocateData()
+  ! call scalarObj%Deallocate()
   ! call scalarObj%initiate( param, dom )
   ! call scalarObj%set( value=10.0_DFP )
   ! call obj%set( value=scalarObj, spaceCompo=1 )

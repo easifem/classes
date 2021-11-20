@@ -102,7 +102,7 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! Solve system of linear equation
   PROCEDURE( als_display ), PUBLIC, DEFERRED, PASS( obj ) :: Display
     !! Display the content
-  PROCEDURE( als_deallocateData ), PUBLIC, DEFERRED, PASS( obj ) :: DeallocateData
+  PROCEDURE( als_Deallocate ), PUBLIC, DEFERRED, PASS( obj ) :: Deallocate
     !! Deallocate Data
   PROCEDURE( als_Import ), PUBLIC, DEFERRED, PASS( obj ) :: Import
     !! importing linsolver from external file
@@ -170,14 +170,14 @@ END SUBROUTINE als_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE als_DeallocateData( obj )
+SUBROUTINE als_Deallocate( obj )
   IMPORT :: AbstractLinSolver_
   CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE als_DeallocateData
+END SUBROUTINE als_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

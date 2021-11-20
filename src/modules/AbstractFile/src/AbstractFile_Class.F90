@@ -100,7 +100,7 @@ TYPE,ABSTRACT :: AbstractFile_
     PROCEDURE, PUBLIC, PASS( obj ) :: isEOF => aFile_isEOF
     PROCEDURE, PUBLIC, PASS( obj ) :: isRead => aFile_isRead
     PROCEDURE, PUBLIC, PASS( obj ) :: isWrite => aFile_isWrite
-    PROCEDURE, PUBLIC, PASS( Obj ) :: DeallocateData => aFile_deallocateData
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => aFile_Deallocate
 ENDTYPE AbstractFile_
 
 PUBLIC :: AbstractFile_
@@ -298,13 +298,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE aFile_deallocateData( obj, delete )
+MODULE SUBROUTINE aFile_Deallocate( obj, delete )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
-END SUBROUTINE aFile_deallocateData
+END SUBROUTINE aFile_Deallocate
 END INTERFACE
 
-PUBLIC :: aFile_deallocateData
+PUBLIC :: aFile_Deallocate
 
 !----------------------------------------------------------------------------
 !

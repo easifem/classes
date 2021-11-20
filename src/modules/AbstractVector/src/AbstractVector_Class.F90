@@ -34,7 +34,7 @@ TYPE, ABSTRACT :: AbstractVector_
   CONTAINS
   PRIVATE
     PROCEDURE(aVec_Initiate), DEFERRED, PUBLIC, PASS( obj ) :: initiate
-    PROCEDURE(aVec_DeallocateData), DEFERRED, PUBLIC, PASS( obj ) :: DeallocateData
+    PROCEDURE(aVec_Deallocate), DEFERRED, PUBLIC, PASS( obj ) :: Deallocate
     PROCEDURE(aVec_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
     PROCEDURE(aVec_set1), DEFERRED, PASS( obj ) :: set1
     PROCEDURE(aVec_set2), DEFERRED, PASS( obj ) :: set2
@@ -82,14 +82,14 @@ END SUBROUTINE aVec_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             DeallocateData
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aVec_DeallocateData( obj )
+SUBROUTINE aVec_Deallocate( obj )
   IMPORT :: AbstractVector_
   CLASS( AbstractVector_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE aVec_DeallocateData
+END SUBROUTINE aVec_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

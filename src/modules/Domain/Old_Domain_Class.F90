@@ -133,7 +133,7 @@ END INTERFACE Initiate
 PUBLIC :: Initiate
 
 !----------------------------------------------------------------------------
-!                                                  DeallocateData@Constructor
+!                                                  Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -151,11 +151,11 @@ END INTERFACE
 
 !>
 ! generic interface to deallocate data in [[Domain_]]
-INTERFACE DeallocateData
+INTERFACE Deallocate
   MODULE PROCEDURE deallocate_obj
-END INTERFACE DeallocateData
+END INTERFACE Deallocate
 
-PUBLIC :: DeallocateData
+PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
 !                                                 ConnectFacetToCell@Methods
