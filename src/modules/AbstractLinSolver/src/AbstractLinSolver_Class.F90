@@ -22,7 +22,7 @@
 MODULE AbstractLinSolver_Class
 USE GlobalData
 USE BaseType
-USE String_Class, ONLY:String
+USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE HDF5File_Class
@@ -50,65 +50,70 @@ PRIVATE
 ! @endnote
 
 TYPE, ABSTRACT :: AbstractLinSolver_
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInitiated = .FALSE.
     !! is object initiated?
-  TYPE( String ) :: engine
+  TYPE(String) :: engine
     !! Name of the engine
     !! NATIVE-SERIAL
     !! NATIVE-OMP
+    !! NATIVE-ACC
     !! NATIVE-MPI
     !! PETSC
     !! LIS-OMP
     !! LIS-MPI
-  INTEGER( I4B ) :: solverName = 0
+  INTEGER(I4B) :: solverName = 0
     !! Solver name
-  INTEGER( I4B ) :: ierr = 0
+  INTEGER(I4B) :: ierr = 0
     !! error code returned by the solver
-  INTEGER( I4B ) :: preconditionOption = 0
-    !! Name of preconditioner; NO_PRECONDITION, LEFT_PRECONDITION
-    !! RIGHT_PRECONDITION, LEFT_RIGHT_PRECONDITON
-  INTEGER( I4B ) ::  iter=0
+  INTEGER(I4B) :: preconditionOption = 0
+    !! Name of preconditioner;
+    !! - NO_PRECONDITION
+    !! - LEFT_PRECONDITION
+    !! - RIGHT_PRECONDITION
+    !! - LEFT_RIGHT_PRECONDITON
+  INTEGER(I4B) :: iter = 0
     !! Current iteration number
-  INTEGER( I4B ) ::  maxIter=0
+  INTEGER(I4B) :: maxIter = 0
     !! Maximum iteration number
-  REAL( DFP ) :: atol=1.0E-8, rtol=1.0E-8
+  REAL(DFP) :: atol = 1.0E-8, rtol = 1.0E-8
     !! Tolerance for testing convergence
-  INTEGER( I4B ) :: convergenceIn = convergenceInRes
+  INTEGER(I4B) :: convergenceIn = convergenceInRes
     !! convergence in residual or solution
-  INTEGER( I4B ) :: convergenceType = relativeConvergence
+  INTEGER(I4B) :: convergenceType = relativeConvergence
     !! relative/ absolute convergence
-  LOGICAL( LGT ) :: relativeToRHS = .FALSE.
+  LOGICAL(LGT) :: relativeToRHS = .FALSE.
     !! In case of relative convergence, is convergence is relative to
     !! right hand side
-  INTEGER( I4B ) :: KrylovSubspaceSize = 15
+  INTEGER(I4B) :: KrylovSubspaceSize = 15
     !! Useful for GMRES type algorithm
-  INTEGER( I4B ) :: globalNumRow = 0, globalNumColumn = 0
+  INTEGER(I4B) :: globalNumRow = 0, globalNumColumn = 0
     !! Size of the global problem;
-  INTEGER( I4B ) :: localNumRow =0, localNumColumn = 0
+  INTEGER(I4B) :: localNumRow = 0, localNumColumn = 0
     !! Size of the problem on a single process
-  REAL( DFP ), ALLOCATABLE :: RES( : )
+  REAL(DFP), ALLOCATABLE :: RES(:)
     !! Residual in each iteration
-  CLASS( AbstractMatrixField_ ), POINTER :: Amat => NULL()
-  CONTAINS
-  PROCEDURE( als_addSurrogate ), PUBLIC, DEFERRED, PASS( obj ) :: addSurrogate
+  CLASS(AbstractMatrixField_), POINTER :: Amat => NULL()
+    !! Pointer to child of [[AbstractMatrixField_]]
+CONTAINS
+  PROCEDURE(als_addSurrogate), PUBLIC, DEFERRED, PASS(obj) :: AddSurrogate
     !! add surrogate to the module exception handler
-  PROCEDURE( als_checkEssentialParam ), PUBLIC, DEFERRED, PASS( obj ) :: &
+  PROCEDURE(als_checkEssentialParam), PUBLIC, DEFERRED, PASS(obj) :: &
     & checkEssentialParam
-  PROCEDURE( als_initiate ), PUBLIC, DEFERRED, PASS( obj ) :: Initiate
+  PROCEDURE(als_initiate), PUBLIC, DEFERRED, PASS(obj) :: Initiate
     !! Initiate the object
-  PROCEDURE( als_set ), PUBLIC, DEFERRED, PASS( obj ) :: set
+  PROCEDURE(als_set), PUBLIC, DEFERRED, PASS(obj) :: Set
     !! Set the matrix and preconditioning matrix
-  PROCEDURE( als_solve ), PUBLIC, DEFERRED, PASS( obj ) :: Solve
+  PROCEDURE(als_solve), PUBLIC, DEFERRED, PASS(obj) :: Solve
     !! Solve system of linear equation
-  PROCEDURE( als_display ), PUBLIC, DEFERRED, PASS( obj ) :: Display
+  PROCEDURE(als_display), PUBLIC, DEFERRED, PASS(obj) :: Display
     !! Display the content
-  PROCEDURE( als_Deallocate ), PUBLIC, DEFERRED, PASS( obj ) :: Deallocate
+  PROCEDURE(als_Deallocate), PUBLIC, DEFERRED, PASS(obj) :: Deallocate
     !! Deallocate Data
-  PROCEDURE( als_Import ), PUBLIC, DEFERRED, PASS( obj ) :: Import
+  PROCEDURE(als_Import), PUBLIC, DEFERRED, PASS(obj) :: Import
     !! importing linsolver from external file
-  PROCEDURE( als_Export ), PUBLIC, DEFERRED, PASS( obj ) :: Export
+  PROCEDURE(als_Export), PUBLIC, DEFERRED, PASS(obj) :: Export
     !! exporting linsolver from external file
-  PROCEDURE, PUBLIC, PASS( obj ) :: getPreconditionOption => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPreconditionOption => &
     & als_getPreconditionOption
 END TYPE AbstractLinSolver_
 
@@ -119,26 +124,25 @@ PUBLIC :: AbstractLinSolver_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractLinSolverPointer_
-  CLASS( AbstractLinSolver_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractLinSolver_), POINTER :: ptr => NULL()
 END TYPE
 
 PUBLIC :: AbstractLinSolverPointer_
-
 
 !----------------------------------------------------------------------------
 !                                                              addSurrogate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	23 Aug 2021
-! summary: 	Add surrogates to exceptionHandler of the module
+! date: 23 Aug 2021
+! summary: Add surrogates to exceptionHandler of the module
 
 ABSTRACT INTERFACE
-SUBROUTINE als_addSurrogate( obj, UserObj )
-  IMPORT :: AbstractLinSolver_, ExceptionHandler_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE als_addSurrogate
+  SUBROUTINE als_addSurrogate(obj, UserObj)
+    IMPORT :: AbstractLinSolver_, ExceptionHandler_
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
+  END SUBROUTINE als_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -150,11 +154,11 @@ END INTERFACE
 ! summary: This routine checks the essential parameters
 
 ABSTRACT INTERFACE
-SUBROUTINE als_checkEssentialParam( obj, param )
-  IMPORT :: AbstractLinSolver_, ParameterList_
-  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE als_checkEssentialParam
+  SUBROUTINE als_checkEssentialParam(obj, param)
+    IMPORT :: AbstractLinSolver_, ParameterList_
+    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE als_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -162,11 +166,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Initiate( obj, param )
-  IMPORT :: AbstractLinSolver_, ParameterList_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE als_Initiate
+  SUBROUTINE als_Initiate(obj, param)
+    IMPORT :: AbstractLinSolver_, ParameterList_
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE als_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -174,10 +178,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Deallocate( obj )
-  IMPORT :: AbstractLinSolver_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE als_Deallocate
+  SUBROUTINE als_Deallocate(obj)
+    IMPORT :: AbstractLinSolver_
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+  END SUBROUTINE als_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -185,11 +189,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Set( obj, Amat )
-  IMPORT :: AbstractLinSolver_, AbstractMatrixField_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractMatrixField_ ), TARGET, INTENT( INOUT ) :: Amat
-END SUBROUTINE als_Set
+  SUBROUTINE als_Set(obj, Amat)
+    IMPORT :: AbstractLinSolver_, AbstractMatrixField_
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: Amat
+  END SUBROUTINE als_Set
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -198,12 +202,12 @@ END INTERFACE
 
 ! sol contains the initial guess
 ABSTRACT INTERFACE
-SUBROUTINE als_Solve( obj, sol, rhs )
-  IMPORT :: AbstractLinSolver_, AbstractNodeField_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: sol
-  CLASS( AbstractNodeField_ ), TARGET, INTENT( INOUT ) :: rhs
-END SUBROUTINE als_Solve
+  SUBROUTINE als_Solve(obj, sol, rhs)
+    IMPORT :: AbstractLinSolver_, AbstractNodeField_
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
+  END SUBROUTINE als_Solve
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -211,12 +215,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Display( obj, msg, unitno )
-  IMPORT :: AbstractLinSolver_, I4B
-  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Unitno
-END SUBROUTINE als_Display
+  SUBROUTINE als_Display(obj, msg, unitno)
+    IMPORT :: AbstractLinSolver_, I4B
+    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: Unitno
+  END SUBROUTINE als_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -228,12 +232,12 @@ END INTERFACE
 ! summary: This routine intiates the linear solver from import
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Import( obj, hdf5, group )
-  IMPORT :: AbstractLinSolver_, HDF5File_
-  CLASS( AbstractLinSolver_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE als_Import
+  SUBROUTINE als_Import(obj, hdf5, group)
+    IMPORT :: AbstractLinSolver_, HDF5File_
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE als_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -245,12 +249,12 @@ END INTERFACE
 ! summary: This routine exports the linear solver to external file
 
 ABSTRACT INTERFACE
-SUBROUTINE als_Export( obj, hdf5, group )
-  IMPORT :: AbstractLinSolver_, HDF5File_
-  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE als_Export
+  SUBROUTINE als_Export(obj, hdf5, group)
+    IMPORT :: AbstractLinSolver_, HDF5File_
+    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE als_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -262,11 +266,10 @@ END INTERFACE
 ! summary: Returns the preconditionOption
 
 INTERFACE
-MODULE PURE FUNCTION als_getPreconditionOption( obj ) RESULT( Ans )
-  CLASS( AbstractLinSolver_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION als_getPreconditionOption
+  MODULE PURE FUNCTION als_getPreconditionOption(obj) RESULT(Ans)
+    CLASS(AbstractLinSolver_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION als_getPreconditionOption
 END INTERFACE
-
 
 END MODULE AbstractLinSolver_Class
