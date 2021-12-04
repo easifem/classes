@@ -132,7 +132,7 @@ CONTAINS
     & Domain_getNodeToElements1, &
     & Domain_getNodeToElements2
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalNodes => Domain_getTotalNodes
-      !! returns the total number of nodes in the domain, mesh, or part of mesh
+    !! returns the total number of nodes in the domain, mesh, or part of mesh
   PROCEDURE, PASS(obj) :: Domain_tNodes1
     !! Returns the total nodes in domain
   PROCEDURE, PASS(obj) :: Domain_tNodes2
