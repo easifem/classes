@@ -186,34 +186,6 @@ PUBLIC :: stvField_checkEssentialParam
 ! - `timeCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 !
-!
-!### Usage
-!
-!```fortran
-  ! type( domain_ ) :: dom
-  ! type( STVectorField_ ) :: obj
-  ! type( HDF5File_ ) :: meshfile
-  ! type( ParameterList_ ) :: param
-  ! integer( i4b ) :: ierr
-  ! call display( "Testing Initiate and Deallocate for normal data" )
-  ! call FPL_INIT()
-  ! call param%initiate()
-  ! ierr = param%set(key="name", value="U" )
-  ! ierr = param%set(key="fieldType", value=FIELD_TYPE_NORMAL)
-  ! ierr = param%set(key="spaceCompo", value=3)
-  ! ierr = param%set(key="timeCompo", value=3)
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call dom%initiate( meshfile )
-  ! call obj%initiate( param, dom )
-  ! call obj%display( "space-time vector field = ")
-  ! call obj%Deallocate()
-  ! call dom%Deallocate()
-  ! call meshfile%close()
-  ! call meshfile%Deallocate()
-  ! call param%Deallocate()
-  ! call FPL_FINALIZE()
-!```
 INTERFACE
 MODULE SUBROUTINE stvField_Initiate1( obj, param, dom )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
@@ -555,10 +527,15 @@ END INTERFACE
 !# Introduction
 ! This routine sets selected entries of space-time vector field. Here
 ! globalNode contains the list of global nodes where values will be changed.
-! `value` is a rank-3 array. Its first index denotes the space component,
-! second index denotes the time components, and third component denotes the
-! node number. The size of dimension should be equal to the size of
-! globalNode.
+!
+! - `value` is a rank-3 array.
+! - Its first index denotes the space component,
+! - second index denotes the time components
+! - third component denotes the node number.
+!
+!@note
+!The size of dimension should be equal to the size of globalNode.
+!@endnote
 !
 ! STvector( :, :, globalNode ) = value( :, :, : )
 
@@ -690,7 +667,12 @@ END INTERFACE
 ! summary: This routine get all the entries of the space-time vector field
 !
 !# Introduction
-! This routine returns all the nodal values of a space-time nodal vector field. Here value is a rank3 array of reals. Its first index denotes the spatial component, second index denotes the temporal component, and third index denotes the node number.
+! This routine returns all the nodal values of a space-time nodal vector field.
+! Here value is a rank3 array of reals.
+!
+! - Its first index denotes the spatial component
+! - the second index denotes the temporal component
+! - the third index denotes the node number.
 
 INTERFACE
 MODULE SUBROUTINE stvField_get2( obj, value )
@@ -709,8 +691,14 @@ END INTERFACE
 !
 !# Introduction
 ! 	This routine returns the space-time nodal values of selected nodes.
-! The values will be returned in rank3 array value. The first index corresponds to the spatial components, the second index corresponds to the temporal components, and the third index corresponds to the node number.
-! Note that the size of third dimension of value should be equal to the size of globalNode.
+! The values will be returned in rank3 array value.
+! - The first index corresponds to the spatial components
+! - The second index corresponds to the temporal components,
+! - The third index corresponds to the node number.
+!
+!@note
+! The size of third dimension of value should be equal to the size of globalNode.
+!@endnote
 
 INTERFACE
 MODULE SUBROUTINE stvField_get3(obj, value, globalNode)
