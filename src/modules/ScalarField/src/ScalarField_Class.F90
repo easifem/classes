@@ -68,7 +68,11 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
     !! set values to a scalar by using triplet
   PROCEDURE, PASS( obj ) :: set7 => sField_set7
     !! set values to a vector by using triplet
-  GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, set7
+  PROCEDURE, PASS( obj ) :: set8 => sField_set8
+    !! set values to a vector by using triplet
+  GENERIC, PUBLIC :: set => set1, set2, set3, set4, &
+       & set5, set6, set7, set8
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => set8
     !! set values to a vector
   PROCEDURE, PASS( obj ) :: get1 => sField_get1
     !! get single entry
@@ -431,6 +435,21 @@ MODULE SUBROUTINE sField_set7( obj, istart, iend, stride, value )
   INTEGER( I4B ), INTENT( IN ) :: stride
   REAL( DFP ), INTENT( IN ) :: value( : )
 END SUBROUTINE sField_set7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: set the vector vals using triplet
+
+INTERFACE
+MODULE SUBROUTINE sField_set8( obj, obj2 )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  CLASS( ScalarField_ ), INTENT( IN ) :: obj2
+END SUBROUTINE sField_set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
