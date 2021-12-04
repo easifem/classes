@@ -25,8 +25,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_get1
-  ! INTEGER( I4B ) :: localNode
-  ! CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_get1"
+  CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_get1"
+  !INTEGER( I4B ) :: localNode
 
   ! IF( PRESENT( globalNode ) ) THEN
   !   SELECT CASE( obj%fieldType )
@@ -55,6 +55,11 @@ MODULE PROCEDURE stvField_get1
   !   CALL e%raiseError(modName//'::'//myName// " - "// &
   !     & 'either globalNode or space component should be present' )
   ! END IF
+  !
+  ! TODO Implement stvField_get1
+  !
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This is work in progress!' )
 END PROCEDURE stvField_get1
 
 !----------------------------------------------------------------------------
@@ -62,7 +67,8 @@ END PROCEDURE stvField_get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_get2
-  value = RESHAPE( get( obj=obj%realVec, datatype=1.0_DFP ), [obj%spaceCompo, obj%timeCompo, obj%domain%getTotalNodes() ] )
+  value = RESHAPE( get( obj=obj%realVec, datatype=1.0_DFP ), &
+       & [obj%spaceCompo, obj%timeCompo, obj%domain%getTotalNodes() ] )
 END PROCEDURE stvField_get2
 
 !----------------------------------------------------------------------------
@@ -92,7 +98,7 @@ END PROCEDURE stvField_get3
 MODULE PROCEDURE stvField_get4
   CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_get4"
   INTEGER( I4B ) :: localNode( SIZE( globalNode ) ), idof
-
+  !! main
   localNode = obj%domain%getLocalNodeNumber( globalNode )
   IF( ANY( localNode .EQ. 0 ) ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &

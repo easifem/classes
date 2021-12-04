@@ -506,7 +506,7 @@ INTEGER(Int8), ALLOCATABLE :: types(:)
 INTEGER(I4B) :: nCells, nPoints, ii, jj, nne
 INTEGER(I4B), ALLOCATABLE :: vtkIndx(:), connectivity(:), &
   & offsets(:), localNptrs(:)
-!> main
+!! main
 IF (.NOT. vtkFile%isInitiated) THEN
   IF (.NOT. PRESENT(filename)) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
@@ -517,22 +517,22 @@ IF (.NOT. vtkFile%isInitiated) THEN
       & DataStructureType=VTK_UnStructuredGrid)
   END IF
 END IF
-!>
+!!
 nCells = obj%getTotalElements()
 nPoints = obj%getTotalNodes()
 OpenTag_ = INPUT(default=.TRUE., option=OpenTag)
 CloseTag_ = INPUT(default=.TRUE., option=CloseTag)
 Content_ = INPUT(default=.TRUE., option=Content)
-!> Write piece information if OpenTag is true
+!! Write piece information if OpenTag is true
 IF (OpenTag_) CALL vtkFile%WritePiece(nPoints=nPoints, nCells=nCells)
-!> Write Points information
+!! Write Points information
 IF (PRESENT(nodeCoord)) THEN
   IF (ANY(SHAPE(nodeCoord) .NE. [3, nPoints])) &
       & CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Shape of nodeCoord should be [3, nPoints]")
   CALL vtkFile%WritePoints(x=nodeCoord)
 END IF
-!> Write Cells
+!! Write Cells
 IF (Content_) THEN
   CALL getVTKelementType(elemType=obj%elemType, &
     & vtk_type=vtkType, Nptrs=vtkIndx)
@@ -555,7 +555,7 @@ IF (Content_) THEN
     & types=types)
 END IF
 IF (CloseTag_) CALL vtkFile%WritePiece()
-!> clean up
+!! clean up
 IF (ALLOCATED(types)) DEALLOCATE (types)
 IF (ALLOCATED(vtkIndx)) DEALLOCATE (vtkIndx)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
