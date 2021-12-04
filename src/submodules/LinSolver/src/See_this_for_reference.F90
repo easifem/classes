@@ -363,14 +363,13 @@ MODULE PROCEDURE skit_solve
 
   INTEGER( I4B ) :: i, j, a, b, n, fac
   REAL( DFP ) :: val
-
+  !
   ! applying dbc
   !
   IF( ALLOCATED( obj % dbcnptrs ) ) THEN
     n = SIZE( obj % dbcnptrs )
     DO j = 1, n
       val = sol( obj % dbcnptrs( j ) )
-
       DO i = obj % dbcindx( j ), obj % dbcindx( j + 1 ) - 1
         rhs( obj % dbcIA( i ) ) = rhs( obj % dbcIA( i ) ) &
           & - obj % A( obj % dbcJA( i ) ) * val
@@ -398,46 +397,39 @@ MODULE PROCEDURE skit_solve
       END DO
     END DO
   END IF
-
+  !
   n = size( rhs )
   obj % ipar( 1 ) = 0
   a = 0 !its
   b = SIZE( obj % A ) !nnz
   fac = 3
   obj % ierr = 0
-
   ! make preconditioning
   IF( obj % ipar( 2 ) .NE. 0 ) THEN
 100  IF( obj % ierr .EQ.  -2 .OR. obj % ierr .EQ. -3 ) THEN
         CALL reallocate( obj % ALU, fac * b, obj % JLU, fac * b )
       END IF
-
     SELECT CASE( obj % precondType )
     CASE( p_ilut )
       CALL ILUT( n, obj % A, obj % JA, obj % IA, &
         & obj % lfil, obj % droptol, &
         & obj % alu, obj % jlu, obj % ju, &
         & SIZE( obj % alu ), obj % w, obj % jw, obj % ierr )
-
     CASE( p_ilutp )
       CALL ILUTP( n, obj % A, obj % JA, obj % IA, &
         & obj % lfil, obj % droptol, obj % permtol, obj % mbloc, &
         & obj % alu, obj % jlu, obj % ju, &
         & SIZE( obj % alu ), obj % w, obj % jw, obj % iperm, obj % ierr )
-
     CASE( p_ilud )
       CALL ILUD( n, obj % A, obj % JA, obj % IA, &
         & obj % alpha, obj % droptol, obj % alu, obj % jlu, obj % ju, &
         & SIZE( obj % alu ), obj % w, obj % jw, obj % ierr )
-
     CASE( p_iludp )
       CALL ILUDP( n, obj % A, obj % JA, obj % IA, &
         & obj % alpha, obj % droptol, obj % permtol, obj % mbloc, &
         & obj % alu, obj % jlu, obj % ju, &
         & SIZE( obj % alu ), obj % w, obj % jw, obj % iperm, obj % ierr )
-
     END SELECT
-
     IF( obj % ierr .EQ.  -2 .OR. obj % ierr .EQ. -3 ) THEN
       fac = 2*fac
       goto 100
