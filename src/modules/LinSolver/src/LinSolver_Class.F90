@@ -52,32 +52,6 @@ INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 !
 ! - Reference : https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
 ! - This class interface LinSolver and `EASIFEM`
-!
-!### Usage
-!
-!```fortran
-! CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
-!    & <, diagScale, ipar, fpar> )
-! CALL obj % setPrecondition( obj, precondtype <,ipar, fpar> )
-! CALL obj % setSparsity( From )
-! CALL obj % setDirichletBCNodes( Nptrs, dofs )
-! CALL obj % setMatrix( From )
-! CALL obj % solve( sol, rhs )
-! CALL obj % Display( msg <,unitno > )
-! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL obj % Deallocate( )
-!```
-!
-!### Solver name
-!
-!
-!### Precondition Name
-!
-!### Todo
-!
-!@todo
-! - Implement `ilutp` ans `iludp` preconditioners
-!@endtodo
 
 TYPE, EXTENDS(AbstractLinSolver_) :: LinSolver_
   PRIVATE
