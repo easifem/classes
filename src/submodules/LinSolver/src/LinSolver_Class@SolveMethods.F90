@@ -19,8 +19,6 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
-! #define _DEBUG_LINSOLVE_
-
 !----------------------------------------------------------------------------
 !                                                                    Display
 !----------------------------------------------------------------------------
@@ -28,8 +26,8 @@ CONTAINS
 MODULE PROCEDURE ls_Solve
 CHARACTER(LEN=*), PARAMETER :: myName = "ls_Solve"
 REAL(DFP), POINTER :: rhsVar(:), solVar(:)
-!> main
-!> check
+!! main
+!! check
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Linear solver is not initiated, initiate first!')
@@ -38,6 +36,24 @@ solVar => NULL(); solVar => sol%getPointer()
 SELECT CASE (obj%solverName)
 CASE (LIS_CG)
   CALL LS_SOLVE_CG(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_CGNR)
+  CALL LS_SOLVE_CGNR(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_BCG)
+  CALL LS_SOLVE_BCG(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_DBCG)
+  CALL LS_SOLVE_DBCG(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_BCGSTAB)
+  CALL LS_SOLVE_BCGSTAB(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_TFQMR)
+  CALL LS_SOLVE_TFQMR(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_FOM)
+  CALL LS_SOLVE_FOM(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_GMRES)
+  CALL LS_SOLVE_GMRES(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_FGMRES)
+  CALL LS_SOLVE_FGMRES(obj, sol=solVar, rhs=rhsVar)
+CASE (LIS_DQGMRES)
+  CALL LS_SOLVE_DQGMRES(obj, sol=solVar, rhs=rhsVar)
 CASE DEFAULT
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Unknown linear solver encountered')
@@ -46,82 +62,94 @@ rhsVar => NULL(); solVar => NULL()
 END PROCEDURE ls_Solve
 
 !----------------------------------------------------------------------------
-!                                                                    Display
+!                                                               LS_SOLVE_CG
 !----------------------------------------------------------------------------
 
-SUBROUTINE LS_SOLVE_CG(obj, sol, rhs)
-  CLASS(LinSolver_), TARGET, INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(INOUT) :: sol(:)
-  REAL(DFP), INTENT(INOUT) :: rhs(:)
-  ! Internal variables
-  CHARACTER(LEN=*), PARAMETER :: myName = "LS_SOLVE_CG"
-  INTEGER(I4B) :: n, ii, jj, x1, x2, y1, y2, unitNo
-  REAL(DFP) :: val
-  !> main
-  obj%IPAR(1) = 0; obj%ierr = 0; obj%FPAR(11) = 0.0_DFP
-  obj%iter = 0; n = obj%globalNumRow; jj = 0
-#ifdef _DEBUG_LINSOLVE_
-  CALL Display("LINEAR ITERATIVE SOLVER CG METHOD")
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    CALL Display("NO PRECONDITONER")
-  ELSE IF (obj%preconditionOption .EQ. LEFT_PRECONDITION) THEN
-    CALL Display("LEFT PRECONDITONER")
-  ELSE IF (obj%preconditionOption .EQ. RIGHT_PRECONDITION) THEN
-    CALL Display("RIGHT PRECONDITONER")
-  ELSE IF (obj%preconditionOption .EQ. LEFT_RIGHT_PRECONDITION) THEN
-    CALL Display("LEFT-RIGHT PRECONDITONER")
-  END IF
-#endif
-  DO
-#ifdef _DEBUG_LINSOLVE_
-    CALL EqualLine()
-    CALL Display(obj%iter, "ITERATION = ")
-    CALL Display(obj%FPAR(6), "CURRENT RESIDUAL = ")
-#endif
-    CALL CG(n, rhs, sol, obj%IPAR, obj%FPAR, obj%W)
-    !> error code
-    obj%ierr = obj%IPAR(1)
-    !> iteration number,🏵  obj%iter represent
-    ! the number of matrix-vec performed.
-    obj%iter = obj%ipar(7)
-    !> Current residual, Be careful ⚠ ,
-    IF (obj%iter .NE. 0) obj%RES(obj%iter) = obj%FPAR(6)
-    ! ii = MOD(obj%iter, 2)
-    ! IF (ii .EQ. 0 .AND. obj%iter .NE. 0) THEN
-    !   jj = jj + 1
-    !   obj%RES(jj) = obj%fpar(6)
-    ! END IF
-    x1 = obj%ipar(8); x2 = x1 + n - 1
-    y1 = obj%ipar(9); y2 = y1 + n - 1
-    IF (obj%ierr .EQ. 0) THEN
-      IF (e%isLogActive()) THEN
-        unitNo = e%getLogFileUnit()
-      ELSE
-        unitNo = stdout
-      END IF
-      CALL e%raiseInformation(modName//'::'//myName//" - "// &
-        & "Convergence is achieved in conjugate gradient method🎖")
-      CALL Display(obj%iter, "# Number of Matrix-Vector Multiplication = ",&
-        & unitNo=unitNo)
-      CALL Display(obj%fpar(3), "# Initial residual/error norm = ",&
-        & unitNo=unitNo)
-      CALL Display(obj%fpar(4), "# Target residual/error norm = ",&
-        & unitNo=unitNo)
-      CALL Display(obj%fpar(6), "# Current residual/error norm = ",&
-        & unitNo=unitNo)
-      CALL Display(obj%fpar(5), "# Current residual norm = ",&
-        & unitNo=unitNo)
-      CALL Display(obj%fpar(7), "# Convergence rate = ",&
-        & unitNo=unitNo)
-      EXIT
-    ELSE IF (obj%ierr .GT. 0) THEN
-      CALL PERFORM_TASK(obj%Amat, y=obj%W(y1:y2), x=obj%W(x1:x2), &
-        & ierr=obj%ierr, myName=myName)
-    ELSE IF (obj%ierr .LT. 0) THEN
-      CALL CHECKERROR(IPAR=obj%IPAR, FPAR=obj%FPAR, myName=myName)
-    END IF
-  END DO
-END SUBROUTINE LS_SOLVE_CG
+#define _SUBROUTINE_NAME LS_SOLVE_CG
+#define _LIS_NAME CG
+#define _MY_NAME "LS_SOLVE_CG"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_CGNR
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_CGNR
+#define _LIS_NAME CGNR
+#define _MY_NAME "LS_SOLVE_CGNR"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_BCG
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_BCG
+#define _LIS_NAME BCG
+#define _MY_NAME "LS_SOLVE_BCG"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_DBCG
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_DBCG
+#define _LIS_NAME DBCG
+#define _MY_NAME "LS_SOLVE_DBCG"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                          LS_SOLVE_BCGSTAB
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_BCGSTAB
+#define _LIS_NAME BCGSTAB
+#define _MY_NAME "LS_SOLVE_BCGSTAB"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+  !                                                          LS_SOLVE_TFQMR
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_TFQMR
+#define _LIS_NAME TFQMR
+#define _MY_NAME "LS_SOLVE_TFQMR"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                              LS_SOLVE_FOM
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_FOM
+#define _LIS_NAME FOM
+#define _MY_NAME "LS_SOLVE_FOM"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                              LS_SOLVE_GMRES
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_GMRES
+#define _LIS_NAME GMRES
+#define _MY_NAME "LS_SOLVE_GMRES"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                           LS_SOLVE_FGMRES
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_FGMRES
+#define _LIS_NAME FGMRES
+#define _MY_NAME "LS_SOLVE_FGMRES"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                           LS_SOLVE_DQGMRES
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_DQGMRES
+#define _LIS_NAME DQGMRES
+#define _MY_NAME "LS_SOLVE_DQGMRES"
+#include "./LIS_SOLVE.inc"
 
 !----------------------------------------------------------------------------
 !                                                           PerformMatVec
@@ -133,29 +161,17 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, ierr, myName)
   REAL(DFP), INTENT(IN) :: x(:)
   INTEGER(I4B), INTENT(IN) :: ierr
   CHARACTER(LEN=*), INTENT(IN) :: myName
-  !-------------------------------------------
+  !! main
   SELECT CASE (ierr)
   CASE (1)
-#ifdef _DEBUG_LINSOLVE_
-    CALL Display("CALLING MATVEC")
-#endif
     CALL Amat%Matvec(y=y, x=x)
   CASE (2)
-#ifdef _DEBUG_LINSOLVE_
-    CALL Display("CALLING MATVEC WITH TRANSPOSE TRUE")
-#endif
     CALL Amat%Matvec(y=y, x=x, transp=.TRUE.)
   CASE (3, 5)
-#ifdef _DEBUG_LINSOLVE_
-    CALL Display("CALLING LUSOLVE")
-#endif
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
     CALL Amat%LUSOLVE(sol=y, rhs=x)
   CASE (4, 6)
-#ifdef _DEBUG_LINSOLVE_
-    CALL Display("CALLING LUTSOLVE")
-#endif
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
     CALL Amat%LUSOLVE(sol=y, rhs=x, transp=.TRUE.)
@@ -205,19 +221,51 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
       & "Return due to anticipated break-down / divide by zero")
   CASE (-4)
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "The values of `fpar(1)` and `fpar(2)` are both <= 0, the valid &
-  & ranges are `0 <= fpar(1) < 1`, `0 <= fpar(2)`, and they can not be &
-      & zero at the same time")
+      & "The values of `fpar(1)` and `fpar(2)` are both <= 0, &
+      & the valid ranges are `0 <= fpar(1) < 1`, `0 <= fpar(2)`, &
+      & and they can not be zero at the same time")
   CASE (-9)
     CALL e%raiseError(modName//'::'//myName//" - "// &
-& "While trying to detect a break-down, an abnormal number is detected")
+      & "While trying to detect a break-down, &
+      & an abnormal number is detected")
   CASE (-10)
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "Return due to some non-numerical reasons, e.g. invalid floating-point numbers etc")
+      & "Return due to some non-numerical reasons, &
+      & e.g. invalid floating-point numbers etc")
   CASE DEFAULT
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "Unknown error encountered. Cannot read the error message")
   END SELECT
 END SUBROUTINE CHECKERROR
 
+!----------------------------------------------------------------------------
+!                                                        DisplayConvergence
+!----------------------------------------------------------------------------
+
+SUBROUTINE DisplayConvergence(myName, iter, FPAR)
+  CHARACTER(LEN=*), INTENT(IN) :: myName
+  INTEGER(I4B), INTENT(IN) :: iter
+  REAL(DFP), INTENT(IN) :: FPAR(:)
+  !! main
+  INTEGER(I4B) :: unitno
+  IF (e%isLogActive()) THEN
+    unitno = e%getLogFileUnit()
+  ELSE
+    unitno = stdout
+  END IF
+  CALL e%raiseInformation(modName//'::'//myName//" - "// &
+    & 'Convergence is achieved 🎖')
+  CALL Display(iter, "# Number of Matrix-Vector Multiplication = ",&
+    & unitno=unitno)
+  CALL Display(fpar(3), "# Initial residual/error norm = ",&
+    & unitno=unitno)
+  CALL Display(fpar(4), "# Target residual/error norm = ",&
+    & unitno=unitno)
+  CALL Display(fpar(6), "# Current residual/error norm = ",&
+    & unitno=unitno)
+  CALL Display(fpar(5), "# Current residual norm = ",&
+    & unitno=unitno)
+  CALL Display(fpar(7), "# Convergence rate = ",&
+    & unitno=unitno)
+END SUBROUTINE DisplayConvergence
 END SUBMODULE SolveMethods
