@@ -564,6 +564,17 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 Sept 2021
 ! summary: Export mesh to a VTK file
+!
+!
+!# Introduction
+!
+! - If `filename` is present then call [[VTKFile_:InitiateVTKFile]] method
+! - If `nodeCoord` is present then write Points by calling
+! [[VTKFile_:WritePoints]] method
+! - If `content` is present then write cell data by calling
+! [[VTKFile_:WriteCells]] methods
+! - If openTag is true then write piece info
+! - If closeTag is true then close the piece
 
 INTERFACE
   MODULE SUBROUTINE mesh_ExportToVTK(obj, vtkFile, nodeCoord, filename, &
@@ -573,8 +584,11 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(:, :)
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: OpenTag
+    !! Default is true
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: CloseTag
+    !! Default is true
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Content
+    !! Default is true
   END SUBROUTINE mesh_ExportToVTK
 END INTERFACE
 
