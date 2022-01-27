@@ -96,8 +96,24 @@ TYPE :: DomainConnectivity_
     !! global node number `i` in domain-1
   INTEGER(I4B), ALLOCATABLE :: cellToCell(:)
     !! Cell to cell connectivity
-    !! CellToCell(ielem) => global elem number in domain-2, corresponding to
+    !! CellToCell(ielem) => global elem number in domain-2,
+    !! corresponding to
     !! global node number `ielem` in domain-1
+  INTEGER(I4B), ALLOCATABLE :: cellToCellExtraData(:,:)
+    !! Currently, cellToCellExtraData has two rows
+    !! the first row is dim
+    !! the second row is entityNum
+    !! the column represents the element number
+    !! example: iel1 in domain1
+    !!          cellToCell(iel) gives iel2 in domain2
+    !!          cellToCellExtraData(1, iel1) gives
+    !!          dimension of mesh which contains iel2
+    !!          cellToCellExtraData(2, iel1) gives
+    !!          entityNum of mesh which contains iel2
+    !!          In this way,
+    !!          domain2%getMeshPointer(dim, entityNum)
+    !!          can give us the pointer to the mesh
+    !!          which contains the iel2
   TYPE(FacetConnectivity_), ALLOCATABLE :: facetToCell(:)
     !! Facet connectivity, Facet to cell data
   TYPE(ElementConnectivity_), ALLOCATABLE :: elemToElem(:)
@@ -105,57 +121,64 @@ TYPE :: DomainConnectivity_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => dc_addSurrogate
-    !! Add surrogate to the module error handler
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => dc_Deallocate
-    !! Deallocate data stored in the object
-    !! TODO change Deallocate --> Deallocate
+  !! Add surrogate to the module error handler
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => dc_Deallocate
+  !! Deallocate data stored in the object
   FINAL :: dc_Final
-    !! finalizer
+  !! finalizer
   PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData1
-    !! Initiate [[DomainConnectivity_:nodeToNode]]
+  !! Initiate [[DomainConnectivity_:nodeToNode]]
   PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData2
-    !! Initiate [[DomainConnectivity_:nodeToNode]]
+  !! Initiate [[DomainConnectivity_:nodeToNode]]
   GENERIC, PUBLIC :: initiateNodeToNodeData => &
     & dc_initiateNodeToNodeData1, &
     & dc_initiateNodeToNodeData2
-    !! Initiate [[DomainConnectivity_:nodeToNode]]
+  !! Initiate [[DomainConnectivity_:nodeToNode]]
   PROCEDURE, PUBLIC, PASS(obj) :: getNodeToNodePointer => &
     & dc_getNodeToNodePointer
-    !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
+  !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
+  !!
+  !! @CellMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData1
-    !! Initiates [[DomainConnectivity_:cellToCell]] data
+  !! Initiates [[DomainConnectivity_:cellToCell]] data
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
-    !! Initiates [[DomainConnectivity_:cellToCell]] data
+  !! Initiates [[DomainConnectivity_:cellToCell]] data
   GENERIC, PUBLIC :: initiateCellToCellData => &
-       & dc_initiateCellToCellData1, &
-       & dc_initiateCellToCellData2
-    !! Initiates [[DomainConnectivity_:cellToCell]] data
+    & dc_initiateCellToCellData1, &
+    & dc_initiateCellToCellData2
+  !! Initiates [[DomainConnectivity_:cellToCell]] data
   PROCEDURE, PUBLIC, PASS(obj) :: getCellToCellPointer => &
     & dc_getCellToCellPointer
-    !! Return pointer to the [[DomainConnectivity_:CellToCell]]
+  !! Return pointer to the [[DomainConnectivity_:CellToCell]]
+  PROCEDURE, PUBLIC, PASS(obj) :: getDimEntityNum => &
+    & dc_getDimEntityNum
+  !! Returns the dim and entity num of mesh which contains
+  !! the element (in domain2) which is connected to element
+  !! in domain 1.
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData1
-    !! Initiate facet to cell connectivity
-    !! [[DomainConnectivity_:facetToCell]]
+  !! Initiate facet to cell connectivity
+  !! [[DomainConnectivity_:facetToCell]]
   GENERIC, PUBLIC :: initiateFacetToCellData1 =>  &
     & dc_initiateFacetToCellData1
-    !! Initiate facet to cell connectivity
-    !! [[DomainConnectivity_:facetToCell]]
+  !! Initiate facet to cell connectivity
+  !! [[DomainConnectivity_:facetToCell]]
   PROCEDURE, PASS(obj) :: dc_cellNumber1
-    !! Return the cell number of a given facet
+  !! Return the cell number of a given facet
   PROCEDURE, PASS(obj) :: dc_cellNumber2
-    !! Return the cell numbers of given facet elements
+  !! Return the cell numbers of given facet elements
   GENERIC, PUBLIC :: cellNumber =>  &
     & dc_cellNumber1, &
     & dc_cellNumber2
-    !! Return the cell numbers of given facet elements
+  !! Return the cell numbers of given facet elements
   PROCEDURE, PUBLIC, PASS(obj) :: dc_facetLocalID1
-    !! Return the facet local id in cell element
+  !! Return the facet local id in cell element
   PROCEDURE, PUBLIC, PASS(obj) :: dc_facetLocalID2
-    !! Return the facet local id in cell element
+  !! Return the facet local id in cell element
   GENERIC, PUBLIC :: facetLocalID =>  &
     & dc_facetLocalID1, &
     & dc_facetLocalID2
-    !! Return the facet local id in cell element
+  !! Return the facet local id in cell element
 END TYPE DomainConnectivity_
 
 PUBLIC :: DomainConnectivity_
@@ -458,8 +481,30 @@ INTERFACE
   END FUNCTION dc_getCellToCellPointer
 END INTERFACE
 
+
 !----------------------------------------------------------------------------
-!                               InitiateFacetToCellData@FacetToCellMethods
+!                                           getDimEntityNum@CellMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-11-10
+! update: 2021-11-10
+! summary: Returns pointer to  cell-to-cell data
+!
+!# Introduction
+!
+! This function returns the pointer to [[DomainConnectivity_:CellToCell]]
+
+INTERFACE
+  MODULE PURE FUNCTION dc_getDimEntityNum(obj, globalElement) RESULT(Ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    INTEGER(I4B) :: ans(2)
+  END FUNCTION dc_getDimEntityNum
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               InitiateFacetToCellData@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -493,7 +538,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              CellNumber@FacetToCellMethods
+!                                              CellNumber@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -504,12 +549,6 @@ END INTERFACE
 !
 ! - Returns cell number of given facet number
 ! - if cell number is zero it means facet element is an orphan
-!
-!# Usage
-!
-!```fortran
-!id = obj % CellNumber( facetNum )
-!```
 
 INTERFACE
   MODULE PURE FUNCTION dc_CellNumber1(obj, FacetNum) RESULT(ans)
@@ -523,7 +562,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              CellNumber@FacetToCellMethods
+!                                              CellNumber@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -534,12 +573,6 @@ END INTERFACE
 !
 ! - Returns cell number of given facet number
 ! - if cell number is zero it means facet element is an orphan
-!
-!# Usage
-!
-!```fortran
-!        id = obj % CellNumber( facetNum )
-!```
 
 INTERFACE
   MODULE PURE FUNCTION dc_CellNumber2(obj, FacetNum) RESULT(ans)
@@ -553,7 +586,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            FacetLocalID@FacetToCellMethods
+!                                            FacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -564,12 +597,6 @@ END INTERFACE
 !
 ! Returns the local facet id of cell element which is in contact with
 ! facet element
-!
-!## Usage
-!
-!```fortran
-! id = obj % FacetLocalID( FacetNum )
-!```
 
 INTERFACE
   MODULE PURE FUNCTION dc_FacetLocalID1(obj, FacetNum) RESULT(ans)
@@ -583,7 +610,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            FacetLocalID@FacetToCellMethods
+!                                            FacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
