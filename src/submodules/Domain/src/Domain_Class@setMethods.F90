@@ -87,7 +87,7 @@ MODULE PROCEDURE Domain_setSparsity2
     rowMeshSize=rowDomain%getTotalMesh( dim=nsd( ivar ) )
     DO jvar = 1, SIZE( domains )
       colDomain => domains( jvar )%ptr
-      CALL domainConn%Deallocate()
+      CALL domainConn%DEALLOCATE()
       CALL domainConn%InitiateNodeToNodeData( domain1=rowDomain, &
         & domain2=colDomain )
       nodeToNode => domainConn%getNodeToNodePointer()
@@ -117,8 +117,36 @@ MODULE PROCEDURE Domain_setSparsity2
   END DO
   CALL setSparsity( mat )
   NULLIFY( rowMesh, colMesh, rowDomain, colDomain, nodeToNode )
-  CALL domainConn%Deallocate()
+  CALL domainConn%DEALLOCATE()
 END PROCEDURE Domain_setSparsity2
+
+!----------------------------------------------------------------------------
+!                                                          setTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setTotalMaterial
+INTEGER(I4B) :: ii
+CLASS(mesh_), POINTER :: meshptr
+!!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
+  CALL meshptr%setTotalMaterial(n)
+END DO
+meshptr=>null()
+END PROCEDURE Domain_setTotalMaterial
+
+!----------------------------------------------------------------------------
+!                                                          setTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setMaterial
+INTEGER(I4B) :: ii
+CLASS(mesh_), POINTER :: meshptr
+!!
+meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+CALL meshptr%setMaterial(medium=medium, material=material)
+meshptr=>null()
+END PROCEDURE Domain_setMaterial
 
 !----------------------------------------------------------------------------
 !
