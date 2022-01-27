@@ -60,16 +60,20 @@ END PROCEDURE Domain_isElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getConnectivity
-CLASS(Mesh_), POINTER :: meshptr
-!> main
-meshptr => NULL()
-meshptr => obj%getMeshPointer(globalElement=globalElement)
-IF (ASSOCIATED(meshptr)) THEN
-  ans = meshptr%getConnectivity(globalElement)
-ELSE
-  ALLOCATE (ans(0))
-END IF
-NULLIFY (meshptr)
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  !! main
+  !!
+  meshptr => NULL()
+  meshptr => obj%getMeshPointer(globalElement=globalElement)
+  !!
+  IF (ASSOCIATED(meshptr)) THEN
+    ans = meshptr%getConnectivity(globalElement)
+  ELSE
+    ALLOCATE (ans(0))
+  END IF
+  !!
+  NULLIFY (meshptr)
 END PROCEDURE Domain_getConnectivity
 
 !----------------------------------------------------------------------------
@@ -297,16 +301,15 @@ TYPE(MeshPointerIterator_) :: iterator
 !> main
 iterator%VALUE%ptr => NULL()
 tsize = obj%getTotalMesh(dim=dim)
-IF (entityNum .GT. tsize) THEN
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "entityNum are out of bound")
-END IF
+IF (entityNum .GT. tsize) &
+  & CALL e%raiseError(modName//"::"//myName//" - "// &
+  & "entityNum are out of bound")
 iterator = obj%meshList(dim)%Begin()
 DO imesh = 2, entityNum
   CALL iterator%Inc()
 END DO
 ans => iterator%VALUE%ptr
-CALL iterator%Deallocate()
+CALL iterator%DEALLOCATE()
 END PROCEDURE Domain_getMeshPointer1
 
 !----------------------------------------------------------------------------
@@ -329,6 +332,27 @@ dimloop: DO dim = 0, obj%nsd
   END DO
 END DO dimloop
 END PROCEDURE Domain_getMeshPointer2
+
+!----------------------------------------------------------------------------
+!                                                           getDimEntityNum
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getDimEntityNum
+INTEGER(i4b) :: dim, entityNum
+CLASS(Mesh_), POINTER :: meshptr
+!! main
+ans = 0
+!!
+dimloop: DO dim = 0, obj%nsd
+  DO entityNum = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+    IF (meshptr%isElementPresent(globalElement=globalElement)) THEN
+      ans = [dim, entityNum]
+      EXIT dimloop
+    END IF
+  END DO
+END DO dimloop
+END PROCEDURE Domain_getDimEntityNum
 
 !----------------------------------------------------------------------------
 !                                                               getNodeCoord
@@ -363,7 +387,7 @@ END PROCEDURE Domain_getNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNodeCoordPointer
-ans => obj%nodeCoord
+  ans => obj%nodeCoord
 END PROCEDURE Domain_getNodeCoordPointer
 
 !----------------------------------------------------------------------------
@@ -379,22 +403,56 @@ END PROCEDURE Domain_getGlobalToLocalNodeNumPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNptrs
-INTEGER(I4B) :: ii
-CLASS(Mesh_), POINTER :: meshptr
-TYPE(IntVector_) :: intvec
-!>
-meshptr => NULL()
-DO ii = 1, SIZE(meshID)
-  meshptr => obj%GetMeshPointer(dim=xidim, entityNum=meshID(ii))
-  IF (ASSOCIATED(meshptr)) THEN
-    CALL APPEND(intvec, meshptr%getNptrs())
-  END IF
-END DO
-CALL RemoveDuplicates(intvec)
-ans = intvec
-CALL Deallocate(intvec)
-NULLIFY (meshptr)
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  TYPE(IntVector_) :: intvec
+  !!
+  !!
+  !!
+  meshptr => NULL()
+  DO ii = 1, SIZE(entityNum)
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
+    IF (ASSOCIATED(meshptr)) THEN
+      CALL APPEND(intvec, meshptr%getNptrs())
+    END IF
+  END DO
+  !!
+  CALL RemoveDuplicates(intvec)
+  !!
+  ans = intvec
+  !!
+  CALL DEALLOCATE (intvec)
+  NULLIFY (meshptr)
+  !!
 END PROCEDURE Domain_getNptrs
+
+!----------------------------------------------------------------------------
+!                                                                   getNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getInternalNptrs
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  TYPE(IntVector_) :: intvec
+  !!
+  !!
+  !!
+  meshptr => NULL()
+  DO ii = 1, SIZE(entityNum)
+    meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
+    IF (ASSOCIATED(meshptr)) THEN
+      CALL APPEND(intvec, meshptr%getInternalNptrs())
+    END IF
+  END DO
+  !!
+  CALL RemoveDuplicates(intvec)
+  !!
+  ans = intvec
+  !!
+  CALL DEALLOCATE (intvec)
+  NULLIFY (meshptr)
+  !!
+END PROCEDURE Domain_getInternalNptrs
 
 !----------------------------------------------------------------------------
 !                                                                     getNSD
@@ -403,6 +461,24 @@ END PROCEDURE Domain_getNptrs
 MODULE PROCEDURE Domain_getNSD
 ans = obj%NSD
 END PROCEDURE Domain_getNSD
+
+!----------------------------------------------------------------------------
+!                                                                     getNSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getOrder
+  INTEGER( I4B ) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  CALL Reallocate( ans, obj%getTotalMesh(dim=dim) )
+  !!
+  DO ii = 1, SIZE( ans )
+    meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
+    ans( ii ) = meshptr%getOrder()
+    meshptr => NULL()
+  END DO
+  !!
+END PROCEDURE Domain_getOrder
 
 !----------------------------------------------------------------------------
 !                                                            getBoundingBox
