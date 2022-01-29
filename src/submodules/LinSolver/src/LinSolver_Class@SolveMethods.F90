@@ -19,163 +19,50 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
-!----------------------------------------------------------------------------
-!                                                                    Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ls_Solve
-CHARACTER(LEN=*), PARAMETER :: myName = "ls_Solve"
-REAL(DFP), POINTER :: rhsVar(:), solVar(:)
-!! main
-!! check
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Linear solver is not initiated, initiate first!')
-rhsVar => NULL(); rhsVar => rhs%getPointer()
-solVar => NULL(); solVar => sol%getPointer()
-SELECT CASE (obj%solverName)
-CASE (LIS_CG)
-  CALL LS_SOLVE_CG(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_CGNR)
-  CALL LS_SOLVE_CGNR(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_BCG)
-  CALL LS_SOLVE_BCG(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_DBCG)
-  CALL LS_SOLVE_DBCG(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_BCGSTAB)
-  CALL LS_SOLVE_BCGSTAB(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_TFQMR)
-  CALL LS_SOLVE_TFQMR(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_FOM)
-  CALL LS_SOLVE_FOM(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_GMRES)
-  CALL LS_SOLVE_GMRES(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_FGMRES)
-  CALL LS_SOLVE_FGMRES(obj, sol=solVar, rhs=rhsVar)
-CASE (LIS_DQGMRES)
-  CALL LS_SOLVE_DQGMRES(obj, sol=solVar, rhs=rhsVar)
-CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Unknown linear solver encountered')
-END SELECT
-rhsVar => NULL(); solVar => NULL()
-END PROCEDURE ls_Solve
-
-!----------------------------------------------------------------------------
-!                                                               LS_SOLVE_CG
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_CG
-#define _LIS_NAME CG
-#define _MY_NAME "LS_SOLVE_CG"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                               LS_SOLVE_CGNR
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_CGNR
-#define _LIS_NAME CGNR
-#define _MY_NAME "LS_SOLVE_CGNR"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                               LS_SOLVE_BCG
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_BCG
-#define _LIS_NAME BCG
-#define _MY_NAME "LS_SOLVE_BCG"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                               LS_SOLVE_DBCG
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_DBCG
-#define _LIS_NAME DBCG
-#define _MY_NAME "LS_SOLVE_DBCG"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                          LS_SOLVE_BCGSTAB
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_BCGSTAB
-#define _LIS_NAME BCGSTAB
-#define _MY_NAME "LS_SOLVE_BCGSTAB"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-  !                                                          LS_SOLVE_TFQMR
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_TFQMR
-#define _LIS_NAME TFQMR
-#define _MY_NAME "LS_SOLVE_TFQMR"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                              LS_SOLVE_FOM
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_FOM
-#define _LIS_NAME FOM
-#define _MY_NAME "LS_SOLVE_FOM"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                              LS_SOLVE_GMRES
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_GMRES
-#define _LIS_NAME GMRES
-#define _MY_NAME "LS_SOLVE_GMRES"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                           LS_SOLVE_FGMRES
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_FGMRES
-#define _LIS_NAME FGMRES
-#define _MY_NAME "LS_SOLVE_FGMRES"
-#include "./LIS_SOLVE.inc"
-
-!----------------------------------------------------------------------------
-!                                                           LS_SOLVE_DQGMRES
-!----------------------------------------------------------------------------
-
-#define _SUBROUTINE_NAME LS_SOLVE_DQGMRES
-#define _LIS_NAME DQGMRES
-#define _MY_NAME "LS_SOLVE_DQGMRES"
-#include "./LIS_SOLVE.inc"
 
 !----------------------------------------------------------------------------
 !                                                           PerformMatVec
 !----------------------------------------------------------------------------
 
 SUBROUTINE PERFORM_TASK(Amat, y, x, ierr, myName)
+  !! intent of dummy variables
   CLASS(AbstractMatrixField_), INTENT(IN) :: Amat
   REAL(DFP), INTENT(INOUT) :: y(:)
   REAL(DFP), INTENT(IN) :: x(:)
   INTEGER(I4B), INTENT(IN) :: ierr
   CHARACTER(LEN=*), INTENT(IN) :: myName
+  !!
   !! main
+  !!
   SELECT CASE (ierr)
   CASE (1)
+    !!
+    !! MatVec
+    !!
     CALL Amat%Matvec(y=y, x=x)
+    !!
   CASE (2)
+    !!
+    !! Transposed MatVec
+    !!
     CALL Amat%Matvec(y=y, x=x, transp=.TRUE.)
+    !!
   CASE (3, 5)
-    ! LEFT/RIGHT PRECONDITIONER SOLVER
-    ! The preconditioners are inside the Amat
+    !!
+    !! LEFT/RIGHT PRECONDITIONER SOLVER
+    !! The preconditioners are inside the Amat
+    !!
     CALL Amat%LUSOLVE(sol=y, rhs=x)
+    !!
   CASE (4, 6)
-    ! LEFT/RIGHT PRECONDITIONER SOLVER
-    ! The preconditioners are inside the Amat
+    !!
+    !! LEFT/RIGHT PRECONDITIONER SOLVER
+    !! The preconditioners are inside the Amat
+    !!
     CALL Amat%LUSOLVE(sol=y, rhs=x, transp=.TRUE.)
+    !!
   END SELECT
+  !!
 END SUBROUTINE PERFORM_TASK
 
 !----------------------------------------------------------------------------
@@ -186,9 +73,13 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
   INTEGER(I4B), INTENT(IN) :: IPAR(:)
   REAL(DFP), INTENT(IN) :: FPAR(:)
   CHARACTER(LEN=*), INTENT(IN) :: myName
-  ! internal variable
+  !!
+  !! internal variable
+  !!
   INTEGER(I4B) :: ierr, unitNo
-  !
+  !!
+  !!
+  !!
   ierr = IPAR(1)
   SELECT CASE (ierr)
   CASE (-1)
@@ -255,6 +146,7 @@ SUBROUTINE DisplayConvergence(myName, iter, FPAR)
   END IF
   CALL e%raiseInformation(modName//'::'//myName//" - "// &
     & 'Convergence is achieved 🎖')
+  CALL EqualLine(unitNo=unitNo)
   CALL Display(iter, "# Number of Matrix-Vector Multiplication = ",&
     & unitno=unitno)
   CALL Display(fpar(3), "# Initial residual/error norm = ",&
@@ -267,5 +159,188 @@ SUBROUTINE DisplayConvergence(myName, iter, FPAR)
     & unitno=unitno)
   CALL Display(fpar(7), "# Convergence rate = ",&
     & unitno=unitno)
+  CALL EqualLine(unitNo=unitNo)
 END SUBROUTINE DisplayConvergence
+
+!----------------------------------------------------------------------------
+!                                                                    Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_Solve
+CHARACTER(LEN=*), PARAMETER :: myName = "ls_Solve"
+REAL(DFP), POINTER :: rhsvar(:), solvar(:)
+!!
+!! main
+!!
+!! check
+!!
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'Linear solver is not initiated, initiate first!')
+!!
+!!
+rhsvar => rhs%getPointer()
+solvar => sol%getPointer()
+!!
+SELECT CASE (obj%solverName)
+!!
+!!
+!!
+CASE (LIS_CG)
+  CALL LS_SOLVE_CG(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_CGNR)
+  CALL LS_SOLVE_CGNR(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_BCG)
+  CALL LS_SOLVE_BCG(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_DBCG)
+  CALL LS_SOLVE_DBCG(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_BCGSTAB)
+  CALL LS_SOLVE_BCGSTAB(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_TFQMR)
+  CALL LS_SOLVE_TFQMR(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_FOM)
+  CALL LS_SOLVE_FOM(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_GMRES)
+  CALL LS_SOLVE_GMRES(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_FGMRES)
+  CALL LS_SOLVE_FGMRES(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE (LIS_DQGMRES)
+  CALL LS_SOLVE_DQGMRES(obj, sol=solvar, rhs=rhsvar)
+!!
+!!
+!!
+CASE DEFAULT
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'Unknown linear solver encountered')
+!!
+!!
+!!
+END SELECT
+!!
+rhsvar => NULL(); solvar => NULL()
+!!
+END PROCEDURE ls_Solve
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_CG
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_CG
+#define _LIS_NAME CG
+#define _MY_NAME "LS_SOLVE_CG"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_CGNR
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_CGNR
+#define _LIS_NAME CGNR
+#define _MY_NAME "LS_SOLVE_CGNR"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_BCG
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_BCG
+#define _LIS_NAME BCG
+#define _MY_NAME "LS_SOLVE_BCG"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                               LS_SOLVE_DBCG
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_DBCG
+#define _LIS_NAME DBCG
+#define _MY_NAME "LS_SOLVE_DBCG"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                          LS_SOLVE_BCGSTAB
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_BCGSTAB
+#define _LIS_NAME BCGSTAB
+#define _MY_NAME "LS_SOLVE_BCGSTAB"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                          LS_SOLVE_TFQMR
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_TFQMR
+#define _LIS_NAME TFQMR
+#define _MY_NAME "LS_SOLVE_TFQMR"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                              LS_SOLVE_FOM
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_FOM
+#define _LIS_NAME FOM
+#define _MY_NAME "LS_SOLVE_FOM"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                              LS_SOLVE_GMRES
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_GMRES
+#define _LIS_NAME GMRES
+#define _MY_NAME "LS_SOLVE_GMRES"
+
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                           LS_SOLVE_FGMRES
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_FGMRES
+#define _LIS_NAME FGMRES
+#define _MY_NAME "LS_SOLVE_FGMRES"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!                                                           LS_SOLVE_DQGMRES
+!----------------------------------------------------------------------------
+
+#define _SUBROUTINE_NAME LS_SOLVE_DQGMRES
+#define _LIS_NAME DQGMRES
+#define _MY_NAME "LS_SOLVE_DQGMRES"
+#include "./LIS_SOLVE.inc"
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE SolveMethods
