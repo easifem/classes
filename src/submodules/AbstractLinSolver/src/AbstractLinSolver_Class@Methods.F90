@@ -28,4 +28,13 @@ MODULE PROCEDURE als_getPreconditionOption
   ans = obj%preconditionOption
 END PROCEDURE als_getPreconditionOption
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE als_setTolerance
+  IF(PRESENT(atol)) obj%atol=atol
+  IF(PRESENT(rtol)) obj%rtol=rtol
+END PROCEDURE als_setTolerance
+
 END SUBMODULE Methods
