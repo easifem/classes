@@ -75,8 +75,15 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! Current iteration number
   INTEGER(I4B) :: maxIter = 0
     !! Maximum iteration number
-  REAL(DFP) :: atol = 1.0E-8, rtol = 1.0E-8
+  REAL(DFP) :: atol = 0.0_DFP
+  REAL(DFP) :: rtol = 1.0E-8
+  REAL(DFP) :: tol = 0.0_DFP
     !! Tolerance for testing convergence
+  REAL(DFP) :: normRHS = 0.0_DFP
+  REAL(DFP) :: error0 = 0.0_DFP
+  !! initial error res or sol
+  REAL(DFP) :: error = 0.0_DFP
+  !! final error in res of sol
   INTEGER(I4B) :: convergenceIn = convergenceInRes
     !! convergence in residual or solution
   INTEGER(I4B) :: convergenceType = relativeConvergence
@@ -115,6 +122,8 @@ CONTAINS
     !! exporting linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: GetPreconditionOption => &
     & als_getPreconditionOption
+  PROCEDURE, PUBLIC, PASS( obj ) :: setTolerance => &
+    & als_setTolerance
 END TYPE AbstractLinSolver_
 
 PUBLIC :: AbstractLinSolver_
@@ -270,6 +279,22 @@ INTERFACE
     CLASS(AbstractLinSolver_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION als_getPreconditionOption
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getPreconditionOption@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 3 Sept 2021
+! summary: Returns the preconditionOption
+
+INTERFACE
+  MODULE PURE SUBROUTINE als_setTolerance(obj, atol, rtol)
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    REAL( DFP ), OPTIONAL, INTENT( IN ) :: atol
+    REAL( DFP ), OPTIONAL, INTENT( IN ) :: rtol
+  END SUBROUTINE als_setTolerance
 END INTERFACE
 
 END MODULE AbstractLinSolver_Class
