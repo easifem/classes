@@ -29,6 +29,10 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "DomainConnectivity_Class"
 TYPE(ExceptionHandler_) :: e
+INTEGER( I4B ), PUBLIC, PARAMETER :: pType = 1
+INTEGER( I4B ), PUBLIC, PARAMETER :: hType = 2
+INTEGER( I4B ), PUBLIC, PARAMETER :: rType = 3
+INTEGER( I4B ), PUBLIC, PARAMETER :: oversetType = 3
 
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
