@@ -14,17 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-# FIND OPENMP
-OPTION(USE_OpenMP OFF)
-IF(USE_OpenMP)
-  FIND_PACKAGE(OpenMP REQUIRED)
-  IF(OpenMP_FOUND)
-    MESSAGE(STATUS "FOUND OpenMP")
-    MESSAGE(STATUS "OpenMP_Fortran_LIBRARIES: ${OpenMP_Fortran_LIBRARIES}")
-    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_OpenMP" )
-    LIST( APPEND TARGET_COMPILE_OPT ${OpenMP_Fortran_FLAGS} )
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${OpenMP_Fortran_LIBRARIES})
+#FFTW
+IF( ${PROJECT_NAME} MATCHES "easifemBase" )
+  OPTION( USE_FFTW OFF )
+  IF( USE_FFTW )
+    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_FFTW" )
+    SET(FFTW_LIBRARY
+      "$ENV{EASIFEM_EXTPKGS}/lib/libfftw3.a" )
+    TARGET_LINK_LIBRARIES(
+      ${PROJECT_NAME}
+      PUBLIC
+      ${FFTW_LIBRARY}
+    )
+    MESSAGE( STATUS "FFTW_LIBRARY : ${FFTW_LIBRARY}" )
   ELSE()
-    MESSAGE(ERROR "NOT FOUND OpenMP")
+    MESSAGE( STATUS "NOT USING FFTW LIBRARIES" )
   ENDIF()
 ENDIF()

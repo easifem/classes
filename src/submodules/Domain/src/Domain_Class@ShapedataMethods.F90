@@ -15,26 +15,40 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
-SUBMODULE ( AbstractLinSolver_Class) Methods
+SUBMODULE(Domain_Class) ShapedataMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   getPreconditionOption
+!                                                        InitiateShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE als_getPreconditionOption
-  ans = obj%preconditionOption
-END PROCEDURE als_getPreconditionOption
+MODULE PROCEDURE Domain_InitiateElemSD
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  CALL meshptr%initiateElemSD(&
+    & orderSpace=orderSpace(ii),  &
+    & linSpaceElem=linSpaceElem, &
+    & spaceElem=spaceElem, &
+    & quadTypeSpace=quadTypeSpace, &
+    & continuityTypeForSpace=continuityTypeForSpace, &
+    & interpolTypeForSpace=interpolTypeForSpace, &
+    & orderTime=orderTime, &
+    & linTimeElem=linTimeElem, &
+    & timeElem=timeElem, &
+    & quadTypeTime=quadTypeTime, &
+    & continuityTypeForTime=continuityTypeForTime, &
+    & interpolTypeForTime=interpolTypeForTime, &
+    & tvec=tvec)
+END DO
+NULLIFY(meshptr)
+END PROCEDURE Domain_InitiateElemSD
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-MODULE PROCEDURE als_setTolerance
-  IF(PRESENT(atol)) obj%atol=atol
-  IF(PRESENT(rtol)) obj%rtol=rtol
-END PROCEDURE als_setTolerance
-
-END SUBMODULE Methods
+!
+END SUBMODULE ShapedataMethods

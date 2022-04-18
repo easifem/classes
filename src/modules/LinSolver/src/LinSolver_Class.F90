@@ -78,6 +78,7 @@ CONTAINS
     !! Importing linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => ls_Export
     !! Exporting linsolver from external file
+  PROCEDURE, PUBLIC, PASS( obj ) :: setTolerance => ls_setTolerance
 END TYPE LinSolver_
 
 PUBLIC :: LinSolver_
@@ -254,6 +255,18 @@ INTERFACE
     CLASS(LinSolver_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: Amat
   END SUBROUTINE ls_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetTolerance@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE SUBROUTINE ls_setTolerance(obj, atol, rtol)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+    REAL( DFP ), OPTIONAL, INTENT( IN ) :: atol
+    REAL( DFP ), OPTIONAL, INTENT( IN ) :: rtol
+  END SUBROUTINE ls_setTolerance
 END INTERFACE
 
 !----------------------------------------------------------------------------

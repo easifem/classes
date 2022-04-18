@@ -1,7 +1,6 @@
 {
   "source_dirs": [
-    "src",
-    "tests"
+    "src"
     ],
   "excl_suffixes": ["_skip.F90", ".bk", ".ignore"],
   "pp_suffixes": [".F90", ".inc", ".part", ".f90"],
