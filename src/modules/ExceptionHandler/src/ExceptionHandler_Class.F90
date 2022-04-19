@@ -55,6 +55,10 @@ INTEGER( I4B ), PARAMETER, PUBLIC :: EXCEPTION_SIZE=5
   !! The number of exception types
 INTEGER( I4B ), PARAMETER, PUBLIC :: EXCEPTION_MAX_MESG_LENGTH=512
   !! The maximum size of an exception message
+LOGICAL( LGT ), PARAMETER, PUBLIC :: DEFAULT_QUIET_SETTINGS(4)= &
+  & [.TRUE.,.TRUE.,.TRUE.,.FALSE.]
+LOGICAL( LGT ), PARAMETER, PUBLIC :: DEFAULT_VERBOSE_SETTINGS(4)= &
+  & [.FALSE.,.FALSE.,.FALSE.,.TRUE.]
 
 !----------------------------------------------------------------------------
 !                                                          ExceptionHandler_
@@ -78,10 +82,10 @@ TYPE :: ExceptionHandler_
   INTEGER( I4B ),PRIVATE :: nFatal=0
     !! The number of FATAL ERROR exceptions that have been raised
   LOGICAL( LGT ),PRIVATE :: quiet(EXCEPTION_SIZE-1)= &
-      (/.FALSE.,.FALSE.,.TRUE.,.FALSE./)
+    & DEFAULT_QUIET_SETTINGS
     !! Defines whether or not to report exceptions to standard error
   LOGICAL( LGT ),PRIVATE :: verbose(EXCEPTION_SIZE-1)= &
-      (/.TRUE.,.TRUE.,.FALSE.,.TRUE./)
+    & DEFAULT_VERBOSE_SETTINGS
     !! Logical array that allows for selective verbosity of exception types
   CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH),PRIVATE :: lastMesg=''
     !! The last exception message that was reported
