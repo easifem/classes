@@ -32,7 +32,7 @@ TYPE(ExceptionHandler_) :: e
 INTEGER( I4B ), PUBLIC, PARAMETER :: pType = 1
 INTEGER( I4B ), PUBLIC, PARAMETER :: hType = 2
 INTEGER( I4B ), PUBLIC, PARAMETER :: rType = 3
-INTEGER( I4B ), PUBLIC, PARAMETER :: oversetType = 3
+INTEGER( I4B ), PUBLIC, PARAMETER :: oversetType = 4
 
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
@@ -40,26 +40,17 @@ INTEGER( I4B ), PUBLIC, PARAMETER :: oversetType = 3
 
 TYPE :: FacetConnectivity_
   INTEGER(I4B) :: facetID = 0
-    !! global element number of facet element in facet cell
-  INTEGER(I4B) :: masterGlobalCellNum = 0
-    !! global element number of master cell
-  INTEGER(I4B) :: masterLocalFacetID = 0
-    !! Local facet of master cell which is connected to the facet mesh
-    !! element
-  INTEGER(I4B) :: slaveCellID = 0
-    !! global element number of slave cell
-  INTEGER(I4B) :: slaveLocalFacetID = 0
-    !! Local facet of slave cell which is connected to the facet mesh element
+    !! global element number of facet element in facet mesh
+  INTEGER(I4B) :: GlobalCellData(4,2) = 0
+    !! 1,1 --> Global element number of master cell
+    !! 2,1 --> master cell's local facet number connected to facet-elem
+    !! 3,1 --> master mesh dimension
+    !! 4,1 --> master mesh entity number
+    !! 1,2 --> Global element number of slave cell
+    !! 2,2 --> slave cell's local facet number connected to facet-elem
+    !! 3,2 --> slave mesh dimension
+    !! 4,2 --> slave mesh entity number
 END TYPE FacetConnectivity_
-
-!----------------------------------------------------------------------------
-!                                                        NodeConnectivity_
-!----------------------------------------------------------------------------
-
-TYPE :: NodeConnectivity_
-  INTEGER(I4B) :: masterGlobalNodeNum = 0
-  INTEGER(I4B) :: slaveGlobalNodeNum = 0
-END TYPE NodeConnectivity_
 
 !----------------------------------------------------------------------------
 !                                                      ElementConnectivity_
@@ -109,15 +100,15 @@ TYPE :: DomainConnectivity_
     !! the second row is entityNum
     !! the column represents the element number
     !! example: iel1 in domain1
-    !!          cellToCell(iel) gives iel2 in domain2
-    !!          cellToCellExtraData(1, iel1) gives
-    !!          dimension of mesh which contains iel2
-    !!          cellToCellExtraData(2, iel1) gives
-    !!          entityNum of mesh which contains iel2
-    !!          In this way,
-    !!          domain2%getMeshPointer(dim, entityNum)
-    !!          can give us the pointer to the mesh
-    !!          which contains the iel2
+    !! cellToCell(iel) gives iel2 in domain2
+    !! cellToCellExtraData(1, iel1) gives
+    !! dimension of mesh which contains iel2
+    !! cellToCellExtraData(2, iel1) gives
+    !! entityNum of mesh which contains iel2
+    !! In this way,
+    !! domain2%getMeshPointer(dim, entityNum)
+    !! can give us the pointer to the mesh
+    !! which contains the iel2
   TYPE(FacetConnectivity_), ALLOCATABLE :: facetToCell(:)
     !! Facet connectivity, Facet to cell data
   TYPE(ElementConnectivity_), ALLOCATABLE :: elemToElem(:)
@@ -161,19 +152,32 @@ CONTAINS
   !! the element (in domain2) which is connected to element
   !! in domain 1.
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData1
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData2
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData3
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData4
   !! Initiate facet to cell connectivity
   !! [[DomainConnectivity_:facetToCell]]
-  GENERIC, PUBLIC :: initiateFacetToCellData1 =>  &
-    & dc_initiateFacetToCellData1
+  GENERIC, PUBLIC :: initiateFacetToCellData =>  &
+    & dc_initiateFacetToCellData1, &
+    & dc_initiateFacetToCellData2, &
+    & dc_initiateFacetToCellData3, &
+    & dc_initiateFacetToCellData4
   !! Initiate facet to cell connectivity
   !! [[DomainConnectivity_:facetToCell]]
-  PROCEDURE, PASS(obj) :: dc_cellNumber1
-  !! Return the cell number of a given facet
-  PROCEDURE, PASS(obj) :: dc_cellNumber2
-  !! Return the cell numbers of given facet elements
-  GENERIC, PUBLIC :: cellNumber =>  &
-    & dc_cellNumber1, &
-    & dc_cellNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterCellNumber1
+  !! Return the masterCell number of a given facet
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterCellNumber2
+  !! Return the masterCell numbers of given facet elements
+  GENERIC, PUBLIC :: masterCellNumber =>  &
+    & dc_masterCellNumber1, &
+    & dc_masterCellNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveCellNumber1
+  !! Return the slaveCell number of a given facet
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveCellNumber2
+  !! Return the slaveCell numbers of given facet elements
+  GENERIC, PUBLIC :: slaveCellNumber =>  &
+    & dc_slaveCellNumber1, &
+    & dc_slaveCellNumber2
   !! Return the cell numbers of given facet elements
   PROCEDURE, PUBLIC, PASS(obj) :: dc_facetLocalID1
   !! Return the facet local id in cell element
@@ -183,6 +187,9 @@ CONTAINS
     & dc_facetLocalID1, &
     & dc_facetLocalID2
   !! Return the facet local id in cell element
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetToCellData => &
+    & dc_DisplayFacetToCellData
 END TYPE DomainConnectivity_
 
 PUBLIC :: DomainConnectivity_
@@ -485,9 +492,8 @@ INTERFACE
   END FUNCTION dc_getCellToCellPointer
 END INTERFACE
 
-
 !----------------------------------------------------------------------------
-!                                           getDimEntityNum@CellMethods
+!                                                getDimEntityNum@CellMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -508,7 +514,38 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                               InitiateFacetToCellData@FacetMethods
+!                                       InitiateFacetToCellData@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 March 2022
+! summary: This is a helper routine for dc_InitiateFacetToCellData1
+!
+!# Introduction
+!
+! - This routine initiate `facetToCell` for given facetMesh and CellMesh
+! - In this case facetMesh should be a boundary of cellMesh
+! - This routine should not be used for internal boundary.
+
+INTERFACE
+  MODULE SUBROUTINE dc_InitiateFacetToCellData1( obj, facetMesh, &
+    & cellMesh, dim, entityNum, isMaster )
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity data
+    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    !! Mesh of facet elements
+    CLASS(Mesh_), INTENT(INOUT) :: cellMesh
+    !! Master mesh
+    INTEGER( I4B ), INTENT( IN ) :: dim
+    INTEGER( I4B ), INTENT( IN ) :: entityNum
+    LOGICAL( LGT ), INTENT( IN ) :: isMaster
+    !! if true then cell Mesh is master cell
+    !! if false then cell mesh is slave cell
+  END SUBROUTINE dc_InitiateFacetToCellData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      InitiateFacetToCellData@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -517,80 +554,176 @@ END INTERFACE
 !
 !# Introduction
 !
-! This subroutine generate the connectivity matrix called obj % CellFacet
-! between cell and facet mesh.
+! This subroutine generates the faceToCell connectivity data between
+! between masterDomain, slaveDomain and faceMesh.
 !
-!  - The output result will be an integer array with 2 rows
-!  - First row contains the element number of `CellMesh`
-!  - Second row contains the local facet number of cell element which
-!  connects to the facet mesh element.
-!  - Each column of `obj % CellFacet` corresponds to an Element of
-!  `FacetMesh`; total number of columns are same as total number of elem
-!  in the `FacetMesh`
-!  - if an element of `FacetMesh` is orphan then its corresponding entry
-!  is set to zero in `obj % CellFacet` matrix
+! In this case facetMesh should a boundary of masterDomain and slaveDomain
+! In otherwords, facetMesh cannot represent the internal boundary.
+! This routine calls `dc_InitiateFacetToCellData1` routine.
 
 INTERFACE
-  MODULE SUBROUTINE dc_InitiateFacetToCellData1(obj, Facet, Cell)
+  MODULE SUBROUTINE dc_InitiateFacetToCellData2(obj, facetMesh, &
+    & masterDomain, slaveDomain )
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
-  !! Mesh connectivity data
-    CLASS(Mesh_), INTENT(INOUT) :: Facet
-  !! Mesh of cell elements
-    CLASS(Mesh_), INTENT(INOUT) :: Cell
-  !! Mesh of facet mesh
-  END SUBROUTINE dc_InitiateFacetToCellData1
+    !! Mesh connectivity data
+    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    !! Mesh of facet elements
+    CLASS(Domain_), INTENT(INOUT) :: masterDomain
+    !! Domain of master elements
+    CLASS(Domain_), INTENT(INOUT) :: slaveDomain
+    !! Domain of slave elements
+  END SUBROUTINE dc_InitiateFacetToCellData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              CellNumber@FacetMethods
+!                                       InitiateFacetToCellData@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 March 2022
+! summary: This is a helper routine for dc_InitiateFacetToCellData1
+!
+!# Introduction
+!
+! - This routine initiate `facetToCell` for given facetMesh and CellMesh
+! - In this case facetMesh can be an internal boundary of cellMesh
+
+INTERFACE
+  MODULE SUBROUTINE dc_InitiateFacetToCellData3( obj, facetMesh, &
+    & cellMesh, dim, entityNum )
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity data
+    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    !! Mesh of facet elements
+    CLASS(Mesh_), INTENT(INOUT) :: cellMesh
+    !! Master mesh
+    INTEGER( I4B ), INTENT( IN ) :: dim
+    INTEGER( I4B ), INTENT( IN ) :: entityNum
+  END SUBROUTINE dc_InitiateFacetToCellData3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateFacetToCellData@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 March 2022
+! summary: This is a helper routine for dc_InitiateFacetToCellData1
+!
+!# Introduction
+!
+! - This routine initiate `facetToCell` for given facetMesh and CellMesh
+! - In this case facetMesh can be an internal boundary of cellMesh
+
+INTERFACE
+  MODULE SUBROUTINE dc_InitiateFacetToCellData4( obj, facetMesh, cellDomain )
+    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
+    !! Domain connectivity data
+    CLASS(Mesh_), INTENT(INOUT) :: facetMesh
+    !! Mesh of facet elements
+    CLASS(Domain_), INTENT(INOUT) :: cellDomain
+    !! Master mesh
+  END SUBROUTINE dc_InitiateFacetToCellData4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    CellNumber@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: Returns cell number of given facet number
+! summary: Returns master cell number of given facet number
 !
 !# Introduction
 !
-! - Returns cell number of given facet number
-! - if cell number is zero it means facet element is an orphan
+! - Returns master cell number of given facet number
+! - If cell number is zero it means facet element does not have a master cell
 
 INTERFACE
-  MODULE PURE FUNCTION dc_CellNumber1(obj, FacetNum) RESULT(ans)
+  MODULE PURE FUNCTION dc_MasterCellNumber1(obj, localElement) RESULT(ans)
     CLASS(DomainConnectivity_), INTENT(IN) :: obj
     !! Mesh connectivity data
-    INTEGER(I4B), INTENT(IN) :: FacetNum
+    INTEGER(I4B), INTENT(IN) :: localElement
     !! Facet element number
     INTEGER(I4B) :: ans
     !! Cell number
-  END FUNCTION dc_CellNumber1
+  END FUNCTION dc_MasterCellNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              CellNumber@FacetMethods
+!                                                    CellNumber@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: Returns cell number of given facet number
+! summary: Returns master cell number of given facet number
 !
 !# Introduction
 !
-! - Returns cell number of given facet number
-! - if cell number is zero it means facet element is an orphan
+! - Returns master cell number of given facet number
+! - if master cell number is zero it means facet element is an orphan
 
 INTERFACE
-  MODULE PURE FUNCTION dc_CellNumber2(obj, FacetNum) RESULT(ans)
+  MODULE PURE FUNCTION dc_MasterCellNumber2(obj, localElement) RESULT(ans)
     CLASS(DomainConnectivity_), INTENT(IN) :: obj
     !! Mesh connectivity data
-    INTEGER(I4B), INTENT(IN) :: FacetNum(:)
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
     !! List of facet element numbers
-    INTEGER(I4B) :: ans(SIZE(FacetNum))
+    INTEGER(I4B) :: ans(SIZE(localElement))
     !! List of cell element numbers
-  END FUNCTION dc_CellNumber2
+  END FUNCTION dc_MasterCellNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            FacetLocalID@FacetMethods
+!                                                    CellNumber@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns slave cell number of given facet number
+!
+!# Introduction
+!
+! - Returns slave cell number of given facet number
+! - If slave cell number is zero it means facet element is an orphan
+
+INTERFACE
+  MODULE PURE FUNCTION dc_SlaveCellNumber1(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), INTENT(IN) :: localElement
+    !! Facet element number
+    INTEGER(I4B) :: ans
+    !! Cell number
+  END FUNCTION dc_SlaveCellNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    CellNumber@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns slave cell number of given facet number
+!
+!# Introduction
+!
+! - Returns slave cell number of given facet number
+! - if slave cell number is zero it means facet element is an orphan
+
+INTERFACE
+  MODULE PURE FUNCTION dc_SlaveCellNumber2(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
+    !! List of facet element numbers
+    INTEGER(I4B) :: ans(SIZE(localElement))
+    !! List of cell element numbers
+  END FUNCTION dc_SlaveCellNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  FacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -614,7 +747,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            FacetLocalID@FacetMethods
+!                                                 FacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -641,6 +774,22 @@ INTERFACE
     INTEGER(I4B) :: ans(SIZE(FacetNum))
     !! List of local facet IDs
   END FUNCTION dc_FacetLocalID2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          DisplayFacetToCellData@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 6 March 2022
+! summary: Display FaceToCellData
+
+INTERFACE
+MODULE SUBROUTINE dc_DisplayFacetToCellData( obj, msg, unitno )
+  CLASS( DomainConnectivity_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE dc_DisplayFacetToCellData
 END INTERFACE
 
 !----------------------------------------------------------------------------

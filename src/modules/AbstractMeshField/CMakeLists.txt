@@ -14,14 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-IF(NOT CMAKE_PREFIX_PATH)
-  LIST(
-    APPEND
-    CMAKE_PREFIX_PATH
-    "$ENV{EASIFEM_EXTPKGS}"
-    "$ENV{EASIFEM_BASE}"
-    "$ENV{EASIFEM_CLASSES}"
-    "$ENV{EASIFEM_MATERIALS}"
-    "$ENV{EASIFEM_KERNELS}"
-    )
-ENDIF()
+
+SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+TARGET_SOURCES(
+  ${PROJECT_NAME} PRIVATE
+  ${src_path}/AbstractMeshField_Class.F90
+)

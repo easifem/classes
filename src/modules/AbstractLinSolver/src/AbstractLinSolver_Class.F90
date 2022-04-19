@@ -26,6 +26,7 @@ USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE HDF5File_Class
+USE DirichletBC_Class
 USE Field
 IMPLICIT NONE
 PRIVATE
@@ -79,7 +80,7 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   REAL(DFP) :: rtol = 1.0E-8
   REAL(DFP) :: tol = 0.0_DFP
     !! Tolerance for testing convergence
-  REAL(DFP) :: normRHS = 0.0_DFP
+  REAL(DFP) :: normRes = 0.0_DFP
   REAL(DFP) :: error0 = 0.0_DFP
   !! initial error res or sol
   REAL(DFP) :: error = 0.0_DFP
@@ -97,6 +98,8 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! Size of the global problem;
   INTEGER(I4B) :: localNumRow = 0, localNumColumn = 0
     !! Size of the problem on a single process
+  INTEGER( I4B ), ALLOCATABLE :: dbcIndx( : )
+    !! Indices where Dirichlet boundary conditions is prescribed
   REAL(DFP), ALLOCATABLE :: RES(:)
     !! Residual in each iteration
   CLASS(AbstractMatrixField_), POINTER :: Amat => NULL()
@@ -124,6 +127,9 @@ CONTAINS
     & als_getPreconditionOption
   PROCEDURE, PUBLIC, PASS( obj ) :: setTolerance => &
     & als_setTolerance
+  PROCEDURE, PUBLIC, PASS( obj ) :: setDirichletBCIndices => &
+    & als_setDirichletBCIndices
+  !!
 END TYPE AbstractLinSolver_
 
 PUBLIC :: AbstractLinSolver_
@@ -169,6 +175,66 @@ ABSTRACT INTERFACE
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE als_checkEssentialParam
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            setLinSolverParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Jan 2022
+! summary: Set linear solver parameters
+
+INTERFACE
+  MODULE SUBROUTINE setAbstractLinSolverParam(param, prefix, &
+    & engine, solverName, preconditionOption, &
+    & maxIter, atol, rtol, convergenceIn, convergenceType, &
+    & relativeToRHS, KrylovSubspaceSize )
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER( LEN = * ), INTENT( IN ) :: prefix
+    CHARACTER( LEN = * ), INTENT( IN ) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceIn
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceType
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: relativeToRHS
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: KrylovSubspaceSize
+  END SUBROUTINE setAbstractLinSolverParam
+END INTERFACE
+
+PUBLIC :: setAbstractLinSolverParam
+
+!----------------------------------------------------------------------------
+!                                              getLinSolverParam@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Jan 2022
+! summary: Set linear solver parameters
+
+INTERFACE
+  MODULE SUBROUTINE getAbstractLinSolverParam(param, prefix, &
+    & engine, solverName, preconditionOption, &
+    & maxIter, atol, rtol, convergenceIn, convergenceType, &
+    & relativeToRHS, KrylovSubspaceSize )
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER( LEN = * ), INTENT( IN ) :: prefix
+    CHARACTER( LEN = * ), OPTIONAL, INTENT( OUT ) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: solverName
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: preconditionOption
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: maxIter
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: atol
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: rtol
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: convergenceIn
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: convergenceType
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: relativeToRHS
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: KrylovSubspaceSize
+  END SUBROUTINE getAbstractLinSolverParam
+END INTERFACE
+
+PUBLIC :: getAbstractLinSolverParam
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
@@ -295,6 +361,21 @@ INTERFACE
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: atol
     REAL( DFP ), OPTIONAL, INTENT( IN ) :: rtol
   END SUBROUTINE als_setTolerance
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getPreconditionOption@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 3 Sept 2021
+! summary: Returns the preconditionOption
+
+INTERFACE
+  MODULE PURE SUBROUTINE als_setDirichletBCIndices(obj, indx)
+    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: indx(:)
+  END SUBROUTINE als_setDirichletBCIndices
 END INTERFACE
 
 END MODULE AbstractLinSolver_Class

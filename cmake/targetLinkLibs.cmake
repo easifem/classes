@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-
+#
 # Link libs to the project
 # 1
 FUNCTION(FIND_EASIFEM_DEPENDENCY EXT_PKG_LIST)
@@ -66,7 +66,12 @@ ENDFUNCTION(LINK_INTER_EASIFEM_KERNELS_DEPENDENCY)
 #...........................................................................
 # EXTPKGS BASE
 # MAKE REGISTER
-LIST(APPEND EXT_PKGS LAPACK95 Sparsekit)
+IF( USE_LAPACK95 )
+    LIST(APPEND EXT_PKGS LAPACK95 Sparsekit)
+    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_LAPACK95" )
+ELSE()
+    LIST(APPEND EXT_PKGS Sparsekit)
+ENDIF()
 FIND_EASIFEM_DEPENDENCY( "${EXT_PKGS}" )
 LINK_EASIFEM_DEPENDENCY( "${EXT_PKGS}" "${PROJECT_NAME}" )
 

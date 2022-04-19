@@ -97,10 +97,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aVec_set1( obj, indx, value )
+SUBROUTINE aVec_set1( obj, nodenum, value )
   IMPORT :: AbstractVector_, I4B, DFP
   CLASS( AbstractVector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), INTENT( IN ) :: nodenum
   REAL( DFP ), INTENT( IN ) :: value
 END SUBROUTINE aVec_set1
 END INTERFACE
@@ -134,10 +134,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aVec_set4(obj, indx, value)
+SUBROUTINE aVec_set4(obj, nodenum, value)
   IMPORT :: AbstractVector_, I4B, DFP
   CLASS( AbstractVector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx( : )
+  INTEGER( I4B ), INTENT( IN ) :: nodenum( : )
   REAL( DFP ), INTENT( IN ) :: value( : )
 END SUBROUTINE aVec_set4
 END INTERFACE
@@ -190,10 +190,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-FUNCTION aVec_get1( obj, indx ) RESULT( ans )
+FUNCTION aVec_get1( obj, nodenum ) RESULT( ans )
   IMPORT :: AbstractVector_, I4B, DFP
   CLASS( AbstractVector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), INTENT( IN ) :: nodenum
   REAL( DFP ) :: ans
 END FUNCTION aVec_get1
 END INTERFACE
@@ -215,11 +215,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-FUNCTION aVec_get3( obj, indx ) RESULT( ans )
+FUNCTION aVec_get3( obj, nodenum ) RESULT( ans )
   IMPORT :: AbstractVector_, DFP, I4B
   CLASS( AbstractVector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx( : )
-  REAL( DFP ) :: ans( SIZE( indx ) )
+  INTEGER( I4B ), INTENT( IN ) :: nodenum( : )
+  REAL( DFP ) :: ans( SIZE( nodenum ) )
 END FUNCTION aVec_get3
 END INTERFACE
 
