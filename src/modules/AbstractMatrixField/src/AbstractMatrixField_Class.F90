@@ -68,14 +68,64 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractMatrixField_
     !! Get the precondition matrix
   PROCEDURE( amField_reversePermutation ), DEFERRED, PUBLIC, PASS( obj ) :: &
     & reversePermutation
+  !!
   PROCEDURE( amField_set1 ), DEFERRED, PASS( obj ) :: set1
   PROCEDURE( amField_set2 ), DEFERRED, PASS( obj ) :: set2
   PROCEDURE( amField_set3 ), DEFERRED, PASS( obj ) :: set3
-  GENERIC, PUBLIC :: set => set1, set2, set3
-  PROCEDURE( amField_setRow ), PUBLIC, DEFERRED, PASS( obj ) :: setRow
-  PROCEDURE( amField_setColumn ), PUBLIC, DEFERRED, PASS( obj ) :: setColumn
-  PROCEDURE( amField_getRow ), PUBLIC, DEFERRED, PASS( obj ) :: getRow
-  PROCEDURE( amField_getColumn ), PUBLIC, DEFERRED, PASS( obj ) :: getColumn
+  PROCEDURE( amField_set4 ), DEFERRED, PASS( obj ) :: set4
+  PROCEDURE( amField_set5 ), DEFERRED, PASS( obj ) :: set5
+  PROCEDURE( amField_set6 ), DEFERRED, PASS( obj ) :: set6
+  PROCEDURE( amField_set7 ), DEFERRED, PASS( obj ) :: set7
+  PROCEDURE( amField_set8 ), DEFERRED, PASS( obj ) :: set8
+  PROCEDURE( amField_set9 ), DEFERRED, PASS( obj ) :: set9
+  PROCEDURE( amField_set10 ), DEFERRED, PASS( obj ) :: set10
+  GENERIC, PUBLIC :: set => set1, set2, set3,set4, set5, &
+    & set6, set7, set8, set9, set10
+  !!
+  PROCEDURE( amField_getColumn1 ), DEFERRED, PASS( obj ) :: getColumn1
+  PROCEDURE( amField_getColumn2 ), DEFERRED, PASS( obj ) :: getColumn2
+  PROCEDURE( amField_getColumn3 ), DEFERRED, PASS( obj ) :: getColumn3
+  PROCEDURE( amField_getColumn4 ), DEFERRED, PASS( obj ) :: getColumn4
+  PROCEDURE( amField_getColumn5 ), DEFERRED, PASS( obj ) :: getColumn5
+  PROCEDURE( amField_getColumn6 ), DEFERRED, PASS( obj ) :: getColumn6
+  PROCEDURE( amField_getColumn7 ), DEFERRED, PASS( obj ) :: getColumn7
+  GENERIC, PUBLIC :: getColumn => getColumn1, getColumn2, &
+    & getColumn3, getColumn4, getColumn5, getColumn6, getColumn7
+  !!
+  PROCEDURE( amField_getRow1 ), DEFERRED, PASS( obj ) :: getRow1
+  PROCEDURE( amField_getRow2 ), DEFERRED, PASS( obj ) :: getRow2
+  PROCEDURE( amField_getRow3 ), DEFERRED, PASS( obj ) :: getRow3
+  PROCEDURE( amField_getRow4 ), DEFERRED, PASS( obj ) :: getRow4
+  PROCEDURE( amField_getRow5 ), DEFERRED, PASS( obj ) :: getRow5
+  PROCEDURE( amField_getRow6 ), DEFERRED, PASS( obj ) :: getRow6
+  PROCEDURE( amField_getRow7 ), DEFERRED, PASS( obj ) :: getRow7
+  GENERIC, PUBLIC :: getRow => getRow1, getRow2, &
+    & getRow3, getRow4, getRow5, getRow6, getRow7
+  !!
+  PROCEDURE( amField_setColumn1 ), DEFERRED, PASS( obj ) :: setColumn1
+  PROCEDURE( amField_setColumn2 ), DEFERRED, PASS( obj ) :: setColumn2
+  PROCEDURE( amField_setColumn3 ), DEFERRED, PASS( obj ) :: setColumn3
+  PROCEDURE( amField_setColumn4 ), DEFERRED, PASS( obj ) :: setColumn4
+  PROCEDURE( amField_setColumn5 ), DEFERRED, PASS( obj ) :: setColumn5
+  PROCEDURE( amField_setColumn6 ), DEFERRED, PASS( obj ) :: setColumn6
+  PROCEDURE( amField_setColumn7 ), DEFERRED, PASS( obj ) :: setColumn7
+  GENERIC, PUBLIC :: setColumn => setColumn1, setColumn2, &
+    & setColumn3, setColumn4, setColumn5, setColumn6, setColumn7
+  !!
+  PROCEDURE( amField_setRow1 ), DEFERRED, PASS( obj ) :: setRow1
+  PROCEDURE( amField_setRow2 ), DEFERRED, PASS( obj ) :: setRow2
+  PROCEDURE( amField_setRow3 ), DEFERRED, PASS( obj ) :: setRow3
+  PROCEDURE( amField_setRow4 ), DEFERRED, PASS( obj ) :: setRow4
+  PROCEDURE( amField_setRow5 ), DEFERRED, PASS( obj ) :: setRow5
+  PROCEDURE( amField_setRow6 ), DEFERRED, PASS( obj ) :: setRow6
+  PROCEDURE( amField_setRow7 ), DEFERRED, PASS( obj ) :: setRow7
+  GENERIC, PUBLIC :: setRow => setRow1, setRow2, setRow3, &
+    & setRow4, setRow5, setRow6, setRow7
+  !!
+  PROCEDURE( amField_DiagonalScaling ), DEFERRED, PUBLIC, PASS( obj ) :: &
+    & DiagonalScaling
+  PROCEDURE( amField_GetDiagonal ), DEFERRED, PUBLIC, PASS( obj ) :: &
+    & GetDiagonal
 END TYPE AbstractMatrixField_
 
 PUBLIC :: AbstractMatrixField_
@@ -301,12 +351,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_set1( obj, globalNode, val, storageFMT, scale, &
+SUBROUTINE amField_set1( obj, globalNode, value, storageFMT, scale, &
   & addContribution )
   IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
-  REAL( DFP ), INTENT( IN ) :: val(:,:)
+  REAL( DFP ), INTENT( IN ) :: value(:,:)
   INTEGER( I4B ), INTENT( IN ) :: storageFMT
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
@@ -318,11 +368,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_set2( obj, globalNode, val, scale, addContribution )
+SUBROUTINE amField_set2( obj, globalNode, value, scale, addContribution )
   IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalNode(:)
-  REAL( DFP ), INTENT( IN ) :: val
+  REAL( DFP ), INTENT( IN ) :: value
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE amField_set2
@@ -333,18 +383,175 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_set3( obj, rowNodeNum, colNodeNum, rowDOF, colDOF, val, &
+SUBROUTINE amField_set3( obj, iNodeNum, jNodeNum, idof, jdof, value, &
   & scale, addContribution )
   IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: rowNodeNum
-  INTEGER( I4B ), INTENT( IN ) :: colNodeNum
-  INTEGER( I4B ), INTENT( IN ) :: rowDOF
-  INTEGER( I4B ), INTENT( IN ) :: colDOF
-  REAL( DFP ), INTENT( IN ) :: val
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  INTEGER( I4B ), INTENT( IN ) :: jdof
+  REAL( DFP ), INTENT( IN ) :: value
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE amField_set3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set4( obj, iNodeNum, jNodeNum, ivar, jvar, value, &
+  & scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  REAL( DFP ), INTENT( IN ) :: value(:,:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set5( obj, iNodeNum, jNodeNum, ivar, jvar, idof,  &
+  & jdof, value, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  INTEGER( I4B ), INTENT( IN ) :: jdof
+  REAL( DFP ), INTENT( IN ) :: value(:,:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set6( obj, iNodeNum, jNodeNum, ivar, jvar, &
+  & idof, jdof, value, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  INTEGER( I4B ), INTENT( IN ) :: jdof
+  REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set7( obj, iNodeNum, jNodeNum, ivar, jvar, &
+  & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+  & value, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  INTEGER( I4B ), INTENT( IN ) :: ispacecompo
+  INTEGER( I4B ), INTENT( IN ) :: itimecompo
+  INTEGER( I4B ), INTENT( IN ) :: jspacecompo
+  INTEGER( I4B ), INTENT( IN ) :: jtimecompo
+  REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set8( obj, iNodeNum, jNodeNum, ivar, jvar, &
+  & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+  & value, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  INTEGER( I4B ), INTENT( IN ) :: ispacecompo
+  INTEGER( I4B ), INTENT( IN ) :: itimecompo
+  INTEGER( I4B ), INTENT( IN ) :: jspacecompo
+  INTEGER( I4B ), INTENT( IN ) :: jtimecompo
+  REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set9( obj, iNodeNum, jNodeNum, ivar, jvar, &
+  & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+  & value, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  INTEGER( I4B ), INTENT( IN ) :: ispacecompo
+  INTEGER( I4B ), INTENT( IN ) :: itimecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: jspacecompo
+  INTEGER( I4B ), INTENT( IN ) :: jtimecompo(:)
+  REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           set@setMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_set10( obj, iNodeNum, jNodeNum, ivar, jvar, &
+  & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+  & value, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: iNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: jNodeNum(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: jvar
+  INTEGER( I4B ), INTENT( IN ) :: ispacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: itimecompo
+  INTEGER( I4B ), INTENT( IN ) :: jspacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: jtimecompo
+  REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -368,7 +575,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_setRow( obj, globalNode, idof, scalarVal, vecVal, &
+SUBROUTINE amField_setRow1( obj, globalNode, idof, scalarVal, vecVal, &
   & nodeFieldVal )
   IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
@@ -377,7 +584,216 @@ SUBROUTINE amField_setRow( obj, globalNode, idof, scalarVal, vecVal, &
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
   CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
-END SUBROUTINE amField_setRow
+END SUBROUTINE amField_setRow1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!# Introduction
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow2( obj, globalNode, ivar, idof, scalarVal, vecVal, &
+  & nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!# Introduction
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow3( obj, globalNode, ivar, spacecompo, timecompo, &
+  & scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!# Introduction
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow4( obj, globalNode, ivar, spacecompo, timecompo, &
+  & scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!# Introduction
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow5( obj, globalNode, ivar, spacecompo, timecompo, &
+  & scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!# Introduction
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow6( obj, globalNode, ivar, spacecompo, timecompo, &
+  & scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          setRow@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the row of a sparse matrix
+!
+!# Introduction
+! This routine sets the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setRow7( obj, globalNode, ivar, spacecompo, timecompo, &
+  & scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setRow7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -402,7 +818,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_setColumn( obj, globalNode, idof, scalarVal, vecVal, &
+SUBROUTINE amField_setColumn1( obj, globalNode, idof, scalarVal, vecVal, &
   & nodeFieldVal )
   IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
   CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
@@ -411,7 +827,222 @@ SUBROUTINE amField_setColumn( obj, globalNode, idof, scalarVal, vecVal, &
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
   CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
-END SUBROUTINE amField_setColumn
+END SUBROUTINE amField_setColumn1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!# Introduction
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn2( obj, globalNode, ivar, idof, &
+  & scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!# Introduction
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn3( obj, globalNode, ivar, spacecompo, &
+  & timecompo, scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!# Introduction
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn4( obj, globalNode, ivar, spacecompo, &
+  & timecompo, scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!# Introduction
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn5( obj, globalNode, ivar, spacecompo, &
+  & timecompo, scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!# Introduction
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn6( obj, globalNode, ivar, spacecompo, &
+  & timecompo, scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       setColumn@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine set the column of a sparse matrix
+!
+!# Introduction
+!
+! This routine sets the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+!
+! - `globalNode` is global node number.
+! - `idof` is the degree of freedom number
+! - `scalarVal` is the scalar value, if present then the row will be set to
+! this scalar value
+! - `vectorVal` is the vector value, if present then the row will be set to
+! this vector value
+! - `nodeFieldVal` is the field of nodal values
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_setColumn7( obj, globalNode, ivar, spacecompo, &
+  & timecompo, scalarVal, vecVal, nodeFieldVal )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scalarVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: vecVal( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( IN ) :: nodeFieldVal
+END SUBROUTINE amField_setColumn7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -429,21 +1060,224 @@ END INTERFACE
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
 !
-! If `val` is present then the vector is returned inside the rank 1 vector
+! If `value` is present then the vector is returned inside the rank 1 vector
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_getRow( obj, globalNode, idof, val, nodeFieldVal, &
+SUBROUTINE amField_getRow1( obj, globalNode, idof, value, nodeFieldVal, &
   & scale, addContribution )
   IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
   CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: idof
-  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: val( : )
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
   CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE amField_getRow
+END SUBROUTINE amField_getRow1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!# Introduction
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow2( obj, globalNode, ivar, idof, value, &
+  & nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!# Introduction
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow3( obj, globalNode, ivar, spacecompo, timecompo, &
+  & value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!# Introduction
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow4( obj, globalNode, ivar, spacecompo, timecompo, &
+  & value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!# Introduction
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow5( obj, globalNode, ivar, spacecompo, timecompo, &
+  & value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!# Introduction
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow6( obj, globalNode, ivar, spacecompo, timecompo, &
+  & value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          getRow@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the row of a sparse matrix in rank1 fortran
+! vector
+!
+!# Introduction
+! This routine returns the row of a sparse matrix. The row index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the row is returned inside the node field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getRow7( obj, globalNode, ivar, spacecompo, timecompo, &
+  & value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getRow7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -461,24 +1295,232 @@ END INTERFACE
 ! `globalNode` is the global node number
 ! `idof` is the degree of freedom number
 !
-! If `val` is present then the vector is returned inside the rank 1 vector
+! If `value` is present then the vector is returned inside the rank 1 vector
 ! If `nodeFieldVal` is present then the column is returned inside the node
 ! field
 
 ABSTRACT INTERFACE
-SUBROUTINE amField_getColumn( obj, globalNode, idof, val, nodeFieldVal, &
+SUBROUTINE amField_getColumn1( obj, globalNode, idof, value, nodeFieldVal, &
   & scale, addContribution )
   IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
   CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: idof
-  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: val( : )
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
   CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE amField_getColumn
+END SUBROUTINE amField_getColumn1
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!# Introduction
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn2( obj, globalNode, ivar, idof, &
+    & value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: idof
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!# Introduction
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn3( obj, globalNode, ivar, spacecompo, &
+  & timecompo, value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!# Introduction
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn4( obj, globalNode, ivar, spacecompo, &
+  & timecompo, value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!# Introduction
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn5( obj, globalNode, ivar, spacecompo, &
+  & timecompo, value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!# Introduction
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn6( obj, globalNode, ivar, spacecompo, &
+  & timecompo, value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo
+  INTEGER( I4B ), INTENT( IN ) :: timecompo(:)
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       getColumn@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: This routine returns the column of a sparse matrix
+! vector
+!
+!# Introduction
+! This routine returns the column of a sparse matrix. The column index is
+! calculated using the `globalNode` and `idof`.
+! `globalNode` is the global node number
+! `idof` is the degree of freedom number
+!
+! If `value` is present then the vector is returned inside the rank 1 vector
+! If `nodeFieldVal` is present then the column is returned inside the node
+! field
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_getColumn7( obj, globalNode, ivar, spacecompo, &
+  & timecompo, value, nodeFieldVal, scale, addContribution )
+  IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
+  CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  INTEGER( I4B ), INTENT( IN ) :: ivar
+  INTEGER( I4B ), INTENT( IN ) :: spacecompo(:)
+  INTEGER( I4B ), INTENT( IN ) :: timecompo
+  REAL( DFP ), OPTIONAL, INTENT( INOUT ) :: value( : )
+  CLASS( AbstractNodeField_ ), OPTIONAL, INTENT( INOUT ) :: nodeFieldVal
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
+END SUBROUTINE amField_getColumn7
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                 isPreconditionSet@Methods
@@ -489,6 +1531,40 @@ MODULE PURE FUNCTION amField_isPreconditionSet( obj ) RESULT( Ans )
   CLASS( AbstractMatrixField_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
 END FUNCTION amField_isPreconditionSet
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getDiagonal
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: REturns the diagnoal
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_GetDiagonal( obj, diag )
+  IMPORT :: AbstractMatrixField_, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: diag( : )
+END SUBROUTINE amField_GetDiagonal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getDiagonal
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: REturns the diagnoal
+
+ABSTRACT INTERFACE
+SUBROUTINE amField_DiagonalScaling( obj, side, diag, operator )
+  IMPORT :: AbstractMatrixField_, DFP
+  CLASS( AbstractMatrixField_ ), INTENT( INOUT ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: side
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: diag( : )
+  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: operator
+END SUBROUTINE amField_DiagonalScaling
 END INTERFACE
 
 END MODULE AbstractMatrixField_Class
