@@ -17,13 +17,15 @@
 MODULE AbstractNodeField_Class
 USE GlobalData
 USE BaseType
-USE RealVector_Method, ONLY : getPointer, Deallocate
-USE DOF_Method, ONLY: Deallocate
+USE RealVector_Method
+USE DOF_Method
 USE AbstractField_Class
 USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_
 IMPLICIT NONE
 PRIVATE
+
+CHARACTER( LEN = * ), PARAMETER :: modName = "AbstractField_Class"
 
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
@@ -44,8 +46,10 @@ TYPE, ABSTRACT, EXTENDS( AbstractField_ ) :: AbstractNodeField_
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: getPointer => anf_getPointer
     PROCEDURE, PUBLIC, PASS( obj ) :: Size => anf_Size
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate2 => anf_Initiate2
     PROCEDURE, PUBLIC, PASS( obj ) :: Initiate3 => anf_Initiate3
     PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => anf_Deallocate
+    PROCEDURE, PUBLIC, PASS( obj ) :: Norm2 => anf_Norm2
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
@@ -61,22 +65,6 @@ END TYPE AbstractNodeFieldPointer_
 PUBLIC :: AbstractNodeFieldPointer_
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE AbstractNodeFieldDeallocate
-  MODULE PROCEDURE anf_Deallocate
-END INTERFACE AbstractNodeFieldDeallocate
-
-PUBLIC :: AbstractNodeFieldDeallocate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-CONTAINS
-
-!----------------------------------------------------------------------------
 !                                                                getPointer
 !----------------------------------------------------------------------------
 
@@ -84,11 +72,12 @@ CONTAINS
 ! date: 20 Jul 2021
 ! summary: Returns the pointer to a fortran real vector stored inside realVec
 
-FUNCTION anf_getPointer( obj ) RESULT( ans )
+INTERFACE
+MODULE FUNCTION anf_getPointer( obj ) RESULT( ans )
   CLASS( AbstractNodeField_ ), TARGET, INTENT( IN ) :: obj
   REAL( DFP ), POINTER :: ans( : )
-  ans => getPointer( obj%realVec )
 END FUNCTION anf_getPointer
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                    Size
@@ -98,12 +87,13 @@ END FUNCTION anf_getPointer
 ! date: 25 Sept 2021
 ! summary: This function returns the size of the field
 
-FUNCTION anf_Size( obj, dims ) RESULT( ans )
+INTERFACE
+MODULE FUNCTION anf_Size( obj, dims ) RESULT( ans )
   CLASS( AbstractNodeField_ ), INTENT( IN ) :: obj
   INTEGER( I4B ), OPTIONAL :: dims
   INTEGER( I4B ) :: ans
-  ans = obj%tSize
 END FUNCTION anf_Size
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            anf_Initiate3
@@ -114,11 +104,33 @@ END FUNCTION anf_Size
 ! summary: This function initiates the block field, here it does nothing in
 ! particular
 
-SUBROUTINE anf_Initiate3( obj, param, dom )
+INTERFACE
+MODULE SUBROUTINE anf_Initiate2( obj, obj2, copyFull, copyStructure, &
+  & usePointer )
+  CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
+END SUBROUTINE anf_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            anf_Initiate3
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: This function initiates the block field, here it does nothing in
+! particular
+
+INTERFACE
+MODULE SUBROUTINE anf_Initiate3( obj, param, dom )
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
 END SUBROUTINE anf_Initiate3
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
@@ -128,14 +140,32 @@ END SUBROUTINE anf_Initiate3
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractNodeField_]]
 
-SUBROUTINE anf_Deallocate( obj )
+INTERFACE
+MODULE SUBROUTINE anf_Deallocate( obj )
   CLASS( AbstractNodeField_ ), INTENT( INOUT ) :: obj
-  !> main
-  obj%tSize = 0
-  CALL AbstractFieldDeallocate(obj)
-  CALL Deallocate(obj%realVec)
-  CALL Deallocate(obj%dof)
 END SUBROUTINE anf_Deallocate
+END INTERFACE
+
+INTERFACE AbstractNodeFieldDeallocate
+  MODULE PROCEDURE anf_Deallocate
+END INTERFACE AbstractNodeFieldDeallocate
+
+PUBLIC :: AbstractNodeFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                                    Norm2
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: This function returns NORM2
+
+INTERFACE
+MODULE FUNCTION anf_Norm2( obj ) RESULT( ans )
+  CLASS( AbstractNodeField_ ), INTENT( IN ) :: obj
+  REAL( DFP ) :: ans
+END FUNCTION anf_Norm2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
