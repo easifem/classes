@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE DirichletBC_Class
 USE GlobalData
@@ -27,7 +26,7 @@ USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="DIRICHLETBC_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName="DirichletBC_Class"
 TYPE( ExceptionHandler_ ) ::  e
 
 !----------------------------------------------------------------------------
@@ -39,31 +38,18 @@ TYPE( ExceptionHandler_ ) ::  e
 ! summary: This is an abstract data type for boundary conditions
 
 TYPE, EXTENDS( AbstractBC_ ) :: DirichletBC_
-  INTEGER( I4B ) :: idof = 0
-  REAL( DFP ), ALLOCATABLE :: nodalValue( :, : )
-  INTEGER( I4B ) :: nodalValueType = -1
-    !! Constant, Space, Time, SpaceTime
-  LOGICAL( LGT ) :: useFunction = .FALSE.
-  PROCEDURE( iface_SpaceTimeFunction ), POINTER, NOPASS :: &
-    & SpaceTimeFunction => NULL()
-  PROCEDURE( iface_SpaceFunction ), POINTER, NOPASS :: &
-    & SpaceFunction => NULL()
-  PROCEDURE( iface_TimeFunction ), POINTER, NOPASS :: &
-    & TimeFunction => NULL()
   CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => dbc_addSurrogate
+  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => bc_addSurrogate
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
-    & dbc_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => dbc_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => dbc_Deallocate
-  FINAL :: dbc_Final
-  PROCEDURE, PUBLIC, PASS( obj ) :: Import => dbc_Import
-  PROCEDURE, PUBLIC, PASS( obj ) :: Export => dbc_Export
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => dbc_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: Set => dbc_Set
-  PROCEDURE, PUBLIC, PASS( obj ) :: Get => dbc_Get
-  PROCEDURE, PUBLIC, PASS( obj ) :: getDOFNo => dbc_getDOFNo
+    & bc_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => bc_Initiate
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => bc_Deallocate
+  FINAL :: bc_Final
+  PROCEDURE, PUBLIC, PASS( obj ) :: Import => bc_Import
+  PROCEDURE, PUBLIC, PASS( obj ) :: Export => bc_Export
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => bc_Display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Set => bc_Set
 END TYPE DirichletBC_
 
 PUBLIC :: DirichletBC_
@@ -79,29 +65,35 @@ END TYPE DirichletBCPointer_
 PUBLIC :: DirichletBCPointer_
 
 !----------------------------------------------------------------------------
-!                                          addSurrogate@ConstructorMethods
+!                                            addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_addSurrogate( obj, userObj )
+MODULE SUBROUTINE bc_addSurrogate( obj, userObj )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
   TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
-END SUBROUTINE dbc_addSurrogate
+END SUBROUTINE bc_addSurrogate
 END INTERFACE
 
+INTERFACE DirichletBCAddSurrogate
+  MODULE PROCEDURE bc_addSurrogate
+END INTERFACE DirichletBCAddSurrogate
+
+PUBLIC :: DirichletBCAddSurrogate
+
 !----------------------------------------------------------------------------
-!                                      checkEssentialParam@ConstructorMethods
+!                                    checkEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_checkEssentialParam( obj, param )
+MODULE SUBROUTINE bc_checkEssentialParam( obj, param )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE dbc_checkEssentialParam
+END SUBROUTINE bc_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      setDirichletParam@ConstructorMethods
+!                                       setDirichletParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -111,6 +103,10 @@ MODULE SUBROUTINE setDirichletBCParam( param, name, idof, nodalValueType, &
   CHARACTER( LEN = * ), INTENT( IN ) :: name
   INTEGER( I4B ), INTENT( IN ) :: idof
   INTEGER( I4B ), INTENT( IN ) :: nodalValueType
+    !! Space
+    !! Time
+    !! SpaceTime
+    !! Constant
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: useFunction
 END SUBROUTINE setDirichletBCParam
 END INTERFACE
@@ -118,38 +114,26 @@ END INTERFACE
 PUBLIC :: setDirichletBCParam
 
 !----------------------------------------------------------------------------
-!                                             addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE addSurrogate_DirichletBC( userObj )
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
-END SUBROUTINE addSurrogate_DirichletBC
-END INTERFACE
-
-PUBLIC :: addSurrogate_DirichletBC
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Initiate( obj, param, boundary, dom )
+MODULE SUBROUTINE bc_Initiate( obj, param, boundary, dom )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( MeshSelection_ ), INTENT( IN ) :: boundary
   CLASS( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE dbc_Initiate
+END SUBROUTINE bc_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Deallocate( obj )
+MODULE SUBROUTINE bc_Deallocate( obj )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE dbc_Deallocate
+END SUBROUTINE bc_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -157,9 +141,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Final( obj )
+MODULE SUBROUTINE bc_Final( obj )
   TYPE( DirichletBC_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE dbc_Final
+END SUBROUTINE bc_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -167,12 +151,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Import( obj, hdf5, group, dom )
+MODULE SUBROUTINE bc_Import( obj, hdf5, group, dom )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
   CLASS( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE dbc_Import
+END SUBROUTINE bc_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -180,11 +164,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Export( obj, hdf5, group )
+MODULE SUBROUTINE bc_Export( obj, hdf5, group )
   CLASS( DirichletBC_ ), INTENT( IN ) :: obj
   TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
   CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE dbc_Export
+END SUBROUTINE bc_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -192,11 +176,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Display( obj, msg, unitNo )
+MODULE SUBROUTINE bc_Display( obj, msg, unitNo )
   CLASS( DirichletBC_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE dbc_Display
+END SUBROUTINE bc_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -204,7 +188,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE dbc_Set( obj, ConstantNodalValue, SpaceNodalValue, &
+MODULE SUBROUTINE bc_Set( obj, ConstantNodalValue, SpaceNodalValue, &
   & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
   & SpaceTimeFunction )
   CLASS( DirichletBC_ ), INTENT( INOUT ) :: obj
@@ -218,32 +202,7 @@ MODULE SUBROUTINE dbc_Set( obj, ConstantNodalValue, SpaceNodalValue, &
     & SpaceFunction
   PROCEDURE( iface_TimeFunction ), POINTER, OPTIONAL, INTENT( IN ) :: &
     & TimeFunction
-END SUBROUTINE dbc_Set
+END SUBROUTINE bc_Set
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE dbc_Get( obj, NodeNum, NodalValue, times )
-  CLASS( DirichletBC_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE, INTENT( INOUT ) :: NodeNum( : )
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: NodalValue( :, : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: times( : )
-END SUBROUTINE dbc_Get
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       getDOFNo@getMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION dbc_getDOFNo( obj ) RESULT( Ans )
-  CLASS( DirichletBC_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION dbc_getDOFNo
-END INTERFACE
-
 
 END MODULE DirichletBC_Class
