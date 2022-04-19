@@ -203,8 +203,18 @@ CONTAINS
   !! set the total number of materials
   PROCEDURE, PUBLIC, PASS(obj) :: setMaterial => Domain_setMaterial
   !! set the material
+  PROCEDURE, PUBLIC, PASS( obj ) :: setDomainBoundaryElement => &
+    & Domain_setDomainBoundaryElement
   !! @ShapedataMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: initiateElemSD => Domain_initiateElemSD
+  PROCEDURE, PASS(obj) :: initiateElemSD1 => Domain_initiateElemSD1
+  PROCEDURE, PASS(obj) :: initiateElemSD2 => Domain_initiateElemSD2
+  PROCEDURE, PASS(obj) :: initiateElemSD3 => Domain_initiateElemSD3
+  PROCEDURE, PASS(obj) :: initiateElemSD4 => Domain_initiateElemSD4
+  GENERIC, PUBLIC :: initiateElemSD => &
+    & initiateElemSD1, &
+    & initiateElemSD2, &
+    & initiateElemSD3, &
+    & initiateElemSD4
   !! Initiating local shape data for mesh
 END TYPE Domain_
 
@@ -926,7 +936,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Sept 2021
-! summary: This routine returns the number of spatial dimensions
+! summary: This routine returns the order of meshes of dimensions=dim
 
 INTERFACE
   MODULE FUNCTION Domain_getOrder(obj, dim) RESULT(Ans)
@@ -1019,6 +1029,20 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                        setDomainBoundaryElement@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 April 2022
+! summary: This routine sets the domain boundary element for cells and faces
+
+INTERFACE
+MODULE SUBROUTINE Domain_setDomainBoundaryElement( obj )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Domain_setDomainBoundaryElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
@@ -1028,40 +1052,123 @@ END INTERFACE
 ! summary: sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE Domain_initiateElemSD(obj, dim, &
-    & orderSpace,  &
-    & linSpaceElem, &
-    & spaceElem, &
-    & quadTypeSpace, &
+  MODULE SUBROUTINE Domain_initiateElemSD1(obj, &
+    & dim, &
+    & orderSpace, &
+    & quadTypeForSpace, &
     & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime, &
-    & tvec)
-
-    CLASS(Domain_), INTENT(inout) :: obj
+    & interpolTypeForSpace)
+    CLASS(Domain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CLASS(ReferenceElement_), TARGET, OPTIONAL, INTENT(IN) :: linSpaceElem
-    CLASS(ReferenceElement_), TARGET, OPTIONAL, INTENT(IN) :: spaceElem
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeSpace
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
     CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
     CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: orderTime
-    TYPE(ReferenceLine_), OPTIONAL, INTENT(IN) :: linTimeElem
-    TYPE(ReferenceLine_), OPTIONAL, INTENT(IN) :: timeElem
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: quadTypeTime
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: continuityTypeForTime
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: interpolTypeForTime
-    REAL(DFP), OPTIONAL, INTENT(IN) :: tvec(:)
-  END SUBROUTINE Domain_initiateElemSD
+  END SUBROUTINE Domain_initiateElemSD1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE Domain_initiateElemSD2(obj, &
+    & dim, &
+    & orderSpace, &
+    & quadTypeForSpace, &
+    & continuityTypeForSpace, &
+    & interpolTypeForSpace, &
+    & orderTime, &
+    & linTimeElem, &
+    & timeElem, &
+    & quadTypeForTime, &
+    & continuityTypeForTime, &
+    & interpolTypeForTime, &
+    & tvec)
+    !!
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh
+    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
+    !! order for each mesh
+    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    INTEGER(I4B), INTENT(IN) :: orderTime
+    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
+    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    REAL(DFP), INTENT(IN) :: tvec(:)
+  END SUBROUTINE Domain_initiateElemSD2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE Domain_initiateElemSD3(obj, &
+    & dim, &
+    & orderSpace, &
+    & quadTypeForSpace, &
+    & continuityTypeForSpace, &
+    & interpolTypeForSpace, &
+    & orderTime, &
+    & linTimeElem, &
+    & timeElem, &
+    & quadTypeForTime, &
+    & continuityTypeForTime, &
+    & interpolTypeForTime)
+    !!
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh
+    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
+    !! order for each mesh
+    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    INTEGER(I4B), INTENT(IN) :: orderTime
+    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
+    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+  END SUBROUTINE Domain_initiateElemSD3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE Domain_initiateElemSD4(obj, dim, tvec)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    REAL( DFP ), INTENT( IN ) :: tvec(:)
+  END SUBROUTINE Domain_initiateElemSD4
 END INTERFACE
 
 !----------------------------------------------------------------------------
