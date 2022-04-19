@@ -53,6 +53,8 @@ CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
       & "CONSTANT_TIME " &
   & ]
 
+CHARACTER( LEN = * ), PARAMETER :: modName = "AbstractField_Class"
+
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
 !----------------------------------------------------------------------------
@@ -74,11 +76,19 @@ TYPE, ABSTRACT :: AbstractField_
     !! Domain for each physical variables
     !! The size of `domains` should be equal to the total number of
     !! physical variables.
+    !! It is used in the case of BlockNodeField
+    !! and BlockMatrixField
   TYPE( String ) :: name
     !! name of the field
   TYPE( String ) :: engine
-    !! Engine of the field, for example NATIVE_SERIAL, NATIVE_OMP,
-    !! NATIVE_MPI, PETSC, LIS_SERIAL, LIS_OMP, LIS_MPI
+    !! Engine of the field, for example
+    !! NATIVE_SERIAL
+    !! NATIVE_OMP,
+    !! NATIVE_MPI,
+    !! PETSC,
+    !! LIS_SERIAL,
+    !! LIS_OMP,
+    !! LIS_MPI
   CONTAINS
   PRIVATE
     PROCEDURE(aField_addSurrogate), DEFERRED, PUBLIC, PASS( obj ) :: &
@@ -234,6 +244,16 @@ SUBROUTINE aField_Export( obj, hdf5, group )
 END SUBROUTINE aField_Export
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE aField_Deallocate( obj )
+  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE aField_Deallocate
+END INTERFACE
+
 INTERFACE AbstractFieldDeallocate
   MODULE PROCEDURE aField_Deallocate
 END INTERFACE AbstractFieldDeallocate
@@ -244,27 +264,13 @@ PUBLIC :: AbstractFieldDeallocate
 !
 !----------------------------------------------------------------------------
 
-CONTAINS
+INTERFACE
+MODULE PURE FUNCTION FIELD_TYPE_NUMBER( name ) RESULT( Ans )
+  CHARACTER( LEN = * ), INTENT( IN ) :: name
+  INTEGER( I4B ) :: ans
+END FUNCTION FIELD_TYPE_NUMBER
+END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-SUBROUTINE aField_Deallocate( obj )
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  !> internal variables
-  INTEGER( I4B ) :: ii
-  obj%name=""
-  obj%engine=""
-  obj%isInitiated=.FALSE.
-  obj%fieldType=0
-  obj%domain => NULL()
-  IF( ALLOCATED( obj%domains ) ) THEN
-    DO ii = 1, SIZE( obj%domains )
-      obj%domains(ii)%ptr => NULL()
-    END DO
-    DEALLOCATE( obj%domains )
-  END IF
-END SUBROUTINE aField_Deallocate
+PUBLIC :: FIELD_TYPE_NUMBER
 
 END MODULE AbstractField_Class
