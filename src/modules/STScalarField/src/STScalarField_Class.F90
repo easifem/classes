@@ -29,9 +29,10 @@ USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "STSCALARFIELD_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "STScalarField_Class"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
@@ -52,7 +53,6 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
     & stsField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stsField_initiate1
-  PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stsField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stsField_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => stsField_Deallocate
   FINAL :: stsField_Final
@@ -80,8 +80,12 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
     !! set values to a STScalar by using triplet
   PROCEDURE, PASS( obj ) :: set12 => stsField_set12
     !! set values to a STScalar by using triplet
+  PROCEDURE, PASS( obj ) :: set13 => stsField_set13
+    !! set values using FEVariable
+  PROCEDURE, PASS( obj ) :: set14 => stsField_set14
+    !! set values using FEVariable
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
-    & set7, set8, set9, set10, set11, set12
+    & set7, set8, set9, set10, set11, set12, set13, set14
   PROCEDURE, PASS( obj ) :: get1 => stsField_get1
   PROCEDURE, PASS( obj ) :: get2 => stsField_get2
   PROCEDURE, PASS( obj ) :: get3 => stsField_get3
@@ -89,7 +93,15 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
   PROCEDURE, PASS( obj ) :: get5 => stsField_get5
   PROCEDURE, PASS( obj ) :: get6 => stsField_get6
   PROCEDURE, PASS( obj ) :: get7 => stsField_get7
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
+  PROCEDURE, PASS( obj ) :: get8 => stsField_get8
+  PROCEDURE, PASS( obj ) :: get9 => stsField_get9
+  GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
+    & get5, get6, get7, get8, get9
+  PROCEDURE, PASS( obj ) :: stsField_applyDirichletBC1
+  PROCEDURE, PASS( obj ) :: stsField_applyDirichletBC2
+  GENERIC, PUBLIC :: applyDirichletBC => &
+    & stsField_applyDirichletBC1, &
+    & stsField_applyDirichletBC2
     !! get the entries of STScalar field
   PROCEDURE, PASS( obj ) :: getPointerOfComponent => stsField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => stsField_Import
@@ -214,27 +226,6 @@ MODULE SUBROUTINE stsField_Initiate1( obj, param, dom )
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE stsField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the object by copying
-!
-!# Introduction
-! This routine initiate the object by copying
-
-INTERFACE
-MODULE SUBROUTINE stsField_Initiate2( obj, obj2, copyFull, copyStructure, usePointer )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
-END SUBROUTINE stsField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -470,10 +461,10 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call reallocate( real2, 3, dom%getTotalNodes() )
-  ! real2 = 1.0_DFP
-  ! call obj%set( value=real2 )
-  ! call obj%display( "test-4: STScalar field = " )
+! call reallocate( real2, 3, dom%getTotalNodes() )
+! real2 = 1.0_DFP
+! call obj%set( value=real2 )
+! call obj%display( "test-4: STScalar field = " )
 !```
 
 INTERFACE
@@ -501,11 +492,12 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call reallocate( real1, dom%getTotalNodes() )
-  ! real1 = 3.0_DFP
-  ! call obj%set( value=real1, timeCompo=3 )
-  ! call obj%display( "test-5: STScalar field = " )
+! call reallocate( real1, dom%getTotalNodes() )
+! real1 = 3.0_DFP
+! call obj%set( value=real1, timeCompo=3 )
+! call obj%display( "test-5: STScalar field = " )
 !```
+
 INTERFACE
 MODULE SUBROUTINE stsField_set5( obj, value, timeCompo )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
@@ -532,16 +524,16 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call scalarObj%initiate( param, dom )
-  ! call scalarObj%set( value = 2.0_DFP )
-  ! call obj%set( value=scalarObj, timeCompo=2 )
-  ! call obj%display( "test-6: STScalar field = ")
-  ! ierr = param%set( key="fieldType", value=FIELD_TYPE_CONSTANT)
-  ! call scalarObj%Deallocate()
-  ! call scalarObj%initiate( param, dom )
-  ! call scalarObj%set( value=10.0_DFP )
-  ! call obj%set( value=scalarObj, timeCompo=1 )
-  ! call obj%display( "test-7: STScalar field = ")
+! call scalarObj%initiate( param, dom )
+! call scalarObj%set( value = 2.0_DFP )
+! call obj%set( value=scalarObj, timeCompo=2 )
+! call obj%display( "test-6: STScalar field = ")
+! ierr = param%set( key="fieldType", value=FIELD_TYPE_CONSTANT)
+! call scalarObj%Deallocate()
+! call scalarObj%initiate( param, dom )
+! call scalarObj%set( value=10.0_DFP )
+! call obj%set( value=scalarObj, timeCompo=1 )
+! call obj%display( "test-7: STScalar field = ")
 !```
 
 INTERFACE
@@ -570,11 +562,11 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call reallocate( real2, 3, 4)
-  ! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-  ! real2( :, 4 ) = -4.0
-  ! call obj%set( value=real2, globalNode=[1,3,5,7] )
-  ! call obj%display( "test-8: STScalar field = ")
+! call reallocate( real2, 3, 4)
+! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
+! real2( :, 4 ) = -4.0
+! call obj%set( value=real2, globalNode=[1,3,5,7] )
+! call obj%display( "test-8: STScalar field = ")
 !```
 
 INTERFACE
@@ -601,11 +593,11 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call reallocate( real2, 3, 4)
-  ! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-  ! real2( :, 4 ) = -4.0
-  ! call obj%set( value=real2, globalNode=[1,3,5,7] )
-  ! call obj%display( "test-8: STScalar field = ")
+! call reallocate( real2, 3, 4)
+! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
+! real2( :, 4 ) = -4.0
+! call obj%set( value=real2, globalNode=[1,3,5,7] )
+! call obj%display( "test-8: STScalar field = ")
 !```
 
 INTERFACE
@@ -633,10 +625,10 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call reallocate( real1, 4)
-  ! real1 = [1,10,100,1000]
-  ! call obj%set( value=real1, globalNode=[1,3,5,7], timeCompo=1 )
-  ! call obj%display( "test-9: STScalar field = " )
+! call reallocate( real1, 4)
+! real1 = [1,10,100,1000]
+! call obj%set( value=real1, globalNode=[1,3,5,7], timeCompo=1 )
+! call obj%display( "test-9: STScalar field = " )
 !```
 
 INTERFACE
@@ -714,12 +706,61 @@ END SUBROUTINE stsField_set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: set the STScalar values using triplet
+!
+!# Introduction
+! Set entries using the selected nodes using triplet.
+
+INTERFACE
+MODULE SUBROUTINE stsField_set13( obj, value, globalNode)
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  TYPE(FEVariable_), INTENT( IN ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+END SUBROUTINE stsField_set13
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: set the STScalar values using triplet
+!
+!# Introduction
+! Set entries using the selected nodes using triplet.
+
+INTERFACE
+MODULE SUBROUTINE stsField_set14( obj, value )
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( IN ) :: value
+END SUBROUTINE stsField_set14
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: This routine returns the single entry of the STScalar field
+!
+!# Introduction
+!
+! If globalnode is present then
+! It returns all the timecomponent at globalnode
+!
+! If timecompo is present then
+! It returns the scalar field at time timecompo.
+!
+!@note
+! 	Both globalnode and timecompo should not be present
+!@endnote
 
 INTERFACE
 MODULE SUBROUTINE stsField_get1( obj, value, globalNode, timeCompo )
@@ -830,6 +871,69 @@ MODULE SUBROUTINE stsField_get7( obj, value, istart, iend, stride, timeCompo )
   INTEGER( I4B ), INTENT( IN ) :: stride
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
 END SUBROUTINE stsField_get7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE stsField_get8( obj, value, globalNode)
+  CLASS( STScalarField_ ), INTENT( IN ) :: obj
+  TYPE(FEVariable_), INTENT( INOUT ) :: value
+  !! Nodal, Vector, SpaceTime
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+END SUBROUTINE stsField_get8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE stsField_get9( obj, value, timeCompo)
+  CLASS( STScalarField_ ), INTENT( IN ) :: obj
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: timeCompo
+END SUBROUTINE stsField_get9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE stsField_applyDirichletBC1( obj, dbc )
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBC_ ), INTENT( IN ) :: dbc
+END SUBROUTINE stsField_applyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE stsField_applyDirichletBC2( obj, dbc )
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBCPointer_ ), INTENT( IN ) :: dbc(:)
+END SUBROUTINE stsField_applyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

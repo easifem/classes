@@ -27,7 +27,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE Domain_Class, ONLY: Domain_
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "MESHSELECTION_CLASS"
+CHARACTER(LEN=*), PARAMETER :: modName = "MeshSelection_Class"
 TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
@@ -108,12 +108,18 @@ CONTAINS
   PROCEDURE, PASS(obj) :: meshSelect_getElemNum4
     !! Returns the element numbers if available
   GENERIC, PUBLIC :: getElemNum => &
-       & meshSelect_getElemNum1, &
-       & meshSelect_getElemNum2, &
-       & meshSelect_getElemNum3, &
-       & meshSelect_getElemNum4
+    & meshSelect_getElemNum1, &
+    & meshSelect_getElemNum2, &
+    & meshSelect_getElemNum3, &
+    & meshSelect_getElemNum4
     !! Returns the element numbers if available
-  PROCEDURE, PUBLIC, PASS(obj) :: getNodeNum => meshSelect_getNodeNum
+  PROCEDURE, PASS(obj) :: meshSelect_getNodeNum1
+  PROCEDURE, PASS(obj) :: meshSelect_getNodeNum2
+  PROCEDURE, PASS(obj) :: meshSelect_getNodeNum3
+  GENERIC, PUBLIC :: getNodeNum => &
+    & meshSelect_getNodeNum1, &
+    & meshSelect_getNodeNum2, &
+    & meshSelect_getNodeNum3
     !! Returns the node number if available
   PROCEDURE, PUBLIC, PASS(obj) :: isMeshIDAllocated => &
     & meshSelect_isMeshIDAllocated
@@ -415,10 +421,48 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION meshSelect_getNodeNum(obj) RESULT(Ans)
+  MODULE FUNCTION meshSelect_getNodeNum1(obj) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getNodeNum
+  END FUNCTION meshSelect_getNodeNum1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getNodeNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+!
+! - [x] isSelectionByMeshID
+! - [x] isSelectionByElemNum
+! - [x] isSelectionByNodeNum
+! - [  ] isSelectionByBox
+
+INTERFACE
+  MODULE FUNCTION meshSelect_getNodeNum2(obj, dim, domain) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    CLASS(Domain_), INTENT(IN) :: domain
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getNodeNum2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getNodeNum@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+
+INTERFACE
+  MODULE FUNCTION meshSelect_getNodeNum3(obj, domain) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    CLASS(Domain_), INTENT(IN) :: domain
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION meshSelect_getNodeNum3
 END INTERFACE
 
 !----------------------------------------------------------------------------
