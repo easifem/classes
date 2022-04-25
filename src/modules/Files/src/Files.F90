@@ -24,6 +24,7 @@ USE HDF5
 USE H5LT
 ! USE H5Fortran
 USE HDF5File_Class
+USE HDF5File_Method
 USE XMLFile_Class
 USE VTKFile_Class
 END MODULE Files
