@@ -177,9 +177,9 @@ PUBLIC :: setLinSolverParam
 ! summary: Returns the linear solver parameters
 
 INTERFACE
-  MODULE SUBROUTINE getLinSolverParam(param, solverName, preconditionOption, &
-    & convergenceIn, convergenceType, maxIter, relativeToRHS, &
-    & KrylovSubspaceSize, rtol, atol)
+  MODULE SUBROUTINE getLinSolverParam(param, solverName, &
+    & preconditionOption, convergenceIn, convergenceType, &
+    & maxIter, relativeToRHS, KrylovSubspaceSize, rtol, atol)
     TYPE(ParameterList_), INTENT(IN) :: param
     INTEGER(I4B), INTENT(OUT) :: solverName
     INTEGER(I4B), INTENT(OUT) :: preconditionOption
