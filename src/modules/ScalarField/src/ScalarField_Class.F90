@@ -28,6 +28,7 @@ USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "ScalarField_Class"
@@ -50,7 +51,6 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
     & sField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => sField_initiate1
-  PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => sField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => sField_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => sField_Deallocate
   FINAL :: sField_Final
@@ -69,21 +69,31 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
   PROCEDURE, PASS( obj ) :: set7 => sField_set7
     !! set values to a vector by using triplet
   PROCEDURE, PASS( obj ) :: set8 => sField_set8
-    !! set values to a vector by using triplet
+    !! This method is used for assignment operator
+  PROCEDURE, PASS( obj ) :: set9 => sField_set9
+    !! Set selected values using FEVariable
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, &
-       & set5, set6, set7, set8
+    & set5, set6, set7, set8, set9
   GENERIC, PUBLIC :: ASSIGNMENT(=) => set8
     !! set values to a vector
   PROCEDURE, PASS( obj ) :: get1 => sField_get1
     !! get single entry
   PROCEDURE, PASS( obj ) :: get2 => sField_get2
-    !! get all values to a scalar values
+    !! get all values in Real vector
   PROCEDURE, PASS( obj ) :: get3 => sField_get3
-    !! get all values to a given vector
+    !! get selected values
   PROCEDURE, PASS( obj ) :: get4 => sField_get4
-    !! get selected values to given scalar
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4
-    !! get the entries of scalar field
+    !! get values from triplet
+  PROCEDURE, PASS( obj ) :: get5 => sField_get5
+    !! get selected values in FEVariable
+  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5
+  !! get the entries of scalar field
+  PROCEDURE, PASS( obj ) :: sField_applyDirichletBC1
+  PROCEDURE, PASS( obj ) :: sField_applyDirichletBC2
+  GENERIC, PUBLIC :: applyDirichletBC => &
+    & sField_applyDirichletBC1, &
+    & sField_applyDirichletBC2
+  !!
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => sField_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => sField_Export
 END TYPE ScalarField_
@@ -173,29 +183,6 @@ MODULE SUBROUTINE sField_Initiate1( obj, param, dom )
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE sField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the ScalarField_ object by copying
-!
-!# Introduction
-!
-! This routine initiate the [[ScalarField_]] object by copying
-
-INTERFACE
-MODULE SUBROUTINE sField_Initiate2( obj, obj2, copyFull, copyStructure, &
-  & usePointer )
-  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
-END SUBROUTINE sField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -443,13 +430,30 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the vector vals using triplet
+! summary: used for assignment operator
 
 INTERFACE
 MODULE SUBROUTINE sField_set8( obj, obj2 )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   CLASS( ScalarField_ ), INTENT( IN ) :: obj2
 END SUBROUTINE sField_set8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine sets the selected entries using [[FEVariable_]]
+
+INTERFACE
+MODULE SUBROUTINE sField_set9(obj, globalNode, value)
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+  TYPE(FEVariable_), INTENT( IN ) :: value
+  !! Scalar, Nodal, FEVariable (Space or Constant)
+END SUBROUTINE sField_set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -463,7 +467,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE sField_get1( obj, value, globalNode )
   CLASS( ScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ) :: value
+  REAL( DFP ), INTENT( INOUT ) :: value
   INTEGER( I4B ), INTENT( IN ) :: globalNode
 END SUBROUTINE sField_get1
 END INTERFACE
@@ -474,7 +478,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all the entries by using given scalar field
+! summary: This routine returns all the entries by using given scalar field
 
 INTERFACE
 MODULE SUBROUTINE sField_get2( obj, value )
@@ -489,7 +493,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine returns the selected entries
 
 INTERFACE
 MODULE SUBROUTINE sField_get3(obj, value, globalNode )
@@ -505,7 +509,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the vector vals using triplet
+! summary: returns the value using triplet
 
 INTERFACE
 MODULE SUBROUTINE sField_get4( obj, value, istart, iend, stride )
@@ -515,6 +519,53 @@ MODULE SUBROUTINE sField_get4( obj, value, istart, iend, stride )
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
 END SUBROUTINE sField_get4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: returns the selected values in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE sField_get5( obj, value, globalNode )
+  CLASS( ScalarField_ ), INTENT( IN ) :: obj
+  TYPE(FEVariable_), INTENT( INOUT ) :: value
+  !! Scalar Nodal FEVariable
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+END SUBROUTINE sField_get5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE sField_applyDirichletBC1( obj, dbc )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBC_ ), INTENT( IN ) :: dbc
+END SUBROUTINE sField_applyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE sField_applyDirichletBC2( obj, dbc )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBCPointer_ ), INTENT( IN ) :: dbc(:)
+END SUBROUTINE sField_applyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
