@@ -27,4 +27,12 @@ USE VectorField_Class
 USE STVectorField_Class
 USE MatrixField_Class
 USE BlockMatrixField_Class
+
+USE AbstractMeshField_Class
+USE ScalarMeshField_Class
+USE STScalarMeshField_Class
+USE VectorMeshField_Class
+USE STVectorMeshField_Class
+USE TensorMeshField_Class
+USE STTensorMeshField_Class
 END MODULE Field
