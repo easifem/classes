@@ -33,7 +33,7 @@ CHARACTER( LEN = * ), PARAMETER :: modName = "MSHFile_CLASS"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
-!                                                                       MSHFile_
+!                                                                 MSHFile_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -115,7 +115,7 @@ END SUBROUTINE msh_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
