@@ -224,9 +224,9 @@ END INTERFACE
 ! summary: This routine sets the single entry of the vector
 
 INTERFACE
-MODULE SUBROUTINE vec_set1( obj, indx, value )
+MODULE SUBROUTINE vec_set1( obj, nodenum, value )
   CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), INTENT( IN ) :: nodenum
   REAL( DFP ), INTENT( IN ) :: value
 END SUBROUTINE vec_set1
 END INTERFACE
@@ -270,9 +270,9 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE vec_set4(obj, indx, value)
+MODULE SUBROUTINE vec_set4(obj, nodenum, value)
   CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx( : )
+  INTEGER( I4B ), INTENT( IN ) :: nodenum( : )
   REAL( DFP ), INTENT( IN ) :: value( : )
 END SUBROUTINE vec_set4
 END INTERFACE
@@ -338,9 +338,9 @@ END INTERFACE
 ! summary: Returns the single entry of the vector
 
 INTERFACE
-MODULE FUNCTION vec_get1( obj, indx ) RESULT( ans )
+MODULE FUNCTION vec_get1( obj, nodenum ) RESULT( ans )
   CLASS( Vector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx
+  INTEGER( I4B ), INTENT( IN ) :: nodenum
   REAL( DFP ) :: ans
 END FUNCTION vec_get1
 END INTERFACE
@@ -369,10 +369,10 @@ END INTERFACE
 ! summary: Returns selected values of vector
 
 INTERFACE
-MODULE FUNCTION vec_get3( obj, indx ) RESULT( ans )
+MODULE FUNCTION vec_get3( obj, nodenum ) RESULT( ans )
   CLASS( Vector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: indx( : )
-  REAL( DFP ) :: ans( SIZE( indx ) )
+  INTEGER( I4B ), INTENT( IN ) :: nodenum( : )
+  REAL( DFP ) :: ans( SIZE( nodenum ) )
 END FUNCTION vec_get3
 END INTERFACE
 
