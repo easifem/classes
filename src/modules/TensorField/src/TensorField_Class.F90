@@ -18,7 +18,7 @@
 ! date: 28 June 2021
 ! summary: Tensor field data type is defined
 
-MODULE TensorField
+MODULE TensorField_Class
 USE GlobalData
 USE BaseType
 USE AbstractNodeField_Class
@@ -28,10 +28,8 @@ USE FPL, ONLY: ParameterList_
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "TENSORFIELD_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "TensorField_Class"
 TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1006
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "TENSORFIELD_CLASS_EXCEPTION.txt"
 
 !----------------------------------------------------------------------------
 !                                                              TensorField_
@@ -61,4 +59,4 @@ END TYPE TensorFieldPointer_
 
 PUBLIC :: TensorFieldPointer_
 
-END MODULE TensorField
+END MODULE TensorField_Class
