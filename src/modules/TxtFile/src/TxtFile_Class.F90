@@ -59,7 +59,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(Obj) :: setEchoUnit => txt_setEchoUnit
   PROCEDURE, PUBLIC, PASS(Obj) :: getEchoUnit => txt_getEchoUnit
   PROCEDURE, PUBLIC, PASS(Obj) :: convertMarkdownToSource => &
-       & txt_convertMarkDownToSource
+      & txt_convertMarkDownToSource
   PROCEDURE, PUBLIC, PASS(Obj) :: getTotalRecords => txt_getTotalRecords
 END TYPE TxtFile_
 
