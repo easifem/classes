@@ -29,9 +29,10 @@ USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "VECTORFIELD_CLASS"
+CHARACTER( LEN = * ), PARAMETER :: modName = "VectorField_Class"
 TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
@@ -52,10 +53,10 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
     & vField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => vField_initiate1
-  PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => vField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => vField_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => vField_Deallocate
   FINAL :: vField_Final
+  !! SetMethods
   PROCEDURE, PASS( obj ) :: set1 => vField_set1
     !! set single entry
   PROCEDURE, PASS( obj ) :: set2 => vField_set2
@@ -80,8 +81,13 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
     !! set values to a vector by using triplet
   PROCEDURE, PASS( obj ) :: set12 => vField_set12
     !! set values to a vector by using triplet
-  GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
-    & set7, set8, set9, set10, set11, set12
+  PROCEDURE, PASS( obj ) :: set13 => vField_set13
+  PROCEDURE, PASS( obj ) :: set14 => vField_set14
+    !! set selected values using FEVariable
+  GENERIC, PUBLIC :: set => &
+    & set1, set2, set3, set4, set5, set6, &
+    & set7, set8, set9, set10, set11, set12, &
+    & set13, set14
 
   PROCEDURE, PASS( obj ) :: get1 => vField_get1
     !! returns the single entry
@@ -93,8 +99,16 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PASS( obj ) :: get5 => vField_get5
   PROCEDURE, PASS( obj ) :: get6 => vField_get6
   PROCEDURE, PASS( obj ) :: get7 => vField_get7
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
+  PROCEDURE, PASS( obj ) :: get8 => vField_get8
+  PROCEDURE, PASS( obj ) :: get9 => vField_get9
+  GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
+    & get5, get6, get7, get8, get9
     !! get the entries of Vector field
+  PROCEDURE, PASS( obj ) :: vField_applyDirichletBC1
+  PROCEDURE, PASS( obj ) :: vField_applyDirichletBC2
+  GENERIC, PUBLIC :: applyDirichletBC => &
+    & vField_applyDirichletBC1, &
+    & vField_applyDirichletBC2
   PROCEDURE, PASS( obj ) :: getPointerOfComponent => &
     & vField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => vField_Import
@@ -189,56 +203,13 @@ PUBLIC :: vField_checkEssentialParam
 ! - `name`  character defining the name of vector field
 ! - `spaceCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-!
-!
-!### Usage
-!
-!```fortran
-  ! type( domain_ ) :: dom
-  ! type( VectorField_ ) :: obj
-  ! type( ScalarField_ ) :: scalarObj
-  ! type( HDF5File_ ) :: meshfile
-  ! type( ParameterList_ ) :: param
-  ! integer( i4b ) :: ierr
-  ! real( DFP ), ALLOCATABLE :: real1( : ), real2( :, : )
-  ! call display( "Testing set methods for normal data" )
-  ! CALL FPL_INIT()
-  ! CALL param%initiate()
-  ! ierr = param%set(key="name", value="U" )
-  ! ierr = param%set(key="fieldType", value=FIELD_TYPE_NORMAL)
-  ! ierr = param%set(key="spaceCompo", value=3)
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call dom%initiate( meshfile )
-  ! call obj%initiate( param, dom )
-!```
+
 INTERFACE
 MODULE SUBROUTINE vField_Initiate1( obj, param, dom )
   CLASS( VectorField_ ), INTENT( INOUT ) :: obj
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE vField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the object by copying
-!
-!# Introduction
-! This routine initiate the object by copying
-
-INTERFACE
-MODULE SUBROUTINE vField_Initiate2( obj, obj2, copyFull, copyStructure, usePointer )
-  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
-END SUBROUTINE vField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -605,11 +576,11 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call reallocate( real2, 3, 4)
-  ! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-  ! real2( :, 4 ) = -4.0
-  ! call obj%set( value=real2, globalNode=[1,3,5,7] )
-  ! call obj%display( "test-8: vector field = ")
+! call reallocate( real2, 3, 4)
+! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
+! real2( :, 4 ) = -4.0
+! call obj%set( value=real2, globalNode=[1,3,5,7] )
+! call obj%display( "test-8: vector field = ")
 !```
 
 INTERFACE
@@ -617,6 +588,7 @@ MODULE SUBROUTINE vField_set8(obj, globalNode, value)
   CLASS( VectorField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  !! value is in value(i,J) format.
 END SUBROUTINE vField_set8
 END INTERFACE
 
@@ -718,12 +690,51 @@ END SUBROUTINE vField_set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: set the values using FEVariable
+
+INTERFACE
+MODULE SUBROUTINE vField_set13( obj, value, globalNode)
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  TYPE(FEVariable_), INTENT( IN ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+END SUBROUTINE vField_set13
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: set the values using FEVariable
+
+INTERFACE
+MODULE SUBROUTINE vField_set14( obj, value)
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  REAL( DFP ), INTENT( IN ) :: value
+END SUBROUTINE vField_set14
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: This routine returns the single entry of the Vector field
+!
+!# Introduction
+!
+! If globalnode is present then this routine returns all spatial components
+! at the globalnode
+!
+! If spacecompo is present then `globalnode` should not be present
+! In this case this routine returns the entire vector of spacecompo.
 
 INTERFACE
 MODULE SUBROUTINE vField_get1( obj, value, globalNode, spaceCompo )
@@ -743,9 +754,10 @@ END INTERFACE
 ! summary: This routine get all the entries by using given Vector field
 
 INTERFACE
-MODULE SUBROUTINE vField_get2( obj, value )
+MODULE SUBROUTINE vField_get2( obj, value, force3D )
   CLASS( VectorField_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( :, : )
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: force3D
 END SUBROUTINE vField_get2
 END INTERFACE
 
@@ -758,10 +770,11 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-MODULE SUBROUTINE vField_get3(obj, value, globalNode)
+MODULE SUBROUTINE vField_get3(obj, value, globalNode, force3D)
   CLASS( VectorField_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value(:,:)
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: force3D
 END SUBROUTINE vField_get3
 END INTERFACE
 
@@ -834,6 +847,68 @@ MODULE SUBROUTINE vField_get7( obj, value, istart, iend, stride, spaceCompo )
   INTEGER( I4B ), INTENT( IN ) :: stride
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
 END SUBROUTINE vField_get7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine returns the selected entries in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE vField_get8(obj, value, globalNode)
+  CLASS( VectorField_ ), INTENT( IN ) :: obj
+  TYPE(FEVariable_), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+END SUBROUTINE vField_get8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE vField_get9( obj, value, spaceCompo)
+  CLASS( VectorField_ ), INTENT( IN ) :: obj
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: spaceCompo
+END SUBROUTINE vField_get9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE vField_applyDirichletBC1( obj, dbc )
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBC_ ), INTENT( IN ) :: dbc
+END SUBROUTINE vField_applyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE vField_applyDirichletBC2( obj, dbc )
+  CLASS( VectorField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBCPointer_ ), INTENT( IN ) :: dbc(:)
+END SUBROUTINE vField_applyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -24,11 +24,13 @@ USE BaseType
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_
+USE STScalarField_Class, ONLY: STScalarField_
 USE VectorField_Class, ONLY: VectorField_
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
+USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "STVectorField_Class"
@@ -53,7 +55,6 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
     & stvField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stvField_initiate1
-  PROCEDURE, PUBLIC, PASS( obj ) :: initiate2 => stvField_initiate2
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => stvField_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => stvField_Deallocate
   FINAL :: stvField_Final
@@ -81,8 +82,13 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
     !! set values to a STvector by using triplet
   PROCEDURE, PASS( obj ) :: set12 => stvField_set12
     !! set values to a STvector by using triplet
-  GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
-    & set7, set8, set9, set10, set11, set12
+  PROCEDURE, PASS( obj ) :: set13 => stvField_set13
+  PROCEDURE, PASS( obj ) :: set14 => stvField_set14
+    !! set values to a STvector by using triplet
+  GENERIC, PUBLIC :: set => &
+    & set1, set2, set3, set4, set5, set6, &
+    & set7, set8, set9, set10, set11, &
+    & set12, set13, set14
   PROCEDURE, PASS( obj ) :: get1 => stvField_get1
   PROCEDURE, PASS( obj ) :: get2 => stvField_get2
   PROCEDURE, PASS( obj ) :: get3 => stvField_get3
@@ -91,8 +97,18 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: STVectorField_
   PROCEDURE, PASS( obj ) :: get6 => stvField_get6
   PROCEDURE, PASS( obj ) :: get7 => stvField_get7
   PROCEDURE, PASS( obj ) :: get8 => stvField_get8
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7, get8
+  PROCEDURE, PASS( obj ) :: get9 => stvField_get9
+  PROCEDURE, PASS( obj ) :: get10 => stvField_get10
+  PROCEDURE, PASS( obj ) :: get11 => stvField_get11
+  PROCEDURE, PASS( obj ) :: get12 => stvField_get12
+  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, &
+    & get6, get7, get8, get9, get10, get11, get12
     !! get the entries of STVector field
+  PROCEDURE, PASS( obj ) :: stvField_applyDirichletBC1
+  PROCEDURE, PASS( obj ) :: stvField_applyDirichletBC2
+  GENERIC, PUBLIC :: applyDirichletBC => &
+    & stvField_applyDirichletBC1, &
+    & stvField_applyDirichletBC2
   PROCEDURE, PASS( obj ) :: getPointerOfComponent =>  &
     & stvField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => stvField_Import
@@ -192,27 +208,6 @@ MODULE SUBROUTINE stvField_Initiate1( obj, param, dom )
   TYPE( ParameterList_ ), INTENT( IN ) :: param
   TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
 END SUBROUTINE stvField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the object by copying
-!
-!# Introduction
-! This routine initiate the object by copying
-
-INTERFACE
-MODULE SUBROUTINE stvField_Initiate2( obj, obj2, copyFull, copyStructure, usePointer )
-  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
-END SUBROUTINE stvField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -631,6 +626,37 @@ END SUBROUTINE stvField_set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: set the STvector values using triplet
+
+INTERFACE
+MODULE SUBROUTINE stvField_set13( obj, value, globalNode )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  TYPE(FEVariable_), INTENT( IN ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+END SUBROUTINE stvField_set13
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: set the STvector values using triplet
+
+INTERFACE
+MODULE SUBROUTINE stvField_set14( obj, value )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  REAL(DFP), INTENT( IN ) :: value
+END SUBROUTINE stvField_set14
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -802,6 +828,101 @@ MODULE SUBROUTINE stvField_get8( obj, value, globalNode )
   REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( :, : )
   INTEGER( I4B ), INTENT( IN ) :: globalNode
 END SUBROUTINE stvField_get8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine returns the space-time value at given node number
+
+INTERFACE
+MODULE SUBROUTINE stvField_get9( obj, value, globalNode )
+  CLASS( STVectorField_ ), INTENT( IN ) :: obj
+  TYPE(FEVariable_), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
+END SUBROUTINE stvField_get9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE stvField_get10( obj, value, spaceCompo)
+  CLASS( STVectorField_ ), INTENT( IN ) :: obj
+  CLASS( STScalarField_ ), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: spaceCompo
+END SUBROUTINE stvField_get10
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE stvField_get11( obj, value, timeCompo)
+  CLASS( STVectorField_ ), INTENT( IN ) :: obj
+  CLASS( VectorField_ ), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: timeCompo
+END SUBROUTINE stvField_get11
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE stvField_get12( obj, value, spaceCompo, timeCompo)
+  CLASS( STVectorField_ ), INTENT( IN ) :: obj
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: value
+  INTEGER( I4B ), INTENT( IN ) :: spaceCompo
+  INTEGER( I4B ), INTENT( IN ) :: timeCompo
+END SUBROUTINE stvField_get12
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE stvField_applyDirichletBC1( obj, dbc )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBC_ ), INTENT( IN ) :: dbc
+END SUBROUTINE stvField_applyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               applyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 22 Jan 2021
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+MODULE SUBROUTINE stvField_applyDirichletBC2( obj, dbc )
+  CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
+  CLASS( DirichletBCPointer_ ), INTENT( IN ) :: dbc(:)
+END SUBROUTINE stvField_applyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
