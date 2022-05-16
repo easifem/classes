@@ -101,8 +101,9 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: VectorField_
   PROCEDURE, PASS( obj ) :: get7 => vField_get7
   PROCEDURE, PASS( obj ) :: get8 => vField_get8
   PROCEDURE, PASS( obj ) :: get9 => vField_get9
+  PROCEDURE, PASS( obj ) :: get10 => vField_get10
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
-    & get5, get6, get7, get8, get9
+    & get5, get6, get7, get8, get9, get10
     !! get the entries of Vector field
   PROCEDURE, PASS( obj ) :: vField_applyDirichletBC1
   PROCEDURE, PASS( obj ) :: vField_applyDirichletBC2
@@ -355,8 +356,8 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call obj%set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
-  ! call obj%display( "test-1: vector field = ")
+! call obj%set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
+! call obj%display( "test-1: vector field = ")
 !```
 
 INTERFACE
@@ -879,6 +880,21 @@ MODULE SUBROUTINE vField_get9( obj, value, spaceCompo)
   CLASS( ScalarField_ ), INTENT( INOUT ) :: value
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
 END SUBROUTINE vField_get9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This routine return value in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE vField_get10( obj, value)
+  CLASS( VectorField_ ), INTENT( IN ) :: obj
+  CLASS( VectorField_ ), INTENT( INOUT ) :: value
+END SUBROUTINE vField_get10
 END INTERFACE
 
 !----------------------------------------------------------------------------
