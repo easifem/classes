@@ -70,10 +70,11 @@ PUBLIC :: ScalarMeshFieldPointer_
 
 INTERFACE
 MODULE SUBROUTINE setScalarMeshFieldParam( param, name, &
-  & fieldType, engine, defineOn, nns )
+  & fieldType, varType, engine, defineOn, nns )
   TYPE( ParameterList_ ), INTENT( INOUT ) :: param
   CHARACTER( LEN = * ), INTENT( IN ) :: name
   INTEGER( I4B ), INTENT( IN ) :: fieldType
+  INTEGER( I4B ), INTENT( IN ) :: varType
   CHARACTER( LEN = * ), INTENT( IN ) :: engine
   INTEGER( I4B ), INTENT( IN ) :: defineOn
   !! Nodal, Quadrature
