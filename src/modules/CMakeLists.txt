@@ -99,6 +99,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 # MSHFile
 include(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 
+# AbstractFunction
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
+
+# Polynomial
+include(${CMAKE_CURRENT_LIST_DIR}/Polynomial/CMakeLists.txt)
+
 # AbstractBC
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
 
