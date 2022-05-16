@@ -178,7 +178,7 @@ CONTAINS
   !! This routine a pointer to [[Mesh_]] object
   PROCEDURE, PUBLIC, PASS(obj) :: getDimEntityNum => Domain_getDimEntityNum
   !! Returns a dim and entity number of mesh which contains the element number
-  PROCEDURE, PASS(obj) :: getNodeCoord => Domain_getNodeCoord
+  PROCEDURE, PUBLIC, PASS(obj) :: getNodeCoord => Domain_getNodeCoord
   !! This routine returns the nodal coordinate in rank2 array
   PROCEDURE, PUBLIC, PASS(obj) :: getNodeCoordPointer => &
     & Domain_getNodeCoordPointer
