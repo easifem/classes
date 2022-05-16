@@ -52,10 +52,14 @@ TYPE, EXTENDS( Element_ ) :: FacetElement_
   PROCEDURE, PUBLIC, PASS( obj ) :: setCellNptrs => faceElem_setCellNptrs
   PROCEDURE, PUBLIC, PASS( obj ) :: getCellPointer => faceElem_getCellPointer
   PROCEDURE, PUBLIC, PASS( obj ) :: setCellPointer => faceElem_setCellPointer
-  PROCEDURE, PUBLIC, PASS( obj ) :: FreeCellPointer => faceElem_freeCellPointer
-  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalID => faceElem_getFacetLocalID
-  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetLocalID => faceElem_setFacetLocalID
-  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalNptrs => faceElem_getFacetLocalNptrs
+  PROCEDURE, PUBLIC, PASS( obj ) :: FreeCellPointer => &
+    & faceElem_freeCellPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalID => &
+    & faceElem_getFacetLocalID
+  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetLocalID => &
+    & faceElem_setFacetLocalID
+  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalNptrs => &
+    & faceElem_getFacetLocalNptrs
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => faceElem_display
   FINAL :: faceElem_Deallocate
   PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => elem_Deallocate
@@ -142,7 +146,8 @@ END INTERFACE
 ! summary: 	Returns an instance of [[FacetElement_]]
 !
 !# Introduction
-! 	Constructing an instance of [[FacetElement_]] from another instance of [[Element_]] or any of its child
+! 	Constructing an instance of [[FacetElement_]] from another instance of
+! [[Element_]] or any of its child
 !
 !### Usage
 !
