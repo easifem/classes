@@ -85,8 +85,9 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
   PROCEDURE, PASS( obj ) :: get4 => sField_get4
     !! get values from triplet
   PROCEDURE, PASS( obj ) :: get5 => sField_get5
+  PROCEDURE, PASS( obj ) :: get6 => sField_get6
     !! get selected values in FEVariable
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5
+  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6
   !! get the entries of scalar field
   PROCEDURE, PASS( obj ) :: sField_applyDirichletBC1
   PROCEDURE, PASS( obj ) :: sField_applyDirichletBC2
@@ -536,6 +537,21 @@ MODULE SUBROUTINE sField_get5( obj, value, globalNode )
   !! Scalar Nodal FEVariable
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
 END SUBROUTINE sField_get5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: returns the selected values in FEVariable
+
+INTERFACE
+MODULE SUBROUTINE sField_get6( obj, value )
+  CLASS( ScalarField_ ), INTENT( IN ) :: obj
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: value
+END SUBROUTINE sField_get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
