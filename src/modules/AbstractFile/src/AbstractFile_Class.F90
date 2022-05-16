@@ -43,7 +43,7 @@ USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
 !List of Public Members
-CHARACTER(LEN=*),PARAMETER :: modName='ABSTRACTFILE_CLASS'
+CHARACTER(LEN=*),PARAMETER :: modName='AbstractFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen=256
 TYPE(ExceptionHandler_), PRIVATE :: e
   !! The exception handler for the object
@@ -60,13 +60,13 @@ TYPE(ExceptionHandler_), PRIVATE :: e
 TYPE,ABSTRACT :: AbstractFile_
   PRIVATE
   INTEGER(I4B) :: pathlen=0
-    !! The length of the path string for this file
+    !! The length of the path of the file
   INTEGER(I4B) :: fnamelen=0
-    !! The length of the name string for this file
+    !! The length of the file name string
   INTEGER(I4B) :: extlen=0
-    !! The length of the file name extension string for this file
+    !! The length of the file name extension string
   TYPE(String) :: path
-    !! The path string to the file
+    !! The path of the file
   TYPE(String) :: fileName
     !! The name of the file (without the file extension)
   TYPE(String) :: ext
@@ -119,6 +119,10 @@ PUBLIC :: AbstractFilePointer_
 !                                                               addSurrogate
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Add surrogate to the module exception handler.
+
 INTERFACE
 MODULE SUBROUTINE aFile_addSurrogate( obj, UserObj )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
@@ -127,8 +131,12 @@ END SUBROUTINE aFile_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                                setFilePath
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the path of file
 
 INTERFACE
 MODULE SUBROUTINE aFile_setFilePath( obj, path )
@@ -141,6 +149,10 @@ END INTERFACE
 !                                                                setFileName
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the file name
+
 INTERFACE
 MODULE SUBROUTINE aFile_setFileName( obj, fileName )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
@@ -152,6 +164,10 @@ END INTERFACE
 !                                                                setFileExt
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the file extension
+
 INTERFACE
 MODULE SUBROUTINE aFile_setFileExt( obj, Ext )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
@@ -162,6 +178,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                               getFileParts
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the path, filename, and extension of the file
 
 INTERFACE
 MODULE PURE SUBROUTINE aFile_getFileParts( obj, path, fileName, ext )
@@ -176,6 +196,10 @@ END INTERFACE
 !                                                                getFilePath
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the path of the file
+
 INTERFACE
 MODULE FUNCTION aFile_getFilePath( obj ) RESULT( path )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
@@ -186,6 +210,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                                getFileName
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the name of the file
 
 INTERFACE
 MODULE FUNCTION aFile_getFileName( obj ) RESULT( fileName )
@@ -198,6 +226,10 @@ END INTERFACE
 !                                                                getFileExt
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the extension of the file
+
 INTERFACE
 MODULE FUNCTION aFile_getFileExt( obj ) RESULT( Ext )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
@@ -208,6 +240,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                                    isOpen
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns true if the file is open
 
 INTERFACE
 MODULE FUNCTION aFile_isOpen( obj ) RESULT( ans )
@@ -220,6 +256,10 @@ END INTERFACE
 !                                                                    isEOF
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns true if the end of the file is reached
+
 INTERFACE
 MODULE FUNCTION aFile_isEOF( obj ) RESULT( ans )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
@@ -230,6 +270,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                                 isWrite
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns true if the file has write access
 
 INTERFACE
 MODULE FUNCTION aFile_isWrite( obj ) RESULT( ans )
@@ -242,6 +286,10 @@ END INTERFACE
 !                                                                 isRead
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns true if the file has read access
+
 INTERFACE
 MODULE FUNCTION aFile_isRead( obj ) RESULT( ans )
   CLASS( AbstractFile_ ), INTENT( IN ) :: obj
@@ -252,6 +300,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                                 setEOFstat
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the end of file status of file
 
 INTERFACE
 MODULE SUBROUTINE aFile_setEOFstat( obj, stat )
@@ -264,6 +316,10 @@ END INTERFACE
 !                                                               setOpenStat
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the openStat
+
 INTERFACE
 MODULE SUBROUTINE aFile_setOpenStat( obj, stat )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
@@ -274,6 +330,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                               setReadStat
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the readStat
 
 INTERFACE
 MODULE SUBROUTINE aFile_setReadStat( obj, stat )
@@ -286,6 +346,10 @@ END INTERFACE
 !                                                               setWriteStat
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the writeStat
+
 INTERFACE
 MODULE SUBROUTINE aFile_setWriteStat( obj, stat )
   CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
@@ -296,6 +360,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                           DealalocateData
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Deallocate the data stored in the file
 
 INTERFACE
 MODULE SUBROUTINE aFile_Deallocate( obj, delete )
@@ -310,6 +378,11 @@ PUBLIC :: aFile_Deallocate
 !
 !----------------------------------------------------------------------------
 
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Close the file
+
 ABSTRACT INTERFACE
   SUBROUTINE aFile_Close(obj)
     IMPORT :: AbstractFile_
@@ -321,6 +394,10 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Open the file
+
 ABSTRACT INTERFACE
   SUBROUTINE aFile_Open(obj)
     IMPORT :: AbstractFile_
@@ -331,6 +408,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Delete the file
 
 ABSTRACT INTERFACE
   SUBROUTINE aFile_Delete(obj)
