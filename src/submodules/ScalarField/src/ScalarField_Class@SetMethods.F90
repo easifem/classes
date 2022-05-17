@@ -27,21 +27,32 @@ CONTAINS
 MODULE PROCEDURE sField_set1
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_set1"
   INTEGER( I4B ) :: localNode
-
+  !!
+#ifdef DEBUG_VER
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated' )
+#endif
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL set( obj%realVec, indx=[1], value=[value]  )
+    CALL set( obj%realVec, nodenum=[1], value=[value]  )
   ELSE
+    !!
     localNode = obj%domain%getLocalNodeNumber( globalNode )
+    !!
+#ifdef DEBUG_VER
     IF( localNode .NE. 0 ) THEN
-      CALL set( obj%realVec, indx=[localNode], value=[value] )
+#endif
+    !!
+    CALL set( obj%realVec, nodenum=[localNode], value=[value] )
+    !!
+#ifdef DEBUG_VER
     ELSE
       CALL e%raiseError(modName//'::'//myName// " - " &
       & // 'globalNode :: '// trim(str(globalNode, .true.)) &
       & // " is out of bound for the domain." )
     END IF
+#endif
   END IF
 END PROCEDURE sField_set1
 
@@ -51,13 +62,20 @@ END PROCEDURE sField_set1
 
 MODULE PROCEDURE sField_set2
   CHARACTER( LEN = * ), PARAMETER :: myName = "sField_set2"
-
+  !!
+#ifdef DEBUG_VER
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'Scalar field object is not initiated' )
   ELSE
-    CALL set( obj%realVec, value=value )
+#endif
+  !!
+  CALL set( obj%realVec, value=value )
+  !!
+#ifdef DEBUG_VER
   END IF
+#endif
+!!
 END PROCEDURE sField_set2
 
 !----------------------------------------------------------------------------
@@ -66,20 +84,32 @@ END PROCEDURE sField_set2
 
 MODULE PROCEDURE sField_set3
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_set3"
-
+  !!
+#ifdef DEBUG_VER
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated' )
-
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    !!
     CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine should not be called for constant field type.' )
+      & 'This routine should not be called for constant &
+      & field type.' )
   ELSE
+    !!
     IF ( obj%tSize .NE. SIZE(value) ) &
       & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'Size of given value is not same as the size of scalar field vector' )
-      CALL set( obj%realVec, value=value )
+      & 'Size of given value is not same as the size of &
+      & scalar field vector' )
+      !!
+#endif
+  !!
+  CALL set( obj%realVec, value=value )
+  !!
+#ifdef DEBUG_VER
   END IF
+#endif
+  !!
 END PROCEDURE sField_set3
 
 !----------------------------------------------------------------------------
@@ -99,20 +129,35 @@ END PROCEDURE sField_set4
 MODULE PROCEDURE sField_set5
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_set5"
   INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
-
+  !!
+#ifdef DEBUG_VER
+  !! check
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated' )
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    !! check
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'This routine should not be called for constant field type.' )
+    !! check
   ELSE
+#endif
+    !!
     localNode = obj%domain%getLocalNodeNumber( globalNode )
+    !!
+#ifdef DEBUG_VER
     IF( ANY( localNode .GT. obj%tSize ) ) &
       & CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'Some of the globalNode are out of bound' )
-    CALL set( obj%realVec, indx=localNode, value=value )
+#endif
+    !!
+    CALL set( obj%realVec, nodenum=localNode, value=value )
+    !!
+#ifdef DEBUG_VER
   END IF
+#endif
+  !!
 END PROCEDURE sField_set5
 
 !----------------------------------------------------------------------------
@@ -122,21 +167,35 @@ END PROCEDURE sField_set5
 MODULE PROCEDURE sField_set6
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_set6"
   INTEGER( I4B ) :: globalNode( INT( 1+ (iend-istart)/stride ) ), ii, jj
-
+  !!
+  !!
+#ifdef DEBUG_VER
+  !!
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated' )
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    !!
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'This routine should not be called for constant field type.' )
+    !!
   ELSE
-    jj = 0
-    DO ii = istart, iend, stride
-      jj = jj + 1
-      globalNode( jj ) = ii
-    END DO
-    CALL obj%set( globalNode=globalNode, value=value )
+    !!
+#endif
+  !!
+  jj = 0
+  DO ii = istart, iend, stride
+    jj = jj + 1
+    globalNode( jj ) = ii
+  END DO
+  !!
+  CALL obj%set( globalNode=globalNode, value=value )
+  !!
+#ifdef DEBUG_VER
+    !!
   END IF
+#endif
 END PROCEDURE sField_set6
 
 !----------------------------------------------------------------------------
@@ -146,31 +205,79 @@ END PROCEDURE sField_set6
 MODULE PROCEDURE sField_set7
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_set7"
   INTEGER( I4B ) :: globalNode( INT( 1+ (iend-istart)/stride ) ), ii, jj
-
+  !!
+#ifdef DEBUG_VER
+  !!
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated' )
-
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    !!
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'This routine should not be called for constant field type.' )
+    !!
   ELSE
-    jj = 0
-    DO ii = istart, iend, stride
-      jj = jj + 1
-      globalNode( jj ) = ii
-    END DO
-    CALL obj%set( globalNode=globalNode, value=value )
+#endif
+  !!
+  jj = 0
+  DO ii = istart, iend, stride
+    jj = jj + 1
+    globalNode( jj ) = ii
+  END DO
+  !!
+  CALL obj%set( globalNode=globalNode, value=value )
+  !!
+#ifdef DEBUG_VER
   END IF
+#endif
 END PROCEDURE sField_set7
 
 !----------------------------------------------------------------------------
-!                                                                  set
+!                                                                       set
 !----------------------------------------------------------------------------
 
 module procedure sField_set8
   obj%realVec = obj2%realVec
 end procedure sField_set8
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_set9
+  CHARACTER( LEN = * ), PARAMETER :: myName="sField_set9"
+  !!
+#ifdef DEBUG_VER
+  !!
+  IF( .NOT. obj%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Scalar field object is not initiated' )
+  !!
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'This routine should not be called for constant field type.' )
+  END IF
+  !!
+#endif
+  !!
+  SELECT CASE( value%vartype )
+    !!
+  CASE( Constant )
+    !!
+    CALL obj%Set( &
+      & value = GET(value, TypeFEVariableScalar, TypeFEVariableConstant), &
+      & globalNode=globalNode)
+    !!
+  CASE( Space )
+    !!
+    CALL obj%Set( &
+      & value = GET(value, TypeFEVariableScalar, TypeFEVariableSpace), &
+      & globalNode=globalNode)
+    !!
+  END SELECT
+  !!
+END PROCEDURE sField_set9
 
 !----------------------------------------------------------------------------
 !

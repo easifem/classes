@@ -59,72 +59,93 @@ MODULE PROCEDURE sField_Import
   INTEGER( I4B ) :: fieldType
   LOGICAL( LGT ) :: restart
   TYPE( ParameterList_ ) :: param
-  ! main program
+  !!
+  !! info
+  !!
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Importing ScalarField_")
+  !!
+  !! check
+  !!
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is already initiated')
-  !> print info
-  CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "IMPORTING SCALAR FIELD")
-  !> check
-  IF( .NOT. hdf5%isOpen() ) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+  !!
+  !! check
+  !!
+  IF( .NOT. hdf5%isOpen() ) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
-  END IF
-  !> check
-  IF( .NOT. hdf5%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+  !!
+  !! check
+  !!
+  IF( .NOT. hdf5%isRead() ) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have read permission')
-  END IF
-  ! READ fieldType
+  !!
+  !! fieldType
+  !!
   dsetname=trim(group)//"/fieldType"
   IF( hdf5%pathExists(dsetname%chars())) THEN
-      CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
-      SELECT CASE( TRIM(strval%chars()) )
-      CASE( "NORMAL" )
-        fieldType = FIELD_TYPE_NORMAL
-      CASE( "CONSTANT" )
-        fieldType = FIELD_TYPE_CONSTANT
-      CASE( "CONSTANT_SPACE" )
-        fieldType = FIELD_TYPE_CONSTANT_SPACE
-      CASE( "CONSTANT_TIME" )
-        fieldType = FIELD_TYPE_CONSTANT_TIME
-      END SELECT
+    CALL hdf5%read(dsetname=dsetname%chars(),vals=strval)
+    fieldType = FIELD_TYPE_NUMBER( TRIM(strval%chars()) )
   ELSE
     fieldType = FIELD_TYPE_NORMAL
   END IF
-  ! READ name
+  !!
+  !! name
+  !!
   dsetname=trim(group)//"/name"
-  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
-  END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
-  ! READ engine
+  !!
+  !! engine
+  !!
   dsetname=trim(group)//"/engine"
-  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset named engine should be present')
-  END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=engine)
-  ! Construct the base
+  !!
+  !! tSize
+  !!
+  dsetname=trim(group)//"/tSize"
+  IF( hdf5%pathExists(dsetname%chars())) &
+    & CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%tSize)
+  !!
+  !! Initiate
+  !!
   CALL FPL_INIT(); CALL param%initiate()
-  CALL setScalarFieldParam( param=param, &
+  CALL setScalarFieldParam( &
+    & param=param, &
     & name=trim(name%chars()), &
     & fieldType = fieldType )
+  !!
   CALL obj%initiate( param=param, dom=dom )
   CALL param%Deallocate(); CALL FPL_FINALIZE()
-  ! READ dof
+  !!
+  !! dof
+  !!
   dsetname=trim(group)//"/dof"
-  IF( hdf5%pathExists(dsetname%chars())) THEN
-    CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
-  END IF
-  ! READ realVec
+  IF( hdf5%pathExists(dsetname%chars())) &
+    & CALL ImportDOF( obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
+  !!
+  !! realVec
+  !!
   dsetname=trim(group)//"/realVec"
-  IF( hdf5%pathExists(dsetname%chars())) THEN
-    CALL ImportRealVector( obj=obj%realVec, hdf5=hdf5, &
-      & group=dsetname%chars() )
-  END IF
+  IF( hdf5%pathExists(dsetname%chars())) &
+    & CALL ImportRealVector( obj=obj%realVec, hdf5=hdf5, &
+    & group=dsetname%chars() )
+  !!
+  !! info
+  !!
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Importing ScalarField_ [OK!]")
+  !!
+  !!
+  !!
 END PROCEDURE sField_Import
 
 !----------------------------------------------------------------------------
@@ -134,40 +155,69 @@ END PROCEDURE sField_Import
 MODULE PROCEDURE sField_Export
   CHARACTER( LEN = * ), PARAMETER :: myName="sField_Export"
   TYPE( String ) :: strval, dsetname
-  ! main program
+  !!
+  !! main program
+  !!
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Scalar field object is not initiated initiated')
-  !> print info
+  !!
+  !! info
+  !!
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "EXPORTING SCALAR FIELD")
-  !> check
+    & "Exporting ScalarField_")
+  !!
+  !! check
+  !!
   IF( .NOT. hdf5%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file is not opened')
   END IF
-  !> check
+  !!
+  !! check
+  !!
   IF( .NOT. hdf5%isWrite() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'HDF5 file does not have write permission')
   END IF
-  ! WRITE fieldType
+  !!
+  !! fieldType
+  !!
   dsetname=trim(group)//"/fieldType"
   strval = FIELD_TYPE_NAME( obj%fieldType )
   CALL hdf5%write(dsetname=dsetname%chars(),vals=strval)
-  ! WRITE name
+  !!
+  !! name
+  !!
   dsetname=trim(group)//"/name"
   CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%name)
-  ! WRITE engine
+  !!
+  !! engine
+  !!
   dsetname=trim(group)//"/engine"
   CALL hdf5%write(dsetname=dsetname%chars(),vals=obj%engine)
-  ! WRITE dof
+  !!
+  !! tSize
+  !!
+  dsetname = trim(group)//"/tSize"
+  CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%tSize)
+  !!
+  !! dof
+  !!
   dsetname=trim(group)//"/dof"
   CALL ExportDOF( obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
-  ! WRITE realVec
+  !!
+  !! realVec
+  !!
   dsetname=trim(group)//"/realVec"
   CALL ExportRealVector( obj=obj%realVec, hdf5=hdf5, &
     & group=dsetname%chars() )
+  !!
+  !! info
+  !!
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
+    & "Exporting ScalarField_")
+  !!
 END PROCEDURE sField_Export
 
 END SUBMODULE IOMethods
