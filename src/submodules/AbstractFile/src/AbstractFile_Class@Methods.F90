@@ -36,7 +36,7 @@ MODULE PROCEDURE aFile_setFilePath
   CHARACTER(LEN=*),PARAMETER :: myName='aFile_setFilePath'
   IF(obj%openstat) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-        'Cannot change path of file while it is open!')
+      & 'Cannot change path of file while it is open!')
   ELSE
     obj%path=TRIM(ADJUSTL(path))
     obj%pathlen=LEN_TRIM(obj%path)
@@ -51,7 +51,7 @@ MODULE PROCEDURE aFile_setFileName
   CHARACTER(LEN=*),PARAMETER :: myName='aFile_setFileName'
   IF(obj%openstat) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-        'Cannot change Filename of file while it is open!')
+      & 'Cannot change Filename of file while it is open!')
   ELSE
     obj%fileName=TRIM(ADJUSTL(fileName))
     obj%fnamelen=LEN_TRIM(obj%fileName)
