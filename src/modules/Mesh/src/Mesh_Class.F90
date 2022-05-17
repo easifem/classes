@@ -109,7 +109,32 @@ TYPE FacetData_
   INTEGER( I4B ) :: slaveCellNumber = 0
   INTEGER( I4B ) :: elementType = 0
   INTEGER( I4B ) :: localFacetID = 0
+  CONTAINS
+  !!
+  !! Contains
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => facetData_Display
+  !!
 END TYPE FacetData_
+
+!----------------------------------------------------------------------------
+!                                                                 FacetData_
+!----------------------------------------------------------------------------
+
+TYPE InternalFacetData_
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
+  INTEGER( I4B ) :: masterCellNumber = 0
+  INTEGER( I4B ) :: slaveCellNumber = 0
+  INTEGER( I4B ) :: elementType = 0
+  INTEGER( I4B ) :: materLocalFacetID = 0
+  INTEGER( I4B ) :: slaveLocalFacetID = 0
+  CONTAINS
+  !!
+  !! Contains
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => InternalfacetData_Display
+  !!
+END TYPE InternalFacetData_
 
 !----------------------------------------------------------------------------
 !                                                                 Mesh_
@@ -272,12 +297,15 @@ CONTAINS
     !! Export mesh to a VTKfile
   PROCEDURE, PUBLIC, PASS(obj) :: Display => mesh_display
     !! Display the mesh
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayNodeData => &
+  & mesh_DisplayNodeData
+  !! Display node data
   PROCEDURE, PUBLIC, PASS( obj ) :: DisplayElementData => &
     & mesh_DisplayElementData
     !! Display element data
-  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayNodeData => &
-    & mesh_DisplayNodeData
-    !! Display node data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetData => &
+    & mesh_DisplayFacetData
+    !! Display element data
   ! @GetMethods
   PROCEDURE, PASS(obj) :: InitiateNodeToElements => &
     & mesh_InitiateNodeToElements
@@ -817,6 +845,22 @@ PUBLIC :: Display
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
+! summary: Display a single instance of NodeData_
+
+INTERFACE
+MODULE SUBROUTINE nodeData_Display( obj, msg, unitno )
+  CLASS( NodeData_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE nodeData_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Display@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
 ! summary: Display a single instance of element data
 
 INTERFACE
@@ -833,14 +877,30 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
-! summary: Display a single instance of NodeData_
+! summary: Display a single instance of facetData
 
 INTERFACE
-MODULE SUBROUTINE nodeData_Display( obj, msg, unitno )
-  CLASS( NodeData_ ), INTENT( IN ) :: obj
+MODULE SUBROUTINE facetData_Display( obj, msg, unitno )
+  CLASS( FacetData_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE nodeData_Display
+END SUBROUTINE facetData_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayNodeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Displays the Node data
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayNodeData( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayNodeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -860,19 +920,19 @@ END SUBROUTINE mesh_DisplayElementData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              DisplayNodeData@GetMethods
+!                                              DisplayFacetData@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
-! summary: Displays the Node data
+! summary: Displays the element data
 
 INTERFACE
-MODULE SUBROUTINE mesh_DisplayNodeData( obj, msg, unitno )
+MODULE SUBROUTINE mesh_DisplayFacetData( obj, msg, unitno )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE mesh_DisplayNodeData
+END SUBROUTINE mesh_DisplayFacetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
