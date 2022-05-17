@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_AddSurrogate
-CALL e%addSurrogate(userObj)
+  CALL e%addSurrogate(userObj)
 END PROCEDURE dc_AddSurrogate
 
 !----------------------------------------------------------------------------
@@ -33,14 +33,14 @@ END PROCEDURE dc_AddSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Deallocate
-obj%isInitiated = .FALSE.
-obj%isFacetToCell = .FALSE.
-obj%isNodeToNode = .FALSE.
-obj%isCellToCell = .FALSE.
-IF (ALLOCATED(obj%facetToCell)) DEALLOCATE (obj%facetToCell)
-IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE (obj%nodeToNode)
-IF (ALLOCATED(obj%cellToCell)) DEALLOCATE (obj%cellToCell)
-IF (ALLOCATED(obj%elemToElem)) DEALLOCATE (obj%elemToElem)
+  obj%isInitiated = .FALSE.
+  obj%isFacetToCell = .FALSE.
+  obj%isNodeToNode = .FALSE.
+  obj%isCellToCell = .FALSE.
+  IF (ALLOCATED(obj%facetToCell)) DEALLOCATE (obj%facetToCell)
+  IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE (obj%nodeToNode)
+  IF (ALLOCATED(obj%cellToCell)) DEALLOCATE (obj%cellToCell)
+  IF (ALLOCATED(obj%elemToElem)) DEALLOCATE (obj%elemToElem)
 END PROCEDURE dc_Deallocate
 
 !----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ END PROCEDURE dc_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Final
-CALL obj%Deallocate()
+  CALL obj%Deallocate()
 END PROCEDURE dc_Final
 
 !----------------------------------------------------------------------------
