@@ -41,56 +41,6 @@ MODULE PROCEDURE mField_Shape
 END PROCEDURE mField_Shape
 
 !----------------------------------------------------------------------------
-!                                                                     getRow
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_getRow
-  INTEGER( I4B ) :: inode
-  REAL( DFP ), POINTER :: realVec( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_getRow"
-  !
-  inode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( PRESENT( val ) ) THEN
-    CALL getRow( obj=obj%mat, inode=inode, idof=idof, val=val, scale=scale,&
-      & addContribution=addContribution )
-  ELSE IF( PRESENT( nodeFieldVal ) ) THEN
-    IF( obj%mat%csr%dof .NE. nodeFieldVal%dof ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'DOF data of matrix is not same as the DOF data of nodefieldVal')
-      realVec => NULL()
-      realVec => nodeFieldVal%getPointer( )
-      CALL getRow( obj=obj%mat, inode=inode, idof=idof, val=realVec, &
-        & scale=scale, addContribution=addContribution )
-  END IF
-  NULLIFY( realVec )
-END PROCEDURE mField_getRow
-
-!----------------------------------------------------------------------------
-!                                                                 getColumn
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_getColumn
-  INTEGER( I4B ) :: inode
-  REAL( DFP ), POINTER :: realVec( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_getColumn"
-  !
-  inode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( PRESENT( val ) ) THEN
-    CALL getColumn( obj=obj%mat, inode=inode, idof=idof, val=val, &
-    & scale=scale, addContribution=addContribution )
-  ELSE IF( PRESENT( nodeFieldVal ) ) THEN
-    IF( obj%mat%csr%dof .NE. nodeFieldVal%dof ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'DOF data of matrix is not same as the DOF data of nodefieldVal')
-      realVec => NULL()
-      realVec => nodeFieldVal%getPointer( )
-      CALL getColumn( obj=obj%mat, inode=inode, idof=idof, val=realVec, &
-        & scale=scale, addContribution=addContribution )
-  END IF
-  NULLIFY( realVec )
-END PROCEDURE mField_getColumn
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
