@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dbc_Import
-  CHARACTER( LEN = * ), PARAMETER :: myName="dbc_Import"
+MODULE PROCEDURE bc_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="bc_Import"
   TYPE( String ) :: dsetname, strval
   INTEGER( I4B ) :: ierr
   REAL( DFP ) :: real0
@@ -131,14 +131,14 @@ MODULE PROCEDURE dbc_Import
 
   IF( ALLOCATED( real1 ) ) DEALLOCATE( real1 )
   IF( ALLOCATED( real2 ) ) DEALLOCATE( real2 )
-END PROCEDURE dbc_Import
+END PROCEDURE bc_Import
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dbc_Export
-  CHARACTER( LEN = * ), PARAMETER :: myName="dbc_Export"
+MODULE PROCEDURE bc_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="bc_Export"
   TYPE( String ) :: dsetname, strval
   INTEGER( I4B ) :: ierr
   REAL( DFP ) :: real0
@@ -214,13 +214,13 @@ MODULE PROCEDURE dbc_Export
   END IF
   IF( ALLOCATED( real1 ) ) DEALLOCATE( real1 )
   IF( ALLOCATED( real2 ) ) DEALLOCATE( real2 )
-END PROCEDURE dbc_Export
+END PROCEDURE bc_Export
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dbc_Display
+MODULE PROCEDURE bc_Display
   TYPE( String ) :: strval
   REAL( DFP ) :: real0
   REAL( DFP ), ALLOCATABLE :: real1( : ), real2( :, : )
@@ -264,6 +264,6 @@ MODULE PROCEDURE dbc_Display
   END IF
   IF( ALLOCATED( real1 ) ) DEALLOCATE( real1 )
   IF( ALLOCATED( real2 ) ) DEALLOCATE( real2 )
-END PROCEDURE dbc_Display
+END PROCEDURE bc_Display
 
 END SUBMODULE IOMethods
