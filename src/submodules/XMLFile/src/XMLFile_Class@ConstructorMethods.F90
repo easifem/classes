@@ -37,14 +37,16 @@ MODULE PROCEDURE xmlFile_Initiate
   TYPE( String ) :: fpath, fname, fext, mode_in
   CHARACTER(LEN=LEN(filename)) :: tempchars
   LOGICAL( LGT ) :: exists
-  !>
+  !!
+  !! check
+  !!
   IF( obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - xmlFile '//obj%getFileName()// &
       & ' is already initialized!')
     RETURN
   ENDIF
-  !>
+  !!
   CALL getPath( chars=filename, path=tempchars )
   fpath=trim(tempchars)
   CALL getFileNameExt( chars=filename, ext=tempchars )
@@ -54,6 +56,9 @@ MODULE PROCEDURE xmlFile_Initiate
   CALL obj%setFilePath( fpath )
   CALL obj%setFileName( fname )
   CALL obj%setFileExt( fext )
+  !!
+  !! MODE
+  !!
   mode_in=mode
   mode_in = mode_in%upper()
   SELECT CASE( TRIM( mode_in%chars() ) )
@@ -152,24 +157,26 @@ END PROCEDURE xmlFile_Final
 
 MODULE PROCEDURE xmlFile_Open
   CHARACTER(LEN=*),PARAMETER :: myName='xmlFile_Open'
-  !>
   CHARACTER( LEN=7 ) :: statusvar
   CHARACTER( LEN=10 ) :: accessvar
   CHARACTER( LEN=11 ) :: formvar
   CHARACTER( LEN=9 ) :: actionvar
   INTEGER( I4B ) :: ierr
-  !>
+  !!
+  !! check
+  !!
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - The xmlFile is not initiated.')
   END IF
-  !>
+  !!
+  !! isOpen
+  !!
   IF( obj%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       ' - File is already open!')
   END IF
-  !>
-  !> STATUS clause value
+  !!
   IF( .NOT. obj%newstat ) THEN
     statusvar='OLD'
   ELSE
@@ -179,7 +186,9 @@ MODULE PROCEDURE xmlFile_Open
       statusvar='NEW'
     END IF
   END IF
-  !> FORM clause value
+  !!
+  !! FORM clause value
+  !!
   IF(obj%isFormatted()) THEN
     formvar='FORMATTED'
   ELSE
@@ -200,7 +209,7 @@ MODULE PROCEDURE xmlFile_Open
     & STATUS=statusvar, ACCESS=accessvar, &
     & FORM=formvar,ACTION=actionvar, ENCODING=obj%encoding, &
     & IOSTAT=ierr)
-  !>
+  !!
   IF(ierr == 0) THEN
     CALL obj%setOpenStat(.TRUE.)
   ELSE

@@ -37,7 +37,7 @@ MODULE PROCEDURE xmlFile_Export
     !Write the header
     WRITE(version,FMT='(f4.1)',IOSTAT=ierr) obj%version
     header='<?xml version="'//TRIM(ADJUSTL(version))// &
-        '" encoding="'//TRIM(obj%encoding)//'"?>'
+      & '" encoding="'//TRIM(obj%encoding)//'"?>'
     WRITE(tmpFile%unitNo,FMT='(a)') TRIM(header%chars())
     !Write style-sheet info
     IF( obj%style_sheet%LEN() > 0 ) THEN
@@ -97,38 +97,52 @@ MODULE PROCEDURE xmlFile_Import
   INTEGER( I4B ) :: rootTagEnd,rootTagBegin
   INTEGER( I4B ), ALLOCATABLE :: itag(:,:),lines(:)
   TYPE( String ) :: tagStr
-  !> Initialize and open the file if needed
+  !!
+  !! Initialize and open the file if needed
+  !!
   IF( .NOT. obj%isInitiated ) THEN
     CALL obj%initiate( filename=filename, mode="READ" )
   END IF
-  !>
+  !!
+  !! Make sure the file is open
+  !!
   IF( .NOT. obj%isOpen() ) THEN
     CALL obj%Open()
   END IF
-  !>
+  !!
+  !! Check
+  !!
   IF( .NOT. obj%isRead() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & ' - xmlFile does not have read access!')
+      & 'xmlFile does not have read access!')
   END IF
-  !> deallocate the root
+  !!
+  !! deallocate the root
+  !!
   CALL obj%root%Deallocate()
   CALL obj%ParseXMLDeclaration()
   SELECT TYPE(obj); TYPE IS( XMLFile_ )
     CALL obj%BuildCache( nchars=nchars, fileCache=cachedFile )
   END SELECT
-  !> Count the number of markup characters "<" and ">" and lines
+  !!
+  !! Count the number of markup characters "<" and ">" and lines
+  !!
   nopen=0; nclose=0; nlines=0
   DO ic=1,nchars
     IF( cachedFile(ic) .EQ. '<' ) nopen=nopen+1
     IF( cachedFile(ic) .EQ. '>' ) nclose=nclose+1
     IF( cachedFile(ic) .EQ. CHAR_LF ) nlines=nlines+1
   END DO
-  !>
+  !!
+  !! check
+  !!
   IF( nopen .NE. nclose) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & ' - mismatched markup characters!')
+      & 'mismatched markup characters!')
   END IF
-  !> Store the locations of all the markup characters "<" and ">" lines
+  !!
+  !! Store the locations of all the markup characters "<" and ">" lines
+  !!
   nTags=nopen
   ALLOCATE(itag(3,nTags))
   ALLOCATE(lines(nlines))
@@ -147,7 +161,9 @@ MODULE PROCEDURE xmlFile_Import
       lines(nlines)=ic
     END IF
   END DO
-  !> Verify that they are all matching (interleaved)
+  !!
+  !! Verify that they are all matching (interleaved)
+  !!
   DO i=1,nTags
     IF(itag(1,i) > itag(2,i)) THEN
       CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -155,14 +171,14 @@ MODULE PROCEDURE xmlFile_Import
       EXIT
     END IF
   END DO
-  !>
+  !!
   DO i=1,nTags
     !Create temporary string
     CALL ConvertCharArrayToStr( &
       & chars=cachedFile(itag(1,i):itag(2,i)), &
       & strobj=tagStr )
     itag(3,i)=BAD_TAG
-    !Determine tag types
+    ! Determine tag types
     IF( tagStr%INDEX('<?') .EQ. 1 ) THEN
       !Processing Instruction
       !Check closing marker to insure tag validity
@@ -192,7 +208,9 @@ MODULE PROCEDURE xmlFile_Import
         & ' - Unrecognizable markup in "'//tagStr//'"!' )
     END IF
   END DO
-  !Find first start tag
+  !!
+  !! Find first start tag
+  !!
   DO i=1,nTags
     IF(itag(3,i) .EQ. START_TAG) THEN
       rootTagBegin=i
@@ -203,7 +221,9 @@ MODULE PROCEDURE xmlFile_Import
         ' - Could not locate start of root element!')
     END IF
   ENDDO
-  !> Find last end tag
+  !!
+  !! Find last end tag
+  !!
   DO i=nTags,1,-1
     IF( itag(3,i) .EQ. END_TAG ) THEN
       rootTagEnd=i
@@ -217,7 +237,9 @@ MODULE PROCEDURE xmlFile_Import
         & ' - Could not locate end of root element!')
     END IF
   ENDDO
-  !> Process the elements
+  !!
+  !! Process the elements
+  !!
   CALL obj%root%Initiate( cachedFile=cachedFile, &
     & itag=itag, lines=lines, tagStart=rootTagBegin, &
     & tagEnd=rootTagEnd )
