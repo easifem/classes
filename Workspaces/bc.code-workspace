@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/AbstractBC"
+		},
+		{
+			"path": "../src/modules/DirichletBC"
+		},
+		{
+			"path": "../src/modules/NeumannBC"
+		},
+		{
+			"path": "../src/submodules/AbstractBC"
+		},
+		{
+			"path": "../src/submodules/DirichletBC"
+		},
+		{
+			"path": "../src/submodules/NeumannBC"
+		}
+	]
+}
