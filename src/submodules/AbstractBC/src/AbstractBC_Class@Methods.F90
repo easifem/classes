@@ -61,9 +61,9 @@ END PROCEDURE bc_getDOFNo
 
 MODULE PROCEDURE bc_Get
   INTEGER(I4B) :: ii
+  CHARACTER(LEN=*), PARAMETER :: myName = "bc_Get"
   !!
 #ifdef DEBUG_VER
-  CHARACTER(LEN=*), PARAMETER :: myName = "bc_Get"
   !!
   !! check
   !!
@@ -136,10 +136,7 @@ MODULE PROCEDURE bc_Get
       END IF
 #endif
       !!
-      CALL Reallocate( &
-        & nodalValue, &
-        & SIZE(nodeNum), &
-        & SIZE(obj%nodalValue, 1))
+      CALL Reallocate( nodalValue, SIZE(nodeNum), SIZE(obj%nodalValue, 1) )
       !!
       DO ii = 1, SIZE(obj%nodalValue, 1)
         nodalValue(:, ii) = obj%nodalValue(ii, 1)
