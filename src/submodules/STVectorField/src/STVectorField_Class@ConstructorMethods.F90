@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(STVectorField_Class) Constructor
+SUBMODULE(STVectorField_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -116,16 +116,6 @@ MODULE PROCEDURE stvField_Initiate1
 END PROCEDURE stvField_Initiate1
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE stvField_Initiate2
-  CHARACTER( LEN = * ), PARAMETER :: myName="stvField_Initiate2"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This method has not been implemented so far')
-END PROCEDURE stvField_Initiate2
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
@@ -164,4 +154,4 @@ END PROCEDURE stvField_Constructor_1
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods
