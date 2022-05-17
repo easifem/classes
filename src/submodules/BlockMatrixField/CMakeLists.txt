@@ -4,7 +4,11 @@ TARGET_SOURCES(
   ${src_path}/BlockMatrixField_Class@ConstructorMethods.F90
   ${src_path}/BlockMatrixField_Class@IOMethods.F90
   ${src_path}/BlockMatrixField_Class@GetMethods.F90
+  ${src_path}/BlockMatrixField_Class@GetRowMethods.F90
+  ${src_path}/BlockMatrixField_Class@GetColMethods.F90
   ${src_path}/BlockMatrixField_Class@SetMethods.F90
+  ${src_path}/BlockMatrixField_Class@SetRowMethods.F90
+  ${src_path}/BlockMatrixField_Class@SetColMethods.F90
   ${src_path}/BlockMatrixField_Class@MatVecMethods.F90
   ${src_path}/BlockMatrixField_Class@LUsolveMethods.F90
   ${src_path}/BlockMatrixField_Class@PreconditionMethods.F90
