@@ -50,13 +50,14 @@ SUBROUTINE _SUBROUTINE_NAME (obj, sol, rhs)
     IF (obj%IPAR(1) .GT. 0) THEN
       !!
       CALL PERFORM_TASK(obj%Amat, y=obj%W(_y1:_y2), x=obj%W(_x1:_x2), &
-        & ierr=obj%IPAR(1), myName=myName)
+        & dbcIndx=obj%dbcIndx, ierr=obj%IPAR(1), myName=myName)
     !!
     !!
     !!
     ELSE IF (obj%IPAR(1) .LT. 0) THEN
       !!
       CALL CHECKERROR(IPAR=obj%IPAR, FPAR=obj%FPAR, myName=myName)
+      EXIT
     !!
     !!
     !!
@@ -70,7 +71,25 @@ SUBROUTINE _SUBROUTINE_NAME (obj, sol, rhs)
     !!
     !!
     END IF
+    !!
   END DO
+  !!
+  !! Initial residual/error norm
+  !!
+  obj%error0 = obj%fpar(3)
+  !!
+  !! Target residual/error norm
+  !!
+  obj%tol = obj%fpar(4)
+  !!
+  !! Current residual/error norm
+  !!
+  obj%error = obj%fpar(6)
+  !!
+  !! Current residual norm
+  !!
+  obj%normRes = obj%fpar(5)
+  !!
 END SUBROUTINE _SUBROUTINE_NAME
 
 #undef _x1

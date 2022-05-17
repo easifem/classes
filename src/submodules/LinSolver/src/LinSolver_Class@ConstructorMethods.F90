@@ -165,6 +165,9 @@ END PROCEDURE ls_addSurrogate
 SUBROUTINE setPreconditionOption( IPAR, PRECOND_TYPE )
   INTEGER( I4B ), INTENT( INOUT ) :: IPAR( : )
   INTEGER( I4B ), INTENT( IN ) :: PRECOND_TYPE
+  !!
+  !!
+  !!
   SELECT CASE( PRECOND_TYPE )
   CASE( NO_PRECONDITION )
     IPAR(2) = 0
@@ -175,6 +178,7 @@ SUBROUTINE setPreconditionOption( IPAR, PRECOND_TYPE )
   CASE( LEFT_RIGHT_PRECONDITION )
     IPAR(2) = 3
   END SELECT
+  !!
 END SUBROUTINE setPreconditionOption
 
 !----------------------------------------------------------------------------
@@ -246,93 +250,26 @@ SUBROUTINE setConvergenceType( IPAR, convergenceIn, convergenceType, &
 END SUBROUTINE setConvergenceType
 
 !----------------------------------------------------------------------------
-!                                                       setRelativeTolerance
-!----------------------------------------------------------------------------
-
-SUBROUTINE setRelativeTolerance( FPAR, tol )
-  REAL( DFP ), INTENT( INOUT ) :: FPAR( : )
-  REAL( DFP ), INTENT( IN ) :: tol
-  FPAR( 1 ) = tol
-END SUBROUTINE
-
-!----------------------------------------------------------------------------
-!                                                       setRelativeTolerance
-!----------------------------------------------------------------------------
-
-SUBROUTINE setAbsoluteTolerance( FPAR, tol )
-  REAL( DFP ), INTENT( INOUT ) :: FPAR( : )
-  REAL( DFP ), INTENT( IN ) :: tol
-  FPAR( 2 ) = tol
-END SUBROUTINE
-
-!----------------------------------------------------------------------------
 !                                                         setLinSolverParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setLinSolverParam
-  INTEGER( I4B ) :: ierr
-  ierr = param%set( key="LinSolver/solverName", value=solverName )
-  ierr = param%set( key="LinSolver/preconditionOption", &
-    & value=preconditionOption )
-  ierr = param%set( key="LinSolver/convergenceIn", value=convergenceIn )
-  ierr = param%set( key="LinSolver/convergenceType", value=convergenceType )
-  ierr = param%set( key="LinSolver/maxIter", value=maxIter )
-  ierr = param%set( key="LinSolver/engine", value="NATIVE_SERIAL" )
   !!
-  !! relativeToRHS
-  !!
-  IF( .NOT. PRESENT( relativeToRHS ) ) THEN
-    ierr = param%set( key="LinSolver/relativeToRHS", value=.FALSE. )
-  ELSE
-    ierr = param%set( key="LinSolver/relativeToRHS", value=relativeToRHS )
-  END IF
-  !!
-  !! KrylovSubspaceSize
-  !!
-  IF( .NOT. PRESENT( KrylovSubspaceSize ) ) THEN
-    ierr = param%set( key="LinSolver/KrylovSubspaceSize", value=15_I4B )
-  ELSE
-    ierr = param%set( key="LinSolver/KrylovSubspaceSize", value=KrylovSubspaceSize )
-  END IF
-  !!
-  !! rtol
-  !!
-  IF( .NOT. PRESENT( rtol ) ) THEN
-    ierr = param%set( key="LinSolver/rtol", value=REAL(1.0E-8, DFP) )
-  ELSE
-    ierr = param%set( key="LinSolver/rtol", value=rtol )
-  END IF
-  !!
-  !! atol
-  !!
-  IF( .NOT. PRESENT( atol ) ) THEN
-    ierr = param%set( key="LinSolver/atol", value=REAL(1.0E-8, DFP) )
-  ELSE
-    ierr = param%set( key="LinSolver/atol", value=atol )
-  END IF
-  !!
-  !!
+  CALL setAbstractLinSolverParam( &
+    & param=param, &
+    & prefix="LinSolver", &
+    & engine="NATIVE_SERIAL", &
+    & solverName=solverName, &
+    & preconditionOption=preconditionOption, &
+    & convergenceIn=convergenceIn, &
+    & convergenceType=convergenceType, &
+    & maxIter=maxIter, &
+    & relativeToRHS=INPUT(option=relativeToRHS, default=.FALSE. ), &
+    & KrylovSubspaceSize=INPUT(option=KrylovSubspaceSize, default=15 ), &
+    & rtol=INPUT(option=rtol, default=REAL(1.0E-8, DFP)), &
+    & atol=INPUT(option=atol, default=REAL(1.0E-8, DFP)) )
   !!
 END PROCEDURE setLinSolverParam
-
-!----------------------------------------------------------------------------
-!                                                         getLinSolverParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE getLinSolverParam
-  INTEGER( I4B ) :: ierr
-  ierr = param%get( key="LinSolver/solverName", value=solverName )
-  ierr = param%get( key="LinSolver/preconditionOption", &
-    & value=preconditionOption )
-  ierr = param%get( key="LinSolver/convergenceIn", value=convergenceIn )
-  ierr = param%get( key="LinSolver/convergenceType", value=convergenceType )
-  ierr = param%get( key="LinSolver/maxIter", value=maxIter )
-  ierr = param%get( key="LinSolver/relativeToRHS", value=relativeToRHS )
-  ierr = param%get( key="LinSolver/KrylovSubspaceSize", &
-    & value=KrylovSubspaceSize )
-  ierr = param%get( key="LinSolver/rtol", value=rtol )
-  ierr = param%get( key="LinSolver/atol", value=atol )
-END PROCEDURE getLinSolverParam
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
@@ -406,17 +343,22 @@ END PROCEDURE ls_checkEssentialParam
 MODULE PROCEDURE ls_Initiate
   INTEGER( I4B ) :: solverName, preconditionOption, convergenceIn, &
     & convergenceType, maxIter, KrylovSubspaceSize
-  !!
-  !!
-  !!
   REAL( DFP ) :: rtol, atol
   LOGICAL( LGT ) :: relativeToRHS
+  !!
   CALL obj%checkEssentialParam(param)
-  CALL getLinSolverParam( param=param, solverName=solverName, &
-    & preconditionOption=preconditionOption, convergenceIn=convergenceIn, &
-    & convergenceType=convergenceType, maxIter=maxIter, &
-    & relativeToRHS=relativeToRHS, KrylovSubspaceSize=KrylovSubspaceSize, &
-    & rtol=rtol, atol=atol )
+  CALL getAbstractLinSolverParam( &
+    & param=param, &
+    & prefix="LinSolver", &
+    & solverName=solverName, &
+    & preconditionOption=preconditionOption, &
+    & convergenceIn=convergenceIn, &
+    & convergenceType=convergenceType, &
+    & maxIter=maxIter, &
+    & relativeToRHS=relativeToRHS, &
+    & KrylovSubspaceSize=KrylovSubspaceSize, &
+    & rtol=rtol, &
+    & atol=atol )
   obj%isInitiated = .TRUE.
   obj%engine = "NATIVE_SERIAL"
   obj%ierr = 0
@@ -433,13 +375,13 @@ MODULE PROCEDURE ls_Initiate
   obj%IPAR = 0
   CALL setPreconditionOption( obj%IPAR, preconditionOption )
   CALL setConvergenceType( obj%IPAR, convergenceIn, convergenceType, &
-  & relativeToRHS )
+    & relativeToRHS )
   obj%IPAR( 5 ) = KrylovSubspaceSize
   CALL setMaxIter( obj%IPAR, maxIter )
   obj%FPAR = 0.0_DFP
-  CALL setRelativeTolerance( obj%FPAR, rtol )
-  CALL setAbsoluteTolerance( obj%FPAR, atol )
+  CALL obj%setTolerance(rtol=rtol, atol=atol)
   CALL Reallocate(obj%RES, maxIter)
+  CALL Reallocate(obj%dbcIndx, 0)
 END PROCEDURE ls_Initiate
 
 !----------------------------------------------------------------------------
@@ -468,6 +410,7 @@ MODULE PROCEDURE ls_Deallocate
   obj%localNumRow = 0
   IF( ALLOCATED( obj%RES ) ) DEALLOCATE( obj%RES )
   IF( ALLOCATED( obj%W ) ) DEALLOCATE( obj%W )
+  IF( ALLOCATED( obj%dbcIndx ) ) DEALLOCATE( obj%dbcIndx )
   NULLIFY( obj%Amat )
 END PROCEDURE ls_Deallocate
 
