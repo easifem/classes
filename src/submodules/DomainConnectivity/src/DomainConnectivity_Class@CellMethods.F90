@@ -212,11 +212,15 @@ MODULE PROCEDURE dc_InitiateCellToCellData2
     mesh1 => domain1%GetMeshPointer(globalElement=iel1)
     refelem1 => mesh1%getRefElemPointer()
     !!
+    !! If the mesh is made of point elements then skip it
+    !!
+    IF( refelem1%xidimension .EQ. 0 ) CYCLE
+    !!
     !! NOTE if the reference element is not a cell then
     !!      skip it. We want to consider only the
     !!      cells, i.e xidim == dim
     !!
-    IF (refelem1%xidimension .NE. nsd) CYCLE
+    !! Commented: IF (refelem1%xidimension .NE. nsd) CYCLE
     !!
     order1 = elementOrder(refelem1)
     nptrs1 = mesh1%getConnectivity(globalElement=iel1)
@@ -237,18 +241,19 @@ MODULE PROCEDURE dc_InitiateCellToCellData2
     DO ii = 1, SIZE(elem2)
       iel2 = elem2(ii)
       dimEntity = domain2%GetDimEntityNum(globalElement=iel2)
-      mesh2 => domain2%GetMeshPointer(dim=dimEntity(1), &
-          & entityNum=dimEntity(2))
+      mesh2 => domain2%GetMeshPointer( &
+        & dim=dimEntity(1), &
+        & entityNum=dimEntity(2))
       refelem2 => mesh2%getRefElemPointer()
       !!
-      !! skip those elements which are not cells
+      !! skip if refelem2%xidim .ne. refelem1%xidim
       !!
-      IF (refelem2%xidimension .NE. nsd) CYCLE
+      IF (refelem2%xidimension .NE. refelem1%xidimension) CYCLE
+      IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) CYCLE
+      !!
       order2 = elementOrder(refelem2)
       nptrs = mesh2%getConnectivity(globalElement=iel2)
-      IF (ElementTopology(refelem1) .NE. ElementTopology(refelem2)) &
-          & CALL e%raiseError(modName//"::"//myName//" - "// &
-          & 'Topology of mesh element is not the same.')
+      !!
       IF (order1 .GE. order2) THEN
         IF (nptrs.in.nptrs2) THEN
           obj%cellToCell(iel1) = iel2
