@@ -27,8 +27,13 @@ CONTAINS
 MODULE PROCEDURE VTKFile_WritePiece_1
   CHARACTER( LEN = * ), PARAMETER :: myName="VTKFile_WritePiece_1"
   TYPE( String ) :: names( 2 ), values( 2 )
-  INTEGER( I4B ) :: n
-  !> main
+  INTEGER( I4B ) :: n, extent0( 6 )
+  !!
+  !! main
+  !!
+  extent0 = 0
+  extent0( 1:SIZE(extent ) ) = extent( : )
+  !!
   SELECT CASE( obj%DataStructureType )
   CASE( PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid )
     IF( .NOT. PRESENT( srcFileName ) ) THEN
@@ -37,12 +42,12 @@ MODULE PROCEDURE VTKFile_WritePiece_1
     END IF
     n = 2
     names( 1 ) = 'Extent'
-    values( 1 ) = '"' // TRIM(str(n=extent(1))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(2))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(3))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(4))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(5))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(6))) // '"'
+    values( 1 ) = '"' // TRIM(str(n=extent0(1))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(2))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(3))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(4))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(5))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(6))) // '"'
     names( 2 ) = 'Source'
     values( 2 ) = '"' // TRIM(ADJUSTL(srcFileName)) // '"'
   CASE( PARALLEL_VTK_UnstructuredGrid, PARALLEL_VTK_PolyData )
@@ -56,12 +61,12 @@ MODULE PROCEDURE VTKFile_WritePiece_1
   CASE( VTK_RectilinearGrid, VTK_StructuredGrid, VTK_ImageData )
     n = 1
     names( 1 ) = 'Extent'
-    values( 1 ) = '"' // TRIM(str(n=extent(1))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(2))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(3))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(4))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(5))) // CHAR_SPACE &
-                    & // TRIM(str(n=extent(6))) // '"'
+    values( 1 ) = '"' // TRIM(str(n=extent0(1))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(2))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(3))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(4))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(5))) // CHAR_SPACE &
+                    & // TRIM(str(n=extent0(6))) // '"'
   CASE DEFAULT
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Unknown DataStructureType')

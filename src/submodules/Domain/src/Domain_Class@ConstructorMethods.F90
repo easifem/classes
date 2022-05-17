@@ -19,7 +19,7 @@
 ! date: 18 June 2021
 ! summary: This submodule contains methods for domain object
 
-SUBMODULE(Domain_Class) Constructor
+SUBMODULE(Domain_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -114,4 +114,4 @@ END PROCEDURE Domain_Constructor_1
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods

@@ -15,8 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 !> authors: Vikas Sharma, Ph. D.
-! date:         2 May 2021
-! summary:         module for I/O defines the derived type for a Fortran File object.
+! date: 2 May 2021
+! summary: module for I/O defines the derived type for a Fortran File object.
 !
 ! The developement of this module is inspired from the
 ! `FileType_Fortran.F90` of Futility package. The original source is located
@@ -93,7 +93,7 @@ INTERFACE
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: filename
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unit
-    !! User specified unit number, it should  not be equal to `stdout, stdin, stderr`
+    !! User specified unit number, it should  not be `stdout, stdin, stderr`
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: status
     !! OLD, NEW, SCRATCH, REPLACE, UNKNOWN
     !! If UNKNOWN then we use REPLACE
@@ -233,7 +233,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION txt_getTotalRecords(obj, ignoreComment, ignoreBlank, &
-       & commentSymbol) RESULT(Ans)
+    & commentSymbol) RESULT(Ans)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank

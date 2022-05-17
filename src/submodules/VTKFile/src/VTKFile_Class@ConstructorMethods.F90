@@ -25,64 +25,76 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE InitiateVTKFile
-CHARACTER(LEN=*), PARAMETER :: myName = "InitiateVTKFile"
-!> main
-IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & ' - VTKFile is already initiated, use Deallocate() first')
-END IF
-!>
-obj%DataFormat = DataFormat
-obj%DataStructureType = DataStructureType
-obj%DataStructureName = TRIM(DataStructureName(DataStructureType))
-IF (PRESENT(WholeExtent)) THEN
-  obj%WholeExtent = WholeExtent
-ELSE
+  CHARACTER(LEN=*), PARAMETER :: myName = "InitiateVTKFile"
+  !!
+  !! main
+  !!
+  IF (obj%isInitiated) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & ' - VTKFile is already initiated, use Deallocate() first')
+  END IF
+  !!
+  !!
+  !!
+  obj%DataFormat = DataFormat
+  obj%DataStructureType = DataStructureType
+  obj%DataStructureName = TRIM(DataStructureName(DataStructureType))
   obj%WholeExtent = 0
-END IF
-IF (PRESENT(isVolatile)) THEN
-  obj%isVolatile = isVolatile
-ELSE
-  obj%isVolatile = .FALSE.
-END IF
-!>
-SELECT CASE (DataStructureType)
-  !> Structured case
-CASE (VTK_ImageData, VTK_RectilinearGrid, VTK_StructuredGrid, &
-  & PARALLEL_VTK_ImageData, PARALLEL_VTK_RectilinearGrid, &
-  & PARALLEL_VTK_StructuredGrid)
-  obj%isStructured = .TRUE.
-  IF (.NOT. PRESENT(WholeExtent)) &
-    &  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & ' - In case of structured data set WholeExtent should be given')
-  !> Unstructured case
-CASE (VTK_PolyData, VTK_UnstructuredGrid, PARALLEL_VTK_PolyData, &
-  & PARALLEL_VTK_UnstructuredGrid)
-  obj%isStructured = .FALSE.
-  !> Default case prints error
-CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & ' - Cannot recognize DataStructureType')
-END SELECT
-!> Handle appended case
-IF (DataFormat .EQ. VTK_APPENDED) THEN
-  obj%encoding4Appended = 'raw'
-  obj%offset = 0
-ELSE IF (DataFormat .EQ. VTK_BINARY_APPENDED) THEN
-  obj%encoding4Appended = 'base64'
-  obj%DataFormat = VTK_APPENDED
-  obj%offset = 0
-END IF
-!>
-IF (obj%isVolatile) THEN
-  obj%volatileBuffer = ''
-ELSE
-  CALL obj%initiate(filename=filename, mode=mode)
-  CALL obj%Open()
-END IF
-CALL obj%WriteRootTag()
-CALL obj%WriteDataStructureTag(meshDataFormat=meshDataFormat)
-CALL obj%OpenScratchFile()
+  IF (PRESENT(WholeExtent)) THEN
+    obj%WholeExtent( 1:SIZE(WholeExtent) ) = WholeExtent( : )
+  END IF
+  IF (PRESENT(isVolatile)) THEN
+    obj%isVolatile = isVolatile
+  ELSE
+    obj%isVolatile = .FALSE.
+  END IF
+  !!
+  SELECT CASE (DataStructureType)
+    !!
+    !! Structured case
+    !!
+  CASE (VTK_ImageData, VTK_RectilinearGrid, VTK_StructuredGrid, &
+    & PARALLEL_VTK_ImageData, PARALLEL_VTK_RectilinearGrid, &
+    & PARALLEL_VTK_StructuredGrid)
+    obj%isStructured = .TRUE.
+    IF (.NOT. PRESENT(WholeExtent)) &
+      &  CALL e%raiseError(modName//'::'//myName//" - "// &
+      & ' - In case of structured data set WholeExtent should be given')
+    !!
+    !! Unstructured case
+    !!
+  CASE (VTK_PolyData, VTK_UnstructuredGrid, PARALLEL_VTK_PolyData, &
+    & PARALLEL_VTK_UnstructuredGrid)
+    obj%isStructured = .FALSE.
+    !!
+    !! Default case prints error
+    !!
+  CASE DEFAULT
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & ' - Cannot recognize DataStructureType')
+  END SELECT
+  !!
+  !! Handle appended case
+  !!
+  IF (DataFormat .EQ. VTK_APPENDED) THEN
+    obj%encoding4Appended = 'raw'
+    obj%offset = 0
+  ELSE IF (DataFormat .EQ. VTK_BINARY_APPENDED) THEN
+    obj%encoding4Appended = 'base64'
+    obj%DataFormat = VTK_APPENDED
+    obj%offset = 0
+  END IF
+  !!
+  IF (obj%isVolatile) THEN
+    obj%volatileBuffer = ''
+  ELSE
+    CALL obj%initiate(filename=filename, mode=mode)
+    CALL obj%Open()
+  END IF
+  !!
+  CALL obj%WriteRootTag()
+  CALL obj%WriteDataStructureTag(meshDataFormat=meshDataFormat)
+  CALL obj%OpenScratchFile()
 END PROCEDURE InitiateVTKFile
 
 !----------------------------------------------------------------------------

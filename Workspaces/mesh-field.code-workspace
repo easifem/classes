@@ -1,0 +1,55 @@
+{
+	"folders": [
+		{
+			"name": "AbstractMeshField",
+			"path": "../src/modules/AbstractMeshField"
+		},
+		{
+			"name": "AbstractMeshField",
+			"path": "../src/submodules/AbstractMeshField"
+		},
+		{
+			"name": "ScalarMeshField",
+			"path": "../src/modules/ScalarMeshField"
+		},
+		{
+			"name": "ScalarMeshField",
+			"path": "../src/submodules/ScalarMeshField"
+		},
+		{
+			"name": "STScalarMeshField",
+			"path": "../src/modules/STScalarMeshField"
+		},
+		{
+			"name": "STScalarMeshField",
+			"path": "../src/submodules/STScalarMeshField"
+		},
+		{
+			"name": "VectorMeshField",
+			"path": "../src/modules/VectorMeshField"
+		},
+		{
+			"name": "VectorMeshField",
+			"path": "../src/submodules/VectorMeshField"
+		},
+		{
+			"name": "STVectorMeshField",
+			"path": "../src/modules/STVectorMeshField"
+		},
+		{
+			"path": "../src/submodules/STVectorMeshField"
+		},
+		{
+			"path": "../src/modules/TensorMeshField"
+		},
+		{
+			"path": "../src/submodules/TensorMeshField"
+		},
+		{
+			"path": "../src/modules/STTensorMeshField"
+		},
+		{
+			"path": "../src/submodules/STTensorMeshField"
+		}
+	]
+}

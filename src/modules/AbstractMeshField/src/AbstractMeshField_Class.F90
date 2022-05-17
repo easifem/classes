@@ -375,7 +375,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE aField_Set( obj, globalElement, fevar )
   CLASS( AbstractMeshField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalElement
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalElement
   TYPE( FEVariable_ ), INTENT( IN ) :: fevar
 END SUBROUTINE aField_Set
 END INTERFACE
@@ -391,7 +391,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE aField_Add( obj, globalElement, scale, fevar )
   CLASS( AbstractMeshField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalElement
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalElement
   REAL( DFP ), INTENT( IN ) :: scale
   TYPE( FEVariable_ ), INTENT( IN ) :: fevar
 END SUBROUTINE aField_Add
@@ -408,7 +408,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE aField_Get( obj, globalElement, fevar )
   CLASS( AbstractMeshField_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalElement
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalElement
   TYPE( FEVariable_ ), INTENT( INOUT ) :: fevar
 END SUBROUTINE aField_Get
 END INTERFACE

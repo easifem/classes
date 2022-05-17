@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(VectorField_Class) Constructor
+SUBMODULE(VectorField_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -103,16 +103,6 @@ IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
 END PROCEDURE vField_Initiate1
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE vField_Initiate2
-CHARACTER(LEN=*), PARAMETER :: myName = "vField_Initiate2"
-CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This method has not been implemented so far')
-END PROCEDURE vField_Initiate2
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
@@ -150,4 +140,4 @@ END PROCEDURE vField_Constructor_1
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods

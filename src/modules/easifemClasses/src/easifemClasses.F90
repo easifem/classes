@@ -58,6 +58,9 @@ USE AbstractBC_Class
 USE DirichletBC_Class
 USE NeumannBC_Class
 
+
+USE AbstractFunction_Class
+USE Polynomial_Class
 USE UserFunction_Class
 
   ! USE ogpf

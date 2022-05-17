@@ -371,7 +371,7 @@ MODULE SUBROUTINE InitiateVTKFile( obj, filename, mode, DataFormat, &
     !! VTK_ASCII, VTK_APPENEDED, VTK_BINARY
   INTEGER( I4B ), INTENT( IN ) :: DataStructureType
     !! VTK_IMAGEDATA, VTK_STRUCTUREDGRID, ...
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: WholeExtent( 6 )
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: WholeExtent( : )
     !! Required for structured data set
     !! [x1, x2, y1, y2, z1, z2]
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isVolatile
@@ -792,7 +792,7 @@ END INTERFACE
 INTERFACE
 MODULE SUBROUTINE VTKFile_WritePiece_1( obj, extent, srcFileName )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: extent( 6 )
+  INTEGER( I4B ), INTENT( IN ) :: extent( : )
   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: srcFileName
 END SUBROUTINE VTKFile_WritePiece_1
 END INTERFACE

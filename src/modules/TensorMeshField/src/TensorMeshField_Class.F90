@@ -70,10 +70,11 @@ PUBLIC :: TensorMeshFieldPointer_
 
 INTERFACE
 MODULE SUBROUTINE setTensorMeshFieldParam( param, name, &
-  & fieldType, engine, defineOn, dim1, dim2, nns )
+  & fieldType, varType, engine, defineOn, dim1, dim2, nns )
   TYPE( ParameterList_ ), INTENT( INOUT ) :: param
   CHARACTER( LEN = * ), INTENT( IN ) :: name
   INTEGER( I4B ), INTENT( IN ) :: fieldType
+  INTEGER( I4B ), INTENT( IN ) :: varType
   CHARACTER( LEN = * ), INTENT( IN ) :: engine
   INTEGER( I4B ), INTENT( IN ) :: defineOn
   !! Nodal, Quadrature

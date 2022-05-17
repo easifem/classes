@@ -705,7 +705,7 @@ END INTERFACE
 !
 !@note
 ! The nodeCoord returned by this routine should be used by the mesh object
-! itselt. This is because, in nodeCoords the nodes are arranged locally.
+! itself. This is because, in nodeCoords the nodes are arranged locally.
 ! However, if you wish to use nodeCoord, then get the localNodeNumber of a
 ! global node by calling the mesh methods, and use this localNodeNumber to
 ! extract the coordinates.
@@ -1929,7 +1929,7 @@ END INTERFACE
 ! summary: Compute the total number of facet elements in the mesh
 
 INTERFACE
-MODULE PURE SUBROUTINE mesh_InitiateFacetElements( obj )
+MODULE SUBROUTINE mesh_InitiateFacetElements( obj )
   CLASS( Mesh_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE mesh_InitiateFacetElements
 END INTERFACE

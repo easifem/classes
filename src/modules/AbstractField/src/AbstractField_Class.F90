@@ -45,13 +45,13 @@ INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 1
 INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 2
 INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
 INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
-CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
-  & [ &
-      & "NORMAL        ", &
-      & "CONSTANT      ", &
-      & "CONSTANT_SPACE", &
-      & "CONSTANT_TIME " &
-  & ]
+! CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
+!   & [ &
+!       & "NORMAL        ", &
+!       & "CONSTANT      ", &
+!       & "CONSTANT_SPACE", &
+!       & "CONSTANT_TIME " &
+!   & ]
 
 CHARACTER( LEN = * ), PARAMETER :: modName = "AbstractField_Class"
 
@@ -272,5 +272,18 @@ END FUNCTION FIELD_TYPE_NUMBER
 END INTERFACE
 
 PUBLIC :: FIELD_TYPE_NUMBER
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE FUNCTION FIELD_TYPE_NAME( id ) RESULT( Ans )
+  INTEGER( I4B ), INTENT( IN ) :: id
+  CHARACTER( LEN = 20 ) :: ans
+END FUNCTION FIELD_TYPE_NAME
+END INTERFACE
+
+PUBLIC :: FIELD_TYPE_NAME
 
 END MODULE AbstractField_Class
