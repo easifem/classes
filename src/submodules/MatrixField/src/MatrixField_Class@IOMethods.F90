@@ -61,7 +61,9 @@ MODULE PROCEDURE mField_Display
   ELSE
     CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
   END IF
-  ! CALL Display( obj%mat, msg="# mat : ", unitNo=unitNo ))
+  !!
+  CALL Display( obj%mat, msg="# mat : ", unitNo=unitNo )
+  !!
 END PROCEDURE mField_Display
 
 !----------------------------------------------------------------------------

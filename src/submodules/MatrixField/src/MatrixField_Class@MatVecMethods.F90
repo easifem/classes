@@ -28,6 +28,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Matvec1
+  !!
+#ifdef DEBUG_VER
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_Matvec1"
   INTEGER( I4B ) :: s( 2 )
   s = obj%shape()
@@ -41,7 +43,10 @@ MODULE PROCEDURE mField_Matvec1
     & // trim( str( SIZE( x ), .true. ) ) // ", " &
     & // 'and, the size of y is ' &
     & // trim( str( SIZE( y ), .true. ) ) // ", " )
+#endif
+  !!
   CALL Matvec( obj=obj%mat, y=y, x=x, transp=transp )
+  !!
 END PROCEDURE mField_Matvec1
 
 !----------------------------------------------------------------------------
@@ -49,11 +54,16 @@ END PROCEDURE mField_Matvec1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Matvec2
-  REAL( DFP ), POINTER :: xVec( : ), yVec( : )
-  xVec => x%getPointer()
-  yVec => y%getPointer()
-  CALL obj%matvec( x=xVec, y=yVec )
-  NULLIFY( xVec, yVec )
+  REAL( DFP ), POINTER :: xvec( : )
+  REAL( DFP ), POINTER :: yvec( : )
+  !!
+  xvec => x%getPointer()
+  yvec => y%getPointer()
+  !!
+  CALL Matvec( obj=obj%mat, y=yvec, x=xvec, transp=transp )
+  !!
+  NULLIFY( xvec, yvec )
+  !!
 END PROCEDURE mField_Matvec2
 
 END SUBMODULE MatVecMethods

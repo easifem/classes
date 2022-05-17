@@ -29,25 +29,41 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set1
+  !!
+#ifdef DEBUG_VER
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_set1"
-  INTEGER( I4B ) :: localNode( SIZE( globalNode ) ), nn
-  REAL( DFP ) ::  alpha
-  !> main
-  nn = (.tdof. obj%mat%csr%dof)*SIZE(globalNode)
-  !> check
-  IF( SIZE( val, 1 ) .NE. SIZE( val, 2 )  &
-    & .OR. SIZE( val,1 ) .NE. nn ) &
+#endif
+  !!
+  !! Main
+  !!
+#ifdef DEBUG_VER
+  !!
+  !! check
+  !!
+  IF( SIZE( value, 1 ) .NE. SIZE( value, 2 )  &
+    & .OR. SIZE( value,1 ) .NE. (.tdof. obj%mat%csr%dof)*SIZE(globalNode) ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'val is not square matrix, or its shape is inconsistent &
+    & 'value is not square matrix, or its shape is inconsistent &
     & with the degree of freedom stored in MatrixField')
-  localNode = obj%domain%getLocalNodeNumber(globalNode)
+#endif
+  !!
   IF( PRESENT( addContribution ) ) THEN
-    alpha = INPUT( default=1.0_DFP, option=scale )
-    CALL add( obj=obj%mat, nptrs=localNode, val=val, storageFMT=storageFMT, &
-    & scale=alpha )
+    !!
+    CALL add( obj=obj%mat,  &
+      & nodenum=obj%domain%getLocalNodeNumber(globalNode),  &
+      & value=value, &
+      & storageFMT=storageFMT, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+    !!
   ELSE
-    CALL set( obj=obj%mat, nptrs=localNode, val=val, storageFMT=storageFMT )
+    !!
+    CALL set( obj=obj%mat,  &
+      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & value=value, &
+      & storageFMT=storageFMT )
+    !!
   END IF
+  !!
 END PROCEDURE mField_set1
 
 !----------------------------------------------------------------------------
@@ -55,26 +71,46 @@ END PROCEDURE mField_set1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set2
-  INTEGER( I4B ), ALLOCATABLE :: localNode( : )
+  !!
+  !! Main
+  !!
   IF( PRESENT( addContribution ) ) THEN
+    !!
+    !! Add
+    !!
     IF( PRESENT( globalNode ) ) THEN
-      localNode = obj%domain%getLocalNodeNumber( globalNode )
-      CALL add( obj=obj%mat, nptrs=localNode, &
-        & scale=INPUT( default=1.0_DFP, option=scale ), val=val )
-      DEALLOCATE( localNode )
+      !!
+      CALL add( obj=obj%mat,  &
+        & nodenum=obj%domain%getLocalNodeNumber( globalNode ), &
+        & scale=INPUT( default=1.0_DFP, option=scale ), &
+        & value=value )
+      !!
     ELSE
-      CALL add( obj=obj%mat, val=val,  &
+      !!
+      CALL add( obj=obj%mat,  &
+        & value=value, &
         & scale=INPUT( default=1.0_DFP, option=scale ) )
+      !!
     END IF
+    !!
+    !! Set
+    !!
   ELSE
+    !!
     IF( PRESENT( globalNode ) ) THEN
-      localNode = obj%domain%getLocalNodeNumber(globalNode)
-      CALL set( obj=obj%mat, nptrs=localNode, val=val )
-      DEALLOCATE( localNode )
+      !!
+      CALL set( obj=obj%mat, &
+        & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+        & value=value )
+      !!
     ELSE
-      CALL set( obj=obj%mat, val=val )
+      !!
+      CALL set( obj=obj%mat, value=value )
+      !!
     END IF
+    !!
   END IF
+  !!
 END PROCEDURE mField_set2
 
 !----------------------------------------------------------------------------
@@ -82,54 +118,309 @@ END PROCEDURE mField_set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set3
-  INTEGER( I4B ) :: s( 2 )
-  REAL( DFP ) :: alpha
-  s = obj%domain%getLocalNodeNumber( [rowNodeNum, colNodeNum ] )
+  !!
+  !! main
+  !!
+  !! Add
+  !!
   IF( PRESENT( addContribution ) ) THEN
-    alpha = INPUT( default=1.0_DFP, option=scale )
-    CALL add(obj=obj%mat,rowNodeNum=s(1),colNodeNum=s(2),rowDOF=rowDOF, &
-    & colDOF=colDOF, val=val, scale=alpha)
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & idof=idof, &
+      & jdof=jdof, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
   ELSE
-    CALL set(obj=obj%mat,rowNodeNum=s(1),colNodeNum=s(2), &
-    & rowDOF=rowDOF,colDOF=colDOF,val=val)
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & idof=idof, &
+      & jdof=jdof, &
+      & value=value)
+    !!
   END IF
+  !!
 END PROCEDURE mField_set3
 
 !----------------------------------------------------------------------------
-!                                                                    setRow
+!                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_setRow"
-  INTEGER( I4B ) :: inode
-  inode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( PRESENT( scalarVal ) ) THEN
-    CALL setRow( obj=obj%mat, inode=inode, idof=idof, val=scalarVal )
-  ELSE IF( PRESENT( vecVal ) ) THEN
-    CALL setRow( obj=obj%mat, inode=inode, idof=idof, val=vecVal )
+MODULE PROCEDURE mField_set4
+  !!
+  !! main
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
   ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine currently is not applicable for node field nodeFieldVal')
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & value=value)
+    !!
   END IF
-END PROCEDURE mField_setRow
+  !!
+END PROCEDURE mField_set4
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_setColumn"
-  INTEGER( I4B ) :: inode
-  inode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( PRESENT( scalarVal ) ) THEN
-    CALL setColumn( obj=obj%mat, inode=inode, idof=idof, val=scalarVal )
-  ELSE IF( PRESENT( vecVal ) ) THEN
-    CALL setColumn( obj=obj%mat, inode=inode, idof=idof, val=vecVal )
+MODULE PROCEDURE mField_set5
+  !!
+  !! main
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
   ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine currently is not applicable for node field nodeFieldVal')
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & value=value)
+    !!
   END IF
-END PROCEDURE mField_setColumn
+  !!
+END PROCEDURE mField_set5
 
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_set6
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
+  ELSE
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & value=value)
+    !!
+  END IF
+  !!
+END PROCEDURE mField_set6
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_set7
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
+  ELSE
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value)
+    !!
+  END IF
+  !!
+END PROCEDURE mField_set7
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_set8
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
+  ELSE
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value)
+    !!
+  END IF
+  !!
+END PROCEDURE mField_set8
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_set9
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
+  ELSE
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value)
+    !!
+  END IF
+  !!
+END PROCEDURE mField_set9
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_set10
+  !!
+  !! Add
+  !!
+  IF( PRESENT( addContribution ) ) THEN
+    !!
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value, &
+      & scale=INPUT( default=1.0_DFP, option=scale ) )
+  !!
+  !! Set
+  !!
+  ELSE
+    !!
+    CALL set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber( inodenum ), &
+      & jnodenum=obj%domain%getLocalNodeNumber( jnodenum ), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & ispacecompo=ispacecompo, &
+      & itimecompo=itimecompo, &
+      & jspacecompo=jspacecompo, &
+      & jtimecompo=jtimecompo, &
+      & value=value)
+    !!
+  END IF
+  !!
+END PROCEDURE mField_set10
 
 END SUBMODULE SetMethods

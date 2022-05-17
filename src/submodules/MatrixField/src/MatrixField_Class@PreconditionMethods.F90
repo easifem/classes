@@ -31,136 +31,251 @@ CONTAINS
 MODULE PROCEDURE mField_setPrecondition
   CHARACTER( LEN = * ), PARAMETER :: myName="mField_setPrecondition"
   INTEGER( I4B ) :: ierr
-
+  !!
+  !! check
+  !!
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'MatrixField_ is not initiated')
+    & 'MatrixField_ is not initiated')
+  !!
+  !!
+  !!
   IF( PRESENT( param ) ) THEN
-    IF( param%isPresent( key="MatrixField/preconditionName") ) THEN
-      ierr = param%get( key="MatrixField/preconditionName", value=obj%Pmat%PmatName )
+    !!
+    IF( param%isPresent( key="precondition/name") ) THEN
+      ierr = param%get( key="precondition/name", &
+        & value=obj%Pmat%PmatName )
     ELSE
       CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'MatrixField/preconditionName should be present in param')
+        & 'precondition/name should be present in param')
     END IF
-    !
+    !!
     SELECT CASE( obj%Pmat%PmatName )
+    !!
+    !! ILUT
+    !! droptol, lfil
+    !!
     CASE( PRECOND_ILUT )
-      IF( param%isPresent(key="MatrixField/droptol") ) THEN
-        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      !!
+      IF( param%isPresent(key="precondition/droptol") ) THEN
+        ierr = param%get( key="precondition/droptol", value=obj%Pmat%droptol )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/droptol should be present in param')
+          & 'precondition/droptol should be present in param')
       END IF
-      !
-      IF( param%isPresent(key="MatrixField/lfil") ) THEN
-        ierr = param%get( key="MatrixField/lfil", value=obj%Pmat%lfil )
+      !!
+      IF( param%isPresent(key="precondition/lfil") ) THEN
+        ierr = param%get( key="precondition/lfil", value=obj%Pmat%lfil )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/lfil should be present in param')
+        & 'precondition/lfil should be present in param')
       END IF
+      !!
+      RETURN
+      !!
+    !!
+    !! ILUTP
+    !! droptol, lfil, permtol, mbloc
+    !!
     CASE( PRECOND_ILUTP )
-      IF( param%isPresent(key="MatrixField/droptol") ) THEN
-        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      !!
+      IF( param%isPresent(key="precondition/droptol") ) THEN
+        ierr = param%get( key="precondition/droptol", value=obj%Pmat%droptol )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/droptol should be present in param')
+          & 'precondition/droptol should be present in param')
       END IF
-      !
-      IF( param%isPresent(key="MatrixField/lfil") ) THEN
-        ierr = param%get( key="MatrixField/lfil", value=obj%Pmat%lfil )
+      !!
+      IF( param%isPresent(key="precondition/lfil") ) THEN
+        ierr = param%get( key="precondition/lfil", value=obj%Pmat%lfil )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/lfil should be present in param')
+        & 'precondition/lfil should be present in param')
       END IF
-      !
-      IF( param%isPresent(key="MatrixField/permtol") ) THEN
-        ierr = param%get( key="MatrixField/permtol", value=obj%Pmat%permtol )
+      !!
+      IF( param%isPresent(key="precondition/permtol") ) THEN
+        ierr = param%get( key="precondition/permtol", value=obj%Pmat%permtol )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/permtol should be present in param')
+        & 'precondition/permtol should be present in param')
       END IF
-      !
-      IF( param%isPresent(key="MatrixField/mbloc") ) THEN
-        ierr = param%get( key="MatrixField/mbloc", value=obj%Pmat%mbloc )
+      !!
+      IF( param%isPresent(key="precondition/mbloc") ) THEN
+        ierr = param%get( key="precondition/mbloc", value=obj%Pmat%mbloc )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/mbloc should be present in param')
+        & 'precondition/mbloc should be present in param')
       END IF
+      !!
+      RETURN
+      !!
+    !!
+    !! ILUD
+    !! droptol, alpha
+    !!
     CASE( PRECOND_ILUD )
-      IF( param%isPresent(key="MatrixField/droptol") ) THEN
-        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      IF( param%isPresent(key="precondition/droptol") ) THEN
+        ierr = param%get( key="precondition/droptol", value=obj%Pmat%droptol )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/droptol should be present in param')
+        & 'precondition/droptol should be present in param')
       END IF
       !
-      IF( param%isPresent(key="MatrixField/alpha") ) THEN
-        ierr = param%get( key="MatrixField/alpha", value=obj%Pmat%alpha )
+      IF( param%isPresent(key="precondition/alpha") ) THEN
+        ierr = param%get( key="precondition/alpha", value=obj%Pmat%alpha )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/alpha should be present in param')
+        & 'precondition/alpha should be present in param')
       END IF
+      !!
+      RETURN
+      !!
+    !!
+    !! ILUDP
+    !! droptol, alpha, permtol, mbloc
+    !!
     CASE( PRECOND_ILUDP )
-      IF( param%isPresent(key="MatrixField/droptol") ) THEN
-        ierr = param%get( key="MatrixField/droptol", value=obj%Pmat%droptol )
+      IF( param%isPresent(key="precondition/droptol") ) THEN
+        ierr = param%get( key="precondition/droptol", value=obj%Pmat%droptol )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/droptol should be present in param')
+        & 'precondition/droptol should be present in param')
       END IF
       !
-      IF( param%isPresent(key="MatrixField/alpha") ) THEN
-        ierr = param%get( key="MatrixField/alpha", value=obj%Pmat%alpha )
+      IF( param%isPresent(key="precondition/alpha") ) THEN
+        ierr = param%get( key="precondition/alpha", value=obj%Pmat%alpha )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/alpha should be present in param')
+        & 'precondition/alpha should be present in param')
       END IF
       !
-      IF( param%isPresent(key="MatrixField/permtol") ) THEN
-        ierr = param%get( key="MatrixField/permtol", value=obj%Pmat%permtol )
+      IF( param%isPresent(key="precondition/permtol") ) THEN
+        ierr = param%get( key="precondition/permtol", value=obj%Pmat%permtol )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/permtol should be present in param')
+        & 'precondition/permtol should be present in param')
       END IF
       !
-      IF( param%isPresent(key="MatrixField/mbloc") ) THEN
-        ierr = param%get( key="MatrixField/mbloc", value=obj%Pmat%mbloc )
+      IF( param%isPresent(key="precondition/mbloc") ) THEN
+        ierr = param%get( key="precondition/mbloc", value=obj%Pmat%mbloc )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/mbloc should be present in param')
+        & 'precondition/mbloc should be present in param')
       END IF
+      !!
+      RETURN
+      !!
+    !!
+    !! ILUK
+    !! lfil
+    !!
     CASE( PRECOND_ILUK )
-      IF( param%isPresent(key="MatrixField/lfil") ) THEN
-        ierr = param%get( key="MatrixField/lfil", value=obj%Pmat%lfil )
+      !!
+      IF( param%isPresent(key="precondition/lfil") ) THEN
+        ierr = param%get( key="precondition/lfil", value=obj%Pmat%lfil )
       ELSE
         CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'MatrixField/lfil should be present in param')
+        & 'precondition/lfil should be present in param')
       END IF
-    END SELECT
-  ELSE
-    SELECT CASE( obj%Pmat%PmatName )
-    CASE( PRECOND_ILUT )
-      CALL mField_getILUT( obj )
-    CASE( PRECOND_ILUTP )
-      CALL mField_getILUTP( obj )
-    CASE( PRECOND_ILUD )
-      CALL mField_getILUD( obj )
-    CASE( PRECOND_ILUDP )
-      CALL mField_getILUDP( obj )
-    CASE( PRECOND_ILUK )
-      CALL mField_getILUK( obj )
+      !!
+      RETURN
+      !!
+    !!
+    !!
+    !!
+    !!
     END SELECT
   END IF
+  !!
+  !!
+  !!
+  !!
+  SELECT CASE( obj%Pmat%PmatName )
+  !!
+  !!
+  !!
+  !!
+  CASE( PRECOND_ILUT )
+    ! CALL mField_getILUT( obj )
+    obj%isPmatInitiated = .TRUE.
+    CALL getILUT( &
+      & obj=obj%mat, &
+      & lfil=obj%Pmat%lfil, &
+      & droptol=obj%Pmat%droptol, &
+      & ALU=obj%Pmat%A, &
+      & JLU=obj%Pmat%JA, &
+      & JU=obj%Pmat%JU )
+  !!
+  !!
+  !!
+  !!
+  CASE( PRECOND_ILUTP )
+    ! CALL mField_getILUTP( obj )
+    obj%isPmatInitiated = .TRUE.
+    CALL getILUTP( &
+      & obj=obj%mat, &
+      & lfil=obj%Pmat%lfil, &
+      & droptol=obj%Pmat%droptol, &
+      & permtol=obj%Pmat%permtol, &
+      & mbloc=obj%Pmat%mbloc, &
+      & IPERM=obj%Pmat%IPERM, &
+      & ALU=obj%Pmat%A, &
+      & JLU=obj%Pmat%JA, &
+      & JU=obj%Pmat%JU )
+  !!
+  !!
+  !!
+  !!
+  CASE( PRECOND_ILUD )
+    ! CALL mField_getILUD( obj )
+    obj%isPmatInitiated = .TRUE.
+    CALL getILUD( &
+      & obj=obj%mat, &
+      & alpha=obj%Pmat%alpha, &
+      & droptol=obj%Pmat%droptol, &
+      & ALU=obj%Pmat%A, &
+      & JLU=obj%Pmat%JA, &
+      & JU=obj%Pmat%JU )
+  !!
+  !!
+  !!
+  !!
+  CASE( PRECOND_ILUDP )
+    ! CALL mField_getILUDP( obj )
+    obj%isPmatInitiated = .TRUE.
+    CALL getILUDP( &
+      & obj=obj%mat, &
+      & alpha=obj%Pmat%alpha, &
+      & droptol=obj%Pmat%droptol, &
+      & permtol=obj%Pmat%permtol, &
+      & mbloc=obj%Pmat%mbloc, &
+      & IPERM=obj%Pmat%IPERM, &
+      & ALU=obj%Pmat%A, &
+      & JLU=obj%Pmat%JA, &
+      & JU=obj%Pmat%JU )
+  !!
+  !!
+  !!
+  !!
+  CASE( PRECOND_ILUK )
+    ! CALL mField_getILUK( obj )
+    obj%isPmatInitiated = .TRUE.
+    CALL getILUK( &
+      & obj=obj%mat, &
+      & lfil=obj%Pmat%lfil, &
+      & LEVS=obj%Pmat%LEVS, &
+      & ALU=obj%Pmat%A, &
+      & JLU=obj%Pmat%JA, &
+      & JU=obj%Pmat%JU )
+  !!
+  !!
+  !!
+  !!
+  END SELECT
+  !!
+  !!
+  !!
 END PROCEDURE mField_setPrecondition
-
-!----------------------------------------------------------------------------
-!                                                           getPrecondition
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_getPrecondition
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_getPrecondition"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine has not been implemented so far')
-END PROCEDURE mField_getPrecondition
 
 !----------------------------------------------------------------------------
 !                                                                      ILUT
@@ -259,5 +374,15 @@ MODULE PROCEDURE mField_reversePermutation
   CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'This subroutine has not been implemented yet')
 END PROCEDURE mField_reversePermutation
+
+!----------------------------------------------------------------------------
+!                                                           getPrecondition
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_getPrecondition
+  CHARACTER( LEN = * ), PARAMETER :: myName="mField_getPrecondition"
+  CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine has not been implemented so far')
+END PROCEDURE mField_getPrecondition
 
 END SUBMODULE PreconditionMethods
