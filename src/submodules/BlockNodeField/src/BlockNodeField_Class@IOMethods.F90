@@ -25,10 +25,11 @@ CONTAINS
 
 MODULE PROCEDURE bnField_Display
   INTEGER( I4B ) :: ii
+  !!
   IF( LEN_TRIM( msg) .NE. 0 ) THEN
     CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
   END IF
-  !>
+  !!
   IF( obj%isInitiated ) THEN
     CALL Display( "# isInitiated : TRUE", unitNo=unitNo )
   ELSE
@@ -36,19 +37,23 @@ MODULE PROCEDURE bnField_Display
       & unitNo=unitNo )
     RETURN
   END IF
+  !!
   CALL Display( "# engine : NATIVE_SERIAL", unitNo=unitNo )
   CALL Display( obj%name, "# name : ", unitNo=unitNo )
   CALL Display( obj%tSize, "# tSize : ", unitNo=unitNo )
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
     CALL Display( "# fieldType : CONSTANT", unitNo=unitNo)
   ELSE
     CALL Display( "# fieldType : NORMAL", unitNo=unitNo)
   END IF
+  !!
   IF( ASSOCIATED( obj%domain )  ) THEN
     CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
   ELSE
     CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
   END IF
+  !!
   IF( ALLOCATED( obj%domains ) ) THEN
     CALL Display( "# domains : ALLOCATED [" &
       & // TOSTRING(SIZE(obj%domains)) &
@@ -65,7 +70,7 @@ MODULE PROCEDURE bnField_Display
   ELSE
     CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
   END IF
-  ! CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
+  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
 END PROCEDURE bnField_Display
 
 !----------------------------------------------------------------------------
