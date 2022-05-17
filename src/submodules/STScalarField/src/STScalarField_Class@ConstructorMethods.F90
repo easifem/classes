@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(STScalarField_Class) Constructor
+SUBMODULE(STScalarField_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -107,16 +107,6 @@ MODULE PROCEDURE stsField_Initiate1
 END PROCEDURE stsField_Initiate1
 
 !----------------------------------------------------------------------------
-!                                                           Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE stsField_Initiate2
-  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_Initiate2"
-  CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This method has not been implemented so far')
-END PROCEDURE stsField_Initiate2
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
@@ -154,4 +144,4 @@ END PROCEDURE stsField_Constructor_1
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE Constructor
+END SUBMODULE ConstructorMethods

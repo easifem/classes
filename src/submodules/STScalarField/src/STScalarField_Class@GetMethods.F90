@@ -25,36 +25,53 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get1
-  INTEGER( I4B ) :: localNode
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_get1"
-
-  IF( PRESENT( globalNode ) ) THEN
+  !!
+  IF( PRESENT( globalnode ) ) THEN
+    !!
     SELECT CASE( obj%fieldType )
+    !!
+    !!
+    !!
     CASE( FIELD_TYPE_CONSTANT )
-      CALL getValue( v=value, val=obj%realVec, obj=obj%dof, &
-        & dofNo = arange(1,obj%timeCompo), &
-        & storageFMT=NODES_FMT, nptrs=[1] )
+      !!
+      CALL getValue( &
+        & obj=obj%realvec, &
+        & dofobj=obj%dof, &
+        & idof = arange(1,obj%timeCompo), &
+        & value=value, &
+        & nodenum=[1] )
+    !!
+    !!
+    !!
     CASE( FIELD_TYPE_NORMAL )
-      localNode = obj%domain%getLocalNodeNumber( globalNode )
-      !> check
-      IF( localNode .GT. obj%domain%getTotalNodes() ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'The given global node num are out of bound' )
-      CALL getValue( v=value, val=obj%realVec, obj=obj%dof, &
-        & dofNo = arange(1,obj%timeCompo), &
-        & storageFMT=NODES_FMT, nptrs=[localNode] )
+      !!
+      CALL getValue( &
+        & obj=obj%realvec, &
+        & dofobj=obj%dof, &
+        & idof = arange(1,obj%timeCompo), &
+        & value=value, &
+        & nodenum=obj%domain%getLocalNodeNumber( [globalnode] ) )
+      !!
     END SELECT
-  ELSE IF (PRESENT( timeCompo ) ) THEN
-    IF( timeCompo .GT. obj%timeCompo ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'given timeCompo should be less than or equal to obj%timeCompo' )
-    CALL getValue( v=value, val=obj%realVec, obj=obj%dof, &
-      & dofNo = [timeCompo], &
-      & storageFMT=NODES_FMT )
-  ELSE
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'either globalNode or space component should be present' )
+    !!
   END IF
+  !!
+  !!
+  !!
+  !!
+  IF( PRESENT( timeCompo ) ) THEN
+    !!
+    CALL getValue( &
+      & obj=obj%realvec, &
+      & dofobj=obj%dof, &
+      & ivar=1, &
+      & idof = timeCompo, &
+      & value=value )
+    !!
+  END IF
+  !!
+  !!
+  !!
 END PROCEDURE stsField_get1
 
 !----------------------------------------------------------------------------
@@ -62,8 +79,13 @@ END PROCEDURE stsField_get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get2
-  CALL getValue( v=value, val=obj%realVec, obj=obj%dof, &
-    & dofNo = arange(1,obj%timeCompo) )
+  !!
+  CALL getValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & idof = arange(1,obj%timeCompo), &
+    & value=value )
+  !!
 END PROCEDURE stsField_get2
 
 !----------------------------------------------------------------------------
@@ -71,19 +93,19 @@ END PROCEDURE stsField_get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get3
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_get3"
-  INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
   REAL( DFP ), ALLOCATABLE :: v( : )
-
-  localNode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( ANY( localNode .GT. obj%domain%getTotalNodes() )) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Some of the global node num are out of bound' )
-  CALL getValue( v=v, val=obj%realVec, obj=obj%dof, &
-    & dofNo = arange(1,obj%timeCompo), &
-    & storageFMT=NODES_FMT, nptrs=localNode )
-  value = RESHAPE( v, [obj%timeCompo, SIZE( localNode ) ])
-  IF( ALLOCATED( v ) ) DEALLOCATE( v )
+  !!
+  CALL getValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & idof = arange(1,obj%timeCompo), &
+    & value=v, &
+    & nodenum=obj%domain%getLocalNodeNumber( globalnode ) )
+  !!
+  value = RESHAPE( v, [obj%timeCompo, SIZE( globalnode ) ])
+  !!
+  DEALLOCATE( v )
+  !!
 END PROCEDURE stsField_get3
 
 !----------------------------------------------------------------------------
@@ -91,18 +113,15 @@ END PROCEDURE stsField_get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get4
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_get4"
-  INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
-
-  localNode = obj%domain%getLocalNodeNumber( globalNode )
-  IF( ANY( localNode .GT. obj%domain%getTotalNodes() )) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Some of the global node num are out of bound' )
-  IF( timeCompo .GT. obj%timeCompo ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'given timeCompo should be less than or equal to obj%timeCompo' )
-  CALL getValue(v=value, val=obj%realVec, obj=obj%dof, &
-    & dofNO=[timeCompo], storageFMT=NODES_FMT, nptrs=localNode)
+  !!
+  CALL getValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & ivar=1, &
+    & idof=timeCompo, &
+    & value=value, &
+    & nodenum=obj%domain%getLocalNodeNumber( globalnode ) )
+  !!
 END PROCEDURE stsField_get4
 
 !----------------------------------------------------------------------------
@@ -110,17 +129,15 @@ END PROCEDURE stsField_get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get5
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_get5"
-  INTEGER( I4B ) :: localNode
-  REAL( DFP ), ALLOCATABLE :: v( : )
-
-  IF( timeCompo .GT. obj%timeCompo ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'given timeCompo should be less than or equal to obj%timeCompo' )
-
-  CALL obj%get( value = v, globalNode = globalNode )
-  value = v( timeCompo )
-
+  !!
+  CALL getValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & ivar=1, &
+    & idof=timeCompo, &
+    & value=value, &
+    & nodenum=obj%domain%getLocalNodeNumber( globalnode ) )
+  !!
 END PROCEDURE stsField_get5
 
 !----------------------------------------------------------------------------
@@ -128,14 +145,16 @@ END PROCEDURE stsField_get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get6
-  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_get6"
-  INTEGER( I4B ) :: globalNode( INT( 1+ (iend-istart)/stride ) ), ii, jj
+  !!
+  INTEGER( I4B ) :: globalnode( INT( 1+ (iend-istart)/stride ) ), ii, jj
+  !!
   jj = 0
   DO ii = istart, iend, stride
     jj = jj + 1
-    globalNode( jj ) = ii
+    globalnode( jj ) = ii
   END DO
-  CALL obj%get( globalNode = globalNode, value=value )
+  CALL obj%get( globalnode = globalnode, value=value )
+  !!
 END PROCEDURE stsField_get6
 
 !----------------------------------------------------------------------------
@@ -143,27 +162,89 @@ END PROCEDURE stsField_get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get7
-  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_get7"
-  INTEGER( I4B ) :: globalNode( INT( 1+ (iend-istart)/stride ) ), ii, jj
+  INTEGER( I4B ) :: globalnode( INT( 1+ (iend-istart)/stride ) ), ii, jj
+  !!
   jj = 0
   DO ii = istart, iend, stride
     jj = jj + 1
-    globalNode( jj ) = ii
+    globalnode( jj ) = ii
   END DO
-  CALL obj%get( globalNode = globalNode, value=value, timeCompo=timeCompo )
+  !!
+  CALL obj%get( globalnode = globalnode, value=value, timeCompo=timeCompo )
+  !!
 END PROCEDURE stsField_get7
+
+!----------------------------------------------------------------------------
+!                                                                        get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_get8
+  REAL( DFP ), ALLOCATABLE :: v( : )
+  !!
+  CALL getValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & value=v, &
+    & idof = arange(1,obj%timeCompo), &
+    & nodenum=obj%domain%getLocalNodeNumber( globalnode ) )
+  !!
+  value = NodalVariable( &
+    & RESHAPE( v, [obj%timeCompo, SIZE( globalnode ) ]), &
+    & TypeFEVariableScalar, &
+    & TypeFEVariableSpaceTime )
+  !!
+  DEALLOCATE( v )
+  !!
+END PROCEDURE stsField_get8
+
+!----------------------------------------------------------------------------
+!                                                                 Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_get9
+  !!
+#ifdef DEBUG_VER
+  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_get9"
+  INTEGER( I4B ) :: n
+  !!
+  !! check
+  !!
+  n = (obj%dof .timecomponents. 1)
+  !!
+  IF( timecompo .GT. n ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine is not callable as &
+    & (obj%dof .timecomponents. 1)='//tostring(n)// &
+    & ' is lesser than ' // &
+    & ' timecompo='//tostring(timecompo) )
+  !!
+#endif
+  !!
+  !!
+  !!
+  CALL GetValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & value=value%realvec, &
+    & idof=timecompo )
+  !!
+END PROCEDURE stsField_get9
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_getPointerOfComponent
+  !!
+#ifdef DEBUG_VER
   CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_getPointerOfComponent"
-
   IF( timeCompo .GT. obj%timeCompo ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'given timeCompo should be less than or equal to obj%timeCompo' )
-  ans => getPointer( obj=obj%realVec, dofobj=obj%dof, dofno = timeCompo )
+#endif
+  !!
+  ans => getPointer( obj=obj%realvec, dofobj=obj%dof, idof = timeCompo )
+  !!
 END PROCEDURE stsField_getPointerOfComponent
 
 END SUBMODULE GetMethods
