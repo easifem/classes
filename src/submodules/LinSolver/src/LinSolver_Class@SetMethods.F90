@@ -72,22 +72,47 @@ END SUBROUTINE AllocateWorkSpace
 MODULE PROCEDURE ls_Set
   CHARACTER( LEN = * ), PARAMETER :: myName="ls_Set"
   INTEGER( I4B ) :: s(2)
+  !!
+  !!
   obj%Amat => Amat
-  SELECT TYPE( Amat )
-  TYPE IS ( MatrixField_ )
+  !!
+  SELECT TYPE( Amat ); CLASS IS ( MatrixField_ )
     s = Amat%SHAPE()
-  TYPE IS ( BlockMatrixField_ )
-    s = Amat%SHAPE()
-  CLASS DEFAULT
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Type of Amat cannot be recognized, it should be MatrixField_ ')
   END SELECT
+  !!
   obj%localNumRow = s(1)
   obj%localNumColumn = s(2)
   obj%globalNumRow = s(1)
   obj%globalNumColumn = s(2)
-  CALL AllocateWorkSpace( W=obj%W, n=obj%globalNumRow, &
-    & solverName=obj%solverName, IPAR=obj%IPAR)
+  !!
+  CALL AllocateWorkSpace( &
+    & W=obj%W, &
+    & n=obj%globalNumRow, &
+    & solverName=obj%solverName, &
+    & IPAR=obj%IPAR)
+  !!
 END PROCEDURE ls_Set
+
+!----------------------------------------------------------------------------
+!                                                               SetTolerance
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_setTolerance
+  !!
+  IF( PRESENT( atol ) ) THEN
+    obj%atol=atol
+    obj%FPAR( 2 ) = atol
+  END IF
+  !!
+  IF( PRESENT( rtol ) ) THEN
+    obj%rtol=rtol
+    obj%FPAR( 1 ) = rtol
+  END IF
+  !!
+END PROCEDURE ls_setTolerance
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE SetMethods

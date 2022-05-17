@@ -38,21 +38,26 @@ END PROCEDURE mField_addSurrogate
 MODULE PROCEDURE setBlockMatrixFieldParam
   INTEGER( I4B ) :: ierr0, ii
   CHARACTER( LEN = * ), PARAMETER :: myName="setBlockMatrixFieldParam"
-  !> main
-  !> check
+  !! main
+  !!
+  !! check
+  !!
+#ifdef DEBUG_VER
   IF( ANY( [SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
     & .NE. SIZE(physicalVarNames))) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
     & 'Size of physicalVarNames, spaceCompo, and timeCompo should be same')
   END IF
+#endif
+  !!
   ierr0 = param%set( key="BlockMatrixField/name", value=TRIM(name) )
   ierr0 = param%set( key="BlockMatrixField/matrixProp", &
     & value=TRIM(matrixProp) )
-  ierr0 = param%set( key="BlockMatrixField/tPhysicalVarNames",  &
-    & value=SIZE(physicalVarNames) )
+  ii = SIZE( physicalVarNames )
+  ierr0 = param%set( key="BlockMatrixField/tPhysicalVarNames", value=ii )
   DO ii = 1, SIZE( physicalVarNames )
     ierr0=param%set( key="BlockMatrixField/physicalVarName"//TOSTRING(ii), &
-      & value=TRIM(physicalVarNames(ii)) )
+      & value=physicalVarNames(ii) )
   END DO
   ierr0 = param%set( key="BlockMatrixField/spaceCompo",  &
     &  value=spaceCompo )

@@ -21,11 +21,11 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 dbc_set
+!                                                                 bc_set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dbc_set
-  CHARACTER( LEN = * ), PARAMETER :: myName="dbc_set"
+MODULE PROCEDURE bc_set
+  CHARACTER( LEN = * ), PARAMETER :: myName="bc_set"
   !> check
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName// " - "// &
@@ -108,6 +108,6 @@ MODULE PROCEDURE dbc_set
     CALL e%raiseError(modName//'::'//myName// " - "// &
       & 'When UseFunction is true then user must provide function')
   END IF
-END PROCEDURE dbc_set
+END PROCEDURE bc_set
 
 END SUBMODULE SetMethods

@@ -28,6 +28,17 @@ MODULE PROCEDURE mesh_InitiateNodeToElements
   ! Define internal  variables
   INTEGER( I4B ) :: ii, jj,  globalElemNum
   INTEGER( I4B ), ALLOCATABLE :: local_nptrs( : )
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_InitiateNodeToElements"
+  !!
+  !! check
+  !!
+  IF( obj%isNodeToElementsInitiated ) THEN
+    CALL e%raiseWarning(modName//"::"//myName//" - "// &
+      & "NodeToElements information is already initiated. If you want to &
+      & Reinitiate it then deallocate nodeData, first!!" )
+    RETURN
+  END IF
+  !!
   obj%isNodeToElementsInitiated = .TRUE.
   DO ii = 1, obj%tElements
     globalElemNum = obj%getGlobalElemNumber( ii )
@@ -41,7 +52,7 @@ MODULE PROCEDURE mesh_InitiateNodeToElements
 END PROCEDURE mesh_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
-!                                                   InitiateNodeToNodes
+!                                                        InitiateNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateNodetoNodes
@@ -49,9 +60,19 @@ MODULE PROCEDURE mesh_InitiateNodetoNodes
   INTEGER( I4B ) :: iel, iLocalNode, tSize, iGlobalNode
   INTEGER( I4B ), ALLOCATABLE ::  globalNodes( : ), NearElements( : )
   CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateNodetoNodes"
-
+  !!
+  !! check
+  !!
+  IF( obj%isNodeToNodesInitiated ) THEN
+    CALL e%raiseWarning(modName//"::"//myName//" - "// &
+      & "Node to node information is already initiated. If you want to &
+      & Reinitiate it then deallocate nodeData, first!!" )
+    RETURN
+  END IF
+  !!
   IF( .NOT. obj%isNodeToElementsInitiated ) &
     & CALL obj%InitiateNodeToElements( )
+  !!
   obj%isNodeToNodesInitiated = .TRUE.
   DO iLocalNode = 1, obj%tNodes
     iGlobalNode = obj%getGlobalNodeNumber( iLocalNode )
@@ -68,7 +89,7 @@ MODULE PROCEDURE mesh_InitiateNodetoNodes
 END PROCEDURE mesh_InitiateNodetoNodes
 
 !----------------------------------------------------------------------------
-!                                                InitiateElementToElements
+!                                                 InitiateElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateElementToElements
@@ -80,29 +101,41 @@ MODULE PROCEDURE mesh_InitiateElementToElements
     & global_nptrsFace2( : )
   LOGICAL( LGT ) :: Found
   CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateElementToElements"
-
+  !!
+  !! check
+  !!
   IF( .NOT. ASSOCIATED( obj%refelem ) ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Unable to identify the Reference element of the mesh, may be it is not set" )
   END IF
-
+  !!
+  !! check
+  !!
+  IF( obj%isElementToElementsInitiated ) THEN
+    CALL e%raiseWarning(modName//"::"//myName//" - "// &
+      & "element to element information is already initiated. If you want to &
+      & Reinitiate it then deallocate nodeData, first!!" )
+    RETURN
+  END IF
+  !!
   IF( .NOT. ALLOCATED( obj%FacetElements ) ) THEN
     obj%FacetElements = FacetElements( obj%refelem )
   END IF
-
+  !!
   tFace = SIZE(obj%FacetElements)
     !! Total number of facet elements
   obj%isElementToElementsInitiated = .TRUE.
-
+  !!
   IF( .NOT. obj%isNodeToElementsInitiated ) THEN
     CALL obj%InitiateNodeToElements()
   END IF
-
+  !!
   DO localElem1 = 1, obj%tElements
     iel1 = obj%getGlobalElemNumber( localElem1 )
     global_nptrs1 = obj%getConnectivity(iel1)
-
+    !!
     !! getting node numbers of element iel1
+    !!
     DO iFace1 = 1, tFace
       FOUND = .FALSE.
       global_nptrsFace1 = global_nptrs1( getConnectivity( &
@@ -119,7 +152,8 @@ MODULE PROCEDURE mesh_InitiateElementToElements
         global_nptrs2 = obj%getConnectivity( n2e1( iel2 ) )
         DO iFace2 = 1, tFace
           !! getting total number of nodes in iFace2
-          global_nptrsFace2 = global_nptrs2( getConnectivity( obj%FacetElements(iFace2)) )
+          global_nptrsFace2 = global_nptrs2( &
+            & getConnectivity( obj%FacetElements(iFace2)) )
           NNS2 =SIZE(global_nptrsFace2)
           r = 0
           DO i = 1, NNS2
@@ -139,13 +173,13 @@ MODULE PROCEDURE mesh_InitiateElementToElements
         IF( FOUND ) EXIT
       END DO
     END DO
-
+    !!
     IF( INT( SIZE( obj%elementData( localElem1 )%globalElements ) / 3 ) &
       & .NE. tFace ) THEN
       obj%elementData( localElem1 )%elementType = BOUNDARY_ELEMENT
     END IF
   END DO
-
+  !!
   IF( ALLOCATED( global_nptrs1 ) ) DEALLOCATE( global_nptrs1 )
   IF( ALLOCATED( global_nptrs2 ) ) DEALLOCATE( global_nptrs2 )
   IF( ALLOCATED( global_nptrsFace1 ) ) DEALLOCATE( global_nptrsFace1 )
@@ -154,29 +188,45 @@ MODULE PROCEDURE mesh_InitiateElementToElements
 END PROCEDURE mesh_InitiateElementToElements
 
 !----------------------------------------------------------------------------
-!                                                InitiateBoundaryData
+!                                                       InitiateBoundaryData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateBoundaryData
   ! Define internal variables
   INTEGER( I4B ) :: iel, tFace, ii, jj, kk
   INTEGER( I4B ), ALLOCATABLE :: global_nptrs( : ), ElemToElem( :, : )
-
+  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_InitiateBoundaryData"
+  !!
+  !! check
+  !!
+  IF( obj%isBoundaryDataInitiated ) THEN
+    CALL e%raiseWarning(modName//"::"//myName//" - "// &
+      & "Boundary data information is already initiated. If you want to &
+      & Reinitiate it then deallocate nodeData, first!!" )
+    RETURN
+  END IF
+  !!
   obj%isBoundaryDataInitiated = .TRUE.
+  !!
   IF( .NOT. obj%isElementToElementsInitiated ) &
     & CALL obj%InitiateElementToElements( )
-  !> Check
+  !!
   IF( .NOT. ALLOCATED( obj%FacetElements ) ) &
     & obj%FacetElements = FacetElements( obj%refelem )
+  !!
   tFace = SIZE( obj%FacetElements )
-  !> Case of single element in the mesh
+  !!
+  !! Case of single element in the mesh
+  !!
   IF( obj%tElements .EQ. 1 ) THEN
     obj%elementData( 1 )%elementType = BOUNDARY_ELEMENT
     tFace = SIZE( obj%FacetElements )
     obj%elementData( 1 )%boundaryData =  [(ii, ii=1, tFace)]
   ELSE
+    !
     ! Now we will include those elements in boundary elements
     ! which contains the boundary nodes
+    !
     DO ii = 1, obj%tElements
       iel = obj%getGlobalElemNumber( ii )
       global_nptrs = obj%getConnectivity( iel )
@@ -189,7 +239,12 @@ MODULE PROCEDURE mesh_InitiateBoundaryData
     DO ii = 1, obj%tElements
       IF( obj%elementData(ii)%elementType .NE. BOUNDARY_ELEMENT ) CYCLE
       iel = obj%getGlobalElemNumber( ii )
-      ElemToElem = obj%getElementToElements( iel, .FALSE. )
+      ElemToElem = obj%getElementToElements( globalElement=iel, &
+        & onlyElements=.FALSE. )
+      !! Because iel is a boundary element, not all its faces will
+      !! have neighbours. Below, we calculate how many faces
+      !! of iel does not have neighbors. These faces are
+      !! called boundary faces.
       jj = tFace - SIZE( ElemToElem, 1 )
       CALL Reallocate( obj%elementData(ii)%boundaryData, jj )
       global_nptrs = obj%getConnectivity(iel)
@@ -204,6 +259,102 @@ MODULE PROCEDURE mesh_InitiateBoundaryData
   IF( ALLOCATED( global_nptrs ) ) DEALLOCATE( global_nptrs )
   IF( ALLOCATED( ElemToElem ) ) DEALLOCATE( ElemToElem )
 END PROCEDURE mesh_InitiateBoundaryData
+
+!----------------------------------------------------------------------------
+!                                                     InitiateFacetElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_InitiateFacetElements
+  INTEGER( I4B ) :: iel, ii, jj, iface, kk, telements
+  INTEGER( I4B ), ALLOCATABLE :: e2e( :, : ), indx( : ), cellNptrs( : )
+  !!
+  !! main
+  !!
+  obj%totalInternalFacetElements = 0
+  obj%totalBoundaryFacetElements = 0
+  !!
+  DO iel = 1, obj%getTotalElements()
+    !!
+    jj = obj%getGlobalElemNumber( iel )
+    !!
+    IF( obj%isBoundaryElement( globalElement=jj ) ) THEN
+      obj%totalBoundaryFacetElements = obj%totalBoundaryFacetElements + &
+        & SIZE( obj%getBoundaryElementData( globalElement = jj ) )
+    END IF
+    !!
+    e2e = obj%getElementToElements( globalElement=jj, onlyElements = .TRUE. )
+    !!
+    DO ii = 1, SIZE( e2e, 1 )
+      IF( jj .LE. e2e( ii, 1 ) ) THEN
+        obj%totalInternalFacetElements = obj%totalInternalFacetElements + 1
+      END IF
+    END DO
+  END DO
+  !!
+  obj%totalFacetElements = obj%totalInternalFacetElements + &
+    & obj%totalBoundaryFacetElements
+  !!
+  !! FacetData
+  !!
+  IF( ALLOCATED( obj%facetData ) ) DEALLOCATE( obj%facetData )
+  ALLOCATE( obj%facetData( obj%totalFacetElements ) )
+  !!
+  !! facetElementType
+  !!
+  telements = obj%getTotalElements()
+  CALL Reallocate( obj%facetElementType, SIZE(obj%facetElements), telements )
+  !!
+  iface = 0
+  !!
+  DO iel = 1, telements
+    !!
+    jj = obj%getGlobalElemNumber( iel )
+    cellNptrs = obj%getConnectivity( globalElement=jj )
+    e2e = obj%getElementToElements( globalElement=jj, onlyElements = .FALSE. )
+    !!
+    !! Boundary elements
+    !!
+    IF( obj%isBoundaryElement( globalElement=jj ) ) THEN
+      !!
+      indx = obj%getBoundaryElementData( globalElement = jj )
+      !!
+      DO ii = 1, SIZE( indx )
+        kk = indx( ii )
+        iface = iface+1
+        obj%facetData( iface )%masterCellNumber = jj
+        obj%facetData( iface )%slaveCellNumber = 0
+        obj%facetData( iface )%elementType = BOUNDARY_ELEMENT
+        obj%facetData( iface )%localFacetID = kk
+        obj%facetData( iface )%nptrs = &
+          & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
+        obj%facetElementType( kk, iel ) = BOUNDARY_ELEMENT
+      END DO
+      !!
+    END IF
+    !!
+    !! Internal elements
+    !!
+    DO ii = 1, SIZE( e2e, 1 )
+      kk = e2e(ii, 2)
+      obj%facetElementType( kk, iel ) = INTERNAL_ELEMENT
+      IF( jj .LE. e2e( ii, 1 ) ) THEN
+        iface = iface + 1
+        obj%facetData( iface )%masterCellNumber = jj
+        obj%facetData( iface )%slaveCellNumber = e2e(ii, 1)
+        obj%facetData( iface )%elementType = INTERNAL_ELEMENT
+        obj%facetData( iface )%localFacetID = kk
+        obj%facetData( iface )%nptrs = &
+          & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
+      END IF
+    END DO
+    !!
+  END DO
+  !!
+  IF( ALLOCATED( e2e ) ) DEALLOCATE( e2e )
+  IF( ALLOCATED( indx ) ) DEALLOCATE( indx )
+  IF( ALLOCATED( cellNptrs ) ) DEALLOCATE( cellNptrs )
+  !!
+END PROCEDURE mesh_InitiateFacetElements
 
 !----------------------------------------------------------------------------
 !

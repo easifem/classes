@@ -23,37 +23,4 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
-!----------------------------------------------------------------------------
-!                                                                    Matvec
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_Matvec1
-  ! CHARACTER( LEN = * ), PARAMETER :: myName="mField_Matvec1"
-  ! INTEGER( I4B ) :: s( 2 )
-  ! s = obj%shape()
-  ! IF( SIZE( y ) .NE. s( 1 ) .OR. SIZE( x ) .NE. s(2) ) &
-  !   & CALL e%raiseError(modName//'::'//myName// " - "// &
-  !   & 'There is some mismatch in dimension of matrix and vectors' // &
-  !   & 'The shape of MatrixField_ instance is ' &
-  !   & // trim( str( s(1), .true. ) ) // ", " &
-  !   & // trim( str( s(2), .true. ) ) // ", " &
-  !   & // 'However, the size of x is ' &
-  !   & // trim( str( SIZE( x ), .true. ) ) // ", " &
-  !   & // 'and, the size of y is ' &
-  !   & // trim( str( SIZE( y ), .true. ) ) // ", " )
-  ! CALL Matvec( obj=obj%mat, y=y, x=x, transp=transp )
-END PROCEDURE mField_Matvec1
-
-!----------------------------------------------------------------------------
-!                                                                    Matvec
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_Matvec2
-  ! REAL( DFP ), POINTER :: xVec( : ), yVec( : )
-  ! xVec => x%getPointer()
-  ! yVec => y%getPointer()
-  ! CALL obj%matvec( x=xVec, y=yVec )
-  ! NULLIFY( xVec, yVec )
-END PROCEDURE mField_Matvec2
-
 END SUBMODULE MatVecMethods

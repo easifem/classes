@@ -56,4 +56,22 @@ MODULE PROCEDURE FIELD_TYPE_NUMBER
   END SELECT
 END PROCEDURE FIELD_TYPE_NUMBER
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE FIELD_TYPE_NAME
+  !!
+  SELECT CASE( id )
+  CASE( FIELD_TYPE_NORMAL  )
+    ans = "NORMAL"
+  CASE( FIELD_TYPE_CONSTANT  )
+    ans = "CONSTANT"
+  CASE( FIELD_TYPE_CONSTANT_SPACE  )
+    ans = "CONSTANT_SPACE"
+  CASE( FIELD_TYPE_CONSTANT_TIME  )
+    ans = "CONSTANT_TIME"
+  END SELECT
+END PROCEDURE FIELD_TYPE_NAME
+
 END SUBMODULE Methods

@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Domain_Class) setMethods
+SUBMODULE(Domain_Class) SetMethods
 USE BaseMethod
 USE DomainConnectivity_Class
 IMPLICIT NONE
@@ -125,14 +125,14 @@ END PROCEDURE Domain_setSparsity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_setTotalMaterial
-INTEGER(I4B) :: ii
-CLASS(mesh_), POINTER :: meshptr
-!!
-DO ii = 1, obj%getTotalMesh(dim=dim)
-  meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
-  CALL meshptr%setTotalMaterial(n)
-END DO
-meshptr=>null()
+  INTEGER(I4B) :: ii
+  CLASS(mesh_), POINTER :: meshptr
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
+    CALL meshptr%setTotalMaterial(n)
+  END DO
+  meshptr=>null()
 END PROCEDURE Domain_setTotalMaterial
 
 !----------------------------------------------------------------------------
@@ -140,16 +140,95 @@ END PROCEDURE Domain_setTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_setMaterial
-INTEGER(I4B) :: ii
-CLASS(mesh_), POINTER :: meshptr
-!!
-meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
-CALL meshptr%setMaterial(medium=medium, material=material)
-meshptr=>null()
+  INTEGER(I4B) :: ii
+  CLASS(mesh_), POINTER :: meshptr
+  !!
+  meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+  CALL meshptr%setMaterial(medium=medium, material=material)
+  meshptr=>null()
 END PROCEDURE Domain_setMaterial
+
+!----------------------------------------------------------------------------
+!                                                        SetFacetElementType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setDomainBoundaryElement
+  CLASS( Mesh_ ), POINTER :: masterMesh, slaveMesh
+  INTEGER( I4B ) :: tsize, ii, jj, kk, iel, iface
+  INTEGER( I4B ), ALLOCATABLE :: faceType( : ), faceID( : ), faceNptrs( : )
+  LOGICAL( LGT ) :: faceFound
+  !!
+  tsize = obj%getTotalMesh( dim=obj%nsd )
+  !!
+  DO ii = 1, tsize
+    !!
+    masterMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=ii )
+    !!
+    DO iel = masterMesh%minElemNum, masterMesh%maxElemNum
+      !!
+      IF( .NOT. masterMesh%isElementPresent( iel ) ) CYCLE
+      IF( .NOT. masterMesh%isBoundaryElement( iel ) ) CYCLE
+      !!
+      faceID = masterMesh%getBoundaryElementData( globalElement=iel )
+      !!
+      DO iface = 1, SIZE( faceID )
+        !!
+        kk = faceID( iface )
+        faceNptrs = masterMesh%getFacetConnectivity( globalElement=iel, &
+          & iface=kk )
+        !!
+        faceFound = .FALSE.
+        !!
+        DO jj = 1, tsize
+          IF( jj .NE. ii ) THEN
+            slaveMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=jj )
+            IF( slaveMesh%isAllNodePresent( faceNptrs ) ) THEN
+              faceFound = .TRUE.
+              EXIT
+            END IF
+          END IF
+        END DO
+        !!
+        IF( .NOT. faceFound ) THEN
+          CALL masterMesh%setFacetElementType( globalElement=iel, &
+            & iface=kk, facetElementType=DOMAIN_BOUNDARY_ELEMENT )
+        END IF
+        !!
+      END DO
+      !!
+    END DO
+    !!
+    DO iel = 1, masterMesh%getTotalFacetElements()
+      !!
+      IF( .NOT. masterMesh%isFacetBoundaryElement( iel ) ) CYCLE
+      !!
+      faceNptrs = masterMesh%getFacetConnectivity( facetElement=iel )
+      faceFound = .FALSE.
+      !!
+      DO jj = 1, tsize
+        IF( jj .NE. ii ) THEN
+          slaveMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=jj )
+          IF( slaveMesh%isAllNodePresent( faceNptrs ) ) THEN
+            faceFound = .TRUE.
+            EXIT
+          END IF
+        END IF
+      END DO
+      !!
+      IF( .NOT. faceFound ) THEN
+        CALL masterMesh%setFacetElementType( facetElement=iel, &
+          & facetElementType=DOMAIN_BOUNDARY_ELEMENT )
+      END IF
+      !!
+      !!
+    END DO
+    !!
+  END DO
+  !!
+END PROCEDURE Domain_setDomainBoundaryElement
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE setMethods
+END SUBMODULE SetMethods

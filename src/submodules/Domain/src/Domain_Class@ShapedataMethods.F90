@@ -23,29 +23,106 @@ CONTAINS
 !                                                        InitiateShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Domain_InitiateElemSD
-INTEGER(I4B) :: ii
-CLASS(Mesh_), POINTER :: meshptr
+MODULE PROCEDURE Domain_InitiateElemSD1
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  !!
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    CALL meshptr%initiateElemSD(&
+      & orderSpace=orderSpace(ii),  &
+      & linSpaceElem=meshptr%refElem, &
+      & spaceElem=meshptr%refElem, &
+      & quadTypeForSpace=quadTypeForSpace, &
+      & continuityTypeForSpace=continuityTypeForSpace, &
+      & interpolTypeForSpace=interpolTypeForSpace )
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateElemSD1
 
-DO ii = 1, obj%getTotalMesh(dim=dim)
-  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-  CALL meshptr%initiateElemSD(&
-    & orderSpace=orderSpace(ii),  &
-    & linSpaceElem=linSpaceElem, &
-    & spaceElem=spaceElem, &
-    & quadTypeSpace=quadTypeSpace, &
-    & continuityTypeForSpace=continuityTypeForSpace, &
-    & interpolTypeForSpace=interpolTypeForSpace, &
-    & orderTime=orderTime, &
-    & linTimeElem=linTimeElem, &
-    & timeElem=timeElem, &
-    & quadTypeTime=quadTypeTime, &
-    & continuityTypeForTime=continuityTypeForTime, &
-    & interpolTypeForTime=interpolTypeForTime, &
-    & tvec=tvec)
-END DO
-NULLIFY(meshptr)
-END PROCEDURE Domain_InitiateElemSD
+!----------------------------------------------------------------------------
+!                                                        InitiateShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_InitiateElemSD2
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  !!
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    CALL meshptr%initiateElemSD(&
+      & orderSpace=orderSpace(ii),  &
+      & linSpaceElem=meshptr%refElem, &
+      & spaceElem=meshptr%refElem, &
+      & quadTypeForSpace=quadTypeForSpace, &
+      & continuityTypeForSpace=continuityTypeForSpace, &
+      & interpolTypeForSpace=interpolTypeForSpace, &
+      & orderTime=orderTime, &
+      & linTimeElem=linTimeElem, &
+      & timeElem=timeElem, &
+      & quadTypeForTime=quadTypeForTime, &
+      & continuityTypeForTime=continuityTypeForTime, &
+      & interpolTypeForTime=interpolTypeForTime, &
+      & tvec=tvec)
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateElemSD2
+
+!----------------------------------------------------------------------------
+!                                                        InitiateShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_InitiateElemSD3
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  !!
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    CALL meshptr%initiateElemSD(&
+      & orderSpace=orderSpace(ii),  &
+      & linSpaceElem=meshptr%refElem, &
+      & spaceElem=meshptr%refElem, &
+      & quadTypeForSpace=quadTypeForSpace, &
+      & continuityTypeForSpace=continuityTypeForSpace, &
+      & interpolTypeForSpace=interpolTypeForSpace, &
+      & orderTime=orderTime, &
+      & linTimeElem=linTimeElem, &
+      & timeElem=timeElem, &
+      & quadTypeForTime=quadTypeForTime, &
+      & continuityTypeForTime=continuityTypeForTime, &
+      & interpolTypeForTime=interpolTypeForTime)
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateElemSD3
+
+!----------------------------------------------------------------------------
+!                                                        InitiateShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_InitiateElemSD4
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    CALL meshptr%initiateElemSD( tvec=tvec)
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateElemSD4
 
 !----------------------------------------------------------------------------
 !

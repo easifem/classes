@@ -57,7 +57,8 @@ IF (obj%initstat) THEN
     & 'Fortran file has already been initialized!')
 ELSE
   !Initialize the file
-  file_ = string(trim(filename))
+
+  file_ = trim(filename)
   fpath = file_%basedir()//'/'
   fext = file_%extension()
   fname = file_%basename(extension=fext%chars())
@@ -65,29 +66,44 @@ ELSE
   CALL obj%setFileName(fname)
   CALL obj%setFileExt(fext)
   IF (PRESENT(unit)) THEN
+    !!
     IF (unit == stdout) THEN
+      !!
       CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
-              'value for optional input argument UNIT! Value is equal to '// &
-                        'default OUTPUT_UNIT.')
+        & 'value for optional input argument UNIT! Value is equal to '// &
+        & 'default OUTPUT_UNIT.')
+      !!
     ELSEIF (unit == stderr) THEN
+      !!
       CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
-              'value for optional input argument UNIT! Value is equal to '// &
-                        'default ERROR_UNIT.')
+        & 'value for optional input argument UNIT! Value is equal to '// &
+        & 'default ERROR_UNIT.')
+      !!
     ELSEIF (unit == stdin) THEN
+      !!
       CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
-              'value for optional input argument UNIT! Value is equal to '// &
-                        'default INPUT_UNIT.')
+        & 'value for optional input argument UNIT! Value is equal to '// &
+        & 'default INPUT_UNIT.')
+      !!
     ELSE
+      !!
       INQUIRE (UNIT=unit, OPENED=ostat)
+      !!
       IF (ostat) THEN
+        !!
         CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
-              'value for optional input argument UNIT! Unit is being used'// &
-                          ' by another file!')
+          & 'value for optional input argument UNIT! Unit is being used'// &
+          & ' by another file!')
+        !!
       ELSE
+        !!
         obj%unitno = unit
         obj%getNewUnit = .FALSE.
+        !!
       END IF
+      !!
     END IF
+    !!
   ELSE
     obj%getNewUnit = .TRUE.
   END IF
@@ -115,7 +131,7 @@ ELSE
       ierr = system_mkdir(fpath//'', RWX_U)
     CASE DEFAULT
       CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
-                   'value ('//status//') for optional input argument STATUS!')
+        & 'value ('//status//') for optional input argument STATUS!')
     END SELECT
   ELSE
     !Default value for status
@@ -189,12 +205,13 @@ ELSE
       actionval = action
     CASE DEFAULT
       CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
-                   'value ('//action//') for optional input argument ACTION!')
+        & 'value ('//action//') for optional input argument ACTION!')
     END SELECT
   ELSE
     !Default value
     actionval = 'READWRITE'
   END IF
+  !!
   IF (PRESENT(pad)) THEN
     SELECT CASE (pad)
     CASE ('YES') !File is padded
@@ -250,7 +267,7 @@ ELSE
   END IF
   IF (oldcnt < e%getCounter(EXCEPTION_ERROR)) THEN
     CALL e%raiseError(modName//'::'//myName//' - Exceptions '// &
-                      'during file initialization! File not initialized!')
+      & 'during file initialization! File not initialized!')
     !Reset all attributes if initialization failed.
     obj%unitno = -1
     obj%formatstat = .FALSE.
@@ -274,7 +291,7 @@ END IF
 END PROCEDURE ff_initiate
 
 !----------------------------------------------------------------------------
-!                                                                 clear
+!                                                                    clear
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ff_clear
