@@ -23,14 +23,20 @@ USE XMLTag_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
 IMPLICIT NONE
 PRIVATE
-!>
-CHARACTER( LEN = * ), PARAMETER :: modName="XMLFILE_CLASS"
+!!
+!!
+!!
+CHARACTER( LEN = * ), PARAMETER :: modName="XMLFile_Class"
 TYPE( ExceptionHandler_ ) :: e
 PUBLIC :: xmlTag_
 
 !----------------------------------------------------------------------------
 !                                                              XMLFile_
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: File to handle XML format.
 
 TYPE, EXTENDS( AbstractFile_ ) :: XMLFile_
   PRIVATE
@@ -64,8 +70,9 @@ TYPE, EXTENDS( AbstractFile_ ) :: XMLFile_
   PROCEDURE, PUBLIC, PASS( obj ) :: Import => xmlFile_Import
   PROCEDURE, PUBLIC, PASS( obj ) :: Export => xmlFile_Export
   PROCEDURE, PUBLIC, PASS( Obj ) :: setNewStat => xmlFile_setNewStat
+  PROCEDURE, PUBLIC, PASS( Obj ) :: setOverwriteStat => &
+    & xmlFile_setOverwriteStat
   PROCEDURE, PUBLIC, PASS( Obj ) :: isNew => xmlFile_isNew
-  PROCEDURE, PUBLIC, PASS( Obj ) :: setOverwriteStat => xmlFile_setOverwriteStat
   PROCEDURE, PUBLIC, PASS( obj ) :: isOverwrite => xmlFile_isOverwrite
   PROCEDURE, PUBLIC, PASS( Obj ) :: isFormatted => xmlFile_isFormatted
   PROCEDURE, PUBLIC, PASS( obj ) :: parseXMLDeclaration => &
@@ -90,6 +97,10 @@ PUBLIC :: XMLFilePointer_
 !                                           addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: May 8 2022
+! summary: Add exception handling to module
+
 INTERFACE
 MODULE SUBROUTINE xmlFile_addSurrogate( obj, userObj )
   CLASS( xmlFile_ ), INTENT( INOUT ) :: obj
@@ -108,21 +119,37 @@ END INTERFACE
 !# Introduction
 !
 ! This routine initiates the xmlFile_.
+!
 ! - filename is full name of the file
 ! - mode can be READ, WRITE, NEW, OVERWRITE
+! - READ: The file should exists
+! - WRITE: The file should exists
+! - OVERWRITE: The file is opened with read and write access. If the file
+! does not exists, then a new file is created.
+! - NEW: The file is opened with read and write access. If the file
+! does not exists, then a new file is created.
 
 INTERFACE
 MODULE SUBROUTINE xmlFile_Initiate( obj, filename, mode )
   CLASS( xmlFile_ ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: filename
   CHARACTER( LEN = * ), INTENT( IN ) :: mode
-    !! READ, WRITE, NEW, OVERWRITE
+    !! mode can be READ, WRITE, NEW, OVERWRITE
 END SUBROUTINE xmlFile_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                        Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Deallocate the data stored in the file, close the file.
+!
+!# Introduction
+!
+! This routine deallocates the data stored in the file. This routine also
+! close the file. If `delete` is present then delete the file.
 
 INTERFACE
 MODULE SUBROUTINE xmlFile_Deallocate( obj, delete )
@@ -137,6 +164,10 @@ PUBLIC :: xmlFile_Deallocate
 !                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Finalizer
+
 INTERFACE
 MODULE SUBROUTINE xmlFile_Final( obj )
   TYPE( xmlFile_ ), INTENT( INOUT ) :: obj
@@ -147,6 +178,10 @@ END INTERFACE
 !                                                   Open@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Open the xml file
+
 INTERFACE
 MODULE SUBROUTINE xmlFile_Open( obj )
   CLASS( xmlFile_ ), INTENT( INOUT ) :: obj
@@ -156,6 +191,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                   Close@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Close the xml file
 
 INTERFACE
 MODULE SUBROUTINE xmlFile_Close( obj )
@@ -169,6 +208,10 @@ PUBLIC :: XMLFile_Close
 !                                                   Delete@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Delete the xmlfile
+
 INTERFACE
 MODULE SUBROUTINE xmlFile_Delete( obj )
   CLASS( xmlFile_ ), INTENT( INOUT ) :: obj
@@ -179,6 +222,10 @@ END INTERFACE
 !                                                           Export@IOMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Export the xml file
+
 INTERFACE
 MODULE SUBROUTINE xmlFile_Export( obj, filename )
   CLASS( xmlFile_ ), INTENT( IN ) :: obj
@@ -187,8 +234,28 @@ END SUBROUTINE xmlFile_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Display the contents of xmlfile
+
+INTERFACE
+MODULE SUBROUTINE xmlFile_Display( obj, msg, unitNo )
+  CLASS( XMLFile_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
+END SUBROUTINE xmlFile_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Import the xml file
 
 INTERFACE
 MODULE SUBROUTINE xmlFile_Import( obj, filename )
@@ -198,11 +265,41 @@ END SUBROUTINE xmlFile_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              ParseXMLDeclaration@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Parse XML declaration
+
+INTERFACE
+MODULE SUBROUTINE xmlFile_parseXMLDeclaration( obj )
+  CLASS( XMLFile_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE xmlFile_parseXMLDeclaration
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      buildCache@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Build Cache
+
+INTERFACE
+MODULE SUBROUTINE xmlFile_BuildCache( obj, nchars, fileCache )
+  CLASS( XMLFile_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( OUT ) :: nchars
+  CHARACTER( LEN=1 ), ALLOCATABLE, INTENT( INOUT ) :: fileCache(:)
+END SUBROUTINE xmlFile_BuildCache
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     setNewStat@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	6 June 2021
+! date: 6 June 2021
 ! summary: Sets whether or not the xml file is new.
 
 INTERFACE
@@ -254,7 +351,7 @@ END FUNCTION xmlFile_isOverwrite
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           isFormatted
+!                                                    isFormatted@getMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -262,40 +359,6 @@ MODULE PURE FUNCTION xmlFile_isFormatted( obj ) RESULT( ans )
   CLASS( XMLFile_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
 END FUNCTION xmlFile_isFormatted
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              ParseXMLDeclaration@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE xmlFile_parseXMLDeclaration( obj )
-  CLASS( XMLFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE xmlFile_parseXMLDeclaration
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      buildCache@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE xmlFile_BuildCache( obj, nchars, fileCache )
-  CLASS( XMLFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( OUT ) :: nchars
-  CHARACTER( LEN=1 ), ALLOCATABLE, INTENT( INOUT ) :: fileCache(:)
-END SUBROUTINE xmlFile_BuildCache
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Display@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE xmlFile_Display( obj, msg, unitNo )
-  CLASS( XMLFile_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE xmlFile_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
