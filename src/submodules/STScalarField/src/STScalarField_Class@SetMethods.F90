@@ -324,6 +324,57 @@ MODULE PROCEDURE stsField_set12
 END PROCEDURE stsField_set12
 
 !----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_set13
+  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_set13"
+  !!
+#ifdef DEBUG_VER
+  IF( .NOT. obj%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Scalar field object is not initiated' )
+  !!
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine should not be called for constant STScalar field' )
+  !!
+  IF( SIZE( value, 1) .NE. obj%timeCompo .OR. &
+    & SIZE( value, 2 ) .NE. SIZE( globalNode ) ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'SIZE( value, 1 ) not equal timeCompo or SIZE( value, 2 ) not equal to the SIZE(globalNode)' )
+  !!
+  IF( ANY( localNode .GT. obj%tSize ) ) &
+    & CALL e%raiseError( modName//'::'//myName// " - "// &
+    & 'Some of the globalNode are out of bound' )
+#endif
+  !!
+  SELECT CASE( value%vartype )
+  CASE( Constant )
+    !!
+    !!CALL obj%set( &
+    !!  & value = GET(value, TypeFEVariableScalar, TypeFEVariableConstant), &
+    !!  & globalNode=globalNode )
+    !!
+  CASE( SpaceTime )
+    !!
+    CALL obj%set( &
+      & value = GET(value, TypeFEVariableScalar, TypeFEVariableSpaceTime), &
+      & globalNode=globalNode )
+    !!
+  END SELECT
+  !!
+END PROCEDURE stsField_set13
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_set14
+  CALL Set( obj=obj%realvec, value=0.0_DFP)
+END PROCEDURE stsField_set14
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

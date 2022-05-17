@@ -25,21 +25,23 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_get1
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_get1"
-  INTEGER( I4B ) :: localNode
-
-  IF( .NOT. obj%isInitiated ) &
-    & CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'ScalarField object is not initiated')
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    value = get( obj=obj%realVec, indx=1, dataType= 1.0_DFP )
+    !!
+    value = get( &
+      & obj=obj%realVec, &
+      & nodenum=1, &
+      & dataType= 1.0_DFP )
+    !!
   ELSE
-    localNode = obj%domain%getLocalNodeNumber( globalNode )
-    IF( localNode .GT. obj%tsize ) &
-      & CALL e%raiseInformation(modName//'::'//myName// " - "// &
-      & 'Out of bound index')
-    value = get( obj=obj%realVec, indx=localNode, dataType= 1.0_DFP )
+    !!
+    value = get( &
+      & obj=obj%realVec, &
+      & nodenum=obj%domain%getLocalNodeNumber( globalNode ), &
+      & dataType= 1.0_DFP )
+    !!
   END IF
+  !!
 END PROCEDURE sField_get1
 
 !----------------------------------------------------------------------------
@@ -47,17 +49,26 @@ END PROCEDURE sField_get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_get2
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_get2"
-
-  IF( .NOT. obj%isInitiated ) &
-    & CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'ScalarField object is not initiated')
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    ALLOCATE( value( obj%tsize ) )
-    value = get( obj=obj%realVec, indx=1, dataType= 1.0_DFP )
+    !!
+    CALL reallocate( value, obj%tsize )
+    !!
+    value = get( &
+      & obj=obj%realVec, &
+      & nodenum=1, &
+      & dataType= 1.0_DFP )
+    !!
   ELSE
-    value = get( obj=obj%realVec, dataType= 1.0_DFP )
+    !!
+    CALL GetValue( &
+      & obj=obj%realvec, &
+      & dofobj=obj%dof, &
+      & value=value, &
+      & idof=1 )
+    !!
   END IF
+  !!
 END PROCEDURE sField_get2
 
 !----------------------------------------------------------------------------
@@ -65,21 +76,12 @@ END PROCEDURE sField_get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_get3
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_get3"
-  INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
-  IF( .NOT. obj%isInitiated ) &
-    & CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'ScalarField object is not initiated')
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'this routine is not callable for constant field type')
-  ELSE
-    localNode = obj%domain%getLocalNodeNumber( globalNode )
-    IF( ANY(localNode .GT. obj%tsize) ) &
-      & CALL e%raiseInformation(modName//'::'//myName// " - "// &
-      & 'Out of bound index')
-    value = get( obj=obj%realVec, indx=localNode, dataType= 1.0_DFP )
-  END IF
+  !!
+  value = get( &
+    & obj=obj%realVec, &
+    & nodenum=obj%domain%getLocalNodeNumber( globalNode ), &
+    & dataType= 1.0_DFP )
+  !!
 END PROCEDURE sField_get3
 
 !----------------------------------------------------------------------------
@@ -87,23 +89,43 @@ END PROCEDURE sField_get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_get4
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_set6"
+  !!
   INTEGER( I4B ) :: globalNode( INT( 1+ (iend-istart)/stride ) ), ii, jj
-
-  IF( .NOT. obj%isInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Scalar field object is not initiated' )
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL e%raiseInformation(modName//'::'//myName// " - "// &
-      & 'this routine is not callable for constant field type')
-  ELSE
-    jj = 0
-    DO ii = istart, iend, stride
-      jj = jj + 1
-      globalNode( jj ) = ii
-    END DO
-    CALL obj%get( globalNode=globalNode, value=value )
-  END IF
+  !!
+  !!
+  jj = 0
+  !!
+  DO ii = istart, iend, stride
+    jj = jj + 1
+    globalNode( jj ) = ii
+  END DO
+  !!
+  CALL obj%get( globalNode=globalNode, value=value )
+  !!
 END PROCEDURE sField_get4
+
+!----------------------------------------------------------------------------
+!                                                                       get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_get5
+  !!
+  value = NodalVariable( &
+    & get( &
+    & obj=obj%realVec, &
+    & nodenum=obj%domain%getLocalNodeNumber( globalNode ), &
+    & dataType= 1.0_DFP ), &
+    & TypeFEVariableScalar, &
+    & TypeFEVariableSpace )
+  !!
+END PROCEDURE sField_get5
+
+!----------------------------------------------------------------------------
+!                                                                       get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_get6
+  CALL getValue( obj=obj%realVec, value=value%realVec )
+END PROCEDURE sField_get6
 
 END SUBMODULE GetMethods

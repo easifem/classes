@@ -323,6 +323,54 @@ MODULE PROCEDURE vField_set12
 END PROCEDURE vField_set12
 
 !----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_set13
+  CHARACTER( LEN = * ), PARAMETER :: myName="vField_set13"
+
+#ifdef DEBUG_VER
+  !!
+  IF( .NOT. obj%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Scalar field object is not initiated' )
+  !!
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'This routine should not be called for constant vector field' )
+  !!
+  IF( SIZE( value, 1) .NE. obj%spaceCompo .OR. &
+    & SIZE( value, 2 ) .NE. SIZE( globalNode ) ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'SIZE( value, 1 ) not equal spaceCompo or SIZE( value, 2 ) not equal to the SIZE(globalNode)' )
+#endif
+  !!
+  SELECT CASE( value%vartype )
+  CASE( Constant )
+    !!
+    CALL obj%Set( &
+      & value = GET(value, TypeFEVariableVector, TypeFEVariableConstant), &
+      & globalNode=globalNode)
+    !!
+  CASE( Space )
+    !!
+    CALL obj%Set( &
+      & value = GET(value, TypeFEVariableVector, TypeFEVariableSpace), &
+      & globalNode=globalNode)
+    !!
+  END SELECT
+  !!
+END PROCEDURE vField_set13
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_set14
+  CALL Set( obj=obj%realvec, value=0.0_DFP)
+END PROCEDURE vField_set14
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

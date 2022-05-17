@@ -226,8 +226,8 @@ CHARACTER(LEN=1) :: asymb
 !> main
 !> check
 IF (.NOT. obj%isInit() .OR. &
-     & .NOT. obj%isOpen() .OR. &
-     & .NOT. obj%isRead()) THEN
+  & .NOT. obj%isOpen() .OR. &
+  & .NOT. obj%isRead()) THEN
   ans = 0; RETURN
 END IF
 !> main program
@@ -237,8 +237,9 @@ ans = 0
 asymb = "#"
 IF (PRESENT(commentSymbol)) asymb = commentSymbol
 CALL obj%REWIND()
-DO WHILE (.NOT. obj%isEOF())
+DO
   CALL obj%readLine(line=aline)
+  IF ( obj%isEOF() ) EXIT
   IF (aline%LEN_TRIM() .EQ. 0) THEN
     IF (.NOT. ignoreBlank0) ans = ans + 1
   ELSE

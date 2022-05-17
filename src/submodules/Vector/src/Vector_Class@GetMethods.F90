@@ -29,10 +29,10 @@ MODULE PROCEDURE vec_get1
   IF( .NOT. obj%isInitiated ) &
     & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
     & 'Vector object is not initiated')
-  IF( indx .GT. obj%tsize ) &
+  IF( nodenum .GT. obj%tsize ) &
     & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
     & 'Out of bound index')
-  ans = get( obj=obj%realVec, indx=indx, dataType= 1.0_DFP )
+  ans = get( obj=obj%realVec, nodenum=nodenum, dataType= 1.0_DFP )
 END PROCEDURE vec_get1
 
 !----------------------------------------------------------------------------
@@ -56,10 +56,10 @@ MODULE PROCEDURE vec_get3
   IF( .NOT. obj%isInitiated ) &
     & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
     & 'Vector object is not initiated')
-  IF( ANY(indx .GT. obj%tsize) ) &
+  IF( ANY(nodenum .GT. obj%tsize) ) &
     & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
     & 'Out of bound index')
-  ans = get( obj=obj%realVec, indx=indx, dataType= 1.0_DFP )
+  ans = get( obj=obj%realVec, nodenum=nodenum, dataType= 1.0_DFP )
 END PROCEDURE vec_get3
 
 !----------------------------------------------------------------------------

@@ -5,4 +5,6 @@ TARGET_SOURCES(
   ${src_path}/MeshSelection_Class@IOMethods.F90
   ${src_path}/MeshSelection_Class@SetMethods.F90
   ${src_path}/MeshSelection_Class@GetMethods.F90
+  ${src_path}/MeshSelection_Class@GetElemNumMethods.F90
+  ${src_path}/MeshSelection_Class@GetNodeNumMethods.F90
 )

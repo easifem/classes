@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(ScalarField_Class) IOMethods
+SUBMODULE(STScalarField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
 IMPLICIT NONE
@@ -25,51 +25,73 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Display
-  CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
+MODULE PROCEDURE stsField_Display
+  IF( LEN_TRIM( msg) .NE. 0 ) THEN
+    CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
+  END IF
+  !!
+  !!
+  !!
   IF( obj%isInitiated ) THEN
     CALL Display( "# isInitiated : TRUE", unitNo=unitNo )
   ELSE
-    CALL Display( "# isInitiated : FALSE, Nothing to Display!!", unitNo=unitNo )
+    CALL Display( &
+      & "# isInitiated : FALSE, Nothing to Display!", &
+      & unitNo=unitNo )
     RETURN
   END IF
+  !!
+  !!
+  !!
   CALL Display( "# engine : NATIVE_SERIAL", unitNo=unitNo )
   CALL Display( obj%name, "# name : ", unitNo=unitNo )
+  CALL Display( obj%timeCompo, "# time components : ", unitNo=unitNo )
   CALL Display( obj%tSize, "# tSize : ", unitNo=unitNo )
+  !!
+  !!
+  !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL Display( "# fieldType : CONSTANT", unitNo=unitNo )
+    CALL Display( "# fieldType : CONSTANT", unitNo=unitNo)
   ELSE
-    CALL Display( "# fieldType : NORMAL", unitNo=unitNo )
+    CALL Display( "# fieldType : NORMAL", unitNo=unitNo)
   END IF
+  !!
+  !!
+  !!
   IF( ASSOCIATED( obj%domain )  ) THEN
     CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
   ELSE
     CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
   END IF
-  CALL Display( obj%realVec, obj%dof,  "# realVec : ", unitNo=unitNo )
-END PROCEDURE sField_Display
+  !!
+  !!
+  !!
+  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
+  !!
+  !!
+  !!
+END PROCEDURE stsField_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Import
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Import"
+MODULE PROCEDURE stsField_Import
+  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_Import"
   TYPE( String ) :: strval, dsetname, name, engine
-  INTEGER( I4B ) :: fieldType
-  LOGICAL( LGT ) :: restart
+  INTEGER( I4B ) :: fieldType, timeCompo
   TYPE( ParameterList_ ) :: param
   !!
   !! info
   !!
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "Importing ScalarField_")
+    & "Importing STScalarField_")
   !!
   !! check
   !!
   IF( obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Scalar field object is already initiated')
+    & 'STScalarField_ object is already initiated')
   !!
   !! check
   !!
@@ -96,9 +118,10 @@ MODULE PROCEDURE sField_Import
   !! name
   !!
   dsetname=trim(group)//"/name"
-  IF( .NOT. hdf5%pathExists(dsetname%chars())) &
-    & CALL e%raiseError(modName//'::'//myName//" - "// &
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'The dataset name should be present')
+  END IF
   CALL hdf5%read(dsetname=dsetname%chars(),vals=name)
   !!
   !! engine
@@ -115,13 +138,23 @@ MODULE PROCEDURE sField_Import
   IF( hdf5%pathExists(dsetname%chars())) &
     & CALL hdf5%read(dsetname=dsetname%chars(),vals=obj%tSize)
   !!
+  !! timeCompo
+  !!
+  dsetname=trim(group)//"/timeCompo"
+  IF( .NOT. hdf5%pathExists(dsetname%chars())) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'The dataset timeCompo should be present')
+  !!
+  CALL hdf5%read(dsetname=dsetname%chars(),vals=timeCompo)
+  !!
   !! Initiate
   !!
   CALL FPL_INIT(); CALL param%initiate()
-  CALL setScalarFieldParam( &
+  CALL setSTScalarFieldParam( &
     & param=param, &
     & name=trim(name%chars()), &
-    & fieldType = fieldType )
+    & fieldType = fieldType, &
+    & timeCompo=timeCompo )
   !!
   CALL obj%initiate( param=param, dom=dom )
   CALL param%Deallocate(); CALL FPL_FINALIZE()
@@ -142,43 +175,43 @@ MODULE PROCEDURE sField_Import
   !! info
   !!
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "Importing ScalarField_ [OK!]")
+    & "Importing STScalarField_ [OK!]")
   !!
   !!
   !!
-END PROCEDURE sField_Import
+END PROCEDURE stsField_Import
 
 !----------------------------------------------------------------------------
-!                                                                    Export
+!                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Export
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Export"
+MODULE PROCEDURE stsField_Export
+  CHARACTER( LEN = * ), PARAMETER :: myName="stsField_Export"
   TYPE( String ) :: strval, dsetname
   !!
   !! main program
   !!
   IF( .NOT. obj%isInitiated ) &
     & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Scalar field object is not initiated initiated')
+    & 'STScalarField_ object is not initiated initiated')
   !!
   !! info
   !!
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "Exporting ScalarField_")
+    & "Exporting STScalarField_")
   !!
   !! check
   !!
   IF( .NOT. hdf5%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'HDF5 file is not opened')
+    & 'HDF5File_ is not opened')
   END IF
   !!
   !! check
   !!
   IF( .NOT. hdf5%isWrite() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'HDF5 file does not have write permission')
+    & 'HDF5File_ does not have write permission')
   END IF
   !!
   !! fieldType
@@ -202,6 +235,11 @@ MODULE PROCEDURE sField_Export
   dsetname = trim(group)//"/tSize"
   CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%tSize)
   !!
+  !! timeCompo
+  !!
+  dsetname = trim(group)//"/timeCompo"
+  CALL hdf5%write(dsetname=dsetname%chars(), vals=obj%timeCompo)
+  !!
   !! dof
   !!
   dsetname=trim(group)//"/dof"
@@ -216,8 +254,10 @@ MODULE PROCEDURE sField_Export
   !! info
   !!
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "Exporting ScalarField_")
+    & "Exporting STScalarField_ [OK!]")
   !!
-END PROCEDURE sField_Export
+  !!
+  !!
+END PROCEDURE stsField_Export
 
 END SUBMODULE IOMethods

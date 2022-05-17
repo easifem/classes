@@ -172,7 +172,7 @@ MODULE PROCEDURE stvField_set6
   IF( value%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
     idof = ( timeCompo - 1 ) * obj%spaceCompo + spaceCompo
     vecPointer => getPointer( obj%realVec, obj%dof, idof )
-    vec = get(obj=value%realVec, indx=[1], datatype=1.0_DFP)
+    vec = get(obj=value%realVec, nodenum=[1], datatype=1.0_DFP)
     vecPointer = vec( 1 )
   ELSE
     idof = ( timeCompo - 1 ) * obj%spaceCompo + spaceCompo
@@ -313,6 +313,40 @@ MODULE PROCEDURE stvField_set12
   END DO
   CALL obj%set( globalNode=globalNode, value=value )
 END PROCEDURE stvField_set12
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_set13
+  CHARACTER( LEN = * ), PARAMETER :: myName="stvField_set13"
+  !!
+  SELECT CASE(value%vartype)
+  CASE( Constant )
+    !!
+    !! CALL obj%set( &
+    !!  & value=GET(value, TypeFEVariableVector, &
+    !!  & TypeFEVariableConstant), &
+    !!  & globalNode=globalNode )
+    !!
+  CASE( SpaceTime )
+    !!
+    CALL obj%set( &
+      & value=GET(value, TypeFEVariableVector, &
+      & TypeFEVariableSpaceTime), &
+      & globalNode=globalNode )
+    !!
+  END SELECT
+  !!
+END PROCEDURE stvField_set13
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_set14
+  CALL Set( obj=obj%realvec, value=0.0_DFP)
+END PROCEDURE stvField_set14
 
 !----------------------------------------------------------------------------
 !
