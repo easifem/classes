@@ -380,6 +380,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetData => &
     & mesh_DisplayFacetData
     !! Display element data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayInternalFacetData => &
+    & mesh_DisplayInternalFacetData
+    !! Display internal facet data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayMeshFacetData => &
+    & mesh_DisplayMeshFacetData
+    !! Display mesh facet data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayDomainFacetData => &
+    & mesh_DisplayDomainFacetData
+    !! Display domain facet data
   ! @GetMethods
   PROCEDURE, PASS(obj) :: InitiateNodeToElements => &
     & mesh_InitiateNodeToElements
@@ -1055,6 +1064,54 @@ MODULE SUBROUTINE mesh_DisplayFacetData( obj, msg, unitno )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE mesh_DisplayFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayFacetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Displays the element data
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayInternalFacetData( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayInternalFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayFacetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Displays the element data
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayMeshFacetData( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayFacetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Displays the element data
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayDomainFacetData( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayDomainFacetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
