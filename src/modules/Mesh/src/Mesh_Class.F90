@@ -118,23 +118,89 @@ TYPE FacetData_
 END TYPE FacetData_
 
 !----------------------------------------------------------------------------
-!                                                                 FacetData_
+!                                                         InternalFacetData_
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data storage for internal facets of mesh
 
 TYPE InternalFacetData_
   INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
   INTEGER( I4B ) :: masterCellNumber = 0
   INTEGER( I4B ) :: slaveCellNumber = 0
-  INTEGER( I4B ) :: elementType = 0
   INTEGER( I4B ) :: materLocalFacetID = 0
   INTEGER( I4B ) :: slaveLocalFacetID = 0
   CONTAINS
   !!
   !! Contains
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => InternalfacetData_Display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => InternalFacetData_Display
   !!
 END TYPE InternalFacetData_
+
+!----------------------------------------------------------------------------
+!                                                             MeshFacetData_
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data storage for mesh-facets
+!
+!# Introduction
+!
+! Mesh facet elements are located on mesh boundary which is connected to
+! other mesh region.
+! In this way, the slaveCell of a meshFacet is inside some other mesh.
+! The information of slaveCell number will be accessed through the
+! Halo of the mesh.
+! The halo of the mesh will be stored inside the instance of Mesh_
+!
+! For each Halo (neighbouring mesh) we have an instance of MeshFacetData_.
+! therefore, I have defined MeshFacetData_ as the collection of
+! all meshfacets.
+
+TYPE MeshFacetData_
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( :, : )
+  INTEGER( I4B ), ALLOCATABLE :: masterCellNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: slaveCellNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: materLocalFacetID( : )
+  INTEGER( I4B ), ALLOCATABLE :: slaveLocalFacetID( : )
+  ! CLASS( Halo_ ), POINTER :: halo => NULL()
+  CONTAINS
+  !!
+  !! Contains
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacet_Display
+  !!
+END TYPE MeshFacetData_
+
+!----------------------------------------------------------------------------
+!                                                                 FacetData_
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data storage for Domain facet data
+!
+!# Introduction
+!
+! DomainFacet elements are those boundary elements which are located
+! on the boundary of the domain. Ofcourse domainFacet elements are
+! located on the mesh Boundary with only difference that these elements do
+! not have slaveCellNumber
+
+TYPE DomainFacetData_
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
+  INTEGER( I4B ) :: masterCellNumber = 0
+  INTEGER( I4B ) :: materLocalFacetID = 0
+  CONTAINS
+  !!
+  !! Contains
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => DomainFacetData_Display
+  !!
+END TYPE DomainFacetData_
 
 !----------------------------------------------------------------------------
 !                                                                 Mesh_
@@ -885,6 +951,54 @@ MODULE SUBROUTINE facetData_Display( obj, msg, unitno )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE facetData_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Display@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Display the instance of InternalFacetData
+
+INTERFACE
+MODULE SUBROUTINE InternalFacetData_Display( obj, msg, unitno )
+  CLASS( InternalFacetData_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE InternalFacetData_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Display@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Display the instance of MeshFacetData
+
+INTERFACE
+MODULE SUBROUTINE MeshFacet_Display( obj, msg, unitno )
+  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE MeshFacet_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Display@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Display the instance of DomainFacetData_
+
+INTERFACE
+MODULE SUBROUTINE DomainFacetData_Display( obj, msg, unitno )
+  CLASS( DomainFacetData_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE DomainFacetData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
