@@ -137,11 +137,10 @@ MODULE PROCEDURE mesh_Deallocate
   IF( ALLOCATED( obj%FacetElements ) ) DEALLOCATE( obj%FacetElements )
   IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
-  IF( ALLOCATED( obj%facetData ) ) THEN
-    CALL e%raiseDebug(modName//'::'//myName// " - "// &
-      & 'We cannot deallocate facetData, there is some bug' )
-    ! DEALLOCATE( obj%facetData )
-  END IF
+  IF( ALLOCATED( obj%facetData ) ) DEALLOCATE( obj%facetData )
+  IF( ALLOCATED( obj%internalFacetData ) ) DEALLOCATE( obj%internalFacetData )
+  IF( ALLOCATED( obj%domainFacetData ) ) DEALLOCATE( obj%domainFacetData )
+  IF( ALLOCATED( obj%meshFacetData ) ) DEALLOCATE( obj%meshFacetData )
   obj%refelem => NULL()
   CALL Deallocate( obj%quadForTime )
   CALL Deallocate( obj%linTimeElemSD )

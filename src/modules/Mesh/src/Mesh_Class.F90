@@ -39,7 +39,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_NODE = -3
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
-INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -3
+INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
 
 !----------------------------------------------------------------------------
 !                                                                 NodeData_
@@ -129,7 +129,7 @@ TYPE InternalFacetData_
   INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
   INTEGER( I4B ) :: masterCellNumber = 0
   INTEGER( I4B ) :: slaveCellNumber = 0
-  INTEGER( I4B ) :: materLocalFacetID = 0
+  INTEGER( I4B ) :: masterLocalFacetID = 0
   INTEGER( I4B ) :: slaveLocalFacetID = 0
   CONTAINS
   !!
@@ -164,7 +164,7 @@ TYPE MeshFacetData_
   INTEGER( I4B ), ALLOCATABLE :: nptrs( :, : )
   INTEGER( I4B ), ALLOCATABLE :: masterCellNumber( : )
   INTEGER( I4B ), ALLOCATABLE :: slaveCellNumber( : )
-  INTEGER( I4B ), ALLOCATABLE :: materLocalFacetID( : )
+  INTEGER( I4B ), ALLOCATABLE :: masterLocalFacetID( : )
   INTEGER( I4B ), ALLOCATABLE :: slaveLocalFacetID( : )
   ! CLASS( Halo_ ), POINTER :: halo => NULL()
   CONTAINS
@@ -193,7 +193,7 @@ END TYPE MeshFacetData_
 TYPE DomainFacetData_
   INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
   INTEGER( I4B ) :: masterCellNumber = 0
-  INTEGER( I4B ) :: materLocalFacetID = 0
+  INTEGER( I4B ) :: masterLocalFacetID = 0
   CONTAINS
   !!
   !! Contains
@@ -313,6 +313,14 @@ TYPE :: Mesh_
     !! element data
   TYPE(FacetData_), ALLOCATABLE :: facetData( : )
     !! facet data
+  TYPE(InternalFacetData_), ALLOCATABLE :: internalFacetData( : )
+    !! Internal facet data
+  TYPE(DomainFacetData_), ALLOCATABLE :: domainFacetData( : )
+    !! Domain Facet Data
+  TYPE(MeshFacetData_), ALLOCATABLE :: meshFacetData( : )
+    !! Collection of Mesh facet elements
+    !! meshFacetData( i ) corresponds to ith interface/boundary,
+    !! which is in contact with some other mesh.
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
     !!

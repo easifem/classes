@@ -680,6 +680,62 @@ MODULE PROCEDURE facetData_Display
 END PROCEDURE facetData_Display
 
 !----------------------------------------------------------------------------
+!                                                 InternalFacetData_Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE InternalFacetData_Display
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
+  CALL Display( "# elementType=INTERNAL_ELEMENT", UnitNo=UnitNo)
+  CALL Display( obj%nptrs, msg="# nptrs=", UnitNo=UnitNo)
+  CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%slaveCellNumber, msg="# slaveCellNumber=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%masterlocalFacetID, msg="# masterlocalFacetID=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%slavelocalFacetID, msg="# slavelocalFacetID=", &
+    & UnitNo=UnitNo)
+  !!
+END PROCEDURE InternalFacetData_Display
+
+!----------------------------------------------------------------------------
+!                                                          MeshFacet_Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacet_Display
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
+  CALL Display( "# elementType=BOUNDARY_ELEMENT", UnitNo=UnitNo)
+  CALL Display( obj%nptrs, msg="# nptrs=", UnitNo=UnitNo)
+  CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%slaveCellNumber, msg="# slaveCellNumber=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%masterlocalFacetID, msg="# masterlocalFacetID=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%slavelocalFacetID, msg="# slavelocalFacetID=", &
+    & UnitNo=UnitNo)
+  !!
+END PROCEDURE MeshFacet_Display
+
+!----------------------------------------------------------------------------
+!                                                   DomainFacetData_Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE DomainFacetData_Display
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
+  CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", UnitNo=UnitNo)
+  CALL Display( obj%nptrs, msg="# nptrs=", UnitNo=UnitNo)
+  CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
+    & UnitNo=UnitNo)
+  CALL Display( obj%masterLocalFacetID, msg="# masterlocalFacetID=", &
+    & UnitNo=UnitNo)
+  !
+END PROCEDURE DomainFacetData_Display
+
+!----------------------------------------------------------------------------
 !                                                        DisplayElementData
 !----------------------------------------------------------------------------
 
@@ -738,5 +794,6 @@ MODULE PROCEDURE mesh_DisplayNodeData
   END DO
   !!
 END PROCEDURE mesh_DisplayNodeData
+
 
 END SUBMODULE IOMethods
