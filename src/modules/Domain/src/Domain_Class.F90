@@ -36,6 +36,52 @@ CHARACTER(LEN=*), PARAMETER :: modName = "Domain_Class"
 TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
+!                                                             MeshFacetData_
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data storage for mesh-facets
+!
+!# Introduction
+!
+! Mesh facet elements are located on mesh boundary which is connected to
+! other mesh region.
+! In this way, the slaveCell of a meshFacet is inside some other mesh.
+! The information of slaveCell number will be accessed through the
+! Halo of the mesh.
+! The halo of the mesh will be stored inside the instance of Mesh_
+!
+! For each Halo (neighbouring mesh) we have an instance of MeshFacetData_.
+! therefore, I have defined MeshFacetData_ as the collection of
+! all meshfacets.
+
+TYPE MeshFacetData_
+  INTEGER( I4B ) :: masterMesh = 0
+  INTEGER( I4B ) :: slaveMesh = 0
+  INTEGER( I4B ), ALLOCATABLE :: masterCellNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: slaveCellNumber( : )
+  INTEGER( I4B ), ALLOCATABLE :: masterLocalFacetID( : )
+  INTEGER( I4B ), ALLOCATABLE :: slaveLocalFacetID( : )
+  ! CLASS( Halo_ ), POINTER :: halo => NULL()
+  ! CONTAINS
+  ! !!
+  ! !! Contains
+  ! !!
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacet_Display
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => MeshFacet_Initiate
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: Set => MeshFacet_Set
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacet_Size
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveCellNumber => &
+  !   & MeshFacet_SetSlaveCellNumber
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveLocalFacetID => &
+  !   & MeshFacet_SetSlaveLocalFacetID
+  ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveData => &
+  !   & MeshFacet_SetSlaveData
+  ! !!
+END TYPE MeshFacetData_
+
+!----------------------------------------------------------------------------
 !                                                                   Domain_
 !----------------------------------------------------------------------------
 
@@ -99,6 +145,8 @@ TYPE :: Domain_
     !! meshList( 1 ) list of meshes of line entities
     !! meshList( 2 ) list of meshes of surface entities
     !! meshList( 3 ) list of meshes of volume entities
+  TYPE(MeshFacetData_), ALLOCATABLE :: meshFacetData( : )
+  TYPE(CSRSparsity_) :: meshMap
 CONTAINS
   PRIVATE
   ! @ConstructorMethods
@@ -203,8 +251,12 @@ CONTAINS
   !! set the total number of materials
   PROCEDURE, PUBLIC, PASS(obj) :: setMaterial => Domain_setMaterial
   !! set the material
-  PROCEDURE, PUBLIC, PASS( obj ) :: setDomainBoundaryElement => &
-    & Domain_setDomainBoundaryElement
+  PROCEDURE, PUBLIC, PASS( obj ) :: setDomainFacetElement => &
+    & Domain_setDomainFacetElement
+  !! Set facet element of meshes
+  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetElementType => &
+    & Domain_setFacetElementType
+  !! Set facet element of meshes
   !! @ShapedataMethods
   PROCEDURE, PASS(obj) :: initiateElemSD1 => Domain_initiateElemSD1
   PROCEDURE, PASS(obj) :: initiateElemSD2 => Domain_initiateElemSD2
@@ -1037,9 +1089,23 @@ END INTERFACE
 ! summary: This routine sets the domain boundary element for cells and faces
 
 INTERFACE
-MODULE SUBROUTINE Domain_setDomainBoundaryElement( obj )
+MODULE SUBROUTINE Domain_setFacetElementType( obj )
   CLASS( Domain_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Domain_setDomainBoundaryElement
+END SUBROUTINE Domain_setFacetElementType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        setDomainBoundaryElement@setMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 April 2022
+! summary: This routine sets the domain boundary element for cells and faces
+
+INTERFACE
+MODULE SUBROUTINE Domain_setDomainFacetElement( obj )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Domain_setDomainFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------

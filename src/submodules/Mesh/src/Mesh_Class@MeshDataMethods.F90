@@ -106,7 +106,8 @@ MODULE PROCEDURE mesh_InitiateElementToElements
   !!
   IF( .NOT. ASSOCIATED( obj%refelem ) ) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
-      & "Unable to identify the Reference element of the mesh, may be it is not set" )
+      & "Unable to identify the Reference element of the mesh, &
+      & may be it is not set" )
   END IF
   !!
   !! check
@@ -265,20 +266,22 @@ END PROCEDURE mesh_InitiateBoundaryData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateFacetElements
-  INTEGER( I4B ) :: iel, ii, jj, iface, kk, telements
+  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateFacetElements"
+  INTEGER( I4B ) :: iel, ii, jj, iintface, idomainFace, kk, telements, &
+    & tIntFace, tDomainFace
   INTEGER( I4B ), ALLOCATABLE :: e2e( :, : ), indx( : ), cellNptrs( : )
   !!
   !! main
   !!
-  obj%totalInternalFacetElements = 0
-  obj%totalBoundaryFacetElements = 0
+  tDomainFace = 0
+  tIntFace = 0
   !!
   DO iel = 1, obj%getTotalElements()
     !!
     jj = obj%getGlobalElemNumber( iel )
     !!
     IF( obj%isBoundaryElement( globalElement=jj ) ) THEN
-      obj%totalBoundaryFacetElements = obj%totalBoundaryFacetElements + &
+      tDomainFace = tDomainFace + &
         & SIZE( obj%getBoundaryElementData( globalElement = jj ) )
     END IF
     !!
@@ -286,33 +289,37 @@ MODULE PROCEDURE mesh_InitiateFacetElements
     !!
     DO ii = 1, SIZE( e2e, 1 )
       IF( jj .LE. e2e( ii, 1 ) ) THEN
-        obj%totalInternalFacetElements = obj%totalInternalFacetElements + 1
+        tIntFace = tIntFace + 1
       END IF
     END DO
   END DO
   !!
-  obj%totalFacetElements = obj%totalInternalFacetElements + &
-    & obj%totalBoundaryFacetElements
+  !! internalFacetData
   !!
-  !! FacetData
+  IF( ALLOCATED( obj%internalFacetData ) ) DEALLOCATE(obj%internalFacetData)
+  ALLOCATE( obj%internalFacetData( tIntFace ) )
   !!
-  IF( ALLOCATED( obj%facetData ) ) DEALLOCATE( obj%facetData )
-  ALLOCATE( obj%facetData( obj%totalFacetElements ) )
+  !! domainFaceData
+  !!
+  IF( ALLOCATED( obj%domainFacetData ) ) DEALLOCATE(obj%domainFacetData)
+  ALLOCATE( obj%domainFacetData( tDomainFace ) )
   !!
   !! facetElementType
   !!
   telements = obj%getTotalElements()
   CALL Reallocate( obj%facetElementType, SIZE(obj%facetElements), telements )
   !!
-  iface = 0
+  iintface = 0; idomainFace = 0
+  !!
+  !! start the loop for each cell element of the mesh
   !!
   DO iel = 1, telements
     !!
     jj = obj%getGlobalElemNumber( iel )
     cellNptrs = obj%getConnectivity( globalElement=jj )
-    e2e = obj%getElementToElements( globalElement=jj, onlyElements = .FALSE. )
+    e2e = obj%getElementToElements(globalElement=jj, onlyElements = .FALSE.)
     !!
-    !! Boundary elements
+    !! domainFacetData
     !!
     IF( obj%isBoundaryElement( globalElement=jj ) ) THEN
       !!
@@ -320,31 +327,30 @@ MODULE PROCEDURE mesh_InitiateFacetElements
       !!
       DO ii = 1, SIZE( indx )
         kk = indx( ii )
-        iface = iface+1
-        obj%facetData( iface )%masterCellNumber = jj
-        obj%facetData( iface )%slaveCellNumber = 0
-        obj%facetData( iface )%elementType = BOUNDARY_ELEMENT
-        obj%facetData( iface )%localFacetID = kk
-        obj%facetData( iface )%nptrs = &
-          & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
-        obj%facetElementType( kk, iel ) = BOUNDARY_ELEMENT
+        idomainFace = idomainFace+1
+        obj%domainFacetData( idomainFace )%masterCellNumber = jj
+        obj%domainFacetData( idomainFace )%masterLocalFacetID = kk
+        ! obj%domainFacetData( idomainFace )%nptrs = &
+        !   & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
+        obj%facetElementType( kk, iel ) = DOMAIN_BOUNDARY_ELEMENT
+        !!
       END DO
       !!
     END IF
     !!
-    !! Internal elements
+    !! internalFacetData
     !!
     DO ii = 1, SIZE( e2e, 1 )
       kk = e2e(ii, 2)
       obj%facetElementType( kk, iel ) = INTERNAL_ELEMENT
       IF( jj .LE. e2e( ii, 1 ) ) THEN
-        iface = iface + 1
-        obj%facetData( iface )%masterCellNumber = jj
-        obj%facetData( iface )%slaveCellNumber = e2e(ii, 1)
-        obj%facetData( iface )%elementType = INTERNAL_ELEMENT
-        obj%facetData( iface )%localFacetID = kk
-        obj%facetData( iface )%nptrs = &
-          & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
+        iintface = iintface + 1
+        obj%internalFacetData( iintface )%masterCellNumber = jj
+        obj%internalFacetData( iintface )%slaveCellNumber = e2e(ii, 1)
+        obj%internalFacetData( iintface )%masterlocalFacetID = e2e(ii,2)
+        obj%internalFacetData( iintface )%slavelocalFacetID = e2e(ii,3)
+        ! obj%internalFacetData( iintface )%nptrs = &
+        !   & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
       END IF
     END DO
     !!

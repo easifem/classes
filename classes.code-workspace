@@ -5,10 +5,9 @@
 		}
 	],
 	"settings": {
-		"fortran.preferredCase": "uppercase",
 		"cmake.installPrefix": "/home/easifem/.easifem/classes",
 		"cmake.configureOnEdit": false,
-		"fortran.fortls.sortKeywords": true,
-		"fortran-ls.autocompletePrefix": true
+		"fortran-ls.autocompletePrefix": false,
+		"fortran-ls.displayVerWarning": false
 	}
 }

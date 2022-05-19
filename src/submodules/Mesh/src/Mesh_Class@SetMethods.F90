@@ -190,20 +190,46 @@ END PROCEDURE mesh_setMaterial
 !                                                        setFacetElementType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setFacetElementType1
+MODULE PROCEDURE mesh_setFacetElementType
   INTEGER( I4B ) :: localElem
   localElem = obj%getLocalElemNumber( globalElement=globalElement )
   obj%facetElementType( iface, localElem ) = facetElementType
   obj%elementData( localElem )%elementType = facetElementType
-END PROCEDURE mesh_setFacetElementType1
+END PROCEDURE mesh_setFacetElementType
 
 !----------------------------------------------------------------------------
-!                                                        setFacetElementType
+!                                                        SetSlaveCellNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setFacetElementType2
-  obj%facetData( facetElement )%elementType = facetElementType
-END PROCEDURE mesh_setFacetElementType2
+MODULE PROCEDURE meshFacet_SetSlaveCellNumber
+  obj%slaveCellNumber( facetElement ) = slaveCellNumber
+END PROCEDURE meshFacet_SetSlaveCellNumber
+
+!----------------------------------------------------------------------------
+!                                                       SetSlaveLocalFacetID
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacet_SetSlaveLocalFacetID
+  obj%slaveLocalFacetID( facetElement ) = slaveLocalFacetID
+END PROCEDURE MeshFacet_SetSlaveLocalFacetID
+
+!----------------------------------------------------------------------------
+!                                                       SetSlaveData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacet_SetSlaveData
+  obj%slaveCellNumber( facetElement ) = slaveCellNumber
+  obj%slaveLocalFacetID( facetElement ) = slaveLocalFacetID
+END PROCEDURE MeshFacet_SetSlaveData
+
+!----------------------------------------------------------------------------
+!                                                              meshFacet_Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshFacet_Set
+  obj%masterCellNumber( facetElement ) = domainFacetData%masterCellNumber
+  obj%masterLocalFacetID( facetElement ) = domainFacetData%masterLocalFacetID
+END PROCEDURE meshFacet_Set
 
 !----------------------------------------------------------------------------
 !

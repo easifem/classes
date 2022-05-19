@@ -45,7 +45,7 @@ MODULE PROCEDURE mesh_initiate
   obj%readFromFile = .TRUE.
   obj%isInitiated = .TRUE.
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Importing mesh' )
+    & '[START] Importing mesh' )
   CALL obj%Import(hdf5, group)
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'Mesh imported' )
@@ -74,7 +74,20 @@ MODULE PROCEDURE mesh_initiate
     CALL obj%InitiateFacetElements()
     !!
   END IF
+  CALL e%raiseInformation(modName//'::'//myName// " - "// &
+    & '[END] Importing mesh [OK!]' )
 END PROCEDURE mesh_initiate
+
+!----------------------------------------------------------------------------
+!                                                        MeshFacet_Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacet_Initiate
+  CALL Reallocate( obj%masterCellNumber, tElements  )
+  CALL Reallocate( obj%slaveCellNumber, tElements  )
+  CALL Reallocate( obj%masterLocalFacetID, tElements  )
+  CALL Reallocate( obj%slaveLocalFacetID, tElements  )
+END PROCEDURE MeshFacet_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                      Mesh
@@ -117,9 +130,6 @@ MODULE PROCEDURE mesh_Deallocate
   obj%tNodes = 0
   obj%tIntNodes = 0
   obj%tElements = 0
-  obj%totalFacetElements = 0
-  obj%totalInternalFacetElements = 0
-  obj%totalBoundaryFacetElements = 0
   obj%minX = 0.0_DFP
   obj%maxX = 0.0_DFP
   obj%minY = 0.0_DFP
@@ -137,7 +147,6 @@ MODULE PROCEDURE mesh_Deallocate
   IF( ALLOCATED( obj%FacetElements ) ) DEALLOCATE( obj%FacetElements )
   IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
-  IF( ALLOCATED( obj%facetData ) ) DEALLOCATE( obj%facetData )
   IF( ALLOCATED( obj%internalFacetData ) ) DEALLOCATE( obj%internalFacetData )
   IF( ALLOCATED( obj%domainFacetData ) ) DEALLOCATE( obj%domainFacetData )
   IF( ALLOCATED( obj%meshFacetData ) ) DEALLOCATE( obj%meshFacetData )

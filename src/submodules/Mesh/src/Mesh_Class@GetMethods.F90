@@ -21,6 +21,18 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 SIZE
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshFacet_Size
+  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
+    ans = SIZE( obj%masterCellNumber )
+  ELSE
+    ans = 0
+  END IF
+END PROCEDURE meshFacet_Size
+
+!----------------------------------------------------------------------------
 !                                                                      SIZE
 !----------------------------------------------------------------------------
 
@@ -351,18 +363,18 @@ END PROCEDURE mesh_getGlobalNodeNumber2
 !                                                        getGlobalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getGlobalElemNumber_1
+MODULE PROCEDURE mesh_getGlobalElemNumber1
   INTEGER(I4B) :: ii
   DO ii = 1, SIZE(localElement)
-    ans(ii) = mesh_getGlobalElemNumber_2(obj, localElement(ii))
+    ans(ii) = mesh_getGlobalElemNumber2(obj, localElement(ii))
   END DO
-END PROCEDURE mesh_getGlobalElemNumber_1
+END PROCEDURE mesh_getGlobalElemNumber1
 
 !----------------------------------------------------------------------------
 !                                                        getGlobalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getGlobalElemNumber_2
+MODULE PROCEDURE mesh_getGlobalElemNumber2
   IF (localElement .EQ. 0) THEN
     ans = 0
   ELSE IF (localElement .LE. obj%tElements) THEN
@@ -370,31 +382,31 @@ MODULE PROCEDURE mesh_getGlobalElemNumber_2
   ELSE
     ans = 0
   END IF
-END PROCEDURE mesh_getGlobalElemNumber_2
+END PROCEDURE mesh_getGlobalElemNumber2
 
 !----------------------------------------------------------------------------
 !                                                         getLocalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getLocalElemNumber_1
+MODULE PROCEDURE mesh_getLocalElemNumber1
   INTEGER(I4B) :: ii
   DO ii = 1, SIZE(GlobalElement)
-    ans(ii) = mesh_getLocalElemNumber_2(obj, GlobalElement(ii))
+    ans(ii) = mesh_getLocalElemNumber2(obj, GlobalElement(ii))
   END DO
-END PROCEDURE mesh_getLocalElemNumber_1
+END PROCEDURE mesh_getLocalElemNumber1
 
 !----------------------------------------------------------------------------
 !                                                         getLocalElemNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getLocalElemNumber_2
+MODULE PROCEDURE mesh_getLocalElemNumber2
   IF (GlobalElement .LT. obj%MinElemNum &
     & .OR. GlobalElement .GT. obj%maxElemNum) THEN
     ans = 0
   ELSE
     ans = obj%local_elemNumber(GlobalElement)
   END IF
-END PROCEDURE mesh_getLocalElemNumber_2
+END PROCEDURE mesh_getLocalElemNumber2
 
 !----------------------------------------------------------------------------
 !                                                          getNodeToElements
@@ -567,7 +579,9 @@ END PROCEDURE mesh_getMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalFacetElements
-  ans = obj%totalFacetElements
+  ans = obj%getTotalInternalFacetElements( ) &
+    & + obj%getTotalMeshFacetElements( ) &
+    & + obj%getTotalDomainFacetElements( )
 END PROCEDURE mesh_getTotalFacetElements
 
 !----------------------------------------------------------------------------
@@ -575,15 +589,52 @@ END PROCEDURE mesh_getTotalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalInternalFacetElements
-  ans = obj%totalInternalFacetElements
+  !!
+  ans = 0
+  !!
+  IF( ALLOCATED( obj%internalFacetData ) ) &
+    & ans = ans + SIZE( obj%internalFacetData )
+  !!
 END PROCEDURE mesh_getTotalInternalFacetElements
+
+!----------------------------------------------------------------------------
+!                                                  getTotalMeshFacetElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getTotalMeshFacetElements
+  INTEGER( I4B ) :: ii
+  !!
+  ans = 0
+  !!
+  IF( ALLOCATED( obj%meshFacetData ) ) THEN
+    DO ii = 1, SIZE( obj%meshFacetData )
+      IF( ALLOCATED( obj%meshFacetData( ii )%masterCellNumber ) ) &
+        & ans = ans + SIZE( obj%meshFacetData( ii )%masterCellNumber )
+    END DO
+  END IF
+  !!
+END PROCEDURE mesh_getTotalMeshFacetElements
+
+!----------------------------------------------------------------------------
+!                                                getTotalDomainFacetElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getTotalDomainFacetElements
+  !!
+  ans = 0
+  !!
+  IF( ALLOCATED( obj%domainFacetData ) ) &
+    & ans = ans + SIZE( obj%domainFacetData )
+  !!
+END PROCEDURE mesh_getTotalDomainFacetElements
 
 !----------------------------------------------------------------------------
 !                                              getTotalBoundaryFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalBoundaryFacetElements
-  ans = obj%totalBoundaryFacetElements
+  ans = obj%getTotalDomainFacetElements() &
+    & + obj%getTotalMeshFacetElements()
 END PROCEDURE mesh_getTotalBoundaryFacetElements
 
 !----------------------------------------------------------------------------
@@ -591,7 +642,16 @@ END PROCEDURE mesh_getTotalBoundaryFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getMasterCellNumber
-  ans = obj%facetData( facetElement )%masterCellNumber
+  !!
+  SELECT CASE( elementType )
+  CASE( INTERNAL_ELEMENT )
+    ans = obj%internalFacetData( facetElement )%masterCellNumber
+  CASE( DOMAIN_BOUNDARY_ELEMENT )
+    ans = obj%domainFacetData( facetElement )%masterCellNumber
+  CASE( BOUNDARY_ELEMENT )
+    ans = obj%meshFacetData( facetBoundary )%masterCellNumber( facetElement )
+  END SELECT
+  !!
 END PROCEDURE mesh_getMasterCellNumber
 
 !----------------------------------------------------------------------------
@@ -599,7 +659,16 @@ END PROCEDURE mesh_getMasterCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getSlaveCellNumber
-  ans = obj%facetData( facetElement )%SlaveCellNumber
+  !!
+  SELECT CASE( elementType )
+  CASE( INTERNAL_ELEMENT )
+    ans = obj%internalFacetData( facetElement )%slaveCellNumber
+  CASE( DOMAIN_BOUNDARY_ELEMENT )
+    ans = 0
+  CASE( BOUNDARY_ELEMENT )
+    ans = obj%meshFacetData( facetBoundary )%slaveCellNumber( facetElement )
+  END SELECT
+  !!
 END PROCEDURE mesh_getSlaveCellNumber
 
 !----------------------------------------------------------------------------
@@ -607,49 +676,97 @@ END PROCEDURE mesh_getSlaveCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getCellNumber
-  ans(1) = obj%facetData( facetElement )%masterCellNumber
-  ans(2) = obj%facetData( facetElement )%slaveCellNumber
+  !!
+  SELECT CASE( elementType )
+  CASE( INTERNAL_ELEMENT )
+    ans(1) = obj%internalFacetData( facetElement )%masterCellNumber
+    ans(2) = obj%internalFacetData( facetElement )%slaveCellNumber
+  CASE( DOMAIN_BOUNDARY_ELEMENT )
+    ans(1) = obj%domainFacetData( facetElement )%masterCellNumber
+    ans(2) = 0
+  CASE( BOUNDARY_ELEMENT )
+    ans(1) = obj%meshFacetData( facetBoundary )%masterCellNumber( &
+      & facetElement )
+    ans(2) = obj%meshFacetData( facetBoundary )%slaveCellNumber( &
+      & facetElement )
+  END SELECT
+  !!
 END PROCEDURE mesh_getCellNumber
-
-!----------------------------------------------------------------------------
-!                                                     isFacetBoundaryElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_isFacetBoundaryElement
-  IF( obj%facetData( facetElement )%elementType .LT. 0 ) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
-END PROCEDURE mesh_isFacetBoundaryElement
-
-!----------------------------------------------------------------------------
-!                                               isFacetDomainBoundaryElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_isFacetDomainBoundaryElement
-  IF( obj%facetData( facetElement )%elementType &
-    & .EQ. DOMAIN_BOUNDARY_ELEMENT ) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
-END PROCEDURE mesh_isFacetDomainBoundaryElement
 
 !----------------------------------------------------------------------------
 !                                                           getLocalFacetID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalFacetID
-  ans = obj%facetData( facetElement )%localFacetID
+  !!
+  SELECT CASE( elementType )
+  CASE( INTERNAL_ELEMENT )
+    IF( isMaster ) THEN
+      ans = obj%internalFacetData( facetElement )%masterLocalFacetID
+    ELSE
+      ans = obj%internalFacetData( facetElement )%slaveLocalFacetID
+    END IF
+  CASE( DOMAIN_BOUNDARY_ELEMENT )
+    ans = obj%domainFacetData( facetElement )%masterLocalFacetID
+  CASE( BOUNDARY_ELEMENT )
+    IF( isMaster ) THEN
+      ans = obj%meshFacetData( facetBoundary )%masterLocalFacetID( &
+        & facetElement )
+    ELSE
+      ans = obj%meshFacetData( facetBoundary )%slaveLocalFacetID( &
+        & facetElement )
+    END IF
+  END SELECT
+  !!
 END PROCEDURE mesh_getLocalFacetID
 
 !----------------------------------------------------------------------------
-!                                                      getFacetConnectivity
+!                                                       getFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getFacetConnectivity1
-  ans = obj%facetData( facetElement )%nptrs
+  !!
+  INTEGER( I4B ), ALLOCATABLE :: cellNptrs( : )
+  INTEGER( I4B ) :: localFaceID, cellNum
+  !!
+  SELECT CASE( elementType )
+  CASE( INTERNAL_ELEMENT )
+    !!
+    IF( isMaster ) THEN
+      !!
+      cellNum = obj%internalFacetData( facetElement )%masterCellNumber
+      localFaceID = obj%internalFacetData( facetElement )%masterLocalFacetID
+      !!
+    ELSE
+      !!
+      cellNum = obj%internalFacetData( facetElement )%slaveCellNumber
+      localFaceID = obj%internalFacetData( facetElement )%slaveLocalFacetID
+      !!
+    END IF
+    !!
+  CASE( DOMAIN_BOUNDARY_ELEMENT )
+    !!
+    cellNum = obj%domainFacetData( facetElement )%masterCellNumber
+    localFaceID = obj%domainFacetData( facetElement )%masterLocalFacetID
+    !!
+  CASE( BOUNDARY_ELEMENT )
+    !!
+    cellNum = obj%meshFacetData( facetBoundary )%masterCellNumber( &
+      & facetElement )
+    localFaceID = obj%meshFacetData( facetBoundary )%masterLocalFacetID( &
+      & facetElement )
+    !!
+  END SELECT
+  !!
+  IF( cellNum .NE. 0 ) THEN
+    cellNptrs = obj%getConnectivity( globalElement=cellNum )
+    ans = cellNptrs( getConnectivity( obj%facetElements( localFaceID )))
+  ELSE
+    ALLOCATE( ans( 0 ) )
+  END IF
+  !!
+  IF( ALLOCATED( cellNptrs ) ) DEALLOCATE( cellNptrs )
+  !!
 END PROCEDURE mesh_getFacetConnectivity1
 
 !----------------------------------------------------------------------------

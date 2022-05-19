@@ -653,33 +653,6 @@ MODULE PROCEDURE nodeData_Display
 END PROCEDURE nodeData_Display
 
 !----------------------------------------------------------------------------
-!                                                                  Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE facetData_Display
-  CALL Display( TRIM(msg), unitno=unitno )
-  CALL Display( obj%nptrs, msg="# nptrs=", unitno=unitno)
-  CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
-    & unitno=unitno)
-  CALL Display( obj%slaveCellNumber, msg="# slaveCellNumber=", &
-    & unitno=unitno)
-  CALL Display( obj%localFacetID, msg="# localFacetID=", &
-    & unitno=unitno)
-  !!
-  SELECT CASE( obj%elementType )
-  CASE( INTERNAL_ELEMENT )
-    CALL Display( "# elementType=INTERNAL_ELEMENT", unitno=unitno)
-  CASE( BOUNDARY_ELEMENT )
-    CALL Display( "# elementType=BOUNDARY_ELEMENT", unitno=unitno)
-  CASE( DOMAIN_BOUNDARY_ELEMENT )
-    CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
-  CASE( GHOST_ELEMENT )
-    CALL Display( "# elementType=GHOST_ELEMENT", unitno=unitno)
-  END SELECT
-  !!
-END PROCEDURE facetData_Display
-
-!----------------------------------------------------------------------------
 !                                                 InternalFacetData_Display
 !----------------------------------------------------------------------------
 
@@ -687,7 +660,6 @@ MODULE PROCEDURE InternalFacetData_Display
   !!
   CALL Display( TRIM(msg), unitno=unitno )
   CALL Display( "# elementType=INTERNAL_ELEMENT", unitno=unitno)
-  CALL Display( obj%nptrs, msg="# nptrs=", unitno=unitno)
   CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
     & unitno=unitno)
   CALL Display( obj%slaveCellNumber, msg="# slaveCellNumber=", &
@@ -707,12 +679,6 @@ MODULE PROCEDURE MeshFacet_Display
   !!
   CALL Display( TRIM(msg), unitno=unitno )
   CALL Display( "# elementType=BOUNDARY_ELEMENT", unitno=unitno)
-  !!
-  IF( ALLOCATED( obj%nptrs ) ) THEN
-    CALL Display( obj%nptrs, msg="# nptrs=", unitno=unitno)
-  ELSE
-    CALL Display( "# nptrs NOT ALLOCATED", unitno=unitno)
-  END IF
   !!
   IF( ALLOCATED( obj%masterCellNumber ) ) THEN
     CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
@@ -752,7 +718,6 @@ MODULE PROCEDURE DomainFacetData_Display
   !!
   CALL Display( TRIM(msg), unitno=unitno )
   CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
-  CALL Display( obj%nptrs, msg="# nptrs=", unitno=unitno)
   CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
     & unitno=unitno)
   CALL Display( obj%masterLocalFacetID, msg="# masterlocalFacetID=", &
@@ -799,26 +764,6 @@ MODULE PROCEDURE mesh_DisplayNodeData
   END DO
   !!
 END PROCEDURE mesh_DisplayNodeData
-
-!----------------------------------------------------------------------------
-!                                                        DisplayFacetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_DisplayFacetData
-  !!
-  INTEGER( I4B ) :: ii, telements
-  !!
-  telements = obj%getTotalFacetElements()
-  !!
-  CALL Display( TRIM(msg), unitno=unitno )
-  !!
-  DO ii = 1, telements
-    CALL obj%facetData( ii )%Display( msg="facetData( "//tostring(ii) &
-      & // " )=", unitno=unitno )
-    CALL BlankLines( nol=2, unitno=unitno )
-  END DO
-  !!
-END PROCEDURE mesh_DisplayFacetData
 
 !----------------------------------------------------------------------------
 !                                                        DisplayFacetData

@@ -326,7 +326,9 @@ MODULE PROCEDURE Domain_Import
   !! Setting the data of domain boundary element for cell elements
   !! and facet elements
   !!
-  CALL obj%setDomainBoundaryElement()
+  CALL obj%SetFacetElementType()
+  !!
+  CALL obj%SetDomainFacetElement()
   !!
   NULLIFY( meshObj%ptr )
   !!
