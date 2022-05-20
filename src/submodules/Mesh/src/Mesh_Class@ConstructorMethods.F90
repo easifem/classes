@@ -41,6 +41,7 @@ END PROCEDURE addSurrogate_mesh
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_initiate
+  !!
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_initiate"
   obj%readFromFile = .TRUE.
   obj%isInitiated = .TRUE.
@@ -76,6 +77,7 @@ MODULE PROCEDURE mesh_initiate
   END IF
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & '[END] Importing mesh [OK!]' )
+  !!
 END PROCEDURE mesh_initiate
 
 !----------------------------------------------------------------------------
@@ -142,6 +144,10 @@ MODULE PROCEDURE mesh_Deallocate
   CALL Deallocate( obj%quadForTime )
   CALL Deallocate( obj%linTimeElemSD )
   CALL Deallocate( obj%timeElemSD )
+  obj%quadTypeForTime=""
+  obj%continuityTypeForTime=""
+  obj%interpolTypeForTime=""
+  obj%orderTime=0
   CALL Deallocate( obj%quadForSpace )
   CALL Deallocate( obj%linSpaceElemSD )
   CALL Deallocate( obj%spaceElemSD )
@@ -149,11 +155,15 @@ MODULE PROCEDURE mesh_Deallocate
   obj%quadTypeForSpace=""
   obj%continuityTypeForSpace=""
   obj%interpolTypeForSpace=""
-  obj%quadTypeForTime=""
-  obj%continuityTypeForTime=""
-  obj%interpolTypeForTime=""
   obj%orderSpace=0
-  obj%orderTime=0
+  CALL Deallocate( obj%quadForFacet )
+  CALL Deallocate( obj%linFacetElemSD )
+  CALL Deallocate( obj%facetElemSD )
+  IF( ALLOCATED( obj%facetSTelemsd ) ) DEALLOCATE(obj%facetSTelemsd)
+  obj%quadTypeForFacet=""
+  obj%continuityTypeForFacet=""
+  obj%interpolTypeForFacet=""
+  obj%orderFacet=0
   ! CALL e%reset()
 END PROCEDURE mesh_Deallocate
 
