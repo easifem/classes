@@ -280,12 +280,26 @@ TYPE :: Mesh_
     !!
     !! Following variables are required during processing.
     !!
+  !!
+  !! time
+  !!
   TYPE(QuadraturePoint_), PUBLIC :: quadForTime
     !! quadrature point for time domain #STFEM #STFEM
   TYPE(ElemshapeData_), PUBLIC :: linTimeElemSD
     !! Element shape data on linear time element #STFEM
   TYPE(ElemshapeData_), PUBLIC :: timeElemSD
     !! Element shape data on time element #STFEM
+  TYPE(String) :: quadTypeForTime
+    !! quadrature type for time
+  TYPE(String) :: continuityTypeForTime
+    !! continuity of base function for time
+  TYPE(String) :: interpolTypeForTime
+    !! interpolation of base function for time
+  INTEGER( I4B ) :: orderTime
+    !! order for time
+  !!
+  !! space (cell)
+  !!
   TYPE(QuadraturePoint_), PUBLIC :: quadForSpace
     !! quadrature point for space
   TYPE(ElemshapeData_), PUBLIC :: linSpaceElemSD
@@ -295,13 +309,32 @@ TYPE :: Mesh_
   TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: stelemsd(:)
     !! Element shape data on space element
   TYPE(String) :: quadTypeForSpace
+    !! quadrature type for space
   TYPE(String) :: continuityTypeForSpace
+    !! continuity of base function for space
   TYPE(String) :: interpolTypeForSpace
-  TYPE(String) :: quadTypeForTime
-  TYPE(String) :: continuityTypeForTime
-  TYPE(String) :: interpolTypeForTime
+    !! interoplation type of base function for space
   INTEGER( I4B ) :: orderSpace
-  INTEGER( I4B ) :: orderTime
+    !! order for space
+  !!
+  !! space (facets)
+  !!
+  TYPE(QuadraturePoint_), PUBLIC :: quadForFacet
+    !! quadrature point for facet elements
+  TYPE(ElemshapeData_), PUBLIC :: linFacetElemSD
+    !! Element shape data on linear facet (simplex) element
+  TYPE(ElemshapeData_), PUBLIC :: facetElemSD
+    !! Element shape data on facet element
+  TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: facetSTelemsd(:,:)
+    !! Element shape data on facet element
+  TYPE(String) :: quadTypeForFacet
+    !! quadrature type for facet element
+  TYPE(String) :: continuityTypeForFacet
+    !! continuity of base function for facet element
+  TYPE(String) :: interpolTypeForFacet
+    !! interoplation type of base function for facet element
+  INTEGER( I4B ) :: orderFacet
+    !! order for facet element
   !!
 CONTAINS
   PRIVATE
