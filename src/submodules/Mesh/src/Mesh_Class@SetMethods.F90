@@ -198,40 +198,6 @@ MODULE PROCEDURE mesh_setFacetElementType
 END PROCEDURE mesh_setFacetElementType
 
 !----------------------------------------------------------------------------
-!                                                        SetSlaveCellNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE meshFacet_SetSlaveCellNumber
-  obj%slaveCellNumber( facetElement ) = slaveCellNumber
-END PROCEDURE meshFacet_SetSlaveCellNumber
-
-!----------------------------------------------------------------------------
-!                                                       SetSlaveLocalFacetID
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshFacet_SetSlaveLocalFacetID
-  obj%slaveLocalFacetID( facetElement ) = slaveLocalFacetID
-END PROCEDURE MeshFacet_SetSlaveLocalFacetID
-
-!----------------------------------------------------------------------------
-!                                                       SetSlaveData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshFacet_SetSlaveData
-  obj%slaveCellNumber( facetElement ) = slaveCellNumber
-  obj%slaveLocalFacetID( facetElement ) = slaveLocalFacetID
-END PROCEDURE MeshFacet_SetSlaveData
-
-!----------------------------------------------------------------------------
-!                                                              meshFacet_Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE meshFacet_Set
-  obj%masterCellNumber( facetElement ) = domainFacetData%masterCellNumber
-  obj%masterLocalFacetID( facetElement ) = domainFacetData%masterLocalFacetID
-END PROCEDURE meshFacet_Set
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
