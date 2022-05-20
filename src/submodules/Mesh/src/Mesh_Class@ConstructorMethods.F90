@@ -79,17 +79,6 @@ MODULE PROCEDURE mesh_initiate
 END PROCEDURE mesh_initiate
 
 !----------------------------------------------------------------------------
-!                                                        MeshFacet_Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshFacet_Initiate
-  CALL Reallocate( obj%masterCellNumber, tElements  )
-  CALL Reallocate( obj%slaveCellNumber, tElements  )
-  CALL Reallocate( obj%masterLocalFacetID, tElements  )
-  CALL Reallocate( obj%slaveLocalFacetID, tElements  )
-END PROCEDURE MeshFacet_Initiate
-
-!----------------------------------------------------------------------------
 !                                                                      Mesh
 !----------------------------------------------------------------------------
 
@@ -148,8 +137,7 @@ MODULE PROCEDURE mesh_Deallocate
   IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
   IF( ALLOCATED( obj%internalFacetData ) ) DEALLOCATE( obj%internalFacetData )
-  IF( ALLOCATED( obj%domainFacetData ) ) DEALLOCATE( obj%domainFacetData )
-  IF( ALLOCATED( obj%meshFacetData ) ) DEALLOCATE( obj%meshFacetData )
+  IF( ALLOCATED( obj%boundaryFacetData ) ) DEALLOCATE( obj%boundaryFacetData )
   obj%refelem => NULL()
   CALL Deallocate( obj%quadForTime )
   CALL Deallocate( obj%linTimeElemSD )
