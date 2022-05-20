@@ -140,50 +140,6 @@ TYPE InternalFacetData_
 END TYPE InternalFacetData_
 
 !----------------------------------------------------------------------------
-!                                                             MeshFacetData_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Data storage for mesh-facets
-!
-!# Introduction
-!
-! Mesh facet elements are located on mesh boundary which is connected to
-! other mesh region.
-! In this way, the slaveCell of a meshFacet is inside some other mesh.
-! The information of slaveCell number will be accessed through the
-! Halo of the mesh.
-! The halo of the mesh will be stored inside the instance of Mesh_
-!
-! For each Halo (neighbouring mesh) we have an instance of MeshFacetData_.
-! therefore, I have defined MeshFacetData_ as the collection of
-! all meshfacets.
-
-TYPE MeshFacetData_
-  INTEGER( I4B ), ALLOCATABLE :: masterCellNumber( : )
-  INTEGER( I4B ), ALLOCATABLE :: slaveCellNumber( : )
-  INTEGER( I4B ), ALLOCATABLE :: masterLocalFacetID( : )
-  INTEGER( I4B ), ALLOCATABLE :: slaveLocalFacetID( : )
-  ! CLASS( Halo_ ), POINTER :: halo => NULL()
-  CONTAINS
-  !!
-  !! Contains
-  !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacet_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => MeshFacet_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Set => MeshFacet_Set
-  PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacet_Size
-  PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveCellNumber => &
-    & MeshFacet_SetSlaveCellNumber
-  PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveLocalFacetID => &
-    & MeshFacet_SetSlaveLocalFacetID
-  PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveData => &
-    & MeshFacet_SetSlaveData
-  !!
-END TYPE MeshFacetData_
-
-!----------------------------------------------------------------------------
 !                                                                 FacetData_
 !----------------------------------------------------------------------------
 
@@ -198,16 +154,19 @@ END TYPE MeshFacetData_
 ! located on the mesh Boundary with only difference that these elements do
 ! not have slaveCellNumber
 
-TYPE DomainFacetData_
+TYPE BoundaryFacetData_
   INTEGER( I4B ) :: masterCellNumber = 0
   INTEGER( I4B ) :: masterLocalFacetID = 0
+  INTEGER( I4B ) :: elementType = 0
   CONTAINS
   !!
   !! Contains
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => DomainFacetData_Display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => BoundaryFacetData_Display
   !!
-END TYPE DomainFacetData_
+END TYPE BoundaryFacetData_
+
+PUBLIC :: BoundaryFacetData_
 
 !----------------------------------------------------------------------------
 !                                                                 Mesh_
@@ -314,12 +273,8 @@ TYPE :: Mesh_
     !! element data
   TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData( : )
     !! Internal facet data
-  TYPE(DomainFacetData_), PUBLIC, ALLOCATABLE :: domainFacetData( : )
+  TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData( : )
     !! Domain Facet Data
-  TYPE(MeshFacetData_), PUBLIC, ALLOCATABLE :: meshFacetData( : )
-    !! Collection of Mesh facet elements
-    !! meshFacetData( i ) corresponds to ith interface/boundary,
-    !! which is in contact with some other mesh.
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
     !!
@@ -379,12 +334,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: DisplayInternalFacetData => &
     & mesh_DisplayInternalFacetData
     !! Display internal facet data
-  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayMeshFacetData => &
-    & mesh_DisplayMeshFacetData
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayBoundaryFacetData => &
+    & mesh_DisplayBoundaryFacetData
     !! Display mesh facet data
-  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayDomainFacetData => &
-    & mesh_DisplayDomainFacetData
-    !! Display domain facet data
   ! @GetMethods
   PROCEDURE, PASS(obj) :: InitiateNodeToElements => &
     & mesh_InitiateNodeToElements
@@ -516,12 +468,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalFacetElements => &
     & mesh_getTotalInternalFacetElements
   !! Returns the total number of internal facet elements
-  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMeshFacetElements => &
-    & mesh_getTotalMeshFacetElements
-  !! Returns the total number of Mesh facet elements
-  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalDomainFacetElements => &
-    & mesh_getTotalDomainFacetElements
-  !! Returns the total number of Domain facet elements
   PROCEDURE, PUBLIC, PASS( obj ) :: getMasterCellNumber => &
     & mesh_getMasterCellNumber
   !! Returns the master cell number of a facet element
@@ -747,21 +693,6 @@ END INTERFACE DEALLOCATE
 PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Initiate an instance [[MeshFacetData_]]
-
-INTERFACE
-MODULE PURE SUBROUTINE MeshFacet_Initiate( obj, tElements )
-  CLASS( MeshFacetData_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: tElements
-END SUBROUTINE MeshFacet_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -930,21 +861,6 @@ END INTERFACE Display
 PUBLIC :: Display
 
 !----------------------------------------------------------------------------
-!                                                            Size@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 19 May 2022
-! summary: Size of meshFacetData
-
-INTERFACE
-MODULE PURE FUNCTION meshFacet_Size( obj ) RESULT( ans )
-  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION meshFacet_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                         Display@GetMethods
 !----------------------------------------------------------------------------
 
@@ -998,30 +914,14 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
-! summary: Display the instance of MeshFacetData
-
-INTERFACE
-MODULE SUBROUTINE MeshFacet_Display( obj, msg, unitno )
-  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE MeshFacet_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         Display@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
 ! summary: Display the instance of DomainFacetData_
 
 INTERFACE
-MODULE SUBROUTINE DomainFacetData_Display( obj, msg, unitno )
-  CLASS( DomainFacetData_ ), INTENT( IN ) :: obj
+MODULE SUBROUTINE BoundaryFacetData_Display( obj, msg, unitno )
+  CLASS( BoundaryFacetData_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE DomainFacetData_Display
+END SUBROUTINE BoundaryFacetData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1073,7 +973,7 @@ END SUBROUTINE mesh_DisplayInternalFacetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              DisplayFacetData@GetMethods
+!                                        DisplayBoundaryFacetData@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1081,27 +981,11 @@ END INTERFACE
 ! summary: Displays the element data
 
 INTERFACE
-MODULE SUBROUTINE mesh_DisplayMeshFacetData( obj, msg, unitno )
+MODULE SUBROUTINE mesh_DisplayBoundaryFacetData( obj, msg, unitno )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE mesh_DisplayMeshFacetData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              DisplayFacetData@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Displays the element data
-
-INTERFACE
-MODULE SUBROUTINE mesh_DisplayDomainFacetData( obj, msg, unitno )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE mesh_DisplayDomainFacetData
+END SUBROUTINE mesh_DisplayBoundaryFacetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1885,36 +1769,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      getTotalMeshFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Returns the total number of Mesh facets element in mesh
-
-INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalMeshFacetElements( obj ) RESULT( ans )
-    CLASS(Mesh_), INTENT( IN ) :: obj
-    INTEGER( I4B ) :: ans
-  END FUNCTION mesh_getTotalMeshFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     getTotalDomainFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Returns the total number of Mesh facets element in mesh
-
-INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalDomainFacetElements( obj ) RESULT( ans )
-    CLASS(Mesh_), INTENT( IN ) :: obj
-    INTEGER( I4B ) :: ans
-  END FUNCTION mesh_getTotalDomainFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                   getTotalBoundaryFacetElements@GetMethods
 !----------------------------------------------------------------------------
 
@@ -2192,75 +2046,6 @@ INTERFACE
 MODULE SUBROUTINE mesh_InitiateFacetElements( obj )
   CLASS( Mesh_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE mesh_InitiateFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Set@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Mesh Facet Data
-
-INTERFACE
-  MODULE PURE SUBROUTINE meshFacet_Set(obj, facetElement, &
-    & domainFacetData )
-    CLASS( MeshFacetData_ ), INTENT(INOUT) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: facetElement
-    TYPE( DomainFacetData_ ), INTENT( IN ) :: domainFacetData
-  END SUBROUTINE meshFacet_Set
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              SetSlaveCellNumber@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Mesh Facet Data
-
-INTERFACE
-  MODULE PURE SUBROUTINE meshFacet_SetSlaveCellNumber(obj, facetElement, &
-    & slaveCellNumber)
-    CLASS( MeshFacetData_ ), INTENT(INOUT) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: facetElement
-    INTEGER( I4B ), INTENT( IN ) :: slaveCellNumber
-  END SUBROUTINE meshFacet_SetSlaveCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetSlaveLocalFacetID@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Mesh Facet Data
-
-INTERFACE
-  MODULE PURE SUBROUTINE MeshFacet_SetSlaveLocalFacetID(obj, facetElement, &
-    & slaveLocalFacetID)
-    CLASS( MeshFacetData_ ), INTENT(INOUT) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: facetElement
-    INTEGER( I4B ), INTENT( IN ) :: slaveLocalFacetID
-  END SUBROUTINE MeshFacet_SetSlaveLocalFacetID
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              SetSlaveData@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Mesh Facet Data
-
-INTERFACE
-  MODULE PURE SUBROUTINE MeshFacet_SetSlaveData(obj, facetElement, &
-    & slaveCellNumber, slaveLocalFacetID)
-    CLASS( MeshFacetData_ ), INTENT(INOUT) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: facetElement
-    INTEGER( I4B ), INTENT( IN ) :: slaveCellNumber
-    INTEGER( I4B ), INTENT( IN ) :: slaveLocalFacetID
-  END SUBROUTINE MeshFacet_SetSlaveData
 END INTERFACE
 
 !----------------------------------------------------------------------------

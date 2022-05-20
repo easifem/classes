@@ -64,12 +64,9 @@ TYPE MeshFacetData_
   INTEGER( I4B ), ALLOCATABLE :: masterLocalFacetID( : )
   INTEGER( I4B ), ALLOCATABLE :: slaveLocalFacetID( : )
   ! CLASS( Halo_ ), POINTER :: halo => NULL()
-  ! CONTAINS
-  ! !!
-  ! !! Contains
-  ! !!
-  ! PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacet_Display
-  ! PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => MeshFacet_Initiate
+  CONTAINS
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacetData_Display
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => MeshFacetData_Initiate
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Set => MeshFacet_Set
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacet_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveCellNumber => &
@@ -163,7 +160,11 @@ CONTAINS
   PROCEDURE, PASS(Obj) :: IMPORT => Domain_Import
       !! Initiates an instance of domain by importing data from meshfile
       !! TODO Add an export method to [[Domain_]] class
-      !! TODO Add a display method to [[Domain_]] class
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => Domain_Display
+    !! TODO Add a display method to [[Domain_]] class
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayMeshFacetData => &
+    & Domain_DisplayMeshFacetData
+    !! Display mesh facet data
   ! @getMethods
   PROCEDURE, PUBLIC, PASS(obj) :: &
     & isNodePresent => &
@@ -257,6 +258,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: setFacetElementType => &
     & Domain_setFacetElementType
   !! Set facet element of meshes
+  PROCEDURE, PUBLIC, PASS( obj ) :: setMeshmap => &
+    & Domain_setMeshmap
+  PROCEDURE, PUBLIC, PASS( obj ) :: setMeshFacetElement => &
+    & Domain_setMeshFacetElement
   !! @ShapedataMethods
   PROCEDURE, PASS(obj) :: initiateElemSD1 => Domain_initiateElemSD1
   PROCEDURE, PASS(obj) :: initiateElemSD2 => Domain_initiateElemSD2
@@ -334,6 +339,21 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: group
     !! Group name (directory name)
   END SUBROUTINE Domain_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initaite@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Initiate an instance of MeshFacetData
+
+INTERFACE
+MODULE PURE SUBROUTINE MeshFacetData_Initiate( obj, n )
+  CLASS( MeshFacetData_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: n
+END SUBROUTINE MeshFacetData_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -429,6 +449,55 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(LEN=*), INTENT(IN) :: group
   END SUBROUTINE Domain_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display the domain
+
+INTERFACE
+MODULE SUBROUTINE Domain_Display( obj, msg, unitno )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE Domain_Display
+END INTERFACE
+
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display mesh facet data
+
+INTERFACE
+MODULE SUBROUTINE Domain_DisplayMeshFacetData( obj, msg, unitno )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE Domain_DisplayMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display mesh facet data
+
+INTERFACE
+MODULE SUBROUTINE MeshFacetData_Display( obj, msg, unitno )
+  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE MeshFacetData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1081,7 +1150,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        setDomainBoundaryElement@setMethod
+!                                        setDomainBoundaryElement@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1095,7 +1164,7 @@ END SUBROUTINE Domain_setFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        setDomainBoundaryElement@setMethod
+!                                        setDomainBoundaryElement@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1106,6 +1175,34 @@ INTERFACE
 MODULE SUBROUTINE Domain_setDomainFacetElement( obj )
   CLASS( Domain_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE Domain_setDomainFacetElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      setMeshmap@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: This routine sets meshMap
+
+INTERFACE
+MODULE SUBROUTINE Domain_setMeshmap( obj )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Domain_setMeshmap
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             setMeshFacetElement@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: This routine sets meshFacetData
+
+INTERFACE
+MODULE SUBROUTINE Domain_setMeshFacetElement( obj )
+  CLASS( Domain_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Domain_setMeshFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------
