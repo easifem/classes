@@ -90,6 +90,8 @@ MODULE PROCEDURE Domain_Deallocate
   obj%tEntitiesForElements = 0
   obj%tElements( 0:3 ) = 0
   obj%tEntities( 0:3 ) = 0
+  CALL Deallocate( obj%meshmap )
+  IF( ALLOCATED( obj%meshFacetData ) ) DEALLOCATE( obj%meshFacetData )
   !! BUG
   CALL e%raiseDebug( modName//'::'//myName//'-'// &
     & 'There should be better way to deallocate obj%meshList...' )
