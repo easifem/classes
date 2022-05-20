@@ -301,8 +301,8 @@ MODULE PROCEDURE mesh_InitiateFacetElements
   !!
   !! domainFaceData
   !!
-  IF( ALLOCATED( obj%domainFacetData ) ) DEALLOCATE(obj%domainFacetData)
-  ALLOCATE( obj%domainFacetData( tDomainFace ) )
+  IF( ALLOCATED( obj%boundaryFacetData ) ) DEALLOCATE(obj%boundaryFacetData)
+  ALLOCATE( obj%boundaryFacetData( tDomainFace ) )
   !!
   !! facetElementType
   !!
@@ -319,19 +319,20 @@ MODULE PROCEDURE mesh_InitiateFacetElements
     cellNptrs = obj%getConnectivity( globalElement=jj )
     e2e = obj%getElementToElements(globalElement=jj, onlyElements = .FALSE.)
     !!
-    !! domainFacetData
+    !! boundaryFacetData
     !!
     IF( obj%isBoundaryElement( globalElement=jj ) ) THEN
       !!
       indx = obj%getBoundaryElementData( globalElement = jj )
       !!
       DO ii = 1, SIZE( indx )
+        !!
         kk = indx( ii )
         idomainFace = idomainFace+1
-        obj%domainFacetData( idomainFace )%masterCellNumber = jj
-        obj%domainFacetData( idomainFace )%masterLocalFacetID = kk
-        ! obj%domainFacetData( idomainFace )%nptrs = &
-        !   & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
+        obj%boundaryFacetData( idomainFace )%masterCellNumber = jj
+        obj%boundaryFacetData( idomainFace )%masterLocalFacetID = kk
+        obj%boundaryFacetData( idomainFace )%elementType = &
+          & DOMAIN_BOUNDARY_ELEMENT
         obj%facetElementType( kk, iel ) = DOMAIN_BOUNDARY_ELEMENT
         !!
       END DO
@@ -349,8 +350,6 @@ MODULE PROCEDURE mesh_InitiateFacetElements
         obj%internalFacetData( iintface )%slaveCellNumber = e2e(ii, 1)
         obj%internalFacetData( iintface )%masterlocalFacetID = e2e(ii,2)
         obj%internalFacetData( iintface )%slavelocalFacetID = e2e(ii,3)
-        ! obj%internalFacetData( iintface )%nptrs = &
-        !   & cellNptrs(getConnectivity( obj%facetElements( kk ) ))
       END IF
     END DO
     !!
