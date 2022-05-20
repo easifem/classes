@@ -409,9 +409,21 @@ MODULE PROCEDURE Domain_Import
   !! Setting the data of domain boundary element for cell elements
   !! and facet elements
   !!
+  CALL e%raiseInformation( modName//"::"//myName//" - "// &
+    & "Calling SetFacetElementType()" )
   CALL obj%SetFacetElementType()
   !!
+  CALL e%raiseInformation( modName//"::"//myName//" - "// &
+    & "Calling SetDomainFacetElement()" )
   CALL obj%SetDomainFacetElement()
+  !!
+  CALL e%raiseInformation( modName//"::"//myName//" - "// &
+    & "Calling SetMeshMap()" )
+  CALL obj%SetMeshMap()
+  !!
+  CALL e%raiseInformation( modName//"::"//myName//" - "// &
+    & "Calling SetMeshFacetElement()" )
+  CALL obj%SetMeshFacetElement()
   !!
   NULLIFY( meshObj%ptr )
   !!
