@@ -56,6 +56,17 @@ MODULE PROCEDURE Domain_Initiate
 END PROCEDURE Domain_Initiate
 
 !----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_Initiate
+  CALL Reallocate( obj%masterCellNumber, n  )
+  CALL Reallocate( obj%slaveCellNumber, n  )
+  CALL Reallocate( obj%masterLocalFacetID, n  )
+  CALL Reallocate( obj%slaveLocalFacetID, n  )
+END PROCEDURE MeshFacetData_Initiate
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
