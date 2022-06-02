@@ -463,7 +463,7 @@ MODULE PROCEDURE Domain_getNSD
 END PROCEDURE Domain_getNSD
 
 !----------------------------------------------------------------------------
-!                                                                     getNSD
+!                                                                    getNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getOrder
@@ -481,7 +481,7 @@ MODULE PROCEDURE Domain_getOrder
 END PROCEDURE Domain_getOrder
 
 !----------------------------------------------------------------------------
-!                                                            getBoundingBox
+!                                                             getBoundingBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getBoundingBox
@@ -494,6 +494,35 @@ MODULE PROCEDURE Domain_getBoundingBox
   lim(2:nsd * 2:2) = MAXVAL(obj%nodeCoord(1:nsd, :), dim=2)
   CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
 END PROCEDURE Domain_getBoundingBox
+
+!----------------------------------------------------------------------------
+!                                                     getTotalMeshFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getTotalMeshFacetData
+  !!
+  IF( PRESENT( imeshFacetData ) ) THEN
+    !!
+    IF( ALLOCATED( obj%meshFacetData ) ) THEN
+      IF( obj%meshFacetData( imeshFacetData )%isInitiated( ) ) THEN
+        ans = obj%meshFacetData( imeshFacetData )%SIZE( )
+      ELSE
+        ans = 0
+      END IF
+    ELSE
+      ans = 0
+    END IF
+    !!
+  ELSE
+    !!
+    IF( ALLOCATED( obj%meshFacetData ) ) THEN
+      ans = SIZE( obj%meshFacetData )
+    ELSE
+      ans = 0
+    END IF
+    !!
+  END IF
+END PROCEDURE Domain_getTotalMeshFacetData
 
 !----------------------------------------------------------------------------
 !
