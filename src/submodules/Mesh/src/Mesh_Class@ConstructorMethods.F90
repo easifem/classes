@@ -141,6 +141,7 @@ MODULE PROCEDURE mesh_Deallocate
   IF( ALLOCATED( obj%internalFacetData ) ) DEALLOCATE( obj%internalFacetData )
   IF( ALLOCATED( obj%boundaryFacetData ) ) DEALLOCATE( obj%boundaryFacetData )
   obj%refelem => NULL()
+  obj%ipType = Equidistance
   CALL Deallocate( obj%quadForTime )
   CALL Deallocate( obj%linTimeElemSD )
   CALL Deallocate( obj%timeElemSD )
@@ -156,9 +157,12 @@ MODULE PROCEDURE mesh_Deallocate
   obj%continuityTypeForSpace=""
   obj%interpolTypeForSpace=""
   obj%orderSpace=0
-  CALL Deallocate( obj%quadForFacet )
-  CALL Deallocate( obj%linFacetElemSD )
-  CALL Deallocate( obj%facetElemSD )
+  IF( ALLOCATED( obj%quadForFacet ) ) DEALLOCATE( obj%quadForFacet )
+  IF( ALLOCATED( obj%quadForFacetCell ) ) DEALLOCATE( obj%quadForFacetCell )
+  IF( ALLOCATED( obj%linFacetElemSD ) ) DEALLOCATE( obj%linFacetElemSD )
+  IF( ALLOCATED( obj%linFacetCellElemSD ) ) DEALLOCATE( obj%linFacetCellElemSD )
+  IF( ALLOCATED( obj%facetElemSD ) ) DEALLOCATE( obj%facetElemSD )
+  IF( ALLOCATED( obj%facetCellElemSD ) ) DEALLOCATE( obj%facetCellElemSD )
   IF( ALLOCATED( obj%facetSTelemsd ) ) DEALLOCATE(obj%facetSTelemsd)
   obj%quadTypeForFacet=""
   obj%continuityTypeForFacet=""
