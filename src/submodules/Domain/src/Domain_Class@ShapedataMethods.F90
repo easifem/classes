@@ -125,6 +125,81 @@ MODULE PROCEDURE Domain_InitiateElemSD4
 END PROCEDURE Domain_InitiateElemSD4
 
 !----------------------------------------------------------------------------
+!                                                        InitiateShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_InitiateFacetElemSD1
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    !!
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    !!
+    CALL meshptr%initiateFacetElemSD(&
+      & orderSpace=orderSpace(ii),  &
+      & linSpaceElem=meshptr%facetElements, &
+      & spaceElem=meshptr%facetElements, &
+      & quadTypeForSpace=quadTypeForSpace, &
+      & continuityTypeForSpace=continuityTypeForSpace, &
+      & interpolTypeForSpace=interpolTypeForSpace )
+    !!
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateFacetElemSD1
+
+!----------------------------------------------------------------------------
+!                                                        InitiateShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_InitiateFacetElemSD2
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  !!
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    CALL meshptr%initiateFacetElemSD(&
+      & orderSpace=orderSpace(ii),  &
+      & linSpaceElem=meshptr%facetElements, &
+      & spaceElem=meshptr%facetElements, &
+      & quadTypeForSpace=quadTypeForSpace, &
+      & continuityTypeForSpace=continuityTypeForSpace, &
+      & interpolTypeForSpace=interpolTypeForSpace, &
+      & orderTime=orderTime, &
+      & linTimeElem=linTimeElem, &
+      & timeElem=timeElem, &
+      & quadTypeForTime=quadTypeForTime, &
+      & continuityTypeForTime=continuityTypeForTime, &
+      & interpolTypeForTime=interpolTypeForTime, &
+      & tvec=tvec)
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateFacetElemSD2
+
+!----------------------------------------------------------------------------
+!                                                        InitiateShapeData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_InitiateFacetElemSD3
+  INTEGER(I4B) :: ii
+  CLASS(Mesh_), POINTER :: meshptr
+  !!
+  DO ii = 1, obj%getTotalMesh(dim=dim)
+    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+    CALL meshptr%initiateFacetElemSD( tvec=tvec)
+  END DO
+  !!
+  NULLIFY(meshptr)
+  !!
+END PROCEDURE Domain_InitiateFacetElemSD3
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 !
