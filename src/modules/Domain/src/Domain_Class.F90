@@ -67,6 +67,8 @@ TYPE MeshFacetData_
   CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacetData_Display
   PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => MeshFacetData_Initiate
+  PROCEDURE, PUBLIC, PASS( obj ) :: isInitiated => MeshFacetData_isInitiated
+  PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacetData_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Set => MeshFacet_Set
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacet_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveCellNumber => &
@@ -142,7 +144,7 @@ TYPE :: Domain_
     !! meshList( 1 ) list of meshes of line entities
     !! meshList( 2 ) list of meshes of surface entities
     !! meshList( 3 ) list of meshes of volume entities
-  TYPE(MeshFacetData_), ALLOCATABLE :: meshFacetData( : )
+  TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData( : )
   TYPE(CSRSparsity_) :: meshMap
 CONTAINS
   PRIVATE
@@ -244,6 +246,8 @@ CONTAINS
   !! Returns the spatial dimension of each physical entities
   PROCEDURE, PUBLIC, PASS( obj ) :: getOrder => Domain_getOrder
   !! Get Order
+  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMeshFacetData => &
+    & Domain_getTotalMeshFacetData
   ! @setMethods
   PROCEDURE, PASS(obj) :: setSparsity1 => Domain_setSparsity1
   PROCEDURE, NOPASS :: setSparsity2 => Domain_setSparsity2
@@ -272,6 +276,14 @@ CONTAINS
     & initiateElemSD2, &
     & initiateElemSD3, &
     & initiateElemSD4
+  !! Initiating local shape data for mesh
+  PROCEDURE, PASS(obj) :: initiateFacetElemSD1 => Domain_initiateFacetElemSD1
+  PROCEDURE, PASS(obj) :: initiateFacetElemSD2 => Domain_initiateFacetElemSD2
+  PROCEDURE, PASS(obj) :: initiateFacetElemSD3 => Domain_initiateFacetElemSD3
+  GENERIC, PUBLIC :: initiateFacetElemSD => &
+    & initiateFacetElemSD1, &
+    & initiateFacetElemSD2, &
+    & initiateFacetElemSD3
   !! Initiating local shape data for mesh
 END TYPE Domain_
 
@@ -354,6 +366,36 @@ MODULE PURE SUBROUTINE MeshFacetData_Initiate( obj, n )
   CLASS( MeshFacetData_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: n
 END SUBROUTINE MeshFacetData_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initaite@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 May 2022
+! summary: Returns true if MeshFacetData initiated
+
+INTERFACE
+MODULE PURE FUNCTION MeshFacetData_isInitiated( obj ) RESULT( ans )
+  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION MeshFacetData_isInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initaite@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 May 2022
+! summary: Returns the size of MeshFacetData
+
+INTERFACE
+MODULE PURE FUNCTION MeshFacetData_Size( obj ) RESULT( ans )
+  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION MeshFacetData_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1083,6 +1125,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                          getTotalMeshFacetData@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 May 2022
+! summary: returns size of meshFacetData
+
+INTERFACE
+MODULE PURE FUNCTION Domain_getTotalMeshFacetData( obj, imeshFacetData ) &
+  & RESULT( ans )
+  CLASS( Domain_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: imeshFacetData
+  INTEGER( I4B ) :: ans
+END FUNCTION Domain_getTotalMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     setSparsity@setMethods
 !----------------------------------------------------------------------------
 
@@ -1332,6 +1391,100 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     REAL( DFP ), INTENT( IN ) :: tvec(:)
   END SUBROUTINE Domain_initiateElemSD4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateFacetElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE Domain_initiateFacetElemSD1(obj, &
+    & dim, &
+    & orderSpace, &
+    & quadTypeForSpace, &
+    & continuityTypeForSpace, &
+    & interpolTypeForSpace)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh
+    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
+    !! order for each mesh
+    !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+  END SUBROUTINE Domain_initiateFacetElemSD1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE Domain_initiateFacetElemSD2(obj, &
+    & dim, &
+    & orderSpace,  &
+    & quadTypeForSpace, &
+    & continuityTypeForSpace, &
+    & interpolTypeForSpace, &
+    & orderTime, &
+    & linTimeElem, &
+    & timeElem, &
+    & quadTypeForTime, &
+    & continuityTypeForTime, &
+    & interpolTypeForTime, &
+    & tvec)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh
+    INTEGER(I4B), INTENT(IN) :: orderSpace( : )
+      !! integrand order in space
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+      !! quadrature type for space
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+      !! continuity type of base in space
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+      !! interpol type of base in space
+    INTEGER(I4B), INTENT(IN) :: orderTime
+      !! integrand order in time
+    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
+      !! linear time element
+    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
+      !! time element
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+      !! quadrature type of base in time
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+      !! continuity type of base in time
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+      !! interpol type of base in time
+    REAL(DFP), INTENT(IN) :: tvec(:)
+  END SUBROUTINE Domain_initiateFacetElemSD2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE Domain_initiateFacetElemSD3(obj, dim, tvec)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    REAL( DFP ), INTENT( IN ) :: tvec(:)
+  END SUBROUTINE Domain_initiateFacetElemSD3
 END INTERFACE
 
 !----------------------------------------------------------------------------
