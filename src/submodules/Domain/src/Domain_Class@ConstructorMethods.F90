@@ -67,6 +67,34 @@ MODULE PROCEDURE MeshFacetData_Initiate
 END PROCEDURE MeshFacetData_Initiate
 
 !----------------------------------------------------------------------------
+!                                                                isInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_isInitiated
+  !!
+  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
+    ans = .TRUE.
+  ELSE
+    ans = .FALSE.
+  END IF
+  !!
+END PROCEDURE MeshFacetData_isInitiated
+
+!----------------------------------------------------------------------------
+!                                                                Size
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_Size
+  !!
+  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
+    ans = SIZE( obj%masterCellNumber )
+  ELSE
+    ans = 0
+  END IF
+  !!
+END PROCEDURE MeshFacetData_Size
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
