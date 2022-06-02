@@ -269,6 +269,10 @@ MODULE PROCEDURE mesh_display
       & unitno=unitno)
   END IF
   !!
+  !! ipType
+  !!
+  CALL Display( obj%ipType, "# ipType = ", unitno=unitno)
+  !!
   !! quadForTime
   !!
   CALL Display( obj%quadForTime, "# quadForTime = ", unitno=unitno )
@@ -351,18 +355,57 @@ MODULE PROCEDURE mesh_display
   !!
   !! quadForFacet
   !!
-  CALL Display( obj%quadForFacet, "# quadForFacet = ", &
-    & unitno=unitno )
+  IF (ALLOCATED(obj%quadForFacet)) THEN
+    CALL Display("# quadForFacet : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# quadForFacet : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! quadForFacetCell
+  !!
+  IF (ALLOCATED(obj%quadForFacetCell)) THEN
+    CALL Display("# quadForFacetCell : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# quadForFacetCell : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
   !!
   !! linFacetElemSD
   !!
-  CALL Display( obj%linFacetElemSD, "# linFacetElemSD = ", &
-    & unitno=unitno )
+  IF (ALLOCATED(obj%linFacetElemSD)) THEN
+    CALL Display("# linFacetElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# linFacetElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! linFacetCellElemSD
+  !!
+  IF (ALLOCATED(obj%linFacetCellElemSD)) THEN
+    CALL Display("# linFacetCellElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# linFacetCellElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
   !!
   !! facetElemSD
   !!
-  CALL Display( obj%facetElemSD, "# facetElemSD = ", &
-    & unitno=unitno )
+  IF (ALLOCATED(obj%facetElemSD)) THEN
+    CALL Display("# facetElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! facetCellElemSD
+  !!
+  IF (ALLOCATED(obj%facetCellElemSD)) THEN
+    CALL Display("# facetCellElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetCellElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
   !!
   !! facetSTelemsd
   !!
@@ -720,8 +763,19 @@ MODULE PROCEDURE mesh_Import
   !> set Reference Element
   CALL e%raiseInformation(modName//'::'//myName//" - " &
     & //"setting reference element")
-  obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, nsd=obj%nsd, &
-    & elemType=obj%elemType)
+  IF (hdf5%pathExists(TRIM(dsetname)//"/ipType")) THEN
+    CALL hdf5%read(TRIM(dsetname)//"/ipType", &
+      & obj%ipType)
+  ELSE
+    obj%ipType = Equidistance
+  END IF
+  !!
+  obj%refelem => ReferenceElement_Pointer( &
+    & xidim=obj%xidim, &
+    & nsd=obj%nsd, &
+    & elemType=obj%elemType, &
+    & ipType=obj%ipType)
+  !!
   IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
   IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
   IF (ALLOCATED(InternalNptrs)) DEALLOCATE (InternalNptrs)
@@ -983,7 +1037,7 @@ MODULE PROCEDURE mesh_DisplayElementData
   CALL Display( TRIM(msg), unitno=unitno )
   !!
   DO ii = 1, telements
-    CALL obj%elementData( ii )%Display( msg="elementData( "//tostring(ii) &
+    CALL obj%elementData( ii )%Display( msg="# elementData( "//tostring(ii) &
       & // " )=", unitno=unitno )
     CALL BlankLines( nol=2, unitno=unitno )
   END DO
@@ -1003,7 +1057,7 @@ MODULE PROCEDURE mesh_DisplayNodeData
   CALL Display( TRIM(msg), unitno=unitno )
   !!
   DO ii = 1, tNodes
-    CALL obj%nodeData( ii )%Display( msg="nodeData( "//tostring(ii) &
+    CALL obj%nodeData( ii )%Display( msg="# nodeData( "//tostring(ii) &
       & // " )=", unitno=unitno )
     CALL BlankLines( nol=2, unitno=unitno )
   END DO
@@ -1027,13 +1081,13 @@ MODULE PROCEDURE mesh_DisplayInternalFacetData
     !!
     DO ii = 1, telements
       CALL obj%internalFacetData( ii )%Display( &
-        & msg="internalFacetData( "//tostring(ii) &
+        & msg="# internalFacetData( "//tostring(ii) &
         & // " )=", unitno=unitno )
       CALL BlankLines( nol=2, unitno=unitno )
     END DO
     !!
   ELSE
-    CALL Display( "internalFacetData NOT ALLOCATED", unitno=unitno )
+    CALL Display( "# internalFacetData NOT ALLOCATED", unitno=unitno )
   END IF
   !!
 END PROCEDURE mesh_DisplayInternalFacetData
@@ -1052,15 +1106,81 @@ MODULE PROCEDURE mesh_DisplayBoundaryFacetData
     !!
     DO ii = 1, SIZE( obj%boundaryFacetData )
       CALL obj%boundaryFacetData( ii )%Display( &
-        & msg="boundaryFacetData( "//tostring(ii) &
+        & msg="# boundaryFacetData( "//tostring(ii) &
         & // " )=", unitno=unitno )
       CALL BlankLines( nol=2, unitno=unitno )
     END DO
     !!
   ELSE
-    CALL Display( "boundaryFacetData NOT ALLOCATED", unitno=unitno )
+    CALL Display( "# boundaryFacetData NOT ALLOCATED", unitno=unitno )
   END IF
   !!
 END PROCEDURE mesh_DisplayBoundaryFacetData
+
+!----------------------------------------------------------------------------
+!                                                         DisplayFacetElemSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_DisplayFacetElemSD
+  !!
+  INTEGER( I4B ) :: ii
+  !!
+  CALL Display( msg, unitno=unitno)
+  !!
+  IF( ALLOCATED( obj%facetElemSD ) ) THEN
+    !!
+    DO ii = 1, SIZE( obj%facetElemSD )
+        !!
+      CALL Display( &
+        & obj%facetElemSD( ii ), &
+        & "# obj%facetElemSD( " // tostring( ii ) // " )=", &
+        & unitno=unitno )
+        !!
+      CALL BlankLines( nol=2, unitno=unitno )
+        !!
+      CALL Display( &
+        & obj%facetCellElemSD( ii ), &
+        & "# obj%facetCellElemSD( " // tostring( ii ) // " )=", &
+        & unitno=unitno )
+        !!
+      CALL BlankLines( nol=2, unitno=unitno )
+        !!
+    END DO
+    !!
+  ELSE
+    !!
+    CALL Display( "# facetElemSD : NOT ALLOCATED", unitno=unitno)
+    !!
+  END IF
+  !!
+END PROCEDURE mesh_DisplayFacetElemSD
+
+!----------------------------------------------------------------------------
+!                                                      DisplayFacetElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_DisplayFacetElements
+  !!
+  INTEGER( I4B ) :: ii
+  !!
+  CALL Display( msg, unitno=unitno)
+  !!
+  IF( ALLOCATED( obj%facetElements ) ) THEN
+    !!
+    DO ii = 1, SIZE( obj%facetElements )
+      CALL Display( &
+        & obj%facetElements( ii ), &
+        & "# obj%facetElements( " // tostring( ii ) // " )=", &
+        & unitno=unitno )
+      CALL BlankLines( nol=2, unitno=unitno )
+    END DO
+    !!
+  ELSE
+    !!
+    CALL Display( "# facetElements : NOT ALLOCATED", unitno=unitno)
+    !!
+  END IF
+  !!
+END PROCEDURE mesh_DisplayFacetElements
 
 END SUBMODULE IOMethods
