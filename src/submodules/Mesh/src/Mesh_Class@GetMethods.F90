@@ -216,6 +216,21 @@ MODULE PROCEDURE mesh_isDomainBoundaryElement
 END PROCEDURE mesh_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
+!                                                   isDomainFacetElement
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_isDomainFacetElement
+  !!
+  IF (obj%boundaryFacetData(facetElement)%elementType  &
+    & .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
+    ans = .TRUE.
+  ELSE
+    ans = .FALSE.
+  END IF
+  !!
+END PROCEDURE mesh_isDomainFacetElement
+
+!----------------------------------------------------------------------------
 !                                                     getTotalInternalNodes
 !----------------------------------------------------------------------------
 
