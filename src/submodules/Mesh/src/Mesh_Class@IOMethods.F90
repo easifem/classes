@@ -58,6 +58,11 @@ MODULE PROCEDURE mesh_display
   CALL Display(obj%isBoundaryDataInitiated,  &
     & "# isBoundaryDataInitiated : ", unitno=unitno)
   !!
+  !! isFacetDataInitiated
+  !!
+  CALL Display(obj%isFacetDataInitiated,  &
+    & "# isFacetDataInitiated : ", unitno=unitno)
+  !!
   !! uid
   !!
   CALL Display(obj%uid,  &
@@ -971,6 +976,13 @@ MODULE PROCEDURE nodeData_Display
   !!
   IF( ALLOCATED( obj%globalNodes ) ) THEN
     CALL Display( obj%globalNodes, msg="# globalNodes=", unitno=unitno)
+  END IF
+  !!
+  !! extraGlobalNodes
+  !!
+  IF( ALLOCATED( obj%extraGlobalNodes ) ) THEN
+    CALL Display( obj%extraGlobalNodes, msg="# extraGlobalNodes=", &
+      & unitno=unitno)
   END IF
   !!
   !! globalElements
