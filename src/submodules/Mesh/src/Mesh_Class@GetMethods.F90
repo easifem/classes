@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(Mesh_Class) GetMethods
 USE BaseMethod
@@ -310,7 +309,9 @@ END PROCEDURE mesh_getBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getConnectivity
+  !!
   ans = obj%elementData(obj%getLocalElemNumber(globalElement))%globalNodes
+  !!
 END PROCEDURE mesh_getConnectivity
 
 !----------------------------------------------------------------------------
@@ -451,27 +452,64 @@ END PROCEDURE mesh_getNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNodeToNodes1
-  ! Define internal variable
-  INTEGER(I4B), ALLOCATABLE :: Nptrs(:)
-  INTEGER(I4B) :: i
+  !!
+  !! Define internal variable
+  !!
+  INTEGER(I4B), ALLOCATABLE :: nptrs(:), extranptrs( : )
+  INTEGER(I4B) :: i, j
   CHARACTER(LEN=*), PARAMETER :: myName = "mesh_getNodeToNodes1"
-
+  !!
+  !!
+  !!
   i = obj%getLocalNodeNumber(GlobalNode=GlobalNode)
-  !> check
-  IF (i .EQ. 0) THEN
-    ALLOCATE (ans(0))
-  ELSE
-    IF (IncludeSelf) THEN
-      Nptrs = obj%nodeData(i)%globalNodes
-      i = SIZE(Nptrs)
-      ALLOCATE (ans(i + 1))
-      ans(1) = GlobalNode
-      ans(2:) = Nptrs
+  !!
+  !! check
+  !!
+  IF( obj%isExtraNodeToNodesInitiated ) THEN
+    !!
+    IF (i .EQ. 0) THEN
+      ALLOCATE (ans(0))
     ELSE
-      ans = obj%nodeData(i)%globalNodes
+      IF (IncludeSelf) THEN
+        nptrs = obj%nodeData(i)%globalNodes
+        extranptrs = obj%nodeData(i)%extraGlobalNodes
+        i = SIZE( nptrs )
+        j = SIZE( extranptrs )
+        CALL Reallocate( ans, i + j + 1 )
+        ans(1) = GlobalNode
+        ans(2:1+i) = nptrs
+        ans(2+i:1+i+j) = extranptrs
+      ELSE
+        CALL APPEND( &
+          & ans, &
+          & obj%nodeData(i)%globalNodes, &
+          & obj%nodeData(i)%extraGlobalNodes )
+      END IF
     END IF
+    !!
+  ELSE
+    !!
+    IF (i .EQ. 0) THEN
+      ALLOCATE (ans(0))
+    ELSE
+      IF (IncludeSelf) THEN
+        nptrs = obj%nodeData(i)%globalNodes
+        i = SIZE(nptrs)
+        ALLOCATE (ans(i + 1))
+        ans(1) = GlobalNode
+        ans(2:) = nptrs
+      ELSE
+        ans = obj%nodeData(i)%globalNodes
+      END IF
+    END IF
+    !!
   END IF
-  IF (ALLOCATED(Nptrs)) DEALLOCATE (Nptrs)
+  !!
+  !!
+  !!
+  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+  IF (ALLOCATED(extranptrs)) DEALLOCATE (extranptrs)
+  !!
 END PROCEDURE mesh_getNodeToNodes1
 
 !----------------------------------------------------------------------------
