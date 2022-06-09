@@ -51,12 +51,16 @@ MODULE PROCEDURE mesh_setSparsity1
   CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity1"
   INTEGER(I4B) :: i, j, k
   INTEGER(I4B), ALLOCATABLE :: n2n(:)
-  !> main
+  !!
+  !! check
+  !!
   IF (.NOT. obj%isInitiated) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
-  !> main
+  !!
+  !! main
+  !!
   DO i = 1, obj%tNodes
     j = obj%getGlobalNodeNumber(LocalNode=i)
     k = localNodeNumber(j)
