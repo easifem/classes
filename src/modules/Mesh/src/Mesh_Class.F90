@@ -61,6 +61,8 @@ TYPE :: NodeData_
     !! It does not contain self global node number
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
     !! It contains the global element number surrounding the node
+  INTEGER( I4B ), ALLOCATABLE :: extraGlobalNodes( : )
+    !! These global nodes required in facet-element-data
   CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => nodeData_Display
     !! Display the content of an instance of NodeData
@@ -188,10 +190,14 @@ TYPE :: Mesh_
     !! Node to elements mapping
   LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
     !! Node to nodes mapping
+  LOGICAL(LGT) :: isExtraNodeToNodesInitiated = .FALSE.
+    !! Node to nodes mapping
   LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
     !! Element to elements mapping
   LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
     !! Boundary data
+  LOGICAL(LGT), PUBLIC :: isFacetDataInitiated = .FALSE.
+    !! FacetData
   INTEGER(I4B) :: uid = 0
     !! Unique id of the mesh
   INTEGER(I4B) :: xidim = 0
@@ -389,6 +395,9 @@ CONTAINS
   !! Initiate node to node data
   PROCEDURE, PASS(obj) :: InitiateNodeToNodes => &
     & mesh_InitiateNodetoNodes
+  !! Initiate Node to nodes mapping
+  PROCEDURE, PASS(obj) :: InitiateExtraNodeToNodes => &
+    & mesh_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & mesh_InitiateElementToElements
@@ -2109,6 +2118,29 @@ INTERFACE
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE mesh_InitiateNodetoNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateExtraNodeToNode@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date:         15 June 2021
+! summary:         Initiate node to node connectivity data
+!
+!# Introduction
+! This routine generate the node to nodes mapping
+! This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
+!
+! For a local node number i, obj%nodeData(i)%ExtraGlobalNodeNum denotes the
+! global node data surrounding the local node number used for
+! edge-based stabilization. This list does not include self node.
+
+INTERFACE
+  MODULE SUBROUTINE mesh_InitiateExtraNodetoNodes(obj)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE mesh_InitiateExtraNodetoNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
