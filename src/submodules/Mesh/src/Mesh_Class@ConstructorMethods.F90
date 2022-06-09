@@ -43,13 +43,28 @@ END PROCEDURE addSurrogate_mesh
 MODULE PROCEDURE mesh_initiate
   !!
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_initiate"
+  !!
+  !!
+  !!
   obj%readFromFile = .TRUE.
   obj%isInitiated = .TRUE.
+  !!
+  !! Import
+  !!
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & '[START] Importing mesh' )
+  !!
+  !! Import
+  !!
   CALL obj%Import(hdf5, group)
+  !!
+  !! raiseInformation
+  !!
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'Mesh imported' )
+  !!
+  !!
+  !!
   IF( obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1 ) THEN
     RETURN
   ELSE
@@ -74,7 +89,14 @@ MODULE PROCEDURE mesh_initiate
       & 'InitiateFacetElements()' )
     CALL obj%InitiateFacetElements()
     !!
+    CALL e%raiseInformation(modName//'::'//myName// " - "// &
+      & 'InitiateExtraNodeToNodes()' )
+    CALL obj%InitiateExtraNodeToNodes()
+    !!
   END IF
+  !!
+  !!
+  !!
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & '[END] Importing mesh [OK!]' )
   !!
@@ -108,8 +130,10 @@ MODULE PROCEDURE mesh_Deallocate
   obj%isInitiated = .FALSE.
   obj%isNodeToElementsInitiated = .FALSE.
   obj%isNodeToNodesInitiated = .FALSE.
+  obj%isExtraNodeToNodesInitiated = .FALSE.
   obj%isElementToElementsInitiated = .FALSE.
   obj%isBoundaryDataInitiated = .FALSE.
+  obj%isFacetDataInitiated = .FALSE.
   obj%uid = 0
   obj%xidim = 0
   obj%elemType = 0
