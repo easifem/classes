@@ -416,14 +416,14 @@ MODULE PROCEDURE Domain_Import
   CALL e%raiseInformation( modName//"::"//myName//" - "// &
     & "Calling SetDomainFacetElement()" )
   CALL obj%SetDomainFacetElement()
-  !!
-  CALL e%raiseInformation( modName//"::"//myName//" - "// &
-    & "Calling SetMeshMap()" )
-  CALL obj%SetMeshMap()
-  !!
-  CALL e%raiseInformation( modName//"::"//myName//" - "// &
-    & "Calling SetMeshFacetElement()" )
-  CALL obj%SetMeshFacetElement()
+  ! !!
+  ! CALL e%raiseInformation( modName//"::"//myName//" - "// &
+  !   & "Calling SetMeshMap()" )
+  ! CALL obj%SetMeshMap()
+  ! !!
+  ! CALL e%raiseInformation( modName//"::"//myName//" - "// &
+  !   & "Calling SetMeshFacetElement()" )
+  ! CALL obj%SetMeshFacetElement()
   !!
   NULLIFY( meshObj%ptr )
   !!
