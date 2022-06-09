@@ -20,6 +20,89 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_Display
+  CHARACTER( LEN = * ), PARAMETER :: myName = "Domain_Display"
+  CALL e%raiseError(modName //'::'//myName// ' - '// &
+    & 'WIP: This method is curretly not available')
+END PROCEDURE Domain_Display
+
+!----------------------------------------------------------------------------
+!                                                       DisplayMeshFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_DisplayMeshFacetData
+  INTEGER( I4B ) :: telements, ii
+  !!
+  !! main
+  !!
+  CALL Display( msg, unitNo=unitNo)
+  !!
+  IF( ALLOCATED( obj%meshFacetData ) ) THEN
+    !!
+    telements = SIZE( obj%meshFacetData )
+    !!
+    !!
+    DO ii = 1, telements
+      CALL obj%meshFacetData( ii )%Display( &
+        & msg="meshFacetData( "//tostring(ii) &
+        & // " )=", unitno=unitno )
+      CALL BlankLines( nol=2, unitno=unitno )
+    END DO
+  ELSE
+    CALL Display( "# meshFacetData NOT ALLOCATED", UnitNo=UnitNo)
+  END IF
+END PROCEDURE Domain_DisplayMeshFacetData
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_Display
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
+  !!
+  CALL Display( "# elementType=BOUNDARY_ELEMENT", unitno=unitno)
+  !!
+  CALL Display( obj%masterMesh, &
+    & "# masterMesh = ", unitno=unitno)
+  !!
+  CALL Display( obj%slaveMesh, &
+    & "# slaveMesh = ", unitno=unitno)
+  !!
+  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
+    CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
+      & unitno=unitno)
+  ELSE
+    CALL Display( "# masterCellNumber NOT ALLOCATED", unitno=unitno)
+  END IF
+  !!
+  IF( ALLOCATED( obj%masterlocalFacetID ) ) THEN
+    CALL Display( obj%masterlocalFacetID, msg="# masterlocalFacetID=", &
+      & unitno=unitno)
+  ELSE
+    CALL Display( "# masterlocalFacetID NOT ALLOCATED", unitno=unitno)
+  END IF
+  !!
+  IF( ALLOCATED( obj%slaveCellNumber ) ) THEN
+    CALL Display( obj%slaveCellNumber, msg="# slaveCellNumber=", &
+      & unitno=unitno)
+  ELSE
+    CALL Display( "# slaveCellNumber NOT ALLOCATED", unitno=unitno)
+  END IF
+  !!
+  IF( ALLOCATED( obj%slavelocalFacetID ) ) THEN
+    CALL Display( obj%slavelocalFacetID, msg="# slavelocalFacetID=", &
+      & unitno=unitno)
+  ELSE
+    CALL Display( "# slavelocalFacetID NOT ALLOCATED", unitno=unitno)
+  END IF
+  !!
+END PROCEDURE MeshFacetData_Display
+
+!----------------------------------------------------------------------------
 !                                                                   Import
 !----------------------------------------------------------------------------
 
@@ -326,7 +409,21 @@ MODULE PROCEDURE Domain_Import
   !! Setting the data of domain boundary element for cell elements
   !! and facet elements
   !!
-  CALL obj%setDomainBoundaryElement()
+  CALL e%raiseInformation( modName//"::"//myName//" - "// &
+    & "Calling SetFacetElementType()" )
+  CALL obj%SetFacetElementType()
+  !!
+  CALL e%raiseInformation( modName//"::"//myName//" - "// &
+    & "Calling SetDomainFacetElement()" )
+  CALL obj%SetDomainFacetElement()
+  ! !!
+  ! CALL e%raiseInformation( modName//"::"//myName//" - "// &
+  !   & "Calling SetMeshMap()" )
+  ! CALL obj%SetMeshMap()
+  ! !!
+  ! CALL e%raiseInformation( modName//"::"//myName//" - "// &
+  !   & "Calling SetMeshFacetElement()" )
+  ! CALL obj%SetMeshFacetElement()
   !!
   NULLIFY( meshObj%ptr )
   !!

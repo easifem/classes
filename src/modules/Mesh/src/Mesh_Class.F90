@@ -39,58 +39,75 @@ INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_NODE = -3
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
-INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -3
+INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
 
 !----------------------------------------------------------------------------
 !                                                                 NodeData_
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data type for storing node data
+
 TYPE :: NodeData_
   INTEGER(I4B) :: globalNodeNum = 0
+    !! Global node number
   INTEGER(I4B) :: localNodeNum = 0
+    !! local node number
   INTEGER(I4B) :: nodeType = INTERNAL_NODE
+    !! node type; INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
-    !! It contains the global node number surrouding an element
+    !! It contains the global node number surrouding the node
     !! It does not contain self global node number
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
-  !!
+    !! It contains the global element number surrounding the node
+  INTEGER( I4B ), ALLOCATABLE :: extraGlobalNodes( : )
+    !! These global nodes required in facet-element-data
   CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: Display => nodeData_Display
+    !! Display the content of an instance of NodeData
 END TYPE NodeData_
 
 !----------------------------------------------------------------------------
 !                                                                 ElemData_
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data type for storing element data
+
 TYPE :: ElemData_
   INTEGER(I4B) :: globalElemNum = 0
+    !! global element number
   INTEGER(I4B) :: localElemNum = 0
+    !! local element number
   INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
-  !! BOUNDARY_ELEMENT: If the element contqains the boundary node
-  !! it will be called the boundary element
-  !! INTERNAL_ELEMENT: If the element does not contain the boundary node then
-  !! it will be called the internal element
+    !! BOUNDARY_ELEMENT: If the element contqains the boundary node
+    !! it will be called the boundary element
+    !! INTERNAL_ELEMENT: If the element does not contain the boundary node
+    !! then it will be called the internal element
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
+    !! nodes contained in the element, connectivity
   INTEGER(I4B), ALLOCATABLE :: globalElements(:)
-  !! Contains the information about the element surrounding an element
-  !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
-  !! surrounds a local element ielem (its global element number is
-  !! globalElem), then globalElements( [1,2,3] ) contains globalElem1,
-  !! pFace, nFace, globalElements( [4,5,6] ) contains globalElem2,
-  !! pFace, nFace, globalElements( [7,8,9] ) contains globalElem3,
-  !! pFace, nFace.
-  !! Here, pFace is the local facet number of parent element
-  !! globalElem (ielem) which is connected to the nFace of the neighbor
-  !! element
-  !! All element numbers are global element number
+    !! Contains the information about the element surrounding an element
+    !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
+    !! surrounds a local element ielem (its global element number is
+    !! globalElem), then globalElements( [1,2,3] ) contains globalElem1,
+    !! pFace, nFace, globalElements( [4,5,6] ) contains globalElem2,
+    !! pFace, nFace, globalElements( [7,8,9] ) contains globalElem3,
+    !! pFace, nFace.
+    !! Here, pFace is the local facet number of parent element
+    !! globalElem (ielem) which is connected to the nFace of the neighbor
+    !! element
+    !! All element numbers are global element number
   INTEGER(I4B), ALLOCATABLE :: boundaryData(:)
-  !! If `iel` is boundary element, then boudnaryData contains
-  !! the local facet number of iel which concides with the
-  !! mesh boundary.
-  !! If an element contains the boundary node then it is considered
-  !! as a boundary element.
-  !! It may happen that a boundary element has no boundary face, in which case
-  !! boundaryData will have zero size
+    !! If `iel` is boundary element, then boudnaryData contains
+    !! the local facet number of iel which concides with the
+    !! mesh boundary.
+    !! If an element contains the boundary node then it is considered
+    !! as a boundary element.
+    !! It may happen that a boundary element has no boundary face, in which
+    !! case boundaryData will have zero size
   CONTAINS
   !!
   !! Contains
@@ -100,41 +117,58 @@ TYPE :: ElemData_
 END TYPE ElemData_
 
 !----------------------------------------------------------------------------
-!                                                                 FacetData_
+!                                                         InternalFacetData_
 !----------------------------------------------------------------------------
 
-TYPE FacetData_
-  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
-  INTEGER( I4B ) :: masterCellNumber = 0
-  INTEGER( I4B ) :: slaveCellNumber = 0
-  INTEGER( I4B ) :: elementType = 0
-  INTEGER( I4B ) :: localFacetID = 0
-  CONTAINS
-  !!
-  !! Contains
-  !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => facetData_Display
-  !!
-END TYPE FacetData_
-
-!----------------------------------------------------------------------------
-!                                                                 FacetData_
-!----------------------------------------------------------------------------
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data storage for internal facets of mesh
 
 TYPE InternalFacetData_
-  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
   INTEGER( I4B ) :: masterCellNumber = 0
+    !! master cell nubmer
   INTEGER( I4B ) :: slaveCellNumber = 0
-  INTEGER( I4B ) :: elementType = 0
-  INTEGER( I4B ) :: materLocalFacetID = 0
+    !! slave cell number
+  INTEGER( I4B ) :: masterLocalFacetID = 0
+    !! local facet ID in master cell
   INTEGER( I4B ) :: slaveLocalFacetID = 0
+    !! slave facet ID in master cell
   CONTAINS
   !!
   !! Contains
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => InternalfacetData_Display
-  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => InternalFacetData_Display
+  !! Display the content of an instance of InternalFacetData_
 END TYPE InternalFacetData_
+
+!----------------------------------------------------------------------------
+!                                                                 FacetData_
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Data storage for Domain facet data
+!
+!# Introduction
+!
+! DomainFacet elements are those boundary elements which are located
+! on the boundary of the domain. Ofcourse domainFacet elements are
+! located on the mesh Boundary with only difference that these elements do
+! not have slaveCellNumber
+
+TYPE BoundaryFacetData_
+  INTEGER( I4B ) :: masterCellNumber = 0
+  INTEGER( I4B ) :: masterLocalFacetID = 0
+  INTEGER( I4B ) :: elementType = 0
+  CONTAINS
+  !!
+  !! Contains
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => BoundaryFacetData_Display
+  !!
+END TYPE BoundaryFacetData_
+
+! PUBLIC :: BoundaryFacetData_
 
 !----------------------------------------------------------------------------
 !                                                                 Mesh_
@@ -156,10 +190,14 @@ TYPE :: Mesh_
     !! Node to elements mapping
   LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
     !! Node to nodes mapping
+  LOGICAL(LGT) :: isExtraNodeToNodesInitiated = .FALSE.
+    !! Node to nodes mapping
   LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
     !! Element to elements mapping
   LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
     !! Boundary data
+  LOGICAL(LGT), PUBLIC :: isFacetDataInitiated = .FALSE.
+    !! FacetData
   INTEGER(I4B) :: uid = 0
     !! Unique id of the mesh
   INTEGER(I4B) :: xidim = 0
@@ -183,12 +221,6 @@ TYPE :: Mesh_
   INTEGER(I4B) :: tElements = 0
     !! total number of elements present inside the mesh
     !! It is the size of elemNumber vector
-  INTEGER( I4B ) :: totalFacetElements = 0
-    !! Total facet elements in the mesh
-  INTEGER( I4B ) :: totalInternalFacetElements = 0
-    !! Total number of internal facet elements in the mesh
-  INTEGER( I4B ) :: totalBoundaryFacetElements = 0
-    !! Total number of boundary facet elements
   REAL(DFP) :: minX = 0.0
     !! minimum value of x coordinate
   REAL(DFP) :: maxX = 0.0
@@ -215,7 +247,7 @@ TYPE :: Mesh_
     !! List of local element numbers, the lowerbound is `minElemNum`
     !! and upper bound is `maxElemNum`. In this way, local_elemNumber(iel)
     !! returns the local element number of global element number iel.
-  INTEGER(I4B), ALLOCATABLE :: Local_Nptrs(:)
+  INTEGER(I4B), ALLOCATABLE :: local_Nptrs(:)
     !! Returns local node number from a global node number
     !! Its length is from 1 to maxNptrs
     !! Helpul in finding if a global node is present inside the mesh or not
@@ -245,19 +277,37 @@ TYPE :: Mesh_
     !! Node data
   TYPE(ElemData_), ALLOCATABLE :: elementData(:)
     !! element data
-  TYPE(FacetData_), ALLOCATABLE :: facetData( : )
-    !! facet data
+  TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData( : )
+    !! Internal facet data
+  TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData( : )
+    !! Domain Facet Data
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
+  INTEGER( I4B ), PUBLIC :: ipType = Equidistance
+    !! interpolation point type
     !!
     !! Following variables are required during processing.
     !!
+  !!
+  !! time
+  !!
   TYPE(QuadraturePoint_), PUBLIC :: quadForTime
     !! quadrature point for time domain #STFEM #STFEM
   TYPE(ElemshapeData_), PUBLIC :: linTimeElemSD
     !! Element shape data on linear time element #STFEM
   TYPE(ElemshapeData_), PUBLIC :: timeElemSD
     !! Element shape data on time element #STFEM
+  TYPE(String) :: quadTypeForTime
+    !! quadrature type for time
+  TYPE(String) :: continuityTypeForTime
+    !! continuity of base function for time
+  TYPE(String) :: interpolTypeForTime
+    !! interpolation of base function for time
+  INTEGER( I4B ) :: orderTime
+    !! order for time
+  !!
+  !! space (cell)
+  !!
   TYPE(QuadraturePoint_), PUBLIC :: quadForSpace
     !! quadrature point for space
   TYPE(ElemshapeData_), PUBLIC :: linSpaceElemSD
@@ -267,13 +317,38 @@ TYPE :: Mesh_
   TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: stelemsd(:)
     !! Element shape data on space element
   TYPE(String) :: quadTypeForSpace
+    !! quadrature type for space
   TYPE(String) :: continuityTypeForSpace
+    !! continuity of base function for space
   TYPE(String) :: interpolTypeForSpace
-  TYPE(String) :: quadTypeForTime
-  TYPE(String) :: continuityTypeForTime
-  TYPE(String) :: interpolTypeForTime
+    !! interoplation type of base function for space
   INTEGER( I4B ) :: orderSpace
-  INTEGER( I4B ) :: orderTime
+    !! order for space
+  !!
+  !! space (facets)
+  !!
+  TYPE(QuadraturePoint_), ALLOCATABLE, PUBLIC :: quadForFacet( : )
+    !! quadrature point for facet elements
+  TYPE(QuadraturePoint_), ALLOCATABLE, PUBLIC :: quadForFacetCell( : )
+    !! quadrature point for facet-cell elements
+  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: linFacetElemSD( : )
+    !! Element shape data on linear facet (simplex) element
+  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: linFacetCellElemSD( : )
+    !! Element shape data on linear facet (simplex) cell element
+  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: facetElemSD( : )
+    !! Element shape data on facet element
+  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: facetCellElemSD( : )
+    !! Element shape data on facet cell element
+  TYPE(String) :: quadTypeForFacet
+    !! quadrature type for facet element
+  TYPE(String) :: continuityTypeForFacet
+    !! continuity of base function for facet element
+  TYPE(String) :: interpolTypeForFacet
+    !! interoplation type of base function for facet element
+  INTEGER( I4B ) :: orderFacet
+    !! order for facet element
+  TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: facetSTelemsd(:, :)
+    !! Element shape data on facet element
   !!
 CONTAINS
   PRIVATE
@@ -303,15 +378,26 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: DisplayElementData => &
     & mesh_DisplayElementData
     !! Display element data
-  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetData => &
-    & mesh_DisplayFacetData
-    !! Display element data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayInternalFacetData => &
+    & mesh_DisplayInternalFacetData
+    !! Display internal facet data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayBoundaryFacetData => &
+    & mesh_DisplayBoundaryFacetData
+    !! Display mesh facet data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetElemSD => &
+    & mesh_DisplayFacetElemSD
+    !! Display facet element shape data
+  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetElements => &
+    & mesh_DisplayFacetElements
   ! @GetMethods
   PROCEDURE, PASS(obj) :: InitiateNodeToElements => &
     & mesh_InitiateNodeToElements
   !! Initiate node to node data
   PROCEDURE, PASS(obj) :: InitiateNodeToNodes => &
     & mesh_InitiateNodetoNodes
+  !! Initiate Node to nodes mapping
+  PROCEDURE, PASS(obj) :: InitiateExtraNodeToNodes => &
+    & mesh_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & mesh_InitiateElementToElements
@@ -329,6 +415,9 @@ CONTAINS
   !! Returns true if a given global element number is a boundary element
   PROCEDURE, PUBLIC, PASS(obj) :: isDomainBoundaryElement => &
     & mesh_isDomainBoundaryElement
+  !! Returns true if a given global element number is a boundary element
+  PROCEDURE, PUBLIC, PASS(obj) :: isDomainFacetElement => &
+    & mesh_isDomainFacetElement
   !! Returns true if a given global element number is a boundary element
   PROCEDURE, PUBLIC, PASS(obj) :: isNodePresent => &
     & mesh_isNodePresent
@@ -396,15 +485,15 @@ CONTAINS
   !! Returns the global node number of a local node number
   GENERIC, PUBLIC :: getGlobalNodeNumber => mesh_getGlobalNodeNumber1, &
     & mesh_getGlobalNodeNumber2
-  PROCEDURE, PASS(obj) :: mesh_getGlobalElemNumber_1
-  PROCEDURE, PASS(obj) :: mesh_getGlobalElemNumber_2
+  PROCEDURE, PASS(obj) :: mesh_getGlobalElemNumber1
+  PROCEDURE, PASS(obj) :: mesh_getGlobalElemNumber2
   GENERIC, PUBLIC :: getGlobalElemNumber => &
-    & mesh_getGlobalElemNumber_1, mesh_getGlobalElemNumber_2
+    & mesh_getGlobalElemNumber1, mesh_getGlobalElemNumber2
   !! Returns the global element number for a local element number
-  PROCEDURE, PASS(obj) :: mesh_getLocalElemNumber_1
-  PROCEDURE, PASS(obj) :: mesh_getLocalElemNumber_2
+  PROCEDURE, PASS(obj) :: mesh_getLocalElemNumber1
+  PROCEDURE, PASS(obj) :: mesh_getLocalElemNumber2
   GENERIC, PUBLIC :: getLocalElemNumber => &
-    & mesh_getLocalElemNumber_1, mesh_getLocalElemNumber_2
+    & mesh_getLocalElemNumber1, mesh_getLocalElemNumber2
   !! Returns the local element number of a global element number
   PROCEDURE, PASS(obj) :: mesh_getNodeToElements1
   PROCEDURE, PASS(obj) :: mesh_getNodeToElements2
@@ -431,12 +520,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: getTotalFacetElements => &
     & mesh_getTotalFacetElements
   !! Returns the total number of facet elements in the mesh
-  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalFacetElements => &
-    & mesh_getTotalInternalFacetElements
-  !! Returns the total number of internal facet elements
   PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundaryFacetElements => &
     & mesh_getTotalBoundaryFacetElements
   !! Returns the total number of boundary facet elements
+  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalInternalFacetElements => &
+    & mesh_getTotalInternalFacetElements
+  !! Returns the total number of internal facet elements
   PROCEDURE, PUBLIC, PASS( obj ) :: getMasterCellNumber => &
     & mesh_getMasterCellNumber
   !! Returns the master cell number of a facet element
@@ -446,12 +535,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS( obj ) :: getCellNumber => &
     & mesh_getCellNumber
   !! Returns the master and slave cell number of a facet element
-  PROCEDURE, PUBLIC, PASS( obj ) :: isFacetBoundaryElement => &
-    & mesh_isFacetBoundaryElement
-  !! True if the facet element is boundary element
-  PROCEDURE, PUBLIC, PASS( obj ) :: isFacetDomainBoundaryElement => &
-    & mesh_isFacetDomainBoundaryElement
-  !! True if the facet element is boundary element
   PROCEDURE, PUBLIC, PASS( obj ) :: getLocalFacetID => &
     & mesh_getLocalFacetID
   !! Return the local facet id, so that we can get reference element of
@@ -499,13 +582,9 @@ CONTAINS
   !! Adding a material ID of a medium which is mapped to the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: setMaterial => mesh_setMaterial
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PRIVATE, PASS( obj ) :: mesh_setFacetElementType1
+  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetElementType => &
+    & mesh_setFacetElementType
   !! Set the facet element type of a given cell number
-  PROCEDURE, PRIVATE, PASS( obj ) :: mesh_setFacetElementType2
-  !! Set the facet elemet type of a given facet element
-  GENERIC, PUBLIC :: setFacetElementType => &
-    & mesh_setFacetElementType1, &
-    & mesh_setFacetElementType2
   !! @ShapeDataMethods
   PROCEDURE, PASS(obj) :: initiateElemSD1 => mesh_initiateElemSD1
   PROCEDURE, PASS(obj) :: initiateElemSD2 => mesh_initiateElemSD2
@@ -516,6 +595,13 @@ CONTAINS
     & initiateElemSD2, &
     & initiateElemSD3, &
     & initiateElemSD4
+  PROCEDURE, PASS(obj) :: initiateFacetElemSD1 => mesh_initiateFacetElemSD1
+  PROCEDURE, PASS(obj) :: initiateFacetElemSD2 => mesh_initiateFacetElemSD2
+  PROCEDURE, PASS(obj) :: initiateFacetElemSD3 => mesh_initiateFacetElemSD3
+  GENERIC, PUBLIC :: initiateFacetElemSD => &
+    & initiateFacetElemSD1, &
+    & initiateFacetElemSD2, &
+    & initiateFacetElemSD3
   !! Initiating local shape data for mesh
 END TYPE Mesh_
 
@@ -642,7 +728,7 @@ END INTERFACE Mesh_Pointer
 PUBLIC :: Mesh_Pointer
 
 !----------------------------------------------------------------------------
-!                                                 Deallocate@Constructor
+!                                                    Deallocate@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -840,7 +926,7 @@ END INTERFACE Display
 PUBLIC :: Display
 
 !----------------------------------------------------------------------------
-!                                                         Display@GetMethods
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -856,7 +942,7 @@ END SUBROUTINE nodeData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Display@GetMethods
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -872,23 +958,39 @@ END SUBROUTINE elemData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Display@GetMethods
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
-! summary: Display a single instance of facetData
+! summary: Display the instance of InternalFacetData
 
 INTERFACE
-MODULE SUBROUTINE facetData_Display( obj, msg, unitno )
-  CLASS( FacetData_ ), INTENT( IN ) :: obj
+MODULE SUBROUTINE InternalFacetData_Display( obj, msg, unitno )
+  CLASS( InternalFacetData_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE facetData_Display
+END SUBROUTINE InternalFacetData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              DisplayNodeData@GetMethods
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Display the instance of DomainFacetData_
+
+INTERFACE
+MODULE SUBROUTINE BoundaryFacetData_Display( obj, msg, unitno )
+  CLASS( BoundaryFacetData_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE BoundaryFacetData_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayNodeData@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -904,7 +1006,7 @@ END SUBROUTINE mesh_DisplayNodeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              DisplayElementData@GetMethods
+!                                              DisplayElementData@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -920,7 +1022,7 @@ END SUBROUTINE mesh_DisplayElementData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              DisplayFacetData@GetMethods
+!                                              DisplayFacetData@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -928,11 +1030,59 @@ END INTERFACE
 ! summary: Displays the element data
 
 INTERFACE
-MODULE SUBROUTINE mesh_DisplayFacetData( obj, msg, unitno )
+MODULE SUBROUTINE mesh_DisplayInternalFacetData( obj, msg, unitno )
   CLASS( Mesh_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE mesh_DisplayFacetData
+END SUBROUTINE mesh_DisplayInternalFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        DisplayBoundaryFacetData@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 April 2022
+! summary: Displays the element data
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayBoundaryFacetData( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayBoundaryFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayFacetElements@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 May 2022
+! summary: Display the facet elements
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayFacetElements( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              DisplayFacetElemSD@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 May 2022
+! summary: Display the facet element shape data.
+
+INTERFACE
+MODULE SUBROUTINE mesh_DisplayFacetElemSD( obj, msg, unitno )
+  CLASS( Mesh_ ), INTENT( IN ) :: obj
+  CHARACTER( LEN = * ), INTENT( IN ) :: msg
+  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
+END SUBROUTINE mesh_DisplayFacetElemSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -973,7 +1123,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 July 2021
-! summary: REturns the pointer to the reference element
+! summary: Returns the pointer to the reference element
 
 INTERFACE
   MODULE FUNCTION mesh_getRefElemPointer(obj) RESULT(ans)
@@ -1168,6 +1318,30 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                        isDomainFacetElement@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 June 2021
+! summary: Returns true if an global element number is domain boundary element
+!
+!# Introduction
+! This routine returns true if a global element number is domain
+! boundary element.
+! A boundary element is one which contains a boundary node.
+! A domain boundary element is a boundary element with
+! no connection with the other mesh.
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_isDomainFacetElement(obj, facetElement) &
+    & RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: facetElement
+    LOGICAL(LGT) :: ans
+  END FUNCTION mesh_isDomainFacetElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                           getTotalInternalNodes@GetMethodss
 !----------------------------------------------------------------------------
 
@@ -1354,12 +1528,12 @@ END INTERFACE
 ! summary: This function returns the Global node number from local node num
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getGlobalElemNumber_1(obj, LocalElement) &
+  MODULE PURE FUNCTION mesh_getGlobalElemNumber1(obj, LocalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: LocalElement(:)
     INTEGER(I4B) :: ans(SIZE(LocalElement))
-  END FUNCTION mesh_getGlobalElemNumber_1
+  END FUNCTION mesh_getGlobalElemNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1371,11 +1545,11 @@ END INTERFACE
 ! summary: This routine returns the Global node number from a local node number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getGlobalElemNumber_2(obj, LocalElement) RESULT(ans)
+  MODULE PURE FUNCTION mesh_getGlobalElemNumber2(obj, LocalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: LocalElement
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getGlobalElemNumber_2
+  END FUNCTION mesh_getGlobalElemNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1387,11 +1561,11 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getLocalElemNumber_1(obj, GlobalElement) RESULT(ans)
+  MODULE PURE FUNCTION mesh_getLocalElemNumber1(obj, GlobalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: GlobalElement(:)
     INTEGER(I4B) :: ans(SIZE(GlobalElement))
-  END FUNCTION mesh_getLocalElemNumber_1
+  END FUNCTION mesh_getLocalElemNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1403,11 +1577,11 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getLocalElemNumber_2(obj, GlobalElement) RESULT(ans)
+  MODULE PURE FUNCTION mesh_getLocalElemNumber2(obj, GlobalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: GlobalElement
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getLocalElemNumber_2
+  END FUNCTION mesh_getLocalElemNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1615,224 +1789,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           getTotalFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getTotalFacetElements( obj ) RESULT( ans )
-  CLASS(Mesh_), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION mesh_getTotalFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  getTotalInternalFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getTotalInternalFacetElements( obj ) RESULT( ans )
-  CLASS(Mesh_), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION mesh_getTotalInternalFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  getTotalBoundaryFacetElements@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getTotalBoundaryFacetElements( obj ) RESULT( ans )
-  CLASS(Mesh_), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION mesh_getTotalBoundaryFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getMasterCellNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the master cell number of a given facet
-!
-!# Introduction
-!
-! - This routine returns the master cell number of a given facet element
-! - The facetElement is the local facet element
-! - The master cell number is the global element number
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getMasterCellNumber( obj, facetElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  INTEGER( I4B ) :: ans
-END FUNCTION mesh_getMasterCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getSlaveCellNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the slave cell number of a given facet
-!
-!# Introduction
-!
-! - This routine returns the slave cell number of a given facet element
-! - The facetElement is the local facet element
-! - The slave cell number is the global element number
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getSlaveCellNumber( obj, facetElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  INTEGER( I4B ) :: ans
-END FUNCTION mesh_getSlaveCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   getCellNumber@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the  cell number of a given facet
-!
-!# Introduction
-!
-! - This routine returns the  cell number of a given facet element
-! - The facetElement is the local facet element
-! - The  cell number is the global element number
-! - ans(1)  contains the master-cell number
-! - ans(2)  contains the slave cell number
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getCellNumber( obj, facetElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  INTEGER( I4B ) :: ans( 2 )
-END FUNCTION mesh_getCellNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         isFacetBoundaryElement@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns true if the facet element is mesh boundary element
-
-INTERFACE
-MODULE PURE FUNCTION mesh_isFacetBoundaryElement( obj, facetElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  LOGICAL( LGT ) :: ans
-END FUNCTION mesh_isFacetBoundaryElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   isFacetDomainBoundaryElement@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns true if the facet element is a domain boundary element
-
-INTERFACE
-MODULE PURE FUNCTION mesh_isFacetDomainBoundaryElement( obj, facetElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  LOGICAL( LGT ) :: ans
-END FUNCTION mesh_isFacetDomainBoundaryElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                getLocalFacetID@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the local facet id
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getLocalFacetID( obj, facetElement ) RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  INTEGER( I4B ) :: ans
-END FUNCTION mesh_getLocalFacetID
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           getFacetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the connectivity of a facet element
-!
-!# Introduction
-!
-! - Returns the connectivity of a given facet element
-! - facetElement is local facet element number
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getFacetConnectivity1( obj, facetElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION mesh_getFacetConnectivity1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           getFacetConnectivity@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 April 2022
-! summary: Returns the connectivity of a facet element of a cellElement
-!
-!# Introduction
-!
-! - Returns the connectivity of a given facet element of a cellElement
-! - globalElement is global element number of cell number
-! - iface is the local face number in globalElement
-!
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getFacetConnectivity2( obj, globalElement, iface ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalElement
-  INTEGER( I4B ), INTENT( IN ) :: iface
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION mesh_getFacetConnectivity2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            getFacetElementType@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 April 2022
-! summary: Returns the facet element type of the cell element number
-
-INTERFACE
-MODULE PURE FUNCTION mesh_getFacetElementType( obj, globalElement ) &
-  & RESULT( Ans )
-  CLASS( Mesh_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalElement
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION mesh_getFacetElementType
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                        getOrder@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1896,6 +1852,220 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                           getTotalFacetElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Returns the total number of facet elements
+!
+!# Introduction
+!
+! This function returns the total number of facet element in the mesh.
+! It includes
+! - InternalFacet Elements
+! - DomainFacet Elements
+! - MeshFacet Elements
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getTotalFacetElements( obj ) RESULT( ans )
+    CLASS(Mesh_), INTENT( IN ) :: obj
+    INTEGER( I4B ) :: ans
+  END FUNCTION mesh_getTotalFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   getTotalInternalFacetElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 May 2022
+! summary: Returns the total number of internal facets element in mesh
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getTotalInternalFacetElements( obj ) RESULT(ans)
+    CLASS(Mesh_), INTENT( IN ) :: obj
+    INTEGER( I4B ) :: ans
+  END FUNCTION mesh_getTotalInternalFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   getTotalBoundaryFacetElements@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getTotalBoundaryFacetElements( obj ) RESULT(ans)
+    CLASS(Mesh_), INTENT( IN ) :: obj
+    INTEGER( I4B ) :: ans
+  END FUNCTION mesh_getTotalBoundaryFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getMasterCellNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns the master cell number of a given facet
+!
+!# Introduction
+!
+! - This routine returns the master cell number of a given facet element
+! - The facetElement is the local facet element
+! - The master cell number is the global element number
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getMasterCellNumber( obj, facetElement, &
+    & elementType )&
+    & RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: facetElement
+    INTEGER( I4B ), INTENT( IN ) :: elementType
+    INTEGER( I4B ) :: ans
+  END FUNCTION mesh_getMasterCellNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getSlaveCellNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns the slave cell number of a given facet
+!
+!# Introduction
+!
+! - This routine returns the slave cell number of a given facet element
+! - The facetElement is the local facet element
+! - The slave cell number is the global element number
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getSlaveCellNumber( obj, facetElement, &
+    & elementType ) RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: facetElement
+    INTEGER( I4B ), INTENT( IN ) :: elementType
+    INTEGER( I4B ) :: ans
+  END FUNCTION mesh_getSlaveCellNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   getCellNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns the  cell number of a given facet
+!
+!# Introduction
+!
+! - This routine returns the  cell number of a given facet element
+! - The facetElement is the local facet element
+! - The  cell number is the global element number
+! - ans(1)  contains the master-cell number
+! - ans(2)  contains the slave cell number
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getCellNumber( obj, facetElement, &
+    & elementType ) RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: facetElement
+    INTEGER( I4B ), INTENT( IN ) :: elementType
+    INTEGER( I4B ) :: ans( 2 )
+  END FUNCTION mesh_getCellNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getLocalFacetID@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns the local facet id
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getLocalFacetID( obj, facetElement, &
+    & elementType, isMaster ) RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: facetElement
+    INTEGER( I4B ), INTENT( IN ) :: elementType
+    LOGICAL( LGT ), INTENT( IN ) :: isMaster
+    INTEGER( I4B ) :: ans
+  END FUNCTION mesh_getLocalFacetID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           getFacetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns the connectivity of a facet element
+!
+!# Introduction
+!
+! - Returns the connectivity of a given facet element
+! - facetElement is local facet element number
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getFacetConnectivity1( obj, facetElement, &
+    & elementType, isMaster ) RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: facetElement
+    INTEGER( I4B ), INTENT( IN ) :: elementType
+    LOGICAL( LGT ), INTENT( IN ) :: isMaster
+      !! if isMaster is true then connectivity of facet in master-cell
+      !! is returned, otherwise connectivity of facet in slave-cell
+      !! is returned. This is only applicable for internal facet element
+      !! because for domain facet we do not have slave-cell.
+      !! Currently, we do not support slave-cell for meshFacet because
+      !! the slave of meshFacet lives in different instance of mesh_
+    INTEGER( I4B ), ALLOCATABLE :: ans( : )
+  END FUNCTION mesh_getFacetConnectivity1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           getFacetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 April 2022
+! summary: Returns the connectivity of a facet element of a cellElement
+!
+!# Introduction
+!
+! - Returns the connectivity of a given facet element of a cellElement
+! - globalElement is global element number of cell number
+! - iface is the local face number in globalElement
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getFacetConnectivity2( obj, globalElement, &
+    & iface ) RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: globalElement
+    INTEGER( I4B ), INTENT( IN ) :: iface
+    INTEGER( I4B ), ALLOCATABLE :: ans( : )
+  END FUNCTION mesh_getFacetConnectivity2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            getFacetElementType@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 April 2022
+! summary: Returns the facet element type of the cell element number
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getFacetElementType( obj, globalElement ) &
+    & RESULT( ans )
+    CLASS( Mesh_ ), INTENT( IN ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: globalElement
+    INTEGER( I4B ), ALLOCATABLE :: ans( : )
+  END FUNCTION mesh_getFacetElementType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                     initiateNodeToElements@MeshDataMethods
 !----------------------------------------------------------------------------
 
@@ -1948,6 +2118,29 @@ INTERFACE
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! mesh data
   END SUBROUTINE mesh_InitiateNodetoNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   InitiateExtraNodeToNode@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date:         15 June 2021
+! summary:         Initiate node to node connectivity data
+!
+!# Introduction
+! This routine generate the node to nodes mapping
+! This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
+!
+! For a local node number i, obj%nodeData(i)%ExtraGlobalNodeNum denotes the
+! global node data surrounding the local node number used for
+! edge-based stabilization. This list does not include self node.
+
+INTERFACE
+  MODULE SUBROUTINE mesh_InitiateExtraNodetoNodes(obj)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    !! mesh data
+  END SUBROUTINE mesh_InitiateExtraNodetoNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2176,30 +2369,13 @@ END INTERFACE
 ! summary: Set the facet element type of a given cell number
 
 INTERFACE
-MODULE PURE SUBROUTINE mesh_setFacetElementType1( obj, globalElement, &
-  & iface, facetElementType )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalElement
-  INTEGER( I4B ), INTENT( IN ) :: iface
-  INTEGER( I4B ), INTENT( IN ) :: facetElementType
-END SUBROUTINE mesh_setFacetElementType1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            setFacetElementType@setMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 April 2022
-! summary: Set the facet element type of a given facetElement
-
-INTERFACE
-MODULE PURE SUBROUTINE mesh_setFacetElementType2( obj, facetElement, &
-  & facetElementType )
-  CLASS( Mesh_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: facetElement
-  INTEGER( I4B ), INTENT( IN ) :: facetElementType
-END SUBROUTINE mesh_setFacetElementType2
+  MODULE PURE SUBROUTINE mesh_setFacetElementType( obj, globalElement, &
+    & iface, facetElementType )
+    CLASS( Mesh_ ), INTENT( INOUT ) :: obj
+    INTEGER( I4B ), INTENT( IN ) :: globalElement
+    INTEGER( I4B ), INTENT( IN ) :: iface
+    INTEGER( I4B ), INTENT( IN ) :: facetElementType
+  END SUBROUTINE mesh_setFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2210,6 +2386,11 @@ END INTERFACE
 ! date: 2021-12-09
 ! update: 2021-12-09
 ! summary: sets the local shape data for the mesh
+!
+!# Introduction
+!
+! This routine set the local shape data in space (linSpaceElemSD and
+! spaceElemSD) for the mesh. It also creates the quadrature points in space.
 
 INTERFACE
   MODULE SUBROUTINE mesh_initiateElemSD1(obj, &
@@ -2221,11 +2402,17 @@ INTERFACE
     & interpolTypeForSpace )
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: orderSpace
+      !! integrand order in space
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem
+      !! linear (simplex) space element
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
+      !! space element
     CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+      !! quadrature for space
     CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+      !! continuity for base in space
     CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+      !! interpolation type for base in space
   END SUBROUTINE mesh_initiateElemSD1
 END INTERFACE
 
@@ -2255,17 +2442,29 @@ INTERFACE
     & tvec)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: orderSpace
+      !! integrand order in space
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem
+      !! linear space element
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
+      !! space element
     CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+      !! quadrature type for space
     CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+      !! continuity type of base in space
     CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+      !! interpol type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
+      !! integrand order in time
     TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
+      !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
+      !! time element
     CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+      !! quadrature type of base in time
     CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+      !! continuity type of base in time
     CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+      !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE mesh_initiateElemSD2
 END INTERFACE
@@ -2295,17 +2494,29 @@ INTERFACE
     & interpolTypeForTime )
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: orderSpace
+      !! integrand order in space
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem
+      !! linear space element
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
+      !! space element
     CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+      !! quadrature type of base in space
     CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+      !! continuity type of base in space
     CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+      !! interpolation type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
+      !! integrand order in time
     TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
+      !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
+      !! time element
     CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+      !! quadrature type of base in time
     CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+      !! continuity type of base in time
     CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+      !! interpolation type of base in time
   END SUBROUTINE mesh_initiateElemSD3
 END INTERFACE
 
@@ -2323,6 +2534,106 @@ INTERFACE
     CLASS(Mesh_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE mesh_initiateElemSD4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE mesh_initiateFacetElemSD1(obj, &
+    & orderSpace,  &
+    & linSpaceElem, &
+    & spaceElem, &
+    & quadTypeForSpace, &
+    & continuityTypeForSpace, &
+    & interpolTypeForSpace )
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: orderSpace
+      !! integrand order in space
+    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem( : )
+      !! linear (simplex) space element for each face
+    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem( : )
+      !! space element for each face
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+      !! quadrature for space
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+      !! continuity for base in space
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+      !! interpolation type for base in space
+  END SUBROUTINE mesh_initiateFacetElemSD1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE mesh_initiateFacetElemSD2(obj, &
+    & orderSpace,  &
+    & linSpaceElem, &
+    & spaceElem, &
+    & quadTypeForSpace, &
+    & continuityTypeForSpace, &
+    & interpolTypeForSpace, &
+    & orderTime, &
+    & linTimeElem, &
+    & timeElem, &
+    & quadTypeForTime, &
+    & continuityTypeForTime, &
+    & interpolTypeForTime, &
+    & tvec)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: orderSpace
+      !! integrand order in space
+    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem( : )
+      !! linear space element for each face
+    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem( : )
+      !! space element for each face
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+      !! quadrature type for space
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+      !! continuity type of base in space
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+      !! interpol type of base in space
+    INTEGER(I4B), INTENT(IN) :: orderTime
+      !! integrand order in time
+    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
+      !! linear time element
+    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
+      !! time element
+    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+      !! quadrature type of base in time
+    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+      !! continuity type of base in time
+    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+      !! interpol type of base in time
+    REAL(DFP), INTENT(IN) :: tvec(:)
+  END SUBROUTINE mesh_initiateFacetElemSD2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            InitiateElemSD@ShapeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: sets the local shape data for the mesh
+
+INTERFACE
+  MODULE SUBROUTINE mesh_initiateFacetElemSD3(obj, tvec)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: tvec(:)
+  END SUBROUTINE mesh_initiateFacetElemSD3
 END INTERFACE
 
 !----------------------------------------------------------------------------

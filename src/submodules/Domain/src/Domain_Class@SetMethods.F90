@@ -152,11 +152,11 @@ END PROCEDURE Domain_setMaterial
 !                                                        SetFacetElementType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Domain_setDomainBoundaryElement
+MODULE PROCEDURE Domain_setFacetElementType
+  !!
   CLASS( Mesh_ ), POINTER :: masterMesh, slaveMesh
   INTEGER( I4B ) :: tsize, ii, jj, kk, iel, iface
-  INTEGER( I4B ), ALLOCATABLE :: faceType( : ), faceID( : ), faceNptrs( : )
-  LOGICAL( LGT ) :: faceFound
+  INTEGER( I4B ), ALLOCATABLE :: faceID( : ), faceNptrs( : )
   !!
   tsize = obj%getTotalMesh( dim=obj%nsd )
   !!
@@ -177,55 +177,301 @@ MODULE PROCEDURE Domain_setDomainBoundaryElement
         faceNptrs = masterMesh%getFacetConnectivity( globalElement=iel, &
           & iface=kk )
         !!
-        faceFound = .FALSE.
-        !!
         DO jj = 1, tsize
           IF( jj .NE. ii ) THEN
             slaveMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=jj )
             IF( slaveMesh%isAllNodePresent( faceNptrs ) ) THEN
-              faceFound = .TRUE.
+              CALL masterMesh%setFacetElementType( globalElement=iel, &
+                & iface=kk, facetElementType=BOUNDARY_ELEMENT )
               EXIT
             END IF
           END IF
         END DO
         !!
-        IF( .NOT. faceFound ) THEN
-          CALL masterMesh%setFacetElementType( globalElement=iel, &
-            & iface=kk, facetElementType=DOMAIN_BOUNDARY_ELEMENT )
+      END DO
+      !!
+    END DO
+    !!
+  END DO
+  !!
+  NULLIFY( masterMesh, slaveMesh )
+  !!
+  IF( ALLOCATED( faceID ) ) DEALLOCATE( faceID )
+  IF( ALLOCATED( faceNptrs ) ) DEALLOCATE( faceNptrs )
+  !!
+END PROCEDURE Domain_setFacetElementType
+
+!----------------------------------------------------------------------------
+!                                                      SetDomainFacetElement
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setDomainFacetElement
+  CLASS( Mesh_ ), POINTER :: masterMesh, slaveMesh
+  INTEGER( I4B ) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet
+  INTEGER( I4B ), ALLOCATABLE :: faceNptrs( : )
+  LOGICAL( LGT ) :: faceFound
+  !!
+  !! main
+  !!
+  tsize = obj%getTotalMesh( dim=obj%nsd )
+  !!
+  DO ii = 1, tsize
+    !!
+    masterMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=ii )
+    tDomFacet = masterMesh%getTotalBoundaryFacetElements( )
+    tMeshFacet = 0
+    !!
+    !!
+    DO iel = 1, tDomFacet
+      !!
+      faceNptrs = masterMesh%getFacetConnectivity( &
+        & facetElement=iel, &
+        & elementType=DOMAIN_BOUNDARY_ELEMENT, &
+        & isMaster=.TRUE. )
+      !!
+      faceFound = .FALSE.
+      !!
+      !! The code below checks if any other mesh contains the
+      !! facetNptrs; if there exists such as mesh, then
+      !! the face element is actually meshFacet.
+      !!
+      DO jj = 1, tsize
+        IF( jj .NE. ii ) THEN
+          !!
+          slaveMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=jj )
+          !!
+          IF( slaveMesh%isAllNodePresent( faceNptrs ) ) THEN
+            !!
+            faceFound = .TRUE.
+            tMeshFacet = tMeshFacet + 1
+            EXIT
+            !!
+          END IF
+        END IF
+      END DO
+      !!
+      IF( faceFound ) THEN
+        masterMesh%boundaryFacetData( iel )%elementType = &
+          & BOUNDARY_ELEMENT
+      END IF
+      !!
+    END DO
+    !!
+  END DO
+  !!
+END PROCEDURE Domain_setDomainFacetElement
+
+!----------------------------------------------------------------------------
+!                                                                 setMeshMap
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setMeshmap
+  CHARACTER( LEN = * ), PARAMETER :: myName = "Domain_setMeshmap"
+  CLASS( Mesh_ ), POINTER :: masterMesh, slaveMesh
+  INTEGER( I4B ) :: tsize, ii, jj, iel, tDomFacet, tMeshFacet
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( : ), meshmap( :, : )
+  !!
+  !! main
+  !!
+  tsize = obj%getTotalMesh( dim=obj%nsd )
+  CALL Reallocate( meshmap, tsize, tsize )
+  !!
+  DO ii = 1, tsize
+    !!
+    masterMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=ii )
+    tDomFacet = masterMesh%getTotalBoundaryFacetElements( )
+    !!
+    DO jj = ii+1, tsize
+      !!
+      slaveMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=jj )
+      !!
+      DO iel = 1, tDomFacet
+        !!
+        IF( masterMesh%boundaryFacetData( iel )%elementType &
+          & .EQ. BOUNDARY_ELEMENT ) THEN
+          !!
+          nptrs = masterMesh%getFacetConnectivity( &
+            & facetElement=iel, &
+            & elementType=BOUNDARY_ELEMENT, &
+            & isMaster=.TRUE. )
+          !!
+          IF( slaveMesh%isAllNodePresent( nptrs ) ) THEN
+            !!
+            meshmap( ii, jj ) = 1
+            EXIT
+            !!
+          END IF
+          !!
         END IF
         !!
       END DO
       !!
     END DO
     !!
-    DO iel = 1, masterMesh%getTotalFacetElements()
+  END DO
+  !!
+  tMeshFacet = COUNT( meshmap .EQ. 1 )
+  !!
+  !! ALLOCATE meshFacetData
+  !!
+  IF( ALLOCATED( obj%meshFacetData ) ) THEN
+    CALL e%raiseError(modName //'::'//myName// ' - '// &
+      & 'meshFacetData is already allocated... dellocate it first')
+  ELSE
+    ALLOCATE( obj%meshFacetData( tMeshFacet ) )
+  END IF
+  !!
+  !!
+  !!
+  CALL Initiate( obj%meshMap, ncol = tsize, nrow=tsize )
+  CALL SetSparsity( obj%meshMap, graph=meshmap )
+  CALL SetSparsity( obj%meshMap )
+  !!
+  IF( ALLOCATED( nptrs ) ) DEALLOCATE(nptrs)
+  IF( ALLOCATED( meshmap ) ) DEALLOCATE(meshmap)
+  !!
+  !!
+  !!
+END PROCEDURE Domain_setMeshmap
+
+!----------------------------------------------------------------------------
+!                                                       setMeshFacetElement
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_setMeshFacetElement
+  !!
+  CHARACTER( LEN = * ), PARAMETER :: myName = "Domain_setMeshFacetElement"
+  CLASS( Mesh_ ), POINTER :: masterMesh, slaveMesh
+  INTEGER( I4B ) :: tSize, ii, jj, imeshfacet, tBndyFacet_master, &
+    & iface_slave, iface_master, tmeshfacet, tBndyFacet_slave
+  INTEGER( I4B ), ALLOCATABLE :: faceNptrs_master( : ), faceNptrs_slave( : )
+  !!
+  !! main
+  !!
+  tsize = obj%getTotalMesh( dim=obj%nsd )
+  !!
+  !! set masterMesh and slaveMesh of meshFacetData
+  !!
+  DO ii = 1, tSize
+    !!
+    DO imeshfacet = obj%meshmap%IA( ii ), obj%meshmap%IA( ii+1 ) - 1
+      obj%meshFacetData( imeshfacet )%masterMesh = ii
+      obj%meshFacetData( imeshfacet )%slaveMesh = obj%meshmap%JA( imeshfacet )
+    END DO
+    !!
+  END DO
+  !!
+  !! Count number of facet element in each meshFacetData
+  !!
+  DO imeshfacet = 1, SIZE( obj%meshFacetData )
+    !!
+    masterMesh => obj%getMeshPointer( dim=obj%nsd, &
+      & entityNum=obj%meshFacetData( imeshfacet )%masterMesh )
+    !!
+    slaveMesh => obj%getMeshPointer( dim=obj%nsd, &
+      & entityNum=obj%meshFacetData( imeshfacet )%slaveMesh )
+    !!
+    tBndyFacet_master = masterMesh%getTotalBoundaryFacetElements( )
+    tBndyFacet_slave = slaveMesh%getTotalBoundaryFacetElements( )
+    !!
+    !! count the number of facet elements in imeshfacet
+    !!
+    tmeshfacet = 0
+    !!
+    DO iface_master = 1, tBndyFacet_master
       !!
-      IF( .NOT. masterMesh%isFacetBoundaryElement( iel ) ) CYCLE
+      IF( masterMesh%boundaryFacetData( iface_master )%elementType .EQ. &
+        & DOMAIN_BOUNDARY_ELEMENT ) CYCLE
       !!
-      faceNptrs = masterMesh%getFacetConnectivity( facetElement=iel )
-      faceFound = .FALSE.
+      faceNptrs_master = masterMesh%getFacetConnectivity( &
+        & facetElement=iface_master, &
+        & elementType=BOUNDARY_ELEMENT, &
+        & isMaster=.TRUE. )
       !!
-      DO jj = 1, tsize
-        IF( jj .NE. ii ) THEN
-          slaveMesh => obj%getMeshPointer( dim=obj%nsd, entityNum=jj )
-          IF( slaveMesh%isAllNodePresent( faceNptrs ) ) THEN
-            faceFound = .TRUE.
+      IF( slaveMesh%isAllNodePresent( faceNptrs_master ) ) &
+        & tmeshfacet = tmeshfacet + 1
+      !!
+    END DO
+    !!
+    !! Prepare data for imeshfacet
+    !!
+    CALL obj%meshFacetData( imeshfacet )%Initiate( tmeshfacet )
+    !!
+    ii = 0
+    !!
+    DO iface_master = 1, tBndyFacet_master
+      !!
+      IF( masterMesh%boundaryFacetData( iface_master )%elementType .EQ. &
+        & DOMAIN_BOUNDARY_ELEMENT ) CYCLE
+      !!
+      faceNptrs_master = masterMesh%getFacetConnectivity( &
+        & facetElement=iface_master, &
+        & elementType=BOUNDARY_ELEMENT, &
+        & isMaster=.TRUE. )
+      !!
+      IF( slaveMesh%isAllNodePresent( faceNptrs_master ) ) THEN
+        !!
+        DO iface_slave = 1, tBndyFacet_slave
+          !!
+          IF( slaveMesh%boundaryFacetData( iface_slave )%elementType .EQ. &
+            & DOMAIN_BOUNDARY_ELEMENT ) CYCLE
+          !!
+          faceNptrs_slave= slaveMesh%getFacetConnectivity( &
+            & facetElement=iface_slave, &
+            & elementType=BOUNDARY_ELEMENT, &
+            & isMaster=.TRUE. )
+          !!
+          IF( faceNptrs_master .IN. faceNptrs_slave ) THEN
+            !!
+            ii = ii + 1
+            !!
+            !! masterCellNumber
+            !!
+            obj%meshFacetData( imeshfacet )%masterCellNumber( ii ) = &
+              & masterMesh%getMasterCellNumber( &
+                & facetElement = iface_master, &
+                & elementType = BOUNDARY_ELEMENT )
+            !!
+            !! masterLocalFacetID
+            !!
+            obj%meshFacetData( imeshfacet )%masterLocalFacetID( ii ) = &
+              & masterMesh%getLocalFacetID( &
+                & facetElement = iface_master, &
+                & isMaster = .TRUE., &
+                & elementType = BOUNDARY_ELEMENT )
+            !!
+            !! slaveCellNumber
+            !!
+            obj%meshFacetData( imeshfacet )%slaveCellNumber( ii ) = &
+              & slaveMesh%getMasterCellNumber( &
+              & facetElement = iface_slave, &
+              & elementType = BOUNDARY_ELEMENT )
+            !!
+            !! slaveLocalFacetID
+            !!
+            obj%meshFacetData( imeshfacet )%slaveLocalFacetID( ii ) = &
+              & slaveMesh%getLocalFacetID( &
+                & facetElement = iface_slave, &
+                & isMaster = .TRUE., &
+                & elementType = BOUNDARY_ELEMENT )
+            !!
             EXIT
+            !!
           END IF
-        END IF
-      END DO
-      !!
-      IF( .NOT. faceFound ) THEN
-        CALL masterMesh%setFacetElementType( facetElement=iel, &
-          & facetElementType=DOMAIN_BOUNDARY_ELEMENT )
+          !!
+        END DO
+        !!
       END IF
-      !!
       !!
     END DO
     !!
   END DO
   !!
-END PROCEDURE Domain_setDomainBoundaryElement
+  IF( ALLOCATED( faceNptrs_master ) ) DEALLOCATE( faceNptrs_master )
+  IF( ALLOCATED( faceNptrs_slave ) ) DEALLOCATE( faceNptrs_slave )
+  NULLIFY( masterMesh, slaveMesh )
+  !!
+END PROCEDURE Domain_setMeshFacetElement
 
 !----------------------------------------------------------------------------
 !

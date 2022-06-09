@@ -56,6 +56,45 @@ MODULE PROCEDURE Domain_Initiate
 END PROCEDURE Domain_Initiate
 
 !----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_Initiate
+  CALL Reallocate( obj%masterCellNumber, n  )
+  CALL Reallocate( obj%slaveCellNumber, n  )
+  CALL Reallocate( obj%masterLocalFacetID, n  )
+  CALL Reallocate( obj%slaveLocalFacetID, n  )
+END PROCEDURE MeshFacetData_Initiate
+
+!----------------------------------------------------------------------------
+!                                                                isInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_isInitiated
+  !!
+  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
+    ans = .TRUE.
+  ELSE
+    ans = .FALSE.
+  END IF
+  !!
+END PROCEDURE MeshFacetData_isInitiated
+
+!----------------------------------------------------------------------------
+!                                                                Size
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFacetData_Size
+  !!
+  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
+    ans = SIZE( obj%masterCellNumber )
+  ELSE
+    ans = 0
+  END IF
+  !!
+END PROCEDURE MeshFacetData_Size
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
@@ -79,6 +118,9 @@ MODULE PROCEDURE Domain_Deallocate
   obj%tEntitiesForElements = 0
   obj%tElements( 0:3 ) = 0
   obj%tEntities( 0:3 ) = 0
+  CALL Deallocate( obj%meshmap )
+  IF( ALLOCATED( obj%meshFacetData ) ) DEALLOCATE( obj%meshFacetData )
+  !! BUG
   CALL e%raiseDebug( modName//'::'//myName//'-'// &
     & 'There should be better way to deallocate obj%meshList...' )
   IF( ALLOCATED( obj%meshList ) ) DEALLOCATE( obj%meshList )

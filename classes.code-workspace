@@ -2,11 +2,18 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../easifem-pages/docs/easifemClasses"
+		},
+		{
+			"path": "../easifem-pages/docs/examples"
 		}
 	],
 	"settings": {
-		"fortran.preferredCase": "uppercase",
 		"cmake.installPrefix": "/home/easifem/.easifem/classes",
-		"cmake.configureOnEdit": false
+		"cmake.configureOnEdit": false,
+		"fortran-ls.autocompletePrefix": false,
+		"fortran-ls.displayVerWarning": false
 	}
 }

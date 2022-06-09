@@ -51,12 +51,16 @@ MODULE PROCEDURE mesh_setSparsity1
   CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity1"
   INTEGER(I4B) :: i, j, k
   INTEGER(I4B), ALLOCATABLE :: n2n(:)
-  !> main
+  !!
+  !! check
+  !!
   IF (.NOT. obj%isInitiated) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "Mesh data is not initiated, first initiate")
   END IF
-  !> main
+  !!
+  !! main
+  !!
   DO i = 1, obj%tNodes
     j = obj%getGlobalNodeNumber(LocalNode=i)
     k = localNodeNumber(j)
@@ -190,20 +194,12 @@ END PROCEDURE mesh_setMaterial
 !                                                        setFacetElementType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setFacetElementType1
+MODULE PROCEDURE mesh_setFacetElementType
   INTEGER( I4B ) :: localElem
   localElem = obj%getLocalElemNumber( globalElement=globalElement )
   obj%facetElementType( iface, localElem ) = facetElementType
   obj%elementData( localElem )%elementType = facetElementType
-END PROCEDURE mesh_setFacetElementType1
-
-!----------------------------------------------------------------------------
-!                                                        setFacetElementType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_setFacetElementType2
-  obj%facetData( facetElement )%elementType = facetElementType
-END PROCEDURE mesh_setFacetElementType2
+END PROCEDURE mesh_setFacetElementType
 
 !----------------------------------------------------------------------------
 !

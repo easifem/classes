@@ -25,6 +25,10 @@ CONTAINS
 
 MODULE PROCEDURE setSTScalarMeshFieldParam
   !!
+  INTEGER( I4B ) :: s( 2 )
+  !!
+  s = [nns, nnt]
+  !!
   CALL setAbstractMeshFieldParam( &
     & param=param, &
     & prefix="STScalarMeshField", &
@@ -34,7 +38,7 @@ MODULE PROCEDURE setSTScalarMeshFieldParam
     & engine=engine, &
     & defineOn=defineOn, &
     & rank=Scalar, &
-    & s=[nns, nnt] )
+    & s=s )
   !!
 END PROCEDURE setSTScalarMeshFieldParam
 

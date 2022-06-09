@@ -41,14 +41,30 @@ END PROCEDURE addSurrogate_mesh
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_initiate
+  !!
   CHARACTER( LEN = * ), PARAMETER :: myName="mesh_initiate"
+  !!
+  !!
+  !!
   obj%readFromFile = .TRUE.
   obj%isInitiated = .TRUE.
+  !!
+  !! Import
+  !!
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Importing mesh' )
+    & '[START] Importing mesh' )
+  !!
+  !! Import
+  !!
   CALL obj%Import(hdf5, group)
+  !!
+  !! raiseInformation
+  !!
   CALL e%raiseInformation(modName//'::'//myName// " - "// &
     & 'Mesh imported' )
+  !!
+  !!
+  !!
   IF( obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1 ) THEN
     RETURN
   ELSE
@@ -73,7 +89,17 @@ MODULE PROCEDURE mesh_initiate
       & 'InitiateFacetElements()' )
     CALL obj%InitiateFacetElements()
     !!
+    CALL e%raiseInformation(modName//'::'//myName// " - "// &
+      & 'InitiateExtraNodeToNodes()' )
+    CALL obj%InitiateExtraNodeToNodes()
+    !!
   END IF
+  !!
+  !!
+  !!
+  CALL e%raiseInformation(modName//'::'//myName// " - "// &
+    & '[END] Importing mesh [OK!]' )
+  !!
 END PROCEDURE mesh_initiate
 
 !----------------------------------------------------------------------------
@@ -104,8 +130,10 @@ MODULE PROCEDURE mesh_Deallocate
   obj%isInitiated = .FALSE.
   obj%isNodeToElementsInitiated = .FALSE.
   obj%isNodeToNodesInitiated = .FALSE.
+  obj%isExtraNodeToNodesInitiated = .FALSE.
   obj%isElementToElementsInitiated = .FALSE.
   obj%isBoundaryDataInitiated = .FALSE.
+  obj%isFacetDataInitiated = .FALSE.
   obj%uid = 0
   obj%xidim = 0
   obj%elemType = 0
@@ -117,9 +145,6 @@ MODULE PROCEDURE mesh_Deallocate
   obj%tNodes = 0
   obj%tIntNodes = 0
   obj%tElements = 0
-  obj%totalFacetElements = 0
-  obj%totalInternalFacetElements = 0
-  obj%totalBoundaryFacetElements = 0
   obj%minX = 0.0_DFP
   obj%maxX = 0.0_DFP
   obj%minY = 0.0_DFP
@@ -137,15 +162,17 @@ MODULE PROCEDURE mesh_Deallocate
   IF( ALLOCATED( obj%FacetElements ) ) DEALLOCATE( obj%FacetElements )
   IF( ALLOCATED( obj%nodeData ) ) DEALLOCATE( obj%nodeData )
   IF( ALLOCATED( obj%elementData ) ) DEALLOCATE( obj%elementData )
-  IF( ALLOCATED( obj%facetData ) ) THEN
-    CALL e%raiseDebug(modName//'::'//myName// " - "// &
-      & 'We cannot deallocate facetData, there is some bug' )
-    ! DEALLOCATE( obj%facetData )
-  END IF
+  IF( ALLOCATED( obj%internalFacetData ) ) DEALLOCATE( obj%internalFacetData )
+  IF( ALLOCATED( obj%boundaryFacetData ) ) DEALLOCATE( obj%boundaryFacetData )
   obj%refelem => NULL()
+  obj%ipType = Equidistance
   CALL Deallocate( obj%quadForTime )
   CALL Deallocate( obj%linTimeElemSD )
   CALL Deallocate( obj%timeElemSD )
+  obj%quadTypeForTime=""
+  obj%continuityTypeForTime=""
+  obj%interpolTypeForTime=""
+  obj%orderTime=0
   CALL Deallocate( obj%quadForSpace )
   CALL Deallocate( obj%linSpaceElemSD )
   CALL Deallocate( obj%spaceElemSD )
@@ -153,11 +180,18 @@ MODULE PROCEDURE mesh_Deallocate
   obj%quadTypeForSpace=""
   obj%continuityTypeForSpace=""
   obj%interpolTypeForSpace=""
-  obj%quadTypeForTime=""
-  obj%continuityTypeForTime=""
-  obj%interpolTypeForTime=""
   obj%orderSpace=0
-  obj%orderTime=0
+  IF( ALLOCATED( obj%quadForFacet ) ) DEALLOCATE( obj%quadForFacet )
+  IF( ALLOCATED( obj%quadForFacetCell ) ) DEALLOCATE( obj%quadForFacetCell )
+  IF( ALLOCATED( obj%linFacetElemSD ) ) DEALLOCATE( obj%linFacetElemSD )
+  IF( ALLOCATED( obj%linFacetCellElemSD ) ) DEALLOCATE( obj%linFacetCellElemSD )
+  IF( ALLOCATED( obj%facetElemSD ) ) DEALLOCATE( obj%facetElemSD )
+  IF( ALLOCATED( obj%facetCellElemSD ) ) DEALLOCATE( obj%facetCellElemSD )
+  IF( ALLOCATED( obj%facetSTelemsd ) ) DEALLOCATE(obj%facetSTelemsd)
+  obj%quadTypeForFacet=""
+  obj%continuityTypeForFacet=""
+  obj%interpolTypeForFacet=""
+  obj%orderFacet=0
   ! CALL e%reset()
 END PROCEDURE mesh_Deallocate
 

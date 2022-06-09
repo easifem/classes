@@ -25,99 +25,422 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_display
+  !!
+  CALL Display(msg, unitno=unitno)
+  !!
   IF (.NOT. obj%isInitiated) THEN
     CALL Display("Mesh object is empty, noting to display", msg, &
-      & unitNo=unitNo)
+      & unitno=unitno)
+    RETURN
   END IF
-  CALL Display(msg, unitNo=unitNo)
-  CALL Display(obj%readFromFile, "# readFromFile : ", UnitNo=UnitNo)
+  !!
+  !! readFromFile
+  !!
+  CALL Display(obj%readFromFile, "# readFromFile : ", unitno=unitno)
+  !!
+  !! isNodeToElementsInitiated
+  !!
   CALL Display(obj%isNodeToElementsInitiated,  &
-    & "# isNodeToElementsInitiated : ", UnitNo=UnitNo)
+    & "# isNodeToElementsInitiated : ", unitno=unitno)
+  !!
+  !! isNodeToNodesInitiated
+  !!
   CALL Display(obj%isNodeToNodesInitiated,  &
-    & "# isNodeToNodesInitiated : ", UnitNo=UnitNo)
+    & "# isNodeToNodesInitiated : ", unitno=unitno)
+  !!
+  !! isElementToElementsInitiated
+  !!
   CALL Display(obj%isElementToElementsInitiated,  &
-    & "# isElementToElementsInitiated : ", UnitNo=UnitNo)
+    & "# isElementToElementsInitiated : ", unitno=unitno)
+  !!
+  !! isBoundaryDataInitiated
+  !!
   CALL Display(obj%isBoundaryDataInitiated,  &
-    & "# isBoundaryDataInitiated : ", UnitNo=UnitNo)
+    & "# isBoundaryDataInitiated : ", unitno=unitno)
+  !!
+  !! isFacetDataInitiated
+  !!
+  CALL Display(obj%isFacetDataInitiated,  &
+    & "# isFacetDataInitiated : ", unitno=unitno)
+  !!
+  !! uid
+  !!
   CALL Display(obj%uid,  &
-    & "# uid : ", UnitNo=UnitNo)
+    & "# uid : ", unitno=unitno)
+  !!
+  !! xidim
+  !!
   CALL Display(obj%xidim,  &
-    & "# xidim : ", UnitNo=UnitNo)
+    & "# xidim : ", unitno=unitno)
+  !!
+  !! elemType
+  !!
   CALL Display(obj%elemType,  &
-    & "# elemType : ", UnitNo=UnitNo)
+    & "# elemType : ", unitno=unitno)
+  !!
+  !! nsd
+  !!
   CALL Display(obj%nsd,  &
-    & "# nsd : ", UnitNo=UnitNo)
+    & "# nsd : ", unitno=unitno)
+  !!
+  !! maxNptrs
+  !!
   CALL Display(obj%maxNptrs,  &
-    & "# maxNptrs : ", UnitNo=UnitNo)
+    & "# maxNptrs : ", unitno=unitno)
+  !!
+  !! minNptrs
+  !!
   CALL Display(obj%minNptrs,  &
-    & "# minNptrs : ", UnitNo=UnitNo)
+    & "# minNptrs : ", unitno=unitno)
+  !!
+  !! maxElemNum
+  !!
   CALL Display(obj%maxElemNum,  &
-    & "# maxElemNum : ", UnitNo=UnitNo)
+    & "# maxElemNum : ", unitno=unitno)
+  !!
+  !! minElemNum
+  !!
   CALL Display(obj%minElemNum,  &
-    & "# minElemNum : ", UnitNo=UnitNo)
+    & "# minElemNum : ", unitno=unitno)
+  !!
+  !! tNodes
+  !!
   CALL Display(obj%tNodes,  &
-    & "# tNodes : ", UnitNo=UnitNo)
+    & "# tNodes : ", unitno=unitno)
+  !!
+  !! tIntNodes
+  !!
   CALL Display(obj%tIntNodes,  &
-    & "# tIntNodes : ", UnitNo=UnitNo)
+    & "# tIntNodes : ", unitno=unitno)
+  !!
+  !! tElements
+  !!
   CALL Display(obj%tElements,  &
-    & "# tElements : ", UnitNo=UnitNo)
+    & "# tElements : ", unitno=unitno)
+  !!
+  !! minX
+  !!
   CALL Display(obj%minX,  &
-    & "# minX : ", UnitNo=UnitNo)
+    & "# minX : ", unitno=unitno)
+  !!
+  !! maxX
+  !!
   CALL Display(obj%maxX,  &
-    & "# maxX : ", UnitNo=UnitNo)
+    & "# maxX : ", unitno=unitno)
+  !!
+  !! minY
+  !!
   CALL Display(obj%minY,  &
-    & "# minY : ", UnitNo=UnitNo)
+    & "# minY : ", unitno=unitno)
+  !!
+  !! maxY
+  !!
   CALL Display(obj%maxY,  &
-    & "# maxY : ", UnitNo=UnitNo)
+    & "# maxY : ", unitno=unitno)
+  !!
+  !! minZ
+  !!
   CALL Display(obj%minZ,  &
-    & "# minZ : ", UnitNo=UnitNo)
+    & "# minZ : ", unitno=unitno)
+  !!
+  !! maxZ
+  !!
   CALL Display(obj%maxZ,  &
-    & "# maxZ : ", UnitNo=UnitNo)
+    & "# maxZ : ", unitno=unitno)
+  !!
+  !! X
+  !!
   CALL Display(obj%X,  &
-    & "# X : ", UnitNo=UnitNo)
+    & "# X : ", unitno=unitno)
+  !!
+  !! Y
+  !!
   CALL Display(obj%Y,  &
-    & "# Y : ", UnitNo=UnitNo)
+    & "# Y : ", unitno=unitno)
+  !!
+  !! Z
+  !!
   CALL Display(obj%Z,  &
-    & "# Z : ", UnitNo=UnitNo)
+    & "# Z : ", unitno=unitno)
+  !!
+  !! physicalTag
+  !!
   IF (ALLOCATED(obj%physicalTag)) THEN
     CALL Display(obj%physicalTag,  &
-      & "# physicalTag : ", UnitNo=UnitNo)
+      & "# physicalTag : ", unitno=unitno)
   ELSE
     CALL Display("# physicalTag : NOT ALLOCATED", &
-      & UnitNo=UnitNo)
+      & unitno=unitno)
   END IF
-  IF (ALLOCATED(obj%physicalTag)) THEN
-    CALL Display(obj%physicalTag,  &
-      & "# physicalTag : ", UnitNo=UnitNo)
+  !!
+  !! boundingEntity
+  !!
+  IF (ALLOCATED(obj%boundingEntity)) THEN
+    CALL Display(obj%boundingEntity,  &
+      & "# boundingEntity : ", unitno=unitno)
   ELSE
-    CALL Display("# physicalTag : NOT ALLOCATED", &
-      & UnitNo=UnitNo)
+    CALL Display("# boundingEntity : NOT ALLOCATED", &
+      & unitno=unitno)
   END IF
-  IF (ALLOCATED(obj%Local_Nptrs)) THEN
-    CALL Display(obj%Local_Nptrs,  &
-      & "# Local_Nptrs : ", UnitNo=UnitNo)
+  !!
+  !! local_elemNumber
+  !!
+  IF (ALLOCATED(obj%local_elemNumber)) THEN
+    CALL Display( "# local_elemNumber : ALLOCATED ", unitno=unitno)
   ELSE
-    CALL Display("# Local_Nptrs : NOT ALLOCATED", &
-      & UnitNo=UnitNo)
+    CALL Display("# local_elemNumber : NOT ALLOCATED", &
+      & unitno=unitno)
   END IF
-  IF (ASSOCIATED(obj%refElem)) THEN
-    CALL Display("# refElem : ASSOCIATED", UnitNo=UnitNo)
+  !!
+  !! local_Nptrs
+  !!
+  IF (ALLOCATED(obj%local_Nptrs)) THEN
+    CALL Display( "# local_Nptrs : ALLOCATED", unitno=unitno)
   ELSE
-    CALL Display("# refElem : NOT ASSOCIATED", &
-      & UnitNo=UnitNo)
+    CALL Display("# local_Nptrs : NOT ALLOCATED", &
+      & unitno=unitno)
   END IF
+  !!
+  !! material
+  !!
+  IF (ALLOCATED(obj%material)) THEN
+    CALL Display(obj%material,  &
+      & "# material : ", unitno=unitno)
+  ELSE
+    CALL Display("# material : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! facetElements
+  !!
+  IF (ALLOCATED(obj%facetElements)) THEN
+    CALL Display( "# facetElements : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetElements : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! facetElementType
+  !!
+  IF (ALLOCATED(obj%facetElementType)) THEN
+    CALL Display( "# facetElementType : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetElementType : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! nodeData
+  !!
   IF (ALLOCATED(obj%nodeData)) THEN
-    CALL Display("# nodeData : ALLOCATED", UnitNo=UnitNo)
+    CALL Display("# nodeData : ALLOCATED", unitno=unitno)
   ELSE
     CALL Display("# nodeData : NOT ALLOCATED", &
-      & UnitNo=UnitNo)
+      & unitno=unitno)
   END IF
+  !!
+  !! elementData
+  !!
   IF (ALLOCATED(obj%elementData)) THEN
-    CALL Display("# elementData : ALLOCATED", UnitNo=UnitNo)
+    CALL Display("# elementData : ALLOCATED", unitno=unitno)
   ELSE
     CALL Display("# elementData : NOT ALLOCATED", &
-      & UnitNo=UnitNo)
+      & unitno=unitno)
   END IF
+  !!
+  !! internalFacetData
+  !!
+  IF (ALLOCATED(obj%internalFacetData)) THEN
+    CALL Display("# internalFacetData : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# internalFacetData : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! boundaryFacetData
+  !!
+  IF (ALLOCATED(obj%boundaryFacetData)) THEN
+    CALL Display("# boundaryFacetData : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# boundaryFacetData : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! refElem
+  !!
+  IF (ASSOCIATED(obj%refElem)) THEN
+    CALL Display("# refElem : ASSOCIATED", unitno=unitno)
+  ELSE
+    CALL Display("# refElem : NOT ASSOCIATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! ipType
+  !!
+  CALL Display( obj%ipType, "# ipType = ", unitno=unitno)
+  !!
+  !! quadForTime
+  !!
+  CALL Display( obj%quadForTime, "# quadForTime = ", unitno=unitno )
+  !!
+  !! linTimeElemSD
+  !!
+  CALL Display( obj%linTimeElemSD, "# linTimeElemSD = ", unitno=unitno )
+  !!
+  !! timeElemSD
+  !!
+  CALL Display( obj%timeElemSD, "# timeElemSD = ", unitno=unitno )
+  !!
+  !! quadTypeForTime
+  !!
+  CALL Display( obj%quadTypeForTime, "# quadTypeForTime = ", unitno=unitno )
+  !!
+  !! continuityTypeForTime
+  !!
+  CALL Display( obj%continuityTypeForTime, "# continuityTypeForTime = ", &
+    & unitno=unitno )
+  !!
+  !! continuityTypeForTime
+  !!
+  CALL Display( obj%continuityTypeForTime, "# continuityTypeForTime = ", &
+    & unitno=unitno )
+  !!
+  !! interpolTypeForTime
+  !!
+  CALL Display( obj%interpolTypeForTime, "# interpolTypeForTime = ", &
+    & unitno=unitno )
+  !!
+  !! orderTime
+  !!
+  CALL Display( obj%orderTime, "# orderTime = ", &
+    & unitno=unitno )
+  !!
+  !! quadForSpace
+  !!
+  CALL Display( obj%quadForSpace, "# quadForSpace = ", &
+    & unitno=unitno )
+  !!
+  !! linSpaceElemSD
+  !!
+  CALL Display( obj%linSpaceElemSD, "# linSpaceElemSD = ", &
+    & unitno=unitno )
+  !!
+  !! spaceElemSD
+  !!
+  CALL Display( obj%spaceElemSD, "# spaceElemSD = ", &
+    & unitno=unitno )
+  !!
+  !! stelemsd
+  !!
+  IF (ALLOCATED(obj%stelemsd)) THEN
+    CALL Display("# stelemsd : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# stelemsd : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! quadTypeForSpace
+  !!
+  CALL Display( obj%quadTypeForSpace, "# quadTypeForSpace = ", &
+    & unitno=unitno )
+  !!
+  !! continuityTypeForSpace
+  !!
+  CALL Display( obj%continuityTypeForSpace, "# continuityTypeForSpace = ", &
+    & unitno=unitno )
+  !!
+  !! interpolTypeForSpace
+  !!
+  CALL Display( obj%interpolTypeForSpace, "# interpolTypeForSpace = ", &
+    & unitno=unitno )
+  !!
+  !! orderSpace
+  !!
+  CALL Display( obj%orderSpace, "# orderSpace = ", &
+    & unitno=unitno )
+  !!
+  !! quadForFacet
+  !!
+  IF (ALLOCATED(obj%quadForFacet)) THEN
+    CALL Display("# quadForFacet : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# quadForFacet : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! quadForFacetCell
+  !!
+  IF (ALLOCATED(obj%quadForFacetCell)) THEN
+    CALL Display("# quadForFacetCell : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# quadForFacetCell : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! linFacetElemSD
+  !!
+  IF (ALLOCATED(obj%linFacetElemSD)) THEN
+    CALL Display("# linFacetElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# linFacetElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! linFacetCellElemSD
+  !!
+  IF (ALLOCATED(obj%linFacetCellElemSD)) THEN
+    CALL Display("# linFacetCellElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# linFacetCellElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! facetElemSD
+  !!
+  IF (ALLOCATED(obj%facetElemSD)) THEN
+    CALL Display("# facetElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! facetCellElemSD
+  !!
+  IF (ALLOCATED(obj%facetCellElemSD)) THEN
+    CALL Display("# facetCellElemSD : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetCellElemSD : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! facetSTelemsd
+  !!
+  IF (ALLOCATED(obj%facetSTelemsd)) THEN
+    CALL Display("# facetSTelemsd : ALLOCATED", unitno=unitno)
+  ELSE
+    CALL Display("# facetSTelemsd : NOT ALLOCATED", &
+      & unitno=unitno)
+  END IF
+  !!
+  !! quadTypeForFacet
+  !!
+  CALL Display( obj%quadTypeForFacet, "# quadTypeForFacet = ", &
+    & unitno=unitno )
+  !!
+  !! continuityTypeForFacet
+  !!
+  CALL Display( obj%continuityTypeForFacet, "# continuityTypeForFacet = ", &
+    & unitno=unitno )
+  !!
+  !! interpolTypeForFacet
+  !!
+  CALL Display( obj%interpolTypeForFacet, "# interpolTypeForFacet = ", &
+    & unitno=unitno )
+  !!
+  !! orderFacet
+  !!
+  CALL Display( obj%orderFacet, "# orderFacet = ", &
+    & unitno=unitno )
+  !!
 END PROCEDURE mesh_display
 
 !----------------------------------------------------------------------------
@@ -309,7 +632,7 @@ MODULE PROCEDURE mesh_Import
     IF (e%isLogActive()) THEN
       CALL e%raiseInformation(modName//'::'//myName//" - ")
       CALL Display(obj%physicalTag, "physicalTag = ", &
-        & unitNo=e%getLogFileUnit())
+        & unitno=e%getLogFileUnit())
     END IF
   END IF
   !> Reading elemNumber, maxElemNum, minElemNum, local_elemNumber,
@@ -325,7 +648,7 @@ MODULE PROCEDURE mesh_Import
     IF (e%isLogActive()) THEN
       CALL e%raiseInformation(modName//'::'//myName//" - ")
       CALL Display(elemNumber, "elemNumber = ", &
-        & unitNo=e%getLogFileUnit())
+        & unitno=e%getLogFileUnit())
     END IF
     IF (ALLOCATED(elemNumber) .AND. SIZE(elemNumber) .NE. 0) THEN
       obj%maxElemNum = MAXVAL(elemNumber)
@@ -417,7 +740,7 @@ MODULE PROCEDURE mesh_Import
     IF (e%isLogActive()) THEN
       CALL e%raiseInformation(modName//'::'//myName//" - ")
       CALL Display(InternalNptrs, "InternalNptrs = ", &
-        & unitNo=e%getLogFileUnit())
+        & unitno=e%getLogFileUnit())
     END IF
     IF (obj%elemType .EQ. Point1 .OR. obj%elemType .EQ. 0) THEN
       obj%nodeData(1)%globalNodeNum = InternalNptrs(1)
@@ -439,14 +762,25 @@ MODULE PROCEDURE mesh_Import
     IF (e%isLogActive()) THEN
       CALL e%raiseInformation(modName//'::'//myName//" - ")
       CALL Display(obj%boundingEntity, "boundingEntity = ", &
-        & unitNo=e%getLogFileUnit())
+        & unitno=e%getLogFileUnit())
     END IF
   END IF
   !> set Reference Element
   CALL e%raiseInformation(modName//'::'//myName//" - " &
     & //"setting reference element")
-  obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, nsd=obj%nsd, &
-    & elemType=obj%elemType)
+  IF (hdf5%pathExists(TRIM(dsetname)//"/ipType")) THEN
+    CALL hdf5%read(TRIM(dsetname)//"/ipType", &
+      & obj%ipType)
+  ELSE
+    obj%ipType = Equidistance
+  END IF
+  !!
+  obj%refelem => ReferenceElement_Pointer( &
+    & xidim=obj%xidim, &
+    & nsd=obj%nsd, &
+    & elemType=obj%elemType, &
+    & ipType=obj%ipType)
+  !!
   IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
   IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
   IF (ALLOCATED(InternalNptrs)) DEALLOCATE (InternalNptrs)
@@ -503,7 +837,7 @@ END PROCEDURE mesh_getNodeCoord
 MODULE PROCEDURE mesh_Export
   CHARACTER(LEN=*), PARAMETER :: myName = "mesh_Export"
   CALL e%raiseError(modName//"::"//myName//" - "// &
-      & "This routine has not been implemented yet.")
+      & "[WIP]: This routine has not been implemented yet.")
 END PROCEDURE mesh_Export
 
 !----------------------------------------------------------------------------
@@ -581,36 +915,36 @@ END PROCEDURE mesh_ExportToVTK
 
 MODULE PROCEDURE elemData_Display
   CALL Display( TRIM(msg), unitno=unitno )
-  CALL Display( obj%globalElemNum, msg="# globalElemNum=", UnitNo=UnitNo)
-  CALL Display( obj%localElemNum, msg="# localElemNum=", UnitNo=UnitNo)
+  CALL Display( obj%globalElemNum, msg="# globalElemNum=", unitno=unitno)
+  CALL Display( obj%localElemNum, msg="# localElemNum=", unitno=unitno)
   !!
   SELECT CASE( obj%elementType )
   CASE( INTERNAL_ELEMENT )
-    CALL Display( "# elementType=INTERNAL_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=INTERNAL_ELEMENT", unitno=unitno)
   CASE( BOUNDARY_ELEMENT )
-    CALL Display( "# elementType=BOUNDARY_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=BOUNDARY_ELEMENT", unitno=unitno)
   CASE( DOMAIN_BOUNDARY_ELEMENT )
-    CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
   CASE( GHOST_ELEMENT )
-    CALL Display( "# elementType=GHOST_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=GHOST_ELEMENT", unitno=unitno)
   END SELECT
   !!
   !! globalNodes
   !!
   IF( ALLOCATED( obj%globalNodes ) ) THEN
-    CALL Display( obj%globalNodes, msg="# globalNodes=", UnitNo=UnitNo)
+    CALL Display( obj%globalNodes, msg="# globalNodes=", unitno=unitno)
   END IF
   !!
   !! globalElements
   !!
   IF( ALLOCATED( obj%globalElements ) ) THEN
-    CALL Display( obj%globalElements, msg="# globalElements=", UnitNo=UnitNo)
+    CALL Display( obj%globalElements, msg="# globalElements=", unitno=unitno)
   END IF
   !!
   !! boundaryData
   !!
   IF( ALLOCATED( obj%boundaryData ) ) THEN
-    CALL Display( obj%boundaryData, msg="# boundaryData=", UnitNo=UnitNo)
+    CALL Display( obj%boundaryData, msg="# boundaryData=", unitno=unitno)
   END IF
   !!
 END PROCEDURE elemData_Display
@@ -622,62 +956,85 @@ END PROCEDURE elemData_Display
 MODULE PROCEDURE nodeData_Display
   !!
   CALL Display( TRIM(msg), unitno=unitno )
-  CALL Display( obj%globalNodeNum, msg="# globalNodeNum=", UnitNo=UnitNo)
-  CALL Display( obj%localNodeNum, msg="# localNodeNum=", UnitNo=UnitNo)
+  CALL Display( obj%globalNodeNum, msg="# globalNodeNum=", unitno=unitno)
+  CALL Display( obj%localNodeNum, msg="# localNodeNum=", unitno=unitno)
   !!
   SELECT CASE( obj%nodeType )
   CASE( INTERNAL_NODE )
-    CALL Display( "# nodeType=INTERNAL_NODE", UnitNo=UnitNo)
+    CALL Display( "# nodeType=INTERNAL_NODE", unitno=unitno)
   CASE( BOUNDARY_NODE )
-    CALL Display( "# nodeType=BOUNDARY_NODE", UnitNo=UnitNo)
+    CALL Display( "# nodeType=BOUNDARY_NODE", unitno=unitno)
   CASE( DOMAIN_BOUNDARY_NODE )
-    CALL Display( "# nodeType=DOMAIN_BOUNDARY_NODE", UnitNo=UnitNo)
+    CALL Display( "# nodeType=DOMAIN_BOUNDARY_NODE", unitno=unitno)
   CASE( GHOST_NODE )
-    CALL Display( "# nodeType=GHOST_NODE", UnitNo=UnitNo)
+    CALL Display( "# nodeType=GHOST_NODE", unitno=unitno)
   END SELECT
   !!
-  CALL Display( obj%localNodeNum, msg="# localNodeNum=", UnitNo=UnitNo)
+  CALL Display( obj%localNodeNum, msg="# localNodeNum=", unitno=unitno)
   !!
   !! globalNodes
   !!
   IF( ALLOCATED( obj%globalNodes ) ) THEN
-    CALL Display( obj%globalNodes, msg="# globalNodes=", UnitNo=UnitNo)
+    CALL Display( obj%globalNodes, msg="# globalNodes=", unitno=unitno)
+  END IF
+  !!
+  !! extraGlobalNodes
+  !!
+  IF( ALLOCATED( obj%extraGlobalNodes ) ) THEN
+    CALL Display( obj%extraGlobalNodes, msg="# extraGlobalNodes=", &
+      & unitno=unitno)
   END IF
   !!
   !! globalElements
   !!
   IF( ALLOCATED( obj%globalElements ) ) THEN
-    CALL Display( obj%globalElements, msg="# globalElements=", UnitNo=UnitNo)
+    CALL Display( obj%globalElements, msg="# globalElements=", unitno=unitno)
   END IF
   !!
 END PROCEDURE nodeData_Display
 
 !----------------------------------------------------------------------------
-!                                                                  Display
+!                                                 InternalFacetData_Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE facetData_Display
+MODULE PROCEDURE InternalFacetData_Display
+  !!
   CALL Display( TRIM(msg), unitno=unitno )
-  CALL Display( obj%nptrs, msg="# nptrs=", UnitNo=UnitNo)
+  CALL Display( "# elementType=INTERNAL_ELEMENT", unitno=unitno)
   CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
-    & UnitNo=UnitNo)
+    & unitno=unitno)
   CALL Display( obj%slaveCellNumber, msg="# slaveCellNumber=", &
-    & UnitNo=UnitNo)
-  CALL Display( obj%localFacetID, msg="# localFacetID=", &
-    & UnitNo=UnitNo)
+    & unitno=unitno)
+  CALL Display( obj%masterlocalFacetID, msg="# masterlocalFacetID=", &
+    & unitno=unitno)
+  CALL Display( obj%slavelocalFacetID, msg="# slavelocalFacetID=", &
+    & unitno=unitno)
+  !!
+END PROCEDURE InternalFacetData_Display
+
+!----------------------------------------------------------------------------
+!                                                   BoundaryFacetData_Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE BoundaryFacetData_Display
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
   !!
   SELECT CASE( obj%elementType )
   CASE( INTERNAL_ELEMENT )
-    CALL Display( "# elementType=INTERNAL_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=INTERNAL_ELEMENT", unitno=unitno)
   CASE( BOUNDARY_ELEMENT )
-    CALL Display( "# elementType=BOUNDARY_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=BOUNDARY_ELEMENT", unitno=unitno)
   CASE( DOMAIN_BOUNDARY_ELEMENT )
-    CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", UnitNo=UnitNo)
-  CASE( GHOST_ELEMENT )
-    CALL Display( "# elementType=GHOST_ELEMENT", UnitNo=UnitNo)
+    CALL Display( "# elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
   END SELECT
   !!
-END PROCEDURE facetData_Display
+  CALL Display( obj%masterCellNumber, msg="# masterCellNumber=", &
+    & unitno=unitno)
+  CALL Display( obj%masterLocalFacetID, msg="# masterlocalFacetID=", &
+    & unitno=unitno)
+  !
+END PROCEDURE BoundaryFacetData_Display
 
 !----------------------------------------------------------------------------
 !                                                        DisplayElementData
@@ -692,32 +1049,12 @@ MODULE PROCEDURE mesh_DisplayElementData
   CALL Display( TRIM(msg), unitno=unitno )
   !!
   DO ii = 1, telements
-    CALL obj%elementData( ii )%Display( msg="elementData( "//tostring(ii) &
+    CALL obj%elementData( ii )%Display( msg="# elementData( "//tostring(ii) &
       & // " )=", unitno=unitno )
     CALL BlankLines( nol=2, unitno=unitno )
   END DO
   !!
 END PROCEDURE mesh_DisplayElementData
-
-!----------------------------------------------------------------------------
-!                                                        DisplayFacetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_DisplayFacetData
-  !!
-  INTEGER( I4B ) :: ii, telements
-  !!
-  telements = obj%getTotalFacetElements()
-  !!
-  CALL Display( TRIM(msg), unitno=unitno )
-  !!
-  DO ii = 1, telements
-    CALL obj%facetData( ii )%Display( msg="facetData( "//tostring(ii) &
-      & // " )=", unitno=unitno )
-    CALL BlankLines( nol=2, unitno=unitno )
-  END DO
-  !!
-END PROCEDURE mesh_DisplayFacetData
 
 !----------------------------------------------------------------------------
 !                                                            DisplayNodeData
@@ -732,11 +1069,130 @@ MODULE PROCEDURE mesh_DisplayNodeData
   CALL Display( TRIM(msg), unitno=unitno )
   !!
   DO ii = 1, tNodes
-    CALL obj%nodeData( ii )%Display( msg="nodeData( "//tostring(ii) &
+    CALL obj%nodeData( ii )%Display( msg="# nodeData( "//tostring(ii) &
       & // " )=", unitno=unitno )
     CALL BlankLines( nol=2, unitno=unitno )
   END DO
   !!
 END PROCEDURE mesh_DisplayNodeData
+
+!----------------------------------------------------------------------------
+!                                                  DisplayInternalFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_DisplayInternalFacetData
+  !!
+  INTEGER( I4B ) :: ii, telements
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
+  !!
+  IF( ALLOCATED( obj%internalFacetData ) ) THEN
+    !!
+    telements = SIZE( obj%internalFacetData )
+    !!
+    !!
+    DO ii = 1, telements
+      CALL obj%internalFacetData( ii )%Display( &
+        & msg="# internalFacetData( "//tostring(ii) &
+        & // " )=", unitno=unitno )
+      CALL BlankLines( nol=2, unitno=unitno )
+    END DO
+    !!
+  ELSE
+    CALL Display( "# internalFacetData NOT ALLOCATED", unitno=unitno )
+  END IF
+  !!
+END PROCEDURE mesh_DisplayInternalFacetData
+
+!----------------------------------------------------------------------------
+!                                                   DisplayBoundaryFacetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_DisplayBoundaryFacetData
+  !!
+  INTEGER( I4B ) :: ii
+  !!
+  CALL Display( TRIM(msg), unitno=unitno )
+  !!
+  IF( ALLOCATED( obj%boundaryFacetData ) ) THEN
+    !!
+    DO ii = 1, SIZE( obj%boundaryFacetData )
+      CALL obj%boundaryFacetData( ii )%Display( &
+        & msg="# boundaryFacetData( "//tostring(ii) &
+        & // " )=", unitno=unitno )
+      CALL BlankLines( nol=2, unitno=unitno )
+    END DO
+    !!
+  ELSE
+    CALL Display( "# boundaryFacetData NOT ALLOCATED", unitno=unitno )
+  END IF
+  !!
+END PROCEDURE mesh_DisplayBoundaryFacetData
+
+!----------------------------------------------------------------------------
+!                                                         DisplayFacetElemSD
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_DisplayFacetElemSD
+  !!
+  INTEGER( I4B ) :: ii
+  !!
+  CALL Display( msg, unitno=unitno)
+  !!
+  IF( ALLOCATED( obj%facetElemSD ) ) THEN
+    !!
+    DO ii = 1, SIZE( obj%facetElemSD )
+        !!
+      CALL Display( &
+        & obj%facetElemSD( ii ), &
+        & "# obj%facetElemSD( " // tostring( ii ) // " )=", &
+        & unitno=unitno )
+        !!
+      CALL BlankLines( nol=2, unitno=unitno )
+        !!
+      CALL Display( &
+        & obj%facetCellElemSD( ii ), &
+        & "# obj%facetCellElemSD( " // tostring( ii ) // " )=", &
+        & unitno=unitno )
+        !!
+      CALL BlankLines( nol=2, unitno=unitno )
+        !!
+    END DO
+    !!
+  ELSE
+    !!
+    CALL Display( "# facetElemSD : NOT ALLOCATED", unitno=unitno)
+    !!
+  END IF
+  !!
+END PROCEDURE mesh_DisplayFacetElemSD
+
+!----------------------------------------------------------------------------
+!                                                      DisplayFacetElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_DisplayFacetElements
+  !!
+  INTEGER( I4B ) :: ii
+  !!
+  CALL Display( msg, unitno=unitno)
+  !!
+  IF( ALLOCATED( obj%facetElements ) ) THEN
+    !!
+    DO ii = 1, SIZE( obj%facetElements )
+      CALL Display( &
+        & obj%facetElements( ii ), &
+        & "# obj%facetElements( " // tostring( ii ) // " )=", &
+        & unitno=unitno )
+      CALL BlankLines( nol=2, unitno=unitno )
+    END DO
+    !!
+  ELSE
+    !!
+    CALL Display( "# facetElements : NOT ALLOCATED", unitno=unitno)
+    !!
+  END IF
+  !!
+END PROCEDURE mesh_DisplayFacetElements
 
 END SUBMODULE IOMethods
