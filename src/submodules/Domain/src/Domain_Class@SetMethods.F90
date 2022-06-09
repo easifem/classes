@@ -221,6 +221,7 @@ MODULE PROCEDURE Domain_setDomainFacetElement
     tDomFacet = masterMesh%getTotalBoundaryFacetElements( )
     tMeshFacet = 0
     !!
+    !!
     DO iel = 1, tDomFacet
       !!
       faceNptrs = masterMesh%getFacetConnectivity( &
