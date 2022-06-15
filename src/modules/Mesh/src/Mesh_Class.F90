@@ -285,14 +285,13 @@ TYPE :: Mesh_
     !! Reference element of the mesh (spatial)
   INTEGER( I4B ), PUBLIC :: ipType = Equidistance
     !! interpolation point type
-    !!
-    !! Following variables are required during processing.
-    !!
+  !!
+  !! Following variables are required during processing.
   !!
   !! time
   !!
   TYPE(QuadraturePoint_), PUBLIC :: quadForTime
-    !! quadrature point for time domain #STFEM #STFEM
+    !! quadrature point for time domain #STFEM
   TYPE(ElemshapeData_), PUBLIC :: linTimeElemSD
     !! Element shape data on linear time element #STFEM
   TYPE(ElemshapeData_), PUBLIC :: timeElemSD
