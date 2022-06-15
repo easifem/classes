@@ -353,10 +353,13 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, : )
 
 INTERFACE
-MODULE SUBROUTINE stvField_set1( obj, globalNode, value )
+MODULE SUBROUTINE stvField_set1( obj, globalNode, value, scale, &
+  & addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set1
 END INTERFACE
 
@@ -379,9 +382,11 @@ END INTERFACE
 ! STvector( :, :, i ) = value( :, : ), for i = 1, tNodes
 
 INTERFACE
-MODULE SUBROUTINE stvField_set2( obj, value )
+MODULE SUBROUTINE stvField_set2( obj, value, scale, addContribution )
   CLASS( STVectorField_ ), TARGET, INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set2
 END INTERFACE
 
@@ -401,11 +406,14 @@ END INTERFACE
 ! STvector( spaceCompo, timeCompo, i ) = value, for i = 1, tNodes
 
 INTERFACE
-MODULE SUBROUTINE stvField_set3( obj, value, spaceCompo, timeCompo )
+MODULE SUBROUTINE stvField_set3( obj, value, spaceCompo, timeCompo, &
+  & scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set3
 END INTERFACE
 
@@ -426,9 +434,11 @@ END INTERFACE
 ! STvector( :, :, : ) = value( :, :, : )
 
 INTERFACE
-MODULE SUBROUTINE stvField_set4( obj, value )
+MODULE SUBROUTINE stvField_set4( obj, value, scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( :, :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set4
 END INTERFACE
 
@@ -450,11 +460,14 @@ END INTERFACE
 ! STvector( spaceCompo, timeCompo, : ) = value( : )
 
 INTERFACE
-MODULE SUBROUTINE stvField_set5( obj, value, spaceCompo, timeCompo )
+MODULE SUBROUTINE stvField_set5( obj, value, spaceCompo, timeCompo,  &
+  & scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( : )
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set5
 END INTERFACE
 
@@ -477,11 +490,14 @@ END INTERFACE
 ! STvector( spaceCompo, : ) = value
 
 INTERFACE
-MODULE SUBROUTINE stvField_set6( obj, value, spaceCompo, timeCompo )
+MODULE SUBROUTINE stvField_set6( obj, value, spaceCompo, timeCompo,  &
+  & scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   TYPE( ScalarField_ ), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set6
 END INTERFACE
 
@@ -504,10 +520,13 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, : ), for entries in global nodes
 
 INTERFACE
-MODULE SUBROUTINE stvField_set7(obj, value, globalNode )
+MODULE SUBROUTINE stvField_set7(obj, value, globalNode, scale,  &
+  & addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set7
 END INTERFACE
 
@@ -535,10 +554,13 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, :, : )
 
 INTERFACE
-MODULE SUBROUTINE stvField_set8(obj, globalNode, value)
+MODULE SUBROUTINE stvField_set8(obj, globalNode, value, scale, &
+  & addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value( :, :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set8
 END INTERFACE
 
@@ -556,12 +578,15 @@ END INTERFACE
 ! STvector( spaceCompo, globalNode ) = value( : )
 
 INTERFACE
-MODULE SUBROUTINE stvField_set9(obj, value, globalNode, spaceCompo, timeCompo)
+MODULE SUBROUTINE stvField_set9(obj, value, globalNode, spaceCompo,  &
+  & timeCompo, scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( : )
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set9
 END INTERFACE
 
@@ -580,12 +605,14 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE stvField_set10(obj, value, globalNode, spaceCompo, &
-  & timeCompo)
+  & timeCompo, scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: spaceCompo
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set10
 END INTERFACE
 
@@ -598,12 +625,15 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE stvField_set11( obj, value, istart, iend, stride )
+MODULE SUBROUTINE stvField_set11( obj, value, istart, iend, stride,  &
+  & scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set11
 END INTERFACE
 
@@ -616,12 +646,15 @@ END INTERFACE
 ! summary: set the STvector values using triplet
 
 INTERFACE
-MODULE SUBROUTINE stvField_set12( obj, value, istart, iend, stride )
+MODULE SUBROUTINE stvField_set12( obj, value, istart, iend, stride,  &
+  & scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( :, :, : )
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set12
 END INTERFACE
 
@@ -634,10 +667,13 @@ END INTERFACE
 ! summary: set the STvector values using triplet
 
 INTERFACE
-MODULE SUBROUTINE stvField_set13( obj, value, globalNode )
+MODULE SUBROUTINE stvField_set13( obj, value, globalNode, scale, &
+  & addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   TYPE(FEVariable_), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set13
 END INTERFACE
 
@@ -650,9 +686,11 @@ END INTERFACE
 ! summary: set the STvector values using triplet
 
 INTERFACE
-MODULE SUBROUTINE stvField_set14( obj, value )
+MODULE SUBROUTINE stvField_set14( obj, value, scale, addContribution )
   CLASS( STVectorField_ ), INTENT( INOUT ) :: obj
   REAL(DFP), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stvField_set14
 END INTERFACE
 
@@ -743,7 +781,11 @@ END INTERFACE
 ! summary: This routine returns the nodal value of a space-time vector field
 !
 !# Introduction
-! This routine returns the nodal values of a space-time nodal vector. In this routine we can specify the spatial and temporal component using spaceCompo and timeCompo. globalNode contains the list of global node number. Also, the values are returned in the a vector scalar `values`. Note that the length of value should be equal to the size of globalNode vector.
+! This routine returns the nodal values of a space-time nodal vector.
+! In this routine we can specify the spatial and temporal component using
+! spaceCompo and timeCompo. globalNode contains the list of global node
+! number. Also, the values are returned in the a vector scalar `values`. Note
+! that the length of value should be equal to the size of globalNode vector.
 
 INTERFACE
 MODULE SUBROUTINE stvField_get4(obj, value, globalNode, spaceCompo, &
