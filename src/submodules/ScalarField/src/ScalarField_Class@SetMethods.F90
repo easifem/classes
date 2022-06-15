@@ -35,7 +35,13 @@ MODULE PROCEDURE sField_set1
 #endif
   !!
   IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL set( obj%realVec, nodenum=[1], value=[value]  )
+    !!
+    IF( PRESENT( addContribution ) ) THEN
+      CALL add( obj%realVec, nodenum=[1], value=[value], scale=scale )
+    ELSE
+      CALL set( obj%realVec, nodenum=[1], value=[value]  )
+    END IF
+    !!
   ELSE
     !!
     localNode = obj%domain%getLocalNodeNumber( globalNode )
@@ -44,7 +50,12 @@ MODULE PROCEDURE sField_set1
     IF( localNode .NE. 0 ) THEN
 #endif
     !!
-    CALL set( obj%realVec, nodenum=[localNode], value=[value] )
+    IF( PRESENT( addContribution ) ) THEN
+      CALL add( obj%realVec, nodenum=[localNode], value=[value], &
+        & scale=scale )
+    ELSE
+      CALL set( obj%realVec, nodenum=[localNode], value=[value] )
+    END IF
     !!
 #ifdef DEBUG_VER
     ELSE
@@ -70,7 +81,11 @@ MODULE PROCEDURE sField_set2
   ELSE
 #endif
   !!
-  CALL set( obj%realVec, value=value )
+  IF( PRESENT( addContribution ) ) THEN
+    CALL add( obj%realVec, value=value, scale=scale )
+  ELSE
+    CALL set( obj%realVec, value=value )
+  END IF
   !!
 #ifdef DEBUG_VER
   END IF
@@ -104,7 +119,11 @@ MODULE PROCEDURE sField_set3
       !!
 #endif
   !!
-  CALL set( obj%realVec, value=value )
+  IF( PRESENT( addContribution ) ) THEN
+    CALL add( obj%realVec, value=value, scale=scale )
+  ELSE
+    CALL set( obj%realVec, value=value )
+  END IF
   !!
 #ifdef DEBUG_VER
   END IF
@@ -117,9 +136,41 @@ END PROCEDURE sField_set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_set4
-  REAL( DFP ) :: val( SIZE(globalNode) )
-  val = value
-  CALL obj%set( globalNode, val )
+  CHARACTER( LEN = * ), PARAMETER :: myName="sField_set4"
+  INTEGER( I4B ) :: localNode( SIZE( globalNode ) )
+  !!
+#ifdef DEBUG_VER
+  !! check
+  IF( .NOT. obj%isInitiated ) &
+    & CALL e%raiseError(modName//'::'//myName// " - "// &
+    & 'Scalar field object is not initiated' )
+  !!
+  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
+    !! check
+    CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'This routine should not be called for constant field type.' )
+    !! check
+  ELSE
+#endif
+    !!
+    localNode = obj%domain%getLocalNodeNumber( globalNode )
+    !!
+#ifdef DEBUG_VER
+    IF( ANY( localNode .GT. obj%tSize ) ) &
+      & CALL e%raiseError(modName//'::'//myName// " - "// &
+      & 'Some of the globalNode are out of bound' )
+#endif
+    !!
+    IF( PRESENT( addContribution ) ) THEN
+      CALL add( obj%realVec, nodenum=localNode, value=value, scale=scale )
+    ELSE
+      CALL set( obj%realVec, nodenum=localNode, value=value )
+    END IF
+    !!
+#ifdef DEBUG_VER
+  END IF
+#endif
+  !!
 END PROCEDURE sField_set4
 
 !----------------------------------------------------------------------------
@@ -152,7 +203,11 @@ MODULE PROCEDURE sField_set5
       & 'Some of the globalNode are out of bound' )
 #endif
     !!
-    CALL set( obj%realVec, nodenum=localNode, value=value )
+    IF( PRESENT( addContribution ) ) THEN
+      CALL add( obj%realVec, nodenum=localNode, value=value, scale=scale )
+    ELSE
+      CALL set( obj%realVec, nodenum=localNode, value=value )
+    END IF
     !!
 #ifdef DEBUG_VER
   END IF
@@ -190,7 +245,8 @@ MODULE PROCEDURE sField_set6
     globalNode( jj ) = ii
   END DO
   !!
-  CALL obj%set( globalNode=globalNode, value=value )
+  CALL obj%set( globalNode=globalNode, value=value, scale=scale, &
+    & addContribution=addContribution )
   !!
 #ifdef DEBUG_VER
     !!
@@ -226,20 +282,22 @@ MODULE PROCEDURE sField_set7
     globalNode( jj ) = ii
   END DO
   !!
-  CALL obj%set( globalNode=globalNode, value=value )
+  CALL obj%set( globalNode=globalNode, value=value, scale=scale, &
+    & addContribution=addContribution )
   !!
 #ifdef DEBUG_VER
   END IF
 #endif
+  !!
 END PROCEDURE sField_set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-module procedure sField_set8
-  obj%realVec = obj2%realVec
-end procedure sField_set8
+MODULE PROCEDURE sField_set8
+  CALL set( obj%realVec, value=obj2%realVec )
+END PROCEDURE sField_set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
@@ -266,18 +324,30 @@ MODULE PROCEDURE sField_set9
   CASE( Constant )
     !!
     CALL obj%Set( &
-      & value = GET(value, TypeFEVariableScalar, TypeFEVariableConstant), &
-      & globalNode=globalNode)
+    & value = GET(value, TypeFEVariableScalar, TypeFEVariableConstant), &
+    & globalNode=globalNode, &
+    & scale=scale, &
+    & addContribution=addContribution)
     !!
   CASE( Space )
     !!
     CALL obj%Set( &
       & value = GET(value, TypeFEVariableScalar, TypeFEVariableSpace), &
-      & globalNode=globalNode)
+      & globalNode=globalNode, &
+      & scale=scale, &
+      & addContribution=addContribution)
     !!
   END SELECT
   !!
 END PROCEDURE sField_set9
+
+!----------------------------------------------------------------------------
+!                                                                       set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_set10
+  CALL add( obj%realVec, value=obj2%realVec, scale=scale )
+END PROCEDURE sField_set10
 
 !----------------------------------------------------------------------------
 !

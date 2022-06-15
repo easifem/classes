@@ -376,10 +376,13 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set1( obj, globalNode, value )
+MODULE SUBROUTINE stsField_set1( obj, globalNode, value, scale, &
+    & addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set1
 END INTERFACE
 
@@ -392,7 +395,8 @@ END INTERFACE
 ! summary: This routine sets all the entries of a STScalar field
 !
 !# Introduction
-! This routine work as follows. The size of value should be same as obj%timeCompo, then this value is set for all the nodal values
+! This routine work as follows. The size of value should be same as
+! obj%timeCompo, then this value is set for all the nodal values
 !
 ! STScalar( :, i ) = value( : ), for i = 1, tNodes
 !
@@ -400,14 +404,16 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call obj%set( value= 10.0_DFP*[1,1,1] )
-  ! call obj%display( "test-2: STScalar field = ")
+! call obj%set( value= 10.0_DFP*[1,1,1] )
+! call obj%display( "test-2: STScalar field = ")
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set2( obj, value )
+MODULE SUBROUTINE stsField_set2( obj, value, scale, addContribution )
   CLASS( STScalarField_ ), TARGET, INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set2
 END INTERFACE
 
@@ -429,17 +435,20 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call obj%set( value= -10.0_DFP, timeCompo=1 )
-  ! call obj%set( value= -20.0_DFP, timeCompo=2 )
-  ! call obj%set( value= -30.0_DFP, timeCompo=3 )
-  ! call obj%display( "test-3: STScalar field = ")
+! call obj%set( value= -10.0_DFP, timeCompo=1 )
+! call obj%set( value= -20.0_DFP, timeCompo=2 )
+! call obj%set( value= -30.0_DFP, timeCompo=3 )
+! call obj%display( "test-3: STScalar field = ")
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set3( obj, value, timeCompo )
+MODULE SUBROUTINE stsField_set3( obj, value, timeCompo, scale, &
+  & addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set3
 END INTERFACE
 
@@ -468,9 +477,11 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set4( obj, value )
+MODULE SUBROUTINE stsField_set4( obj, value, scale, addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set4
 END INTERFACE
 
@@ -499,10 +510,13 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set5( obj, value, timeCompo )
+MODULE SUBROUTINE stsField_set5( obj, value, timeCompo, scale, &
+  & addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( : )
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set5
 END INTERFACE
 
@@ -537,10 +551,13 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set6( obj, value, timeCompo )
+MODULE SUBROUTINE stsField_set6( obj, value, timeCompo, scale, &
+  & addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   TYPE( ScalarField_ ), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set6
 END INTERFACE
 
@@ -570,10 +587,13 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set7(obj, value, globalNode)
+MODULE SUBROUTINE stsField_set7(obj, value, globalNode, scale, &
+  & addContribution)
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set7
 END INTERFACE
 
@@ -601,10 +621,13 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set8(obj, globalNode, value)
+MODULE SUBROUTINE stsField_set8(obj, globalNode, value, scale, &
+  & addContribution)
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value( :, : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set8
 END INTERFACE
 
@@ -632,11 +655,14 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set9(obj, value, globalNode, timeCompo)
+MODULE SUBROUTINE stsField_set9(obj, value, globalNode, timeCompo, scale, &
+  & addContribution)
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( : )
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set9
 END INTERFACE
 
@@ -654,11 +680,14 @@ END INTERFACE
 ! STScalar( timeCompo, globalNode ) = value
 
 INTERFACE
-MODULE SUBROUTINE stsField_set10(obj, value, globalNode, timeCompo)
+MODULE SUBROUTINE stsField_set10(obj, value, globalNode, timeCompo, scale, &
+  & addContribution)
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   INTEGER( I4B ), INTENT( IN ) :: timeCompo
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set10
 END INTERFACE
 
@@ -675,12 +704,15 @@ END INTERFACE
 !
 
 INTERFACE
-MODULE SUBROUTINE stsField_set11( obj, value, istart, iend, stride )
+MODULE SUBROUTINE stsField_set11( obj, value, istart, iend, stride, scale, &
+  & addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set11
 END INTERFACE
 
@@ -696,12 +728,15 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-MODULE SUBROUTINE stsField_set12( obj, value, istart, iend, stride )
+MODULE SUBROUTINE stsField_set12( obj, value, istart, iend, stride, scale, &
+  & addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( :, : )
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set12
 END INTERFACE
 
@@ -717,10 +752,13 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-MODULE SUBROUTINE stsField_set13( obj, value, globalNode)
+MODULE SUBROUTINE stsField_set13( obj, value, globalNode, scale, &
+  & addContribution)
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   TYPE(FEVariable_), INTENT( IN ) :: value
   INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set13
 END INTERFACE
 
@@ -736,9 +774,11 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-MODULE SUBROUTINE stsField_set14( obj, value )
+MODULE SUBROUTINE stsField_set14( obj, value, scale, addContribution )
   CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE stsField_set14
 END INTERFACE
 

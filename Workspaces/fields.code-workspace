@@ -21,6 +21,10 @@
 			"path": "../src/modules/ScalarField"
 		},
 		{
+			"name": "ScalarField",
+			"path": "../src/submodules/ScalarField"
+		},
+		{
 			"name": "TensorField",
 			"path": "../src/modules/TensorField"
 		},
@@ -29,33 +33,34 @@
 			"path": "../src/modules/VectorField"
 		},
 		{
-			"name": "ScalarField",
-			"path": "../src/submodules/ScalarField"
-		},
-		{
 			"name": "VectorField",
 			"path": "../src/submodules/VectorField"
 		},
 		{
+			"name": "MatrixField",
 			"path": "../src/modules/MatrixField"
 		},
 		{
+			"name": "MatrixField",
 			"path": "../src/submodules/MatrixField"
 		},
 		{
-			"path": "../tests/testMatrixField"
+			"path": "../src/modules/STScalarField"
 		},
 		{
-			"path": "../tests/testScalarField"
+			"path": "../src/submodules/STScalarField"
 		},
 		{
-			"path": "../tests/testSTScalarField"
+			"path": "../src/modules/BlockNodeField"
 		},
 		{
-			"path": "../tests/testSTVectorField"
+			"path": "../src/submodules/BlockNodeField"
 		},
 		{
-			"path": "../tests/testVectorField"
+			"path": "../src/modules/STVectorField"
+		},
+		{
+			"path": "../src/submodules/STVectorField"
 		}
 	]
 }
