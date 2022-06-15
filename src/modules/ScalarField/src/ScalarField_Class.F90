@@ -72,8 +72,10 @@ TYPE, EXTENDS( AbstractNodeField_ ) :: ScalarField_
     !! This method is used for assignment operator
   PROCEDURE, PASS( obj ) :: set9 => sField_set9
     !! Set selected values using FEVariable
+  PROCEDURE, PASS( obj ) :: set10 => sField_set10
+    !! Set selected values using FEVariable
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, &
-    & set5, set6, set7, set8, set9
+    & set5, set6, set7, set8, set9, set10
   GENERIC, PUBLIC :: ASSIGNMENT(=) => set8
     !! set values to a vector
   PROCEDURE, PASS( obj ) :: get1 => sField_get1
@@ -320,10 +322,13 @@ END INTERFACE
 ! summary: This routine sets the single entry of the scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_set1( obj, globalNode, value )
+MODULE SUBROUTINE sField_set1( obj, globalNode, value, scale, &
+  & addContribution )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode
   REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set1
 END INTERFACE
 
@@ -336,9 +341,11 @@ END INTERFACE
 ! summary: This routine sets all the entries of a scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_set2( obj, value )
+MODULE SUBROUTINE sField_set2( obj, value, scale, addContribution )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set2
 END INTERFACE
 
@@ -351,9 +358,11 @@ END INTERFACE
 ! summary: This routine set all the entries by using given scalar field
 
 INTERFACE
-MODULE SUBROUTINE sField_set3( obj, value )
+MODULE SUBROUTINE sField_set3( obj, value, scale, addContribution )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set3
 END INTERFACE
 
@@ -366,10 +375,12 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_set4(obj, globalNode, value)
+MODULE SUBROUTINE sField_set4(obj, globalNode, value, scale, addContribution)
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set4
 END INTERFACE
 
@@ -382,10 +393,12 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_set5(obj, globalNode, value)
+MODULE SUBROUTINE sField_set5(obj, globalNode, value, scale, addContribution)
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set5
 END INTERFACE
 
@@ -398,12 +411,15 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE sField_set6( obj, istart, iend, stride, value )
+MODULE SUBROUTINE sField_set6( obj, istart, iend, stride, value, &
+  & scale, addContribution )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
   REAL( DFP ), INTENT( IN ) :: value
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set6
 END INTERFACE
 
@@ -416,12 +432,15 @@ END INTERFACE
 ! summary: set the vector vals using triplet
 
 INTERFACE
-MODULE SUBROUTINE sField_set7( obj, istart, iend, stride, value )
+MODULE SUBROUTINE sField_set7( obj, istart, iend, stride, value, &
+  & scale, addContribution )
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: istart
   INTEGER( I4B ), INTENT( IN ) :: iend
   INTEGER( I4B ), INTENT( IN ) :: stride
   REAL( DFP ), INTENT( IN ) :: value( : )
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set7
 END INTERFACE
 
@@ -449,12 +468,31 @@ END INTERFACE
 ! summary: This routine sets the selected entries using [[FEVariable_]]
 
 INTERFACE
-MODULE SUBROUTINE sField_set9(obj, globalNode, value)
+MODULE SUBROUTINE sField_set9(obj, globalNode, value, scale, addContribution)
   CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
   TYPE(FEVariable_), INTENT( IN ) :: value
   !! Scalar, Nodal, FEVariable (Space or Constant)
+  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
 END SUBROUTINE sField_set9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: used for assignment operator
+
+INTERFACE
+MODULE SUBROUTINE sField_set10( obj, obj2, scale, addContribution )
+  CLASS( ScalarField_ ), INTENT( INOUT ) :: obj
+  CLASS( ScalarField_ ), INTENT( IN ) :: obj2
+  REAL( DFP ), INTENT( IN ) :: scale
+  LOGICAL( LGT ), INTENT( IN ) :: addContribution
+END SUBROUTINE sField_set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
