@@ -40,7 +40,7 @@ TYPE :: Test_ReferenceElement_
     !! name of the element
   INTEGER(I4B) :: dim = 0
     !! Number of spatial dimensions
-  TYPE(Test_Reference_), ALLOCATABLE :: topology(:)
+  TYPE(Test_Topology_), ALLOCATABLE :: topology(:)
     !! Topology information of 0D, 1, 2, 3D entities
 END TYPE Test_ReferenceElement_
 
