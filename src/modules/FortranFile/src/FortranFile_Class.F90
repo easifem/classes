@@ -35,7 +35,9 @@ USE ExceptionHandler_Class
 USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*),PARAMETER :: modName='FortranFile_Class', hash="#", comma=","
+CHARACTER(LEN=*),PARAMETER :: modName='FortranFile_Class'
+CHARACTER(LEN=*),PARAMETER :: hash="#"
+CHARACTER(LEN=*),PARAMETER :: comma=","
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
 TYPE(ExceptionHandler_), PRIVATE :: e
 
@@ -82,30 +84,42 @@ TYPE, EXTENDS(AbstractFile_) :: FortranFile_
     !! Whether or not the file is being padded
   LOGICAL(LGT) :: getNewUnit = .FALSE.
   CHARACTER(LEN=6) :: posopt = 'ASIS  '
-  CHARACTER(LEN=1) :: comment = hash
-  CHARACTER(LEN=1) :: separator = comma
-  CHARACTER(LEN=2) :: delimiter = "\n"
+  CHARACTER(LEN=1), PUBLIC :: comment = hash
+  CHARACTER(LEN=1), PUBLIC :: separator = " "
+  CHARACTER(LEN=2), PUBLIC :: delimiter = "\n"
   !
 CONTAINS
   PRIVATE
+  !!
+  !! @ConstructorMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => ff_addSurrogate
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => ff_initiate
-  PROCEDURE, PUBLIC, PASS(Obj) :: clear => ff_clear
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => ff_clear
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => ff_Deallocate
+  FINAL :: ff_final
   PROCEDURE, PUBLIC, PASS(Obj) :: open => ff_open
   PROCEDURE, PUBLIC, PASS(Obj) :: close => ff_close
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => ff_delete
   PROCEDURE, PUBLIC, PASS(Obj) :: backspace => ff_backspace
   PROCEDURE, PUBLIC, PASS(Obj) :: rewind => ff_rewind
+  !!
+  !! @SetMethods
+  !!
+  PROCEDURE, PUBLIC, PASS(Obj) :: setStatus => ff_setStatus
+  !!
+  !! @GetMethods
+  !!
   PROCEDURE, PUBLIC, PASS(Obj) :: getUnitNo => ff_getUnitNo
+  PROCEDURE, PUBLIC, PASS(Obj) :: getRecLen => ff_getRecLen
+  !!
+  !! @EnquireMethods
+  !!
   PROCEDURE, PUBLIC, PASS(Obj) :: isFormatted => ff_isFormatted
   PROCEDURE, PUBLIC, PASS(Obj) :: isDirect => ff_isDirect
-  PROCEDURE, PUBLIC, PASS(Obj) :: getRecLen => ff_getRecLen
   PROCEDURE, PUBLIC, PASS(Obj) :: isPadded => ff_isPadded
   PROCEDURE, PUBLIC, PASS(Obj) :: isNew => ff_isNew
   PROCEDURE, PUBLIC, PASS(Obj) :: isOverwrite => ff_isOverwrite
-  PROCEDURE, PUBLIC, PASS(Obj) :: isInit => ff_isInit
-  PROCEDURE, PUBLIC, PASS(Obj) :: setStatus => ff_setStatus
+  PROCEDURE, PUBLIC, PASS(Obj) :: isInitiated => ff_isInitiated
 END TYPE FortranFile_
 
 PUBLIC :: FortranFile_
@@ -118,8 +132,12 @@ END TYPE
 PUBLIC :: FortranFilePointer_
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogate
+!                                            addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July, 2022
+! summary: Add surrogate to the module
 
 INTERFACE
   MODULE SUBROUTINE ff_addSurrogate(obj, UserObj)
@@ -129,11 +147,15 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Initiate the fortran file
+
 INTERFACE
-  MODULE SUBROUTINE ff_initiate(obj, filename, unit, status, access, form, &
+  MODULE SUBROUTINE ff_initiate( obj, filename, unit, status, access, form, &
     & position, action, pad, recl, comment, separator, delimiter)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: filename
@@ -165,32 +187,54 @@ INTERFACE
   END SUBROUTINE ff_initiate
 END INTERFACE
 
-INTERFACE InitiateFortranFile
+INTERFACE FortranFileInitiate
   MODULE PROCEDURE ff_initiate
-END INTERFACE InitiateFortranFile
+END INTERFACE FortranFileInitiate
 
-PUBLIC :: InitiateFortranFile
+PUBLIC :: FortranFileInitiate
 
 !----------------------------------------------------------------------------
-!                                                                 Clear
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July, 2022
+! summary: 	Clear the content of fortran file
 
 INTERFACE
-  MODULE SUBROUTINE ff_clear(obj, delete)
+  MODULE SUBROUTINE ff_Deallocate(obj, delete)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: delete
-  END SUBROUTINE ff_clear
+  END SUBROUTINE ff_Deallocate
 END INTERFACE
 
-INTERFACE ClearFortranFile
-  MODULE PROCEDURE ff_clear
-END INTERFACE ClearFortranFile
+INTERFACE FortranFileDeallocate
+  MODULE PROCEDURE ff_Deallocate
+END INTERFACE FortranFileDeallocate
 
-PUBLIC :: ClearFortranFile
+PUBLIC :: FortranFileDeallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Open
+!                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July, 2022
+! summary: 	Deallocate the content of fortran file
+
+INTERFACE
+  MODULE SUBROUTINE ff_Final(obj)
+    TYPE(FortranFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE ff_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   Open@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Open the fortran file
 
 INTERFACE
   MODULE SUBROUTINE ff_open(obj)
@@ -199,8 +243,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Close
+!                                                   Close@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Close the fortran file
 
 INTERFACE
   MODULE SUBROUTINE ff_close(obj)
@@ -209,8 +257,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Delete
+!                                                 Delete@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Delete the fortran file
 
 INTERFACE
   MODULE SUBROUTINE ff_delete(obj)
@@ -219,8 +271,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Backspace
+!                                              Backspace@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Move one line back
 
 INTERFACE
   MODULE SUBROUTINE ff_backspace(obj)
@@ -228,15 +284,19 @@ INTERFACE
   END SUBROUTINE ff_backspace
 END INTERFACE
 
-INTERFACE BackspaceFortranFile
+INTERFACE FortranFileBackspace
   MODULE PROCEDURE ff_backspace
-END INTERFACE BackspaceFortranFile
+END INTERFACE FortranFileBackspace
 
-PUBLIC :: BackspaceFortranFile
+PUBLIC :: FortranFileBackspace
 
 !----------------------------------------------------------------------------
-!                                                               Rewind
+!                                                  Rewind@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: 	Move to the begining
 
 INTERFACE
   MODULE SUBROUTINE ff_rewind(obj)
@@ -244,15 +304,35 @@ INTERFACE
   END SUBROUTINE ff_rewind
 END INTERFACE
 
-INTERFACE RewindFortranFile
+INTERFACE FortranFileRewind
   MODULE PROCEDURE ff_rewind
-END INTERFACE RewindFortranFile
+END INTERFACE FortranFileRewind
 
-PUBLIC :: RewindFortranFile
+PUBLIC :: FortranFileRewind
 
 !----------------------------------------------------------------------------
-!                                                             getUnitNo
+!                                                   ff_setStatus@SetMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Set the status of the file
+
+INTERFACE
+  MODULE SUBROUTINE ff_setStatus(obj, status)
+    CLASS(FortranFile_), INTENT(INOUT) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: status
+    LOGICAL(LGT) :: ans
+  END SUBROUTINE ff_setStatus
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      getUnitNo@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Get the unit number of the fortran file
 
 INTERFACE
   MODULE PURE FUNCTION ff_getUnitNo(obj) RESULT(ans)
@@ -262,30 +342,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           isFormatted
+!                                                      getRecLen@GetMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE PURE FUNCTION ff_isFormatted(obj) RESULT(ans)
-    CLASS(FortranFile_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION ff_isFormatted
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              isDirect
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION ff_isDirect(obj) RESULT(ans)
-    CLASS(FortranFile_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION ff_isDirect
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             getRecLen
-!----------------------------------------------------------------------------
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Get the length of the record
 
 INTERFACE
   MODULE PURE FUNCTION ff_getRecLen(obj) RESULT(ans)
@@ -295,8 +357,42 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             isPadded
+!                                                 isFormatted@EnquireMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Returns true if the file is formatted
+
+INTERFACE
+  MODULE PURE FUNCTION ff_isFormatted(obj) RESULT(ans)
+    CLASS(FortranFile_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION ff_isFormatted
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    isDirect@EnquireMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: returns true if direct access
+
+INTERFACE
+  MODULE PURE FUNCTION ff_isDirect(obj) RESULT(ans)
+    CLASS(FortranFile_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION ff_isDirect
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   isPadded@EnquireMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Return true if padded
 
 INTERFACE
   MODULE PURE FUNCTION ff_isPadded(obj) RESULT(ans)
@@ -306,8 +402,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               isNew
+!                                                      isNew@EnquireMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Return true if the file is new
 
 INTERFACE
   MODULE PURE FUNCTION ff_isNew(obj) RESULT(Ans)
@@ -317,8 +417,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           isOverwrite
+!                                                 isOverwrite@EnquireMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Return true if overwrite status is set
 
 INTERFACE
   MODULE PURE FUNCTION ff_isOverwrite(obj) RESULT(Ans)
@@ -328,26 +432,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               isInit
+!                                                isInitiated@EnquireMethods
 !----------------------------------------------------------------------------
 
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July 2022
+! summary: Returns true if the file is initiated
+
 INTERFACE
-  MODULE PURE FUNCTION ff_isInit(obj) RESULT(Ans)
+  MODULE PURE FUNCTION ff_isInitiated(obj) RESULT(Ans)
     CLASS(FortranFile_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION ff_isInit
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          ff_setStatus
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE ff_setStatus(obj, status)
-    CLASS(FortranFile_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: status
-    LOGICAL(LGT) :: ans
-  END SUBROUTINE ff_setStatus
+  END FUNCTION ff_isInitiated
 END INTERFACE
 
 END MODULE FortranFile_Class
