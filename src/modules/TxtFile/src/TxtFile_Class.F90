@@ -17,24 +17,16 @@
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 May 2021
 ! summary: module for I/O defines the derived type for a Fortran File object.
-!
-! The developement of this module is inspired from the
-! `FileType_Fortran.F90` of Futility package. The original source is located
-! at https://github.com/CASL/Futility/blob/master/src/AbstractFile_.F90. The
-! original code has been modified as per the code-standard of easifem library.
-!
-! The Fortan file type is an extension of the abstract `AbstractFile_`
-! It provides a simplified interface to the native Fortran
-! file capabilities and includes error checking.
 
 MODULE TxtFile_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr, stdin
-USE String_Class, ONLY: String
+USE GlobalData
+USE String_Class
+USE BaseType
 USE ExceptionHandler_Class
 USE FortranFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = 'TXTFILE_CLASS'
+CHARACTER(LEN=*), PARAMETER :: modName = 'TxtFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
 TYPE(ExceptionHandler_), PRIVATE :: e
 
@@ -42,29 +34,144 @@ TYPE(ExceptionHandler_), PRIVATE :: e
 !                                                                 TxtFile_
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 19 July, 2022
+! summary: TxtFile is extension of FortranFile
+!
+!# Introduction
+!
+! TxtFile is an extension of the FortranFile.
+! It stores data in ASCII format.
+
 TYPE, EXTENDS(FortranFile_) :: TxtFile_
   PRIVATE
   LOGICAL(LGT) :: echostat = .FALSE.
   INTEGER(I4B) :: echounit = -1
   !
-CONTAINS
+  CONTAINS
   PRIVATE
+  !!
+  !! @ConstructorMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => txt_addSurrogate
-  PROCEDURE, PUBLIC, PASS(Obj) :: initiate => txt_initiate
-  PROCEDURE, PUBLIC, PASS(Obj) :: clear => txt_clear
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => txt_clear
-  PROCEDURE, PUBLIC, PASS(Obj) :: readLine => txt_readLine
-  PROCEDURE, PUBLIC, PASS(Obj) :: setEchoStat => txt_setEchoStat
-  PROCEDURE, PUBLIC, PASS(Obj) :: getEchoStat => txt_getEchoStat
-  PROCEDURE, PUBLIC, PASS(Obj) :: setEchoUnit => txt_setEchoUnit
-  PROCEDURE, PUBLIC, PASS(Obj) :: getEchoUnit => txt_getEchoUnit
-  PROCEDURE, PUBLIC, PASS(Obj) :: convertMarkdownToSource => &
-      & txt_convertMarkDownToSource
-  PROCEDURE, PUBLIC, PASS(Obj) :: getTotalRecords => txt_getTotalRecords
+  PROCEDURE, PUBLIC, PASS(obj) :: initiate => txt_initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => txt_Deallocate
+  FINAL :: txt_final
+  !!
+  !! @EnquireMethods
+  !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: isValidRecord => txt_isValidRecord
+  !!
+  !! @SetMethods
+  !!
+  PROCEDURE, PUBLIC, PASS(obj) :: setEchoStat => txt_setEchoStat
+  PROCEDURE, PUBLIC, PASS(obj) :: setEchoUnit => txt_setEchoUnit
+  !!
+  !! @GetMethods
+  !!
+  PROCEDURE, PUBLIC, PASS(obj) :: getEchoStat => txt_getEchoStat
+  PROCEDURE, PUBLIC, PASS(obj) :: getEchoUnit => txt_getEchoUnit
+  PROCEDURE, PUBLIC, PASS(obj) :: getTotalRecords => txt_getTotalRecords
+  !!
+  !! @ReadMethods
+  !!
+  !! read strings and chars
+  PROCEDURE, PUBLIC, PASS(obj) :: readLine => txt_read_Line
+  PROCEDURE, PUBLIC, PASS(obj) :: readLines => txt_read_Lines
+  PROCEDURE, PASS( obj ) :: readChar => txt_read_Char
+  !! scalars
+  PROCEDURE, PASS( obj ) :: readInt8 => txt_read_Int8
+  PROCEDURE, PASS( obj ) :: readInt16 => txt_read_Int16
+  PROCEDURE, PASS( obj ) :: readInt32 => txt_read_Int32
+  PROCEDURE, PASS( obj ) :: readInt64 => txt_read_Int64
+  PROCEDURE, PASS( obj ) :: readReal32 => txt_read_Real32
+  PROCEDURE, PASS( obj ) :: readReal64 => txt_read_Real64
+  !! vectors
+  PROCEDURE, PASS( obj ) :: readVecInt8 => txt_read_vec_Int8
+  PROCEDURE, PASS( obj ) :: readVecInt16 => txt_read_vec_Int16
+  PROCEDURE, PASS( obj ) :: readVecInt32 => txt_read_vec_Int32
+  PROCEDURE, PASS( obj ) :: readVecInt64 => txt_read_vec_Int64
+  PROCEDURE, PASS( obj ) :: readIntVector => txt_read_IntVector
+  PROCEDURE, PASS( obj ) :: readVecIntVector => txt_read_vec_IntVector
+  PROCEDURE, PASS( obj ) :: readVecReal32 => txt_read_vec_Real32
+  PROCEDURE, PASS( obj ) :: readVecReal64 => txt_read_vec_Real64
+  PROCEDURE, PASS( obj ) :: readRealVector => txt_read_RealVector
+  PROCEDURE, PASS( obj ) :: readVecRealVector => txt_read_vec_RealVector
+  !! matrix
+  PROCEDURE, PASS( obj ) :: readMatReal32 => txt_read_Mat_Real32
+  PROCEDURE, PASS( obj ) :: readMatReal64 => txt_read_Mat_Real64
+  PROCEDURE, PASS( obj ) :: readMatInt8 => txt_read_Mat_Int8
+  PROCEDURE, PASS( obj ) :: readMatInt16 => txt_read_Mat_Int16
+  PROCEDURE, PASS( obj ) :: readMatInt32 => txt_read_Mat_Int32
+  PROCEDURE, PASS( obj ) :: readMatInt64 => txt_read_Mat_Int64
+  !! generic
+  GENERIC, PUBLIC :: read => &
+    & readLine, readLines, readChar, &
+    & readInt8, readInt16, readInt32, readInt64, &
+    & readReal32, readReal64, &
+    & readVecInt8, readVecInt16, readVecInt32, readVecInt64, &
+    & readIntVector, readVecIntVector, &
+    & readVecReal32, readVecReal64, &
+    & readRealVector, readVecRealVector, &
+    & readMatInt8, readMatInt16, readMatInt32, readMatInt64, &
+    & readMatReal32, readMatReal64
+  !!
+  !! @WriteMethods
+  !!
+  PROCEDURE, PUBLIC, PASS(obj) :: convertMarkdownToSource => &
+    & txt_convertMarkDownToSource
+  !!
+  PROCEDURE, PUBLIC, PASS(obj) :: writeBlank => txt_write_Blank
+  PROCEDURE, PUBLIC, PASS( obj ) :: nextRow => txt_write_Blank
+  PROCEDURE, PUBLIC, PASS(obj) :: writeLine => txt_write_Line
+  PROCEDURE, PUBLIC, PASS(obj) :: writeLines => txt_write_Lines
+  PROCEDURE, PASS( obj ) :: writeChar => txt_write_Char
+  !! scalars
+  PROCEDURE, PASS( obj ) :: writeInt8 => txt_write_Int8
+  PROCEDURE, PASS( obj ) :: writeInt16 => txt_write_Int16
+  PROCEDURE, PASS( obj ) :: writeInt32 => txt_write_Int32
+  PROCEDURE, PASS( obj ) :: writeInt64 => txt_write_Int64
+  PROCEDURE, PASS( obj ) :: writeReal32 => txt_write_Real32
+  PROCEDURE, PASS( obj ) :: writeReal64 => txt_write_Real64
+  !! vectors
+  PROCEDURE, PASS( obj ) :: writeVecInt8 => txt_write_vec_Int8
+  PROCEDURE, PASS( obj ) :: writeVecInt16 => txt_write_vec_Int16
+  PROCEDURE, PASS( obj ) :: writeVecInt32 => txt_write_vec_Int32
+  PROCEDURE, PASS( obj ) :: writeVecInt64 => txt_write_vec_Int64
+  PROCEDURE, PASS( obj ) :: writeIntVector => txt_write_IntVector
+  PROCEDURE, PASS( obj ) :: writeVecIntVector => txt_write_vec_IntVector
+  PROCEDURE, PASS( obj ) :: writeVecReal32 => txt_write_vec_Real32
+  PROCEDURE, PASS( obj ) :: writeVecReal64 => txt_write_vec_Real64
+  PROCEDURE, PASS( obj ) :: writeRealVector => txt_write_RealVector
+  PROCEDURE, PASS( obj ) :: writeVecRealVector => txt_write_vec_RealVector
+  !! matrix
+  PROCEDURE, PASS( obj ) :: writeMatReal32 => txt_write_Mat_Real32
+  PROCEDURE, PASS( obj ) :: writeMatReal64 => txt_write_Mat_Real64
+  PROCEDURE, PASS( obj ) :: writeMatInt8 => txt_write_Mat_Int8
+  PROCEDURE, PASS( obj ) :: writeMatInt16 => txt_write_Mat_Int16
+  PROCEDURE, PASS( obj ) :: writeMatInt32 => txt_write_Mat_Int32
+  PROCEDURE, PASS( obj ) :: writeMatInt64 => txt_write_Mat_Int64
+  !! generic
+  GENERIC, PUBLIC :: write => &
+    & writeBlank, &
+    & writeLine, writeLines, writeChar, &
+    & writeInt8, writeInt16, writeInt32, writeInt64, &
+    & writeVecInt8, writeVecInt16, writeVecInt32, writeVecInt64, &
+    & writeMatInt8, writeMatInt16, writeMatInt32, writeMatInt64, &
+    & writeIntVector, writeVecIntVector, &
+    & writeReal32, writeReal64, &
+    & writeVecReal32, writeVecReal64, &
+    & writeRealVector, writeVecRealVector, &
+    & writeMatReal32, writeMatReal64
 END TYPE TxtFile_
 
 PUBLIC :: TxtFile_
+
 TYPE(TxtFile_), PUBLIC, PARAMETER :: TypeTxtFile = TxtFile_()
+
+!----------------------------------------------------------------------------
+!                                                             TxtFilePointer
+!----------------------------------------------------------------------------
 
 TYPE :: TxtFilePointer_
   CLASS(TxtFile_), POINTER :: ptr => NULL()
@@ -72,174 +179,11 @@ END TYPE
 
 PUBLIC :: TxtFilePointer_
 
-!----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE txt_addSurrogate(obj, UserObj)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE txt_addSurrogate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE txt_initiate(obj, filename, unit, status, access, form, &
-    & position, action, pad, recl, comment, separator, delimiter)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: filename
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unit
-    !! User specified unit number, it should  not be `stdout, stdin, stderr`
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: status
-    !! OLD, NEW, SCRATCH, REPLACE, UNKNOWN
-    !! If UNKNOWN then we use REPLACE
-    !! Default is REPLACE
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: access
-    !! DIRECT, SEQUENTIAL, STREAM
-    !! Default is SEQUENTIAL
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: form
-    !! FORMATTED, UNFORMATTED
-    !! Default is FORMATTED
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: position
-    !! REWIND, APPEND, ASIS
-    !! Default is ASIS
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: action
-    !! READ, WRITE, READWRITE
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pad
-    !! YES, NO
-    !! Default is YES
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: recl
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: comment
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: delimiter
-  END SUBROUTINE txt_initiate
-END INTERFACE
-
-INTERFACE InitiateTxtFile
-  MODULE PROCEDURE txt_initiate
-END INTERFACE InitiateTxtFile
-
-PUBLIC :: InitiateTxtFile
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE txt_clear(obj, Delete)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Delete
-  END SUBROUTINE txt_clear
-END INTERFACE
-
-INTERFACE DeallocateTxtFile
-  MODULE PROCEDURE txt_clear
-END INTERFACE DeallocateTxtFile
-
-PUBLIC :: DeallocateTxtFile
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE txt_readLine(obj, line, iostat, iomsg)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(String), INTENT(OUT) :: line
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-  END SUBROUTINE txt_readLine
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE txt_setEchoStat(obj, bool)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    LOGICAL(LGT), INTENT(IN) :: bool
-  END SUBROUTINE txt_setEchoStat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION txt_getEchoStat(obj) RESULT(ans)
-    CLASS(TxtFile_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION txt_getEchoStat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE txt_setEchoUnit(obj, unitno)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: unitno
-  END SUBROUTINE txt_setEchoUnit
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION txt_getEchoUnit(obj) RESULT(ans)
-    CLASS(TxtFile_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION txt_getEchoUnit
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   convertMarkdownToSource
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-07
-! update: 2021-11-07
-! summary: Reads a markdown file and converts it into the source file
-
-INTERFACE
-  MODULE SUBROUTINE txt_convertMarkdownToSource(obj, outfile)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(TxtFile_), INTENT(INOUT) :: outfile
-  END SUBROUTINE txt_convertMarkdownToSource
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            getTotalRecords
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-11-09
-! update: 2021-11-09
-! summary: Returns the total number of records in a file
-!
-!
-!# Introduction
-!
-! This function returns the total number of records in a file
-! If `ignoreComment=.TRUE.`, then the comments are ignored
-! If `ignoreComment` is true, then `commentSymbol` should be given
-
-INTERFACE
-  MODULE FUNCTION txt_getTotalRecords(obj, ignoreComment, ignoreBlank, &
-    & commentSymbol) RESULT(Ans)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-    CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-    INTEGER(I4B) :: ans
-  END FUNCTION txt_getTotalRecords
-END INTERFACE
+#include "./ConstructorMethods.inc"
+#include "./EnquireMethods.inc"
+#include "./SetMethods.inc"
+#include "./GetMethods.inc"
+#include "./ReadMethods.inc"
+#include "./WriteMethods.inc"
 
 END MODULE TxtFile_Class
