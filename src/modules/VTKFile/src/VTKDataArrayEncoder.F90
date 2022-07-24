@@ -116,7 +116,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_rank1_Int64( x, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1: )
@@ -129,7 +128,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !                                           encodeVTKDataArray@Rank2Methods
@@ -220,7 +218,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_rank2_Int64( x, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1: )
@@ -233,7 +230,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !                                           encodeVTKDataArray@Rank3Methods
@@ -324,7 +320,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_rank3_Int64( x, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
@@ -337,7 +332,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !                                           encodeVTKDataArray@Rank4Methods
@@ -428,7 +422,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_rank4_Int64( x, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
@@ -441,7 +434,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !                                           encodeVTKDataArray@Rank1Methods
@@ -542,7 +534,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_xyz_rank1_Int64( x, y, z, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1: )
@@ -557,7 +548,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !                                           encodeVTKDataArray@Rank2Methods
@@ -658,7 +648,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_xyz_rank2_Int64( x, y, z, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1: )
@@ -673,7 +662,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !                                           encodeVTKDataArray@Rank2Methods
@@ -774,7 +762,6 @@ END INTERFACE encodeVTKDataArray
 !                                           encodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE FUNCTION encode_xyz_rank3_Int64( x, y, z, fmt ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
@@ -789,7 +776,6 @@ END INTERFACE
 INTERFACE encodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Int64
 END INTERFACE encodeVTKDataArray
-#endif
 
 !----------------------------------------------------------------------------
 !
