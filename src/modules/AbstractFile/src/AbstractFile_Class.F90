@@ -81,26 +81,41 @@ TYPE,ABSTRACT :: AbstractFile_
     !! Whether or not the file is open for writing
   CONTAINS
     PRIVATE
-    PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS( obj ) :: open
-    PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS( obj ) :: close
-    PROCEDURE(aFile_delete), PUBLIC, DEFERRED, PASS( obj ) :: delete
+    !!
+    !! ConstructorMethods
+    !!
     PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => aFile_addSurrogate
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => AbstractFileDeallocate
+    !!
+    !! @SetMethods
+    !!
     PROCEDURE, PUBLIC, PASS( obj ) :: setFilePath => aFile_setFilePath
     PROCEDURE, PUBLIC, PASS( obj ) :: setFileName => aFile_setFileName
     PROCEDURE, PUBLIC, PASS( obj ) :: setFileExt => aFile_setFileExt
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFilePath => aFile_getFilePath
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileName => aFile_getFileName
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileExt => aFile_getFileExt
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileParts => aFile_getFileParts
     PROCEDURE, PUBLIC, PASS( obj ) :: setEOFstat => aFile_setEOFStat
     PROCEDURE, PUBLIC, PASS( obj ) :: setOpenStat => aFile_setOpenStat
     PROCEDURE, PUBLIC, PASS( obj ) :: setReadStat => aFile_setReadStat
     PROCEDURE, PUBLIC, PASS( obj ) :: setWriteStat => aFile_setWriteStat
+    !!
+    !! @GetMethods
+    !!
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFilePath => aFile_getFilePath
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFileName => aFile_getFileName
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFileExt => aFile_getFileExt
+    PROCEDURE, PUBLIC, PASS( obj ) :: getFileParts => aFile_getFileParts
+    !!
+    !! @EnquireMethods
+    !!
     PROCEDURE, PUBLIC, PASS( obj ) :: isOpen => aFile_isOpen
     PROCEDURE, PUBLIC, PASS( obj ) :: isEOF => aFile_isEOF
     PROCEDURE, PUBLIC, PASS( obj ) :: isRead => aFile_isRead
     PROCEDURE, PUBLIC, PASS( obj ) :: isWrite => aFile_isWrite
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => aFile_Deallocate
+    !!
+    !! Deferred Methods
+    !!
+    PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS( obj ) :: open
+    PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS( obj ) :: close
+    PROCEDURE(aFile_delete), PUBLIC, DEFERRED, PASS( obj ) :: delete
 ENDTYPE AbstractFile_
 
 PUBLIC :: AbstractFile_
@@ -116,7 +131,7 @@ END TYPE AbstractFilePointer_
 PUBLIC :: AbstractFilePointer_
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogate
+!                                            addSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -131,7 +146,24 @@ END SUBROUTINE aFile_addSurrogate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                setFilePath
+!                                             Dealalocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Deallocate the data stored in the file
+
+INTERFACE
+MODULE SUBROUTINE AbstractFileDeallocate( obj, delete )
+  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
+END SUBROUTINE AbstractFileDeallocate
+END INTERFACE
+
+PUBLIC :: AbstractFileDeallocate
+
+!----------------------------------------------------------------------------
+!                                                    setFilePath@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -146,7 +178,7 @@ END SUBROUTINE aFile_setFilePath
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                setFileName
+!                                                    setFileName@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -161,7 +193,7 @@ END SUBROUTINE aFile_setFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                setFileExt
+!                                                     setFileExt@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -176,7 +208,112 @@ END SUBROUTINE aFile_setFileExt
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               getFileParts
+!                                                      setEOFstat@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the end of file status of file
+
+INTERFACE
+MODULE SUBROUTINE aFile_setEOFstat( obj, stat )
+  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: stat
+END SUBROUTINE aFile_setEOFstat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     setOpenStat@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the openStat
+
+INTERFACE
+MODULE SUBROUTINE aFile_setOpenStat( obj, stat )
+  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: stat
+END SUBROUTINE aFile_setOpenStat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     setReadStat@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the readStat
+
+INTERFACE
+MODULE SUBROUTINE aFile_setReadStat( obj, stat )
+  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: stat
+END SUBROUTINE aFile_setReadStat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    setWriteStat@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Set the writeStat
+
+INTERFACE
+MODULE SUBROUTINE aFile_setWriteStat( obj, stat )
+  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  LOGICAL( LGT ), INTENT( IN ) :: stat
+END SUBROUTINE aFile_setWriteStat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    getFilePath@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the path of the file
+
+INTERFACE
+MODULE FUNCTION aFile_getFilePath( obj ) RESULT( path )
+  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
+  TYPE( String ) :: path
+END FUNCTION aFile_getFilePath
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    getFileName@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the name of the file
+
+INTERFACE
+MODULE FUNCTION aFile_getFileName( obj ) RESULT( fileName )
+  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
+  TYPE( String ) :: fileName
+END FUNCTION aFile_getFileName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getFileExt@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Returns the extension of the file
+
+INTERFACE
+MODULE FUNCTION aFile_getFileExt( obj ) RESULT( Ext )
+  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
+  TYPE( String ) :: Ext
+END FUNCTION aFile_getFileExt
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    getFileParts@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -193,52 +330,7 @@ END SUBROUTINE aFile_getFileParts
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                getFilePath
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Returns the path of the file
-
-INTERFACE
-MODULE FUNCTION aFile_getFilePath( obj ) RESULT( path )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: path
-END FUNCTION aFile_getFilePath
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                getFileName
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Returns the name of the file
-
-INTERFACE
-MODULE FUNCTION aFile_getFileName( obj ) RESULT( fileName )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: fileName
-END FUNCTION aFile_getFileName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                getFileExt
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Returns the extension of the file
-
-INTERFACE
-MODULE FUNCTION aFile_getFileExt( obj ) RESULT( Ext )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: Ext
-END FUNCTION aFile_getFileExt
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                    isOpen
+!                                                         isOpen@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -253,7 +345,7 @@ END FUNCTION aFile_isOpen
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                    isEOF
+!                                                      isEOF@EnquireMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -268,22 +360,7 @@ END FUNCTION aFile_isEOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 isWrite
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Returns true if the file has write access
-
-INTERFACE
-MODULE FUNCTION aFile_isWrite( obj ) RESULT( ans )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION aFile_isWrite
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 isRead
+!                                                      isRead@EnquireMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -298,96 +375,18 @@ END FUNCTION aFile_isRead
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 setEOFstat
+!                                                     isWrite@EnquireMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 May 2022
-! summary: Set the end of file status of file
+! summary: Returns true if the file has write access
 
 INTERFACE
-MODULE SUBROUTINE aFile_setEOFstat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setEOFstat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               setOpenStat
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Set the openStat
-
-INTERFACE
-MODULE SUBROUTINE aFile_setOpenStat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setOpenStat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               setReadStat
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Set the readStat
-
-INTERFACE
-MODULE SUBROUTINE aFile_setReadStat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setReadStat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               setWriteStat
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Set the writeStat
-
-INTERFACE
-MODULE SUBROUTINE aFile_setWriteStat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setWriteStat
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           DealalocateData
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Deallocate the data stored in the file
-
-INTERFACE
-MODULE SUBROUTINE aFile_Deallocate( obj, delete )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
-END SUBROUTINE aFile_Deallocate
-END INTERFACE
-
-PUBLIC :: aFile_Deallocate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Close the file
-
-ABSTRACT INTERFACE
-  SUBROUTINE aFile_Close(obj)
-    IMPORT :: AbstractFile_
-    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  END SUBROUTINE aFile_Close
+MODULE FUNCTION aFile_isWrite( obj ) RESULT( ans )
+  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
+  LOGICAL( LGT ) :: ans
+END FUNCTION aFile_isWrite
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -403,6 +402,22 @@ ABSTRACT INTERFACE
     IMPORT :: AbstractFile_
     CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
   END SUBROUTINE aFile_Open
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2022
+! summary: Close the file
+
+ABSTRACT INTERFACE
+  SUBROUTINE aFile_Close(obj)
+    IMPORT :: AbstractFile_
+    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+  END SUBROUTINE aFile_Close
 END INTERFACE
 
 !----------------------------------------------------------------------------
