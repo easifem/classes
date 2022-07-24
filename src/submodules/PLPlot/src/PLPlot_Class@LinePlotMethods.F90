@@ -1,0 +1,252 @@
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+
+SUBMODULE(PLPlot_Class) LinePlotMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                   LinePlot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE line_plot_x1y1
+#ifdef USE_PLPLOT
+  REAL( DFP ) :: xmin0, xmax0, ymin0, ymax0, lineWidth0
+  TYPE( String ) :: extn, driver, xlabel0, ylabel0, title0, pointType0
+  !!
+  xlabel0 = INPUT( option=xlabel, default="X-Axis" )
+  ylabel0 = INPUT( option=ylabel, default="Y-Axis" )
+  title0 = INPUT( option=title, default="Title" )
+  lineWidth0 = INPUT( option=lineWidth, default=2.0_DFP )
+  pointType0 = INPUT( option=pointType, default="#(135)" )
+  !!
+  IF( PRESENT( xmin ) ) THEN
+    xmin0 = xmin
+  ELSE
+    xmin0 = MINVAL( x )
+    xmin0 = xmin0 - ABS( xmin0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( xmax ) ) THEN
+    xmax0 = xmax
+  ELSE
+    xmax0 = MAXVAL( x )
+    xmax0 = xmax0 + ABS( xmax0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( ymin ) ) THEN
+    ymin0 = ymin
+  ELSE
+    ymin0 = MINVAL( y )
+    ymin0 = ymin0 - ABS( ymin0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( ymax ) ) THEN
+    ymax0 = ymax
+  ELSE
+    ymax0 = MAXVAL( y )
+    ymax0 = ymax0 + ABS( ymax0 ) * 0.1
+  END IF
+  !!
+  extn = getExtension( filename )
+  !!
+  SELECT CASE( extn%chars( ) )
+  CASE( "pdf" )
+    driver = "pdf"
+    ! driver = "pdfcairo"
+  CASE( "png" )
+    driver = "pngqt"
+    ! driver = "pngcairo"
+  CASE( "ps" )
+    driver = "ps"
+    ! driver = "pscairo"
+  CASE( "eps" )
+    driver = "epscairo"
+  CASE( "svg" )
+    driver = "svg"
+  CASE( "jpeg", "jpg" )
+    driver = "jpgqt"
+  END SELECT
+  !!
+  CALL PLSDEV( driver%chars() )
+  CALL PLSFNAM( TRIM(filename ) )
+  CALL PLSCOLBG(255,255,255)
+  CALL PLINIT
+  CALL PLSCOL0(0,0,0,0)
+  CALL PLCOL0(0)
+  CALL PLENV( xmin0, xmax0, ymin0, ymax0, 0, 0 )
+  CALL PLBOX( 'bcnst', 0.0_DFP, 0, 'bcnstv', 0.0_DFP, 0 )
+  CALL PLLAB( xlabel0%chars(), ylabel0%chars(), title0%chars() )
+  CALL PLWIDTH( lineWidth0 )
+  CALL PLLINE( x, y )
+  IF( PRESENT( isPoint ) ) THEN
+    CALL PLSTRING(x, y, pointType0%chars())
+  END IF
+  CALL PLEND
+#endif
+END PROCEDURE line_plot_x1y1
+
+!----------------------------------------------------------------------------
+!                                                                   LinePlot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE line_plot_x1y2
+#ifdef USE_PLPLOT
+  REAL( DFP ) :: xmin0, xmax0, ymin0, ymax0, lineWidth0
+  REAL( DFP ) :: legend_width, legend_height
+  TYPE( String ) :: extn, driver, xlabel0, ylabel0, title0, pointType0
+  INTEGER( I4B ) :: ii
+  INTEGER( I4B ), DIMENSION(SIZE( y, 2 )) :: opt_array, text_colors, &
+  & box_colors, box_patterns, line_colors, &
+  & line_styles, symbol_colors, symbol_numbers
+  REAL( DFP ), DIMENSION( SIZE(y,2)) :: symbol_scales, line_widths, &
+    & box_line_widths, box_scales
+  CHARACTER( LEN = 20 ), DIMENSION( SIZE(y,2)) :: symbols
+  CHARACTER( LEN = 80 ), DIMENSION( SIZE(y,2)) :: legend_text
+  !!
+  xlabel0 = INPUT( option=xlabel, default="X-Axis" )
+  ylabel0 = INPUT( option=ylabel, default="Y-Axis" )
+  title0 = INPUT( option=title, default="Title" )
+  lineWidth0 = INPUT( option=lineWidth, default=2.0_DFP )
+  pointType0 = INPUT( option=pointType, default="#(135)" )
+  !!
+  IF( PRESENT( xmin ) ) THEN
+    xmin0 = xmin
+  ELSE
+    xmin0 = MINVAL( x )
+    xmin0 = xmin0 - ABS( xmin0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( xmax ) ) THEN
+    xmax0 = xmax
+  ELSE
+    xmax0 = MAXVAL( x )
+    xmax0 = xmax0 + ABS( xmax0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( ymin ) ) THEN
+    ymin0 = ymin
+  ELSE
+    ymin0 = MINVAL( y )
+    ymin0 = ymin0 - ABS( ymin0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( ymax ) ) THEN
+    ymax0 = ymax
+  ELSE
+    ymax0 = MAXVAL( y )
+    ymax0 = ymax0 + ABS( ymax0 ) * 0.1
+  END IF
+  !!
+  IF( PRESENT( legendTexts ) ) THEN
+    DO ii = 1, SIZE( legendTexts )
+      legend_text( ii ) = legendTexts( ii )%chars()
+    END DO
+  ELSE
+    DO ii = 1, SIZE( legend_text )
+      legend_text( ii ) = "data_"//tostring(ii)
+    END DO
+  END IF
+  !!
+  extn = getExtension( filename )
+  !!
+  SELECT CASE( extn%chars( ) )
+  CASE( "pdf" )
+    driver = "pdf"
+    ! driver = "pdfcairo"
+  CASE( "png" )
+    driver = "pngqt"
+    ! driver = "pngcairo"
+  CASE( "ps" )
+    driver = "ps"
+    ! driver = "pscairo"
+  CASE( "eps" )
+    driver = "epscairo"
+  CASE( "svg" )
+    driver = "svg"
+  CASE( "jpeg", "jpg" )
+    driver = "jpgqt"
+  END SELECT
+  !!
+  CALL PLSDEV( driver%chars() )
+  CALL PLSFNAM( TRIM(filename ) )
+  CALL PLSCOLBG(255,255,255)
+  CALL PLINIT
+  CALL PLSCOL0(0,0,0,0)
+  CALL PLCOL0(0)
+  CALL PLENV( xmin0, xmax0, ymin0, ymax0, 0, 0 )
+  CALL PLBOX( 'bcnst', 0.0_DFP, 0, 'bcnstv', 0.0_DFP, 0 )
+  CALL PLLAB( xlabel0%chars(), ylabel0%chars(), title0%chars() )
+  CALL PLWIDTH( lineWidth0 )
+  DO ii = 1, SIZE( y, 2 )
+    CALL PLCOL0(ii)
+    line_colors( ii ) = ii
+    symbol_colors( ii ) = ii
+    CALL PLLINE( x, y(:, ii) )
+    IF( PRESENT( isPoint ) ) THEN
+      CALL PLSTRING(x, y(:, ii), pointType0%chars())
+    END IF
+  END DO
+  !!
+  opt_array = PL_LEGEND_LINE
+  line_styles = 1
+  line_widths = 1
+  symbol_scales = 1.0
+  symbol_numbers = 1
+  text_colors = 0
+  DO ii = 1, SIZE(symbols)
+    symbols(ii)=""
+  END DO
+  !!
+  CALL PLLEGEND( &
+    & legend_width, &
+    & legend_height, &
+    & PL_LEGEND_BACKGROUND + PL_LEGEND_BOUNDING_BOX, &
+    & 0, &
+    & 0.0_DFP, &
+    & 0.0_DFP, &
+    & 0.10_DFP, &
+    & 15, &
+    & 0, &
+    & 1, &
+    & 0, &
+    & 0, &
+    & opt_array, &
+    & 1.0_DFP, &
+    & 1.0_DFP, &
+    & 2.0_DFP, &
+    & 1.0_DFP, &
+    & text_colors, &
+    & legend_text, &
+    & box_colors, &
+    & box_patterns, &
+    & box_scales, &
+    & box_line_widths, &
+    & line_colors, &
+    & line_styles, &
+    & line_widths, &
+    & symbol_colors, &
+    & symbol_scales, &
+    & symbol_numbers, &
+    & symbols )
+  CALL PLCOL0(0)
+  CALL PLEND
+#endif
+END PROCEDURE line_plot_x1y2
+
+END SUBMODULE LinePlotMethods
