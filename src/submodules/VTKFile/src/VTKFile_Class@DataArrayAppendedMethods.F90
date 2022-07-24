@@ -31,16 +31,14 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
   CHARACTER( LEN=2 ) :: dataarray_type
   REAL( Real64 ),    ALLOCATABLE :: dataarray_R8P(:)
   REAL( Real32 ),    ALLOCATABLE :: dataarray_R4P(:)
-#ifdef USE_Int64
   INTEGER( Int64 ), ALLOCATABLE :: dataarray_I8P(:)
-#endif
   INTEGER( Int32 ), ALLOCATABLE :: dataarray_I4P(:)
   INTEGER( Int16 ), ALLOCATABLE :: dataarray_I2P(:)
   INTEGER( int8 ), ALLOCATABLE :: dataarray_I1P(:)
-
-  !> main
-  SELECT CASE( obj%DataFormat )
-  CASE( VTK_APPENDED )
+  !!
+  !! main
+  !!
+  IF( obj%DataFormat .EQ. VTK_APPENDED ) THEN
     name = "AppendedData"
     names( 1 ) = "encoding"
     values( 1 ) = '"' // TRIM(obj%encoding4Appended%chars()) // '"'
@@ -56,16 +54,14 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
     END DO
     WRITE( unit=obj%unitNo, iostat=iostat ) CHAR_LF
     CALL obj%WriteEndTag( name=name )
-  END SELECT
-
+  END IF
+  !!
   CONTAINS
-
-  !---------------------------------------------------------------------
-  !
-  !---------------------------------------------------------------------
-
+  !!
   SUBROUTINE read_dataarray_from_scratch
-    !< Read the current dataaray from scratch file.
+    !!
+    !! Read the current dataaray from scratch file.
+    !!
     READ(unit=obj%scratch, iostat=iostat ) &
       & nByte, dataarray_type, dataarray_dim
     IF( IS_IOSTAT_END( iostat ) ) THEN
@@ -75,7 +71,9 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
       & CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Some error has occured while reading scratch file')
     END IF
-    !> select case
+    !!
+    !! select case
+    !!
     SELECT CASE(dataarray_type)
     CASE('R8')
       IF( ALLOCATED( dataarray_R8P ) ) DEALLOCATE( dataarray_R8P )
@@ -85,76 +83,72 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
       IF( ALLOCATED(dataarray_R4P) ) DEALLOCATE(dataarray_R4P)
       ALLOCATE( dataarray_R4P(1:dataarray_dim) )
       READ( unit=obj%scratch, iostat=iostat ) dataarray_R4P
-#ifdef USE_Int64
     CASE( 'I8' )
       IF( ALLOCATED(dataarray_I8P) ) DEALLOCATE(dataarray_I8P)
       ALLOCATE( dataarray_I8P(1:dataarray_dim) )
       READ( unit=obj%scratch, iostat=iostat ) dataarray_I8P
-#endif
     CASE('I4')
       IF( ALLOCATED(dataarray_I4P) ) DEALLOCATE(dataarray_I4P)
       ALLOCATE(dataarray_I4P(1:dataarray_dim))
       READ( unit=obj%scratch, iostat=iostat ) dataarray_I4P
-
     CASE('I2')
       IF( ALLOCATED(dataarray_I2P)) DEALLOCATE(dataarray_I2P)
       ALLOCATE(dataarray_I2P(1:dataarray_dim))
       READ( unit=obj%scratch, iostat=iostat )dataarray_I2P
-
     CASE('I1')
       IF( ALLOCATED(dataarray_I1P)) DEALLOCATE(dataarray_I1P)
       ALLOCATE(dataarray_I1P(1:dataarray_dim))
       READ( unit=obj%scratch, iostat=iostat ) dataarray_I1P
-
     CASE DEFAULT
       iostat = 1
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Bad dataarray_type = ' // dataarray_type // &
         & ' bytes = ' // TRIM( str(nByte, .true.) ) // &
         & ' dataarray dimension = ' // TRIM( str(dataarray_dim, .true.)))
-
     END SELECT
+    !!
   END SUBROUTINE read_dataarray_from_scratch
-
-  !----------------------------------------------------------------------
-  !
-  !----------------------------------------------------------------------
-
+  !!
   SUBROUTINE write_dataarray_on_xml
-    !< Write the current dataaray on xml file.
-    character(len=:), allocatable  :: content
-
-    IF ( TRIM(obj%encoding4Appended%chars()) .EQ. 'raw') THEN
+    !!
+    !! Write the current dataaray on xml file.
+    !!
+    CHARACTER(len=:), ALLOCATABLE  :: content
+    !!
+    IF ( obj%encoding4Appended%chars() .EQ. 'raw') THEN
       SELECT CASE( dataarray_type )
       CASE('R8')
-        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_R8P, fmt="ASCII" )
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // &
+          & encodeVTKDataArray( x=dataarray_R8P, fmt="ASCII" )
         WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_R8P)
       CASE('R4')
-        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_R4P, fmt="ASCII" )
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // &
+          & encodeVTKDataArray( x=dataarray_R4P, fmt="ASCII" )
         WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_R4P)
-#ifdef USE_Int64
       CASE('I8')
-        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I8P, fmt="ASCII" )
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // &
+          & encodeVTKDataArray( x=dataarray_I8P, fmt="ASCII" )
         WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I8P)
-#endif
       CASE('I4')
-        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I4P, fmt="ASCII" )
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // &
+          & encodeVTKDataArray( x=dataarray_I4P, fmt="ASCII" )
         WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I4P)
       CASE('I2')
-        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I2P, fmt="ASCII" )
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // &
+          & encodeVTKDataArray( x=dataarray_I2P, fmt="ASCII" )
         WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I2P)
       CASE('I1')
-        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // encodeVTKDataArray( x=dataarray_I1P, fmt="ASCII" )
+        content = encodeVTKDataArray( x=[nByte], fmt="ASCII" ) // &
+          & encodeVTKDataArray( x=dataarray_I1P, fmt="ASCII" )
         WRITE( unit=obj%unitNo, fmt="(A)", iostat=iostat )content
         DEALLOCATE(dataarray_I1P)
       END SELECT
     ELSE
-      !..BASE64..BASE64..BASE64..BASE64..BASE64..BASE64..BASE64..!
       SELECT CASE(dataarray_type)
       CASE('R8')
         content = encodeVTKDataArray(x=dataarray_R8P, fmt="BINARY")
@@ -162,11 +156,9 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
       CASE('R4')
         content = encodeVTKDataArray(x=dataarray_R4P, fmt="BINARY")
         WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
-#ifdef USE_Int64
       CASE('I8')
         content = encodeVTKDataArray(x=dataarray_I8P, fmt="BINARY")
         WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
-#endif
       CASE('I4')
         content = encodeVTKDataArray(x=dataarray_I4P, fmt="BINARY")
         WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
@@ -178,7 +170,8 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Appended
         WRITE(unit=obj%unitNo, fmt="(A)", iostat=iostat, ADVANCE="NO")content
       END SELECT
     END IF
-    END SUBROUTINE write_dataarray_on_xml
+  END SUBROUTINE write_dataarray_on_xml
+  !!
 END PROCEDURE VTKFile_WriteDataArray_Appended
 
 !----------------------------------------------------------------------------
@@ -245,12 +238,10 @@ END PROCEDURE VTKFile_WriteToScratch6
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteToScratch7
   INTEGER( I4B ) :: n
   CALL obj%WriteToScratch( x=[(x(n), y(n), z(n), n=1, SIZE(x, dim=1))] )
 END PROCEDURE VTKFile_WriteToScratch7
-#endif
 
 !----------------------------------------------------------------------------
 !
@@ -303,13 +294,11 @@ END PROCEDURE VTKFile_WriteToScratch12
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteToScratch13
   INTEGER( I4B ) :: n1, n2
   CALL obj%WriteToScratch(x=[((x(n1,n2), y(n1,n2), z(n1,n2), n1=1, &
     & size(x, dim=1)),n2=1,size(x, dim=2))])
 END PROCEDURE VTKFile_WriteToScratch13
-#endif
 
 !----------------------------------------------------------------------------
 !
@@ -365,13 +354,11 @@ END PROCEDURE VTKFile_WriteToScratch18
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteToScratch19
   INTEGER( I4B ) :: n1, n2, n3
   CALL obj%WriteToScratch(x=[(((x(n1,n2,n3), y(n1,n2,n3), z(n1,n2,n3), &
     & n1=1,size(x, dim=1)),n2=1,size(x, dim=2)),n3=1,size(x, dim=3))])
 END PROCEDURE VTKFile_WriteToScratch19
-#endif
 
 !----------------------------------------------------------------------------
 !
