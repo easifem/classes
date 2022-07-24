@@ -63,5 +63,6 @@ USE AbstractFunction_Class
 USE Polynomial_Class
 USE UserFunction_Class
 
-  ! USE ogpf
+USE Plot_Method
+! USE ogpf
 END MODULE easifemClasses

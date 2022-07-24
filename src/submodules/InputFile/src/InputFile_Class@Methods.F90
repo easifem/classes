@@ -52,7 +52,7 @@ MODULE PROCEDURE inp_initiate
     & ' - Optional input "RECL" is being ignored. File is "SEQUENTIAL".')
 
   !Initialize the input file
-  CALL InitiateFortranFile(obj=obj, unit=unit, filename=filename, &
+  CALL FortranFileInitiate(obj=obj, unit=unit, filename=filename, &
     &  status='OLD', access='SEQUENTIAL', form='FORMATTED', &
     & position = 'REWIND', action = 'READ')
 END PROCEDURE inp_initiate
@@ -64,7 +64,7 @@ END PROCEDURE inp_initiate
 MODULE PROCEDURE inp_rewind
   obj%probe=''
   obj%lastprobe=''
-  CALL RewindFortranFile(obj)
+  CALL FortranFileRewind(obj)
 END PROCEDURE inp_rewind
 
 !----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ END PROCEDURE inp_rewind
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE inp_backspace
-  CALL BackspaceFortranFile(obj)
+  CALL FortranFileBackspace(obj)
   obj%probe=obj%lastprobe
 END PROCEDURE inp_backspace
 
@@ -88,7 +88,7 @@ MODULE PROCEDURE inp_clear
   obj%lastprobe=''
   bool=.FALSE.
   IF(PRESENT(Delete)) bool=Delete
-  CALL ClearFortranFile(obj,bool)
+  CALL FortranFileDeallocate(obj,bool)
 END PROCEDURE inp_clear
 
 !----------------------------------------------------------------------------

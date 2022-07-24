@@ -48,7 +48,6 @@ END PROCEDURE encode_xyz_rank3_Real64
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE encode_xyz_rank3_Int64
   INTEGER( I4B ) :: i, j, k, ii, jj, kk, nbyte
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -56,7 +55,6 @@ MODULE PROCEDURE encode_xyz_rank3_Int64
   nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYInt64
 #include "./ENCODE_XYZ_RANK3.inc"
 END PROCEDURE encode_xyz_rank3_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !

@@ -21,34 +21,35 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             WriteDataArray
+!                                              WriteDataArrayLocationTag
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE VTKFile_WriteDataArray_LocationTag
-  TYPE( String ) :: loc, act
-  !> main
-  loc = location%upper()
-  act = action%upper()
-  SELECT CASE( TRIM(loc%chars()) )
+MODULE PROCEDURE VTKFile_WriteDataArrayLocationTag
+  TYPE( String ) :: location0, action0
+  !>
+  location0 = location%upper()
+  action0 = action%upper()
+  !>
+  SELECT CASE( TRIM( location0%chars() ) )
   CASE( 'CELL' )
-    loc = 'CellData'
+    location0 = 'CellData'
   CASE( 'NODE' )
-    loc = 'PointData'
+    location0 = 'PointData'
   END SELECT
   !>
   SELECT CASE( obj%DataStructureType )
-  CASE( PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid, &
+  CASE(PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid, &
     & PARALLEL_VTK_UnstructuredGrid )
-    loc = 'P'// loc
+    location0 = 'P'//location0
   END SELECT
   !>
-  SELECT CASE( TRIM(act%chars()) )
-  CASE( 'OPEN' )
-    CALL obj%WriteStartTag( name=loc )
+  SELECT CASE( TRIM(action0%chars()) )
+  CASE('OPEN')
+    CALL obj%WriteStartTag( name=location0 )
   CASE('CLOSE')
-    CALL obj%WriteEndTag( name=loc )
+    CALL obj%WriteEndTag( name=location0 )
   END SELECT
-END PROCEDURE VTKFile_WriteDataArray_LocationTag
+END PROCEDURE VTKFile_WriteDataArrayLocationTag
 
 !----------------------------------------------------------------------------
 !                                                        WriteDataArrrayTag
@@ -80,37 +81,6 @@ MODULE PROCEDURE VTKFile_WriteDataArrayTag
       & attrValues=Values(1:n), content=content )
   END IF
 END PROCEDURE VTKFile_WriteDataArrayTag
-
-!----------------------------------------------------------------------------
-!                                              WriteDataArrayLocationTag
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE VTKFile_WriteDataArrayLocationTag
-  TYPE( String ) :: location0, action0
-  !>
-  location0 = location%upper()
-  action0 = action%upper()
-  !>
-  SELECT CASE( TRIM( location0%chars() ) )
-  CASE( 'CELL' )
-    location0 = 'CellData'
-  CASE( 'NODE' )
-    location0 = 'PointData'
-  END SELECT
-  !>
-  SELECT CASE( obj%DataStructureType )
-  CASE(PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid, &
-    & PARALLEL_VTK_UnstructuredGrid )
-    location0 = 'P'//location0
-  END SELECT
-  !>
-  SELECT CASE( TRIM(action0%chars()) )
-  CASE('OPEN')
-    CALL obj%WriteStartTag( name=location0 )
-  CASE('CLOSE')
-    CALL obj%WriteEndTag( name=location0 )
-  END SELECT
-END PROCEDURE VTKFile_WriteDataArrayLocationTag
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray
@@ -201,7 +171,6 @@ END PROCEDURE VTKFile_WriteDataArray_Rank1_Int32
 !                                                            WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -214,7 +183,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 
 END PROCEDURE VTKFile_WriteDataArray_Rank1_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray
@@ -303,7 +271,6 @@ END PROCEDURE VTKFile_WriteDataArray_Rank2_Int32
 !                                                            WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -315,7 +282,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
   noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank2_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray
@@ -404,7 +370,6 @@ END PROCEDURE VTKFile_WriteDataArray_Rank3_Int32
 !                                                            WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -416,8 +381,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
   noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank3_Int64
-#endif
-
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray
@@ -506,7 +469,6 @@ END PROCEDURE VTKFile_WriteDataArray_Rank4_Int32
 !                                                            WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -518,7 +480,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
   noc = INPUT( default=SIZE(x,1), option=numberOfComponents )
 #include "./VTKFile_WriteDataArray_Rank1234.inc"
 END PROCEDURE VTKFile_WriteDataArray_Rank4_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !                                                             WriteDataArray
@@ -604,7 +565,6 @@ END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int32
 !                                                             WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -616,7 +576,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int64
   noc = 3
 #include "./VTKFile_WriteDataArray_XYZ.inc"
 END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank1_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray
@@ -702,7 +661,6 @@ END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int32
 !                                                            WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -714,7 +672,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int64
   noc = 3
 #include "./VTKFile_WriteDataArray_XYZ.inc"
 END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank2_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray
@@ -800,7 +757,6 @@ END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int32
 !                                                            WriteDataArray
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int64
   TYPE( String ) :: dataType, content
   INTEGER( I4B ) :: noc, nByte
@@ -812,7 +768,6 @@ MODULE PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int64
   noc = 3
 #include "./VTKFile_WriteDataArray_XYZ.inc"
 END PROCEDURE VTKFile_WriteDataArray_XYZ_Rank3_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !                                                            WriteDataArray

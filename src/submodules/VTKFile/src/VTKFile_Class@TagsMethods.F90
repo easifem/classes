@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(VTKFile_Class) IOMethods
+SUBMODULE(VTKFile_Class) TagsMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -29,39 +29,44 @@ MODULE PROCEDURE VTKFile_WriteRootTag
   TYPE( String ) :: buffer
   CHARACTER( LEN = 100 ) :: ioerrmsg
   INTEGER( I4B ) :: ierr
-
+  !!
   IF( .NOT. obj%isInitiated ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile is not initiated!')
   END IF
-
+  !!
   IF( .NOT. obj%isOpen() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile is not open')
   END IF
-
+  !!
   IF( .NOT. obj%isWrite() ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - VTKFile does not have write permission')
   END IF
-
+  !!
   buffer = '<?xml version="1.0" encoding="UTF-8"?>'//CHAR_LF
-
+  !!
   IF (endian .EQ. endianL) THEN
-    buffer = buffer//'<VTKFile type="'//trim(obj%DataStructureName)//'" version="1.0" byte_order="LittleEndian">'
+    buffer = buffer//'<VTKFile type="'//trim(obj%DataStructureName)// &
+    & '" version="1.0" byte_order="LittleEndian">'
   ELSE
-    buffer = buffer//'<VTKFile type="'//trim(obj%DataStructureName)//'" version="1.0" byte_order="BigEndian">'
+    buffer = buffer//'<VTKFile type="'//trim(obj%DataStructureName)// &
+    & '" version="1.0" byte_order="BigEndian">'
   END IF
-
-  WRITE( obj%unitNo, "(a)", iostat=ierr, iomsg=ioerrmsg ) trim( buffer%chars() ) // CHAR_LF
+  !!
+  WRITE( obj%unitNo, "(a)", iostat=ierr, iomsg=ioerrmsg ) &
+    & trim( buffer%chars() ) // CHAR_LF
+  !!
   obj%indent = 2
-
+  !!
   IF( ierr .NE. 0 ) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - Error has occured while writing header info in VTKFile &
       & iostat = ' // trim(str(ierr, .true.)) // ' error msg :: ' // &
       & TRIM( ioerrmsg ) )
   END IF
+  !!
 END PROCEDURE VTKFile_WriteRootTag
 
 !----------------------------------------------------------------------------
@@ -72,9 +77,13 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
   CHARACTER( LEN = * ), PARAMETER :: myName = "VTKFile_WriteDataStructureTag"
   INTEGER( I4B ) :: tattr
   TYPE( String ) :: attrNames( 4 ), attrValues( 4 )
-
-  !> main
+  !!
+  !! main
+  !!
   SELECT CASE( obj%DataStructureType )
+  !!
+  !! Structured
+  !!
   CASE(VTK_RectilinearGrid, VTK_StructuredGrid, VTK_ImageData )
     attrNames( 1 ) = "WholeExtent"
     attrValues( 1 ) = &
@@ -87,7 +96,27 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
       & str( obj%WholeExtent( 6 ), .TRUE. )  // &
       & '"'
     tattr = 1
-  !>
+    !!
+    IF( obj%DataStructureType .EQ. VTK_ImageData ) THEN
+      attrNames( 2 ) = "Origin"
+      attrNames( 3 ) = "Spacing"
+      attrValues( 2 ) = &
+      & '"' // &
+      & str( obj%Origin( 1 ), .TRUE. )  // CHAR_SPACE // &
+      & str( obj%Origin( 2 ), .TRUE. )  // CHAR_SPACE // &
+      & str( obj%Origin( 3 ), .TRUE. )  // CHAR_SPACE // &
+      & '"'
+      attrValues( 3 ) = &
+      & '"' // &
+      & str( obj%Spacing( 1 ), .TRUE. )  // CHAR_SPACE // &
+      & str( obj%Spacing( 2 ), .TRUE. )  // CHAR_SPACE // &
+      & str( obj%Spacing( 3 ), .TRUE. )  // CHAR_SPACE // &
+      & '"'
+      tattr = 3
+    END IF
+  !!
+  !! Parallel Structured
+  !!
   CASE( PARALLEL_VTK_RectilinearGrid, PARALLEL_VTK_StructuredGrid  )
     attrNames( 1 ) = "WholeExtent"
     attrValues( 1 ) = &
@@ -100,53 +129,79 @@ MODULE PROCEDURE VTKFile_WriteDataStructureTag
       & str( obj%WholeExtent( 6 ), .TRUE. )  // &
       & '"'
     tattr = 1
-    !>
+    !!
     attrNames( 2 ) = "GhostLevel"
     attrValues( 2 ) = '"#"'
     tattr = 2
-  !>
+  !!
+  !! Parallel unstructured
+  !!
   CASE( PARALLEL_VTK_UnstructuredGrid )
     attrNames( 1 ) = "GhostLevel"
     attrValues( 1 ) = '"#"'
     tattr = 1
   END SELECT
-  !>
-  CALL obj%writeStartTag( name=String(obj%DataStructureName), &
-    & attrNames=attrNames(1:tattr), attrValues=attrValues(1:tattr) )
-
-  ! parallel data structure types
+  !!
+  !! Write the StartTag
+  !!
+  CALL obj%writeStartTag( &
+    & name=String(obj%DataStructureName), &
+    & attrNames=attrNames(1:tattr), &
+    & attrValues=attrValues(1:tattr) )
+  !!
+  !! parallel data structure types
+  !!
   SELECT CASE( obj%DataStructureType )
+  !!
+  !! Parallel RectilinearGrid
+  !!
   CASE( PARALLEL_VTK_RectilinearGrid )
+    !!
     IF( .NOT. PRESENT( meshDataFormat )) THEN
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - meshDataFormat should be present for PARALLEL_VTK_RECTILINEAR')
     END IF
-    !> Write <PCoordinates>
+    !!
+    !! Write <PCoordinates>
+    !!
     CALL obj%WriteStartTag(name=String('PCoordinates'))
-    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+    !!
+    CALL obj%WriteSelfClosingTag( &
+      & name=String('PDataArray'), &
       & attrNames = [String( 'type' )], &
       & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"') ] )
-    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+    !!
+    CALL obj%WriteSelfClosingTag( &
+      & name=String('PDataArray'), &
       & attrNames = [String( 'type' )], &
       & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"') ] )
-    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+    !!
+    CALL obj%WriteSelfClosingTag( &
+      & name=String('PDataArray'), &
       & attrNames = [String( 'type' )], &
       & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"') ] )
+    !!
     CALL obj%WriteEndTag(name=String('PCoordinates'))
-  !> case of structured grid and unstructured parallel grids
+  !!
+  !! PARALLEL StructuredGrid, PARALLEL UnstructuredGrid
+  !!
   CASE ( PARALLEL_VTK_StructuredGrid, PARALLEL_VTK_UnstructuredGrid )
+    !!
     IF( .NOT. PRESENT( meshDataFormat )) THEN
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & ' - meshDataFormat should be present for PARALLEL CASE')
     END IF
+    !!
     CALL obj%WriteStartTag(name=String('PPoints'))
-    CALL obj%WriteSelfClosingTag( name=String('PDataArray'), &
+    CALL obj%WriteSelfClosingTag(  &
+      & name=String('PDataArray'), &
       & attrNames = [String( 'type' ), String( 'NumberOfComponents' ), &
       & String( 'Name' ) ], &
       & attrValues = [String( '"' // TRIM( meshDataFormat ) // '"'), &
       & String( '"3"'), String( '"Points"') ] )
     CALL obj%WriteEndTag(name=String('PPoints'))
   END SELECT
+  !!
 END PROCEDURE VTKFile_WriteDataStructureTag
 
 !----------------------------------------------------------------------------
@@ -200,27 +255,4 @@ MODULE PROCEDURE VTKFile_WriteTag
   CALL tag%Deallocate()
 END PROCEDURE VTKFile_WriteTag
 
-!----------------------------------------------------------------------------
-!                                                                WriteCells
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE VTKFile_WriteCells
-  CALL obj%WriteStartTag(name=String('Cells'))
-  CALL obj%WriteDataArray( name=String('connectivity'), x=connectivity )
-  CALL obj%WriteDataArray( name=String('offsets'), x=offsets )
-  CALL obj%WriteDataArray( name=String('types'), x=types )
-  CALL obj%WriteEndTag(name=String('Cells'))
-END PROCEDURE VTKFile_WriteCells
-
-!----------------------------------------------------------------------------
-!                                                                 WriteVerts
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE VTKFile_WriteVerts
-  CALL obj%WriteStartTag(name=String('Verts'))
-  CALL obj%WriteDataArray( name=String('connectivity'), x=connectivity )
-  CALL obj%WriteDataArray( name=String('offsets'), x=offsets )
-  CALL obj%WriteEndTag(name=String('Verts'))
-END PROCEDURE VTKFile_WriteVerts
-
-END SUBMODULE IOMethods
+END SUBMODULE TagsMethods

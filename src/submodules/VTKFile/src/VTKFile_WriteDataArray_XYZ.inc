@@ -23,12 +23,12 @@ CASE( VTK_BINARY )
 CASE( VTK_APPENDED )
   isOffset = .TRUE.
 END SELECT
-
+!!
 CALL obj%WriteDataArrayTag( dataType=dataType, &
   & numberOfComponents=noc, &
   & name=name, isTuples=isTuples, &
   & isOffset=isOffset, content=content )
-
+!!
 IF( isOffset) THEN
   CALL obj%WriteToScratch( x=x, y=y, z=z )
   CALL Obj%UpdateOffset( nByte=nByte )

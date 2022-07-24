@@ -77,15 +77,18 @@ TYPE :: XMLTag_
   PROCEDURE, PUBLIC, PASS( obj ) :: setName => xmlTag_setName
 
   PROCEDURE, PUBLIC, PASS( obj ) :: hasParent => xmlTag_hasParent
-  PROCEDURE, PUBLIC, PASS( obj ) :: getParentPointer => xmlTag_getParentPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: getParentPointer => &
+    & xmlTag_getParentPointer
   PROCEDURE, PUBLIC, PASS( obj ) :: setParent => xmlTag_setParent
 
   PROCEDURE, PUBLIC, PASS( obj ) :: hasChildren => xmlTag_hasChildren
-  PROCEDURE, PUBLIC, PASS( obj ) :: getChildrenPointer => xmlTag_getChildrenPointer
+  PROCEDURE, PUBLIC, PASS( obj ) :: getChildrenPointer => &
+    & xmlTag_getChildrenPointer
   PROCEDURE, PUBLIC, PASS( obj ) :: setChildren => xmlTag_setChildren
 
   PROCEDURE, PUBLIC, PASS( obj ) :: getAttributes => xmlTag_getAttributes
-  PROCEDURE, PUBLIC, PASS( obj ) :: getAttributeValue => xmlTag_getAttributeValue
+  PROCEDURE, PUBLIC, PASS( obj ) :: getAttributeValue => &
+    & xmlTag_getAttributeValue
   PROCEDURE, PUBLIC, PASS( obj ) :: setAttribute => xmlTag_setAttribute
   PROCEDURE, PUBLIC, PASS( obj ) :: setAttributes => xmlTag_setAttributes
 

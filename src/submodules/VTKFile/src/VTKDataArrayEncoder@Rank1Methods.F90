@@ -139,7 +139,6 @@ END PROCEDURE encode_rank1_Int32
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE encode_rank1_Int64
   INTEGER( I4B ) :: ii, nn
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -158,6 +157,5 @@ MODULE PROCEDURE encode_rank1_Int64
     CALL B64_ENCODE( n=xp, code=ans )
   END SELECT
 END PROCEDURE encode_rank1_Int64
-#endif
 
 END SUBMODULE Rank1Methods

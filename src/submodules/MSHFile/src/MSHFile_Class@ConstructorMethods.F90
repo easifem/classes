@@ -44,7 +44,7 @@ MODULE PROCEDURE msh_Deallocate
   obj%nsd = 0
   IF( ASSOCIATED( obj % buffer ) ) DEALLOCATE( obj%buffer )
   NULLIFY( obj%buffer )
-  CALL DeallocateTxtFile( obj, Delete )
+  CALL TxtFileDeallocate( obj, Delete )
 END PROCEDURE msh_Deallocate
 
 ! !----------------------------------------------------------------------------

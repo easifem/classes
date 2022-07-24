@@ -19,6 +19,7 @@ MODULE Files
 USE AbstractFile_Class
 USE FortranFile_Class
 USE TxtFile_Class
+USE CSVFile_Class
 USE InputFile_Class
 USE HDF5
 USE H5LT

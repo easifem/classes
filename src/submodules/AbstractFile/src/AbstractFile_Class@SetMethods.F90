@@ -15,18 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(AbstractFile_Class) Methods
+SUBMODULE(AbstractFile_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                              addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_addSurrogate
-  CALL e%addSurrogate( UserObj )
-END PROCEDURE aFile_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                               setFilePath
@@ -38,8 +30,8 @@ MODULE PROCEDURE aFile_setFilePath
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Cannot change path of file while it is open!')
   ELSE
-    obj%path=TRIM(ADJUSTL(path))
-    obj%pathlen=LEN_TRIM(obj%path)
+    obj%path=path
+    obj%pathlen=path%len_trim()
   ENDIF
 END PROCEDURE aFile_setFilePath
 
@@ -53,8 +45,8 @@ MODULE PROCEDURE aFile_setFileName
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Cannot change Filename of file while it is open!')
   ELSE
-    obj%fileName=TRIM(ADJUSTL(fileName))
-    obj%fnamelen=LEN_TRIM(obj%fileName)
+    obj%fileName=fileName
+    obj%fnamelen=filename%len_trim()
   ENDIF
 END PROCEDURE aFile_setFileName
 
@@ -69,76 +61,10 @@ MODULE PROCEDURE aFile_setFileExt
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'Cannot change extension of file while it is open!')
   ELSE
-    obj%ext=TRIM(ADJUSTL(ext))
-    obj%extlen=LEN_TRIM(obj%ext)
+    obj%ext=ext
+    obj%extlen=ext%len_trim()
   ENDIF
 END PROCEDURE aFile_setFileExt
-
-!----------------------------------------------------------------------------
-!                                                              getFileParts
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFileParts
-  path=obj%path
-  fileName=obj%fileName
-  ext=obj%ext
-END PROCEDURE aFile_getFileParts
-
-!----------------------------------------------------------------------------
-!                                                                getFilePath
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFilePath
-  path = obj%path
-END PROCEDURE aFile_getFilePath
-
-!----------------------------------------------------------------------------
-!                                                                getFileName
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFileName
-  fileName = obj%fileName
-END PROCEDURE aFile_getFileName
-
-!----------------------------------------------------------------------------
-!                                                                getFileExt
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFileExt
-  ext = obj%ext
-END PROCEDURE aFile_getFileExt
-
-!----------------------------------------------------------------------------
-!                                                                 isOpen
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_isOpen
-  ans = obj%openStat
-END PROCEDURE aFile_isOpen
-
-!----------------------------------------------------------------------------
-!                                                                 isEOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_isEOF
-  ans = obj%eofStat
-END PROCEDURE aFile_isEOF
-
-!----------------------------------------------------------------------------
-!                                                                 isWrite
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_isWrite
-  ans = obj%writeStat
-END PROCEDURE aFile_isWrite
-
-!----------------------------------------------------------------------------
-!                                                                 isRead
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_isRead
-  ans = obj%readStat
-END PROCEDURE aFile_isRead
 
 !----------------------------------------------------------------------------
 !                                                                 setEOF
@@ -190,21 +116,4 @@ MODULE PROCEDURE aFile_setWriteStat
   ENDIF
 END PROCEDURE aFile_setWriteStat
 
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_Deallocate
-  obj%path=''
-  obj%fileName=''
-  obj%ext=''
-  obj%pathlen=0
-  obj%fnamelen=0
-  obj%extlen=0
-  obj%openstat=.FALSE.
-  obj%EOFstat=.FALSE.
-  obj%readstat=.FALSE.
-  obj%writestat=.FALSE.
-END PROCEDURE aFile_Deallocate
-
-END SUBMODULE Methods
+END SUBMODULE SetMethods

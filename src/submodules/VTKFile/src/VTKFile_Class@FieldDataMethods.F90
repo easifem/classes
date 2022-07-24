@@ -35,10 +35,8 @@ MODULE PROCEDURE VTKFile_WriteFieldData_1
     CALL obj%WriteDataArray(name=name, x=[x], isTuples=.TRUE.)
   TYPE IS( INTEGER( Int32 ) )
     CALL obj%WriteDataArray(name=name, x=[x], isTuples=.TRUE.)
-#ifdef USE_Int64
   TYPE IS( INTEGER( Int64 ) )
     CALL obj%WriteDataArray(name=name, x=[x], isTuples=.TRUE.)
-#endif
   END SELECT
 END PROCEDURE VTKFile_WriteFieldData_1
 
@@ -49,11 +47,11 @@ END PROCEDURE VTKFile_WriteFieldData_1
 MODULE PROCEDURE VTKFile_WriteFieldData_2
   TYPE( String ) :: act
   act = action%upper()
-  SELECT CASE( TRIM(act%chars()) )
+  SELECT CASE( act%chars() )
   CASE( 'OPEN' )
     CALL obj%WriteStartTag( name=String('FieldData') )
   CASE( 'CLOSE' )
-    call obj%WriteEndTag( name=String('FieldData') )
+    CALL obj%WriteEndTag( name=String('FieldData') )
   END SELECT
 END PROCEDURE VTKFile_WriteFieldData_2
 

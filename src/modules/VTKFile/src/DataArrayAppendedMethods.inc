@@ -15,6 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!----------------------------------------------------------------------------
+!                                    WriteDataArray@DataArrayAppendedMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WriteDataArray_Appended( obj )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE VTKFile_WriteDataArray_Appended
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                    WriteToScratch@DataArrayAppendedMethods
@@ -90,7 +99,6 @@ END INTERFACE
 !                                    WriteToScratch@DataArrayAppendedMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteToScratch7( obj, x, y, z )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
@@ -99,7 +107,6 @@ MODULE SUBROUTINE VTKFile_WriteToScratch7( obj, x, y, z )
   INTEGER( Int64 ), INTENT( IN ) :: z( 1: )
 END SUBROUTINE VTKFile_WriteToScratch7
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                    WriteToScratch@DataArrayAppendedMethods
@@ -170,7 +177,6 @@ END INTERFACE
 !                                    WriteToScratch@DataArrayAppendedMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteToScratch13( obj, x, y, z )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
@@ -179,7 +185,6 @@ MODULE SUBROUTINE VTKFile_WriteToScratch13( obj, x, y, z )
   INTEGER( Int64 ), INTENT( IN ) :: z( 1:, 1: )
 END SUBROUTINE VTKFile_WriteToScratch13
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                    WriteToScratch@DataArrayAppendedMethods
@@ -250,7 +255,6 @@ END INTERFACE
 !                                    WriteToScratch@DataArrayAppendedMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteToScratch19( obj, x, y, z )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
@@ -259,7 +263,6 @@ MODULE SUBROUTINE VTKFile_WriteToScratch19( obj, x, y, z )
   INTEGER( Int64 ), INTENT( IN ) :: z( 1:, 1:, 1: )
 END SUBROUTINE VTKFile_WriteToScratch19
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                    WriteToScratch@DataArrayAppendedMethods

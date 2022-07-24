@@ -72,7 +72,8 @@ TYPE, EXTENDS( TxtFile_ ) :: MSHFile_
       !! Read the file and initiate the object
     PROCEDURE, PUBLIC, PASS( obj ) :: Export => msh_Export
       !! Export to the external hdf5 file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Read => msh_Read
+    PROCEDURE, PUBLIC, PASS( obj ) :: MSHFileRead => msh_Read
+    GENERIC, PUBLIC :: Read => MSHFileRead
       !! initiate the object
     PROCEDURE, PUBLIC, PASS( obj ) :: ReadPointEntities => &
       & msh_ReadPointEntities

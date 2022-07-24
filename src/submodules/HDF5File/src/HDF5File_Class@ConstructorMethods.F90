@@ -317,7 +317,7 @@ MODULE PROCEDURE hdf5_clear
     obj%fullname=''
     obj%unitno=-1
     obj%overwriteStat = .FALSE.
-    CALL aFile_Deallocate(obj)
+    CALL AbstractFileDeallocate(obj)
   ENDIF
 END PROCEDURE hdf5_clear
 
