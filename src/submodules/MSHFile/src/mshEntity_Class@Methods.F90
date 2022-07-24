@@ -65,7 +65,7 @@ MODULE PROCEDURE ent_GotoTag
   !
   ! Find $meshFormat
 
-  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() .OR. .NOT. mshFile%isInit() ) THEN
+  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() .OR. .NOT. mshFile%isInitiated() ) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'mshFile is either not opened or does not have read access!')
     error = -1
