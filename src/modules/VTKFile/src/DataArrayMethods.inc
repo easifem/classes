@@ -16,12 +16,12 @@
 !
 
 !----------------------------------------------------------------------------
-!                                           WriteDataArray@DataArrayMethods
+!                                 WriteDataArrayLocationTag@DataArrayMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 15 Sept 2021
-! summary: This routine writes the location information
+! date: 13 Sept 2021
+! summary: WriteDataArrayLocation CELL or NODE
 !
 !# Introduction
 !
@@ -37,26 +37,49 @@
 ! A single file can contain both cell and node centered variables.
 !@endnote
 !
-!
-!### Usage
-!
-!```fortran
-! TBA
-!```
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_WriteDataArray_LocationTag( obj, location, action )
+MODULE SUBROUTINE VTKFile_WriteDataArrayLocationTag( obj, location, action )
   CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
   TYPE( String ), INTENT( IN ) :: location
-    !! node or cell
+    !! "CELL" and "NODE"
   TYPE( String ), INTENT( IN ) :: action
-    !! open, close
-END SUBROUTINE VTKFile_WriteDataArray_LocationTag
+    !! "OPEN" or "CLOSE"
+END SUBROUTINE VTKFile_WriteDataArrayLocationTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             WriteDataArray@DataArrayMethods
+!                                         WriteDataArrayTag@DataArrayMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 13 Sept 2021
+! summary: WriteDataArrayTag
+
+INTERFACE
+MODULE SUBROUTINE VTKFile_WriteDataArrayTag( obj, dataType, name, &
+  & numberOfComponents, content, isTuples, isOffset )
+  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
+  TYPE( String ), INTENT( IN ) :: dataType
+  TYPE( String ), INTENT( IN ) :: name
+  INTEGER( I4B ), INTENT( IN ) :: numberOfComponents
+  TYPE( String ), OPTIONAL, INTENT( IN ) :: content
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOffset
+END SUBROUTINE VTKFile_WriteDataArrayTag
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           WriteDataArray@DataArrayMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary: This routine writes Rank1 array of Real32
+!
+!# Introduction
+!
+! This routine writes Rank 1 of Real32. This routine calls `WriteDataArrayTag`
 
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32( obj, name, x, &
@@ -66,12 +89,17 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32( obj, name, x, &
   REAL( Real32 ), INTENT( IN ) :: x( 1: )
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: numberOfComponents
+    !! number of components in the data, default is 1
 END SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary: This routine writes Rank1 array of Real64
 
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real64( obj, name, x, &
@@ -88,6 +116,10 @@ END INTERFACE
 !                                             WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary: This routine writes Rank1 array of Int8
+
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int8( obj, name, x, &
   & isTuples, numberOfComponents )
@@ -102,6 +134,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 15 Sept 2021
+! summary: This routine writes Rank1 array of Int16
 
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int16( obj, name, x, &
@@ -133,7 +169,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64(obj, name, x, &
   & isTuples, numberOfComponents )
@@ -144,7 +179,6 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64(obj, name, x, &
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: numberOfComponents
 END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                             WriteDataArray@DataArrayMethods
@@ -225,7 +259,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int64(obj, name, x, &
   & isTuples, numberOfComponents )
@@ -236,8 +269,6 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int64(obj, name, x, &
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: numberOfComponents
 END SUBROUTINE VTKFile_WriteDataArray_Rank2_Int64
 END INTERFACE
-#endif
-
 
 !----------------------------------------------------------------------------
 !                                             WriteDataArray@DataArrayMethods
@@ -318,7 +349,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int64(obj, name, x, &
   & isTuples, numberOfComponents )
@@ -329,7 +359,6 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int64(obj, name, x, &
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: numberOfComponents
 END SUBROUTINE VTKFile_WriteDataArray_Rank3_Int64
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                             WriteDataArray@DataArrayMethods
@@ -410,7 +439,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int64(obj, name, x, &
   & isTuples, numberOfComponents )
@@ -421,7 +449,6 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int64(obj, name, x, &
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: numberOfComponents
 END SUBROUTINE VTKFile_WriteDataArray_Rank4_Int64
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                            WriteDataArray@DataArrayMethods
@@ -507,7 +534,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int64( obj, name, x, &
   & y, z, isTuples )
@@ -519,7 +545,6 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int64( obj, name, x, &
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
 END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int64
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                            WriteDataArray@DataArrayMethods
@@ -605,7 +630,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int64( obj, name, x, &
   & y, z, isTuples )
@@ -617,7 +641,6 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int64( obj, name, x, &
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
 END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int64
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !                                            WriteDataArray@DataArrayMethods
@@ -703,7 +726,6 @@ END INTERFACE
 !                                            WriteDataArray@DataArrayMethods
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 INTERFACE
 MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int64( obj, name, x, &
   & y, z, isTuples )
@@ -715,4 +737,3 @@ MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int64( obj, name, x, &
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isTuples
 END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int64
 END INTERFACE
-#endif
