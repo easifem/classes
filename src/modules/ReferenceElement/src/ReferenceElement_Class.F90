@@ -28,12 +28,20 @@ INTEGER( I4B ), PARAMETER :: MAX_NAME_LENGTH=25
 !----------------------------------------------------------------------------
 
 TYPE :: Test_ReferenceElement_
-  REAL(DFP), ALLOCATABLE :: xiJ(:, :)
+  ! REAL(DFP), ALLOCATABLE :: xiJ(:, :)
     !! Node coord
+    !! I think reference element should not contain the nodecoord
+    !! It is a purely topological quantity
   INTEGER(I4B) :: entityCounts(4) = 0
-    !! Number of 0D, 1D, 2D, 3D entities
+    !!
+    !! Number of 0D, 1D, 2D, 3D subentities in the reference element
+    !!
   INTEGER(I4B) :: xiDimension = 0
-    !! Xidimension
+    !! Xidimension  elemType
+    !! 0 -> point
+    !! 1 -> line
+    !! 2 -> surface
+    !! 3 -> volume
   INTEGER(I4B) :: name = 0
     !! name of the element
   CHARACTER( LEN = MAX_NAME_LENGTH ) :: name_str=""

@@ -42,6 +42,4 @@ END TYPE Test_TopologyPointer_
 
 PUBLIC :: Test_TopologyPointer_
 
-
-
 END MODULE Test_Topolgy_Class
