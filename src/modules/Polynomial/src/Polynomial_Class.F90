@@ -46,6 +46,8 @@ TYPE(ExceptionHandler_) :: e
 TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial_
   REAL( DFP ), ALLOCATABLE :: coeff( : )
   INTEGER( I4B ), ALLOCATABLE :: power( :, : )
+  !! n is total number of unknowns
+  !! n=1, then polynomial is space of
   !!
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: CheckEssentialParam => &
