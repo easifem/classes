@@ -18,8 +18,29 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/Polynomial_Class@ConstructorMethods.F90
-  ${src_path}/Polynomial_Class@GetMethods.F90
-  ${src_path}/Polynomial_Class@IOMethods.F90
-  ${src_path}/Polynomial_Class@OperatorMethods.F90
+  ${src_path}/AbstractMonomial_Class@ConstructorMethods.F90
+  ${src_path}/Monomial1D_Class@ConstructorMethods.F90
+  ${src_path}/Monomial1D_Class@GetMethods.F90
+  ${src_path}/Monomial1D_Class@IOMethods.F90
+  ${src_path}/Monomial1D_Class@OperatorMethods.F90
+  ${src_path}/Monomial1D_Class@AssignMethods.F90
+  ${src_path}/Monomial2D_Class@ConstructorMethods.F90
+  ${src_path}/Monomial2D_Class@GetMethods.F90
+  ${src_path}/Monomial2D_Class@IOMethods.F90
+  ${src_path}/Monomial2D_Class@OperatorMethods.F90
+  ${src_path}/Monomial2D_Class@AssignMethods.F90
+  ${src_path}/Monomial3D_Class@ConstructorMethods.F90
+  ${src_path}/Monomial3D_Class@GetMethods.F90
+  ${src_path}/Monomial3D_Class@IOMethods.F90
+  ${src_path}/Monomial3D_Class@AssignMethods.F90
+  ${src_path}/Monomial3D_Class@OperatorMethods.F90
+  ${src_path}/Polynomial1D_Class@ConstructorMethods.F90
+  ${src_path}/Polynomial1D_Class@GetMethods.F90
+  ${src_path}/Polynomial1D_Class@IOMethods.F90
+  ${src_path}/Polynomial1D_Class@AssignMethods.F90
+  ${src_path}/Polynomial1D_Class@OperatorMethods.F90
+  # ${src_path}/Polynomial_Class@ConstructorMethods.F90
+  # ${src_path}/Polynomial_Class@GetMethods.F90
+  # ${src_path}/Polynomial_Class@IOMethods.F90
+  # ${src_path}/Polynomial_Class@OperatorMethods.F90
 )

@@ -39,10 +39,16 @@ END PROCEDURE funcptr_EvalGradient
 !                                                              Deallocate
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE func_Deallocate
+END PROCEDURE func_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                              Deallocate
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE funcptr_Deallocate
   CALL obj%ptr%Deallocate()
   obj%ptr => NULL()
 END PROCEDURE funcptr_Deallocate
-
 
 END SUBMODULE Methods

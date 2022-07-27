@@ -44,8 +44,7 @@ TYPE, ABSTRACT :: AbstractFunction_
     !! Evaluate the jacobian
     GENERIC, PUBLIC :: OPERATOR( .Grad. ) => EvalGradient
     !! Generic operator to get the jacobian
-    PROCEDURE(func_Deallocate), DEFERRED, PUBLIC, PASS( Obj ) :: &
-      & Deallocate
+    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate
 END TYPE AbstractFunction_
 
 PUBLIC :: AbstractFunction_
@@ -106,19 +105,24 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              Deallocate
+!                                                        Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
 ! summary: Evaluate the function
 
-ABSTRACT INTERFACE
-  SUBROUTINE func_Deallocate( obj )
-    IMPORT AbstractFunction_
+INTERFACE
+  MODULE SUBROUTINE func_Deallocate( obj )
     CLASS( AbstractFunction_ ), INTENT( INOUT ) :: obj
   END SUBROUTINE func_Deallocate
 END INTERFACE
+
+INTERFACE AbstractFunctionDeallocate
+  MODULE PROCEDURE func_Deallocate
+END INTERFACE AbstractFunctionDeallocate
+
+PUBLIC :: AbstractFunctionDeallocate
 
 !----------------------------------------------------------------------------
 !                                                                      Eval

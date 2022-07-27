@@ -60,7 +60,7 @@ USE NeumannBC_Class
 
 
 USE AbstractFunction_Class
-USE Polynomial_Class
+USE PolynomialFactory
 USE UserFunction_Class
 
 USE Plot_Method
