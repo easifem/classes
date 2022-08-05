@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Chebyshev1Polynomial1D_Class) GetMethods
+SUBMODULE(ChebyshevFirst1D_Class) GetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
