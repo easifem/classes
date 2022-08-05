@@ -19,19 +19,21 @@
 !
 !----------------------------------------------------------------------------
 
-SUBMODULE(Polynomial_Class) IOMethods
+SUBMODULE(Monomial1D_Class) OperatorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                      Eval
+!                                                            Multiplication
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE func_Display
-  CALL Display( msg, unitno=unitno )
-  CALL Display( obj%coeff, msg="# coeff: ", unitno=unitno )
-  CALL Display( obj%power, msg="# power: ", unitno=unitno )
-END PROCEDURE func_Display
+MODULE PROCEDURE func_Multiplication_obj_obj
+  INTEGER( I4B ) :: degree
+  !!
+  degree = obj1%degree + obj2%degree
+  ans=Monomial1D(degree=degree, varname=obj1%varname%chars())
+  !!
+END PROCEDURE func_Multiplication_obj_obj
 
-END SUBMODULE IOMethods
+END SUBMODULE OperatorMethods
