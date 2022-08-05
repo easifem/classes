@@ -15,16 +15,16 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Chebyshev1Polynomial1D_Class) ConstructorMethods
+SUBMODULE(ChebyshevFirst1D_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    Chebyshev1Polynomial1D
+!                                                    ChebyshevFirst1D
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Chebyshev1Polynomial1D1
+MODULE PROCEDURE ChebyshevFirst1D1
   REAL( DFP ) :: coeff( 0:n-1, 2 ), scale( 0:n-1, 2 )
   !!
   CALL ans%GetCoeffScale( n=n, coeff=coeff, scale=scale, &
@@ -36,13 +36,13 @@ MODULE PROCEDURE Chebyshev1Polynomial1D1
     & coeff=coeff, &
     & scale=scale )
   !!
-END PROCEDURE Chebyshev1Polynomial1D1
+END PROCEDURE ChebyshevFirst1D1
 
 !----------------------------------------------------------------------------
-!                                            Chebyshev1Polynomial1D_Pointer
+!                                            ChebyshevFirst1D_Pointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Chebyshev1Polynomial1D_Pointer1
+MODULE PROCEDURE ChebyshevFirst1D_Pointer1
   REAL( DFP ) :: coeff( 0:n, 2 ), scale( 0:n-1, 2 )
   !!
   ALLOCATE( ans )
@@ -56,7 +56,7 @@ MODULE PROCEDURE Chebyshev1Polynomial1D_Pointer1
     & coeff=coeff, &
     & scale=scale )
   !!
-END PROCEDURE Chebyshev1Polynomial1D_Pointer1
+END PROCEDURE ChebyshevFirst1D_Pointer1
 
 !----------------------------------------------------------------------------
 !
