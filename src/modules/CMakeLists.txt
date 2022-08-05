@@ -147,8 +147,8 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthoPol1D/CMakeLists.txt)
 # ChebyshevFirst1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
 
-# JacobiPolynomial1D
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/JacobiPolynomial1D/CMakeLists.txt)
+# Jacobi1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
 
 # PolynomialFactory
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
