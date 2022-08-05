@@ -15,5 +15,5 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Chebyshev1Polynomial1D_Class) IOMethods
+SUBMODULE(ChebyshevFirst1D_Class) IOMethods
 END SUBMODULE IOMethods
