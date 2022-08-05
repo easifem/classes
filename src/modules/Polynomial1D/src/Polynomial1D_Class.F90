@@ -19,7 +19,7 @@ MODULE Polynomial1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractFunction_Class
-USE Monomial1D_Class
+USE MonomialFactory
 IMPLICIT NONE
 PRIVATE
 
@@ -32,9 +32,10 @@ PRIVATE
 ! summary: Polynomial1D class is defined
 !
 
-TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
-  INTEGER( I4B ) :: degree = 0
-  TYPE( String ) :: varname
+TYPE, EXTENDS( AbstractFunction1D_ ) :: Polynomial1D_
+  PRIVATE
+  INTEGER( I4B ), ALLOCATABLE :: degree( : )
+  REAL( DFP ), ALLOCATABLE :: coeff( : )
   TYPE( Monomial1D_ ), ALLOCATABLE :: x( : )
   CONTAINS
     !!
@@ -45,7 +46,8 @@ TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
     !!
     !! @GetMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: Eval=>func_Eval
+    PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar=>func_EvalScalar
+    PROCEDURE, PUBLIC, PASS( obj ) :: EvalVector=>func_EvalVector
     PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient=>func_EvalGradient
     PROCEDURE, PUBLIC, PASS( obj ) :: Grad => func_Grad
     PROCEDURE, PUBLIC, PASS( obj ) :: GetStringForUID => func_GetStringForUID
@@ -54,6 +56,8 @@ TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
       & func_GetDisplayString
     PROCEDURE, PUBLIC, PASS( obj ) :: GetCoeff => &
       & func_GetCoeff
+    PROCEDURE, PUBLIC, PASS( obj ) :: GetOrder => &
+      & func_GetOrder
     !!
     GENERIC, PUBLIC :: OPERATOR( .Grad. ) => Grad
     !!
@@ -63,7 +67,12 @@ TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
     !!
     !! @OperatorMethods
     !!
-    !! +
+    !! OPERATOR(+)
+    !!
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddMonoObj => &
+      & func_Add_mono_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjMono => &
+      & func_Add_obj_mono
     PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjObj => func_Add_obj_obj
     PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt8 => func_Add_obj_Int8
     PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt16 => func_Add_obj_Int16
@@ -82,8 +91,12 @@ TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
       & AddInt8Obj, AddInt16Obj, AddInt32Obj, AddInt64Obj, &
       & AddReal32Obj, AddReal64Obj
     !!
-    !! -
+    !! OPERATOR(-)
     !!
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractMonoObj => &
+      & func_Subtract_mono_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjMono => &
+      & func_Subtract_obj_mono
     PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjObj => func_Subtract_obj_obj
     PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt8 => &
       & func_Subtract_obj_Int8
@@ -117,8 +130,12 @@ TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
       & SubtractInt64Obj, &
       & SubtractReal32Obj, SubtractReal64Obj
     !!
-    !! *
+    !! OPERATOR(*)
     !!
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationMonoObj => &
+      & func_Multiplication_mono_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjMono => &
+      & func_Multiplication_obj_mono
     PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjObj => &
       & func_Multiplication_obj_obj
     PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt8 => &
@@ -158,7 +175,23 @@ TYPE, EXTENDS( AbstractFunction_ ) :: Polynomial1D_
     !! @AssignmentMethods
     !!
     PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjObj => func_AssignObjObj
-    GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt8 => &
+      & func_AssignObjInt8
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt16 => &
+      & func_AssignObjInt16
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt32 => &
+      & func_AssignObjInt32
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt64 => &
+      & func_AssignObjInt64
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjReal32 => &
+      & func_AssignObjReal32
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjReal64 => &
+      & func_AssignObjReal64
+    GENERIC, PUBLIC :: ASSIGNMENT( = ) => &
+      & AssignObjObj, AssignObjInt8, &
+      & AssignObjInt16, AssignObjInt32, &
+      & AssignObjInt64, AssignObjReal32, &
+      & AssignObjReal64
 END TYPE Polynomial1D_
 
 PUBLIC :: Polynomial1D_
@@ -256,11 +289,27 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE PURE FUNCTION func_eval( obj, x ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_evalscalar( obj, x ) RESULT( ans )
+    CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
+    REAL( DFP ), INTENT( IN ) :: x
+    REAL( DFP ) :: ans
+  END FUNCTION func_evalscalar
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Eval@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate the function
+
+INTERFACE
+  MODULE PURE FUNCTION func_evalvector( obj, x ) RESULT( ans )
     CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
     REAL( DFP ), INTENT( IN ) :: x( : )
-    REAL( DFP ) :: ans
-  END FUNCTION func_eval
+    REAL( DFP ) :: ans( SIZE(x) )
+  END FUNCTION func_evalvector
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -272,10 +321,10 @@ END INTERFACE
 ! summary: Evaluate the function f(x)
 
 INTERFACE
-  MODULE PURE FUNCTION func_EvalGradient( obj, x ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_EvalGradient( obj, x ) RESULT( ans )
     CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x( : )
-    REAL( DFP ) :: ans( SIZE(x) )
+    REAL( DFP ), INTENT( IN ) :: x
+    REAL( DFP ) :: ans
   END FUNCTION func_EvalGradient
 END INTERFACE
 
@@ -288,7 +337,7 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE PURE FUNCTION func_Grad( obj ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_Grad( obj ) RESULT( ans )
     CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
     TYPE( Polynomial1D_ ) :: ans
   END FUNCTION func_Grad
@@ -303,7 +352,7 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE PURE FUNCTION func_GetStringForUID( obj ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_GetStringForUID( obj ) RESULT( ans )
     CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
     TYPE( String ) :: ans
   END FUNCTION func_GetStringForUID
@@ -333,7 +382,7 @@ END INTERFACE
 ! summary: Get the display string
 
 INTERFACE
-  MODULE PURE FUNCTION func_GetDisplayString( obj ) RESULT( ans )
+  MODULE FUNCTION func_GetDisplayString( obj ) RESULT( ans )
     CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
     TYPE( String ) :: ans
   END FUNCTION func_GetDisplayString
@@ -352,6 +401,21 @@ INTERFACE
     CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
     REAL( DFP ), ALLOCATABLE :: ans( : )
   END FUNCTION func_GetCoeff
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 July 2022
+! summary: Get the order of the polynomial
+
+INTERFACE
+MODULE ELEMENTAL FUNCTION func_GetOrder( obj ) RESULT( ans )
+  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ) :: ans
+END FUNCTION func_GetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -374,9 +438,12 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-#include "./inc/Polynomial1D/Polynomial1D_AddOperator.inc"
-#include "./inc/Polynomial1D/Polynomial1D_SubtractOperator.inc"
-#include "./inc/Polynomial1D/Polynomial1D_MultiplicationOperator.inc"
-#include "./inc/Polynomial1D/Polynomial1D_AssignOperator.inc"
+#include "./inc/Monomial1D_AddOperator.inc"
+#include "./inc/Monomial1D_SubtractOperator.inc"
+#include "./inc/Monomial1D_MultiplicationOperator.inc"
+#include "./inc/Polynomial1D_AddOperator.inc"
+#include "./inc/Polynomial1D_SubtractOperator.inc"
+#include "./inc/Polynomial1D_MultiplicationOperator.inc"
+#include "./inc/Polynomial1D_AssignOperator.inc"
 
 END MODULE Polynomial1D_Class
