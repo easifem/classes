@@ -18,12 +18,5 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/AbstractMonomial_Class.F90
   ${src_path}/Monomial1D_Class.F90
-  ${src_path}/Monomial2D_Class.F90
-  ${src_path}/Monomial3D_Class.F90
-  # ${src_path}/MonomialND_Class.F90
-  ${src_path}/Polynomial1D_Class.F90
-  # ${src_path}/Polynomial_Class.F90
-  ${src_path}/PolynomialFactory.F90
 )
