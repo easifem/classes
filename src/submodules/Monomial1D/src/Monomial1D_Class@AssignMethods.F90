@@ -26,7 +26,6 @@ CONTAINS
 MODULE PROCEDURE func_AssignObjObj
   obj%degree=obj2%degree
   obj%varname=obj2%varname
-  obj%coeff=obj2%coeff
   obj%uid=obj2%uid
 END PROCEDURE func_AssignObjObj
 
