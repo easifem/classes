@@ -15,23 +15,25 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBMODULE(AbstractMonomial_Class) ConstructorMethods
+SUBMODULE(AbstractOrthoPol1D_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                Deallocate
+!                                                                 SetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE func_Deallocate
-  CALL AbstractFunctionDeallocate( obj )
-  obj%coeff = 0_I4B
-  obj%uid=0_I4B
-END PROCEDURE func_Deallocate
+MODULE PROCEDURE OrthoPol_SetParam
+  TYPE(String) :: astr
+  obj%n = n
+  obj%an_1 = an_1
+  obj%bn_1 = bn_1
+  obj%sn_1 = sn_1
+  obj%sn_2 = sn_2
+  astr = obj%getstringforuid( )
+  obj%uid = stringtouid( astr%chars() )
+  obj%varname = String( trim(varname) )
+END PROCEDURE OrthoPol_SetParam
 
-END SUBMODULE ConstructorMethods
+END SUBMODULE SetMethods
