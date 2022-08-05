@@ -27,8 +27,10 @@ MODULE PROCEDURE func_AssignObjObj
   obj%x(1)=obj2%x(1)
   obj%x(2)=obj2%x(2)
   obj%x(3)=obj2%x(3)
-  obj%coeff = obj2%coeff
   obj%uid = obj2%uid
+  obj%varname(1) = obj2%varname(1)
+  obj%varname(2) = obj2%varname(2)
+  obj%varname(3) = obj2%varname(3)
 END PROCEDURE func_AssignObjObj
 
 END SUBMODULE AssignMethods
