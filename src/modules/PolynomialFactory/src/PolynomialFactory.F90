@@ -20,7 +20,7 @@ MODULE PolynomialFactory
   USE Polynomial1D_Class
   USE AbstractOrthoPol1D_Class
   USE LagrangePolynomial1D_Class
-  USE Chebyshev1Polynomial1D_Class
+  USE ChebyshevFirst1D_Class
   USE JacobiPolynomial1D_Class
 ! USE Polynomial2D_Class
 ! USE Polynomial3D_Class
