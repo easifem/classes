@@ -28,17 +28,20 @@ CONTAINS
 !                                                                      Eval
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE func_Eval
+MODULE PROCEDURE func_EvalScalar
+  ans = DOT_PRODUCT( obj%coeff, x**(obj%degree) )
+END PROCEDURE func_EvalScalar
+
+!----------------------------------------------------------------------------
+!                                                                      Eval
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_EvalVector
   INTEGER( I4B ) :: ii
-  !!
-  ans = 0.0_DFP
-  !!
-  IF( ALLOCATED( obj%x ) ) THEN
-    DO ii = 1, SIZE( obj%x )
-      ans = ans + (obj%x( ii ) .EVAL. x)
-    END DO
-  END IF
-END PROCEDURE func_Eval
+  DO ii = 1, SIZE( ans )
+    ans( ii ) = DOT_PRODUCT( obj%coeff, x(ii)**(obj%degree) )
+  END DO
+END PROCEDURE func_EvalVector
 
 !----------------------------------------------------------------------------
 !                                                                      Grad
@@ -46,12 +49,10 @@ END PROCEDURE func_Eval
 
 MODULE PROCEDURE func_EvalGradient
   INTEGER( I4B ) :: ii
-  !!
   ans = 0.0_DFP
-  !!
   IF( ALLOCATED( obj%x ) ) THEN
     DO ii = 1, SIZE( obj%x )
-      ans = ans + (obj%x( ii ) .GRAD. x)
+      ans = ans + (obj%x( ii )%EvalGradient( x ))
     END DO
   END IF
 END PROCEDURE func_EvalGradient
@@ -65,19 +66,19 @@ MODULE PROCEDURE func_Grad
   INTEGER( I4B ), ALLOCATABLE :: degree( : )
   REAL( DFP ), ALLOCATABLE :: coeff( : )
   !!
-  degree = obj%getDegree( )
-  coeff = obj%getCoeff( )
-  !!
-  coeff = coeff * degree
-  !!
-  DO ii = 1, SIZE( degree )
-    degree( ii ) = MAX( 0_I4B, degree( ii ) - 1_I4B )
-  END DO
-  !!
-  ans = Polynomial1D(coeff=coeff, degree=degree, varname=obj%varname%chars())
-  !!
-  IF(ALLOCATED(degree) ) DEALLOCATE( degree )
-  IF(ALLOCATED(coeff) ) DEALLOCATE( coeff )
+  IF( ALLOCATED( obj%x ) ) THEN
+    coeff = obj%coeff * obj%degree
+    !!
+    degree = obj%degree
+    DO ii = 1, SIZE( degree )
+      degree( ii ) = MAX( 0_I4B, degree( ii ) - 1_I4B )
+    END DO
+    !!
+    ans = Polynomial1D(coeff=coeff, degree=degree, &
+      & varname=obj%x(1)%varname%chars())
+    !!
+    DEALLOCATE( coeff, degree )
+  END IF
 END PROCEDURE func_Grad
 
 !----------------------------------------------------------------------------
@@ -99,18 +100,9 @@ END PROCEDURE func_GetStringForUID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetDegree
-  INTEGER( I4B ) :: ii, tsize
   !!
   IF( ALLOCATED( obj%x ) ) THEN
-    !!
-    tsize = SIZE( obj%x )
-    !!
-    CALL Reallocate(ans, tsize)
-    !!
-    DO ii = 1, tsize
-      ans( ii ) = obj%x(ii)%GetDegree()
-    END DO
-    !!
+    ans = obj%degree
   ELSE
     ALLOCATE( ans( 0 ) )
   END IF
@@ -128,7 +120,17 @@ MODULE PROCEDURE func_GetDisplayString
   IF( ALLOCATED( obj%x ) ) THEN
     !!
     DO ii = 1, SIZE( obj%x )
-      ans = TRIM( ans ) // TRIM( obj%x(ii)%GetDisplayString() )
+      IF( obj%coeff( ii ) .APPROXEQ. 0.0_DFP ) THEN
+        CYCLE
+      ELSEIF( obj%coeff( ii ) .GT. 0.0_DFP ) THEN
+        ans = TRIM( ans ) // "+" // &
+          & TOSTRING(obj%coeff(ii)) // &
+          & TRIM( obj%x(ii)%GetDisplayString() )
+      ELSE
+        ans = TRIM( ans ) // &
+          & TOSTRING(obj%coeff(ii)) // &
+          & TRIM( obj%x(ii)%GetDisplayString() )
+      END IF
     END DO
     !!
   END IF
@@ -140,22 +142,23 @@ END PROCEDURE func_GetDisplayString
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetCoeff
-  INTEGER( I4B ) :: ii, tsize
-  !!
   IF( ALLOCATED( obj%x ) ) THEN
-    !!
-    tsize = SIZE( obj%x )
-    ALLOCATE( ans( tsize ) )
-    DO ii = 1, tsize
-      ans( ii ) = obj%x(ii)%GetCoeff( )
-    END DO
-    !!
+    ans = obj%coeff
   ELSE
-    !!
     ALLOCATE( ans( 0 ) )
-    !!
   END IF
-  !!
 END PROCEDURE func_GetCoeff
+
+!----------------------------------------------------------------------------
+!                                                                 GetOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetOrder
+  IF( ALLOCATED( obj%degree ) ) THEN
+    ans = MAXVAL( obj%degree )
+  ELSE
+    ans = 0_I4B
+  END IF
+END PROCEDURE func_GetOrder
 
 END SUBMODULE GetMethods
