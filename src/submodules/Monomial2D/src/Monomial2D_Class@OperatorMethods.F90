@@ -19,27 +19,26 @@
 !
 !----------------------------------------------------------------------------
 
-SUBMODULE(Monomial3D_Class) IOMethods
+SUBMODULE(Monomial2D_Class) OperatorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
+!----------------------------------------------------------------------------
+!                                                            Multiplication
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Multiplication_obj_obj
+  INTEGER( I4B ) :: n1, n2
+  !!
+  n1 = obj1%x(1)%getDegree() + obj2%x(1)%getDegree()
+  n2 = obj1%x(2)%getDegree() + obj2%x(2)%getDegree()
+  ans=Monomial2D(n1=n1, n2=n2, name1=obj1%varname(1)%chars(), &
+    & name2=obj1%varname(2)%chars() )
+  !!
+END PROCEDURE func_Multiplication_obj_obj
 
 !----------------------------------------------------------------------------
-!                                                                      Eval
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE func_Display
-  TYPE( String ) :: astr
-  !!
-  astr = TOSTRING( obj%coeff ) // "*" // &
-    & TRIM(obj%x(1)%GetDisplayString()) // &
-    & "*" // &
-    & TRIM(obj%x(2)%GetDisplayString()) // &
-    & "*" // &
-    & TRIM(obj%x(3)%GetDisplayString())
-  !!
-  CALL Display( astr, msg, unitno )
-  ! CALL Display( obj%uid, "uid=", unitno )
-END PROCEDURE func_Display
-
-END SUBMODULE IOMethods
+END SUBMODULE OperatorMethods
