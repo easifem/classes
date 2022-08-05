@@ -15,6 +15,37 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!----------------------------------------------------------------------------
+!                                                       Add@OperatorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Add two Monomial1D
+
+INTERFACE
+MODULE ELEMENTAL FUNCTION func_Subtract_mono_obj( obj1, obj2 ) RESULT( Ans )
+  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
+  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial1D_ ) :: ans
+END FUNCTION func_Subtract_mono_obj
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Add@OperatorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Add two Monomial1D
+
+INTERFACE
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_mono( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
+  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial1D_ ) :: ans
+END FUNCTION func_Subtract_obj_mono
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                  Subtract@OperatorMethods
@@ -25,7 +56,7 @@
 ! summary: Subtract two Polynomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_obj( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -41,7 +72,7 @@ END INTERFACE
 ! summary: Subtract two Polynomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_Int8( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_Int8( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int8 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -53,7 +84,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_Int16( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_Int16( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int16 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -65,7 +96,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_Int32( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_Int32( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int32 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -77,7 +108,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_Int64( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_Int64( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int64 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -89,7 +120,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_Real32( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_Real32( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   REAL( Real32 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -101,7 +132,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_obj_Real64( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_obj_Real64( obj1, obj2 ) RESULT( Ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   REAL( Real64 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -117,7 +148,7 @@ END INTERFACE
 ! summary: Subtract two Polynomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_Int8_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_Int8_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int8 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -129,7 +160,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_Int16_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_Int16_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int16 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -141,7 +172,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_Int32_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_Int32_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int32 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -153,7 +184,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_Int64_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_Int64_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -165,7 +196,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_Real32_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_Real32_obj( obj1, obj2 ) RESULT( Ans )
   REAL( Real32 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -177,7 +208,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Subtract_Real64_obj( obj1, obj2 ) RESULT( Ans )
+MODULE ELEMENTAL FUNCTION func_Subtract_Real64_obj( obj1, obj2 ) RESULT( Ans )
   REAL( Real64 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
