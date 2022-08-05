@@ -16,10 +16,10 @@
 !
 
 MODULE Monomial2D_Class
-USE GlobalData
 USE String_Class, ONLY: String
+USE GlobalData
 USE AbstractFunction_Class
-USE AbstractMonomial_Class
+USE AbstractBasis_Class
 USE Monomial1D_Class
 IMPLICIT NONE
 PRIVATE
@@ -33,7 +33,8 @@ CHARACTER(LEN=*), PARAMETER :: modName = "Monomial2D_Class"
 ! date: 14 May 2022
 ! summary: Monomial2D class is defined
 
-TYPE, EXTENDS( AbstractMonomial_ ) :: Monomial2D_
+TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
+  PRIVATE
   TYPE( Monomial1D_ ) :: x( 2 )
   CONTAINS
     !!
@@ -48,7 +49,10 @@ TYPE, EXTENDS( AbstractMonomial_ ) :: Monomial2D_
     PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient=>func_EvalGradient
     PROCEDURE, PUBLIC, PASS( obj ) :: Grad => func_Grad
     GENERIC, PUBLIC :: OPERATOR( .Grad. ) => Grad
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetStringForUID => func_GetStringForUID
+    PROCEDURE, PUBLIC, PASS( obj ) :: GetStringForUID => &
+      & func_GetStringForUID
+    PROCEDURE, PUBLIC, PASS( obj ) :: GetDisplayString =>  &
+      & func_GetDisplayString
     PROCEDURE, PUBLIC, PASS( obj ) :: GetDegree => func_GetDegree
     PROCEDURE, PUBLIC, PASS( obj ) :: GetCoeff => func_GetCoeff
     !!
@@ -58,97 +62,11 @@ TYPE, EXTENDS( AbstractMonomial_ ) :: Monomial2D_
     !!
     !! @OperatorMethods
     !!
-    !! +
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjObj => func_Add_obj_obj
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt8 => func_Add_obj_Int8
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt16 => func_Add_obj_Int16
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt32 => func_Add_obj_Int32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt64 => func_Add_obj_Int64
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal32 => func_Add_obj_Real32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal64 => func_Add_obj_Real64
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt8Obj => func_Add_Int8_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt16Obj => func_Add_Int16_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt32Obj => func_Add_Int32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt64Obj => func_Add_Int64_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal32Obj => func_Add_Real32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal64Obj => func_Add_Real64_obj
-    GENERIC, PUBLIC :: OPERATOR( + ) => AddObjObj, AddObjInt8, AddObjInt16, &
-      & AddObjInt32, AddObjInt64, AddObjReal32, AddObjReal64, &
-      & AddInt8Obj, AddInt16Obj, AddInt32Obj, AddInt64Obj, &
-      & AddReal32Obj, AddReal64Obj
-    !!
-    !! -
-    !!
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjObj => func_Subtract_obj_obj
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt8 => &
-      & func_Subtract_obj_Int8
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt16 => &
-      & func_Subtract_obj_Int16
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt32 => &
-      & func_Subtract_obj_Int32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt64 => &
-      & func_Subtract_obj_Int64
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjReal32 => &
-      & func_Subtract_obj_Real32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjReal64 => &
-      & func_Subtract_obj_Real64
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt8Obj => &
-      & func_Subtract_Int8_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt16Obj => &
-      & func_Subtract_Int16_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt32Obj => &
-      & func_Subtract_Int32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt64Obj => &
-      & func_Subtract_Int64_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractReal32Obj => &
-      & func_Subtract_Real32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractReal64Obj => &
-      & func_Subtract_Real64_obj
-    GENERIC, PUBLIC :: OPERATOR( - ) => SubtractObjObj, &
-      & SubtractObjInt8, SubtractObjInt16, &
-      & SubtractObjInt32, SubtractObjInt64, SubtractObjReal32, &
-      & SubtractObjReal64, &
-      & SubtractInt8Obj, SubtractInt16Obj, SubtractInt32Obj, &
-      & SubtractInt64Obj, &
-      & SubtractReal32Obj, SubtractReal64Obj
-    !!
-    !! *
+    !! OPERATOR(*)
     !!
     PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjObj => &
       & func_Multiplication_obj_obj
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt8 => &
-      & func_Multiplication_obj_Int8
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt16 => &
-      & func_Multiplication_obj_Int16
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt32 => &
-      & func_Multiplication_obj_Int32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt64 => &
-      & func_Multiplication_obj_Int64
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal32 => &
-      & func_Multiplication_obj_Real32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal64 => &
-      & func_Multiplication_obj_Real64
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt8Obj => &
-      & func_Multiplication_Int8_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt16Obj => &
-      & func_Multiplication_Int16_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt32Obj => &
-      & func_Multiplication_Int32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt64Obj => &
-      & func_Multiplication_Int64_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal32Obj => &
-      & func_Multiplication_Real32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal64Obj => &
-      & func_Multiplication_Real64_obj
-    GENERIC, PUBLIC :: OPERATOR( * ) => MultiplicationObjObj, &
-      & MultiplicationObjInt8, MultiplicationObjInt16, &
-      & MultiplicationObjInt32, MultiplicationObjInt64, &
-      & MultiplicationObjReal32, &
-      & MultiplicationObjReal64, &
-      & MultiplicationInt8Obj, MultiplicationInt16Obj, &
-      & MultiplicationInt32Obj, &
-      & MultiplicationInt64Obj, &
-      & MultiplicationReal32Obj, MultiplicationReal64Obj
+    GENERIC, PUBLIC :: OPERATOR( * ) => MultiplicationObjObj
     !!
     !! @AssignmentMethods
     !!
@@ -177,10 +95,12 @@ PUBLIC :: Monomial2DPointer_
 ! summary: Construct the Monomial2D
 
 INTERFACE
-MODULE PURE FUNCTION func_Monomial2D1( coeff, degree, varname ) RESULT( ans )
-  REAL( DFP ), INTENT( IN ) :: coeff
-  INTEGER( I4B ), INTENT( IN ) :: degree(2)
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname(2)
+MODULE ELEMENTAL FUNCTION func_Monomial2D1( n1, n2, name1, name2 ) &
+  & RESULT( ans )
+  INTEGER( I4B ), INTENT( IN ) :: n1
+  INTEGER( I4B ), INTENT( IN ) :: n2
+  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+  CHARACTER( LEN = * ), INTENT( IN ) :: name2
   TYPE( Monomial2D_ ) :: ans
 END FUNCTION func_Monomial2D1
 END INTERFACE
@@ -200,8 +120,7 @@ PUBLIC :: Monomial2D
 ! summary: Construct the Monomial2D
 
 INTERFACE
-MODULE PURE FUNCTION func_Monomial2D2( coeff, f1, f2 ) RESULT( ans )
-  REAL( DFP ), INTENT( IN ) :: coeff
+MODULE ELEMENTAL FUNCTION func_Monomial2D2( f1, f2 ) RESULT( ans )
   CLASS( Monomial1D_ ), INTENT( IN ) :: f1
   CLASS( Monomial1D_ ), INTENT( IN ) :: f2
   TYPE( Monomial2D_ ) :: ans
@@ -221,11 +140,12 @@ END INTERFACE Monomial2D
 ! summary: Construct the Monomial2D
 
 INTERFACE
-MODULE FUNCTION func_Monomial2D_Pointer1( coeff, degree, varname ) &
+MODULE FUNCTION func_Monomial2D_Pointer1( n1, n2, name1, name2 ) &
   & RESULT( ans )
-  REAL( DFP ), INTENT( IN ) :: coeff
-  INTEGER( I4B ), INTENT( IN ) :: degree(2)
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname(2)
+  INTEGER( I4B ), INTENT( IN ) :: n1
+  INTEGER( I4B ), INTENT( IN ) :: n2
+  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+  CHARACTER( LEN = * ), INTENT( IN ) :: name2
   CLASS( Monomial2D_ ), POINTER :: ans
 END FUNCTION func_Monomial2D_Pointer1
 END INTERFACE
@@ -245,8 +165,7 @@ PUBLIC :: Monomial2D_Pointer
 ! summary: Construct the Monomial2D
 
 INTERFACE
-MODULE FUNCTION func_Monomial2D_Pointer2( coeff, f1, f2 ) RESULT( ans )
-  REAL( DFP ), INTENT( IN ) :: coeff
+MODULE FUNCTION func_Monomial2D_Pointer2( f1, f2 ) RESULT( ans )
   CLASS( Monomial1D_ ), INTENT( IN ) :: f1
   CLASS( Monomial1D_ ), INTENT( IN ) :: f2
   CLASS( Monomial2D_ ), POINTER :: ans
@@ -292,9 +211,9 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE PURE FUNCTION func_eval( obj, x ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_eval( obj, x, y ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x( : )
+    REAL( DFP ), INTENT( IN ) :: x, y
     REAL( DFP ) :: ans
   END FUNCTION func_eval
 END INTERFACE
@@ -308,10 +227,12 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE PURE FUNCTION func_EvalGradient( obj, x ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_EvalGradient( obj, x, y, dim ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x( : )
-    REAL( DFP ) :: ans( SIZE(x) )
+    REAL( DFP ), INTENT( IN ) :: x
+    REAL( DFP ), INTENT( IN ) :: y
+    INTEGER( I4B ), INTENT( IN ) :: dim
+    REAL( DFP ) :: ans
   END FUNCTION func_EvalGradient
 END INTERFACE
 
@@ -324,7 +245,7 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE PURE FUNCTION func_Grad( obj, dim ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_Grad( obj, dim ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
     INTEGER( I4B ), INTENT( IN ) :: dim
     TYPE( Monomial2D_ ) :: ans
@@ -340,10 +261,25 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE PURE FUNCTION func_GetStringForUID( obj ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_GetStringForUID( obj ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
     TYPE( String ) :: ans
   END FUNCTION func_GetStringForUID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetStringForUID@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Get the display string
+
+INTERFACE
+  MODULE ELEMENTAL FUNCTION func_GetDisplayString( obj ) RESULT( ans )
+    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
+    TYPE( String ) :: ans
+  END FUNCTION func_GetDisplayString
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -355,7 +291,7 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE PURE FUNCTION func_GetDegree( obj ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_GetDegree( obj ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
     INTEGER( I4B ) :: ans
   END FUNCTION func_GetDegree
@@ -370,7 +306,7 @@ END INTERFACE
 ! summary: Get the coefficient
 
 INTERFACE
-  MODULE PURE FUNCTION func_GetCoeff( obj ) RESULT( ans )
+  MODULE ELEMENTAL FUNCTION func_GetCoeff( obj ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
     REAL( DFP ) :: ans
   END FUNCTION func_GetCoeff
@@ -393,12 +329,31 @@ END SUBROUTINE func_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                             Multiplication@OperatorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Multiplication two Monomial1D
+
+INTERFACE
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_obj( obj1, obj2 ) &
+  & RESULT( ans )
+  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
+  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Monomial2D_ ) :: ans
+END FUNCTION func_Multiplication_obj_obj
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-#include "./inc/Monomial2D_AddOperator.inc"
-#include "./inc/Monomial2D_SubtractOperator.inc"
-#include "./inc/Monomial2D_MultiplicationOperator.inc"
-#include "./inc/Monomial2D_AssignOperator.inc"
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
+  CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
+  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjObj
+END INTERFACE
 
 END MODULE Monomial2D_Class
