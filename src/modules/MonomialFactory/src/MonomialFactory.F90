@@ -15,11 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE PolynomialFactory
-USE AbstractMonomial_Class
+MODULE MonomialFactory
 USE Monomial1D_Class
 USE Monomial2D_Class
 USE Monomial3D_Class
 ! USE MonomialND_Class
-USE Polynomial1D_Class
-END MODULE PolynomialFactory
+END MODULE MonomialFactory
