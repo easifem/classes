@@ -16,6 +16,7 @@
 !
 
 MODULE MonomialND_Class
+USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractFunction_Class
 USE AbstractMonomial_Class
@@ -34,6 +35,7 @@ INTEGER( I4B ), PARAMETER :: MAX_STR_LEN=256
 ! summary: MonomialND class is defined
 
 TYPE, EXTENDS( AbstractMonomial_ ) :: MonomialND_
+  PRIVATE
   TYPE( Monomial1D_ ), ALLOCATABLE :: x( : )
   CONTAINS
     PROCEDURE, PUBLIC, PASS( obj ) :: Eval=>func_Eval
