@@ -20,7 +20,7 @@ MODULE Chebyshev1Basis1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractBasis_Class
-USE Chebyshev1Polynomial1D_Class
+USE ChebyshevFirst1D_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -36,7 +36,7 @@ PRIVATE
 
 TYPE, EXTENDS( AbstractBasis1D_ ) :: Chebyshev1Basis1D_
   PRIVATE
-  TYPE( Chebyshev1Polynomial1D_ ) :: x
+  TYPE( ChebyshevFirst1D_ ) :: x
   INTEGER( I4B ) :: n = 0_I4B
     !! Order of polynomial space
   REAL( DFP ), ALLOCATABLE :: coeff( : )
