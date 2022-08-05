@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE JacobiPolynomial1D_Class
+MODULE Jacobi1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractBasis_Class
@@ -23,10 +23,10 @@ IMPLICIT NONE
 PRIVATE
 
 !----------------------------------------------------------------------------
-!                                                        JacobiPolynomial1D_
+!                                                        Jacobi1D_
 !----------------------------------------------------------------------------
 
-TYPE, EXTENDS( AbstractBasis1D_ ) :: JacobiPolynomial1D_
+TYPE, EXTENDS( AbstractBasis1D_ ) :: Jacobi1D_
   PRIVATE
   INTEGER( I4B ) :: n = 0
     !! order of Jacobi polynomial
@@ -50,9 +50,9 @@ TYPE, EXTENDS( AbstractBasis1D_ ) :: JacobiPolynomial1D_
     !! alpha + 1 > 0
   REAL( DFP ) :: beta= 0.0_DFP
     !! beta + 1 > 0
-  CLASS( JacobiPolynomial1D_ ), POINTER :: Jn_1 => NULL()
+  CLASS( Jacobi1D_ ), POINTER :: Jn_1 => NULL()
     !! Jacobi polynomial of order n-1
-  CLASS( JacobiPolynomial1D_ ), POINTER :: Jn_2 => NULL()
+  CLASS( Jacobi1D_ ), POINTER :: Jn_2 => NULL()
     !! Jacobi polynomial of order n-2
   CONTAINS
   !!
@@ -90,22 +90,22 @@ TYPE, EXTENDS( AbstractBasis1D_ ) :: JacobiPolynomial1D_
   !! @SetMethods
   !!
   PROCEDURE, PRIVATE, PASS( obj ) :: SetParam => J_SetParam
-END TYPE JacobiPolynomial1D_
+END TYPE Jacobi1D_
 
-PUBLIC :: JacobiPolynomial1D_
-
-!----------------------------------------------------------------------------
-!                                                 JacobiPolynomial1DPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: JacobiPolynomial1DPointer_
-  CLASS( JacobiPolynomial1D_ ), POINTER :: ptr => NULL()
-END TYPE JacobiPolynomial1DPointer_
-
-PUBLIC :: JacobiPolynomial1DPointer_
+PUBLIC :: Jacobi1D_
 
 !----------------------------------------------------------------------------
-!                                     JacobiPolynomial1D@ConstructorMethods
+!                                                 Jacobi1DPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: Jacobi1DPointer_
+  CLASS( Jacobi1D_ ), POINTER :: ptr => NULL()
+END TYPE Jacobi1DPointer_
+
+PUBLIC :: Jacobi1DPointer_
+
+!----------------------------------------------------------------------------
+!                                     Jacobi1D@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -113,7 +113,7 @@ PUBLIC :: JacobiPolynomial1DPointer_
 ! summary: Jacobi polynomial 1D
 
 INTERFACE
-MODULE FUNCTION JacobiPolynomial1D1( varname, n, alpha, beta, &
+MODULE FUNCTION Jacobi1D1( varname, n, alpha, beta, &
   & isMonic, isOrthonormal ) RESULT( ans )
   CHARACTER( LEN = * ), INTENT( IN ) :: varname
   INTEGER( I4B ), INTENT( IN ) :: n
@@ -125,19 +125,19 @@ MODULE FUNCTION JacobiPolynomial1D1( varname, n, alpha, beta, &
     !! Default is .FALSE.
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
     !! Default is .FALSE.
-  TYPE( JacobiPolynomial1D_ ) :: ans
+  TYPE( Jacobi1D_ ) :: ans
     !! tree to be built
-END FUNCTION JacobiPolynomial1D1
+END FUNCTION Jacobi1D1
 END INTERFACE
 
-INTERFACE JacobiPolynomial1D
-  MODULE PROCEDURE JacobiPolynomial1D1
-END INTERFACE JacobiPolynomial1D
+INTERFACE Jacobi1D
+  MODULE PROCEDURE Jacobi1D1
+END INTERFACE Jacobi1D
 
-PUBLIC :: JacobiPolynomial1D
+PUBLIC :: Jacobi1D
 
 !----------------------------------------------------------------------------
-!                              JacobiPolynomial1D_Pointer@ConstructorMethods
+!                              Jacobi1D_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -145,7 +145,7 @@ PUBLIC :: JacobiPolynomial1D
 ! summary: Jacobi polynomial 1D
 
 INTERFACE
-MODULE FUNCTION JacobiPolynomial1D_Pointer1( varname, n, alpha, beta, &
+MODULE FUNCTION Jacobi1D_Pointer1( varname, n, alpha, beta, &
   & isMonic, isOrthonormal ) RESULT( ans )
   CHARACTER( LEN = * ), INTENT( IN ) :: varname
   INTEGER( I4B ), INTENT( IN ) :: n
@@ -157,16 +157,16 @@ MODULE FUNCTION JacobiPolynomial1D_Pointer1( varname, n, alpha, beta, &
     !! Default is .FALSE.
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
     !! Default is .FALSE.
-  CLASS( JacobiPolynomial1D_ ), POINTER :: ans
+  CLASS( Jacobi1D_ ), POINTER :: ans
     !! tree to be built
-END FUNCTION JacobiPolynomial1D_Pointer1
+END FUNCTION Jacobi1D_Pointer1
 END INTERFACE
 
-INTERFACE JacobiPolynomial1D_Pointer
-  MODULE PROCEDURE JacobiPolynomial1D_Pointer1
-END INTERFACE JacobiPolynomial1D_Pointer
+INTERFACE Jacobi1D_Pointer
+  MODULE PROCEDURE Jacobi1D_Pointer1
+END INTERFACE Jacobi1D_Pointer
 
-PUBLIC :: JacobiPolynomial1D_Pointer
+PUBLIC :: Jacobi1D_Pointer
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -178,7 +178,7 @@ PUBLIC :: JacobiPolynomial1D_Pointer
 
 INTERFACE
 MODULE RECURSIVE SUBROUTINE J_Deallocate( obj )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE J_Deallocate
 END INTERFACE
 
@@ -188,7 +188,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE J_Final( obj )
-  TYPE( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  TYPE( Jacobi1D_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE J_Final
 END INTERFACE
 
@@ -203,7 +203,7 @@ END INTERFACE
 INTERFACE
 MODULE RECURSIVE SUBROUTINE J_Initiate( obj, varname, n, alpha, beta, &
   & isMonic, isOrthonormal )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
     !! tree to be built
   CHARACTER( LEN = * ), INTENT( IN ) :: varname
   INTEGER( I4B ), INTENT( IN ) :: n
@@ -230,7 +230,7 @@ INTERFACE
 MODULE RECURSIVE SUBROUTINE J_Initiate1( obj, varname, n, &
     & alpha, beta, isMonic, isOrthonormal, alphaCoeff, betaCoeff, s1, &
     & s2 )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
     !! tree to be built
   CHARACTER( LEN = * ), INTENT( IN ) :: varname
   INTEGER( I4B ), INTENT( IN ) :: n
@@ -259,8 +259,8 @@ END INTERFACE
 
 INTERFACE
 MODULE RECURSIVE SUBROUTINE J_Initiate2( obj, j1 )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
-  CLASS( JacobiPolynomial1D_ ), TARGET, INTENT( INOUT ) :: j1
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), TARGET, INTENT( INOUT ) :: j1
 END SUBROUTINE J_Initiate2
 END INTERFACE
 
@@ -274,7 +274,7 @@ END INTERFACE
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION J_isInitiated( obj ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   LOGICAL( LGT ) :: ans
 END FUNCTION J_isInitiated
 END INTERFACE
@@ -289,7 +289,7 @@ END INTERFACE
 
 INTERFACE
 MODULE RECURSIVE SUBROUTINE J_Display( obj, msg, unitno )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE J_Display
@@ -301,7 +301,7 @@ END INTERFACE
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION J_GetStringForUID( obj ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 END FUNCTION J_GetStringForUID
 END INTERFACE
@@ -312,7 +312,7 @@ END INTERFACE
 
 INTERFACE
 MODULE PURE FUNCTION J_GetStringToDisplay( obj ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
 END FUNCTION J_GetStringToDisplay
 END INTERFACE
@@ -327,7 +327,7 @@ END INTERFACE
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION J_EvalScalar( obj, x ) RESULT( ans )
-    CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+    CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
     REAL( DFP ), INTENT( IN ) :: x
     REAL( DFP ) :: ans
   END FUNCTION J_EvalScalar
@@ -343,7 +343,7 @@ END INTERFACE
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION J_EvalGradientScalar( obj, x ) RESULT( ans )
-    CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+    CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
     REAL( DFP ), INTENT( IN ) :: x
     REAL( DFP ) :: ans
   END FUNCTION J_EvalGradientScalar
@@ -360,7 +360,7 @@ END INTERFACE
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION J_Weight( obj, x ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: x
   REAL( DFP ) :: ans
 END FUNCTION J_Weight
@@ -377,7 +377,7 @@ END INTERFACE
 
 INTERFACE
 MODULE PURE SUBROUTINE J_GetRecurrenceCoeff( obj, coeff )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( OUT ) :: coeff( 0:, 0: )
 END SUBROUTINE J_GetRecurrenceCoeff
 END INTERFACE
@@ -392,7 +392,7 @@ END INTERFACE
 
 INTERFACE
 MODULE FUNCTION J_Zeros( obj ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( : )
 END FUNCTION J_Zeros
 END INTERFACE
@@ -407,7 +407,7 @@ END INTERFACE
 
 INTERFACE
 MODULE FUNCTION J_GaussQuadrature( obj ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
 END FUNCTION J_GaussQuadrature
 END INTERFACE
@@ -422,7 +422,7 @@ END INTERFACE
 
 INTERFACE
 MODULE FUNCTION J_GaussRadauQuadrature( obj, a ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: a
   !! it should be either + 1 or -1
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
@@ -439,7 +439,7 @@ END INTERFACE
 
 INTERFACE
 MODULE FUNCTION J_GaussLobattoQuadrature( obj ) RESULT( ans )
-  CLASS( JacobiPolynomial1D_ ), INTENT( IN ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
 END FUNCTION J_GaussLobattoQuadrature
 END INTERFACE
@@ -451,7 +451,7 @@ END INTERFACE
 INTERFACE
 MODULE PURE SUBROUTINE J_SetParam( obj, n, alpha, beta, &
   &  an_1, bn_1, sn_1, sn_2, varname )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: n
   REAL( DFP ), INTENT( IN ) :: alpha
   REAL( DFP ), INTENT( IN ) :: beta
@@ -464,4 +464,4 @@ END SUBROUTINE J_SetParam
 END INTERFACE
 
 
-END MODULE JacobiPolynomial1D_Class
+END MODULE Jacobi1D_Class
