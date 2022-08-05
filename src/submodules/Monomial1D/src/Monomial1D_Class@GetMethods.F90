@@ -28,9 +28,17 @@ CONTAINS
 !                                                                      Eval
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE func_Eval
-  ans = obj%coeff * (x( 1 ) ** obj%degree)
-END PROCEDURE func_Eval
+MODULE PROCEDURE func_EvalScalar
+  ans = x ** obj%degree
+END PROCEDURE func_EvalScalar
+
+!----------------------------------------------------------------------------
+!                                                                      Eval
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_EvalVector
+  ans = x ** obj%degree
+END PROCEDURE func_EvalVector
 
 !----------------------------------------------------------------------------
 !                                                                      Grad
@@ -41,7 +49,7 @@ MODULE PROCEDURE func_EvalGradient
   IF( obj%degree .LE. 0_I4B ) THEN
     ans = 0.0_DFP
   ELSE
-    ans = obj%coeff*obj%degree*( x(1)**(obj%degree-1) )
+    ans = obj%degree*( x**(obj%degree-1) )
   END IF
   !!
 END PROCEDURE func_EvalGradient
@@ -53,12 +61,10 @@ END PROCEDURE func_EvalGradient
 MODULE PROCEDURE func_Grad
   IF( obj%degree .LE. 0_I4B ) THEN
     ans = Monomial1D( &
-      & coeff=0.0_DFP, &
       & degree=0_I4B, &
       & varname=obj%varname%chars())
   ELSE
     ans = Monomial1D( &
-      & coeff=obj%coeff*obj%degree, &
       & degree=obj%degree-1, &
       & varname=obj%varname%chars())
   END IF
@@ -86,32 +92,7 @@ END PROCEDURE func_GetDegree
 
 MODULE PROCEDURE func_GetDisplayString
   !!
-  IF( (obj%coeff - 1.0_DFP) .APPROXEQ. zero ) THEN
-    IF( obj%degree .EQ. 0_I4B ) THEN
-      ans = "+1"
-    ELSEIF( obj%degree .EQ. 1_I4B ) THEN
-      ans = "+" // obj%varname%chars()
-    ELSE IF( obj%degree .LT. 10_I4B .AND. obj%degree .GT. 1_I4B ) THEN
-      ans = "+" // obj%varname%chars()// "^" // TRIM(STR( obj%degree ))
-    ELSE
-      ans = "+"//obj%varname%chars()//  ")^{"// TRIM(STR( obj%degree ))// "}"
-    END IF
-  ELSE
-    IF( obj%degree .EQ. 0_I4B ) THEN
-      ans = TRIM(STR( obj%coeff, no_sign=.FALSE., compact=.TRUE. ))
-    ELSEIF( obj%degree .EQ. 1_I4B ) THEN
-      ans = TRIM(STR( obj%coeff, no_sign=.FALSE., compact=.TRUE. )) // &
-        & "*" // obj%varname%chars()
-    ELSE IF( obj%degree .LT. 10_I4B .AND. obj%degree .GT. 1_I4B ) THEN
-      ans = TRIM(STR( obj%coeff, no_sign=.FALSE., compact=.TRUE. ))// &
-        & "*("// obj%varname%chars()//  ")^" &
-        & // TRIM(STR( obj%degree ))
-    ELSE
-      ans = TRIM(STR( obj%coeff, no_sign=.FALSE., compact=.TRUE. ))// &
-        & "*("// obj%varname%chars()//  ")^{" &
-        & // TRIM(STR( obj%degree )) // "}"
-    END IF
-  END IF
+  ans = obj%varname%chars()// "^" // TRIM(STR( obj%degree ))
   !!
 END PROCEDURE func_GetDisplayString
 
@@ -120,7 +101,7 @@ END PROCEDURE func_GetDisplayString
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetCoeff
-  ans = obj%coeff
+  ans = 1.0_DFP
 END PROCEDURE func_GetCoeff
 
 END SUBMODULE GetMethods
