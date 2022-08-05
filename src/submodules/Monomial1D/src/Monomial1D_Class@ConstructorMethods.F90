@@ -29,9 +29,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Deallocate
-  CALL AbstractMonomialDeallocate( obj )
+  CALL AbstractBasis1DDeallocate( obj )
   obj%degree = 0_I4B
-  obj%varname=""
 END PROCEDURE func_Deallocate
 
 !----------------------------------------------------------------------------
@@ -50,7 +49,6 @@ MODULE PROCEDURE func_Monomial1D1
   !!
   TYPE( String ) :: astr
   !!
-  ans%coeff = coeff
   ans%degree = degree
   ans%varname = TRIM(varname)
   astr = ans%GetStringForUID()
@@ -66,7 +64,6 @@ MODULE PROCEDURE func_Monomial1D_Pointer1
   TYPE( String ) :: astr
   !!
   ALLOCATE( Monomial1D_::ans )
-  ans%coeff = coeff
   ans%degree = degree
   ans%varname = TRIM(varname)
   astr = ans%GetStringForUID()
