@@ -29,13 +29,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Eval
-  INTEGER( I4B ) :: ii
-  !!
-  ans = obj%coeff
-  DO ii = 1, MAX_COMPONENTS
-    ans = ans * (obj%x(ii) .Eval. [x( ii )] )
-  END DO
-  !!
+  ans = obj%x(1)%Eval(x) * obj%x(2)%Eval(y) * obj%x(3)%Eval(z)
 END PROCEDURE func_Eval
 
 !----------------------------------------------------------------------------
@@ -44,21 +38,24 @@ END PROCEDURE func_Eval
 
 MODULE PROCEDURE func_EvalGradient
   ! Define internal values
-  REAL( DFP ) :: f1, f2, f3, df1(1), df2(1), df3(1)
+  REAL( DFP ) :: a,b,c
   !!
-  f1 = obj%x(1) .Eval. [x(1)]
-  f2 = obj%x(2) .Eval. [x(2)]
-  f3 = obj%x(3) .Eval. [x(3)]
+  SELECT CASE( dim )
+  CASE( 1 )
+    a = obj%x(1)%EvalGradient( x )
+    b = obj%x(2)%Eval(y)
+    c = obj%x(3)%Eval(z)
+  CASE( 2 )
+    a = obj%x(1)%Eval( x )
+    b = obj%x(2)%EvalGradient(y)
+    c = obj%x(3)%Eval(z)
+  CASE( 3 )
+    a = obj%x(1)%Eval( x )
+    b = obj%x(2)%Eval(y)
+    c = obj%x(3)%EvalGradient(z)
+  END SELECT
   !!
-  df1 = obj%x(1) .Grad. [x(1)]
-  df2 = obj%x(2) .Grad. [x(2)]
-  df3 = obj%x(3) .Grad. [x(3)]
-  !!
-  ans = obj%coeff
-  !!
-  ans(1) = ans(1)*df1(1)*f2*f3
-  ans(2) = ans(2)*f1*df2(1)*f3
-  ans(3) = ans(3)*f1*f2*df3(1)
+  ans = a*b*c
   !!
 END PROCEDURE func_EvalGradient
 
@@ -71,20 +68,20 @@ MODULE PROCEDURE func_Grad
   !!
   SELECT CASE( dim )
   CASE( 1 )
-    f1 = .GRAD. obj%x(1)
+    f1 = obj%x(1)%grad()
     f2 = obj%x(2)
     f3 = obj%x(3)
   CASE( 2 )
     f1 = obj%x(1)
-    f2 = .GRAD. obj%x(2)
+    f2 = obj%x(2)%grad()
     f3 = obj%x(3)
   CASE( 3 )
     f1 = obj%x(1)
     f2 = obj%x(2)
-    f3 = .GRAD. obj%x(3)
+    f3 = obj%x(3)%grad()
   END SELECT
   !!
-  ans = Monomial3D(coeff=obj%coeff, f1=f1, f2=f2, f3=f3 )
+  ans = Monomial3D(f1=f1, f2=f2, f3=f3 )
   !!
 END PROCEDURE func_Grad
 
@@ -101,6 +98,18 @@ MODULE PROCEDURE func_GetStringForUID
 END PROCEDURE func_GetStringForUID
 
 !----------------------------------------------------------------------------
+!                                                          GetDisplayString
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetDisplayString
+  ans = obj%x(1)%GetDisplayString() // &
+    & "*" // &
+    & obj%x(2)%GetDisplayString() // &
+    & "*" // &
+    & obj%x(3)%GetDisplayString()
+END PROCEDURE func_GetDisplayString
+
+!----------------------------------------------------------------------------
 !                                                                 GetDegree
 !----------------------------------------------------------------------------
 
@@ -113,8 +122,7 @@ END PROCEDURE func_GetDegree
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetCoeff
-  ans = obj%coeff * obj%x(1)%GetCoeff() * obj%x(2)%GetCoeff() * &
-    & obj%x(3)%GetCoeff()
+  ans = 1.0_DFP
 END PROCEDURE func_GetCoeff
 
 END SUBMODULE GetMethods
