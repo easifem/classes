@@ -15,12 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!! Monomial1D_Class_Add_obj_scalar.inc
-
-REAL( DFP ) :: coeff
-INTEGER( I4B ) :: degree
-!!
-coeff = obj1%coeff * REAL(obj2, KIND=DFP)
-degree = obj1%degree
-ans=Monomial1D(coeff=coeff, degree=degree, varname=obj1%varname%chars())
+ans=Polynomial1D(degree=[obj1%getdegree()], &
+  & coeff=[REAL(obj2, KIND=DFP)], &
+  & varname=obj1%varname%chars())
 !!
