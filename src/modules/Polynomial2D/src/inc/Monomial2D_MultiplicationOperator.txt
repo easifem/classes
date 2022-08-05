@@ -15,23 +15,42 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
-!----------------------------------------------------------------------------
-!                                             Multiplication@OperatorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Multiplication two Monomial1D
-
-INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_obj( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
-END FUNCTION func_Multiplication_obj_obj
-END INTERFACE
-
+    !!
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjObj => &
+      & func_Multiplication_obj_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt8 => &
+      & func_Multiplication_obj_Int8
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt16 => &
+      & func_Multiplication_obj_Int16
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt32 => &
+      & func_Multiplication_obj_Int32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt64 => &
+      & func_Multiplication_obj_Int64
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal32 => &
+      & func_Multiplication_obj_Real32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal64 => &
+      & func_Multiplication_obj_Real64
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt8Obj => &
+      & func_Multiplication_Int8_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt16Obj => &
+      & func_Multiplication_Int16_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt32Obj => &
+      & func_Multiplication_Int32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt64Obj => &
+      & func_Multiplication_Int64_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal32Obj => &
+      & func_Multiplication_Real32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal64Obj => &
+      & func_Multiplication_Real64_obj
+    GENERIC, PUBLIC :: OPERATOR( * ) => MultiplicationObjObj, &
+      & MultiplicationObjInt8, MultiplicationObjInt16, &
+      & MultiplicationObjInt32, MultiplicationObjInt64, &
+      & MultiplicationObjReal32, &
+      & MultiplicationObjReal64, &
+      & MultiplicationInt8Obj, MultiplicationInt16Obj, &
+      & MultiplicationInt32Obj, &
+      & MultiplicationInt64Obj, &
+      & MultiplicationReal32Obj, MultiplicationReal64Obj
 !----------------------------------------------------------------------------
 !                                             Multiplication@OperatorMethods
 !----------------------------------------------------------------------------
