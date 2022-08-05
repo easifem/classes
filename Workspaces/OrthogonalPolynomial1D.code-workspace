@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/JacobiPolynomial1D"
+		},
+		{
+			"path": "../src/submodules/JacobiPolynomial1D"
+		}
+	]
+}
