@@ -35,7 +35,7 @@ ELSE
 END IF
 !!
 ans = Polynomial1D( coeff=coeff, degree=degree, &
-  & varname=obj1%varname%chars())
+  & varname=obj1%x(1)%varname%chars())
 !!
 IF( ALLOCATED( coeff ) ) DEALLOCATE( coeff )
 IF( ALLOCATED( degree ) ) DEALLOCATE( degree )
