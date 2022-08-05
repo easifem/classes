@@ -16,13 +16,13 @@
 !
 
 !!
-REAL( DFP ) :: coeff
-INTEGER( I4B ) :: degree
+REAL( DFP ) :: coeff( 2 )
+INTEGER( I4B ) :: degree( 2 )
 !!
-IF( obj1%degree .EQ. 0_I4B ) THEN
-  coeff = obj1%coeff + REAL( obj2, KIND=DFP )
-  degree = obj1%degree
-  ans=Monomial1D(coeff=coeff, degree=degree, varname=obj1%varname%chars())
-END IF
+coeff = [1.0_DFP, REAL(obj2, KIND=DFP)]
+degree = [obj1%getDegree(), 0_I4B]
+!!
+ans = Polynomial1D(coeff=coeff, degree=degree, &
+  & varname=obj1%varname%chars())
 !!
 
