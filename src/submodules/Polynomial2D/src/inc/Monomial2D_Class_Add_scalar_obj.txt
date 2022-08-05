@@ -17,7 +17,6 @@
 
 !! Monomial1D_Class_Add_obj_scalar.inc
 
-REAL( DFP ) :: coeff
 INTEGER( I4B ) :: degree( 2 )
 CHARACTER( LEN = 256 ) :: varname(2)
 !!
@@ -25,9 +24,8 @@ degree(1) = obj2%x(1)%getDegree()
 degree(2) = obj2%x(2)%getDegree()
 !!
 IF( ALL( degree .EQ. 0_I4B ) ) THEN
-  coeff = REAL( obj1, KIND=DFP ) - obj2%getCoeff()
   varname(1) = obj2%x(1)%varname%chars()
   varname(2) = obj2%x(2)%varname%chars()
-  ans=Monomial2D(coeff=coeff, degree=degree, varname=varname)
+  ans=Monomial2D(degree=degree, varname=varname)
 END IF
 !!
