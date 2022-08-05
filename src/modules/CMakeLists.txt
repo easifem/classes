@@ -105,11 +105,56 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 # AbstractFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
 
-# Monomial
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial/CMakeLists.txt)
+# AbstractBasis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractBasis/CMakeLists.txt)
 
-# Polynomial
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial/CMakeLists.txt)
+# Monomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial1D/CMakeLists.txt)
+
+# Monomial2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial2D/CMakeLists.txt)
+
+# Monomial3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial3D/CMakeLists.txt)
+
+# MonomialND
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MonomialND/CMakeLists.txt)
+
+# MonomialFactory
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MonomialFactory/CMakeLists.txt)
+
+# AbstractPolynomial
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPolynomial/CMakeLists.txt)
+
+# Polynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial1D/CMakeLists.txt)
+
+# Polynomial2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial2D/CMakeLists.txt)
+
+# Polynomial3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial3D/CMakeLists.txt)
+
+# PolynomialND
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
+
+# LagrangePolynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LagrangePolynomial1D/CMakeLists.txt)
+
+# AbstractOrthoPol1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthoPol1D/CMakeLists.txt)
+
+# Chebyshev1Polynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Chebyshev1Polynomial1D/CMakeLists.txt)
+
+# JacobiPolynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/JacobiPolynomial1D/CMakeLists.txt)
+
+# PolynomialFactory
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
+
+# Tree3R
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 
 # AbstractBC
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
