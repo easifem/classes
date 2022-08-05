@@ -15,6 +15,22 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!----------------------------------------------------------------------------
+!                                             Multiplication@OperatorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Multiplication two Polynomial1D
+
+INTERFACE
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_mono( obj1, obj2 ) &
+  & RESULT( ans )
+  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
+  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial1D_ ) :: ans
+END FUNCTION func_Multiplication_obj_mono
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             Multiplication@OperatorMethods
@@ -25,7 +41,24 @@
 ! summary: Multiplication two Polynomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_obj( obj1, obj2 ) &
+MODULE ELEMENTAL FUNCTION func_Multiplication_mono_obj( obj1, obj2 ) &
+  & RESULT( ans )
+  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
+  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial1D_ ) :: ans
+END FUNCTION func_Multiplication_mono_obj
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Multiplication@OperatorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Multiplication two Polynomial1D
+
+INTERFACE
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_obj( obj1, obj2 ) &
   & RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
@@ -42,7 +75,7 @@ END INTERFACE
 ! summary: Multiplication two Polynomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_Int8( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_Int8( obj1, obj2 ) RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int8 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -54,7 +87,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_Int16( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_Int16( obj1, obj2 ) RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int16 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -66,7 +99,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_Int32( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_Int32( obj1, obj2 ) RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int32 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -78,7 +111,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_Int64( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_Int64( obj1, obj2 ) RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   INTEGER( Int64 ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -90,7 +123,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_Real32( obj1, obj2 ) &
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_Real32( obj1, obj2 ) &
   & RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   REAL( Real32 ), INTENT( IN ) :: obj2
@@ -103,7 +136,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_obj_Real64( obj1, obj2 )  &
+MODULE ELEMENTAL FUNCTION func_Multiplication_obj_Real64( obj1, obj2 )  &
   & RESULT( ans )
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
   REAL( Real64 ), INTENT( IN ) :: obj2
@@ -112,15 +145,11 @@ END FUNCTION func_Multiplication_obj_Real64
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Multiplication@OperatorMethods
+!                                            Multiplication@OperatorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Multiplication two Polynomial1D
-
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_Int8_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_Int8_obj( obj1, obj2 ) RESULT( ans )
   INTEGER( Int8 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -132,7 +161,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_Int16_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_Int16_obj( obj1, obj2 ) RESULT( ans )
   INTEGER( Int16 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -144,7 +173,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_Int32_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_Int32_obj( obj1, obj2 ) RESULT( ans )
   INTEGER( Int32 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -156,7 +185,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_Int64_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Multiplication_Int64_obj( obj1, obj2 ) RESULT( ans )
   INTEGER( Int64 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
   TYPE( Polynomial1D_ ) :: ans
@@ -168,7 +197,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_Real32_obj( obj1, obj2 ) &
+MODULE ELEMENTAL FUNCTION func_Multiplication_Real32_obj( obj1, obj2 ) &
   & RESULT( ans )
   REAL( Real32 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
@@ -181,7 +210,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Multiplication_Real64_obj( obj1, obj2 ) &
+MODULE ELEMENTAL FUNCTION func_Multiplication_Real64_obj( obj1, obj2 ) &
   & RESULT( ans )
   REAL( Real64 ), INTENT( IN ) :: obj1
   CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
