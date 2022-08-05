@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(JacobiPolynomial1D_Class) GetMethods
+SUBMODULE(Jacobi1D_Class) GetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
