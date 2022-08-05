@@ -17,7 +17,6 @@
 
 !! Monomial1D_Class_Add_obj_scalar.inc
 
-REAL( DFP ) :: coeff
 INTEGER( I4B ) :: degree( MAX_COMPONENTS )
 CHARACTER( LEN = 256 ) :: varname( MAX_COMPONENTS )
 !!
@@ -26,10 +25,9 @@ degree(2) = obj1%x(2)%getDegree()
 degree(3) = obj1%x(3)%getDegree()
 !!
 IF( ALL( degree .EQ. 0_I4B ) ) THEN
-  coeff = obj1%getCoeff() - REAL( obj2, KIND=DFP )
   varname(1) = obj1%x(1)%varname%chars()
   varname(2) = obj1%x(2)%varname%chars()
   varname(3) = obj1%x(3)%varname%chars()
-  ans=Monomial3D(coeff=coeff, degree=degree, varname=varname)
+  ans=Monomial3D( degree=degree, varname=varname)
 END IF
 !!
