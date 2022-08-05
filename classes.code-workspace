@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "../easifem-pages/docs/easifemClasses"
-		},
-		{
-			"path": "../easifem-pages/docs/examples"
 		}
 	],
 	"settings": {
