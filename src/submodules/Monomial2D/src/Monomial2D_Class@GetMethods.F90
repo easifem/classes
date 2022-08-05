@@ -29,11 +29,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Eval
-  REAL( DFP ) :: x1( 1 ), x2( 1 )
-  !!
-  x1( 1 ) = x( 1 )
-  x2( 1 ) = x( 2 )
-  ans = obj%coeff * (obj%x(1) .Eval. x1) * (obj%x(2) .Eval. x2 )
+  ans = obj%x(1)%Eval(x) * obj%x(2)%Eval(y)
 END PROCEDURE func_Eval
 
 !----------------------------------------------------------------------------
@@ -41,15 +37,11 @@ END PROCEDURE func_Eval
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_EvalGradient
-  ! Define internal values
-  REAL( DFP ) :: x1( 1 ), x2( 1 )
-  !!
-  x1( 1 ) = x( 1 )
-  x2( 1 ) = x( 2 )
-  !!
-  ans(1:1) = obj%coeff * (obj%x(1) .Grad. x1) * (obj%x(2) .Eval. x2 )
-  ans(2:2) = obj%coeff * (obj%x(1) .Eval. x1) * (obj%x(2) .Grad. x2 )
-  !!
+  IF( dim .EQ. 1_I4B ) THEN
+    ans = obj%x(1)%EvalGradient(x) * obj%x(2)%Eval(y)
+  ELSE
+    ans = obj%x(1)%Eval(x) * obj%x(2)%EvalGradient(y)
+  END IF
 END PROCEDURE func_EvalGradient
 
 !----------------------------------------------------------------------------
@@ -60,14 +52,14 @@ MODULE PROCEDURE func_Grad
   TYPE( Monomial1D_ ) :: f1,f2
   !!
   IF( dim .EQ. 1 ) THEN
-    f1 = .GRAD. obj%x(1)
+    f1 = obj%x(1)%Grad()
     f2 = obj%x(2)
   ELSE
     f1 = obj%x(1)
-    f2 = .GRAD. obj%x(2)
+    f2 = obj%x(2)%Grad()
   END IF
   !!
-  ans = Monomial2D(coeff=obj%coeff, f1=f1, f2=f2)
+  ans = Monomial2D(f1=f1, f2=f2)
   !!
 END PROCEDURE func_Grad
 
@@ -78,6 +70,16 @@ END PROCEDURE func_Grad
 MODULE PROCEDURE func_GetStringForUID
   ans = obj%x(1)%GetStringForUID()// "*" // obj%x(2)%GetStringForUID()
 END PROCEDURE func_GetStringForUID
+
+!----------------------------------------------------------------------------
+!                                                           GetDisplayString
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetDisplayString
+  ans = TRIM(obj%x(1)%GetDisplayString())// &
+    & "*"// &
+    & TRIM(obj%x(2)%GetDisplayString())
+END PROCEDURE func_GetDisplayString
 
 !----------------------------------------------------------------------------
 !                                                                 GetDegree
@@ -92,7 +94,7 @@ END PROCEDURE func_GetDegree
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetCoeff
-  ans = obj%coeff * obj%x(1)%GetCoeff() * obj%x(2)%GetCoeff()
+  ans = 1.0_DFP
 END PROCEDURE func_GetCoeff
 
 END SUBMODULE GetMethods
