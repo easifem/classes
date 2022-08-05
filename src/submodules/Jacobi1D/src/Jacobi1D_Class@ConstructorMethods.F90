@@ -15,16 +15,16 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(JacobiPolynomial1D_Class) ConstructorMethods
+SUBMODULE(Jacobi1D_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       JacobiPolynomial1D
+!                                                       Jacobi1D
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE JacobiPolynomial1D1
+MODULE PROCEDURE Jacobi1D1
   CALL ans%Initiate( &
     & varname=varname,  &
     & n=n,  &
@@ -32,14 +32,14 @@ MODULE PROCEDURE JacobiPolynomial1D1
     & beta=beta,  &
     & isMonic=isMonic, &
     & isOrthonormal=isOrthonormal )
-END PROCEDURE JacobiPolynomial1D1
+END PROCEDURE Jacobi1D1
 
 !----------------------------------------------------------------------------
-!                                                JacobiPolynomial1D_Pointer1
+!                                                Jacobi1D_Pointer1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE JacobiPolynomial1D_Pointer1
-  ALLOCATE( JacobiPolynomial1D_:: ans )
+MODULE PROCEDURE Jacobi1D_Pointer1
+  ALLOCATE( Jacobi1D_:: ans )
   CALL ans%Initiate( &
     & varname=varname,  &
     & n=n,  &
@@ -47,7 +47,7 @@ MODULE PROCEDURE JacobiPolynomial1D_Pointer1
     & beta=beta,  &
     & isMonic=isMonic, &
     & isOrthonormal=isOrthonormal )
-END PROCEDURE JacobiPolynomial1D_Pointer1
+END PROCEDURE Jacobi1D_Pointer1
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
@@ -66,7 +66,7 @@ END PROCEDURE J_Deallocate
 !----------------------------------------------------------------------------
 
 RECURSIVE SUBROUTINE J_Deallocate1( obj )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
   !!
   CALL AbstractBasis1DDeallocate( obj )
   obj%n = 0
@@ -90,7 +90,7 @@ END SUBROUTINE J_Deallocate1
 !----------------------------------------------------------------------------
 
 RECURSIVE SUBROUTINE J_Deallocate2( obj )
-  CLASS( JacobiPolynomial1D_ ), INTENT( INOUT ) :: obj
+  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
   !!
   IF( ASSOCIATED( obj%Jn_2 ) ) THEN
     !!
