@@ -60,8 +60,12 @@ USE NeumannBC_Class
 
 
 USE AbstractFunction_Class
+USE AbstractBasis_Class
+USE MonomialFactory
 USE PolynomialFactory
 USE UserFunction_Class
+
+USE Tree3R_Class
 
 USE Plot_Method
 ! USE ogpf

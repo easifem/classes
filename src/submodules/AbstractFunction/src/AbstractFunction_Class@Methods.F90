@@ -20,22 +20,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                       Eval
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE funcptr_Eval
-  ans = obj%ptr%Eval(x)
-END PROCEDURE funcptr_Eval
-
-!----------------------------------------------------------------------------
-!                                                              EvalGradient
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE funcptr_EvalGradient
-  ans = obj%ptr%EvalGradient(x)
-END PROCEDURE funcptr_EvalGradient
-
-!----------------------------------------------------------------------------
 !                                                              Deallocate
 !----------------------------------------------------------------------------
 
@@ -46,9 +30,78 @@ END PROCEDURE func_Deallocate
 !                                                              Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE funcptr_Deallocate
-  CALL obj%ptr%Deallocate()
-  obj%ptr => NULL()
-END PROCEDURE funcptr_Deallocate
+MODULE PROCEDURE func_Deallocate1
+  CALL AbstractFunctionDeallocate(obj)
+  obj%varname=""
+END PROCEDURE func_Deallocate1
+
+
+!----------------------------------------------------------------------------
+!                                                              Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Deallocate2
+  CALL AbstractFunctionDeallocate(obj)
+  obj%varname(1)=""
+  obj%varname(2)=""
+END PROCEDURE func_Deallocate2
+
+
+!----------------------------------------------------------------------------
+!                                                              Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Deallocate3
+  CALL AbstractFunctionDeallocate(obj)
+  obj%varname(1)=""
+  obj%varname(2)=""
+  obj%varname(3)=""
+END PROCEDURE func_Deallocate3
+
+!----------------------------------------------------------------------------
+!                                                              Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_DeallocateN
+  CALL AbstractFunctionDeallocate(obj)
+  IF( ALLOCATED(obj%varname) ) DEALLOCATE( obj%varname )
+END PROCEDURE func_DeallocateN
+
+!----------------------------------------------------------------------------
+!                                                                 GetVarName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetVarname1
+  ans = obj%varname
+END PROCEDURE func_GetVarname1
+
+!----------------------------------------------------------------------------
+!                                                                 GetVarName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetVarname2
+  ans = obj%varname
+END PROCEDURE func_GetVarname2
+
+!----------------------------------------------------------------------------
+!                                                                 GetVarName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetVarname3
+  ans = obj%varname
+END PROCEDURE func_GetVarname3
+
+!----------------------------------------------------------------------------
+!                                                                 GetVarName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_GetVarnameN
+  IF( ALLOCATED( obj%varname ) ) THEN
+    ALLOCATE( ans( SIZE( obj%varname ) ) )
+    ans = obj%varname
+  ELSE
+    ALLOCATE( ans( 0 ) )
+  END IF
+END PROCEDURE func_GetVarnameN
 
 END SUBMODULE Methods
