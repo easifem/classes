@@ -29,7 +29,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Deallocate
-  CALL AbstractMonomialDeallocate( obj )
+  CALL AbstractBasis3DDeallocate( obj )
   CALL obj%x(1)%Deallocate()
   CALL obj%x(2)%Deallocate()
   CALL obj%x(3)%Deallocate()
@@ -50,17 +50,13 @@ END PROCEDURE func_Final
 MODULE PROCEDURE func_Monomial3D1
   !!
   TYPE( String ) :: astr
-  INTEGER( I4B ) :: ii
   !!
-  ans%coeff = coeff
-  !!
-  DO ii = 1, MAX_COMPONENTS
-    ans%x(ii) = Monomial1D( &
-      & coeff=1.0_DFP, &
-      & degree=degree(ii), &
-      & varname=varname(ii))
-  END DO
-  !!
+  ans%x(1) = Monomial1D(degree=n1, varname=name1)
+  ans%x(2) = Monomial1D(degree=n2, varname=name2)
+  ans%x(3) = Monomial1D(degree=n3, varname=name3)
+  ans%varname(1) = TRIM(name1)
+  ans%varname(2) = TRIM(name2)
+  ans%varname(3) = TRIM(name3)
   astr = ans%GetStringForUID( )
   ans%uid = StringToUID(astr%chars())
   !!
@@ -72,21 +68,19 @@ END PROCEDURE func_Monomial3D1
 
 MODULE PROCEDURE func_Monomial3D2
   !!
-  REAL( DFP ) :: coeff0
-  INTEGER( I4B ) :: degree(MAX_COMPONENTS)
-  CHARACTER( LEN = 256 ) :: varname(MAX_COMPONENTS)
+  INTEGER( I4B ) :: n1, n2, n3
+  CHARACTER( LEN = 256 ) :: name1, name2, name3
   !!
-  coeff0 = coeff * f1%coeff * f2%coeff * f3%coeff
+  n1 = f1%GetDegree()
+  n2 = f2%GetDegree()
+  n3 = f3%GetDegree()
   !!
-  degree(1) = f1%degree
-  degree(2) = f2%degree
-  degree(3) = f3%degree
+  name1 = f1%varname%chars()
+  name2 = f2%varname%chars()
+  name3 = f3%varname%chars()
   !!
-  varname(1) = f1%varname%chars()
-  varname(2) = f2%varname%chars()
-  varname(3) = f3%varname%chars()
-  !!
-  ans = Monomial3D(coeff=coeff, degree=degree, varname=varname)
+  ans = Monomial3D(n1=n1, n2=n2, n3=n3, &
+    & name1=name1, name2=name2, name3=name3)
   !!
 END PROCEDURE func_Monomial3D2
 
@@ -97,18 +91,14 @@ END PROCEDURE func_Monomial3D2
 MODULE PROCEDURE func_Monomial3D_Pointer1
   !!
   TYPE( String ) :: astr
-  INTEGER( I4B ) :: ii
   !!
   ALLOCATE( Monomial3D_::ans )
-  ans%coeff = coeff
-  !!
-  DO ii = 1, MAX_COMPONENTS
-    ans%x(ii) = Monomial1D( &
-      & coeff=1.0_DFP, &
-      & degree=degree(ii), &
-      & varname=varname(ii))
-  END DO
-  !!
+  ans%x(1) = Monomial1D(degree=n1, varname=name1)
+  ans%x(2) = Monomial1D(degree=n2, varname=name2)
+  ans%x(3) = Monomial1D(degree=n3, varname=name3)
+  ans%varname(1) = TRIM(name1)
+  ans%varname(2) = TRIM(name2)
+  ans%varname(3) = TRIM(name3)
   astr = ans%GetStringForUID( )
   ans%uid = StringToUID(astr%chars())
   !!
@@ -120,22 +110,19 @@ END PROCEDURE func_Monomial3D_Pointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial3D_Pointer2
+  INTEGER( I4B ) :: n1, n2, n3
+  CHARACTER( LEN = 256 ) :: name1, name2, name3
   !!
-  REAL( DFP ) :: coeff0
-  INTEGER( I4B ) :: degree(MAX_COMPONENTS)
-  CHARACTER( LEN = 256 ) :: varname(MAX_COMPONENTS)
+  n1 = f1%GetDegree()
+  n2 = f2%GetDegree()
+  n3 = f3%GetDegree()
   !!
-  coeff0 = coeff * f1%coeff * f2%coeff * f3%coeff
+  name1 = f1%varname%chars()
+  name2 = f2%varname%chars()
+  name3 = f3%varname%chars()
   !!
-  degree(1) = f1%degree
-  degree(2) = f2%degree
-  degree(3) = f3%degree
-  !!
-  varname(1) = f1%varname%chars()
-  varname(2) = f2%varname%chars()
-  varname(3) = f3%varname%chars()
-  !!
-  ans => Monomial3D_Pointer(coeff=coeff, degree=degree, varname=varname)
+  ans => Monomial3D_Pointer(n1=n1, n2=n2, n3=n3, &
+    & name1=name1, name2=name2, name3=name3)
   !!
 END PROCEDURE func_Monomial3D_Pointer2
 
