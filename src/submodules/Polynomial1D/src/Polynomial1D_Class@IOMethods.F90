@@ -32,7 +32,7 @@ MODULE PROCEDURE func_Display
   TYPE( String ) :: astr
   astr = obj%GetDisplayString()
   CALL Display(astr, msg, unitno)
-  ! CALL Display(obj%uid, "uid=", unitno)
+  astr=""
 END PROCEDURE func_Display
 
 END SUBMODULE IOMethods
