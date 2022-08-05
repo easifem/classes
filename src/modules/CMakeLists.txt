@@ -105,6 +105,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 # AbstractFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
 
+# Monomial
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial/CMakeLists.txt)
+
 # Polynomial
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial/CMakeLists.txt)
 
