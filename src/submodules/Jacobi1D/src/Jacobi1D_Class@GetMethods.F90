@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Chebyshev1Polynomial1D_Class) GetMethods
+SUBMODULE(Jacobi1D_Class) GetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -25,20 +25,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_GetStringForUID
-  ans = "T" // TRIM( STR( obj%GetOrder() ) ) // obj%varname%chars()
+  ans = "P" // TRIM( STR( obj%GetOrder() ) ) // obj%varname%chars()
 END PROCEDURE Orthopol_GetStringForUID
 
 !----------------------------------------------------------------------------
-!                                                                 Weight
+!                                                                  Weight
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Weight
-  ans = SQRT( 1.0_DFP - x**2 )
-  IF( ans .APPROXEQ. zero ) THEN
-    RETURN
-  ELSE
-    ans = 1.0_DFP / ans
-  END IF
+  ans = ( 1.0_DFP - x ) ** obj%alpha + (1.0_DFP + x ) ** obj%beta
 END PROCEDURE Orthopol_Weight
 
 !----------------------------------------------------------------------------
@@ -46,8 +41,14 @@ END PROCEDURE Orthopol_Weight
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_GetRecurrenceCoeff
-  CALL GetChebyshev1RecurrenceCoeff( n=n, alphaCoeff=ans(0:,1), &
-  & betaCoeff=ans(0:,2) )
+  !!
+  CALL GetJacobiRecurrenceCoeff( &
+    & n=n, &
+    & alpha=obj%alpha, &
+    & beta=obj%beta, &
+    & alphaCoeff=ans(0:,1), &
+    & betaCoeff=ans(0:,2) )
+  !!
 END PROCEDURE Orthopol_GetRecurrenceCoeff
 
 !----------------------------------------------------------------------------
@@ -56,25 +57,55 @@ END PROCEDURE Orthopol_GetRecurrenceCoeff
 
 MODULE PROCEDURE Orthopol_GetCoeffScale
   !!
-  REAL( DFP ) :: coeff0( 0:n, 1:2 )
-  LOGICAL( LGT ) :: isMonic0, isOrthonomal0
+  REAL( DFP ) :: alpha, beta, coeff0( 0:n, 1:2 ), r1, r2, r3, r4
+  LOGICAL( LGT ) :: isMonic0, isOrthonormal0
   INTEGER( I4B ) :: ii
   !!
+  alpha = obj%alpha
+  beta = obj%beta
   coeff0 = obj%GetRecurrenceCoeff( n = n+1 )
   coeff = coeff0(0:n-1, 1:2)
   !!
-  !!
   isMonic0 = INPUT( option=isMonic, default=.FALSE. )
-  isOrthonomal0 = INPUT( option=isOrthonormal, default=.FALSE. )
+  isOrthonormal0 = INPUT( option=isOrthonormal, default=.FALSE. )
   !!
   IF( .NOT. isMonic0 ) THEN
     !!
-    scale( :, 1 ) = 2.0_DFP
+    r1 = 2.0_DFP+alpha+beta
+    r2 = 1.0_DFP
+    r3 = 2.0_DFP
+    scale( 0, 1 ) = r1*r2/r3
     !!
-    IF( isOrthonomal0 ) THEN
-      scale( 0, 1 ) = 1.0_DFP / SQRT( 2.0_DFP )
-    ELSE
-      scale( 0, 1 ) = 1.0_DFP
+    DO ii = 1, n-1
+      !!
+      r1 = 2.0_DFP*ii+alpha+beta + 2.0_DFP
+      r2 = r1 - 1.0_DFP
+      r3 = 2.0_DFP * (ii+1.0) * (ii+alpha+beta+1.0_DFP)
+      scale( ii, 1 ) = r1*r2/r3
+      !!
+    END DO
+    !!
+    IF( isOrthonormal0 ) THEN
+      !!
+      IF( n .GT. 1 ) THEN
+        !!
+        r1 = alpha+beta+3.0_DFP
+        r2 = 1.0_DFP
+        r3 = (1.0 + alpha)*(1.0 + beta)
+        scale( 1, 1 ) = scale( 1, 1 ) * SQRT(r1*r2/r3)
+        !!
+      END IF
+      !!
+      DO ii = 2, n-1
+        !!
+        r1 = 2.0_DFP*ii+alpha+beta + 1.0_DFP
+        r2 = ii * (ii+alpha+beta)
+        r3 = (r1-2.0_DFP)*(ii+beta)*(ii+alpha)
+        r4 = r1*r2/r3
+        scale( ii, 1 ) = scale( ii, 1 ) * SQRT(r4)
+        !!
+      END DO
+      !!
     END IF
     !!
     scale( 0, 2 ) = scale( 0, 1 )
@@ -87,7 +118,7 @@ MODULE PROCEDURE Orthopol_GetCoeffScale
     !!
     scale = 1.0_DFP
     !!
-    IF( isOrthonomal0 ) THEN
+    IF( isOrthonormal0 ) THEN
       scale( 0:n-1, 1 ) = 1.0_DFP / SQRT( coeff0( 1:n, 2 ) )
       scale( 0:n-1, 2 ) = 1.0_DFP / SQRT( &
         & coeff0( 1:n, 2 )*coeff0( 0:n-1, 2 ) )
@@ -95,77 +126,68 @@ MODULE PROCEDURE Orthopol_GetCoeffScale
     END IF
     !!
   END IF
+  !!
 END PROCEDURE Orthopol_GetCoeffScale
 
 !----------------------------------------------------------------------------
-!
+!                                                                   Zeros
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Zeros
-  INTEGER( I4B ) :: ii, n
-  n = obj%getOrder()
-  ALLOCATE( ans( n ) )
-  DO ii = 1, n
-    ans( ii ) = -COS( (2.0_DFP*ii-1.0_DFP)*pi*0.5_DFP/n )
-  END DO
+  ans = JacobiZeros( n = obj%GetOrder(), alpha=obj%alpha, beta=obj%beta )
 END PROCEDURE Orthopol_Zeros
 
 !----------------------------------------------------------------------------
-!
+!                                                           GaussQuadrature
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_GaussQuadrature
-  INTEGER( I4B ) :: n
-  n = obj%getOrder()
-  ALLOCATE( ans( n, 2 ) )
-  ans( :, 1 ) = obj%Zeros()
-  ans( :, 2 ) = pi/n
+  CALL Reallocate( ans, obj%GetOrder(), 2_I4B )
+  !!
+  CALL JacobiGaussQuadrature( &
+    & n=obj%GetOrder(), &
+    & alpha=obj%alpha, &
+    & beta=obj%beta, &
+    & pt=ans(:,1), &
+    & wt=ans(:,2) )
+  !!
 END PROCEDURE Orthopol_GaussQuadrature
 
 !----------------------------------------------------------------------------
-!
+!                                                     GaussRadauQuadrature
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_GaussRadauQuadrature
-  INTEGER( I4B ) :: n, ii
-  REAL( DFP ) :: avar, avar2
+  CALL Reallocate( ans, obj%GetOrder()+1, 2_I4B )
   !!
-  n = obj%getOrder()
-  ALLOCATE( ans( n+1, 2 ) )
-  !!
-  avar = 2.0_DFP * pi / (2.0_DFP * n + 1.0_DFP)
-  avar2 = pi / (2.0_DFP * n + 1.0_DFP)
-  !!
-  DO ii = 0, n
-    ans( ii+1, 1 ) = -COS( avar*ii )
-    ans( ii+1, 2 ) = avar2
-  END DO
-  !!
-  ans( 1, 2 ) = ans( 1, 2 ) / 2.0_DFP
+  CALL JacobiGaussRadauQuadrature( &
+    & a = a, &
+    & n=obj%GetOrder(), &
+    & alpha=obj%alpha, &
+    & beta=obj%beta, &
+    & pt=ans(:,1), &
+    & wt=ans(:,2) )
   !!
 END PROCEDURE Orthopol_GaussRadauQuadrature
 
 !----------------------------------------------------------------------------
-!
+!                                                     GaussLobattoQuadrature
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_GaussLobattoQuadrature
-  INTEGER( I4B ) :: n, ii
-  REAL( DFP ) :: avar
+  CALL Reallocate( ans, obj%GetOrder()+2, 2_I4B )
   !!
-  n = obj%getOrder()
-  ALLOCATE( ans( n+2, 2 ) )
-  !!
-  avar = pi / (n + 1.0_DFP)
-  !!
-  DO ii = 0, n+1
-    ans( ii+1, 1 ) = -COS( avar*ii )
-    ans( ii+1, 2 ) = avar
-  END DO
-  !!
-  ans( 1, 2 ) = ans( 1, 2 ) / 2.0_DFP
-  ans( n+2, 2 ) = ans( n+2, 2 ) / 2.0_DFP
+  CALL JacobiGaussLobattoQuadrature( &
+    & n=obj%GetOrder(), &
+    & alpha=obj%alpha, &
+    & beta=obj%beta, &
+    & pt=ans(:,1), &
+    & wt=ans(:,2) )
   !!
 END PROCEDURE Orthopol_GaussLobattoQuadrature
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE GetMethods

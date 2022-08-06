@@ -21,6 +21,30 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                            GetJn1Pointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_GetJn1Pointer
+  IF( ASSOCIATED( obj%Jn_1 ) ) THEN
+    ans => obj%Jn_1
+  ELSE
+    ans => NULL()
+  END IF
+END PROCEDURE Orthopol_GetJn1Pointer
+
+!----------------------------------------------------------------------------
+!                                                            GetJn2Pointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_GetJn2Pointer
+  IF( ASSOCIATED( obj%Jn_2 ) ) THEN
+    ans => obj%Jn_2
+  ELSE
+    ans => NULL()
+  END IF
+END PROCEDURE Orthopol_GetJn2Pointer
+
+!----------------------------------------------------------------------------
 !                                                                 GetOrder
 !----------------------------------------------------------------------------
 

@@ -23,7 +23,7 @@ IMPLICIT NONE
 PRIVATE
 
 !----------------------------------------------------------------------------
-!                                           AbstractOrthopol1D_
+!                                                       AbstractOrthopol1D_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -72,6 +72,10 @@ TYPE, ABSTRACT,  EXTENDS( AbstractBasis1D_ ) :: &
   !!
   !! @GetMethods
   !!
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetJn1Pointer => Orthopol_GetJn1Pointer
+  !! Return pointer to Jn_1
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetJn2Pointer => Orthopol_GetJn2Pointer
+  !! Return pointer to Jn_2
   PROCEDURE, PUBLIC, PASS( obj ) :: GetOrder => Orthopol_GetOrder
   !! Return the order of the polynomial
   PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar => Orthopol_EvalScalar
@@ -254,7 +258,7 @@ END SUBROUTINE Orthopol_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      Display@IOMethods
+!                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -267,6 +271,36 @@ MODULE RECURSIVE SUBROUTINE Orthopol_Display( obj, msg, unitno )
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 END SUBROUTINE Orthopol_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetJn1Pointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Aug 2022
+! summary: Return the pointer to Jn_1
+
+INTERFACE
+MODULE FUNCTION Orthopol_GetJn1Pointer( obj ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  CLASS( AbstractOrthopol1D_ ), POINTER :: ans
+END FUNCTION Orthopol_GetJn1Pointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetJn1Pointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Aug 2022
+! summary: Return the pointer to Jn_1
+
+INTERFACE
+MODULE FUNCTION Orthopol_GetJn2Pointer( obj ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  CLASS( AbstractOrthopol1D_ ), POINTER :: ans
+END FUNCTION Orthopol_GetJn2Pointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

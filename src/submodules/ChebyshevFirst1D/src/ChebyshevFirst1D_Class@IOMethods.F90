@@ -15,22 +15,5 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(JacobiPolynomial1D_Class) IOMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE J_Display
-  !!
-  TYPE(String) :: astr
-  astr = obj%GetStringToDisplay()
-  CALL Display( astr, msg=msg, unitno=unitno )
-  IF( ASSOCIATED( obj%Jn_1 ) ) &
-    & CALL obj%Jn_1%Display( msg=msg, unitno=unitno)
-END PROCEDURE J_Display
-
+SUBMODULE(ChebyshevFirst1D_Class) IOMethods
 END SUBMODULE IOMethods

@@ -15,51 +15,44 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Chebyshev1Polynomial1D_Class) ConstructorMethods
-USE BaseMethod
+SUBMODULE(ChebyshevFirstSpace1D_Class) ConstructorMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    Chebyshev1Polynomial1D
+!                                                     ChebyshevFirstSpace1D
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Chebyshev1Polynomial1D1
-  REAL( DFP ) :: coeff( 0:n-1, 2 ), scale( 0:n-1, 2 )
-  !!
-  CALL ans%GetCoeffScale( n=n, coeff=coeff, scale=scale, &
-    & isMonic=isMonic, isOrthonormal=isOrthonormal )
-  !!
-  CALL ans%Initiate( &
-    & varname=varname, &
-    & n=n, &
-    & coeff=coeff, &
-    & scale=scale )
-  !!
-END PROCEDURE Chebyshev1Polynomial1D1
+MODULE PROCEDURE ChebyshevFirstSpace1D1
+  ans%x = ChebyshevFirst1D( varname=varname, n=n )
+  ans%coeff = ans%x%GetRecurrenceCoeff( n=n )
+END PROCEDURE ChebyshevFirstSpace1D1
 
 !----------------------------------------------------------------------------
-!                                            Chebyshev1Polynomial1D_Pointer
+!                                                     ChebyshevFirstSpace1D
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Chebyshev1Polynomial1D_Pointer1
-  REAL( DFP ) :: coeff( 0:n, 2 ), scale( 0:n-1, 2 )
-  !!
+MODULE PROCEDURE ChebyshevFirstSpace1D_Pointer1
   ALLOCATE( ans )
-  !!
-  CALL ans%GetCoeffScale( n=n, coeff=coeff, scale=scale, &
-    & isMonic=isMonic, isOrthonormal=isOrthonormal )
-  !!
-  CALL ans%Initiate( &
-    & varname=varname, &
-    & n=n, &
-    & coeff=coeff, &
-    & scale=scale )
-  !!
-END PROCEDURE Chebyshev1Polynomial1D_Pointer1
+  ans%x = ChebyshevFirst1D( varname=varname, n=n )
+  ans%coeff = ans%x%GetRecurrenceCoeff( n=n )
+END PROCEDURE ChebyshevFirstSpace1D_Pointer1
 
 !----------------------------------------------------------------------------
-!
+!                                                               Deallocate
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE f_Deallocate
+  IF( ALLOCATED( obj%coeff ) ) DEALLOCATE( obj%coeff )
+  CALL obj%x%Deallocate()
+END PROCEDURE f_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                 Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE f_Final
+  CALL obj%x%Deallocate()
+END PROCEDURE f_Final
 
 END SUBMODULE ConstructorMethods

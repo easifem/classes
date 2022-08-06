@@ -15,5 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Chebyshev1Polynomial1D_Class) SetMethods
+SUBMODULE(Jacobi1D_Class) SetMethods
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                   SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_SetJacobiParam
+  obj%alpha=alpha
+  obj%beta=beta
+END PROCEDURE Orthopol_SetJacobiParam
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE SetMethods

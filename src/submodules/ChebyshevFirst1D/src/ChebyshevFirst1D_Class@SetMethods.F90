@@ -15,26 +15,5 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(JacobiPolynomial1D_Class) SetMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                 SetParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE J_SetParam
-  TYPE(String) :: astr
-  obj%n = n
-  obj%alpha=alpha
-  obj%beta=beta
-  obj%an_1 = an_1
-  obj%bn_1 = bn_1
-  obj%sn_1 = sn_1
-  obj%sn_2 = sn_2
-  astr = obj%getstringforuid( )
-  obj%uid = stringtouid( astr%chars() )
-  obj%varname = String( trim(varname) )
-END PROCEDURE J_SetParam
+SUBMODULE(ChebyshevFirst1D_Class) SetMethods
 END SUBMODULE SetMethods
