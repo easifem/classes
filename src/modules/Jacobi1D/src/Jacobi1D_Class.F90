@@ -18,7 +18,7 @@
 MODULE Jacobi1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
-USE AbstractBasis_Class
+USE AbstractOrthoPol1D_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -26,70 +26,47 @@ PRIVATE
 !                                                        Jacobi1D_
 !----------------------------------------------------------------------------
 
-TYPE, EXTENDS( AbstractBasis1D_ ) :: Jacobi1D_
+TYPE, EXTENDS( AbstractOrthopol1D_ ) :: Jacobi1D_
   PRIVATE
-  INTEGER( I4B ) :: n = 0
-    !! order of Jacobi polynomial
-  REAL( DFP ) :: an_1= 0.0_DFP
-    !! $\alpha_{n-1}$
-  REAL( DFP ) :: bn_1 = 0.0_DFP
-    !! $\beta_{n-1}$
-  REAL( DFP ) :: sn_1 = 1.0_DFP
-    !! scale for $J_{n-1}$
-    !! For monic orthogonal $s_{n-1}$ = 1.0
-    !! For monic orthonormal $s_{n-1}$ = 1.0 / sqrt( b_n )
-    !! For non-monic orthogonal
-    !! For non-monic orthonormal
-  REAL( DFP ) :: sn_2 = 1.0_DFP
-    !! scale for $J_{n-2}$
-    !! For monic orthogonal sn_2 = 1.0
-    !! For monic orthonormal sn_2 = 1.0 / sqrt( b_n * b_{n-1} )
-    !! For non-monic orthogonal
-    !! For non-monic orthonormal
   REAL( DFP ) :: alpha = 0.0_DFP
     !! alpha + 1 > 0
   REAL( DFP ) :: beta= 0.0_DFP
     !! beta + 1 > 0
-  CLASS( Jacobi1D_ ), POINTER :: Jn_1 => NULL()
-    !! Jacobi polynomial of order n-1
-  CLASS( Jacobi1D_ ), POINTER :: Jn_2 => NULL()
-    !! Jacobi polynomial of order n-2
   CONTAINS
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => J_Deallocate
-  FINAL :: J_Final
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => J_Initiate
-  PROCEDURE, PRIVATE, PASS( obj ) :: Initiate1 => &
-    & J_Initiate1
-  PROCEDURE, PRIVATE, PASS( obj ) :: Initiate2 => &
-    & J_Initiate2
-  PROCEDURE, PUBLIC, PASS( obj ) :: isInitiated => J_isInitiated
-  !!
-  !! @IOMethods
-  !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => J_Display
+  FINAL :: Orthopol_Final
+  !! Finalizer
   !!
   !! @GetMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetStringToDisplay => J_GetStringToDisplay
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetStringForUID => J_GetStringForUID
-  PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar => J_EvalScalar
-  PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient => J_EvalGradientScalar
-  PROCEDURE, PUBLIC, PASS( obj ) :: Weight => J_Weight
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetRecurrenceCoeff => J_GetRecurrenceCoeff
-  PROCEDURE, PUBLIC, PASS( obj ) :: Zeros => J_Zeros
-  PROCEDURE, PUBLIC, PASS( obj ) :: GaussQuadrature => J_GaussQuadrature
-  PROCEDURE, PUBLIC, PASS( obj ) :: GaussRadauQuadrature => &
-    & J_GaussRadauQuadrature
-  PROCEDURE, PUBLIC, PASS( obj ) :: GaussLobattoQuadrature => &
-    & J_GaussLobattoQuadrature
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetStringForUID => &
+    & Orthopol_GetStringForUID
+  !! Get string for creating UID
+  PROCEDURE, PUBLIC, PASS( obj ) :: Weight => Orthopol_Weight
+  !! Weight of orthogonal polynomials
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetRecurrenceCoeff => &
+    & Orthopol_GetRecurrenceCoeff
   !! Get the recurrence coefficients
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetCoeffScale => &
+    & Orthopol_GetCoeffScale
+  !! Get recurrence coefficient
+  PROCEDURE, PUBLIC, PASS( obj ) :: Zeros => Orthopol_Zeros
+  !! zeros of polynomial
+  PROCEDURE, PUBLIC, PASS( obj ) :: GaussQuadrature => &
+    & Orthopol_GaussQuadrature
+  !! Gauss quadrature points and weights
+  PROCEDURE, PUBLIC, PASS( obj ) :: GaussRadauQuadrature => &
+    & Orthopol_GaussRadauQuadrature
+  !! Gauss-Radau quadrature points
+  PROCEDURE, PUBLIC, PASS( obj ) :: GaussLobattoQuadrature => &
+    & Orthopol_GaussLobattoQuadrature
   !!
   !! @SetMethods
   !!
-  PROCEDURE, PRIVATE, PASS( obj ) :: SetParam => J_SetParam
+  PROCEDURE, PUBLIC, PASS( obj ) :: SetJacobiParam => &
+    & Orthopol_SetJacobiParam
 END TYPE Jacobi1D_
 
 PUBLIC :: Jacobi1D_
@@ -169,130 +146,13 @@ END INTERFACE Jacobi1D_Pointer
 PUBLIC :: Jacobi1D_Pointer
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 July 2022
-! summary: Deallocate the tree
-
-INTERFACE
-MODULE RECURSIVE SUBROUTINE J_Deallocate( obj )
-  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE J_Deallocate
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE J_Final( obj )
+MODULE SUBROUTINE Orthopol_Final( obj )
   TYPE( Jacobi1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE J_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 July 2022
-! summary: Build the 3 term recurrence tree
-
-INTERFACE
-MODULE RECURSIVE SUBROUTINE J_Initiate( obj, varname, n, alpha, beta, &
-  & isMonic, isOrthonormal )
-  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
-    !! tree to be built
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  INTEGER( I4B ), INTENT( IN ) :: n
-  REAL( DFP ), INTENT( IN ) :: alpha
-    !! 1+alpha > 0
-  REAL( DFP ), INTENT( IN ) :: beta
-    !! 1+beta > 0
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
-    !! Default is .FALSE.
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
-    !! Default is .FALSE.
-END SUBROUTINE J_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 July 2022
-! summary: Build the 3 term recurrence tree
-
-INTERFACE
-MODULE RECURSIVE SUBROUTINE J_Initiate1( obj, varname, n, &
-    & alpha, beta, isMonic, isOrthonormal, alphaCoeff, betaCoeff, s1, &
-    & s2 )
-  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
-    !! tree to be built
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  INTEGER( I4B ), INTENT( IN ) :: n
-  REAL( DFP ), INTENT( IN ) :: alpha
-    !! 1+alpha > 0
-  REAL( DFP ), INTENT( IN ) :: beta
-    !! 1+beta > 0
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
-    !! Default is .FALSE.
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
-    !! Default is .FALSE.
-  REAL( DFP ), INTENT( IN ) :: alphaCoeff( 0: )
-  REAL( DFP ), INTENT( IN ) :: betaCoeff( 0: )
-  REAL( DFP ), INTENT( IN ) :: s1( 0: )
-  REAL( DFP ), INTENT( IN ) :: s2( 0: )
-END SUBROUTINE J_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 July 2022
-! summary: Build the 3 term recurrence tree
-
-INTERFACE
-MODULE RECURSIVE SUBROUTINE J_Initiate2( obj, j1 )
-  CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
-  CLASS( Jacobi1D_ ), TARGET, INTENT( INOUT ) :: j1
-END SUBROUTINE J_Initiate2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             isInitiated@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 July 2022
-! summary: If left or right is associated then it returns true
-
-INTERFACE
-MODULE ELEMENTAL FUNCTION J_isInitiated( obj ) RESULT( ans )
-  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION J_isInitiated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 July 2022
-! summary: Display the recurrence tree
-
-INTERFACE
-MODULE RECURSIVE SUBROUTINE J_Display( obj, msg, unitno )
-  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE J_Display
+END SUBROUTINE Orthopol_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -300,53 +160,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION J_GetStringForUID( obj ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION Orthopol_GetStringForUID( obj ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   TYPE( String ) :: ans
-END FUNCTION J_GetStringForUID
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GetStringToDisplay@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION J_GetStringToDisplay( obj ) RESULT( ans )
-  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: ans
-END FUNCTION J_GetStringToDisplay
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Eval@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Evaluate for single variable function
-
-INTERFACE
-  MODULE ELEMENTAL FUNCTION J_EvalScalar( obj, x ) RESULT( ans )
-    CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
-  END FUNCTION J_EvalScalar
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   EvalGradient@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Evaluate gradient for 1d argument function
-
-INTERFACE
-  MODULE ELEMENTAL FUNCTION J_EvalGradientScalar( obj, x ) RESULT( ans )
-    CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
-  END FUNCTION J_EvalGradientScalar
+END FUNCTION Orthopol_GetStringForUID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -359,31 +176,47 @@ END INTERFACE
 !
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION J_Weight( obj, x ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION Orthopol_Weight( obj, x ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: x
   REAL( DFP ) :: ans
-END FUNCTION J_Weight
+END FUNCTION Orthopol_Weight
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            J_GetRecurrenceCoeff@GetMethod
+!                                               GetRecurrenceCoeff@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Aug 2022
 ! summary: Returns the recurrence coefficient
-!
 
 INTERFACE
-MODULE PURE SUBROUTINE J_GetRecurrenceCoeff( obj, coeff )
+MODULE PURE FUNCTION Orthopol_GetRecurrenceCoeff(obj, n) RESULT(ans)
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( OUT ) :: coeff( 0:, 0: )
-END SUBROUTINE J_GetRecurrenceCoeff
+  INTEGER( I4B ), INTENT( IN ) :: n
+  REAL( DFP ) :: ans( 0:n-1, 1:2 )
+END FUNCTION Orthopol_GetRecurrenceCoeff
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        Zeros@GetMethods
+!                                                  GetCoeffScale@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE Orthopol_GetCoeffScale( obj, n, coeff, scale, &
+  & isMonic, isOrthonormal )
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: n
+  REAL( DFP ), INTENT( OUT ) :: coeff(0:,1:)
+  REAL( DFP ), INTENT( OUT ) :: scale(0:,1:)
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
+  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
+END SUBROUTINE Orthopol_GetCoeffScale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Zeros@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -391,10 +224,10 @@ END INTERFACE
 ! summary: 	Returns zeros of jacobi polynomial
 
 INTERFACE
-MODULE FUNCTION J_Zeros( obj ) RESULT( ans )
+MODULE FUNCTION Orthopol_Zeros( obj ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( : )
-END FUNCTION J_Zeros
+END FUNCTION Orthopol_Zeros
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -406,10 +239,10 @@ END INTERFACE
 ! summary: 	Returns Gauss quadrature points and weights
 
 INTERFACE
-MODULE FUNCTION J_GaussQuadrature( obj ) RESULT( ans )
+MODULE FUNCTION Orthopol_GaussQuadrature( obj ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
-END FUNCTION J_GaussQuadrature
+END FUNCTION Orthopol_GaussQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -421,12 +254,12 @@ END INTERFACE
 ! summary: 	Returns GaussRadau quadrature points and weights
 
 INTERFACE
-MODULE FUNCTION J_GaussRadauQuadrature( obj, a ) RESULT( ans )
+MODULE FUNCTION Orthopol_GaussRadauQuadrature( obj, a ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), INTENT( IN ) :: a
   !! it should be either + 1 or -1
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
-END FUNCTION J_GaussRadauQuadrature
+END FUNCTION Orthopol_GaussRadauQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -438,30 +271,30 @@ END INTERFACE
 ! summary: 	Returns GaussLobatto quadrature points and weights
 
 INTERFACE
-MODULE FUNCTION J_GaussLobattoQuadrature( obj ) RESULT( ans )
+MODULE FUNCTION Orthopol_GaussLobattoQuadrature( obj ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
-END FUNCTION J_GaussLobattoQuadrature
+END FUNCTION Orthopol_GaussLobattoQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  SetParam@SetMethods
+!                                                     SetParam@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 5 Aug 2022
+! summary: 	Set the jacobi param, alpha and beta
 
 INTERFACE
-MODULE PURE SUBROUTINE J_SetParam( obj, n, alpha, beta, &
-  &  an_1, bn_1, sn_1, sn_2, varname )
+MODULE PURE SUBROUTINE Orthopol_SetJacobiParam( obj, alpha, beta )
   CLASS( Jacobi1D_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: n
   REAL( DFP ), INTENT( IN ) :: alpha
   REAL( DFP ), INTENT( IN ) :: beta
-  REAL( DFP ), INTENT( IN ) :: an_1
-  REAL( DFP ), INTENT( IN ) :: bn_1
-  REAL( DFP ), INTENT( IN ) :: sn_1
-  REAL( DFP ), INTENT( IN ) :: sn_2
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-END SUBROUTINE J_SetParam
+END SUBROUTINE Orthopol_SetJacobiParam
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE Jacobi1D_Class
