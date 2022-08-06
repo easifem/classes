@@ -16,21 +16,4 @@
 !
 
 SUBMODULE(Jacobi1D_Class) IOMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE J_Display
-  !!
-  TYPE(String) :: astr
-  astr = obj%GetStringToDisplay()
-  CALL Display( astr, msg=msg, unitno=unitno )
-  IF( ASSOCIATED( obj%Jn_1 ) ) &
-    & CALL obj%Jn_1%Display( msg=msg, unitno=unitno)
-END PROCEDURE J_Display
-
 END SUBMODULE IOMethods
