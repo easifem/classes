@@ -40,6 +40,8 @@ TYPE, EXTENDS( AbstractOrthoPol1D_ ) :: ChebyshevFirst1D_
   !!
   !! @GetMethods
   !!
+  FINAL :: Orthopol_Final
+  !! Finalizer
   PROCEDURE, PUBLIC, PASS( obj ) :: &
     & GetStringForUID => Orthopol_GetStringForUID
   !! Get String for unique ID
@@ -77,6 +79,16 @@ END TYPE ChebyshevFirst1DPointer_
 PUBLIC :: ChebyshevFirst1DPointer_
 
 !----------------------------------------------------------------------------
+!                                                  Final@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE Orthopol_Final( obj )
+  TYPE( ChebyshevFirst1D_ ), INTENT( INOUT ) :: obj
+END SUBROUTINE Orthopol_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                 ChebyshevFirst1D@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -107,7 +119,7 @@ END INTERFACE ChebyshevFirst1D
 PUBLIC :: ChebyshevFirst1D
 
 !----------------------------------------------------------------------------
-!                          ChebyshevFirst1D_Pointer@ConstructorMethods
+!                                ChebyshevFirst1D_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -137,7 +149,7 @@ END INTERFACE ChebyshevFirst1D_Pointer
 PUBLIC :: ChebyshevFirst1D_Pointer
 
 !----------------------------------------------------------------------------
-!                                                GetStringForUID@GetMethods
+!                                                 GetStringForUID@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -152,7 +164,7 @@ END FUNCTION Orthopol_GetStringForUID
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Weight@GetMethod
+!                                                           Weight@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -184,7 +196,7 @@ END FUNCTION Orthopol_GetRecurrenceCoeff
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  GetCoeffScale@GetMethods
+!                                                   GetCoeffScale@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -200,7 +212,7 @@ END SUBROUTINE Orthopol_GetCoeffScale
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        Zeros@GetMethods
+!                                                           Zeros@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -215,7 +227,7 @@ END FUNCTION Orthopol_Zeros
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GaussQuadrature@GetMethods
+!                                                 GaussQuadrature@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -230,7 +242,7 @@ END FUNCTION Orthopol_GaussQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GaussRadauQuadrature@GetMethods
+!                                            GaussRadauQuadrature@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
