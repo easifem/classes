@@ -87,6 +87,48 @@ MODULE PROCEDURE Orthopol_EvalScalar
 END PROCEDURE Orthopol_EvalScalar
 
 !----------------------------------------------------------------------------
+!                                                                BasisEval
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_BasisEvalScalar
+  REAL( DFP ) :: Jn_1, Jn_2
+  INTEGER( I4B ) :: ii
+  !!
+  Jn_1 = obj%P0(x)
+  Jn_2 = obj%Pm1(x)
+  ans( 1 ) = Jn_1
+  !!
+  DO ii = 2, obj%n+1
+    ans( ii ) = (x-coeff(ii-2,1))*scale(ii-2,1)*Jn_1 &
+      & - coeff(ii-2,2)*scale(ii-2,2)*Jn_2
+    Jn_1 = ans( ii )
+    Jn_2 = ans( ii-1 )
+  END DO
+  !!
+END PROCEDURE Orthopol_BasisEvalScalar
+
+!----------------------------------------------------------------------------
+!                                                                BasisEval
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_BasisEvalVector
+  REAL( DFP ), DIMENSION( SIZE( x ) ) :: Jn_1, Jn_2
+  INTEGER( I4B ) :: ii
+  !!
+  Jn_1 = obj%P0(x)
+  Jn_2 = obj%Pm1(x)
+  ans( :, 1 ) = Jn_1
+  !!
+  DO ii = 2, obj%n+1
+    ans( :, ii ) = (x-coeff(ii-2,1))*scale(ii-2,1)*Jn_1 &
+      & - coeff(ii-2,2)*scale(ii-2,2)*Jn_2
+    Jn_1 = ans( :, ii )
+    Jn_2 = ans( :, ii-1 )
+  END DO
+  !!
+END PROCEDURE Orthopol_BasisEvalVector
+
+!----------------------------------------------------------------------------
 !                                                                 Eval
 !----------------------------------------------------------------------------
 
@@ -153,6 +195,20 @@ MODULE PROCEDURE Orthopol_EvalGradientScalar
   END SELECT
   !!
 END PROCEDURE Orthopol_EvalGradientScalar
+
+!----------------------------------------------------------------------------
+!                                                          BasisEvalGradient
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_BasisEvalGradientScalar
+END PROCEDURE Orthopol_BasisEvalGradientScalar
+
+!----------------------------------------------------------------------------
+!                                                         BasisEvalGradient
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_BasisEvalGradientVector
+END PROCEDURE Orthopol_BasisEvalGradientVector
 
 !----------------------------------------------------------------------------
 !                                                         GetStringToDisplay

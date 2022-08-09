@@ -15,25 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(AbstractOrthoPol1D_Class) SetMethods
+SUBMODULE(AbstractOrthopolSpace1D_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 SetParam
+!                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE OrthoPol_SetParam
-  TYPE(String) :: astr
-  obj%n = n
-  obj%an_1 = an_1
-  obj%bn_1 = bn_1
-  obj%sn_1 = sn_1
-  obj%sn_2 = sn_2
-  astr = obj%getstringforuid( )
-  obj%uid = stringtouid( astr%chars() )
-  obj%varname = String( trim(varname) )
-END PROCEDURE OrthoPol_SetParam
+MODULE PROCEDURE Orthopol_Deallocate
+  obj%n=0
+  obj%isMonic=.FALSE.
+  obj%isOrthonormal=.FALSE.
+  IF( ALLOCATED( obj%coeff ) ) DEALLOCATE( obj%coeff )
+  IF( ALLOCATED( obj%scale ) ) DEALLOCATE( obj%scale )
+END PROCEDURE Orthopol_Deallocate
 
-END SUBMODULE SetMethods
+END SUBMODULE ConstructorMethods

@@ -15,20 +15,25 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE PolynomialFactory
-  USE AbstractFunction_Class
-  USE AbstractBasis_Class
-  USE MonomialFactory
-! USE AbstractPolynomial_Class
-  USE Polynomial1D_Class
-  USE AbstractOrthopol1D_Class
-  USE AbstractOrthopolSpace1D_Class
-  USE LagrangePolynomial1D_Class
-  USE ChebyshevFirst1D_Class
-  USE ChebyshevFirstSpace1D_Class
-  USE Jacobi1D_Class
-  USE JacobiSpace1D_Class
-! USE Polynomial2D_Class
-! USE Polynomial3D_Class
-! USE PolynomialND_Class
-END MODULE PolynomialFactory
+SUBMODULE(AbstractOrthopol1D_Class) SetMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE OrthoPol_SetParam
+  TYPE(String) :: astr
+  obj%n = n
+  obj%an_1 = an_1
+  obj%bn_1 = bn_1
+  obj%sn_1 = sn_1
+  obj%sn_2 = sn_2
+  astr = obj%getstringforuid( )
+  obj%uid = stringtouid( astr%chars() )
+  obj%varname = String( trim(varname) )
+END PROCEDURE OrthoPol_SetParam
+
+END SUBMODULE SetMethods

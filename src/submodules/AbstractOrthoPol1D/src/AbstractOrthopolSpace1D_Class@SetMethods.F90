@@ -15,20 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE PolynomialFactory
-  USE AbstractFunction_Class
-  USE AbstractBasis_Class
-  USE MonomialFactory
-! USE AbstractPolynomial_Class
-  USE Polynomial1D_Class
-  USE AbstractOrthopol1D_Class
-  USE AbstractOrthopolSpace1D_Class
-  USE LagrangePolynomial1D_Class
-  USE ChebyshevFirst1D_Class
-  USE ChebyshevFirstSpace1D_Class
-  USE Jacobi1D_Class
-  USE JacobiSpace1D_Class
-! USE Polynomial2D_Class
-! USE Polynomial3D_Class
-! USE PolynomialND_Class
-END MODULE PolynomialFactory
+SUBMODULE(AbstractOrthopolSpace1D_Class) SetMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Orthopol_SetParam
+  IF( PRESENT( n ) ) obj%n=n
+  IF( PRESENT( isMonic ) ) obj%isMonic=isMonic
+  IF( PRESENT( isOrthonormal ) ) obj%isOrthonormal=isOrthonormal
+  IF( PRESENT( coeff ) ) obj%coeff=coeff
+  IF( PRESENT( scale ) ) obj%scale=scale
+END PROCEDURE Orthopol_SetParam
+
+END SUBMODULE SetMethods

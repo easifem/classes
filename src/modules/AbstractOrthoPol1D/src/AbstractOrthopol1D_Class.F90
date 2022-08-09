@@ -80,6 +80,15 @@ TYPE, ABSTRACT,  EXTENDS( AbstractBasis1D_ ) :: &
   !! Return the order of the polynomial
   PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar => Orthopol_EvalScalar
   !! Evaluate the polynomial
+  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalScalar => &
+    & Orthopol_BasisEvalScalar
+  !! Evaluate all the basis from n=0 to n=n at a given point
+  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalVector => &
+    & Orthopol_BasisEvalVector
+  !! Evaluate all the basis (n=0,1,...,n) at several points
+  GENERIC, PUBLIC :: BasisEval => &
+    & BasisEvalScalar, BasisEvalVector
+  !! Generic function for evaluating values of all basis
   PROCEDURE, PUBLIC, PASS( obj ) :: P0 => Orthopol_P0
   !! When n=0 this function is called for evaluting polynomial
   PROCEDURE, PUBLIC, PASS( obj ) :: Pm1 => Orthopol_Pm1
@@ -91,6 +100,15 @@ TYPE, ABSTRACT,  EXTENDS( AbstractBasis1D_ ) :: &
   PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient => &
     & Orthopol_EvalGradientScalar
   !! Evaluate the polynomial Gradient
+  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalGradientScalar => &
+    & Orthopol_BasisEvalGradientScalar
+  !! Evaluate grad of all the basis (n=0,1,...,n) at a given point
+  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalGradientVector => &
+    & Orthopol_BasisEvalGradientVector
+  !! Evaluate grad of all the basis (n=0,1,...,n) at several points
+  GENERIC, PUBLIC :: BasisEvalGradient => &
+    & BasisEvalGradientScalar, BasisEvalGradientVector
+  !! Generic function for evaluating gradient of all basis
   PROCEDURE, PUBLIC, PASS( obj ) :: GetStringToDisplay => &
     & Orthopol_GetStringToDisplay
   !! Get the string for display
@@ -327,11 +345,11 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_EvalScalar( obj, x ) RESULT( ans )
-    CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
-  END FUNCTION Orthopol_EvalScalar
+MODULE ELEMENTAL FUNCTION Orthopol_EvalScalar( obj, x ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x
+  REAL( DFP ) :: ans
+END FUNCTION Orthopol_EvalScalar
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -343,11 +361,11 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_P0( obj, x ) RESULT( ans )
-    CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
-  END FUNCTION Orthopol_P0
+MODULE ELEMENTAL FUNCTION Orthopol_P0( obj, x ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x
+  REAL( DFP ) :: ans
+END FUNCTION Orthopol_P0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -407,12 +425,119 @@ END INTERFACE
 ! summary: Evaluate gradient for 1d argument function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_EvalGradientScalar( obj, x ) &
-    & RESULT( ans )
-    CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
-  END FUNCTION Orthopol_EvalGradientScalar
+MODULE ELEMENTAL FUNCTION Orthopol_EvalGradientScalar( obj, x ) &
+  & RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x
+  REAL( DFP ) :: ans
+END FUNCTION Orthopol_EvalGradientScalar
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      BasisEval@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate all basis at given point
+
+INTERFACE
+MODULE PURE FUNCTION Orthopol_BasisEvalScalar( obj, x, &
+  & coeff, scale ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x
+    !! scalar value of argument
+  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    !! recurrence coefficient
+  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    !! scale coefficient
+  REAL( DFP ) :: ans( obj%n + 1 )
+    !! n+1 values of basis (n=0,1,2,..n)
+END FUNCTION Orthopol_BasisEvalScalar
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       BasisEval@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate all basis at given points
+!
+!# Introduction
+!
+!- Evaluate the basis at given number of points.
+!- Returns a two dim array of shape SIZE(x) and obj%n+1
+!
+!$$
+! ans(i,j) = P_{j-1}(x(i))
+!$$
+!
+!
+
+INTERFACE
+MODULE PURE FUNCTION Orthopol_BasisEvalVector( obj, x, &
+  & coeff, scale ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x( : )
+    !! several values of x
+  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    !! recurrence coefficient
+  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    !! scale coefficient
+  REAL( DFP ) :: ans( SIZE(x), obj%n+1 )
+    !! ans(i, :), denotes the n+1 values of basis (n=0,1,...,n) at x(i).
+    !! ans(:, I), denotes the value $J_{I-1}$ at points $x$.
+    !!  the number of rows = `size(x)` and number of cols = `obj%n+1`.
+END FUNCTION Orthopol_BasisEvalVector
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              BasisEvalGradient@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate grad of all basis at given point
+
+INTERFACE
+MODULE PURE FUNCTION Orthopol_BasisEvalGradientScalar( obj, x, &
+  & coeff, scale, n ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x
+    !! scalar value of argument
+  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    !! recurrence coefficient
+  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    !! scale coefficient
+  INTEGER( I4B ), INTENT( IN ) :: n
+    !! order of polynomial
+  REAL( DFP ) :: ans( n+1 )
+    !! n+1 values of grad of basis (n=0,1,2,..n)
+END FUNCTION Orthopol_BasisEvalGradientScalar
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             BasisEvalGradient@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate all basis at given points
+
+INTERFACE
+MODULE PURE FUNCTION Orthopol_BasisEvalGradientVector( obj, x, &
+  & coeff, scale, n ) RESULT( ans )
+  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x( : )
+    !! several values of x
+  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    !! recurrence coefficient
+  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    !! scale coefficient
+  INTEGER( I4B ), INTENT( IN ) :: n
+  REAL( DFP ) :: ans( SIZE(x), n+1 )
+END FUNCTION Orthopol_BasisEvalGradientVector
 END INTERFACE
 
 !----------------------------------------------------------------------------

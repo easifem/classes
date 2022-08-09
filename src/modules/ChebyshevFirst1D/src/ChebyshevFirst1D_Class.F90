@@ -20,7 +20,7 @@ MODULE ChebyshevFirst1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractBasis_Class
-USE AbstractOrthoPol1D_Class
+USE AbstractOrthopol1D_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -34,14 +34,17 @@ PRIVATE
 !
 !{!pages/ChebyshevFirst1D_.md!}
 
-TYPE, EXTENDS( AbstractOrthoPol1D_ ) :: ChebyshevFirst1D_
+TYPE, EXTENDS( AbstractOrthopol1D_ ) :: ChebyshevFirst1D_
   CONTAINS
   PRIVATE
   !!
-  !! @GetMethods
+  !! @ConstructorMethods
   !!
   FINAL :: Orthopol_Final
   !! Finalizer
+  !!
+  !! @GetMethods
+  !!
   PROCEDURE, PUBLIC, PASS( obj ) :: &
     & GetStringForUID => Orthopol_GetStringForUID
   !! Get String for unique ID

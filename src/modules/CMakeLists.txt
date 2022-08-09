@@ -141,8 +141,8 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
 # LagrangePolynomial1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LagrangePolynomial1D/CMakeLists.txt)
 
-# AbstractOrthoPol1D
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthoPol1D/CMakeLists.txt)
+# AbstractOrthopol1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
 
 # ChebyshevFirst1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)

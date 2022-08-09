@@ -24,8 +24,20 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ChebyshevFirstSpace1D1
-  ans%x = ChebyshevFirst1D( varname=varname, n=n )
-  ans%coeff = ans%x%GetRecurrenceCoeff( n=n )
+  REAL( DFP ), DIMENSION( 0:n-1, 2 ) :: coeff, scale
+  !!
+  ans%x = ChebyshevFirst1D( varname=varname, n=n, &
+    & isMonic=isMonic, isOrthonormal=isOrthonormal )
+  !!
+  CALL ans%x%GetCoeffScale( n=n, coeff=coeff, scale=scale  )
+  !!
+  CALL ans%setParam( &
+    & isMonic=isMonic, &
+    & isOrthonormal=isOrthonormal, &
+    & n=n, &
+    & coeff=coeff, &
+    & scale=scale)
+  !!
 END PROCEDURE ChebyshevFirstSpace1D1
 
 !----------------------------------------------------------------------------
@@ -33,26 +45,39 @@ END PROCEDURE ChebyshevFirstSpace1D1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ChebyshevFirstSpace1D_Pointer1
+  REAL( DFP ), DIMENSION( 0:n-1, 2 ) :: coeff, scale
+  !!
   ALLOCATE( ans )
-  ans%x = ChebyshevFirst1D( varname=varname, n=n )
-  ans%coeff = ans%x%GetRecurrenceCoeff( n=n )
+  !!
+  ans%x = ChebyshevFirst1D( varname=varname, n=n, &
+    & isMonic=isMonic, isOrthonormal=isOrthonormal )
+  !!
+  CALL ans%x%GetCoeffScale( n=n, coeff=coeff, scale=scale  )
+  !!
+  CALL ans%setParam( &
+    & isMonic=isMonic, &
+    & isOrthonormal=isOrthonormal, &
+    & n=n, &
+    & coeff=coeff, &
+    & scale=scale)
+  !!
 END PROCEDURE ChebyshevFirstSpace1D_Pointer1
 
 !----------------------------------------------------------------------------
-!                                                               Deallocate
+!                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE f_Deallocate
-  IF( ALLOCATED( obj%coeff ) ) DEALLOCATE( obj%coeff )
+MODULE PROCEDURE Orthopol_Deallocate
+  CALL AbstractOrthopolSpace1DDeallocate(obj)
   CALL obj%x%Deallocate()
-END PROCEDURE f_Deallocate
+END PROCEDURE Orthopol_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Final
+!                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE f_Final
+MODULE PROCEDURE Orthopol_Final
   CALL obj%x%Deallocate()
-END PROCEDURE f_Final
+END PROCEDURE Orthopol_Final
 
 END SUBMODULE ConstructorMethods

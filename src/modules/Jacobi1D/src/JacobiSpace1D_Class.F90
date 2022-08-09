@@ -18,29 +18,29 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 5 Aug 2022
-! summary: Space of Chebyshev polynomial is defined
+! summary: Space of Jacobi polynomial is defined
 
-MODULE ChebyshevFirstSpace1D_Class
+MODULE JacobiSpace1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractOrthopolSpace1D_Class
-USE ChebyshevFirst1D_Class
+USE Jacobi1D_Class
 IMPLICIT NONE
 PRIVATE
 
 !----------------------------------------------------------------------------
-!                                                   ChebyshevFirstSpace1D_
+!                                                   JacobiSpace1D_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 3 Aug 2022
 ! summary: Chebyshev1 orthogonal Basis are defined
 !
-!{!pages/ChebyshevFirstSpace1D_.md!}
+!{!pages/JacobiSpace1D_.md!}
 
-TYPE, EXTENDS( AbstractOrthopolSpace1D_ ) :: ChebyshevFirstSpace1D_
+TYPE, EXTENDS( AbstractOrthopolSpace1D_ ) :: JacobiSpace1D_
   PRIVATE
-  TYPE( ChebyshevFirst1D_ ) :: x
+  TYPE( Jacobi1D_ ) :: x
     !! Basis
   CONTAINS
   !!
@@ -50,22 +50,22 @@ TYPE, EXTENDS( AbstractOrthopolSpace1D_ ) :: ChebyshevFirstSpace1D_
   !!
   PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => Orthopol_Deallocate
   FINAL :: Orthopol_Final
-END TYPE ChebyshevFirstSpace1D_
+END TYPE JacobiSpace1D_
 
-PUBLIC :: ChebyshevFirstSpace1D_
-
-!----------------------------------------------------------------------------
-!                                           ChebyshevFirstSpace1DPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: ChebyshevFirstSpace1DPointer_
-  CLASS( ChebyshevFirstSpace1D_ ), POINTER :: ptr => NULL()
-END TYPE ChebyshevFirstSpace1DPointer_
-
-PUBLIC :: ChebyshevFirstSpace1DPointer_
+PUBLIC :: JacobiSpace1D_
 
 !----------------------------------------------------------------------------
-!                                 ChebyshevFirstSpace1D@ConstructorMethods
+!                                           JacobiSpace1DPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: JacobiSpace1DPointer_
+  CLASS( JacobiSpace1D_ ), POINTER :: ptr => NULL()
+END TYPE JacobiSpace1DPointer_
+
+PUBLIC :: JacobiSpace1DPointer_
+
+!----------------------------------------------------------------------------
+!                                 JacobiSpace1D@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -73,29 +73,31 @@ PUBLIC :: ChebyshevFirstSpace1DPointer_
 ! summary: Constructor for Chebyshev Basis of first kind
 
 INTERFACE
-MODULE FUNCTION ChebyshevFirstSpace1D1( varname, n, isMonic, &
+MODULE FUNCTION JacobiSpace1D1( varname, n, alpha, beta, isMonic, &
     & isOrthonormal ) RESULT( ans )
   CHARACTER( LEN = * ), INTENT( IN ) :: varname
     !! variable name
   INTEGER( I4B ), INTENT( IN ) :: n
     !! order of chebyshev Basis
+  REAL( DFP ), INTENT( IN ) :: alpha
+  REAL( DFP ), INTENT( IN ) :: beta
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
     !! Default is .FALSE., if true then leading coeff of poly is 1
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
     !! Default is .FALSE., if true then the Basiss are orthonormal
-  TYPE( ChebyshevFirstSpace1D_ ) :: ans
+  TYPE( JacobiSpace1D_ ) :: ans
     !! Chebyshev Basis of first kind
-END FUNCTION ChebyshevFirstSpace1D1
+END FUNCTION JacobiSpace1D1
 END INTERFACE
 
-INTERFACE ChebyshevFirstSpace1D
-  MODULE PROCEDURE ChebyshevFirstSpace1D1
-END INTERFACE ChebyshevFirstSpace1D
+INTERFACE JacobiSpace1D
+  MODULE PROCEDURE JacobiSpace1D1
+END INTERFACE JacobiSpace1D
 
-PUBLIC :: ChebyshevFirstSpace1D
+PUBLIC :: JacobiSpace1D
 
 !----------------------------------------------------------------------------
-!                          ChebyshevFirstSpace1D_Pointer@ConstructorMethods
+!                          JacobiSpace1D_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -103,26 +105,28 @@ PUBLIC :: ChebyshevFirstSpace1D
 ! summary: Constructor for Chebyshev1 Basis of first kind
 
 INTERFACE
-MODULE FUNCTION ChebyshevFirstSpace1D_Pointer1( varname, n, &
+MODULE FUNCTION JacobiSpace1D_Pointer1( varname, n, alpha, beta, &
   & isMonic, isOrthonormal ) RESULT( ans )
   CHARACTER( LEN = * ), INTENT( IN ) :: varname
     !! variable name
   INTEGER( I4B ), INTENT( IN ) :: n
     !! order of chebyshev Basis
+  REAL( DFP ), INTENT( IN ) :: alpha
+  REAL( DFP ), INTENT( IN ) :: beta
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
     !! Default is .FALSE., if true then leading coeff of poly is 1
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
     !! Default is .FALSE., if true then the Basiss are orthonormal
-  CLASS( ChebyshevFirstSpace1D_ ), POINTER :: ans
+  CLASS( JacobiSpace1D_ ), POINTER :: ans
     !! Chebyshev Basis of first kind
-END FUNCTION ChebyshevFirstSpace1D_Pointer1
+END FUNCTION JacobiSpace1D_Pointer1
 END INTERFACE
 
-INTERFACE ChebyshevFirstSpace1D_Pointer
-  MODULE PROCEDURE ChebyshevFirstSpace1D_Pointer1
-END INTERFACE ChebyshevFirstSpace1D_Pointer
+INTERFACE JacobiSpace1D_Pointer
+  MODULE PROCEDURE JacobiSpace1D_Pointer1
+END INTERFACE JacobiSpace1D_Pointer
 
-PUBLIC :: ChebyshevFirstSpace1D_Pointer
+PUBLIC :: JacobiSpace1D_Pointer
 
 !----------------------------------------------------------------------------
 !                                            Deallocate@ConstructorMethods
@@ -134,7 +138,7 @@ PUBLIC :: ChebyshevFirstSpace1D_Pointer
 
 INTERFACE
 MODULE SUBROUTINE Orthopol_Deallocate( obj )
-  CLASS( ChebyshevFirstSpace1D_ ), INTENT( INOUT ) :: obj
+  CLASS( JacobiSpace1D_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE Orthopol_Deallocate
 END INTERFACE
 
@@ -148,7 +152,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE Orthopol_Final( obj )
-  TYPE( ChebyshevFirstSpace1D_ ), INTENT( INOUT ) :: obj
+  TYPE( JacobiSpace1D_ ), INTENT( INOUT ) :: obj
 END SUBROUTINE Orthopol_Final
 END INTERFACE
 
@@ -156,4 +160,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE ChebyshevFirstSpace1D_Class
+END MODULE JacobiSpace1D_Class
