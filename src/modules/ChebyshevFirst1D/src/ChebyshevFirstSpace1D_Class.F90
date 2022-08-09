@@ -23,7 +23,7 @@
 MODULE ChebyshevFirstSpace1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
-USE AbstractBasis_Class
+USE AbstractOrthopolSpace1D_Class
 USE ChebyshevFirst1D_Class
 IMPLICIT NONE
 PRIVATE
@@ -38,21 +38,18 @@ PRIVATE
 !
 !{!pages/ChebyshevFirstSpace1D_.md!}
 
-! TYPE, EXTENDS( AbstractFunctionSpace1D_ ) :: ChebyshevFirstSpace1D_
-TYPE :: ChebyshevFirstSpace1D_
+TYPE, EXTENDS( AbstractOrthopolSpace1D_ ) :: ChebyshevFirstSpace1D_
   PRIVATE
   TYPE( ChebyshevFirst1D_ ) :: x
     !! Basis
-  REAL( DFP ), ALLOCATABLE :: rCoeff( :, : )
-    !! Recurrence coefficients for chebyshev polynomials
   CONTAINS
   !!
   PRIVATE
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => f_Deallocate
-  FINAL :: f_Final
+  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => Orthopol_Deallocate
+  FINAL :: Orthopol_Final
 END TYPE ChebyshevFirstSpace1D_
 
 PUBLIC :: ChebyshevFirstSpace1D_
@@ -136,9 +133,9 @@ PUBLIC :: ChebyshevFirstSpace1D_Pointer
 ! summary: 	Deallocate the object
 
 INTERFACE
-MODULE SUBROUTINE f_Deallocate( obj )
+MODULE SUBROUTINE Orthopol_Deallocate( obj )
   CLASS( ChebyshevFirstSpace1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE f_Deallocate
+END SUBROUTINE Orthopol_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -150,9 +147,9 @@ END INTERFACE
 ! summary: 	Finalizer for chebyshev space
 
 INTERFACE
-MODULE SUBROUTINE f_Final( obj )
+MODULE SUBROUTINE Orthopol_Final( obj )
   TYPE( ChebyshevFirstSpace1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE f_Final
+END SUBROUTINE Orthopol_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
