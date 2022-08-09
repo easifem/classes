@@ -18,7 +18,7 @@
 MODULE Jacobi1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
-USE AbstractOrthoPol1D_Class
+USE AbstractOrthopol1D_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -62,6 +62,12 @@ TYPE, EXTENDS( AbstractOrthopol1D_ ) :: Jacobi1D_
   !! Gauss-Radau quadrature points
   PROCEDURE, PUBLIC, PASS( obj ) :: GaussLobattoQuadrature => &
     & Orthopol_GaussLobattoQuadrature
+  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalGradientScalar => &
+    & Orthopol_BasisEvalGradientScalar
+  !! Evaluate grad of all the basis (n=0,1,...,n) at a given point
+  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalGradientVector => &
+    & Orthopol_BasisEvalGradientVector
+  !! Evaluate grad of all the basis (n=0,1,...,n) at several points
   !!
   !! @SetMethods
   !!
@@ -275,6 +281,54 @@ MODULE FUNCTION Orthopol_GaussLobattoQuadrature( obj ) RESULT( ans )
   CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
   REAL( DFP ), ALLOCATABLE :: ans( :, : )
 END FUNCTION Orthopol_GaussLobattoQuadrature
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              BasisEvalGradient@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate grad of all basis at given point
+
+INTERFACE
+MODULE PURE FUNCTION Orthopol_BasisEvalGradientScalar( obj, x, &
+  & coeff, scale, n ) RESULT( ans )
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x
+    !! scalar value of argument
+  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    !! recurrence coefficient
+  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    !! scale coefficient
+  INTEGER( I4B ), INTENT( IN ) :: n
+    !! order of polynomial
+  REAL( DFP ) :: ans( n+1 )
+    !! n+1 values of grad of basis (n=0,1,2,..n)
+END FUNCTION Orthopol_BasisEvalGradientScalar
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             BasisEvalGradient@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate all basis at given points
+
+INTERFACE
+MODULE PURE FUNCTION Orthopol_BasisEvalGradientVector( obj, x, &
+  & coeff, scale, n ) RESULT( ans )
+  CLASS( Jacobi1D_ ), INTENT( IN ) :: obj
+  REAL( DFP ), INTENT( IN ) :: x( : )
+    !! several values of x
+  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    !! recurrence coefficient
+  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    !! scale coefficient
+  INTEGER( I4B ), INTENT( IN ) :: n
+  REAL( DFP ) :: ans( SIZE(x), n+1 )
+END FUNCTION Orthopol_BasisEvalGradientVector
 END INTERFACE
 
 !----------------------------------------------------------------------------
