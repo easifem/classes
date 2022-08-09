@@ -65,7 +65,6 @@ TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunction1D_
   CONTAINS
     PRIVATE
     PROCEDURE(func_EvalScalar1), DEFERRED, PUBLIC, PASS( Obj ) :: EvalScalar
-    ! PROCEDURE(func_EvalVector1), DEFERRED, PUBLIC, PASS( Obj ) :: EvalVector
     GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
     PROCEDURE(func_EvalGradient1), DEFERRED, PUBLIC, PASS( Obj ) :: &
       & EvalGradient
