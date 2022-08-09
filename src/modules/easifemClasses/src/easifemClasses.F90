@@ -58,10 +58,6 @@ USE AbstractBC_Class
 USE DirichletBC_Class
 USE NeumannBC_Class
 
-
-USE AbstractFunction_Class
-USE AbstractBasis_Class
-USE MonomialFactory
 USE PolynomialFactory
 USE UserFunction_Class
 
