@@ -47,8 +47,7 @@ MODULE PROCEDURE Jacobi1D1
     !!
     IF( ASSOCIATED( ptr ) ) THEN
       SELECT TYPE( ptr ); TYPE IS( Jacobi1D_ )
-        ptr%alpha = alpha
-        ptr%beta = beta
+        CALL ptr%SetJacobiParam( alpha=alpha, beta=beta )
       END SELECT
       ptr => ptr%GetJn1Pointer()
     ELSE
