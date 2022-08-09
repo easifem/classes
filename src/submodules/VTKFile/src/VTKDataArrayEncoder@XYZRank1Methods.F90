@@ -84,7 +84,6 @@ END PROCEDURE encode_xyz_rank1_Int32
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE encode_xyz_rank1_Int64
   INTEGER( I4B ) :: ii, i, nbyte
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -92,6 +91,5 @@ MODULE PROCEDURE encode_xyz_rank1_Int64
   nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYInt64
 #include "./ENCODE_XYZ_RANK1.inc"
 END PROCEDURE encode_xyz_rank1_Int64
-#endif
 
 END SUBMODULE XYZRank1Methods

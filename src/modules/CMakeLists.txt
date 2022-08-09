@@ -16,183 +16,246 @@
 #
 
 # ExceptionHandler
-include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 
 # CommandLineArg
-include(${CMAKE_CURRENT_LIST_DIR}/CommandLineArg/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/CommandLineArg/CMakeLists.txt)
 
 # AbstractFile
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFile/CMakeLists.txt)
 
 # FortranFile
-include(${CMAKE_CURRENT_LIST_DIR}/FortranFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FortranFile/CMakeLists.txt)
 
 # TxtFile
-include(${CMAKE_CURRENT_LIST_DIR}/TxtFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/TxtFile/CMakeLists.txt)
+
+# CSVFile
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/CSVFile/CMakeLists.txt)
 
 # InputFile
-include(${CMAKE_CURRENT_LIST_DIR}/InputFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/InputFile/CMakeLists.txt)
 
 # HDF5File
-include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
 
 # XMLFile
-include(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
 
 # VTKFile
-include(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
 
 # Files
-include(${CMAKE_CURRENT_LIST_DIR}/Files/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Files/CMakeLists.txt)
 
 # HDF5File
-include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
 
 # FPL
-include(${CMAKE_CURRENT_LIST_DIR}/FPL/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FPL/CMakeLists.txt)
 
 # Element
-include(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
 
 # FacetElement
-include(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
 
 # FE
-include(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
 
 # IntList
-include(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
 
 # RealList
-include(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
 
 # StringList
-include(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
 
 # ElementList
-include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
 
 # ElementPointerVector
-include(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
 
 # Mesh
-include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 
 # MeshPointerVector
-include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)
 
 # MeshConnectivity
-# include(${CMAKE_CURRENT_LIST_DIR}/MeshConnectivity/CMakeLists.txt)
+# INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MeshConnectivity/CMakeLists.txt)
 
 # Domain
-include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
 
 # DomainConnectivity
-include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 
 # MeshSelection
-include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
 
 # GmshAPI
-include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 
 # MSHFile
-include(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 
 # AbstractFunction
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
 
-# Polynomial
-include(${CMAKE_CURRENT_LIST_DIR}/Polynomial/CMakeLists.txt)
+# AbstractBasis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractBasis/CMakeLists.txt)
+
+# Monomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial1D/CMakeLists.txt)
+
+# Monomial2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial2D/CMakeLists.txt)
+
+# Monomial3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial3D/CMakeLists.txt)
+
+# MonomialND
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MonomialND/CMakeLists.txt)
+
+# MonomialFactory
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MonomialFactory/CMakeLists.txt)
+
+# AbstractPolynomial
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPolynomial/CMakeLists.txt)
+
+# Polynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial1D/CMakeLists.txt)
+
+# Polynomial2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial2D/CMakeLists.txt)
+
+# Polynomial3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial3D/CMakeLists.txt)
+
+# PolynomialND
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
+
+# LagrangePolynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LagrangePolynomial1D/CMakeLists.txt)
+
+# AbstractOrthopol1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
+
+# ChebyshevFirst1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
+
+# Jacobi1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
+
+# PolynomialFactory
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
+
+# Tree3R
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 
 # AbstractBC
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
 
 # DirichletBC
-include(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
 
 # NeumannBC
-include(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
 
 # UserFunction
-include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
 # AbstractVector
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
 
 # Vector
-include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 
 # AbstractField
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 
 # AbstractNodeField
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 
 # AbstractMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
 
 # ScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
 
 # STScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
 
 # VectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
 
 # STVectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
 
 # TensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
 
 # STTensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
 
 # AbstractElementField
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
 
 # AbstractMatrixField
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 
 # ScalarField
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 
 # STScalarField
-include(${CMAKE_CURRENT_LIST_DIR}/STScalarField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STScalarField/CMakeLists.txt)
 
 # VectorField
-include(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 
 # STVectorField
-include(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
 
 # BlockNodeField
-include(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 
 # MatrixField
-include(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 
 # BlockMatrixField
-include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
 
 # AbstractLinSolver
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 
 # Field
-include(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
 
 # FieldFactory
-include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
 # LinSolver
-include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 
 # LinSolverFactory
-include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
+
+# AbstractPlot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
+
+# VTKPlot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
+
+# PLPlot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
+
+# Plot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 
 # easifemClasses
-include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
 
 

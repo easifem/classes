@@ -27,6 +27,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FortranFile/CMakeLists.txt)
 # TxtFile
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/TxtFile/CMakeLists.txt)
 
+# CSVFile
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/CSVFile/CMakeLists.txt)
+
 # InputFile
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/InputFile/CMakeLists.txt)
 
@@ -70,25 +73,25 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 
 # AbstractMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
 
 # ScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
 
 # STScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
 
 # VectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
 
 # STVectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
 
 # TensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
 
 # STTensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
 
 # ScalarField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
@@ -136,10 +139,65 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
 
 # AbstractFunction
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFunction/CMakeLists.txt)
 
-# Polynomial
-include(${CMAKE_CURRENT_LIST_DIR}/Polynomial/CMakeLists.txt)
+# AbstractBasis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractBasis/CMakeLists.txt)
+
+# Monomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial1D/CMakeLists.txt)
+
+# Monomial2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial2D/CMakeLists.txt)
+
+# Monomial3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Monomial3D/CMakeLists.txt)
+
+# MonomialND
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MonomialND/CMakeLists.txt)
+
+# AbstractPolynomial
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPolynomial/CMakeLists.txt)
+
+# Polynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial1D/CMakeLists.txt)
+
+# Polynomial2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial2D/CMakeLists.txt)
+
+# Polynomial3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial3D/CMakeLists.txt)
+
+# PolynomialND
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
+
+# LagrangePolynomial1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LagrangePolynomial1D/CMakeLists.txt)
+
+# AbstractOrthopol1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
+
+# ChebyshevFirst1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
+
+# Jacobi1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
+
+# PolynomialFactory
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
+
+# Tree3R
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 
 # UserFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
+
+# AbstractPlot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
+
+# VTKPlot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
+
+# PLPlot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
+

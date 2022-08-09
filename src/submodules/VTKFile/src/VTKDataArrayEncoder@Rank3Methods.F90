@@ -82,7 +82,6 @@ END PROCEDURE encode_rank3_Real64
 !
 !----------------------------------------------------------------------------
 
-#ifdef USE_Int64
 MODULE PROCEDURE encode_rank3_Int64
   INTEGER( I4B ) :: ii, jj, kk, nn, mm, ll
   INTEGER( Int8 ), ALLOCATABLE :: xp( : )
@@ -107,7 +106,6 @@ MODULE PROCEDURE encode_rank3_Int64
     CALL B64_ENCODE( n=xp, code=ans )
   END SELECT
 END PROCEDURE encode_rank3_Int64
-#endif
 
 !----------------------------------------------------------------------------
 !

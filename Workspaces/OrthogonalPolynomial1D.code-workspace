@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../src/modules/Jacobi1D"
+		},
+		{
+			"path": "../src/submodules/Jacobi1D"
+		}
+	]
+}

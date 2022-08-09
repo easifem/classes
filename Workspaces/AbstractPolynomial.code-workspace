@@ -1,0 +1,49 @@
+{
+	"folders": [
+		{
+			"name": "AbstractPolynomial",
+			"path": "../src/modules/AbstractPolynomial"
+		},
+		{
+			"name": "Polynomial1D",
+			"path": "../src/modules/Polynomial1D"
+		},
+		{
+			"name": "Polynomial2D",
+			"path": "../src/modules/Polynomial2D"
+		},
+		{
+			"name": "Polynomial3D",
+			"path": "../src/modules/Polynomial3D"
+		},
+		{
+			"name": "PolynomialND",
+			"path": "../src/modules/PolynomialND"
+		},
+		{
+			"name": "PolynomialFactory",
+			"path": "../src/modules/PolynomialFactory"
+		},
+		{
+			"path": "../src/submodules/AbstractPolynomial"
+		},
+		{
+			"path": "../src/submodules/LagrangePolynomial1D"
+		},
+		{
+			"path": "../src/submodules/Polynomial1D"
+		},
+		{
+			"path": "../src/submodules/Polynomial2D"
+		},
+		{
+			"path": "../src/submodules/Polynomial3D"
+		},
+		{
+			"path": "../src/submodules/PolynomialFactory"
+		},
+		{
+			"path": "../src/submodules/PolynomialND"
+		}
+	]
+}
