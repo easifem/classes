@@ -14,3 +14,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
+
+MODULE Test_ReferenceElementFactory
+USE Test_Topology_Class
+USE Test_ReferenceElement_Class
+USE Test_ReferencePoint_Class
+USE Test_ReferenceLine_Class
+USE Test_ReferenceTriangle_Class
+USE Test_ReferenceQuadrangle_Class
+USE Test_ReferenceTetrahedron_Class
+USE Test_ReferenceHexahedron_Class
+USE Test_ReferencePyramid_Class
+USE Test_ReferencePrism_Class
+END MODULE Test_ReferenceElementFactory
