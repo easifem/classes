@@ -16,6 +16,7 @@
 
 SUBMODULE(Test_ReferenceLine_Class) Methods
 USE BaseMethod
+USE Test_ReferencePoint_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -24,35 +25,30 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Initiate
-  REAL( DFP ) :: xij0( 3 ,1 )
+  REAL( DFP ) :: xij0( 3 , 2 )
   INTEGER( I4B ) :: entityCounts( 4 ), xidimension, name
   TYPE(String) :: nameStr
-  TYPE( Test_Topology_ ) :: topology(1)
+  TYPE( Test_Topology_ ) :: topology(3)
   !!
   xij0 = 0.0_DFP
+  xij0(1,1) = -1.0_DFP
+  xij0(1,2) = 1.0_DFP
   !!
-  IF( PRESENT( xij ) ) THEN
-    xij0(1:SIZE(xij,1),1) = xij(:,1)
-  END IF
+  entityCounts = [2, 1, 0, 0]
+  xidimension = 1
+  name= Line2
+  nameStr = "Line2"
   !!
-  entityCounts = [1, 0, 0, 0]
-  xidimension = 0
-  name= Point1
-  nameStr = "Point1"
-  !!
-  CALL topology( 1 )%Initiate( nptrs=[1_I4B], name=Point1, &
-    & xidimension=xidimension )
+  topology = obj%GetTopology()
   !!
   CALL obj%SetParam( &
     & xij=xij0, &
     & entityCounts=entityCounts, &
     & nsd=nsd, &
-    & order=order, &
     & xidimension=xidimension, &
     & name=name, &
     & nameStr=nameStr%chars(), &
-    & topology=topology, &
-    & interpolationType=Equidistance)
+    & topology=topology)
   !!
 END PROCEDURE refelem_Initiate
 
@@ -61,23 +57,64 @@ END PROCEDURE refelem_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetElements
-  ALLOCATE( ans( 0 ) )
+  INTEGER( I4B ), PARAMETER :: tFacet = 2_I4B
+  INTEGER( I4B ) :: ii
+  !!
+  ALLOCATE( ans( tFacet ) )
+  !!
+  DO ii = 1, tFacet
+    ALLOCATE( Test_ReferencePoint_ :: ans(ii)%ptr )
+    CALL ans(ii)%ptr%Initiate( nsd=obj%getNSD() )
+  END DO
+  !!
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
-!                                                          GetFacetTopology
+!                                                           GetFacetTopology
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetTopology
-  ALLOCATE( ans( 0 ) )
+  INTEGER( I4B ), PARAMETER :: n=2_I4B
+  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
+  INTEGER( I4B ) :: ii
+  !!
+  ALLOCATE (ans(n))
+  !!
+  nptrs = obj%getNptrs()
+  !!
+  DO ii = 1, n
+    CALL ans(ii)%Initiate( nptrs=nptrs(ii:ii), name=Point, &
+      & xidimension=0_I4B)
+  END DO
+  !!
 END PROCEDURE refelem_GetFacetTopology
+
+!----------------------------------------------------------------------------
+!                                                                GetTopology
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_GetTopology
+  INTEGER( I4B ), PARAMETER :: n=3_I4B
+  !!
+  ALLOCATE (ans(n))
+  !!
+  !! point
+  !!
+  CALL ans( 1 )%Initiate( nptrs=[1_I4B], name=Point, &
+    & xidimension=0_I4B )
+  CALL ans( 2 )%Initiate( nptrs=[2_I4B], name=Point, &
+    & xidimension=0_I4B )
+  CALL ans( 3 )%Initiate( nptrs=[1_I4B, 2_I4B], &
+    & name=Line2, xidimension=1_I4B )
+  !!
+END PROCEDURE refelem_GetTopology
 
 !----------------------------------------------------------------------------
 !                                                                 GetMeasure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetMeasure
-  ans = 0.0_DFP
+  ans = NORM2( xij(:, 1) - xij(:, 2) )
 END PROCEDURE refelem_GetMeasure
 
 !----------------------------------------------------------------------------
@@ -85,7 +122,10 @@ END PROCEDURE refelem_GetMeasure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetElementQuality
-  ans = 1.0_DFP
+  CHARACTER( LEN = * ), PARAMETER :: myName="refelem_GetElementQuality"
+  CALL e%raiseError(modName //'::'//myName// ' - '// &
+    & '[NOT IMPLEMENTED!], this routine is under development')
+! TODO #120 Implement GetElementQuality method for [[ReferenceLine_]]
 END PROCEDURE refelem_GetElementQuality
 
 !----------------------------------------------------------------------------
@@ -93,11 +133,10 @@ END PROCEDURE refelem_GetElementQuality
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_isPointInside
-  REAL( DFP ) :: err, x0( 3, 1 )
-  REAL( DFP ), PARAMETER :: tol=1.0E-10
-  x0 = obj%GetNodeCoord()
-  err = NORM2(x0(:,1) - x)
-  ans = SOFTEQ( err, zero, tol=tol)
+  CHARACTER( LEN = * ), PARAMETER :: myName="refelem_GetElementQuality"
+  CALL e%raiseError(modName //'::'//myName// ' - '// &
+    & '[NOT IMPLEMENTED!], this routine is under development')
+! TODO #121 Implement isPointInside method for [[ReferenceLine_]]
 END PROCEDURE refelem_isPointInside
 
 !----------------------------------------------------------------------------

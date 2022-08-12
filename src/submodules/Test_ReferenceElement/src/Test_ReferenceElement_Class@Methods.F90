@@ -45,8 +45,6 @@ MODULE PROCEDURE refelem_Copy
   obj%name = obj2%name
   obj%nameStr = obj2%nameStr
   obj%nsd = obj2%nsd
-  obj%order = obj2%order
-  obj%interpolationType = obj2%interpolationType
   IF( ALLOCATED( obj2%topology ) ) THEN
     n = SIZE( obj2%topology )
     ALLOCATE( obj%topology( n ) )
@@ -69,8 +67,6 @@ MODULE PROCEDURE refelem_Deallocate
   obj%name= -1
   obj%nameStr= ""
   obj%nsd= -1
-  obj%order= 0
-  obj%interpolationType= Equidistance
   IF( ALLOCATED( obj%topology ) ) THEN
     n = SIZE( obj%topology )
     DO ii = 1, n
@@ -97,11 +93,6 @@ MODULE PROCEDURE refelem_Display
     & unitno=unitno  )
   !!
   CALL Display( obj%nsd, "nsd : ", unitno=unitno )
-  !!
-  CALL Display( obj%order, "order : ", unitno=unitno )
-  !!
-  CALL Display( obj%interpolationType, &
-    & "interpolationType : ", unitno=unitno )
   !!
   CALL Display( obj%entityCounts( 1 ), "entityCounts(0) : ", &
     & unitno=unitno )
@@ -143,12 +134,12 @@ MODULE PROCEDURE refelem_GetNNE
 END PROCEDURE refelem_GetNNE
 
 !----------------------------------------------------------------------------
-!                                                            GetElementOrder
+!                                                            GetNSD
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_GetElementOrder
-  ans=obj%order
-END PROCEDURE refelem_GetElementOrder
+MODULE PROCEDURE refelem_GetNSD
+  ans =obj%NSD
+END PROCEDURE refelem_GetNSD
 
 !----------------------------------------------------------------------------
 !                                                            GetXidimension
@@ -157,14 +148,6 @@ END PROCEDURE refelem_GetElementOrder
 MODULE PROCEDURE refelem_GetXidimension
   ans =obj%xidimension
 END PROCEDURE refelem_GetXidimension
-
-!----------------------------------------------------------------------------
-!                                                       GetInterpolationType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GetInterpolationType
-  ans = obj%interpolationType
-END PROCEDURE refelem_GetInterpolationType
 
 !----------------------------------------------------------------------------
 !                                                        GetElementTopology
@@ -281,6 +264,16 @@ MODULE PROCEDURE refelem_GetFacetTopology
 END PROCEDURE refelem_GetFacetTopology
 
 !----------------------------------------------------------------------------
+!                                                               GetTopology
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_GetTopology
+  CHARACTER( LEN = * ), PARAMETER :: myName="refelem_GetTopology"
+  CALL e%raiseError(modName //'::'//myName// ' - '// &
+    & 'This routine cannot be called from ReferenceElement_')
+END PROCEDURE refelem_GetTopology
+
+!----------------------------------------------------------------------------
 !                                                                 GetMeasure
 !----------------------------------------------------------------------------
 
@@ -323,8 +316,6 @@ MODULE PROCEDURE refelem_SetParam
   IF( PRESENT( name ) ) obj%name = name
   IF( PRESENT( nameStr ) ) obj%nameStr=nameStr
   IF( PRESENT( nsd ) ) obj%nsd=nsd
-  IF( PRESENT( order ) ) obj%order=order
-  IF( PRESENT( interpolationType ) ) obj%interpolationType=interpolationType
   !!
   IF( PRESENT( topology ) ) THEN
     !!

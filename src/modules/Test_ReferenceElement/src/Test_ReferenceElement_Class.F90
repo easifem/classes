@@ -40,6 +40,7 @@ TYPE(ExceptionHandler_) :: e
 !{!pages/ReferenceElement_.md!}
 
 TYPE, ABSTRACT :: Test_ReferenceElement_
+  PRIVATE
   REAL(DFP), ALLOCATABLE :: xij(:, :)
     !! Nodal coordinates
   INTEGER(I4B) :: entityCounts(4) = 0_I4B
@@ -56,10 +57,6 @@ TYPE, ABSTRACT :: Test_ReferenceElement_
     !! name of the element
   INTEGER(I4B) :: nsd = -1_I4B
     !! Number of spatial dimensions
-  INTEGER( I4B ) :: order = 0_I4B
-    !! order of element
-  INTEGER( I4B ) :: interpolationType = Equidistance
-    !! Interpolation point
   TYPE(Test_Topology_), ALLOCATABLE :: topology(:)
     !! Topology information of 0D, 1, 2, 3D entities
   !!
@@ -76,13 +73,10 @@ TYPE, ABSTRACT :: Test_ReferenceElement_
   !! Display the contents
   PROCEDURE, PUBLIC, PASS( obj ) :: GetNNE => refelem_GetNNE
   !! Returns the number of nodes in the element
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetElementOrder => refelem_GetElementOrder
-  !! Returns the element order
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetNSD => refelem_GetNSD
+  !! Returns the xidimension
   PROCEDURE, PUBLIC, PASS( obj ) :: GetXidimension => refelem_GetXidimension
   !! Returns the xidimension
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetInterpolationType => &
-    & refelem_GetInterpolationType
-  !! Returns the interpolation type
   PROCEDURE, PUBLIC, PASS( obj ) :: GetElementTopology => &
     & refelem_GetElementTopology
   !! Returns the element topology
@@ -100,6 +94,9 @@ TYPE, ABSTRACT :: Test_ReferenceElement_
     & refelem_GetFacetElements
   PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetTopology => &
     & refelem_GetFacetTopology
+    !! Get the vector of topology of facet elements
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetTopology => &
+    & refelem_GetTopology
     !! Get the vector of topology of facet elements
   PROCEDURE, PUBLIC, PASS( obj ) :: GetElementQuality => &
     & refelem_GetElementQuality
@@ -137,11 +134,9 @@ PUBLIC :: Test_ReferenceElementPointer_
 ! routine should be implemented by the child class
 
 INTERFACE
-MODULE SUBROUTINE refelem_Initiate( obj, order, nsd, xij )
+MODULE SUBROUTINE refelem_Initiate( obj, nsd )
   CLASS( Test_ReferenceElement_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: order
   INTEGER( I4B ), INTENT( IN ) :: nsd
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: xij( :, : )
 END SUBROUTINE refelem_Initiate
 END INTERFACE
 
@@ -222,18 +217,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetElementOrder@Methods
+!                                                    GetNSD@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 21 May 2022
-! summary: Returns the order of an element
+! date: 9 Aug 2022
+! summary: Returns NSD of the reference element
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION refelem_GetElementOrder(obj) RESULT(ans)
+  MODULE ELEMENTAL FUNCTION refelem_GetNSD(obj) RESULT(ans)
     CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION  refelem_GetElementOrder
+  END FUNCTION refelem_GetNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -249,21 +244,6 @@ INTERFACE
     CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION refelem_GetXidimension
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              GetInterpolationType@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 9 Aug 2022
-! summary: Returns the interpolation type
-
-INTERFACE
-  MODULE ELEMENTAL FUNCTION refelem_GetInterpolationType(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION refelem_GetInterpolationType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -379,6 +359,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       GetTopology@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns the topology of reference element
+!
+!# Introduction
+!
+!- This routine returns the facet topology of [[ReferenceElement_]]
+!- This routine should be implemented by the child classes.
+
+INTERFACE
+  MODULE FUNCTION refelem_GetTopology(obj) RESULT(ans)
+    CLASS( Test_ReferenceElement_ ), INTENT( IN ) :: obj
+    TYPE( Test_Topology_ ), ALLOCATABLE :: ans(:)
+  END FUNCTION refelem_GetTopology
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                  GetMeasureSimplex@Methods
 !----------------------------------------------------------------------------
 
@@ -452,7 +452,7 @@ END INTERFACE
 
 INTERFACE
 MODULE PURE SUBROUTINE refelem_SetParam( obj, xij, entityCounts, &
-  & xidimension, name, nameStr, nsd, order, interpolationType, &
+  & xidimension, name, nameStr, nsd, &
   & topology )
   CLASS( Test_ReferenceElement_ ), INTENT( INOUT ) :: obj
   REAL( DFP ), OPTIONAL, INTENT( IN ) :: xij(:,:)
@@ -461,8 +461,6 @@ MODULE PURE SUBROUTINE refelem_SetParam( obj, xij, entityCounts, &
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: name
   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: nameStr
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: nsd
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: order
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: interpolationType
   TYPE(Test_Topology_), OPTIONAL, INTENT( IN ) :: topology(:)
 END SUBROUTINE refelem_SetParam
 END INTERFACE

@@ -21,4 +21,11 @@ TARGET_SOURCES(
   ${src_path}/Test_Topology_Class@Methods.F90
   ${src_path}/Test_ReferenceElement_Class@Methods.F90
   ${src_path}/Test_ReferencePoint_Class@Methods.F90
+  ${src_path}/Test_ReferenceLine_Class@Methods.F90
+  ${src_path}/Test_ReferenceTriangle_Class@Methods.F90
+  ${src_path}/Test_ReferenceQuadrangle_Class@Methods.F90
+  ${src_path}/Test_ReferenceTetrahedron_Class@Methods.F90
+  ${src_path}/Test_ReferenceHexahedron_Class@Methods.F90
+  ${src_path}/Test_ReferencePrism_Class@Methods.F90
+  ${src_path}/Test_ReferencePyramid_Class@Methods.F90
 )

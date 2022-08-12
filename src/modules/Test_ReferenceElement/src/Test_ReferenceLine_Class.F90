@@ -50,6 +50,11 @@ TYPE, EXTENDS( Test_ReferenceElement_ ) :: Test_ReferenceLine_
   PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetTopology => &
     & refelem_GetFacetTopology
   !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetTopology => &
+    & refelem_GetTopology
+  !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetMeasure => &
+    & refelem_GetMeasure
   PROCEDURE, PUBLIC, PASS( obj ) :: GetElementQuality => &
     & refelem_GetElementQuality
   !! returns element quality
@@ -84,14 +89,10 @@ PUBLIC :: Test_ReferenceLinePointer_
 ! routine should be implemented by the child class
 
 INTERFACE
-MODULE SUBROUTINE refelem_Initiate( obj, order, nsd, xij )
+MODULE SUBROUTINE refelem_Initiate( obj, nsd )
   CLASS( Test_ReferenceLine_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: order
-  !! not required
   INTEGER( I4B ), INTENT( IN ) :: nsd
   !! spatial dimension
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: xij( :, : )
-  !! coordinate, the number of col should be at least 2
 END SUBROUTINE refelem_Initiate
 END INTERFACE
 
@@ -105,8 +106,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! Returns the facet elements. This routine should be implemented by the
-! child classes.
+! Returns the facet elements.
 
 INTERFACE
   MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
@@ -125,15 +125,32 @@ END INTERFACE
 !
 !# Introduction
 !
-! This routine returns the facet topology of [[ReferenceElement_]]
-!
-! This routine should be implemented by the child classes.
+!- This routine returns the facet topology of [[ReferenceElement_]]
 
 INTERFACE
   MODULE FUNCTION refelem_GetFacetTopology(obj) RESULT(ans)
     CLASS( Test_ReferenceLine_ ), INTENT( IN ) :: obj
     TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
   END FUNCTION refelem_GetFacetTopology
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTopology@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns the topology of reference element
+!
+!# Introduction
+!
+!- This routine returns the topology of [[ReferenceElement_]]
+
+INTERFACE
+  MODULE FUNCTION refelem_GetTopology(obj) RESULT(ans)
+    CLASS( Test_ReferenceLine_ ), INTENT( IN ) :: obj
+    TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
+  END FUNCTION refelem_GetTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -148,7 +165,6 @@ END INTERFACE
 !
 ! This routine returns the measure of the reference element.
 !
-! This routine should be implemented by the child class.
 
 INTERFACE
   MODULE FUNCTION refelem_GetMeasure(obj, xij) RESULT(ans)
@@ -168,8 +184,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! This function returns the element quality. This should be
-! implemented by the child class.
+! This function returns the element quality.
 
 INTERFACE
   MODULE FUNCTION refelem_GetElementQuality(obj, xij, measure) RESULT(ans)
@@ -193,8 +208,6 @@ END INTERFACE
 ! If the given point is inside the referencelement, then
 ! it returns the true, otherwise it returns false.
 !
-! This routine should be implemented by the class child.
-
 INTERFACE
   MODULE FUNCTION refelem_isPointInside(obj, xij, x) RESULT(ans)
     CLASS(Test_ReferenceLine_), INTENT(IN) :: obj

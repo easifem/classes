@@ -17,14 +17,17 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Reference element for triangle is implemented
+! summary: 	Reference element for point is implemented
 
 MODULE Test_ReferencePrism_Class
 USE GlobalData
+USE Test_Topology_Class
 USE Test_ReferenceElement_Class
+USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName="Test_ReferencePrism_Class"
+TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                   Test_ReferencePrism_
@@ -37,6 +40,27 @@ CHARACTER( LEN = * ), PARAMETER :: modName="Test_ReferencePrism_Class"
 !{!pages/ReferencePrism_.md!}
 
 TYPE, EXTENDS( Test_ReferenceElement_ ) :: Test_ReferencePrism_
+  CONTAINS
+  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => &
+    & refelem_Initiate
+  !! Initiate an instance of ReferencePrism_
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetElements => &
+    & refelem_GetFacetElements
+  !! Returns the facet elements
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetTopology => &
+    & refelem_GetFacetTopology
+  !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetTopology => &
+    & refelem_GetTopology
+  !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetMeasure => &
+    & refelem_GetMeasure
+  PROCEDURE, PUBLIC, PASS( obj ) :: GetElementQuality => &
+    & refelem_GetElementQuality
+  !! returns element quality
+  PROCEDURE, PUBLIC, PASS( obj ) :: isPointInside => &
+    & refelem_isPointInside
+  !! returns true if the element is inside the point
 END TYPE Test_ReferencePrism_
 
 PUBLIC :: Test_ReferencePrism_
@@ -52,48 +76,145 @@ END TYPE Test_ReferencePrismPointer_
 PUBLIC :: Test_ReferencePrismPointer_
 
 !----------------------------------------------------------------------------
-!                               Test_ReferencePrism@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 9 aug 2022
-! summary: Constructor function for Reference point
-
-INTERFACE
-MODULE FUNCTION refelem_ReferencePrism( nsd, xij ) RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: nsd
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: xij( :, : )
-  TYPE( Test_ReferencePrism_ ) :: ans
-END FUNCTION refelem_ReferencePrism
-END INTERFACE
-
-INTERFACE Test_ReferencePrism
-  MODULE PROCEDURE refelem_ReferencePrism
-END INTERFACE Test_ReferencePrism
-
-PUBLIC :: Test_ReferencePrism
-
-!----------------------------------------------------------------------------
-!                        Test_ReferencePrism_Pointer@ConstructorMethods
+!                                                         Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: Constructor function for ReferencePrism
+! summary: Initiate the instance of Reference element
+!
+!# Introduction
+!
+! This routine initiates an instance of reference element. This
 
 INTERFACE
-MODULE FUNCTION refelem_ReferencePrism_Pointer( nsd, xij ) RESULT( ans )
+MODULE SUBROUTINE refelem_Initiate( obj, nsd )
+  CLASS( Test_ReferencePrism_ ), INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: nsd
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: xij( :, : )
-  CLASS( Test_ReferencePrism_ ), POINTER :: ans
-END FUNCTION refelem_ReferencePrism_Pointer
+  !! spatial dimension
+END SUBROUTINE refelem_Initiate
 END INTERFACE
 
-INTERFACE Test_ReferencePrism_Pointer
-  MODULE PROCEDURE refelem_ReferencePrism_Pointer
-END INTERFACE Test_ReferencePrism_Pointer
+!----------------------------------------------------------------------------
+!                                                   GetFacetElements@Methods
+!----------------------------------------------------------------------------
 
-PUBLIC :: Test_ReferencePrism_Pointer
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: This routine returns the facet elements
+!
+!# Introduction
+!
+! Returns the facet elements.
+
+INTERFACE
+  MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
+    CLASS(Test_ReferencePrism_), INTENT(IN) :: obj
+    TYPE(Test_ReferenceElementPointer_), ALLOCATABLE :: ans(:)
+  END SUBROUTINE refelem_GetFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetFacetTopology@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns the facet topology of reference element
+!
+!# Introduction
+!
+!- This routine returns the facet topology of [[ReferenceElement_]]
+
+INTERFACE
+  MODULE FUNCTION refelem_GetFacetTopology(obj) RESULT(ans)
+    CLASS( Test_ReferencePrism_ ), INTENT( IN ) :: obj
+    TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
+  END FUNCTION refelem_GetFacetTopology
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTopology@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns the topology of reference element
+!
+!# Introduction
+!
+!- This routine returns the topology of [[ReferenceElement_]]
+
+INTERFACE
+  MODULE FUNCTION refelem_GetTopology(obj) RESULT(ans)
+    CLASS( Test_ReferencePrism_ ), INTENT( IN ) :: obj
+    TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
+  END FUNCTION refelem_GetTopology
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetMeasureSimplex@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns the  measures for simplex
+!
+!# Introduction
+!
+! This routine returns the measure of the reference element.
+
+INTERFACE
+  MODULE FUNCTION refelem_GetMeasure(obj, xij) RESULT(ans)
+    CLASS(Test_ReferencePrism_), INTENT(IN) ::obj
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    REAL(DFP) :: ans
+  END FUNCTION refelem_GetMeasure
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetElementQuality@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Measure the quality of the element
+!
+!# Introduction
+!
+! This function returns the element quality.
+
+INTERFACE
+  MODULE FUNCTION refelem_GetElementQuality(obj, xij, measure) RESULT(ans)
+    CLASS(Test_ReferencePrism_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    INTEGER(I4B), INTENT(IN) :: measure
+    REAL(DFP) :: ans
+  END FUNCTION refelem_GetElementQuality
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     isPointInside@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 11 April 2022
+! summary: Returns true if the given point is inside the element
+!
+!# Introduction
+!
+! If the given point is inside the referencelement, then
+! it returns the true, otherwise it returns false.
+!
+
+INTERFACE
+  MODULE FUNCTION refelem_isPointInside(obj, xij, x) RESULT(ans)
+    CLASS(Test_ReferencePrism_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    REAL(DFP), INTENT(IN) :: x(3)
+    LOGICAL(LGT) :: ans
+  END FUNCTION refelem_isPointInside
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
