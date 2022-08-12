@@ -124,6 +124,8 @@ MODULE PROCEDURE func_Initiate
   obj%degree(:,1) = b1
   obj%degree(:,2) = b2
   obj%coeff = c
+  obj%varname(1) = TRIM(name1)
+  obj%varname(2) = TRIM(name2)
   !!
   IF( ALLOCATED( coeff0 ) ) DEALLOCATE( coeff0 )
   IF( ALLOCATED( d1 ) ) DEALLOCATE( d1 )

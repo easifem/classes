@@ -40,6 +40,9 @@ TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
     !!
     !! @ConstructorMethods
     !!
+    PROCEDURE, PASS( obj ) :: Initiate1 => func_Initiate1
+    PROCEDURE, PASS( obj ) :: Initiate2 => func_Initiate2
+    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
     PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => func_Deallocate
     FINAL :: func_Final
     !!
@@ -70,7 +73,7 @@ TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
     !!
     !! @AssignmentMethods
     !!
-    PROCEDURE, PASS( obj ) :: AssignObjObj => func_AssignObjObj
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjObj => func_AssignObjObj
     GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
 END TYPE Monomial2D_
 
@@ -85,6 +88,48 @@ TYPE :: Monomial2DPointer_
 END TYPE Monomial2DPointer_
 
 PUBLIC :: Monomial2DPointer_
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct function for Monomial2D
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_Initiate1( obj, n1, n2, name1, name2 )
+  CLASS( Monomial2D_ ), INTENT( INOUT )  :: obj
+    !! monomial2d = $x^{n1} y^{n2}$
+  INTEGER( I4B ), INTENT( IN ) :: n1
+    !! power of variable 1
+  INTEGER( I4B ), INTENT( IN ) :: n2
+    !! power for variable 2
+  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! name of variable 1
+  CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! name of variable 2
+END SUBROUTINE func_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Constructor function the Monomial2D
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_Initiate2( obj, f1, f2 )
+  CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
+    !! ans = f1*f2
+  CLASS( Monomial1D_ ), INTENT( IN ) :: f1
+    !! monomial for first variable
+  CLASS( Monomial1D_ ), INTENT( IN ) :: f2
+    !! monomial for second variable
+END SUBROUTINE func_Initiate2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             Monomial2D@ConstructorMethods

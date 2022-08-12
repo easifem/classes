@@ -80,7 +80,8 @@ END PROCEDURE func_GetVarname1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetVarname2
-  ans = obj%varname
+  ans(1) = obj%varname(1)
+  ans(2) = obj%varname(2)
 END PROCEDURE func_GetVarname2
 
 !----------------------------------------------------------------------------
@@ -88,7 +89,9 @@ END PROCEDURE func_GetVarname2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetVarname3
-  ans = obj%varname
+  ans(1) = obj%varname(1)
+  ans(2) = obj%varname(2)
+  ans(3) = obj%varname(3)
 END PROCEDURE func_GetVarname3
 
 !----------------------------------------------------------------------------
@@ -96,9 +99,13 @@ END PROCEDURE func_GetVarname3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetVarnameN
+  INTEGER( I4B ) :: ii, n
   IF( ALLOCATED( obj%varname ) ) THEN
-    ALLOCATE( ans( SIZE( obj%varname ) ) )
-    ans = obj%varname
+    n = SIZE( obj%varname )
+    ALLOCATE( ans( n ) )
+    DO ii = 1, n
+      ans(ii) = obj%varname(ii)
+    END DO
   ELSE
     ALLOCATE( ans( 0 ) )
   END IF

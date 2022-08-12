@@ -36,6 +36,9 @@ MODULE PROCEDURE func_AssignObjObj
     obj%coeff=obj2%coeff
   END IF
   !!
+  obj%varname(1) = obj2%varname(1)
+  obj%varname(2) = obj2%varname(2)
+  !!
   IF( ALLOCATED( obj2%x ) ) THEN
     !!
     row = SIZE( obj2%x )
