@@ -97,7 +97,8 @@ TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunction2D_
   TYPE(String) :: varname(2)
   CONTAINS
     PRIVATE
-    PROCEDURE(func_Eval2), DEFERRED, PUBLIC, PASS( Obj ) :: Eval
+    PROCEDURE(func_Eval2), DEFERRED, PUBLIC, PASS( Obj ) :: EvalScalar
+    GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
     PROCEDURE(func_EvalGradient2), DEFERRED, PUBLIC, PASS( Obj ) :: &
       & EvalGradient
     PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate2

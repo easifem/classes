@@ -45,7 +45,7 @@ TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
     !!
     !! @GetMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: Eval=>func_Eval
+    PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar=>func_Eval
     PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient=>func_EvalGradient
     PROCEDURE, PUBLIC, PASS( obj ) :: Grad => func_Grad
     GENERIC, PUBLIC :: OPERATOR( .Grad. ) => Grad
@@ -70,7 +70,7 @@ TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
     !!
     !! @AssignmentMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjObj => func_AssignObjObj
+    PROCEDURE, PASS( obj ) :: AssignObjObj => func_AssignObjObj
     GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
 END TYPE Monomial2D_
 
@@ -92,16 +92,21 @@ PUBLIC :: Monomial2DPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Construct function for Monomial2D
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION func_Monomial2D1( n1, n2, name1, name2 ) &
   & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: n1
+    !! power of variable 1
   INTEGER( I4B ), INTENT( IN ) :: n2
+    !! power for variable 2
   CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! name of variable 1
   CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! name of variable 2
   TYPE( Monomial2D_ ) :: ans
+    !! monomial2d = $x^{n1} y^{n2}$
 END FUNCTION func_Monomial2D1
 END INTERFACE
 
@@ -117,13 +122,16 @@ PUBLIC :: Monomial2D
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Constructor function the Monomial2D
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION func_Monomial2D2( f1, f2 ) RESULT( ans )
   CLASS( Monomial1D_ ), INTENT( IN ) :: f1
+    !! monomial for first variable
   CLASS( Monomial1D_ ), INTENT( IN ) :: f2
+    !! monomial for second variable
   TYPE( Monomial2D_ ) :: ans
+    !! ans = f1*f2
 END FUNCTION func_Monomial2D2
 END INTERFACE
 
@@ -137,16 +145,21 @@ END INTERFACE Monomial2D
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Construct function to return a pointer to the Monomial2D
 
 INTERFACE
 MODULE FUNCTION func_Monomial2D_Pointer1( n1, n2, name1, name2 ) &
   & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: n1
+    !! power of variable 1
   INTEGER( I4B ), INTENT( IN ) :: n2
+    !! power of variable 2
   CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! name of variable 1
   CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! name of variable 2
   CLASS( Monomial2D_ ), POINTER :: ans
+    !! returned 2D monomial
 END FUNCTION func_Monomial2D_Pointer1
 END INTERFACE
 
@@ -162,7 +175,7 @@ PUBLIC :: Monomial2D_Pointer
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Construct function to return a pointer to the Monomial2D
 
 INTERFACE
 MODULE FUNCTION func_Monomial2D_Pointer2( f1, f2 ) RESULT( ans )
