@@ -15,14 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!! Monomial1D_Class_Add_obj_scalar.inc
+!! Monomial2D_Class_Multiplication_scalar_obj.inc
 
-INTEGER( I4B ) :: degree( 2 )
-CHARACTER( LEN = 256 ) :: varname(2)
+REAL( DFP ) :: coeff( 1 )
+INTEGER( I4B ) :: degree( 1, 2 )
+TYPE( String ) :: varname( 2 )
 !!
-degree(1) = obj1%x(1)%getDegree()
-degree(2) = obj1%x(2)%getDegree()
-varname(1) = obj1%x(1)%varname%chars()
-varname(2) = obj1%x(2)%varname%chars()
-ans=Monomial2D(degree=degree, varname=varname)
+coeff( 1 ) = obj1
+degree( 1, : ) = obj2%GetDegree()
+varname = obj2%GetVarname()
+!!
+CALL ans%Initiate( &
+  & coeff=coeff, &
+  & degree=degree, &
+  & name1=varname(1)%chars(), &
+  & name2=varname(2)%chars() )
 !!
