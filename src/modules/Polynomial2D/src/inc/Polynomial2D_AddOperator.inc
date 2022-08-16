@@ -13,27 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
-
-    !!
-    !! +
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjObj => func_Add_obj_obj
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt8 => func_Add_obj_Int8
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt16 => func_Add_obj_Int16
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt32 => func_Add_obj_Int32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt64 => func_Add_obj_Int64
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal32 => func_Add_obj_Real32
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal64 => func_Add_obj_Real64
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt8Obj => func_Add_Int8_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt16Obj => func_Add_Int16_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt32Obj => func_Add_Int32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt64Obj => func_Add_Int64_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal32Obj => func_Add_Real32_obj
-    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal64Obj => func_Add_Real64_obj
-    GENERIC, PUBLIC :: OPERATOR( + ) => AddObjObj, AddObjInt8, AddObjInt16, &
-      & AddObjInt32, AddObjInt64, AddObjReal32, AddObjReal64, &
-      & AddInt8Obj, AddInt16Obj, AddInt32Obj, AddInt64Obj, &
-      & AddReal32Obj, AddReal64Obj
 
 !----------------------------------------------------------------------------
 !                                                       Add@OperatorMethods
@@ -41,14 +20,14 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Add monomial in 2D.
+! summary: Add two Monomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_obj_obj( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
-END FUNCTION func_Add_obj_obj
+MODULE ELEMENTAL FUNCTION func_Add_obj_Int8( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj1
+  INTEGER( Int8 ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
+END FUNCTION func_Add_obj_Int8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -56,70 +35,58 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_obj_Int8( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int8 ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
-END FUNCTION func_Add_obj_Int8
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE PURE FUNCTION func_Add_obj_Int16( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
+MODULE ELEMENTAL FUNCTION func_Add_obj_Int16( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj1
   INTEGER( Int16 ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_obj_Int16
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_obj_Int32( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
+MODULE ELEMENTAL FUNCTION func_Add_obj_Int32( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj1
   INTEGER( Int32 ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_obj_Int32
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_obj_Int64( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
+MODULE ELEMENTAL FUNCTION func_Add_obj_Int64( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj1
   INTEGER( Int64 ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_obj_Int64
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_obj_Real32( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
+MODULE ELEMENTAL FUNCTION func_Add_obj_Real32( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj1
   REAL( Real32 ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_obj_Real32
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_obj_Real64( obj1, obj2 ) RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
+MODULE ELEMENTAL FUNCTION func_Add_obj_Real64( obj1, obj2 ) RESULT( Ans )
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj1
   REAL( Real64 ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_obj_Real64
 END INTERFACE
 
@@ -132,69 +99,69 @@ END INTERFACE
 ! summary: Add two Monomial1D
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_Int8_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Add_Int8_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int8 ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_Int8_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_Int16_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Add_Int16_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int16 ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_Int16_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_Int32_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Add_Int32_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int32 ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_Int32_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_Int64_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Add_Int64_obj( obj1, obj2 ) RESULT( Ans )
   INTEGER( Int64 ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_Int64_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_Real32_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Add_Real32_obj( obj1, obj2 ) RESULT( Ans )
   REAL( Real32 ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_Real32_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       Add@OperatorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_Add_Real64_obj( obj1, obj2 ) RESULT( ans )
+MODULE ELEMENTAL FUNCTION func_Add_Real64_obj( obj1, obj2 ) RESULT( Ans )
   REAL( Real64 ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
+  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
+  TYPE( Polynomial2D_ ) :: ans
 END FUNCTION func_Add_Real64_obj
 END INTERFACE
