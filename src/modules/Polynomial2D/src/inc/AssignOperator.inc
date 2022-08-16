@@ -19,6 +19,10 @@
 !                                                       Assign@AssignMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	copy one [[Polynomial2D_]] into other.
+
 INTERFACE
 MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
   CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
@@ -26,49 +30,107 @@ MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
 END SUBROUTINE func_AssignObjObj
 END INTERFACE
 
-! !----------------------------------------------------------------------------
-! !                                                       Assign@AssignMethods
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                       Assign@AssignMethods
+!----------------------------------------------------------------------------
 
-! INTERFACE
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjMono( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjMono
-! END INTERFACE
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from [[Monomial2D_]]
 
-! !----------------------------------------------------------------------------
-! !                                                       Assign@AssignMethods
-! !----------------------------------------------------------------------------
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjMono( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjMono
+END INTERFACE
 
-! INTERFACE
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjInt8( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   INTEGER( Int8 ), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjInt8
-! !!
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjInt16( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   INTEGER( Int16 ), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjInt16
-! !!
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjInt32( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   INTEGER( Int32 ), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjInt32
-! !!
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjInt64( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   INTEGER( Int64 ), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjInt64
-! !!
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjReal32( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   REAL( Real32), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjReal32
-! !!
-! MODULE ELEMENTAL SUBROUTINE func_AssignObjReal64( obj, obj2 )
-!   CLASS( Polynomial1D_ ), INTENT( INOUT ) :: obj
-!   REAL( Real64), INTENT( IN ) :: obj2
-! END SUBROUTINE func_AssignObjReal64
-! END INTERFACE
+!----------------------------------------------------------------------------
+!                                                       Assign@AssignMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from integer
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjInt8( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  INTEGER( Int8 ), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjInt8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from integer
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjInt16( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  INTEGER( Int16 ), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjInt16
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from integer
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjInt32( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  INTEGER( Int32 ), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjInt32
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from integer
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjInt64( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  INTEGER( Int64 ), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjInt64
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from real
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjReal32( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  REAL( Real32), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjReal32
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Copy [[Polynomial2D_]] from real
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_AssignObjReal64( obj, obj2 )
+  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
+  REAL( Real64), INTENT( IN ) :: obj2
+END SUBROUTINE func_AssignObjReal64
+END INTERFACE

@@ -39,6 +39,8 @@ TYPE, EXTENDS( AbstractBasis1D_ ) :: Monomial1D_
     !!
     !! @ConstructorMethods
     !!
+    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => func_Initiate
+    !! Initiate the monomial
     PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => func_Deallocate
     FINAL :: func_Final
     !!
@@ -85,6 +87,22 @@ TYPE :: Monomial1DPointer_
 END TYPE Monomial1DPointer_
 
 PUBLIC :: Monomial1DPointer_
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct the Monomial1D
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_Initiate( obj, degree, varname )
+  CLASS( Monomial1D_ ), INTENT( INOUT ) :: obj
+  INTEGER( I4B ), INTENT( IN ) :: degree
+  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+END SUBROUTINE func_Initiate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             Monomial1D@ConstructorMethods
@@ -318,10 +336,106 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
+MODULE PURE SUBROUTINE func_AssignObjObj( obj, obj2 )
   CLASS( Monomial1D_ ), INTENT( INOUT ) :: obj
   CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
 END SUBROUTINE func_AssignObjObj
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Assign@AssignMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE func_AssignObjVecObjVec( obj, obj2 )
+  CLASS( Monomial1D_ ), ALLOCATABLE, INTENT( INOUT ) :: obj( : )
+  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2( : )
+END SUBROUTINE func_AssignObjVecObjVec
+END INTERFACE
+
+INTERFACE ASSIGNMENT(=)
+  MODULE PROCEDURE func_AssignObjVecObjVec
+END INTERFACE ASSIGNMENT(=)
+
+PUBLIC :: ASSIGNMENT(=)
+
+!----------------------------------------------------------------------------
+!                                                  Monomials1D@BasisMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Generate monomials from $x^0$ to $x^{order}$
+
+INTERFACE
+MODULE PURE FUNCTION func_Monomials1D( order, varname ) RESULT( ans )
+  INTEGER( I4B ), INTENT( IN ) :: order
+    !! order
+  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+    !! variable varname
+  TYPE( Monomial1D_ ), ALLOCATABLE :: ans( : )
+    !! vector of monomial
+END FUNCTION func_Monomials1D
+END INTERFACE
+
+INTERFACE Monomials1D
+  MODULE PROCEDURE func_Monomials1D
+END INTERFACE Monomials1D
+
+PUBLIC :: Monomials1D
+
+!----------------------------------------------------------------------------
+!                                              EvenMonomials1D@BasisMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Generate monomials from $x^0$ to $x^{order}$
+
+INTERFACE
+MODULE PURE FUNCTION func_EvenMonomials1D( order, varname ) RESULT( ans )
+  INTEGER( I4B ), INTENT( IN ) :: order
+    !! order
+  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+    !! variable varname
+  TYPE( Monomial1D_ ), ALLOCATABLE :: ans( : )
+    !! vector of monomial
+END FUNCTION func_EvenMonomials1D
+END INTERFACE
+
+INTERFACE EvenMonomials1D
+  MODULE PROCEDURE func_EvenMonomials1D
+END INTERFACE EvenMonomials1D
+
+PUBLIC :: EvenMonomials1D
+
+!----------------------------------------------------------------------------
+!                                              OddMonomials1D@BasisMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 12 Aug 2022
+! summary: 	Generate monomials from $x^0$ to $x^{order}$
+
+INTERFACE
+MODULE PURE FUNCTION func_OddMonomials1D( order, varname ) RESULT( ans )
+  INTEGER( I4B ), INTENT( IN ) :: order
+    !! order
+  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+    !! variable varname
+  TYPE( Monomial1D_ ), ALLOCATABLE :: ans( : )
+    !! vector of monomial
+END FUNCTION func_OddMonomials1D
+END INTERFACE
+
+INTERFACE OddMonomials1D
+  MODULE PROCEDURE func_OddMonomials1D
+END INTERFACE OddMonomials1D
+
+PUBLIC :: OddMonomials1D
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE Monomial1D_Class

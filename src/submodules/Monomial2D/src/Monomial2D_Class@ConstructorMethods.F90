@@ -30,8 +30,8 @@ CONTAINS
 
 MODULE PROCEDURE func_Deallocate
   CALL AbstractBasis2DDeallocate( obj )
-  CALL obj%x(1)%Deallocate()
-  CALL obj%x(2)%Deallocate()
+  obj%n1 = -1
+  obj%n2 = -1
 END PROCEDURE func_Deallocate
 
 !----------------------------------------------------------------------------
@@ -50,8 +50,8 @@ MODULE PROCEDURE func_Initiate1
   !!
   TYPE( String ) :: astr
   !!
-  obj%x(1) = Monomial1D(degree=n1, varname=name1)
-  obj%x(2) = Monomial1D(degree=n2, varname=name2)
+  obj%n1 = n1
+  obj%n2 = n2
   obj%varname(1) = TRIM(name1)
   obj%varname(2) = TRIM(name2)
   astr = obj%GetStringForUID( )

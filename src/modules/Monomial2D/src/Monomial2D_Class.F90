@@ -35,7 +35,8 @@ CHARACTER(LEN=*), PARAMETER :: modName = "Monomial2D_Class"
 
 TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
   PRIVATE
-  TYPE( Monomial1D_ ) :: x( 2 )
+  INTEGER( I4B ) :: n1 = -1_I4B
+  INTEGER( I4B ) :: n2 = -1_I4B
   CONTAINS
     !!
     !! @ConstructorMethods
@@ -75,6 +76,9 @@ TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
     !!
     PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjObj => func_AssignObjObj
     GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
+    !!
+    !! @BasisMethods
+    !!
 END TYPE Monomial2D_
 
 PUBLIC :: Monomial2D_
@@ -349,9 +353,9 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_GetDegree( obj ) RESULT( ans )
+  MODULE PURE FUNCTION func_GetDegree( obj ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    INTEGER( I4B ) :: ans
+    INTEGER( I4B ) :: ans(2)
   END FUNCTION func_GetDegree
 END INTERFACE
 
@@ -408,10 +412,62 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
+MODULE PURE SUBROUTINE func_AssignObjObj( obj, obj2 )
   CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
   CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
 END SUBROUTINE func_AssignObjObj
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Assign@AssignMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE func_AssignObjVecObjVec( obj, obj2 )
+  CLASS( Monomial2D_ ), ALLOCATABLE, INTENT( INOUT ) :: obj( : )
+  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2( : )
+END SUBROUTINE func_AssignObjVecObjVec
+END INTERFACE
+
+INTERFACE ASSIGNMENT(=)
+  MODULE PROCEDURE func_AssignObjVecObjVec
+END INTERFACE ASSIGNMENT(=)
+
+PUBLIC :: ASSIGNMENT(=)
+
+!----------------------------------------------------------------------------
+!                                                   Monomials2D@BasisMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 13 Aug 2022
+! summary: Returns monomial basis for lagrange polynomials
+
+INTERFACE
+MODULE FUNCTION func_Monomials2D( order, name1, name2, elemType ) &
+  & RESULT( ans )
+  INTEGER( I4B ), INTENT( IN ) :: order
+    !! order
+  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! "x"
+  CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! "y"
+  INTEGER( I4B ), INTENT( IN ) :: elemType
+    !! "P", "Triangle" then monomial for triangle
+    !! "Q", "Quadrangle" then monomials for quadrangle
+  TYPE( Monomial2D_ ), ALLOCATABLE :: ans( : )
+    !! Monomials in 2D
+END FUNCTION func_Monomials2D
+END INTERFACE
+
+INTERFACE Monomials2D
+  MODULE PROCEDURE func_Monomials2D
+END INTERFACE Monomials2D
+
+PUBLIC :: Monomials2D
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE Monomial2D_Class

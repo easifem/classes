@@ -22,4 +22,7 @@ TARGET_SOURCES(
   ${src_path}/Polynomial2D_Class@GetMethods.F90
   ${src_path}/Polynomial2D_Class@IOMethods.F90
   ${src_path}/Polynomial2D_Class@AssignMethods.F90
+  ${src_path}/Polynomial2D_Class@AddMethods.F90
+  ${src_path}/Polynomial2D_Class@SubtractMethods.F90
+  ${src_path}/Polynomial2D_Class@MultiplicationMethods.F90
 )

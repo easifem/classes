@@ -23,12 +23,13 @@ MODULE PolynomialFactory
   USE Polynomial1D_Class
   USE AbstractOrthopol1D_Class
   USE AbstractOrthopolSpace1D_Class
-  USE LagrangePolynomial1D_Class
+  USE Lagrange1D_Class
   USE ChebyshevFirst1D_Class
   USE ChebyshevFirstSpace1D_Class
   USE Jacobi1D_Class
   USE JacobiSpace1D_Class
   USE Polynomial2D_Class
+  USE Lagrange2D_Class
 ! USE Polynomial3D_Class
 ! USE PolynomialND_Class
 END MODULE PolynomialFactory

@@ -29,4 +29,28 @@ MODULE PROCEDURE func_AssignObjObj
   obj%uid=obj2%uid
 END PROCEDURE func_AssignObjObj
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjVecObjVec
+  INTEGER( I4B ) :: n1, n2, ii
+  !!
+  n2 = SIZE( obj2 )
+  !!
+  IF( ALLOCATED( obj ) ) THEN
+    n1 = SIZE( obj )
+    IF( n1 .EQ. n2 ) THEN
+      obj = obj2
+    ELSE
+      DEALLOCATE( obj )
+      ALLOCATE( obj( n2 ) )
+      obj = obj2
+    END IF
+  ELSE
+    ALLOCATE( obj( n2 ) )
+    obj = obj2
+  END IF
+END PROCEDURE func_AssignObjVecObjVec
+
 END SUBMODULE AssignMethods

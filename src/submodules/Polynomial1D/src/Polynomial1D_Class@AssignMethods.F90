@@ -32,6 +32,7 @@ MODULE PROCEDURE func_AssignObjObj
     !!
     obj%degree=obj2%degree
     obj%coeff=obj2%coeff
+    obj%varname = obj2%varname
     !!
     row = SIZE( obj2%x )
     !!

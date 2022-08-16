@@ -72,129 +72,135 @@ TYPE, EXTENDS( AbstractFunction2D_ ) :: Polynomial2D_
     !!
     !! OPERATOR(+)
     !!
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddMonoObj => &
-    !   & func_Add_mono_obj
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjMono => &
-    !   & func_Add_obj_mono
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjObj => func_Add_obj_obj
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt8 => func_Add_obj_Int8
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt16 => func_Add_obj_Int16
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt32 => func_Add_obj_Int32
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt64 => func_Add_obj_Int64
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal32 => func_Add_obj_Real32
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal64 => func_Add_obj_Real64
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt8Obj => func_Add_Int8_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt16Obj => func_Add_Int16_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt32Obj => func_Add_Int32_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt64Obj => func_Add_Int64_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal32Obj => func_Add_Real32_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal64Obj => func_Add_Real64_obj
-    ! GENERIC, PUBLIC :: OPERATOR( + ) => AddObjObj, AddObjInt8, AddObjInt16, &
-    !   & AddObjInt32, AddObjInt64, AddObjReal32, AddObjReal64, &
-    !   & AddInt8Obj, AddInt16Obj, AddInt32Obj, AddInt64Obj, &
-    !   & AddReal32Obj, AddReal64Obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjObj => func_Add_obj_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddMonoObj => &
+      & func_Add_mono_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjMono => &
+      & func_Add_obj_mono
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt8 => func_Add_obj_Int8
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt16 => func_Add_obj_Int16
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt32 => func_Add_obj_Int32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjInt64 => func_Add_obj_Int64
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal32 => func_Add_obj_Real32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: AddObjReal64 => func_Add_obj_Real64
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt8Obj => func_Add_Int8_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt16Obj => func_Add_Int16_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt32Obj => func_Add_Int32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddInt64Obj => func_Add_Int64_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal32Obj => func_Add_Real32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: AddReal64Obj => func_Add_Real64_obj
+    !!
+    GENERIC, PUBLIC :: OPERATOR( + ) => &
+      & AddObjObj, AddObjMono, &
+      & AddObjInt8, AddObjInt16, AddObjInt32, AddObjInt64, &
+      & AddObjReal32, AddObjReal64, &
+      & AddInt8Obj, AddInt16Obj, AddInt32Obj, AddInt64Obj, &
+      & AddReal32Obj, AddReal64Obj
     !!
     !! OPERATOR(-)
     !!
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractMonoObj => &
-    !   & func_Subtract_mono_obj
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjMono => &
-    !   & func_Subtract_obj_mono
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjObj => func_Subtract_obj_obj
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt8 => &
-    !   & func_Subtract_obj_Int8
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt16 => &
-    !   & func_Subtract_obj_Int16
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt32 => &
-    !   & func_Subtract_obj_Int32
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt64 => &
-    !   & func_Subtract_obj_Int64
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjReal32 => &
-    !   & func_Subtract_obj_Real32
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjReal64 => &
-    !   & func_Subtract_obj_Real64
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt8Obj => &
-    !   & func_Subtract_Int8_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt16Obj => &
-    !   & func_Subtract_Int16_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt32Obj => &
-    !   & func_Subtract_Int32_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt64Obj => &
-    !   & func_Subtract_Int64_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractReal32Obj => &
-    !   & func_Subtract_Real32_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractReal64Obj => &
-    !   & func_Subtract_Real64_obj
-    ! GENERIC, PUBLIC :: OPERATOR( - ) => SubtractObjObj, &
-    !   & SubtractObjInt8, SubtractObjInt16, &
-    !   & SubtractObjInt32, SubtractObjInt64, SubtractObjReal32, &
-    !   & SubtractObjReal64, &
-    !   & SubtractInt8Obj, SubtractInt16Obj, SubtractInt32Obj, &
-    !   & SubtractInt64Obj, &
-    !   & SubtractReal32Obj, SubtractReal64Obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjObj => func_Subtract_obj_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractMonoObj => &
+      & func_Subtract_mono_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjMono => &
+      & func_Subtract_obj_mono
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt8 => &
+      & func_Subtract_obj_Int8
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt16 => &
+      & func_Subtract_obj_Int16
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt32 => &
+      & func_Subtract_obj_Int32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjInt64 => &
+      & func_Subtract_obj_Int64
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjReal32 => &
+      & func_Subtract_obj_Real32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: SubtractObjReal64 => &
+      & func_Subtract_obj_Real64
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt8Obj => &
+      & func_Subtract_Int8_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt16Obj => &
+      & func_Subtract_Int16_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt32Obj => &
+      & func_Subtract_Int32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractInt64Obj => &
+      & func_Subtract_Int64_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractReal32Obj => &
+      & func_Subtract_Real32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: SubtractReal64Obj => &
+      & func_Subtract_Real64_obj
+    !!
+    GENERIC, PUBLIC :: OPERATOR( - ) => &
+      & SubtractObjObj, SubtractObjMono, &
+      & SubtractObjInt8, SubtractObjInt16, &
+      & SubtractObjInt32, SubtractObjInt64, &
+      & SubtractObjReal32, SubtractObjReal64, &
+      & SubtractInt8Obj, SubtractInt16Obj, &
+      & SubtractInt32Obj, SubtractInt64Obj, &
+      & SubtractReal32Obj, SubtractReal64Obj
     !!
     !! OPERATOR(*)
     !!
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationMonoObj => &
-    !   & func_Multiplication_mono_obj
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjMono => &
-    !   & func_Multiplication_obj_mono
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjObj => &
-    !   & func_Multiplication_obj_obj
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt8 => &
-    !   & func_Multiplication_obj_Int8
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt16 => &
-    !   & func_Multiplication_obj_Int16
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt32 => &
-    !   & func_Multiplication_obj_Int32
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt64 => &
-    !   & func_Multiplication_obj_Int64
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal32 => &
-    !   & func_Multiplication_obj_Real32
-    ! PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal64 => &
-    !   & func_Multiplication_obj_Real64
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt8Obj => &
-    !   & func_Multiplication_Int8_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt16Obj => &
-    !   & func_Multiplication_Int16_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt32Obj => &
-    !   & func_Multiplication_Int32_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt64Obj => &
-    !   & func_Multiplication_Int64_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal32Obj => &
-    !   & func_Multiplication_Real32_obj
-    ! PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal64Obj => &
-    !   & func_Multiplication_Real64_obj
-    ! GENERIC, PUBLIC :: OPERATOR( * ) => MultiplicationObjObj, &
-    !   & MultiplicationObjInt8, MultiplicationObjInt16, &
-    !   & MultiplicationObjInt32, MultiplicationObjInt64, &
-    !   & MultiplicationObjReal32, &
-    !   & MultiplicationObjReal64, &
-    !   & MultiplicationInt8Obj, MultiplicationInt16Obj, &
-    !   & MultiplicationInt32Obj, &
-    !   & MultiplicationInt64Obj, &
-    !   & MultiplicationReal32Obj, MultiplicationReal64Obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjObj => &
+      & func_Multiplication_obj_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationMonoObj => &
+      & func_Multiplication_mono_obj
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjMono => &
+      & func_Multiplication_obj_mono
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt8 => &
+      & func_Multiplication_obj_Int8
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt16 => &
+      & func_Multiplication_obj_Int16
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt32 => &
+      & func_Multiplication_obj_Int32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjInt64 => &
+      & func_Multiplication_obj_Int64
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal32 => &
+      & func_Multiplication_obj_Real32
+    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjReal64 => &
+      & func_Multiplication_obj_Real64
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt8Obj => &
+      & func_Multiplication_Int8_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt16Obj => &
+      & func_Multiplication_Int16_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt32Obj => &
+      & func_Multiplication_Int32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationInt64Obj => &
+      & func_Multiplication_Int64_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal32Obj => &
+      & func_Multiplication_Real32_obj
+    PROCEDURE, PUBLIC, PASS( obj2 ) :: MultiplicationReal64Obj => &
+      & func_Multiplication_Real64_obj
+    !!
+    GENERIC, PUBLIC :: OPERATOR( * ) => &
+      & MultiplicationObjObj, MultiplicationObjMono, &
+      & MultiplicationObjInt8, MultiplicationObjInt16, &
+      & MultiplicationObjInt32, MultiplicationObjInt64, &
+      & MultiplicationObjReal32, MultiplicationObjReal64, &
+      & MultiplicationInt8Obj, MultiplicationInt16Obj, &
+      & MultiplicationInt32Obj, MultiplicationInt64Obj, &
+      & MultiplicationReal32Obj, MultiplicationReal64Obj
     !!
     !! @AssignmentMethods
     !!
     PROCEDURE, PASS( obj ) :: AssignObjObj => func_AssignObjObj
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt8 => &
-    !   & func_AssignObjInt8
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt16 => &
-    !   & func_AssignObjInt16
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt32 => &
-    !   & func_AssignObjInt32
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt64 => &
-    !   & func_AssignObjInt64
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjReal32 => &
-    !   & func_AssignObjReal32
-    ! PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjReal64 => &
-    !   & func_AssignObjReal64
-    GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
-      !!, AssignObjInt8, &
-      ! & AssignObjInt16, AssignObjInt32, &
-      ! & AssignObjInt64, AssignObjReal32, &
-      ! & AssignObjReal64
+    PROCEDURE, PASS( obj ) :: AssignObjMono => func_AssignObjMono
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt8 => &
+      & func_AssignObjInt8
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt16 => &
+      & func_AssignObjInt16
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt32 => &
+      & func_AssignObjInt32
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjInt64 => &
+      & func_AssignObjInt64
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjReal32 => &
+      & func_AssignObjReal32
+    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjReal64 => &
+      & func_AssignObjReal64
+    GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj, &
+      & AssignObjMono, AssignObjInt8, &
+      & AssignObjInt16, AssignObjInt32, &
+      & AssignObjInt64, AssignObjReal32, &
+      & AssignObjReal64
 END TYPE Polynomial2D_
 
 PUBLIC :: Polynomial2D_
@@ -486,30 +492,16 @@ END SUBROUTINE func_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Assign@AssignMethods
+!
 !----------------------------------------------------------------------------
 
-INTERFACE
-MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
-  CLASS( Polynomial2D_ ), INTENT( INOUT ) :: obj
-  CLASS( Polynomial2D_ ), INTENT( IN ) :: obj2
-END SUBROUTINE func_AssignObjObj
-END INTERFACE
+#include "./inc/AddOperator.inc"
+#include "./inc/SubtractOperator.inc"
+#include "./inc/MultiplicationOperator.inc"
+#include "./inc/AssignOperator.inc"
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-! #include "./inc/Monomial1D_AddOperator.inc"
-! #include "./inc/Monomial1D_SubtractOperator.inc"
-! #include "./inc/Monomial1D_MultiplicationOperator.inc"
-! #include "./inc/Polynomial2D_AddOperator.inc"
-! #include "./inc/Polynomial2D_SubtractOperator.inc"
-! #include "./inc/Polynomial2D_MultiplicationOperator.inc"
-! #include "./inc/AssignOperator.inc"
-!
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
 END MODULE Polynomial2D_Class

@@ -17,6 +17,7 @@
 
 SUBMODULE(PLPlot_Class) LinePlotMethods
 USE BaseMethod
+USE EasyPlplot
 IMPLICIT NONE
 CONTAINS
 
@@ -27,77 +28,65 @@ CONTAINS
 MODULE PROCEDURE line_plot_x1y1
 #ifdef USE_PLPLOT
   REAL( DFP ) :: xmin0, xmax0, ymin0, ymax0, lineWidth0
-  TYPE( String ) :: extn, driver, xlabel0, ylabel0, title0, pointType0
+  TYPE( String ) :: device, xlabel0, ylabel0, title0, pointType0
   !!
-  xlabel0 = INPUT( option=xlabel, default="X-Axis" )
-  ylabel0 = INPUT( option=ylabel, default="Y-Axis" )
-  title0 = INPUT( option=title, default="Title" )
-  lineWidth0 = INPUT( option=lineWidth, default=2.0_DFP )
-  pointType0 = INPUT( option=pointType, default="#(135)" )
+  device = GetDeviceName( filename )
   !!
-  IF( PRESENT( xmin ) ) THEN
-    xmin0 = xmin
-  ELSE
-    xmin0 = MINVAL( x )
-    xmin0 = xmin0 - ABS( xmin0 ) * 0.1
-  END IF
+  CALL obj%Set( &
+    & device=device%chars(), &
+    & filename=filename, &
+    & fontScaling=fontScaling, &
+    & isWhiteOnBlack=isWhiteOnBlack, &
+    & isTransparent=isTransparent, &
+    & colormap=colormap, &
+    & figSize=figSize, &
+    & isFileFamily=.FALSE. )
   !!
-  IF( PRESENT( xmax ) ) THEN
-    xmax0 = xmax
-  ELSE
-    xmax0 = MAXVAL( x )
-    xmax0 = xmax0 + ABS( xmax0 ) * 0.1
-  END IF
+  ! CALL obj%Figure()
+  CALL obj%Subplot(ncol=1_I4B, nrow=1_I4B, i=1_I4B )
   !!
-  IF( PRESENT( ymin ) ) THEN
-    ymin0 = ymin
-  ELSE
-    ymin0 = MINVAL( y )
-    ymin0 = ymin0 - ABS( ymin0 ) * 0.1
-  END IF
+  xmin0 = MINVAL(x); xmin0=xmin0 - ABS( xmin0 ) * 0.1_DFP
+  xmin0 = INPUT( option=xmin, default=xmin0 )
+  xmax0 = MAXVAL(x); xmax0=xmax0 + ABS( xmax0 ) * 0.1_DFP
+  xmax0 = INPUT( option=xmax, default=xmax0 )
   !!
-  IF( PRESENT( ymax ) ) THEN
-    ymax0 = ymax
-  ELSE
-    ymax0 = MAXVAL( y )
-    ymax0 = ymax0 + ABS( ymax0 ) * 0.1
-  END IF
+  ymin0 = MINVAL(y); ymin0=ymin0 - ABS( ymin0 ) * 0.1_DFP
+  ymin0 = INPUT( option=ymin, default=ymin0 )
+  ymax0 = MAXVAL(y); ymax0=ymax0 + ABS( ymax0 ) * 0.1_DFP
+  ymax0 = INPUT( option=ymax, default=ymax0 )
   !!
-  extn = getExtension( filename )
+  CALL obj%SetXYlim(x=[xmin0, xmax0], y=[ymin0, ymax0])
   !!
-  SELECT CASE( extn%chars( ) )
-  CASE( "pdf" )
-    driver = "pdf"
-    ! driver = "pdfcairo"
-  CASE( "png" )
-    driver = "pngqt"
-    ! driver = "pngcairo"
-  CASE( "ps" )
-    driver = "ps"
-    ! driver = "pscairo"
-  CASE( "eps" )
-    driver = "epscairo"
-  CASE( "svg" )
-    driver = "svg"
-  CASE( "jpeg", "jpg" )
-    driver = "jpgqt"
-  END SELECT
+  CALL obj%Plot2D( &
+    & x=x, &
+    & y=y, &
+    & lineColor=lineColor, &
+    & lineType=lineType, &
+    & lineWidth=lineWidth, &
+    & pointColor=pointColor, &
+    & pointType=pointType, &
+    & pointSize=pointSize )
   !!
-  CALL PLSDEV( driver%chars() )
-  CALL PLSFNAM( TRIM(filename ) )
-  CALL PLSCOLBG(255,255,255)
-  CALL PLINIT
-  CALL PLSCOL0(0,0,0,0)
-  CALL PLCOL0(0)
-  CALL PLENV( xmin0, xmax0, ymin0, ymax0, 0, 0 )
-  CALL PLBOX( 'bcnst', 0.0_DFP, 0, 'bcnstv', 0.0_DFP, 0 )
-  CALL PLLAB( xlabel0%chars(), ylabel0%chars(), title0%chars() )
-  CALL PLWIDTH( lineWidth0 )
-  CALL PLLINE( x, y )
-  IF( PRESENT( isPoint ) ) THEN
-    CALL PLSTRING(x, y, pointType0%chars())
-  END IF
+  CALL obj%SetTicks( &
+    & dx=dx, &
+    & dy=dy, &
+    & isLogX=isLogX, &
+    & isLogY=isLogY, &
+    & color=tickColor, &
+    & lineWidth=tickWidth )
+  !!
+  xlabel0 = INPUT( option=xlabel, default="" )
+  ylabel0 = INPUT( option=ylabel, default="" )
+  title0 = INPUT( option=title, default="" )
+  !!
+  CALL obj%SetLabels( &
+    & xlabel=xlabel0%chars(), &
+    & ylabel=ylabel0%chars(), &
+    & title=title0%chars(), &
+    & color=labelColor)
+  !!
   CALL PLEND
+  ! CALL obj%Show()
 #endif
 END PROCEDURE line_plot_x1y1
 
@@ -248,5 +237,53 @@ MODULE PROCEDURE line_plot_x1y2
   CALL PLEND
 #endif
 END PROCEDURE line_plot_x1y2
+
+!----------------------------------------------------------------------------
+!                                                                    Plot2D
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE plot_Plot2D
+  CALL Plot( &
+    & x=x, &
+    & y=y, &
+    & lineColor=lineColor, &
+    & lineStyle=lineType, &
+    & lineWidth=lineWidth, &
+    & markColor=pointColor, &
+    & markStyle=pointType, &
+    & markSize=pointSize )
+END PROCEDURE plot_Plot2D
+
+!----------------------------------------------------------------------------
+!                                                                 Errorbar
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE plot_Errorbar
+  CALL errorbar(&
+    & x=x, &
+    & y=y, &
+    & xerr=xerr, &
+    & yerr=yerr, &
+    & lineColor=lineColor, &
+    & lineStyle=lineType, &
+    & lineWidth=lineWidth )
+END PROCEDURE plot_Errorbar
+
+!----------------------------------------------------------------------------
+!                                                                 Plot3D
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE plot_Plot3D
+  CALL Plot3( &
+    & x=x, &
+    & y=y, &
+    & z=z, &
+    & lineColor=lineColor, &
+    & lineStyle=lineType, &
+    & lineWidth=lineWidth, &
+    & markColor=pointColor, &
+    & markStyle=pointType, &
+    & markSize=pointSize)
+END PROCEDURE plot_Plot3D
 
 END SUBMODULE LinePlotMethods

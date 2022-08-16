@@ -112,13 +112,14 @@ END PROCEDURE func_GetDegree
 
 MODULE PROCEDURE func_GetDisplayString
   INTEGER( I4B ) :: ii
+  REAL( DFP ), PARAMETER :: tol=1.0E-10
   !!
   ans=""
   !!
   IF( ALLOCATED( obj%x ) ) THEN
     !!
     DO ii = 1, SIZE( obj%x )
-      IF( obj%coeff( ii ) .APPROXEQ. 0.0_DFP ) THEN
+      IF( SOFTEQ(obj%coeff( ii ), 0.0_DFP, tol) ) THEN
         CYCLE
       ELSEIF( obj%coeff( ii ) .GT. 0.0_DFP ) THEN
         ans = TRIM( ans ) // "+" // &

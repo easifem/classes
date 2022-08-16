@@ -38,7 +38,7 @@ MODULE PROCEDURE func_Deallocate
     DO ii = 1, n
       CALL obj%x(ii)%Deallocate( )
     END DO
-    ! DEALLOCATE( obj%x )
+    DEALLOCATE( obj%x )
 ! BUG #138 Polynomial2D%Deallocate routine does not work properly. Seg fault
   END IF
 END PROCEDURE func_Deallocate
@@ -114,7 +114,7 @@ MODULE PROCEDURE func_Initiate
   ALLOCATE( obj%x( tsize ) )
   !!
   DO ii = 1, tsize
-    obj%x(ii) = Monomial2D( &
+    CALL obj%x(ii)%Initiate( &
       & n1=b1(ii), n2=b2(ii), &
       & name1=name1, &
       & name2=name2 )

@@ -61,6 +61,129 @@ MODULE PROCEDURE func_AssignObjObj
 END PROCEDURE func_AssignObjObj
 
 !----------------------------------------------------------------------------
+!                                                                 Assign
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjMono
+  INTEGER( I4B ) :: degree( 1, 2 )
+  TYPE( String ) :: varname( 2 )
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = 1.0_DFP
+  degree(1,:) = obj2%getDegree()
+  varname = obj2%GetVarname()
+  !!
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1= varname(1)%chars(), &
+    & name2=varname(2)%chars() )
+  !!
+END PROCEDURE func_AssignObjMono
+
+!----------------------------------------------------------------------------
+!                                                                 Assign
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjInt8
+  INTEGER( I4B ), PARAMETER :: degree( 1, 2 ) = 0
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = obj2
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1="x", &
+    & name2="y" )
+  !!
+END PROCEDURE func_AssignObjInt8
+
+!----------------------------------------------------------------------------
+!                                                                 Assign
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjInt16
+  INTEGER( I4B ), PARAMETER :: degree( 1, 2 ) = 0
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = obj2
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1="x", &
+    & name2="y" )
+  !!
+END PROCEDURE func_AssignObjInt16
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjInt32
+  INTEGER( I4B ), PARAMETER :: degree( 1, 2 ) = 0
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = obj2
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1="x", &
+    & name2="y" )
+  !!
+END PROCEDURE func_AssignObjInt32
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjInt64
+  INTEGER( I4B ), PARAMETER :: degree( 1, 2 ) = 0
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = obj2
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1="x", &
+    & name2="y" )
+  !!
+END PROCEDURE func_AssignObjInt64
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjReal32
+  INTEGER( I4B ), PARAMETER :: degree( 1, 2 ) = 0
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = obj2
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1="x", &
+    & name2="y" )
+  !!
+END PROCEDURE func_AssignObjReal32
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjReal64
+  INTEGER( I4B ), PARAMETER :: degree( 1, 2 ) = 0
+  REAL( DFP ) :: coeff( 1 )
+  !!
+  coeff = obj2
+  CALL obj%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & name1="x", &
+    & name2="y" )
+  !!
+END PROCEDURE func_AssignObjReal64
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
