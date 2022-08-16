@@ -28,13 +28,15 @@ INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_GNUPLOT = 2
 INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_MATPLOTLIB = 3
 INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_VTK = 4
 INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_GMSH = 5
-CHARACTER( LEN = * ), PUBLIC, PARAMETER, DIMENSION(5) :: PLOT_ENGINE_NAME = &
+INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_PYPLOT = 6
+CHARACTER( LEN = * ), PUBLIC, PARAMETER, DIMENSION(6) :: PLOT_ENGINE_NAME = &
   & [ &
   & "PLPLOT    ", &
   & "GNUPLOT   ", &
   & "MATPLOTLIB", &
   & "VTK       ", &
-  & "GMSH      " &
+  & "GMSH      ", &
+  & "PYPLOT    " &
   & ]
 
 !----------------------------------------------------------------------------
