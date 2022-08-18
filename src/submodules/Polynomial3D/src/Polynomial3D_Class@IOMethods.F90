@@ -15,19 +15,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!! Monomial1D_Class_Add_obj_scalar.inc
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
-INTEGER( I4B ) :: degree( MAX_COMPONENTS )
-CHARACTER( LEN = 256 ) :: varname( MAX_COMPONENTS )
-!!
-degree(1) = obj2%x(1)%getDegree()
-degree(2) = obj2%x(2)%getDegree()
-degree(3) = obj2%x(3)%getDegree()
-!!
-IF( ALL( degree .EQ. 0_I4B ) ) THEN
-  varname(1) = obj2%x(1)%varname%chars()
-  varname(2) = obj2%x(2)%varname%chars()
-  varname(3) = obj2%x(3)%varname%chars()
-  ans=Monomial3D(degree=degree, varname=varname)
-END IF
-!!
+SUBMODULE(Polynomial3D_Class) IOMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                      Eval
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Display
+  TYPE( String ) :: astr
+  astr = obj%GetDisplayString()
+  CALL Display(astr, msg, unitno)
+  astr=""
+END PROCEDURE func_Display
+
+END SUBMODULE IOMethods
