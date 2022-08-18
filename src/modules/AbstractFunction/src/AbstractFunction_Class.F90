@@ -130,7 +130,8 @@ TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunction3D_
   TYPE(String) :: varname( 3 )
   CONTAINS
     PRIVATE
-    PROCEDURE(func_Eval3), DEFERRED, PUBLIC, PASS( Obj ) :: Eval
+    PROCEDURE(func_Eval3), DEFERRED, PUBLIC, PASS( Obj ) :: EvalScalar
+    GENERIC, PUBLIC :: Eval => EvalScalar
     PROCEDURE(func_EvalGradient3), DEFERRED, PUBLIC, PASS( Obj ) :: &
       & EvalGradient
     PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate3
