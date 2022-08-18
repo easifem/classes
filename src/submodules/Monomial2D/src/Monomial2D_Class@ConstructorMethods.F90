@@ -30,8 +30,8 @@ CONTAINS
 
 MODULE PROCEDURE func_Deallocate
   CALL AbstractBasis2DDeallocate( obj )
-  CALL obj%x(1)%Deallocate()
-  CALL obj%x(2)%Deallocate()
+  obj%n1 = -1
+  obj%n2 = -1
 END PROCEDURE func_Deallocate
 
 !----------------------------------------------------------------------------
@@ -43,20 +43,46 @@ MODULE PROCEDURE func_Final
 END PROCEDURE func_Final
 
 !----------------------------------------------------------------------------
+!                                                               Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Initiate1
+  !!
+  TYPE( String ) :: astr
+  !!
+  obj%n1 = n1
+  obj%n2 = n2
+  obj%varname(1) = TRIM(name1)
+  obj%varname(2) = TRIM(name2)
+  astr = obj%GetStringForUID( )
+  obj%uid = StringToUID(astr%chars())
+  !!
+END PROCEDURE func_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                               Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Initiate2
+  !!
+  INTEGER( I4B ) :: n1, n2
+  TYPE( String ) :: name1, name2
+  !!
+  n1 = f1%GetDegree()
+  n2 = f2%GetDegree()
+  name1 = f1%GetVarname()
+  name2 = f2%GetVarname()
+  !!
+  CALL obj%Initiate(n1=n1, n2=n2, name1=name1%chars(), name2=name2%chars())
+  !!
+END PROCEDURE func_Initiate2
+
+!----------------------------------------------------------------------------
 !                                                               Monomial2D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial2D1
-  !!
-  TYPE( String ) :: astr
-  !!
-  ans%x(1) = Monomial1D(degree=n1, varname=name1)
-  ans%x(2) = Monomial1D(degree=n2, varname=name2)
-  ans%varname(1) = TRIM(name1)
-  ans%varname(2) = TRIM(name2)
-  astr = ans%GetStringForUID( )
-  ans%uid = StringToUID(astr%chars())
-  !!
+  CALL ans%Initiate( n1=n1, n2=n2, name1=name1, name2=name2)
 END PROCEDURE func_Monomial2D1
 
 !----------------------------------------------------------------------------
@@ -64,17 +90,7 @@ END PROCEDURE func_Monomial2D1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial2D2
-  !!
-  INTEGER( I4B ) :: n1, n2
-  CHARACTER( LEN = 256 ) :: name1, name2
-  !!
-  n1 = f1%GetDegree()
-  n2 = f2%GetDegree()
-  name1 = f1%varname%chars()
-  name2 = f2%varname%chars()
-  !!
-  ans = Monomial2D(n1=n1, n2=n2, name1=name1, name2=name2)
-  !!
+  CALL ans%Initiate( f1=f1, f2=f2 )
 END PROCEDURE func_Monomial2D2
 
 !----------------------------------------------------------------------------
@@ -82,16 +98,8 @@ END PROCEDURE func_Monomial2D2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial2D_Pointer1
-  TYPE( String ) :: astr
-  !!
   ALLOCATE( Monomial2D_::ans )
-  ans%x(1) = Monomial1D(degree=n1, varname=name1)
-  ans%x(2) = Monomial1D(degree=n2, varname=name2)
-  ans%varname(1) = TRIM(name1)
-  ans%varname(2) = TRIM(name2)
-  astr = ans%GetStringForUID( )
-  ans%uid = StringToUID(astr%chars())
-  !!
+  CALL ans%Initiate( n1=n1, n2=n2, name1=name1, name2=name2)
 END PROCEDURE func_Monomial2D_Pointer1
 
 !----------------------------------------------------------------------------
@@ -99,17 +107,8 @@ END PROCEDURE func_Monomial2D_Pointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial2D_Pointer2
-  !!
-  INTEGER( I4B ) :: n1, n2
-  CHARACTER( LEN = 256 ) :: name1, name2
-  !!
-  n1 = f1%GetDegree()
-  n2 = f2%GetDegree()
-  name1 = f1%varname%chars()
-  name2 = f2%varname%chars()
-  !!
-  ans => Monomial2D_Pointer(n1=n1, n2=n2, name1=name1, name2=name2)
-  !!
+  ALLOCATE( Monomial2D_::ans )
+  CALL ans%Initiate( f1=f1, f2=f2 )
 END PROCEDURE func_Monomial2D_Pointer2
 
 !----------------------------------------------------------------------------

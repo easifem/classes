@@ -29,6 +29,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Deallocate
+  CALL AbstractFunction1DDeallocate( obj )
   IF( ALLOCATED( obj%degree ) ) DEALLOCATE( obj%degree )
   IF( ALLOCATED( obj%coeff ) ) DEALLOCATE( obj%coeff )
   IF( ALLOCATED( obj%x ) ) DEALLOCATE( obj%x )

@@ -138,8 +138,11 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Polynomial3D/CMakeLists.txt)
 # PolynomialND
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialND/CMakeLists.txt)
 
-# LagrangePolynomial1D
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LagrangePolynomial1D/CMakeLists.txt)
+# Lagrange1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Lagrange1D/CMakeLists.txt)
+
+# Lagrange2D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Lagrange2D/CMakeLists.txt)
 
 # AbstractOrthopol1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
@@ -248,6 +251,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
 
 # VTKPlot
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
+
+# EasyPlplot
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/EasyPlplot/CMakeLists.txt)
 
 # PLPlot
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)

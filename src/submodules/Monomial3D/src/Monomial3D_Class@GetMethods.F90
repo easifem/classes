@@ -25,63 +25,62 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                       Eval
+!                                                                      Eval
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Eval
-  ans = obj%x(1)%Eval(x) * obj%x(2)%Eval(y) * obj%x(3)%Eval(z)
+  ans = (x**obj%n1) * (y**obj%n2) * (z**obj%n3)
 END PROCEDURE func_Eval
 
 !----------------------------------------------------------------------------
-!                                                                      Grad
+!                                                                       Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_EvalGradient
-  ! Define internal values
-  REAL( DFP ) :: a,b,c
-  !!
-  SELECT CASE( dim )
-  CASE( 1 )
-    a = obj%x(1)%EvalGradient( x )
-    b = obj%x(2)%Eval(y)
-    c = obj%x(3)%Eval(z)
-  CASE( 2 )
-    a = obj%x(1)%Eval( x )
-    b = obj%x(2)%EvalGradient(y)
-    c = obj%x(3)%Eval(z)
-  CASE( 3 )
-    a = obj%x(1)%Eval( x )
-    b = obj%x(2)%Eval(y)
-    c = obj%x(3)%EvalGradient(z)
-  END SELECT
-  !!
-  ans = a*b*c
-  !!
+  INTEGER( I4B ) :: n
+  IF( dim .EQ. 1_I4B ) THEN
+    n = MAX( 0_I4B, obj%n1-1_I4B )
+    ans = obj%n1*(x**n) * (y**obj%n2) * (z**obj%n3)
+  ELSEIF( dim .EQ. 2_I4B ) THEN
+    n = MAX( 0_I4B, obj%n2-1_I4B )
+    ans = obj%n2*(y**n) * (x**obj%n1) * (z**obj%n3)
+  ELSE
+    n = MAX( 0_I4B, obj%n3-1_I4B )
+    ans = obj%n3*(z**n) * (x**obj%n1) * (y**obj%n2)
+  END IF
 END PROCEDURE func_EvalGradient
 
 !----------------------------------------------------------------------------
-!                                                                      Grad
+!                                                                       Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Grad
-  TYPE( Monomial1D_ ) :: f1,f2,f3
+  INTEGER( I4B ) :: n1, n2, n3
+  TYPE(String) :: name(3)
   !!
-  SELECT CASE( dim )
-  CASE( 1 )
-    f1 = obj%x(1)%grad()
-    f2 = obj%x(2)
-    f3 = obj%x(3)
-  CASE( 2 )
-    f1 = obj%x(1)
-    f2 = obj%x(2)%grad()
-    f3 = obj%x(3)
-  CASE( 3 )
-    f1 = obj%x(1)
-    f2 = obj%x(2)
-    f3 = obj%x(3)%grad()
-  END SELECT
+  IF( dim .EQ. 1_I4B ) THEN
+    n1 = MAX( 0_I4B, obj%n1-1_I4B )
+    n2 = obj%n2
+    n3 = obj%n3
+  ELSEIF( dim .EQ. 2_I4B ) THEN
+    n1 = obj%n1
+    n2 = MAX( 0_I4B, obj%n2-1_I4B )
+    n3 = obj%n3
+  ELSE
+    n1 = obj%n1
+    n2 = obj%n2
+    n3 = MAX( 0_I4B, obj%n3-1_I4B )
+  END IF
   !!
-  ans = Monomial3D(f1=f1, f2=f2, f3=f3 )
+  name = obj%GetVarname()
+  !!
+  CALL ans%Initiate( &
+    & n1=n1, &
+    & n2=n2, &
+    & n3=n3, &
+    & name1=name(1)%chars(), &
+    & name2=name(2)%chars(), &
+    & name3=name(3)%chars() )
   !!
 END PROCEDURE func_Grad
 
@@ -90,23 +89,35 @@ END PROCEDURE func_Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetStringForUID
-  ans = obj%x(1)%GetStringForUID() // &
+  TYPE(String) :: varname(3)
+  !!
+  varname = obj%GetVarname()
+  !!
+  ans = &
+    & varname(1)%chars() // "^" // TRIM(STR( obj%n1 )) // &
     & "*" // &
-    & obj%x(2)%GetStringForUID() // &
+    & varname(2)%chars() // "^" // TRIM(STR( obj%n2 )) // &
     & "*" // &
-    & obj%x(3)%GetStringForUID()
+    & varname(3)%chars() // "^" // TRIM(STR( obj%n3 ))
 END PROCEDURE func_GetStringForUID
 
 !----------------------------------------------------------------------------
-!                                                          GetDisplayString
+!                                                           GetDisplayString
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetDisplayString
-  ans = obj%x(1)%GetDisplayString() // &
-    & "*" // &
-    & obj%x(2)%GetDisplayString() // &
-    & "*" // &
-    & obj%x(3)%GetDisplayString()
+  TYPE(String) :: varname(3)
+  varname = obj%GetVarname()
+  ans = ""
+  IF( obj%n1 .NE. 0_I4B ) THEN
+    ans = varname(1)%chars() // "^" // TRIM(STR( obj%n1 ))
+  END IF
+  IF( obj%n2 .NE. 0_I4B ) THEN
+    ans = ans // " " // varname(2)%chars() // "^" // TRIM(STR( obj%n2 ))
+  END IF
+  IF( obj%n3 .NE. 0_I4B ) THEN
+    ans = ans // " " // varname(3)%chars() // "^" // TRIM(STR( obj%n3 ))
+  END IF
 END PROCEDURE func_GetDisplayString
 
 !----------------------------------------------------------------------------
@@ -114,7 +125,7 @@ END PROCEDURE func_GetDisplayString
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetDegree
-  ans = obj%x(1)%GetDegree() + obj%x(2)%GetDegree() + obj%x(3)%GetDegree()
+  ans = [obj%n1, obj%n2, obj%n3]
 END PROCEDURE func_GetDegree
 
 !----------------------------------------------------------------------------

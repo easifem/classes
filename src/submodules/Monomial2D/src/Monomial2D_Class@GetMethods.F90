@@ -29,37 +29,44 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Eval
-  ans = obj%x(1)%Eval(x) * obj%x(2)%Eval(y)
+  ans = (x**obj%n1) * (y**obj%n2)
 END PROCEDURE func_Eval
 
 !----------------------------------------------------------------------------
-!                                                                      Grad
+!                                                                       Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_EvalGradient
+  INTEGER( I4B ) :: n
   IF( dim .EQ. 1_I4B ) THEN
-    ans = obj%x(1)%EvalGradient(x) * obj%x(2)%Eval(y)
+    n = MAX( 0_I4B, obj%n1-1_I4B )
+    ans = obj%n1*(x**n) * (y**obj%n2)
   ELSE
-    ans = obj%x(1)%Eval(x) * obj%x(2)%EvalGradient(y)
+    n = MAX( 0_I4B, obj%n2-1_I4B )
+    ans = obj%n2*(y**n) * (x**obj%n1)
   END IF
 END PROCEDURE func_EvalGradient
 
 !----------------------------------------------------------------------------
-!                                                                      Grad
+!                                                                       Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Grad
-  TYPE( Monomial1D_ ) :: f1,f2
+  INTEGER( I4B ) :: n1, n2
+  TYPE(String) :: name(2)
   !!
   IF( dim .EQ. 1 ) THEN
-    f1 = obj%x(1)%Grad()
-    f2 = obj%x(2)
+    n1 =  MAX( 0_I4B, obj%n1-1_I4B )
+    n2 = obj%n2
+    name = obj%GetVarname()
   ELSE
-    f1 = obj%x(1)
-    f2 = obj%x(2)%Grad()
+    n1 = obj%n1
+    n2 = MAX( 0_I4B, obj%n2-1_I4B )
+    name = obj%GetVarname()
   END IF
   !!
-  ans = Monomial2D(f1=f1, f2=f2)
+  CALL ans%Initiate(n1=n1, n2=n2, name1=name(1)%chars(), &
+    & name2=name(2)%chars() )
   !!
 END PROCEDURE func_Grad
 
@@ -68,7 +75,12 @@ END PROCEDURE func_Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetStringForUID
-  ans = obj%x(1)%GetStringForUID()// "*" // obj%x(2)%GetStringForUID()
+  TYPE(String) :: varname(2)
+  varname = obj%GetVarname()
+  ans = &
+    & varname(1)%chars() // "^" // TRIM(STR( obj%n1 )) // &
+    & "*" // &
+    & varname(2)%chars() // "^" // TRIM(STR( obj%n2 ))
 END PROCEDURE func_GetStringForUID
 
 !----------------------------------------------------------------------------
@@ -76,9 +88,19 @@ END PROCEDURE func_GetStringForUID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetDisplayString
-  ans = TRIM(obj%x(1)%GetDisplayString())// &
-    & "*"// &
-    & TRIM(obj%x(2)%GetDisplayString())
+  TYPE(String) :: varname(2)
+  varname = obj%GetVarname()
+  ans = ""
+  IF( obj%n1 .NE. 0_I4B ) THEN
+    ans = varname(1)%chars() // "^" // TRIM(STR( obj%n1 ))
+  END IF
+  IF( obj%n2 .NE. 0_I4B ) THEN
+    ans = ans // " " // varname(2)%chars() // "^" // TRIM(STR( obj%n2 ))
+  END IF
+  ! ans = &
+  !   & varname(1)%chars() // "^" // TRIM(STR( obj%n1 )) // &
+  !   & "*" // &
+  !   & varname(2)%chars() // "^" // TRIM(STR( obj%n2 ))
 END PROCEDURE func_GetDisplayString
 
 !----------------------------------------------------------------------------
@@ -86,7 +108,7 @@ END PROCEDURE func_GetDisplayString
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetDegree
-  ans = obj%x(1)%GetDegree() + obj%x(2)%GetDegree()
+  ans = [obj%n1, obj%n2]
 END PROCEDURE func_GetDegree
 
 !----------------------------------------------------------------------------

@@ -42,18 +42,24 @@ MODULE PROCEDURE func_Final
 END PROCEDURE func_Final
 
 !----------------------------------------------------------------------------
+!                                                               Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Initiate
+  TYPE( String ) :: astr
+  !!
+  obj%degree = degree
+  obj%varname = TRIM(varname)
+  astr = obj%GetStringForUID()
+  obj%uid = StringToUID(astr%chars())
+END PROCEDURE func_Initiate
+
+!----------------------------------------------------------------------------
 !                                                               Monomial1D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial1D1
-  !!
-  TYPE( String ) :: astr
-  !!
-  ans%degree = degree
-  ans%varname = TRIM(varname)
-  astr = ans%GetStringForUID()
-  ans%uid = StringToUID(astr%chars())
-  !!
+  CALL ans%Initiate( degree=degree, varname=varname )
 END PROCEDURE func_Monomial1D1
 
 !----------------------------------------------------------------------------
@@ -61,14 +67,8 @@ END PROCEDURE func_Monomial1D1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial1D_Pointer1
-  TYPE( String ) :: astr
-  !!
   ALLOCATE( Monomial1D_::ans )
-  ans%degree = degree
-  ans%varname = TRIM(varname)
-  astr = ans%GetStringForUID()
-  ans%uid = StringToUID(astr%chars())
-  !!
+  CALL ans%Initiate( degree=degree, varname=varname )
 END PROCEDURE func_Monomial1D_Pointer1
 
 END SUBMODULE ConstructorMethods

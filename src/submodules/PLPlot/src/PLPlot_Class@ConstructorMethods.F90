@@ -44,4 +44,25 @@ MODULE PROCEDURE plot_Display
   CALL Display( "# PLOT ENGINE : PLPLOT", msg, unitno)
 END PROCEDURE plot_Display
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetDeviceName
+  TYPE( String ) :: extn
+  !!
+  extn = getExtension( filename )
+  !!
+  SELECT CASE( TRIM(LowerCase(extn%chars( ))) )
+  CASE( "pdf" ); ans = "pdf"
+  CASE( "png" ); ans = "pngqt"
+  CASE( "ps" ); ans = "ps"
+  CASE( "eps" ); ans = "epscairo"
+  CASE( "svg" ); ans = "svg"
+  CASE( "jpeg", "jpg" ); ans = "jpgqt"
+  END SELECT
+  !!
+END PROCEDURE GetDeviceName
+
+
 END SUBMODULE ConstructorMethods

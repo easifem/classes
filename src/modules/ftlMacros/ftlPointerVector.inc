@@ -338,7 +338,8 @@ END SUBROUTINE T_Finalizer
 !----------------------------------------------------------------------------
 
 FUNCTION T_Begin(obj) RESULT(ans)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), TARGET, INTENT( IN ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+    & TARGET, INTENT( IN ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ) :: ans
   ! Internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName="Begin()"
@@ -358,7 +359,8 @@ END FUNCTION T_Begin
 !----------------------------------------------------------------------------
 
 FUNCTION T_End(obj) RESULT(ans)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), TARGET, INTENT( IN ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & TARGET, INTENT( IN ) :: obj
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ) :: ans
   ! Internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName="End()"
@@ -377,7 +379,8 @@ END FUNCTION T_End
 !----------------------------------------------------------------------------
 
 PURE FUNCTION T_Size( obj ) RESULT( ans )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( IN ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( IN ) :: obj
   INTEGER( I4B ) :: ans
   ans = obj%psize
 END FUNCTION T_Size
@@ -479,7 +482,8 @@ END SUBROUTINE T_Pushback
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_Popback( obj, val )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
   FTL_TEMPLATE_TYPE_WRAP, INTENT( INOUT ) :: val
   ! Internal variables
   CHARACTER( LEN=* ), PARAMETER :: myName = "Popback()"
@@ -579,10 +583,13 @@ END SUBROUTINE T_InsertArrayAtIndex
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_InsertIteratorPairAtIndex( obj, pos, first, last )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pos
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), &
+  & INTENT( IN ) :: first
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), &
+  & INTENT( IN ) :: last
   CALL obj%Insert( pos, first%dynArray%data(first%index:last%index-1) )
 END SUBROUTINE T_InsertIteratorPairAtIndex
 
@@ -592,11 +599,13 @@ END SUBROUTINE T_InsertIteratorPairAtIndex
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_SetSingleAtIndex(obj, pos, val)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: pos
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
   ! Internal variables
-  CHARACTER( LEN = * ), PARAMETER :: myName = "T_SetSingleAtIndex(obj, pos, val)"
+  CHARACTER( LEN = * ), PARAMETER :: myName = &
+  & "T_SetSingleAtIndex(obj, pos, val)"
 
   IF( pos .GT. obj%psize ) THEN
     CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
@@ -615,8 +624,10 @@ END SUBROUTINE T_SetSingleAtIndex
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_SetSingle(obj, pos, val)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), &
+  & INTENT( IN ) :: pos
   FTL_TEMPLATE_TYPE_WRAP, INTENT( IN ) :: val
   CALL obj%Set(pos%index, val)
 END SUBROUTINE T_SetSingle
@@ -757,7 +768,8 @@ END SUBROUTINE T_SetIteratorPairAtIndex
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_EraseIndexPair( obj, first, last, freeMem )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
   INTEGER( I4B ), INTENT( IN ) :: first
   INTEGER( I4B ), INTENT( IN ) :: last
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
@@ -787,8 +799,10 @@ END SUBROUTINE T_EraseIndexPair
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_EraseSingle( obj, pos, freeMem )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: pos
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), &
+  & INTENT( IN ) :: pos
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
 
   CALL obj%Erase( pos%index, pos%index+1, freeMem )
@@ -811,9 +825,12 @@ END SUBROUTINE T_EraseSingleIndex
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_EraseIteratorPair( obj, first, last, freeMem )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: first
-  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), INTENT( IN ) :: last
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), &
+  & INTENT( IN ) :: first
+  TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_) ), &
+  & INTENT( IN ) :: last
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
 
   CALL obj%Erase(first%index, last%index, freeMem)
@@ -824,7 +841,8 @@ END SUBROUTINE T_EraseIteratorPair
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_Clear( obj, freeMem )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), INTENT( INOUT ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & INTENT( INOUT ) :: obj
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
   CALL obj%Erase( 1, obj%psize+1, freeMem )
 END SUBROUTINE T_Clear
@@ -834,7 +852,8 @@ END SUBROUTINE T_Clear
 !----------------------------------------------------------------------------
 
 SUBROUTINE T_FixValuePtrs(obj)
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), TARGET, INTENT( INOUT ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_) ), &
+  & TARGET, INTENT( INOUT ) :: obj
 
   IF( allocated(obj%storage) ) THEN
     obj%data => obj%storage(1:obj%psize)

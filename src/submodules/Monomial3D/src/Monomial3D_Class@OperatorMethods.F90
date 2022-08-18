@@ -30,15 +30,21 @@ CONTAINS
 
 MODULE PROCEDURE func_Multiplication_obj_obj
   INTEGER( I4B ) :: n1, n2, n3
+  TYPE( String ) :: varname( 3 )
   !!
-  n1 = obj1%x(1)%getDegree() + obj2%x(1)%getDegree()
-  n2 = obj1%x(2)%getDegree() + obj2%x(2)%getDegree()
-  n3 = obj1%x(3)%getDegree() + obj2%x(3)%getDegree()
+  n1 = obj1%n1 + obj2%n1
+  n2 = obj1%n2 + obj2%n2
+  n3 = obj1%n3 + obj2%n3
   !!
-  ans=Monomial3D(n1=n1, n2=n2, n3=n3, &
-    & name1=obj1%varname(1)%chars(), &
-    & name2=obj1%varname(2)%chars(), &
-    & name3=obj1%varname(3)%chars() )
+  varname = obj1%GetVarname()
+  !! fs
+  CALL ans%Initiate( &
+    & n1=n1, &
+    & n2=n2, &
+    & n3=n3, &
+    & name1=varname(1)%chars(), &
+    & name2=varname(2)%chars(), &
+    & name3=varname(3)%chars() )
   !!
 END PROCEDURE func_Multiplication_obj_obj
 
