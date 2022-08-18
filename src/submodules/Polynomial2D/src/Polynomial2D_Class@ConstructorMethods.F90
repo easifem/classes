@@ -39,7 +39,6 @@ MODULE PROCEDURE func_Deallocate
       CALL obj%x(ii)%Deallocate( )
     END DO
     DEALLOCATE( obj%x )
-! BUG #138 Polynomial2D%Deallocate routine does not work properly. Seg fault
   END IF
 END PROCEDURE func_Deallocate
 
@@ -142,10 +141,6 @@ END PROCEDURE func_Initiate
 MODULE PROCEDURE func_Polynomial2D1
   CALL ans%Initiate( coeff=coeff, degree=degree, name1=name1, &
     & name2=name2)
-! BUG #137 Polynomial2D function is not working!
-! It produces following error:
-! Program received signal SIGSEGV: Segmentation fault - invalid memory
-! reference.
 END PROCEDURE func_Polynomial2D1
 
 !----------------------------------------------------------------------------
