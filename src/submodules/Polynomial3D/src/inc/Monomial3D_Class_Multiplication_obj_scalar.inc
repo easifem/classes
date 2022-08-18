@@ -15,18 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!! Monomial1D_Class_Add_obj_scalar.inc
+!! Monomial2D_Class_Multiplication_obj_scalar.inc
 
-INTEGER( I4B ) :: degree( MAX_COMPONENTS )
-CHARACTER( LEN = 256 ) :: varname( MAX_COMPONENTS )
+REAL( DFP ) :: coeff( 1 )
+INTEGER( I4B ) :: degree( 1, 3 )
+TYPE( String ) :: varname( 3 )
 !!
-degree(1) = obj2%x(1)%getDegree()
-degree(2) = obj2%x(2)%getDegree()
-degree(3) = obj2%x(3)%getDegree()
+coeff( 1 ) = obj2
 !!
-varname(1) = obj2%x(1)%varname%chars()
-varname(2) = obj2%x(2)%varname%chars()
-varname(3) = obj2%x(3)%varname%chars()
+degree( 1, : ) = obj1%GetDegree()
+varname = obj1%GetVarname()
 !!
-ans=Monomial3D(degree=degree, varname=varname)
+CALL ans%Initiate( &
+  & coeff=coeff, &
+  & degree=degree, &
+  & name1=varname(1)%chars(), &
+  & name3=varname(3)%chars(), &
+  & name2=varname(2)%chars() )
 !!
