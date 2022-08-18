@@ -21,6 +21,7 @@ TARGET_SOURCES(
   ${src_path}/Monomial3D_Class@ConstructorMethods.F90
   ${src_path}/Monomial3D_Class@GetMethods.F90
   ${src_path}/Monomial3D_Class@IOMethods.F90
-  ${src_path}/Monomial3D_Class@AssignMethods.F90
   ${src_path}/Monomial3D_Class@OperatorMethods.F90
+  ${src_path}/Monomial3D_Class@AssignMethods.F90
+  ${src_path}/Monomial3D_Class@BasisMethods.F90
 )
