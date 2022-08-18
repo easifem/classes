@@ -67,7 +67,7 @@ MODULE PROCEDURE func_Grad
       degree( ii, dim ) = MAX( 0_I4B, degree( ii, dim ) - 1_I4B )
     END DO
     !!
-    name = obj%x(1)%GetVarname()
+    name = obj%GetVarname()
     !!
     CALL ans%Initiate( &
       & coeff=coeff, &
