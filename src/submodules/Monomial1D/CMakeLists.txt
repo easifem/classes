@@ -23,4 +23,5 @@ TARGET_SOURCES(
   ${src_path}/Monomial1D_Class@IOMethods.F90
   ${src_path}/Monomial1D_Class@OperatorMethods.F90
   ${src_path}/Monomial1D_Class@AssignMethods.F90
+  ${src_path}/Monomial1D_Class@BasisMethods.F90
 )

@@ -35,17 +35,21 @@ CHARACTER(LEN=*), PARAMETER :: modName = "Monomial2D_Class"
 
 TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
   PRIVATE
-  TYPE( Monomial1D_ ) :: x( 2 )
+  INTEGER( I4B ) :: n1 = -1_I4B
+  INTEGER( I4B ) :: n2 = -1_I4B
   CONTAINS
     !!
     !! @ConstructorMethods
     !!
+    PROCEDURE, PASS( obj ) :: Initiate1 => func_Initiate1
+    PROCEDURE, PASS( obj ) :: Initiate2 => func_Initiate2
+    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
     PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => func_Deallocate
     FINAL :: func_Final
     !!
     !! @GetMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: Eval=>func_Eval
+    PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar=>func_Eval
     PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient=>func_EvalGradient
     PROCEDURE, PUBLIC, PASS( obj ) :: Grad => func_Grad
     GENERIC, PUBLIC :: OPERATOR( .Grad. ) => Grad
@@ -72,6 +76,9 @@ TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
     !!
     PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjObj => func_AssignObjObj
     GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
+    !!
+    !! @BasisMethods
+    !!
 END TYPE Monomial2D_
 
 PUBLIC :: Monomial2D_
@@ -87,21 +94,68 @@ END TYPE Monomial2DPointer_
 PUBLIC :: Monomial2DPointer_
 
 !----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct function for Monomial2D
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_Initiate1( obj, n1, n2, name1, name2 )
+  CLASS( Monomial2D_ ), INTENT( INOUT )  :: obj
+    !! monomial2d = $x^{n1} y^{n2}$
+  INTEGER( I4B ), INTENT( IN ) :: n1
+    !! power of variable 1
+  INTEGER( I4B ), INTENT( IN ) :: n2
+    !! power for variable 2
+  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! name of variable 1
+  CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! name of variable 2
+END SUBROUTINE func_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Constructor function the Monomial2D
+
+INTERFACE
+MODULE ELEMENTAL SUBROUTINE func_Initiate2( obj, f1, f2 )
+  CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
+    !! ans = f1*f2
+  CLASS( Monomial1D_ ), INTENT( IN ) :: f1
+    !! monomial for first variable
+  CLASS( Monomial1D_ ), INTENT( IN ) :: f2
+    !! monomial for second variable
+END SUBROUTINE func_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             Monomial2D@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Construct function for Monomial2D
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION func_Monomial2D1( n1, n2, name1, name2 ) &
   & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: n1
+    !! power of variable 1
   INTEGER( I4B ), INTENT( IN ) :: n2
+    !! power for variable 2
   CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! name of variable 1
   CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! name of variable 2
   TYPE( Monomial2D_ ) :: ans
+    !! monomial2d = $x^{n1} y^{n2}$
 END FUNCTION func_Monomial2D1
 END INTERFACE
 
@@ -117,13 +171,16 @@ PUBLIC :: Monomial2D
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Constructor function the Monomial2D
 
 INTERFACE
 MODULE ELEMENTAL FUNCTION func_Monomial2D2( f1, f2 ) RESULT( ans )
   CLASS( Monomial1D_ ), INTENT( IN ) :: f1
+    !! monomial for first variable
   CLASS( Monomial1D_ ), INTENT( IN ) :: f2
+    !! monomial for second variable
   TYPE( Monomial2D_ ) :: ans
+    !! ans = f1*f2
 END FUNCTION func_Monomial2D2
 END INTERFACE
 
@@ -137,16 +194,21 @@ END INTERFACE Monomial2D
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Construct function to return a pointer to the Monomial2D
 
 INTERFACE
 MODULE FUNCTION func_Monomial2D_Pointer1( n1, n2, name1, name2 ) &
   & RESULT( ans )
   INTEGER( I4B ), INTENT( IN ) :: n1
+    !! power of variable 1
   INTEGER( I4B ), INTENT( IN ) :: n2
+    !! power of variable 2
   CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! name of variable 1
   CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! name of variable 2
   CLASS( Monomial2D_ ), POINTER :: ans
+    !! returned 2D monomial
 END FUNCTION func_Monomial2D_Pointer1
 END INTERFACE
 
@@ -162,7 +224,7 @@ PUBLIC :: Monomial2D_Pointer
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Construct the Monomial2D
+! summary: Construct function to return a pointer to the Monomial2D
 
 INTERFACE
 MODULE FUNCTION func_Monomial2D_Pointer2( f1, f2 ) RESULT( ans )
@@ -291,9 +353,9 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_GetDegree( obj ) RESULT( ans )
+  MODULE PURE FUNCTION func_GetDegree( obj ) RESULT( ans )
     CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    INTEGER( I4B ) :: ans
+    INTEGER( I4B ) :: ans(2)
   END FUNCTION func_GetDegree
 END INTERFACE
 
@@ -350,10 +412,62 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL SUBROUTINE func_AssignObjObj( obj, obj2 )
+MODULE PURE SUBROUTINE func_AssignObjObj( obj, obj2 )
   CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
   CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
 END SUBROUTINE func_AssignObjObj
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Assign@AssignMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE PURE SUBROUTINE func_AssignObjVecObjVec( obj, obj2 )
+  CLASS( Monomial2D_ ), ALLOCATABLE, INTENT( INOUT ) :: obj( : )
+  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2( : )
+END SUBROUTINE func_AssignObjVecObjVec
+END INTERFACE
+
+INTERFACE ASSIGNMENT(=)
+  MODULE PROCEDURE func_AssignObjVecObjVec
+END INTERFACE ASSIGNMENT(=)
+
+PUBLIC :: ASSIGNMENT(=)
+
+!----------------------------------------------------------------------------
+!                                                   Monomials2D@BasisMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 13 Aug 2022
+! summary: Returns monomial basis for lagrange polynomials
+
+INTERFACE
+MODULE FUNCTION func_Monomials2D( order, name1, name2, elemType ) &
+  & RESULT( ans )
+  INTEGER( I4B ), INTENT( IN ) :: order
+    !! order
+  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    !! "x"
+  CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    !! "y"
+  INTEGER( I4B ), INTENT( IN ) :: elemType
+    !! "P", "Triangle" then monomial for triangle
+    !! "Q", "Quadrangle" then monomials for quadrangle
+  TYPE( Monomial2D_ ), ALLOCATABLE :: ans( : )
+    !! Monomials in 2D
+END FUNCTION func_Monomials2D
+END INTERFACE
+
+INTERFACE Monomials2D
+  MODULE PROCEDURE func_Monomials2D
+END INTERFACE Monomials2D
+
+PUBLIC :: Monomials2D
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE Monomial2D_Class

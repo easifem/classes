@@ -19,5 +19,14 @@ SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/PLPlot_Class@ConstructorMethods.F90
+  ${src_path}/PLPlot_Class@PlotMethods.F90
   ${src_path}/PLPlot_Class@LinePlotMethods.F90
+  ${src_path}/PLPlot_Class@ScatterMethods.F90
+  ${src_path}/PLPlot_Class@ContourMethods.F90
+  ${src_path}/PLPlot_Class@ColorbarMethods.F90
+  ${src_path}/PLPlot_Class@BarMethods.F90
+  ${src_path}/PLPlot_Class@FillMethods.F90
+  ${src_path}/PLPlot_Class@QuiverMethods.F90
+  ${src_path}/PLPlot_Class@SurfaceMethods.F90
+  ${src_path}/PLPlot_Class@SetMethods.F90
 )

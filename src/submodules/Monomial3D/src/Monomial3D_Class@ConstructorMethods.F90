@@ -30,9 +30,9 @@ CONTAINS
 
 MODULE PROCEDURE func_Deallocate
   CALL AbstractBasis3DDeallocate( obj )
-  CALL obj%x(1)%Deallocate()
-  CALL obj%x(2)%Deallocate()
-  CALL obj%x(3)%Deallocate()
+  obj%n1 = -1
+  obj%n2 = -1
+  obj%n3 = -1
 END PROCEDURE func_Deallocate
 
 !----------------------------------------------------------------------------
@@ -44,22 +44,62 @@ MODULE PROCEDURE func_Final
 END PROCEDURE func_Final
 
 !----------------------------------------------------------------------------
+!                                                               Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Initiate1
+  !!
+  TYPE( String ) :: astr
+  !!
+  obj%n1 = n1
+  obj%n2 = n2
+  obj%n3 = n3
+  obj%varname(1) = TRIM(name1)
+  obj%varname(2) = TRIM(name2)
+  obj%varname(3) = TRIM(name3)
+  astr = obj%GetStringForUID( )
+  obj%uid = StringToUID(astr%chars())
+  !!
+END PROCEDURE func_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                               Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Initiate2
+  !!
+  INTEGER( I4B ) :: n1, n2, n3
+  TYPE( String ) :: name1, name2, name3
+  !!
+  n1 = f1%GetDegree()
+  n2 = f2%GetDegree()
+  n3 = f3%GetDegree()
+  name1 = f1%GetVarname()
+  name2 = f2%GetVarname()
+  name3 = f3%GetVarname()
+  !!
+  CALL obj%Initiate( &
+    & n1=n1, &
+    & n2=n2, &
+    & n3=n3, &
+    & name1=name1%chars(), &
+    & name2=name2%chars(), &
+    & name3=name3%chars() )
+  !!
+END PROCEDURE func_Initiate2
+
+!----------------------------------------------------------------------------
 !                                                               Monomial3D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial3D1
-  !!
-  TYPE( String ) :: astr
-  !!
-  ans%x(1) = Monomial1D(degree=n1, varname=name1)
-  ans%x(2) = Monomial1D(degree=n2, varname=name2)
-  ans%x(3) = Monomial1D(degree=n3, varname=name3)
-  ans%varname(1) = TRIM(name1)
-  ans%varname(2) = TRIM(name2)
-  ans%varname(3) = TRIM(name3)
-  astr = ans%GetStringForUID( )
-  ans%uid = StringToUID(astr%chars())
-  !!
+  CALL ans%Initiate( &
+    & n1=n1, &
+    & n2=n2, &
+    & n3=n3, &
+    & name1=name1, &
+    & name2=name2, &
+    & name3=name3 )
 END PROCEDURE func_Monomial3D1
 
 !----------------------------------------------------------------------------
@@ -67,21 +107,7 @@ END PROCEDURE func_Monomial3D1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial3D2
-  !!
-  INTEGER( I4B ) :: n1, n2, n3
-  CHARACTER( LEN = 256 ) :: name1, name2, name3
-  !!
-  n1 = f1%GetDegree()
-  n2 = f2%GetDegree()
-  n3 = f3%GetDegree()
-  !!
-  name1 = f1%varname%chars()
-  name2 = f2%varname%chars()
-  name3 = f3%varname%chars()
-  !!
-  ans = Monomial3D(n1=n1, n2=n2, n3=n3, &
-    & name1=name1, name2=name2, name3=name3)
-  !!
+  CALL ans%Initiate( f1=f1, f2=f2, f3=f3 )
 END PROCEDURE func_Monomial3D2
 
 !----------------------------------------------------------------------------
@@ -89,42 +115,27 @@ END PROCEDURE func_Monomial3D2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial3D_Pointer1
-  !!
-  TYPE( String ) :: astr
-  !!
   ALLOCATE( Monomial3D_::ans )
-  ans%x(1) = Monomial1D(degree=n1, varname=name1)
-  ans%x(2) = Monomial1D(degree=n2, varname=name2)
-  ans%x(3) = Monomial1D(degree=n3, varname=name3)
-  ans%varname(1) = TRIM(name1)
-  ans%varname(2) = TRIM(name2)
-  ans%varname(3) = TRIM(name3)
-  astr = ans%GetStringForUID( )
-  ans%uid = StringToUID(astr%chars())
-  !!
+  CALL ans%Initiate( &
+    & n1=n1, &
+    & n2=n2, &
+    & n3=n3, &
+    & name1=name1, &
+    & name2=name2, &
+    & name3=name3 )
 END PROCEDURE func_Monomial3D_Pointer1
-
 
 !----------------------------------------------------------------------------
 !                                                               Monomial3D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial3D_Pointer2
-  INTEGER( I4B ) :: n1, n2, n3
-  CHARACTER( LEN = 256 ) :: name1, name2, name3
-  !!
-  n1 = f1%GetDegree()
-  n2 = f2%GetDegree()
-  n3 = f3%GetDegree()
-  !!
-  name1 = f1%varname%chars()
-  name2 = f2%varname%chars()
-  name3 = f3%varname%chars()
-  !!
-  ans => Monomial3D_Pointer(n1=n1, n2=n2, n3=n3, &
-    & name1=name1, name2=name2, name3=name3)
-  !!
+  ALLOCATE( Monomial3D_::ans )
+  CALL ans%Initiate( f1=f1, f2=f2, f3=f3 )
 END PROCEDURE func_Monomial3D_Pointer2
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

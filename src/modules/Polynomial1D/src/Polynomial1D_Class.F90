@@ -19,7 +19,7 @@ MODULE Polynomial1D_Class
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractFunction_Class
-USE MonomialFactory
+USE Monomial1D_Class
 IMPLICIT NONE
 PRIVATE
 

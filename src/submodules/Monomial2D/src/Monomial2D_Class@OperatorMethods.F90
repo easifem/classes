@@ -29,11 +29,16 @@ CONTAINS
 
 MODULE PROCEDURE func_Multiplication_obj_obj
   INTEGER( I4B ) :: n1, n2
+  TYPE( String ) :: varname( 2 )
   !!
-  n1 = obj1%x(1)%getDegree() + obj2%x(1)%getDegree()
-  n2 = obj1%x(2)%getDegree() + obj2%x(2)%getDegree()
-  ans=Monomial2D(n1=n1, n2=n2, name1=obj1%varname(1)%chars(), &
-    & name2=obj1%varname(2)%chars() )
+  n1 = obj1%n1 + obj2%n1
+  n2 = obj1%n2 + obj2%n2
+  varname = obj1%GetVarname()
+  !! fs
+  CALL ans%Initiate( &
+    & n1=n1, n2=n2, &
+    & name1=varname(1)%chars(), &
+    & name2=varname(2)%chars() )
   !!
 END PROCEDURE func_Multiplication_obj_obj
 

@@ -24,13 +24,47 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_AssignObjObj
-  obj%x(1)=obj2%x(1)
-  obj%x(2)=obj2%x(2)
-  obj%x(3)=obj2%x(3)
+  obj%n1=obj2%n1
+  obj%n2=obj2%n2
+  obj%n3=obj2%n3
   obj%uid = obj2%uid
   obj%varname(1) = obj2%varname(1)
   obj%varname(2) = obj2%varname(2)
   obj%varname(3) = obj2%varname(3)
 END PROCEDURE func_AssignObjObj
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_AssignObjVecObjVec
+  INTEGER( I4B ) :: n1, n2, ii
+  !!
+  n2 = SIZE( obj2 )
+  !!
+  IF( ALLOCATED( obj ) ) THEN
+    n1 = SIZE( obj )
+    IF( n1 .EQ. n2 ) THEN
+      DO ii = 1, n2
+        obj(ii) = obj2( ii )
+      END DO
+    ELSE
+      DEALLOCATE( obj )
+      ALLOCATE( obj( n2 ) )
+      DO ii = 1, n2
+        obj(ii) = obj2( ii )
+      END DO
+    END IF
+  ELSE
+    ALLOCATE( obj( n2 ) )
+    DO ii = 1, n2
+      obj(ii) = obj2( ii )
+    END DO
+  END IF
+END PROCEDURE func_AssignObjVecObjVec
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE AssignMethods
