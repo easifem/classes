@@ -30,6 +30,6 @@ MODULE PolynomialFactory
   USE JacobiSpace1D_Class
   USE Polynomial2D_Class
   USE Lagrange2D_Class
-! USE Polynomial3D_Class
+  USE Polynomial3D_Class
 ! USE PolynomialND_Class
 END MODULE PolynomialFactory
