@@ -19,13 +19,13 @@
 ! date: 9 Aug 2022
 ! summary: Topology class is defined
 
-MODULE Test_Topology_Class
+MODULE Topology_Class
 USE GlobalData
 IMPLICIT NONE
 PRIVATE
 
 !----------------------------------------------------------------------------
-!                                                            Test_Topology_
+!                                                            Topology_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -34,41 +34,41 @@ PRIVATE
 !
 !{!pages/Topology_.md!}
 
-TYPE :: Test_Topology_
+TYPE :: Topology_
   PRIVATE
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   INTEGER(I4B) :: name = 0
   INTEGER(I4B) :: xiDimension = 0
   !!
-  CONTAINS
+CONTAINS
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => topo_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => topo_Initiate
   !! Initiate the topology object
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => obj_Deallocate
   !! Deallocate the topology object
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetNptrs => obj_GetNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Get the nptrs
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetName => obj_GetName
+  PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Get the name
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetXiDimension => obj_GetXiDimension
+  PROCEDURE, PUBLIC, PASS(obj) :: GetXiDimension => obj_GetXiDimension
   !! Get the xidimension
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetNNE => obj_GetNNE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Return the size of nptrs
-END TYPE Test_Topology_
+END TYPE Topology_
 
-PUBLIC :: Test_Topology_
+PUBLIC :: Topology_
 
 !----------------------------------------------------------------------------
-!                                                     Test_TopologyPointer_
+!                                                     TopologyPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: Test_TopologyPointer_
-  CLASS(Test_Topology_), POINTER :: ptr => NULL()
-END TYPE Test_TopologyPointer_
+TYPE :: TopologyPointer_
+  CLASS(Topology_), POINTER :: ptr => NULL()
+END TYPE TopologyPointer_
 
-PUBLIC :: Test_TopologyPointer_
+PUBLIC :: TopologyPointer_
 
 !----------------------------------------------------------------------------
 !                                                         Initiate@Methods
@@ -76,15 +76,15 @@ PUBLIC :: Test_TopologyPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Initiate the object
+! summary:         Initiate the object
 
 INTERFACE
-MODULE PURE SUBROUTINE topo_Initiate( obj, nptrs, name, xiDimension )
-  CLASS( Test_Topology_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nptrs( : )
-  INTEGER( I4B ), INTENT( IN ) :: name
-  INTEGER( I4B ), INTENT( IN ) :: xiDimension
-END SUBROUTINE topo_Initiate
+  MODULE PURE SUBROUTINE topo_Initiate(obj, nptrs, name, xiDimension)
+    CLASS(Topology_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nptrs(:)
+    INTEGER(I4B), INTENT(IN) :: name
+    INTEGER(I4B), INTENT(IN) :: xiDimension
+  END SUBROUTINE topo_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -93,12 +93,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Deallocate the contents
+! summary:         Deallocate the contents
 
 INTERFACE
-MODULE PURE SUBROUTINE obj_Deallocate( obj )
-  CLASS( Test_Topology_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE obj_Deallocate
+  MODULE PURE SUBROUTINE obj_Deallocate(obj)
+    CLASS(Topology_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -110,11 +110,11 @@ END INTERFACE
 ! summary: Display the contents
 
 INTERFACE
-MODULE SUBROUTINE obj_Display( obj, msg, unitno )
-  CLASS( Test_Topology_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE obj_Display
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(Topology_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -123,12 +123,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Get the nptrs
+! summary:         Get the nptrs
 INTERFACE
-MODULE PURE FUNCTION obj_GetNptrs( obj ) RESULT( ans )
-  CLASS( Test_Topology_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION obj_GetNptrs
+  MODULE PURE FUNCTION obj_GetNptrs(obj) RESULT(ans)
+    CLASS(Topology_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -137,13 +137,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Get the name
+! summary:         Get the name
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION obj_GetName( obj ) RESULT( ans )
-  CLASS( Test_Topology_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION obj_GetName
+  MODULE ELEMENTAL FUNCTION obj_GetName(obj) RESULT(ans)
+    CLASS(Topology_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -152,13 +152,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Get the xidimension
+! summary:         Get the xidimension
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION obj_GetXiDimension( obj ) RESULT( ans )
-  CLASS( Test_Topology_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION obj_GetXiDimension
+  MODULE ELEMENTAL FUNCTION obj_GetXiDimension(obj) RESULT(ans)
+    CLASS(Topology_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetXiDimension
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -167,13 +167,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Get the size of nptrs
+! summary:         Get the size of nptrs
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION obj_GetNNE( obj ) RESULT( ans )
-  CLASS( Test_Topology_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION obj_GetNNE
+  MODULE ELEMENTAL FUNCTION obj_GetNNE(obj) RESULT(ans)
+    CLASS(Topology_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNNE
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ INTERFACE
   MODULE PURE FUNCTION obj_GetFacetTopology(elemType, nptrs) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: elemType
     INTEGER(I4B), INTENT(IN) :: nptrs(:)
-    TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
+    TYPE(Topology_), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetFacetTopology
 END INTERFACE
 
@@ -202,4 +202,4 @@ PUBLIC :: GetFacetTopology
 !
 !----------------------------------------------------------------------------
 
-END MODULE Test_Topology_Class
+END MODULE Topology_Class

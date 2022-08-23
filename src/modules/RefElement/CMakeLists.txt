@@ -18,15 +18,15 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/Test_Topology_Class.F90
-  ${src_path}/Test_ReferenceElement_Class.F90
-  ${src_path}/Test_ReferencePoint_Class.F90
-  ${src_path}/Test_ReferenceLine_Class.F90
-  ${src_path}/Test_ReferenceTriangle_Class.F90
-  ${src_path}/Test_ReferenceQuadrangle_Class.F90
-  ${src_path}/Test_ReferenceTetrahedron_Class.F90
-  ${src_path}/Test_ReferenceHexahedron_Class.F90
-  ${src_path}/Test_ReferencePrism_Class.F90
-  ${src_path}/Test_ReferencePyramid_Class.F90
-  ${src_path}/Test_ReferenceElementFactory.F90
+  ${src_path}/Topology_Class.F90
+  ${src_path}/AbstractRefElement_Class.F90
+  ${src_path}/RefPoint_Class.F90
+  ${src_path}/RefLine_Class.F90
+  ${src_path}/RefTriangle_Class.F90
+  ${src_path}/RefQuadrangle_Class.F90
+  ${src_path}/RefTetrahedron_Class.F90
+  ${src_path}/RefHexahedron_Class.F90
+  ${src_path}/RefPrism_Class.F90
+  ${src_path}/RefPyramid_Class.F90
+  ${src_path}/RefElementFactory.F90
 )

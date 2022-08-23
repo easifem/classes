@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(Test_ReferencePoint_Class) Methods
+SUBMODULE(RefPoint_Class) Methods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -24,29 +24,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Initiate
-  REAL( DFP ) :: xij0( 3 ,1 )
-  INTEGER( I4B ) :: entityCounts( 4 ), xidimension, name
-  TYPE(String) :: nameStr
-  TYPE( Test_Topology_ ) :: topology(1)
+REAL(DFP) :: xij0(3, 1)
+INTEGER(I4B) :: entityCounts(4), xidimension, name
+TYPE(String) :: nameStr
+TYPE(Topology_) :: topology(1)
   !!
-  xij0 = 0.0_DFP
+xij0 = 0.0_DFP
   !!
-  entityCounts = [1, 0, 0, 0]
-  xidimension = 0
-  name= Point1
-  nameStr = "Point1"
+entityCounts = [1, 0, 0, 0]
+xidimension = 0
+name = Point1
+nameStr = "Point1"
   !!
-  CALL topology( 1 )%Initiate( nptrs=[1_I4B], name=Point1, &
-    & xidimension=xidimension )
+CALL topology(1)%Initiate(nptrs=[1_I4B], name=Point1, &
+  & xidimension=xidimension)
   !!
-  CALL obj%SetParam( &
-    & xij=xij0, &
-    & entityCounts=entityCounts, &
-    & nsd=nsd, &
-    & xidimension=xidimension, &
-    & name=name, &
-    & nameStr=nameStr%chars(), &
-    & topology=topology )
+CALL obj%SetParam( &
+  & xij=xij0, &
+  & entityCounts=entityCounts, &
+  & nsd=nsd, &
+  & xidimension=xidimension, &
+  & name=name, &
+  & nameStr=nameStr%chars(), &
+  & topology=topology)
   !!
 END PROCEDURE refelem_Initiate
 
@@ -55,7 +55,7 @@ END PROCEDURE refelem_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetElements
-  ALLOCATE( ans( 0 ) )
+ALLOCATE (ans(0))
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ END PROCEDURE refelem_GetFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetTopology
-  ALLOCATE( ans( 0 ) )
+ALLOCATE (ans(0))
 END PROCEDURE refelem_GetFacetTopology
 
 !----------------------------------------------------------------------------
@@ -71,9 +71,9 @@ END PROCEDURE refelem_GetFacetTopology
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetTopology
-  ALLOCATE( ans( 1 ) )
-  CALL ans( 1 )%Initiate( nptrs=[1_I4B], name=Point1, &
-    & xidimension=0_I4B )
+ALLOCATE (ans(1))
+CALL ans(1)%Initiate(nptrs=[1_I4B], name=Point1, &
+  & xidimension=0_I4B)
 END PROCEDURE refelem_GetTopology
 
 !----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ END PROCEDURE refelem_GetTopology
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetMeasure
-  ans = 0.0_DFP
+ans = 0.0_DFP
 END PROCEDURE refelem_GetMeasure
 
 !----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ END PROCEDURE refelem_GetMeasure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetElementQuality
-  ans = 1.0_DFP
+ans = 1.0_DFP
 END PROCEDURE refelem_GetElementQuality
 
 !----------------------------------------------------------------------------
@@ -97,11 +97,11 @@ END PROCEDURE refelem_GetElementQuality
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_isPointInside
-  REAL( DFP ) :: err, x0( 3, 1 )
-  REAL( DFP ), PARAMETER :: tol=1.0E-10
-  x0 = obj%GetNodeCoord()
-  err = NORM2(x0(:,1) - x)
-  ans = SOFTEQ( err, zero, tol=tol)
+REAL(DFP) :: err, x0(3, 1)
+REAL(DFP), PARAMETER :: tol = 1.0E-10
+x0 = obj%GetNodeCoord()
+err = NORM2(x0(:, 1) - x)
+ans = SOFTEQ(err, zero, tol=tol)
 END PROCEDURE refelem_isPointInside
 
 !----------------------------------------------------------------------------

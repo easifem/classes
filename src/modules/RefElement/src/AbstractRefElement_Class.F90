@@ -17,29 +17,28 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	ReferenceElement Class is implemented
+! summary:         AbstractRefElement Class is implemented
 
-MODULE Test_ReferenceElement_Class
+MODULE AbstractRefElement_Class
 USE GlobalData
 USE String_Class, ONLY: String
-USE Test_Topology_Class
-USE ExceptionHandler_Class
+USE Topology_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="Test_ReferenceElement_Class"
-TYPE(ExceptionHandler_) :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "AbstractRefElement_Class"
 
 !----------------------------------------------------------------------------
-!                                                   Test_ReferenceElement_
+!                                                       AbstractRefElement_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	ReferenceElement class is defined
+! update: 18 Aug 2022
+! summary:         AbstractRefElement class is defined
 !
-!{!pages/ReferenceElement_.md!}
+!{!pages/AbstractRefElement_.md!}
 
-TYPE, ABSTRACT :: Test_ReferenceElement_
+TYPE, ABSTRACT :: AbstractRefElement_
   PRIVATE
   REAL(DFP), ALLOCATABLE :: xij(:, :)
     !! Nodal coordinates
@@ -53,75 +52,70 @@ TYPE, ABSTRACT :: Test_ReferenceElement_
     !! 3 is for volume
   INTEGER(I4B) :: name = -1_I4B
     !! name of the element
-  TYPE( String ) :: nameStr
+  TYPE(String) :: nameStr
     !! name of the element
   INTEGER(I4B) :: nsd = -1_I4B
     !! Number of spatial dimensions
-  TYPE(Test_Topology_), ALLOCATABLE :: topology(:)
+  TYPE(Topology_), ALLOCATABLE :: topology(:)
     !! Topology information of 0D, 1, 2, 3D entities
   !!
-  CONTAINS
+CONTAINS
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => refelem_Initiate
+  !! @DeferredMethods
+  !!
+  PROCEDURE(refelem_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
   !! Initiate an instance
-  PROCEDURE, PUBLIC, PASS( obj ) :: Copy => refelem_Copy
+  PROCEDURE(refelem_GetFacetElements), DEFERRED, PUBLIC, PASS(obj) :: &
+    & GetFacetElements
+  PROCEDURE(refelem_GetFacetTopology), DEFERRED, PUBLIC, PASS(obj) :: &
+    & GetFacetTopology
+  !! Get the vector of topology of facet elements
+  PROCEDURE(refelem_GetTopology), DEFERRED, PUBLIC, PASS(obj) :: GetTopology
+  !! Get the vector of topology of facet elements
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => refelem_Copy
   !! Initiate an instance by copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => refelem_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => refelem_Deallocate
   !! Deallocate the data
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => refelem_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => refelem_Display
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetNNE => refelem_GetNNE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => refelem_GetNNE
   !! Returns the number of nodes in the element
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetNSD => refelem_GetNSD
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => refelem_GetNSD
   !! Returns the xidimension
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetXidimension => refelem_GetXidimension
+  PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => refelem_GetXidimension
   !! Returns the xidimension
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetElementTopology => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElementTopology => &
     & refelem_GetElementTopology
   !! Returns the element topology
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetNptrs => refelem_GetNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => refelem_GetNptrs
   !! Returns the connectivity
   GENERIC, PUBLIC :: GetConnectivity => GetNptrs
   !! Returns the connectivity
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetMatrix => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetMatrix => &
     & refelem_GetFacetMatrix
   !! Returns the facet matrix
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetNodeCoord => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => &
     & refelem_GetNodeCoord
   !! Returns the node coord
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetElements => &
-    & refelem_GetFacetElements
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetTopology => &
-    & refelem_GetFacetTopology
-    !! Get the vector of topology of facet elements
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetTopology => &
-    & refelem_GetTopology
-    !! Get the vector of topology of facet elements
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetElementQuality => &
-    & refelem_GetElementQuality
-    !! Get the element quality
-  PROCEDURE, PUBLIC, PASS( obj ) :: isPointInside => &
-    & refelem_isPointInside
-    !! Check if a point is inside the reference element
-  PROCEDURE, PUBLIC, PASS( obj ) :: SetParam => refelem_SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => refelem_SetParam
     !! Set the parameter at once
-END TYPE Test_ReferenceElement_
+END TYPE AbstractRefElement_
 
-PUBLIC :: Test_ReferenceElement_
-
-!----------------------------------------------------------------------------
-!                                            Test_ReferenceElementPointer_
-!----------------------------------------------------------------------------
-
-TYPE :: Test_ReferenceElementPointer_
-  CLASS(Test_ReferenceElement_), POINTER :: ptr => NULL()
-END TYPE Test_ReferenceElementPointer_
-
-PUBLIC :: Test_ReferenceElementPointer_
+PUBLIC :: AbstractRefElement_
 
 !----------------------------------------------------------------------------
-!                                                         Initiate@Methods
+!                                                AbstractRefElementPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractRefElementPointer_
+  CLASS(AbstractRefElement_), POINTER :: ptr => NULL()
+END TYPE AbstractRefElementPointer_
+
+PUBLIC :: AbstractRefElementPointer_
+
+!----------------------------------------------------------------------------
+!                                                   Initiate@DeferredMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -133,11 +127,75 @@ PUBLIC :: Test_ReferenceElementPointer_
 ! This routine initiates an instance of reference element. This
 ! routine should be implemented by the child class
 
-INTERFACE
-MODULE SUBROUTINE refelem_Initiate( obj, nsd )
-  CLASS( Test_ReferenceElement_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nsd
-END SUBROUTINE refelem_Initiate
+ABSTRACT INTERFACE
+  SUBROUTINE refelem_Initiate(obj, nsd)
+    IMPORT AbstractRefElement_, I4B
+    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nsd
+  END SUBROUTINE refelem_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetElements@DeferredMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: This routine returns the facet elements
+!
+!# Introduction
+!
+! Returns the facet elements. This routine should be implemented by the
+! child classes.
+
+ABSTRACT INTERFACE
+  SUBROUTINE refelem_GetFacetElements(obj, ans)
+    IMPORT AbstractRefElement_, AbstractRefElementPointer_
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    TYPE(AbstractRefElementPointer_), ALLOCATABLE :: ans(:)
+  END SUBROUTINE refelem_GetFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetFacetTopology@DeferredMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns the facet topology of reference element
+!
+!# Introduction
+!
+!- This routine returns the facet topology of [[AbstractRefElement_]]
+!- This routine should be implemented by the child classes.
+
+ABSTRACT INTERFACE
+  FUNCTION refelem_GetFacetTopology(obj) RESULT(ans)
+    IMPORT AbstractRefElement_, Topology_
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    TYPE(Topology_), ALLOCATABLE :: ans(:)
+  END FUNCTION refelem_GetFacetTopology
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTopology@DeferredMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2021
+! summary: Returns the topology of reference element
+!
+!# Introduction
+!
+!- This routine returns the topology of [[AbstractRefElement_]]
+!- This routine should be implemented by the child classes.
+
+ABSTRACT INTERFACE
+  FUNCTION refelem_GetTopology(obj) RESULT(ans)
+    IMPORT AbstractRefElement_, Topology_
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    TYPE(Topology_), ALLOCATABLE :: ans(:)
+  END FUNCTION refelem_GetTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -156,8 +214,8 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE SUBROUTINE refelem_Copy(obj, obj2)
-    CLASS(Test_ReferenceElement_), INTENT(INOUT) :: obj
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj2
+    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj2
   END SUBROUTINE refelem_Copy
 END INTERFACE
 
@@ -167,11 +225,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 1 March 2021
-! summary: Deallocates the data stored inside the [[ReferenceElement_]]
+! summary: Deallocates the data stored inside the [[AbstractRefElement_]]
 
 INTERFACE
   MODULE PURE SUBROUTINE refelem_Deallocate(obj)
-    CLASS(Test_ReferenceElement_), INTENT(INOUT) :: obj
+    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
   END SUBROUTINE refelem_Deallocate
 END INTERFACE
 
@@ -185,11 +243,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 20 May 2022
-! summary: Display the ReferenceElement
+! summary: Display the AbstractRefElement
 
 INTERFACE
   MODULE SUBROUTINE refelem_Display(obj, msg, unitno)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: msg
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
   END SUBROUTINE refelem_Display
@@ -211,13 +269,13 @@ PUBLIC :: Display
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION refelem_GetNNE(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION refelem_GetNNE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    GetNSD@Methods
+!                                                             GetNSD@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -226,7 +284,7 @@ END INTERFACE
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION refelem_GetNSD(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION refelem_GetNSD
 END INTERFACE
@@ -241,13 +299,13 @@ END INTERFACE
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION refelem_GetXidimension(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION refelem_GetXidimension
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetElementTopology@Methods
+!                                                 GetElementTopology@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -256,7 +314,7 @@ END INTERFACE
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION refelem_GetElementTopology(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION refelem_GetElementTopology
 END INTERFACE
@@ -271,7 +329,7 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE FUNCTION refelem_GetNptrs(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION refelem_GetNptrs
 END INTERFACE
@@ -297,9 +355,9 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE FUNCTION refelem_GetFacetMatrix(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:, :)
-  END FUNCTION  refelem_GetFacetMatrix
+  END FUNCTION refelem_GetFacetMatrix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -312,138 +370,9 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE FUNCTION refelem_GetNodeCoord(obj) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE :: ans(:, :)
   END FUNCTION refelem_GetNodeCoord
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetFacetElements@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: This routine returns the facet elements
-!
-!# Introduction
-!
-! Returns the facet elements. This routine should be implemented by the
-! child classes.
-
-INTERFACE
-  MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
-    TYPE(Test_ReferenceElementPointer_), ALLOCATABLE :: ans(:)
-  END SUBROUTINE refelem_GetFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetFacetTopology@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: Returns the facet topology of reference element
-!
-!# Introduction
-!
-! This routine returns the facet topology of [[ReferenceElement_]]
-!
-! This routine should be implemented by the child classes.
-
-INTERFACE
-  MODULE FUNCTION refelem_GetFacetTopology(obj) RESULT(ans)
-    CLASS( Test_ReferenceElement_ ), INTENT( IN ) :: obj
-    TYPE( Test_Topology_ ), ALLOCATABLE :: ans(:)
-  END FUNCTION refelem_GetFacetTopology
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetTopology@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: Returns the topology of reference element
-!
-!# Introduction
-!
-!- This routine returns the facet topology of [[ReferenceElement_]]
-!- This routine should be implemented by the child classes.
-
-INTERFACE
-  MODULE FUNCTION refelem_GetTopology(obj) RESULT(ans)
-    CLASS( Test_ReferenceElement_ ), INTENT( IN ) :: obj
-    TYPE( Test_Topology_ ), ALLOCATABLE :: ans(:)
-  END FUNCTION refelem_GetTopology
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetMeasureSimplex@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns the  measures for simplex
-!
-!# Introduction
-!
-! This routine returns the measure of the reference element.
-!
-! This routine should be implemented by the child class.
-
-INTERFACE
-  MODULE FUNCTION refelem_GetMeasure(obj, xij) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) ::obj
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    REAL(DFP) :: ans
-  END FUNCTION refelem_GetMeasure
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GetElementQuality@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Measure the quality of the element
-!
-!# Introduction
-!
-! This function returns the element quality. This should be
-! implemented by the child class.
-
-INTERFACE
-  MODULE FUNCTION refelem_GetElementQuality(obj, xij, measure) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    INTEGER(I4B), INTENT(IN) :: measure
-    REAL(DFP) :: ans
-  END FUNCTION refelem_GetElementQuality
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     isPointInside@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 11 April 2022
-! summary: Returns true if the given point is inside the element
-!
-!# Introduction
-!
-! If the given point is inside the referencelement, then
-! it returns the true, otherwise it returns false.
-!
-! This routine should be implemented by the class child.
-
-INTERFACE
-  MODULE FUNCTION refelem_isPointInside(obj, xij, x) RESULT(ans)
-    CLASS(Test_ReferenceElement_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(IN) :: xij(:, :)
-    REAL(DFP), INTENT(IN) :: x(3)
-    LOGICAL(LGT) :: ans
-  END FUNCTION refelem_isPointInside
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -451,22 +380,22 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE refelem_SetParam( obj, xij, entityCounts, &
-  & xidimension, name, nameStr, nsd, &
-  & topology )
-  CLASS( Test_ReferenceElement_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: xij(:,:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: entityCounts(4)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: xidimension
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: name
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: nameStr
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: nsd
-  TYPE(Test_Topology_), OPTIONAL, INTENT( IN ) :: topology(:)
-END SUBROUTINE refelem_SetParam
+  MODULE PURE SUBROUTINE refelem_SetParam(obj, xij, entityCounts, &
+    & xidimension, name, nameStr, nsd, &
+    & topology)
+    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityCounts(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: xidimension
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: name
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: nameStr
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+    TYPE(Topology_), OPTIONAL, INTENT(IN) :: topology(:)
+  END SUBROUTINE refelem_SetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END MODULE Test_ReferenceElement_Class
+END MODULE AbstractRefElement_Class

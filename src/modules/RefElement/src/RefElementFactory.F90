@@ -15,15 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE Test_ReferenceElementFactory
-USE Test_Topology_Class
-USE Test_ReferenceElement_Class
-USE Test_ReferencePoint_Class
-USE Test_ReferenceLine_Class
-USE Test_ReferenceTriangle_Class
-USE Test_ReferenceQuadrangle_Class
-USE Test_ReferenceTetrahedron_Class
-USE Test_ReferenceHexahedron_Class
-USE Test_ReferencePyramid_Class
-USE Test_ReferencePrism_Class
-END MODULE Test_ReferenceElementFactory
+MODULE RefElementFactory
+USE Topology_Class
+USE AbstractRefElement_Class
+USE RefPoint_Class
+USE RefLine_Class
+USE RefTriangle_Class
+USE RefQuadrangle_Class
+USE RefTetrahedron_Class
+USE RefHexahedron_Class
+USE RefPyramid_Class
+USE RefPrism_Class
+END MODULE RefElementFactory

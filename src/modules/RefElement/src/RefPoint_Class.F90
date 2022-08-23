@@ -17,64 +17,64 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	Reference element for point is implemented
+! summary:         Reference element for point is implemented
 
-MODULE Test_ReferencePoint_Class
+MODULE RefPoint_Class
 USE GlobalData
-USE Test_Topology_Class
-USE Test_ReferenceElement_Class
+USE Topology_Class
+USE AbstractRefElement_Class
 USE ExceptionHandler_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="Test_ReferencePoint_Class"
+CHARACTER(LEN=*), PARAMETER :: modName = "RefPoint_Class"
 TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
-!                                                   Test_ReferencePoint_
+!                                                   RefPoint_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary: 	ReferencePoint class is defined
+! summary:         RefPoint class is defined
 !
-!{!pages/ReferencePoint_.md!}
+!{!pages/RefPoint_.md!}
 
-TYPE, EXTENDS( Test_ReferenceElement_ ) :: Test_ReferencePoint_
-  CONTAINS
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => &
+TYPE, EXTENDS(AbstractRefElement_) :: RefPoint_
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => &
     & refelem_Initiate
-  !! Initiate an instance of ReferencePoint_
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetElements => &
+  !! Initiate an instance of RefPoint_
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElements => &
     & refelem_GetFacetElements
   !! Returns the facet elements
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetFacetTopology => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetTopology => &
     & refelem_GetFacetTopology
   !! returns the facet topology
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetTopology => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTopology => &
     & refelem_GetTopology
   !! returns the topology
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetMeasure => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeasure => &
     & refelem_GetMeasure
   !! Return the measure
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetElementQuality => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElementQuality => &
     & refelem_GetElementQuality
   !! returns element quality
-  PROCEDURE, PUBLIC, PASS( obj ) :: isPointInside => &
+  PROCEDURE, PUBLIC, PASS(obj) :: isPointInside => &
     & refelem_isPointInside
   !! returns true if the element is inside the point
-END TYPE Test_ReferencePoint_
+END TYPE RefPoint_
 
-PUBLIC :: Test_ReferencePoint_
+PUBLIC :: RefPoint_
 
 !----------------------------------------------------------------------------
-!                                            Test_ReferencePointPointer_
+!                                            RefPointPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: Test_ReferencePointPointer_
-  CLASS(Test_ReferencePoint_), POINTER :: ptr => NULL()
-END TYPE Test_ReferencePointPointer_
+TYPE :: RefPointPointer_
+  CLASS(RefPoint_), POINTER :: ptr => NULL()
+END TYPE RefPointPointer_
 
-PUBLIC :: Test_ReferencePointPointer_
+PUBLIC :: RefPointPointer_
 
 !----------------------------------------------------------------------------
 !                                                         Initiate@Methods
@@ -89,11 +89,11 @@ PUBLIC :: Test_ReferencePointPointer_
 ! This routine initiates an instance of reference element.
 
 INTERFACE
-MODULE SUBROUTINE refelem_Initiate( obj, nsd )
-  CLASS( Test_ReferencePoint_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nsd
+  MODULE SUBROUTINE refelem_Initiate(obj, nsd)
+    CLASS(RefPoint_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nsd
   !! spatial dimension
-END SUBROUTINE refelem_Initiate
+  END SUBROUTINE refelem_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -110,8 +110,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
-    CLASS(Test_ReferencePoint_), INTENT(IN) :: obj
-    TYPE(Test_ReferenceElementPointer_), ALLOCATABLE :: ans(:)
+    CLASS(RefPoint_), INTENT(IN) :: obj
+    TYPE(AbstractRefElementPointer_), ALLOCATABLE :: ans(:)
   END SUBROUTINE refelem_GetFacetElements
 END INTERFACE
 
@@ -125,13 +125,13 @@ END INTERFACE
 !
 !# Introduction
 !
-! This routine returns the facet topology of [[ReferenceElement_]]
+! This routine returns the facet topology of [[AbstractRefElement_]]
 !
 
 INTERFACE
   MODULE FUNCTION refelem_GetFacetTopology(obj) RESULT(ans)
-    CLASS( Test_ReferencePoint_ ), INTENT( IN ) :: obj
-    TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
+    CLASS(RefPoint_), INTENT(IN) :: obj
+    TYPE(Topology_), ALLOCATABLE :: ans(:)
   END FUNCTION refelem_GetFacetTopology
 END INTERFACE
 
@@ -145,12 +145,12 @@ END INTERFACE
 !
 !# Introduction
 !
-!- This routine returns the facet topology of [[ReferenceElement_]]
+!- This routine returns the facet topology of [[AbstractRefElement_]]
 
 INTERFACE
   MODULE FUNCTION refelem_GetTopology(obj) RESULT(ans)
-    CLASS( Test_ReferencePoint_ ), INTENT( IN ) :: obj
-    TYPE(Test_Topology_), ALLOCATABLE :: ans(:)
+    CLASS(RefPoint_), INTENT(IN) :: obj
+    TYPE(Topology_), ALLOCATABLE :: ans(:)
   END FUNCTION refelem_GetTopology
 END INTERFACE
 
@@ -169,7 +169,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION refelem_GetMeasure(obj, xij) RESULT(ans)
-    CLASS(Test_ReferencePoint_), INTENT(IN) ::obj
+    CLASS(RefPoint_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: xij(:, :)
     REAL(DFP) :: ans
   END FUNCTION refelem_GetMeasure
@@ -189,7 +189,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION refelem_GetElementQuality(obj, xij, measure) RESULT(ans)
-    CLASS(Test_ReferencePoint_), INTENT(IN) :: obj
+    CLASS(RefPoint_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: xij(:, :)
     INTEGER(I4B), INTENT(IN) :: measure
     REAL(DFP) :: ans
@@ -212,7 +212,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION refelem_isPointInside(obj, xij, x) RESULT(ans)
-    CLASS(Test_ReferencePoint_), INTENT(IN) :: obj
+    CLASS(RefPoint_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: xij(:, :)
     REAL(DFP), INTENT(IN) :: x(3)
     LOGICAL(LGT) :: ans
@@ -223,4 +223,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE Test_ReferencePoint_Class
+END MODULE RefPoint_Class
