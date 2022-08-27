@@ -21,6 +21,88 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_Initiate
+INTEGER(I4B) :: name
+!!
+name = obj%GetName()
+!!
+CALL obj%SetParam( &
+  & xij=EquidistancePoint(order=1_I4B, elemType=name), &
+  & entityCounts=TotalEntities(elemType=name), &
+  & nsd=nsd, &
+  & xidimension=Xidimension(elemType=name), &
+  & name=name, &
+  & nameStr=ElementName(name))
+!!
+CALL obj%GenerateTopology()
+!!
+END PROCEDURE refelem_Initiate
+
+!----------------------------------------------------------------------------
+!                                                               GetTopology
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_GetTopology
+INTEGER(I4B) :: ii, n
+!!
+IF (PRESENT(xidim)) THEN
+  n = obj%entityCounts(xidim + 1)
+  ALLOCATE (ans(n))
+  !!
+  SELECT CASE (xidim)
+  CASE (0_I4B)
+    DO ii = 1, n
+      ans(ii) = obj%pointTopology(ii)
+    END DO
+  CASE (1_I4B)
+    DO ii = 1, n
+      ans(ii) = obj%edgeTopology(ii)
+    END DO
+  CASE (2_I4B)
+    DO ii = 1, n
+      ans(ii) = obj%faceTopology(ii)
+    END DO
+  CASE (3_I4B)
+    DO ii = 1, n
+      ans(ii) = obj%cellTopology(ii)
+    END DO
+  END SELECT
+ELSE
+  n = SUM(obj%entityCounts)
+  ALLOCATE (ans(n))
+  !!
+  !! points
+  !!
+  DO ii = 1, obj%entityCounts(1)
+    ans(ii) = obj%pointTopology(ii)
+  END DO
+  !!
+  !! edge
+  !!
+  DO ii = 1, obj%entityCounts(2)
+    ans(obj%entityCounts(1) + ii) = obj%edgeTopology(ii)
+  END DO
+  !!
+  !! face
+  !!
+  DO ii = 1, obj%entityCounts(3)
+    ans(obj%entityCounts(2) + ii) = obj%faceTopology(ii)
+  END DO
+  !!
+  !! cell
+  !!
+  DO ii = 1, obj%entityCounts(4)
+    ans(obj%entityCounts(3) + ii) = obj%cellTopology(ii)
+  END DO
+  !!
+END IF
+!!
+END PROCEDURE refelem_GetTopology
+
+!----------------------------------------------------------------------------
 !                                                                      Copy
 !----------------------------------------------------------------------------
 
@@ -35,14 +117,47 @@ obj%xidimension = obj2%xidimension
 obj%name = obj2%name
 obj%nameStr = obj2%nameStr
 obj%nsd = obj2%nsd
-IF (ALLOCATED(obj2%topology)) THEN
-  n = SIZE(obj2%topology)
-  ALLOCATE (obj%topology(n))
+!!
+!! point topology
+!!
+IF (ALLOCATED(obj2%pointTopology)) THEN
+  n = SIZE(obj2%pointTopology)
+  ALLOCATE (obj%pointTopology(n))
   DO ii = 1, n
-    obj%topology(ii) = obj2%topology(ii)
+    obj%pointTopology(ii) = obj2%pointTopology(ii)
   END DO
 END IF
-  !!
+!!
+!! edge topology
+!!
+IF (ALLOCATED(obj2%edgeTopology)) THEN
+  n = SIZE(obj2%edgeTopology)
+  ALLOCATE (obj%edgeTopology(n))
+  DO ii = 1, n
+    obj%edgeTopology(ii) = obj2%edgeTopology(ii)
+  END DO
+END IF
+!!
+!! face topology
+!!
+IF (ALLOCATED(obj2%faceTopology)) THEN
+  n = SIZE(obj2%faceTopology)
+  ALLOCATE (obj%faceTopology(n))
+  DO ii = 1, n
+    obj%faceTopology(ii) = obj2%faceTopology(ii)
+  END DO
+END IF
+!!
+!! cell topology
+!!
+IF (ALLOCATED(obj2%cellTopology)) THEN
+  n = SIZE(obj2%cellTopology)
+  ALLOCATE (obj%cellTopology(n))
+  DO ii = 1, n
+    obj%cellTopology(ii) = obj2%cellTopology(ii)
+  END DO
+END IF
+!!
 END PROCEDURE refelem_Copy
 
 !----------------------------------------------------------------------------
@@ -57,12 +172,45 @@ obj%xidimension = -1
 obj%name = -1
 obj%nameStr = ""
 obj%nsd = -1
-IF (ALLOCATED(obj%topology)) THEN
-  n = SIZE(obj%topology)
+!!
+!! point topology
+!!
+IF (ALLOCATED(obj%pointTopology)) THEN
+  n = SIZE(obj%pointTopology)
   DO ii = 1, n
-    CALL obj%topology(ii)%Deallocate()
+    CALL obj%pointTopology(ii)%Deallocate()
   END DO
-  DEALLOCATE (obj%topology)
+  DEALLOCATE (obj%pointTopology)
+END IF
+!!
+!! edge topology
+!!
+IF (ALLOCATED(obj%edgeTopology)) THEN
+  n = SIZE(obj%edgeTopology)
+  DO ii = 1, n
+    CALL obj%edgeTopology(ii)%Deallocate()
+  END DO
+  DEALLOCATE (obj%edgeTopology)
+END IF
+!!
+!! face topology
+!!
+IF (ALLOCATED(obj%faceTopology)) THEN
+  n = SIZE(obj%faceTopology)
+  DO ii = 1, n
+    CALL obj%faceTopology(ii)%Deallocate()
+  END DO
+  DEALLOCATE (obj%faceTopology)
+END IF
+!!
+!! cell topology
+!!
+IF (ALLOCATED(obj%cellTopology)) THEN
+  n = SIZE(obj%cellTopology)
+  DO ii = 1, n
+    CALL obj%cellTopology(ii)%Deallocate()
+  END DO
+  DEALLOCATE (obj%cellTopology)
 END IF
 END PROCEDURE refelem_Deallocate
 
@@ -71,41 +219,67 @@ END PROCEDURE refelem_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Display
-  !! Define internal variable
+!! Define internal variable
 INTEGER(I4B) :: I, j
-  !!
+!!
 CALL Display(msg, unitno=unitno)
-  !!
+!!
 CALL Display("element type : "//trim(ElementName(obj%name)), &
   & unitno=unitno)
-  !!
+!!
 CALL Display(obj%xidimension, "xidimension :: ", &
   & unitno=unitno)
-  !!
+!!
 CALL Display(obj%nsd, "nsd : ", unitno=unitno)
-  !!
+!!
 CALL Display(obj%entityCounts(1), "entityCounts(0) : ", &
   & unitno=unitno)
-  !!
+!!
 CALL Display(obj%entityCounts(2), "entityCounts(1) : ", &
   & unitno=unitno)
-  !!
+!!
 CALL Display(obj%entityCounts(3), "entityCounts(2) : ", &
   & unitno=unitno)
-  !!
+!!
 CALL Display(obj%entityCounts(4), "entityCounts(3) : ", &
   & unitno=unitno)
-  !!
+!!
 DO j = 1, SIZE(obj%xiJ, 2)
   CALL Display( &
     & obj%xiJ(:, j), &
     & "Node( "//tostring(j)//" ) : ", &
     & unitno=unitno)
 END DO
-  !!
-DO j = 1, SIZE(obj%topology)
-  CALL obj%topology(j)%Display( &
-    & "topology( "//tostring(j)//" ) : ", &
+!!
+!! pointTopology
+!!
+DO j = 1, obj%entityCounts(1)
+  CALL obj%pointTopology(j)%Display( &
+    & "pointTopology( "//tostring(j)//" ) : ", &
+    & unitno=unitno)
+END DO
+!!
+!! edgeTopology
+!!
+DO j = 1, obj%entityCounts(2)
+  CALL obj%edgeTopology(j)%Display( &
+    & "edgeTopology( "//tostring(j)//" ) : ", &
+    & unitno=unitno)
+END DO
+!!
+!! faceTopology
+!!
+DO j = 1, obj%entityCounts(3)
+  CALL obj%faceTopology(j)%Display( &
+    & "faceTopology( "//tostring(j)//" ) : ", &
+    & unitno=unitno)
+END DO
+!!
+!! cellTopology
+!!
+DO j = 1, obj%entityCounts(4)
+  CALL obj%cellTopology(j)%Display( &
+    & "cellTopology( "//tostring(j)//" ) : ", &
     & unitno=unitno)
 END DO
   !!
@@ -152,7 +326,16 @@ END PROCEDURE refelem_GetElementTopology
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetNptrs
-ans = obj%topology(SUM(obj%entityCounts))%GetNptrs()
+SELECT CASE (obj%xidimension)
+CASE (0_I4B)
+  ans = obj%pointTopology(1)%GetNptrs()
+CASE (1_I4B)
+  ans = obj%edgeTopology(1)%GetNptrs()
+CASE (2_I4B)
+  ans = obj%faceTopology(1)%GetNptrs()
+CASE (3_I4B)
+  ans = obj%cellTopology(1)%GetNptrs()
+END SELECT
 END PROCEDURE refelem_GetNptrs
 
 !----------------------------------------------------------------------------
@@ -160,65 +343,33 @@ END PROCEDURE refelem_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetMatrix
-  !!
-INTEGER(I4B) :: xicell, T(4), i, istart, iend, max_nns, nns, tFacet
-  !!
-  !! main
-  !!
-T(1) = 0
-  !!
-DO i = 2, 4
-  T(i) = SUM(obj%entityCounts(1:i - 1))
-END DO
-  !!
+!!
+INTEGER(I4B) :: xicell, i, max_nns, nns, tFacet
+TYPE(Topology_), ALLOCATABLE :: faceTopology(:)
+!!
+!! main
+!!
 xicell = obj%xidimension
-  !!
-SELECT CASE (xicell)
-  !!
-CASE (0_I4B)
-  !!
-  ALLOCATE (ans(0, 0))
-  !!
-CASE (1_I4B)
-    !!
-  tFacet = 2; istart = 1; iend = 2; max_nns = 2
-  ALLOCATE (ans(tFacet, max_nns + 3))
-  ans = 0
-    !!
-  DO i = 0, tFacet - 1
-    ans(i + 1, 1) = obj%topology(iStart + i)%GetName()
-    ans(i + 1, 2) = obj%topology(iStart + i)%GetXiDimension()
-    nns = obj%topology(iStart + i)%GetNNE()
-    ans(i + 1, 3) = nns
-    ans(i + 1, 4:(3 + nns)) = obj%topology(iStart + i)%GetNptrs()
-  END DO
-    !!
-CASE (2_I4B, 3_I4B)
-    !!
-  tFacet = obj%entityCounts(xicell)
-  istart = T(xicell) + 1
-  iend = T(xicell) + tFacet
-  max_nns = 0
-    !!
-  DO i = istart, iend
-    nns = obj%topology(i)%GetNNE()
-    IF (max_nns .LT. nns) max_nns = nns
-  END DO
-    !!
-  ALLOCATE (ans(tFacet, max_nns + 3))
-    !!
-  ans = 0
-    !!
-  DO i = 0, tFacet - 1
-    ans(i + 1, 1) = obj%topology(iStart + i)%GetName()
-    ans(i + 1, 2) = obj%topology(iStart + i)%GetXiDimension()
-    nns = obj%topology(iStart + i)%GetNNE()
-    ans(i + 1, 3) = nns
-    ans(i + 1, 4:(3 + nns)) = obj%topology(iStart + i)%GetNptrs()
-  END DO
-    !!
-END SELECT
-  !!
+faceTopology = obj%GetTopology(xidim=xicell)
+tFacet = obj%entityCounts(xicell)
+max_nns = 0
+!!
+DO i = 1, tFacet
+  nns = obj%faceTopology(i)%GetNNE()
+  IF (max_nns .LT. nns) max_nns = nns
+END DO
+!!
+ALLOCATE (ans(tFacet, max_nns + 3))
+ans = 0
+!!
+DO i = 1, tFacet
+  ans(i, 1) = faceTopology(i)%GetName()
+  ans(i, 2) = faceTopology(i)%GetXiDimension()
+  nns = faceTopology(i)%GetNNE()
+  ans(i, 3) = nns
+  ans(i, 4:(3 + nns)) = faceTopology(i)%GetNptrs()
+END DO
+!!
 END PROCEDURE refelem_GetFacetMatrix
 
 !----------------------------------------------------------------------------
@@ -247,12 +398,39 @@ IF (PRESENT(name)) obj%name = name
 IF (PRESENT(nameStr)) obj%nameStr = nameStr
 IF (PRESENT(nsd)) obj%nsd = nsd
 !!
-IF (PRESENT(topology)) THEN
-  IF (ALLOCATED(obj%topology)) DEALLOCATE (obj%topology)
-  n = SIZE(topology)
-  ALLOCATE (obj%topology(n))
+IF (PRESENT(pointTopology)) THEN
+  IF (ALLOCATED(obj%pointTopology)) DEALLOCATE (obj%pointTopology)
+  n = SIZE(pointTopology)
+  ALLOCATE (obj%pointTopology(n))
   DO ii = 1, n
-    obj%topology(ii) = topology(ii)
+    obj%pointTopology(ii) = pointTopology(ii)
+  END DO
+END IF
+!!
+IF (PRESENT(edgeTopology)) THEN
+  IF (ALLOCATED(obj%edgeTopology)) DEALLOCATE (obj%edgeTopology)
+  n = SIZE(edgeTopology)
+  ALLOCATE (obj%edgeTopology(n))
+  DO ii = 1, n
+    obj%edgeTopology(ii) = edgeTopology(ii)
+  END DO
+END IF
+!!
+IF (PRESENT(faceTopology)) THEN
+  IF (ALLOCATED(obj%faceTopology)) DEALLOCATE (obj%faceTopology)
+  n = SIZE(faceTopology)
+  ALLOCATE (obj%faceTopology(n))
+  DO ii = 1, n
+    obj%faceTopology(ii) = faceTopology(ii)
+  END DO
+END IF
+!!
+IF (PRESENT(cellTopology)) THEN
+  IF (ALLOCATED(obj%cellTopology)) DEALLOCATE (obj%cellTopology)
+  n = SIZE(cellTopology)
+  ALLOCATE (obj%cellTopology(n))
+  DO ii = 1, n
+    obj%cellTopology(ii) = cellTopology(ii)
   END DO
 END IF
 !!

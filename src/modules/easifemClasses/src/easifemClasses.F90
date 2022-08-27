@@ -61,7 +61,7 @@ USE NeumannBC_Class
 USE PolynomialFactory
 USE UserFunction_Class
 
-USE Test_ReferenceElementFactory
+USE RefElementFactory
 
 USE Tree3R_Class
 

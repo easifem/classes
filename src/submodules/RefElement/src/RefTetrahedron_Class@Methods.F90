@@ -16,41 +16,17 @@
 
 SUBMODULE(RefTetrahedron_Class) Methods
 USE BaseMethod
-USE RefLine_Class
-USE RefTriangle_Class
+USE RefElementFactory
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                                 GetName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_Initiate
-REAL(DFP) :: xij(3, 4)
-INTEGER(I4B) :: entityCounts(4), xidimension, name, ii
-TYPE(String) :: nameStr
-TYPE(Topology_) :: topology(15)
-  !!
-xij = 0.0_DFP
-xij = EquidistancePoint_Tetrahedron(order=1_I4B)
-  !!
-xidimension = 3
-name = Tetrahedron4
-nameStr = "Tetrahedron4"
-entityCounts = TotalEntities(name)
-  !!
-topology = obj%GetTopology()
-  !!
-CALL obj%SetParam( &
-  & xij=xij, &
-  & entityCounts=entityCounts, &
-  & nsd=nsd, &
-  & xidimension=xidimension, &
-  & name=name, &
-  & nameStr=nameStr%chars(), &
-  & topology=topology)
-  !!
-END PROCEDURE refelem_Initiate
+MODULE PROCEDURE refelem_GetName
+ans = Tetrahedron4
+END PROCEDURE refelem_GetName
 
 !----------------------------------------------------------------------------
 !                                                           GetFacetElements
@@ -59,88 +35,82 @@ END PROCEDURE refelem_Initiate
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: n = 4_I4B
 INTEGER(I4B) :: ii
-  !!
+!!
 ALLOCATE (ans(n))
-  !!
+!!
 DO ii = 1, n
   ALLOCATE (RefTriangle_ :: ans(ii)%ptr)
   CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
 END DO
-  !!
+!!
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
-!                                                           GetFacetTopology
+!                                                           GenerateTopology
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_GetFacetTopology
-INTEGER(I4B), PARAMETER :: n = 4_I4B
-INTEGER(I4B) :: ii, n3(3, n)
-  !!
-ALLOCATE (ans(n))
-  !!
-n3(:, 1) = [2, 3, 4]
-n3(:, 2) = [1, 4, 3]
-n3(:, 3) = [1, 2, 4]
-n3(:, 4) = [1, 3, 2]
-  !!
-DO ii = 1, 4
-  CALL ans(ii)%Initiate(nptrs=n3(:, ii), name=Triangle3, &
-    & xidimension=2_I4B)
-END DO
-  !!
-END PROCEDURE refelem_GetFacetTopology
-
-!----------------------------------------------------------------------------
-!                                                                GetTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GetTopology
-INTEGER(I4B), PARAMETER :: n = 15_I4B
+MODULE PROCEDURE refelem_GenerateTopology
+INTEGER(I4B), PARAMETER :: np = 4_I4B
+INTEGER(I4B), PARAMETER :: ne = 6_I4B
+INTEGER(I4B), PARAMETER :: nf = 4_I4B
+INTEGER(I4B), PARAMETER :: nc = 1_I4B
+INTEGER(I4B), PARAMETER :: nptrs(4) = [1, 2, 3, 4]
+INTEGER(I4B) :: edges(2, ne)
+INTEGER(I4B) :: faces(3, nf)
 INTEGER(I4B) :: ii
-INTEGER(I4B) :: n2(2, 6), n3(3, 4), n4(4)
-  !!
-ALLOCATE (ans(n))
-  !!
-  !! point = 4
-  !!
-DO ii = 1, 4
-  CALL ans(ii)%Initiate(nptrs=[ii], name=Point, &
+!!
+ALLOCATE (obj%pointTopology(np))
+ALLOCATE (obj%edgeTopology(ne))
+ALLOCATE (obj%faceTopology(nf))
+ALLOCATE (obj%cellTopology(nc))
+!!
+!! point
+!!
+DO ii = 1, np
+  CALL obj%pointTopology(ii)%Initiate( &
+    & nptrs=[ii], &
+    & name=Point, &
     & xidimension=0_I4B)
 END DO
-  !!
-  !! Lines = 6
-  !!
-n2(:, 1) = [3, 4]
-n2(:, 2) = [2, 4]
-n2(:, 3) = [2, 3]
-n2(:, 4) = [1, 4]
-n2(:, 5) = [1, 3]
-n2(:, 6) = [1, 2]
-  !!
-DO ii = 1, 6
-  CALL ans(4 + ii)%Initiate(nptrs=n2(:, ii), name=Line2, &
+!!
+!! edges
+!!
+edges(:, 1) = [3, 4]
+edges(:, 2) = [2, 4]
+edges(:, 3) = [2, 3]
+edges(:, 4) = [1, 4]
+edges(:, 5) = [1, 3]
+edges(:, 6) = [1, 2]
+!!
+DO ii = 1, ne
+  CALL obj%edgeTopology(ii)%Initiate( &
+    & nptrs=edges(:, ii), &
+    & name=Line2, &
     & xidimension=1_I4B)
 END DO
-  !!
-  !! Triangle
-  !!
-n3(:, 1) = [2, 3, 4]
-n3(:, 2) = [1, 4, 3]
-n3(:, 3) = [1, 2, 4]
-n3(:, 4) = [1, 3, 2]
-  !!
-DO ii = 1, 4
-  CALL ans(10 + ii)%Initiate(nptrs=n3(:, ii), name=Triangle3, &
+!!
+!! faces
+!!
+faces(:, 1) = [2, 3, 4]
+faces(:, 2) = [1, 4, 3]
+faces(:, 3) = [1, 2, 4]
+faces(:, 4) = [1, 3, 2]
+!!
+DO ii = 1, nf
+  CALL obj%faceTopology(ii)%Initiate( &
+    & nptrs=faces(:, ii), &
+    & name=Triangle3, &
     & xidimension=2_I4B)
 END DO
-  !!
-  !! Tetrahedron
-  !!
-n4 = [1, 2, 3, 4]
-CALL ans(15)%Initiate(nptrs=n4, name=Tetrahedron4, &
+!!
+!! cell
+!!
+CALL obj%cellTopology(1)%Initiate( &
+  & nptrs=nptrs, &
+  & name=Tetrahedron4, &
   & xidimension=3_I4B)
-END PROCEDURE refelem_GetTopology
+!!
+END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------
 !

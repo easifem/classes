@@ -16,39 +16,17 @@
 
 SUBMODULE(RefTriangle_Class) Methods
 USE BaseMethod
-USE RefLine_Class
+USE RefElementFactory
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
+!                                                                    GetName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_Initiate
-REAL(DFP) :: xij(3, 3)
-INTEGER(I4B) :: entityCounts(4), xidimension, name
-TYPE(String) :: nameStr
-TYPE(Topology_) :: topology(7)
-!!
-xij = EquidistancePoint_Triangle(order=1_I4B)
-!!
-entityCounts = [3, 3, 1, 0]
-xidimension = 2
-name = Triangle3
-nameStr = "Triangle3"
-!!
-topology = obj%GetTopology()
-!!
-CALL obj%SetParam( &
-  & xij=xij, &
-  & entityCounts=entityCounts, &
-  & nsd=nsd, &
-  & xidimension=xidimension, &
-  & name=name, &
-  & nameStr=nameStr%chars(), &
-  & topology=topology)
-  !!
-END PROCEDURE refelem_Initiate
+MODULE PROCEDURE refelem_GetName
+ans = Triangle3
+END PROCEDURE refelem_GetName
 
 !----------------------------------------------------------------------------
 !                                                           GetFacetElements
@@ -57,69 +35,57 @@ END PROCEDURE refelem_Initiate
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: n = 3_I4B
 INTEGER(I4B) :: ii
-  !!
+!!
 ALLOCATE (ans(n))
-  !!
+!!
 DO ii = 1, n
   ALLOCATE (RefLine_ :: ans(ii)%ptr)
   CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
 END DO
-  !!
+!!
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
-!                                                           GetFacetTopology
+!                                                           GenerateTopology
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_GetFacetTopology
-INTEGER(I4B), PARAMETER :: n = 3_I4B
-INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-  !!
-ALLOCATE (ans(n))
-  !!
-nptrs = [1, 2, 3]
-  !!
-CALL ans(1)%Initiate(nptrs=nptrs(2:3), name=Line2, &
-  & xidimension=1_I4B)
-CALL ans(2)%Initiate(nptrs=nptrs(3:1), name=Line2, &
-  & xidimension=1_I4B)
-CALL ans(3)%Initiate(nptrs=nptrs(1:2), name=Line2, &
-  & xidimension=1_I4B)
-  !!
-END PROCEDURE refelem_GetFacetTopology
-
-!----------------------------------------------------------------------------
-!                                                                GetTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GetTopology
-INTEGER(I4B), PARAMETER :: tFacet = 7_I4B
+MODULE PROCEDURE refelem_GenerateTopology
+INTEGER(I4B), PARAMETER :: np = 3_I4B
+INTEGER(I4B), PARAMETER :: ne = 3_I4B
+INTEGER(I4B), PARAMETER :: nf = 1_I4B
+INTEGER(I4B), PARAMETER :: edges(2, ne) = RESHAPE([2, 3, 3, 1, 1, 2], [2, ne])
 INTEGER(I4B) :: ii
-  !!
-ALLOCATE (ans(tFacet))
-  !!
-  !! point
-  !!
-DO ii = 1, 3
-  CALL ans(ii)%Initiate(nptrs=[ii], name=Point, &
+!!
+ALLOCATE (obj%pointTopology(np))
+ALLOCATE (obj%edgeTopology(ne))
+ALLOCATE (obj%faceTopology(nf))
+!!
+!! point
+!!
+DO ii = 1, np
+  CALL obj%pointTopology(ii)%Initiate( &
+    & nptrs=[ii], &
+    & name=Point, &
     & xidimension=0_I4B)
 END DO
+!!
+!! edge
+!!
+DO ii = 1, ne
+  CALL obj%edgeTopology(ii)%Initiate( &
+    & nptrs=edges(:, ii), &
+    & name=Line2, &
+    & xidimension=1_I4B)
+END DO
+!!
+!! face
+!!
+CALL obj%faceTopology(1)%Initiate( &
+  & nptrs=[1_I4B, 2_I4B, 3_I4B], &
+  & name=Triangle3, &
+  & xidimension=2_I4B)
   !!
-  !! Lines
-  !!
-CALL ans(4)%Initiate(nptrs=[2_I4B, 3_I4B], name=Line2, &
-  & xidimension=1_I4B)
-CALL ans(5)%Initiate(nptrs=[3_I4B, 1_I4B], name=Line2, &
-  & xidimension=1_I4B)
-CALL ans(6)%Initiate(nptrs=[1_I4B, 2_I4B], name=Line2, &
-  & xidimension=1_I4B)
-  !!
-  !! Triangle
-  !!
-CALL ans(7)%Initiate(nptrs=[1_I4B, 2_I4B, 3_I4B], &
-  & name=Triangle3, xidimension=2_I4B)
-  !!
-END PROCEDURE refelem_GetTopology
+END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------
 !

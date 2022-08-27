@@ -30,7 +30,6 @@ PRIVATE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 July 2022
 ! summary: Polynomial3D class is defined
-!
 
 TYPE, EXTENDS( AbstractFunction3D_ ) :: Polynomial3D_
   PRIVATE

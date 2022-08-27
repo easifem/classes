@@ -16,42 +16,17 @@
 
 SUBMODULE(RefPrism_Class) Methods
 USE BaseMethod
-USE RefLine_Class
-USE RefTriangle_Class
-USE RefQuadrangle_Class
+USE RefElementFactory
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                                    GetName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_Initiate
-REAL(DFP) :: xij(3, 6)
-INTEGER(I4B) :: entityCounts(4), xidimension, name, ii
-TYPE(String) :: nameStr
-TYPE(Topology_) :: topology(21)
-  !!
-xij = 0.0_DFP
-xij = EquidistancePoint_Prism(order=1_I4B)
-  !!
-xidimension = 3
-name = Prism6
-nameStr = "Prism6"
-entityCounts = TotalEntities(name)
-  !!
-topology = obj%GetTopology()
-  !!
-CALL obj%SetParam( &
-  & xij=xij, &
-  & entityCounts=entityCounts, &
-  & nsd=nsd, &
-  & xidimension=xidimension, &
-  & name=name, &
-  & nameStr=nameStr%chars(), &
-  & topology=topology)
-  !!
-END PROCEDURE refelem_Initiate
+MODULE PROCEDURE refelem_GetName
+ans = Prism6
+END PROCEDURE refelem_GetName
 
 !----------------------------------------------------------------------------
 !                                                           GetFacetElements
@@ -60,108 +35,91 @@ END PROCEDURE refelem_Initiate
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: n = 5_I4B
 INTEGER(I4B) :: ii
-  !!
+!!
 ALLOCATE (ans(n))
-  !!
+!!
 ALLOCATE (RefTriangle_ :: ans(1)%ptr)
 CALL ans(1)%ptr%Initiate(nsd=obj%getNSD())
 ALLOCATE (RefTriangle_ :: ans(5)%ptr)
 CALL ans(5)%ptr%Initiate(nsd=obj%getNSD())
-  !!
+!!
 DO ii = 2, 4
   ALLOCATE (RefQuadrangle_ :: ans(ii)%ptr)
   CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
 END DO
-  !!
+!!
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
-!                                                           GetFacetTopology
+!                                                          GenerateTopology
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE refelem_GetFacetTopology
-INTEGER(I4B), PARAMETER :: n = 5_I4B
-INTEGER(I4B) :: ii, n4(4, 5)
-  !!
-ALLOCATE (ans(n))
-  !!
-n4(:, 1) = [1, 3, 2, 0]
-n4(:, 2) = [2, 3, 6, 5]
-n4(:, 3) = [1, 2, 5, 4]
-n4(:, 4) = [1, 4, 6, 3]
-n4(:, 5) = [4, 5, 6, 0]
-  !!
-CALL ans(1)%Initiate(nptrs=n4(1:3, 1), name=Triangle3, &
-  & xidimension=2_I4B)
-CALL ans(5)%Initiate(nptrs=n4(1:3, 5), name=Triangle3, &
-  & xidimension=2_I4B)
-  !!
-DO ii = 2, 4
-  CALL ans(ii)%Initiate(nptrs=n4(:, ii), name=Quadrangle4, &
-    & xidimension=2_I4B)
-END DO
-  !!
-END PROCEDURE refelem_GetFacetTopology
-
-!----------------------------------------------------------------------------
-!                                                                GetTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GetTopology
-INTEGER(I4B), PARAMETER :: n = 21_I4B
+MODULE PROCEDURE refelem_GenerateTopology
+INTEGER(I4B), PARAMETER :: np = 6_I4B
+INTEGER(I4B), PARAMETER :: ne = 9_I4B
+INTEGER(I4B), PARAMETER :: nf = 5_I4B
+INTEGER(I4B), PARAMETER :: nc = 1_I4B
+INTEGER(I4B), PARAMETER :: nptrs(np) = [1, 2, 3, 4, 5, 6]
+INTEGER(I4B) :: edges(2, ne)
+INTEGER(I4B) :: faces(4, nf), faceHelp(2, nf)
 INTEGER(I4B) :: ii
-INTEGER(I4B) :: n2(2, 9), n4(4, 5), n6(6)
-  !!
-ALLOCATE (ans(n))
-  !!
-  !! point = 6
-  !!
-DO ii = 1, 6
-  CALL ans(ii)%Initiate(nptrs=[ii], name=Point, &
+!!
+ALLOCATE (obj%pointTopology(np))
+ALLOCATE (obj%edgeTopology(ne))
+ALLOCATE (obj%faceTopology(nf))
+ALLOCATE (obj%cellTopology(nc))
+!!
+!! point
+!!
+DO ii = 1, np
+  CALL obj%pointTopology(ii)%Initiate( &
+    & nptrs=[ii], &
+    & name=Point, &
     & xidimension=0_I4B)
 END DO
-  !!
-  !! Lines = 9
-  !!
-n2(:, 1) = [1, 2]
-n2(:, 2) = [1, 3]
-n2(:, 3) = [1, 4]
-n2(:, 4) = [2, 3]
-n2(:, 5) = [2, 5]
-n2(:, 6) = [3, 6]
-n2(:, 7) = [4, 5]
-n2(:, 8) = [4, 6]
-n2(:, 9) = [5, 6]
-  !!
-DO ii = 1, 9
-  CALL ans(6 + ii)%Initiate(nptrs=n2(:, ii), name=Line2, &
+!!
+!! edges
+!!
+edges(:, 1) = [1, 2]
+edges(:, 2) = [1, 3]
+edges(:, 3) = [1, 4]
+edges(:, 4) = [2, 3]
+edges(:, 5) = [2, 5]
+edges(:, 6) = [3, 6]
+edges(:, 7) = [4, 5]
+edges(:, 8) = [4, 6]
+edges(:, 9) = [5, 6]
+!!
+DO ii = 1, ne
+  CALL obj%edgeTopology(ii)%Initiate( &
+    & nptrs=edges(:, ii), &
+    & name=Line2, &
     & xidimension=1_I4B)
 END DO
-  !!
-n4(:, 1) = [1, 3, 2, 0]
-n4(:, 2) = [2, 3, 6, 5]
-n4(:, 3) = [1, 2, 5, 4]
-n4(:, 4) = [1, 4, 6, 3]
-n4(:, 5) = [4, 5, 6, 0]
-  !!
-CALL ans(15 + 1)%Initiate(nptrs=n4(1:3, 1), name=Triangle3, &
-  & xidimension=2_I4B)
-CALL ans(15 + 5)%Initiate(nptrs=n4(1:3, 5), name=Triangle3, &
-  & xidimension=2_I4B)
-  !!
-DO ii = 2, 4
-  CALL ans(15 + ii)%Initiate(nptrs=n4(:, ii), name=Quadrangle4, &
+!!
+!! faces
+!!
+faces(:, 1) = [1, 3, 2, 0]; faceHelp(:, 1) = [3, Triangle3]
+faces(:, 2) = [2, 3, 6, 5]; faceHelp(:, 2) = [4, Quadrangle4]
+faces(:, 3) = [1, 2, 5, 4]; faceHelp(:, 3) = [4, Quadrangle4]
+faces(:, 4) = [1, 4, 6, 3]; faceHelp(:, 4) = [4, Quadrangle4]
+faces(:, 5) = [4, 5, 6, 0]; faceHelp(:, 5) = [3, Triangle3]
+!!
+DO ii = 1, nf
+  CALL obj%faceTopology(ii)%Initiate( &
+    & nptrs=faces(1:faceHelp(1, ii), ii), &
+    & name=faceHelp(2, ii), &
     & xidimension=2_I4B)
 END DO
-  !!
-  !! Prism
-  !!
-n6 = [1, 2, 3, 4, 5, 6]
-  !!
-CALL ans(21)%Initiate(nptrs=n6, name=Prism6, &
+!!
+!! cell
+!!
+CALL obj%cellTopology(1)%Initiate( &
+  & nptrs=nptrs, &
+  & name=Prism6, &
   & xidimension=3_I4B)
-  !!
-END PROCEDURE refelem_GetTopology
+!!
+END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------
 !

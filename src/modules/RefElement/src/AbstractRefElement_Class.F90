@@ -1,5 +1,5 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Copyright (C) 2020-2022  Vikas Sharma, Ph.D
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -56,21 +56,31 @@ TYPE, ABSTRACT :: AbstractRefElement_
     !! name of the element
   INTEGER(I4B) :: nsd = -1_I4B
     !! Number of spatial dimensions
-  TYPE(Topology_), ALLOCATABLE :: topology(:)
-    !! Topology information of 0D, 1, 2, 3D entities
+  TYPE(Topology_), PUBLIC, ALLOCATABLE :: pointTopology(:)
+    !! Topology information of points
+  TYPE(Topology_), PUBLIC, ALLOCATABLE :: edgeTopology(:)
+    !! Topology information of edges
+  TYPE(Topology_), PUBLIC, ALLOCATABLE :: faceTopology(:)
+    !! Topology information of facet
+  TYPE(Topology_), PUBLIC, ALLOCATABLE :: cellTopology(:)
+    !! Topology information of cells
   !!
 CONTAINS
   !!
   !! @DeferredMethods
   !!
-  PROCEDURE(refelem_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
-  !! Initiate an instance
+  PROCEDURE(refelem_GetName), DEFERRED, PUBLIC, PASS(obj) :: &
+    & GetName
+  !! returns the name
   PROCEDURE(refelem_GetFacetElements), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetFacetElements
-  PROCEDURE(refelem_GetFacetTopology), DEFERRED, PUBLIC, PASS(obj) :: &
-    & GetFacetTopology
+  !! returns the facet elements
+  PROCEDURE(refelem_GenerateTopology), DEFERRED, PUBLIC, PASS(obj) :: &
+    & GenerateTopology
   !! Get the vector of topology of facet elements
-  PROCEDURE(refelem_GetTopology), DEFERRED, PUBLIC, PASS(obj) :: GetTopology
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => refelem_Initiate
+  !! Initiate an instance
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTopology => refelem_GetTopology
   !! Get the vector of topology of facet elements
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => refelem_Copy
   !! Initiate an instance by copy
@@ -115,24 +125,24 @@ END TYPE AbstractRefElementPointer_
 PUBLIC :: AbstractRefElementPointer_
 
 !----------------------------------------------------------------------------
-!                                                   Initiate@DeferredMethods
+!                                                    GetName@DeferredMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 9 Aug 2022
-! summary: Initiate the instance of Reference element
+! date: 25 July 2022
+! summary: Return the name of the element
 !
 !# Introduction
 !
-! This routine initiates an instance of reference element. This
-! routine should be implemented by the child class
+! This routine returns the name of the element. This should be implemented
+! by the child class.
 
 ABSTRACT INTERFACE
-  SUBROUTINE refelem_Initiate(obj, nsd)
+  PURE FUNCTION refelem_GetName(obj) RESULT(ans)
     IMPORT AbstractRefElement_, I4B
-    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: nsd
-  END SUBROUTINE refelem_Initiate
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION refelem_GetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -140,7 +150,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
+! date: 16 June 2022
 ! summary: This routine returns the facet elements
 !
 !# Introduction
@@ -161,49 +171,58 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
-! summary: Returns the facet topology of reference element
-!
-!# Introduction
-!
-!- This routine returns the facet topology of [[AbstractRefElement_]]
-!- This routine should be implemented by the child classes.
+! date: 16 June 2022
+! update: 25 July 2022
+! summary: Generate topology of the element
 
 ABSTRACT INTERFACE
-  FUNCTION refelem_GetFacetTopology(obj) RESULT(ans)
+  SUBROUTINE refelem_GenerateTopology(obj)
     IMPORT AbstractRefElement_, Topology_
-    CLASS(AbstractRefElement_), INTENT(IN) :: obj
-    TYPE(Topology_), ALLOCATABLE :: ans(:)
-  END FUNCTION refelem_GetFacetTopology
+    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
+  END SUBROUTINE refelem_GenerateTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetTopology@DeferredMethods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
+! date: 9 Aug 2022
+! summary: Initiate the instance of Reference element
+
+INTERFACE
+  MODULE SUBROUTINE refelem_Initiate(obj, nsd)
+    CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nsd
+  END SUBROUTINE refelem_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTopology@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 16 June 2022
 ! summary: Returns the topology of reference element
 !
 !# Introduction
 !
 !- This routine returns the topology of [[AbstractRefElement_]]
-!- This routine should be implemented by the child classes.
 
-ABSTRACT INTERFACE
-  FUNCTION refelem_GetTopology(obj) RESULT(ans)
-    IMPORT AbstractRefElement_, Topology_
+INTERFACE
+  MODULE PURE FUNCTION refelem_GetTopology(obj, xidim) RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: xidim
     TYPE(Topology_), ALLOCATABLE :: ans(:)
   END FUNCTION refelem_GetTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              Copy@Methods
+!                                                               Copy@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2 March 2021
+! date: 2 March 2022
 ! summary: This subroutine copies one reference element into other
 !
 !# Introduction
@@ -224,7 +243,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 1 March 2021
+! date: 1 March 2022
 ! summary: Deallocates the data stored inside the [[AbstractRefElement_]]
 
 INTERFACE
@@ -264,7 +283,7 @@ PUBLIC :: Display
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 1 March 2021
+! date: 1 March 2022
 ! summary: Returns the total number of nodes in the reference element
 
 INTERFACE
@@ -324,7 +343,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 16 June 2021
+! date: 16 June 2022
 ! summary: Returns the connectivity of reference element
 
 INTERFACE
@@ -382,7 +401,7 @@ END INTERFACE
 INTERFACE
   MODULE PURE SUBROUTINE refelem_SetParam(obj, xij, entityCounts, &
     & xidimension, name, nameStr, nsd, &
-    & topology)
+    & pointTopology, edgeTopology, faceTopology, cellTopology)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityCounts(4)
@@ -390,7 +409,10 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: name
     CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: nameStr
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    TYPE(Topology_), OPTIONAL, INTENT(IN) :: topology(:)
+    TYPE(Topology_), OPTIONAL, INTENT(IN) :: pointTopology(:)
+    TYPE(Topology_), OPTIONAL, INTENT(IN) :: edgeTopology(:)
+    TYPE(Topology_), OPTIONAL, INTENT(IN) :: faceTopology(:)
+    TYPE(Topology_), OPTIONAL, INTENT(IN) :: cellTopology(:)
   END SUBROUTINE refelem_SetParam
 END INTERFACE
 
