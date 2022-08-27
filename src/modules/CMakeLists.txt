@@ -156,6 +156,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
 # PolynomialFactory
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 
+# RefElement
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
+
 # Tree3R
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 

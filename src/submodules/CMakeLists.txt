@@ -195,6 +195,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 # UserFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
+# RefElement
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
+
 # AbstractPlot
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
 
