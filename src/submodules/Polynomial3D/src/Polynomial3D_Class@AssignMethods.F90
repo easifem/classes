@@ -77,9 +77,9 @@ MODULE PROCEDURE func_AssignObjMono
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1= varname(1)%chars(), &
-    & name2= varname(2)%chars(), &
-    & name3=varname(3)%chars() )
+    & varname1= varname(1)%chars(), &
+    & varname2= varname(2)%chars(), &
+    & varname3=varname(3)%chars() )
   !!
 END PROCEDURE func_AssignObjMono
 
@@ -95,9 +95,9 @@ MODULE PROCEDURE func_AssignObjInt8
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1="x", &
-    & name2="y", &
-    & name3="z" )
+    & varname1="x", &
+    & varname2="y", &
+    & varname3="z" )
   !!
 END PROCEDURE func_AssignObjInt8
 
@@ -113,9 +113,9 @@ MODULE PROCEDURE func_AssignObjInt16
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1="x", &
-    & name2="y", &
-    & name3="z" )
+    & varname1="x", &
+    & varname2="y", &
+    & varname3="z" )
   !!
 END PROCEDURE func_AssignObjInt16
 
@@ -131,9 +131,9 @@ MODULE PROCEDURE func_AssignObjInt32
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1="x", &
-    & name2="y", &
-    & name3="z" )
+    & varname1="x", &
+    & varname2="y", &
+    & varname3="z" )
   !!
 END PROCEDURE func_AssignObjInt32
 
@@ -149,9 +149,9 @@ MODULE PROCEDURE func_AssignObjInt64
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1="x", &
-    & name2="y", &
-    & name3="z" )
+    & varname1="x", &
+    & varname2="y", &
+    & varname3="z" )
   !!
 END PROCEDURE func_AssignObjInt64
 
@@ -167,9 +167,9 @@ MODULE PROCEDURE func_AssignObjReal32
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1="x", &
-    & name2="y", &
-    & name3="z" )
+    & varname1="x", &
+    & varname2="y", &
+    & varname3="z" )
   !!
 END PROCEDURE func_AssignObjReal32
 
@@ -185,9 +185,9 @@ MODULE PROCEDURE func_AssignObjReal64
   CALL obj%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1="x", &
-    & name2="y", &
-    & name3="z" )
+    & varname1="x", &
+    & varname2="y", &
+    & varname3="z" )
   !!
 END PROCEDURE func_AssignObjReal64
 
