@@ -29,7 +29,7 @@ IMPLICIT NONE
 PRIVATE
 
 !----------------------------------------------------------------------------
-!                                                   JacobiSpace1D_
+!                                                            JacobiSpace1D_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -38,34 +38,29 @@ PRIVATE
 !
 !{!pages/JacobiSpace1D_.md!}
 
-TYPE, EXTENDS( AbstractOrthopolSpace1D_ ) :: JacobiSpace1D_
+TYPE, EXTENDS(AbstractOrthopolSpace1D_) :: JacobiSpace1D_
   PRIVATE
-  TYPE( Jacobi1D_ ) :: x
-    !! Basis
-  CONTAINS
-  !!
+  TYPE(Jacobi1D_) :: x
+CONTAINS
   PRIVATE
-  !!
-  !! @ConstructorMethods
-  !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => Orthopol_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Orthopol_Deallocate
   FINAL :: Orthopol_Final
 END TYPE JacobiSpace1D_
 
 PUBLIC :: JacobiSpace1D_
 
 !----------------------------------------------------------------------------
-!                                           JacobiSpace1DPointer_
+!                                                      JacobiSpace1DPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: JacobiSpace1DPointer_
-  CLASS( JacobiSpace1D_ ), POINTER :: ptr => NULL()
+  CLASS(JacobiSpace1D_), POINTER :: ptr => NULL()
 END TYPE JacobiSpace1DPointer_
 
 PUBLIC :: JacobiSpace1DPointer_
 
 !----------------------------------------------------------------------------
-!                                 JacobiSpace1D@ConstructorMethods
+!                                           JacobiSpace1D@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -73,21 +68,21 @@ PUBLIC :: JacobiSpace1DPointer_
 ! summary: Constructor for Chebyshev Basis of first kind
 
 INTERFACE
-MODULE FUNCTION JacobiSpace1D1( varname, n, alpha, beta, isMonic, &
-    & isOrthonormal ) RESULT( ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+  MODULE FUNCTION JacobiSpace1D1(varname, n, alpha, beta, isMonic, &
+      & isOrthonormal) RESULT(ans)
+    CHARACTER(LEN=*), INTENT(IN) :: varname
     !! variable name
-  INTEGER( I4B ), INTENT( IN ) :: n
+    INTEGER(I4B), INTENT(IN) :: n
     !! order of chebyshev Basis
-  REAL( DFP ), INTENT( IN ) :: alpha
-  REAL( DFP ), INTENT( IN ) :: beta
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
+    REAL(DFP), INTENT(IN) :: alpha
+    REAL(DFP), INTENT(IN) :: beta
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isMonic
     !! Default is .FALSE., if true then leading coeff of poly is 1
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrthonormal
     !! Default is .FALSE., if true then the Basiss are orthonormal
-  TYPE( JacobiSpace1D_ ) :: ans
+    TYPE(JacobiSpace1D_) :: ans
     !! Chebyshev Basis of first kind
-END FUNCTION JacobiSpace1D1
+  END FUNCTION JacobiSpace1D1
 END INTERFACE
 
 INTERFACE JacobiSpace1D
@@ -97,7 +92,7 @@ END INTERFACE JacobiSpace1D
 PUBLIC :: JacobiSpace1D
 
 !----------------------------------------------------------------------------
-!                          JacobiSpace1D_Pointer@ConstructorMethods
+!                                   JacobiSpace1D_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -105,21 +100,21 @@ PUBLIC :: JacobiSpace1D
 ! summary: Constructor for Chebyshev1 Basis of first kind
 
 INTERFACE
-MODULE FUNCTION JacobiSpace1D_Pointer1( varname, n, alpha, beta, &
-  & isMonic, isOrthonormal ) RESULT( ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+  MODULE FUNCTION JacobiSpace1D_Pointer1(varname, n, alpha, beta, &
+    & isMonic, isOrthonormal) RESULT(ans)
+    CHARACTER(LEN=*), INTENT(IN) :: varname
     !! variable name
-  INTEGER( I4B ), INTENT( IN ) :: n
+    INTEGER(I4B), INTENT(IN) :: n
     !! order of chebyshev Basis
-  REAL( DFP ), INTENT( IN ) :: alpha
-  REAL( DFP ), INTENT( IN ) :: beta
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
+    REAL(DFP), INTENT(IN) :: alpha
+    REAL(DFP), INTENT(IN) :: beta
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isMonic
     !! Default is .FALSE., if true then leading coeff of poly is 1
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrthonormal
     !! Default is .FALSE., if true then the Basiss are orthonormal
-  CLASS( JacobiSpace1D_ ), POINTER :: ans
+    CLASS(JacobiSpace1D_), POINTER :: ans
     !! Chebyshev Basis of first kind
-END FUNCTION JacobiSpace1D_Pointer1
+  END FUNCTION JacobiSpace1D_Pointer1
 END INTERFACE
 
 INTERFACE JacobiSpace1D_Pointer
@@ -129,17 +124,17 @@ END INTERFACE JacobiSpace1D_Pointer
 PUBLIC :: JacobiSpace1D_Pointer
 
 !----------------------------------------------------------------------------
-!                                            Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 4 Aug 2022
-! summary: 	Deallocate the object
+! summary:         Deallocate the object
 
 INTERFACE
-MODULE SUBROUTINE Orthopol_Deallocate( obj )
-  CLASS( JacobiSpace1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Orthopol_Deallocate
+  MODULE SUBROUTINE Orthopol_Deallocate(obj)
+    CLASS(JacobiSpace1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE Orthopol_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -148,12 +143,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 4 Aug 2022
-! summary: 	Finalizer for chebyshev space
+! summary:         Finalizer for chebyshev space
 
 INTERFACE
-MODULE SUBROUTINE Orthopol_Final( obj )
-  TYPE( JacobiSpace1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Orthopol_Final
+  MODULE SUBROUTINE Orthopol_Final(obj)
+    TYPE(JacobiSpace1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE Orthopol_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
