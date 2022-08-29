@@ -54,8 +54,8 @@ MODULE PROCEDURE func_Multiplication_obj_obj
   CALL ans%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1=varname(1)%chars(), &
-    & name2=varname(2)%chars() )
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars() )
   !!
   IF( ALLOCATED( coeff ) ) DEALLOCATE( coeff )
   IF( ALLOCATED( degree ) ) DEALLOCATE( degree )
@@ -78,8 +78,8 @@ MODULE PROCEDURE func_Multiplication_mono_mono
   CALL ans%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1=varname(1)%chars(), &
-    & name2=varname(2)%chars() )
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars() )
   !!
 END PROCEDURE func_Multiplication_mono_mono
 
@@ -106,8 +106,8 @@ MODULE PROCEDURE func_Multiplication_mono_obj
   CALL ans%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1=varname(1)%chars(), &
-    & name2=varname(2)%chars() )
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars() )
   !!
   IF( ALLOCATED( coeff ) ) DEALLOCATE( coeff )
   IF( ALLOCATED( degree ) ) DEALLOCATE( degree )
@@ -137,8 +137,8 @@ MODULE PROCEDURE func_Multiplication_obj_mono
   CALL ans%Initiate( &
     & coeff=coeff, &
     & degree=degree, &
-    & name1=varname(1)%chars(), &
-    & name2=varname(2)%chars() )
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars() )
   !!
   IF( ALLOCATED( coeff ) ) DEALLOCATE( coeff )
   IF( ALLOCATED( degree ) ) DEALLOCATE( degree )

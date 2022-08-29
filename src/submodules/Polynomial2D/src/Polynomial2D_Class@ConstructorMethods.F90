@@ -115,16 +115,16 @@ MODULE PROCEDURE func_Initiate
   DO ii = 1, tsize
     CALL obj%x(ii)%Initiate( &
       & n1=b1(ii), n2=b2(ii), &
-      & name1=name1, &
-      & name2=name2 )
+      & varname1=varname1, &
+      & varname2=varname2 )
   END DO
   !!
   CALL Reallocate( obj%degree, tsize, 2 )
   obj%degree(:,1) = b1
   obj%degree(:,2) = b2
   obj%coeff = c
-  obj%varname(1) = TRIM(name1)
-  obj%varname(2) = TRIM(name2)
+  obj%varname(1) = TRIM(varname1)
+  obj%varname(2) = TRIM(varname2)
   !!
   IF( ALLOCATED( coeff0 ) ) DEALLOCATE( coeff0 )
   IF( ALLOCATED( d1 ) ) DEALLOCATE( d1 )
@@ -139,8 +139,8 @@ END PROCEDURE func_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Polynomial2D1
-  CALL ans%Initiate( coeff=coeff, degree=degree, name1=name1, &
-    & name2=name2)
+  CALL ans%Initiate( coeff=coeff, degree=degree, varname1=varname1, &
+    & varname2=varname2)
 END PROCEDURE func_Polynomial2D1
 
 !----------------------------------------------------------------------------
@@ -149,8 +149,8 @@ END PROCEDURE func_Polynomial2D1
 
 MODULE PROCEDURE func_Polynomial2D_Pointer1
   ALLOCATE( ans )
-  CALL ans%Initiate( coeff=coeff, degree=degree, name1=name1, &
-    & name2=name2)
+  CALL ans%Initiate( coeff=coeff, degree=degree, varname1=varname1, &
+    & varname2=varname2)
 END PROCEDURE func_Polynomial2D_Pointer1
 
 END SUBMODULE ConstructorMethods

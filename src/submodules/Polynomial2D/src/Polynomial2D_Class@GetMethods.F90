@@ -56,7 +56,7 @@ MODULE PROCEDURE func_Grad
   INTEGER( I4B ) :: ii
   INTEGER( I4B ), ALLOCATABLE :: degree( :, : )
   REAL( DFP ), ALLOCATABLE :: coeff( : )
-  TYPE(String) :: name(2)
+  TYPE(String) :: varname(2)
   !!
   IF( ALLOCATED( obj%x ) ) THEN
     !!
@@ -67,13 +67,13 @@ MODULE PROCEDURE func_Grad
       degree( ii, dim ) = MAX( 0_I4B, degree( ii, dim ) - 1_I4B )
     END DO
     !!
-    name = obj%GetVarname()
+    varname = obj%GetVarname()
     !!
     CALL ans%Initiate( &
       & coeff=coeff, &
       & degree=degree, &
-      & name1=name(1)%chars(), &
-      & name2=name(2)%chars() )
+      & varname1=varname(1)%chars(), &
+      & varname2=varname(2)%chars() )
     !!
     DEALLOCATE( coeff, degree )
   END IF
