@@ -18,5 +18,6 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/Lagrange1D_Class@ConstructorMethods.F90
+  ${src_path}/Lagrange1D_Class@Methods.F90
+  ${src_path}/LagrangeSpace1D_Class@Methods.F90
 )
