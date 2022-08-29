@@ -220,7 +220,10 @@ END PROCEDURE refelem_Deallocate
 
 MODULE PROCEDURE refelem_Display
 !! Define internal variable
-INTEGER(I4B) :: I, j
+INTEGER(I4B) :: j
+LOGICAL(LGT) :: notFull0
+!!
+notFull0 = INPUT(option=notFull, default=.FALSE.)
 !!
 CALL Display(msg, unitno=unitno)
 !!
@@ -231,6 +234,8 @@ CALL Display(obj%xidimension, "xidimension :: ", &
   & unitno=unitno)
 !!
 CALL Display(obj%nsd, "nsd : ", unitno=unitno)
+!!
+IF (notFull0) RETURN
 !!
 CALL Display(obj%entityCounts(1), "entityCounts(0) : ", &
   & unitno=unitno)
@@ -383,6 +388,14 @@ ELSE
   ALLOCATE (ans(0, 0))
 END IF
 END PROCEDURE refelem_GetNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                      GetInterpolationPoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_GetInterpolationPoint
+ans = InterpolationPoint(order=order, ipType=ipType, elemType=obj%name)
+END PROCEDURE refelem_GetInterpolationPoint
 
 !----------------------------------------------------------------------------
 !                                                                 SetParam
