@@ -29,13 +29,9 @@ PRIVATE
 ! date: 26 July 2022
 ! summary: Lagrange2D class is defined
 
-TYPE, EXTENDS( Polynomial2D_ ) :: Lagrange2D_
-  CONTAINS
-    !!
-    !! @ConstructorMethods
-    !!
-    FINAL :: func_Final
-    !!
+TYPE, EXTENDS(Polynomial2D_) :: Lagrange2D_
+CONTAINS
+  FINAL :: func_Final
 END TYPE Lagrange2D_
 
 PUBLIC :: Lagrange2D_
@@ -45,7 +41,7 @@ PUBLIC :: Lagrange2D_
 !----------------------------------------------------------------------------
 
 TYPE :: Lagrange2DPointer_
-  CLASS( Lagrange2D_ ), POINTER :: ptr => NULL()
+  CLASS(Lagrange2D_), POINTER :: ptr => NULL()
 END TYPE Lagrange2DPointer_
 
 PUBLIC :: Lagrange2DPointer_
@@ -59,9 +55,9 @@ PUBLIC :: Lagrange2DPointer_
 ! summary: Finalizer
 
 INTERFACE
-MODULE SUBROUTINE func_final( obj )
-  TYPE( Lagrange2D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE func_final
+  MODULE SUBROUTINE func_final(obj)
+    TYPE(Lagrange2D_), INTENT(INOUT) :: obj
+  END SUBROUTINE func_final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -78,23 +74,23 @@ END INTERFACE
 !- It solves a linear system by LU decomposition by using Lapack lib
 
 INTERFACE
-MODULE FUNCTION func_Lagrange2D1( i, x, order, name1, name2, elemType) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange2D1(i, x, order, varname1, varname2, elemType) &
+    & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( IN ) :: x( :, : )
+    REAL(DFP), INTENT(IN) :: x(:, :)
   !! interpolation points in $x_{iJ}$ format
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-  !! variable name
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-  !! variable name
-  INTEGER( I4B ), INTENT( IN ) :: elemType
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+  !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+  !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
   !! Triangle, Quadrangle
-  TYPE( Lagrange2D_ ) :: ans
+    TYPE(Lagrange2D_) :: ans
   !! Polynomial in 2D
-END FUNCTION func_Lagrange2D1
+  END FUNCTION func_Lagrange2D1
 END INTERFACE
 
 INTERFACE Lagrange2D
@@ -120,23 +116,23 @@ PUBLIC :: Lagrange2D
 !
 
 INTERFACE
-MODULE FUNCTION func_Lagrange2D2( i, v, order, name1, name2, elemType, &
-  & isVandermonde ) RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange2D2(i, v, order, varname1, varname2, elemType, &
+    & isVandermonde) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( IN ) :: v( :, : )
+    REAL(DFP), INTENT(IN) :: v(:, :)
   !! Vandermonde matrix
-  INTEGER( I4B ), INTENT( IN ) :: order
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-  !! variable name
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-  !! variable name
-  INTEGER( I4B ), INTENT( IN ) :: elemType
+    INTEGER(I4B), INTENT(IN) :: order
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+  !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+  !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
   !! "Triangle" or "Quadrangle"
-  LOGICAL( LGT ), INTENT( IN ) :: isVandermonde
+    LOGICAL(LGT), INTENT(IN) :: isVandermonde
   !! This is just to resolve interface issue
-  TYPE( Lagrange2D_ ) :: ans
-END FUNCTION func_Lagrange2D2
+    TYPE(Lagrange2D_) :: ans
+  END FUNCTION func_Lagrange2D2
 END INTERFACE
 
 INTERFACE Lagrange2D
@@ -160,23 +156,23 @@ END INTERFACE Lagrange2D
 !- linear system of equations is solved by using Lapack lib
 !
 INTERFACE
-MODULE FUNCTION func_Lagrange2D3( i, v, order, ipiv, name1, name2, elemType) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+ MODULE FUNCTION func_Lagrange2D3(i, v, order, ipiv, varname1, varname2, elemType) &
+      & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( INOUT ) :: v( :, : )
+    REAL(DFP), INTENT(INOUT) :: v(:, :)
   !! LU decomposition of Vandermonde matrix
-  INTEGER( I4B ), INTENT( IN ) :: order
-  INTEGER( I4B ), INTENT( IN ) :: ipiv( : )
+    INTEGER(I4B), INTENT(IN) :: order
+    INTEGER(I4B), INTENT(IN) :: ipiv(:)
   !! inverse pivoting mapping, compes from LU decomposition
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-  !! variable name
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-  !! variable name
-  INTEGER( I4B ), INTENT( IN ) :: elemType
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+  !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+  !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
   !! "Triangle" or "Quadrangle"
-  TYPE( Lagrange2D_ ) :: ans
-END FUNCTION func_Lagrange2D3
+    TYPE(Lagrange2D_) :: ans
+  END FUNCTION func_Lagrange2D3
 END INTERFACE
 
 INTERFACE Lagrange2D
@@ -197,21 +193,21 @@ END INTERFACE Lagrange2D
 !- It solves a linear system by LU decomposition by using Lapack lib
 
 INTERFACE
-MODULE FUNCTION func_Lagrange2D4( x, order, name1, name2, elemType) &
-  & RESULT( ans )
-  REAL( DFP ), INTENT( IN ) :: x( :, : )
+  MODULE FUNCTION func_Lagrange2D4(x, order, varname1, varname2, elemType) &
+    & RESULT(ans)
+    REAL(DFP), INTENT(IN) :: x(:, :)
   !! interpolation points in $x_{iJ}$ format
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-  !! variable name
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-  !! variable name
-  INTEGER( I4B ), INTENT( IN ) :: elemType
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+  !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+  !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
   !! Triangle, Quadrangle
-  TYPE( Lagrange2D_ ), ALLOCATABLE :: ans( : )
+    TYPE(Lagrange2D_), ALLOCATABLE :: ans(:)
   !! Lagrange polynomials in 2D
-END FUNCTION func_Lagrange2D4
+  END FUNCTION func_Lagrange2D4
 END INTERFACE
 
 INTERFACE Lagrange2D
