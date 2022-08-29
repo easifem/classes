@@ -144,6 +144,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Lagrange1D/CMakeLists.txt)
 # Lagrange2D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Lagrange2D/CMakeLists.txt)
 
+# Lagrange3D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Lagrange3D/CMakeLists.txt)
+
 # AbstractOrthopol1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
 
@@ -158,6 +161,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 
 # RefElement
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
+
+# FiniteElement
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
 
 # Tree3R
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)

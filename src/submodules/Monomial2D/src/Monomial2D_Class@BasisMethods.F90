@@ -40,7 +40,7 @@ MODULE PROCEDURE func_Monomials2D
   !!
   DO ii = 1, n
     CALL ans( ii )%Initiate( n1=degree(ii,1), &
-      & n2=degree(ii,2), name1=name1, name2=name2 )
+      & n2=degree(ii,2), varname1=varname1, varname2=varname2 )
   END DO
   !!
   IF(ALLOCATED(degree)) DEALLOCATE(degree)

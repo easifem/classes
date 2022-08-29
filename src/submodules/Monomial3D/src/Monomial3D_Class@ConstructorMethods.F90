@@ -54,9 +54,9 @@ MODULE PROCEDURE func_Initiate1
   obj%n1 = n1
   obj%n2 = n2
   obj%n3 = n3
-  obj%varname(1) = TRIM(name1)
-  obj%varname(2) = TRIM(name2)
-  obj%varname(3) = TRIM(name3)
+  obj%varname(1) = TRIM(varname1)
+  obj%varname(2) = TRIM(varname2)
+  obj%varname(3) = TRIM(varname3)
   astr = obj%GetStringForUID( )
   obj%uid = StringToUID(astr%chars())
   !!
@@ -69,22 +69,22 @@ END PROCEDURE func_Initiate1
 MODULE PROCEDURE func_Initiate2
   !!
   INTEGER( I4B ) :: n1, n2, n3
-  TYPE( String ) :: name1, name2, name3
+  TYPE( String ) :: varname1, varname2, varname3
   !!
   n1 = f1%GetDegree()
   n2 = f2%GetDegree()
   n3 = f3%GetDegree()
-  name1 = f1%GetVarname()
-  name2 = f2%GetVarname()
-  name3 = f3%GetVarname()
+  varname1 = f1%GetVarname()
+  varname2 = f2%GetVarname()
+  varname3 = f3%GetVarname()
   !!
   CALL obj%Initiate( &
     & n1=n1, &
     & n2=n2, &
     & n3=n3, &
-    & name1=name1%chars(), &
-    & name2=name2%chars(), &
-    & name3=name3%chars() )
+    & varname1=varname1%chars(), &
+    & varname2=varname2%chars(), &
+    & varname3=varname3%chars() )
   !!
 END PROCEDURE func_Initiate2
 
@@ -97,9 +97,9 @@ MODULE PROCEDURE func_Monomial3D1
     & n1=n1, &
     & n2=n2, &
     & n3=n3, &
-    & name1=name1, &
-    & name2=name2, &
-    & name3=name3 )
+    & varname1=varname1, &
+    & varname2=varname2, &
+    & varname3=varname3 )
 END PROCEDURE func_Monomial3D1
 
 !----------------------------------------------------------------------------
@@ -120,9 +120,9 @@ MODULE PROCEDURE func_Monomial3D_Pointer1
     & n1=n1, &
     & n2=n2, &
     & n3=n3, &
-    & name1=name1, &
-    & name2=name2, &
-    & name3=name3 )
+    & varname1=varname1, &
+    & varname2=varname2, &
+    & varname3=varname3 )
 END PROCEDURE func_Monomial3D_Pointer1
 
 !----------------------------------------------------------------------------

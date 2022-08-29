@@ -33,49 +33,49 @@ CHARACTER(LEN=*), PARAMETER :: modName = "Monomial2D_Class"
 ! date: 14 May 2022
 ! summary: Monomial2D class is defined
 
-TYPE, EXTENDS( AbstractBasis2D_ ) :: Monomial2D_
+TYPE, EXTENDS(AbstractBasis2D_) :: Monomial2D_
   PRIVATE
-  INTEGER( I4B ) :: n1 = -1_I4B
-  INTEGER( I4B ) :: n2 = -1_I4B
-  CONTAINS
+  INTEGER(I4B) :: n1 = -1_I4B
+  INTEGER(I4B) :: n2 = -1_I4B
+CONTAINS
     !!
     !! @ConstructorMethods
     !!
-    PROCEDURE, PASS( obj ) :: Initiate1 => func_Initiate1
-    PROCEDURE, PASS( obj ) :: Initiate2 => func_Initiate2
-    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
-    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => func_Deallocate
-    FINAL :: func_Final
+  PROCEDURE, PASS(obj) :: Initiate1 => func_Initiate1
+  PROCEDURE, PASS(obj) :: Initiate2 => func_Initiate2
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => func_Deallocate
+  FINAL :: func_Final
     !!
     !! @GetMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar=>func_Eval
-    PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient=>func_EvalGradient
-    PROCEDURE, PUBLIC, PASS( obj ) :: Grad => func_Grad
-    GENERIC, PUBLIC :: OPERATOR( .Grad. ) => Grad
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetStringForUID => &
-      & func_GetStringForUID
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetDisplayString =>  &
-      & func_GetDisplayString
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetDegree => func_GetDegree
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetCoeff => func_GetCoeff
+  PROCEDURE, PUBLIC, PASS(obj) :: EvalScalar => func_Eval
+  PROCEDURE, PUBLIC, PASS(obj) :: EvalGradient => func_EvalGradient
+  PROCEDURE, PUBLIC, PASS(obj) :: Grad => func_Grad
+  GENERIC, PUBLIC :: OPERATOR(.Grad.) => Grad
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStringForUID => &
+    & func_GetStringForUID
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDisplayString =>  &
+    & func_GetDisplayString
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDegree => func_GetDegree
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCoeff => func_GetCoeff
     !!
     !! @DisplayMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: Display => func_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => func_Display
     !!
     !! @OperatorMethods
     !!
     !! OPERATOR(*)
     !!
-    PROCEDURE, PUBLIC, PASS( obj1 ) :: MultiplicationObjObj => &
-      & func_Multiplication_obj_obj
-    GENERIC, PUBLIC :: OPERATOR( * ) => MultiplicationObjObj
+  PROCEDURE, PUBLIC, PASS(obj1) :: MultiplicationObjObj => &
+    & func_Multiplication_obj_obj
+  GENERIC, PUBLIC :: OPERATOR(*) => MultiplicationObjObj
     !!
     !! @AssignmentMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: AssignObjObj => func_AssignObjObj
-    GENERIC, PUBLIC :: ASSIGNMENT( = ) => AssignObjObj
+  PROCEDURE, PUBLIC, PASS(obj) :: AssignObjObj => func_AssignObjObj
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => AssignObjObj
     !!
     !! @BasisMethods
     !!
@@ -88,7 +88,7 @@ PUBLIC :: Monomial2D_
 !----------------------------------------------------------------------------
 
 TYPE :: Monomial2DPointer_
-  CLASS( Monomial2D_ ), POINTER :: ptr => NULL()
+  CLASS(Monomial2D_), POINTER :: ptr => NULL()
 END TYPE Monomial2DPointer_
 
 PUBLIC :: Monomial2DPointer_
@@ -102,18 +102,18 @@ PUBLIC :: Monomial2DPointer_
 ! summary: Construct function for Monomial2D
 
 INTERFACE
-MODULE ELEMENTAL SUBROUTINE func_Initiate1( obj, n1, n2, name1, name2 )
-  CLASS( Monomial2D_ ), INTENT( INOUT )  :: obj
+  MODULE ELEMENTAL SUBROUTINE func_Initiate1(obj, n1, n2, varname1, varname2)
+    CLASS(Monomial2D_), INTENT(INOUT) :: obj
     !! monomial2d = $x^{n1} y^{n2}$
-  INTEGER( I4B ), INTENT( IN ) :: n1
+    INTEGER(I4B), INTENT(IN) :: n1
     !! power of variable 1
-  INTEGER( I4B ), INTENT( IN ) :: n2
+    INTEGER(I4B), INTENT(IN) :: n2
     !! power for variable 2
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-    !! name of variable 1
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-    !! name of variable 2
-END SUBROUTINE func_Initiate1
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    !! varname of variable 1
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    !! varname of variable 2
+  END SUBROUTINE func_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -125,14 +125,14 @@ END INTERFACE
 ! summary: Constructor function the Monomial2D
 
 INTERFACE
-MODULE ELEMENTAL SUBROUTINE func_Initiate2( obj, f1, f2 )
-  CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
+  MODULE ELEMENTAL SUBROUTINE func_Initiate2(obj, f1, f2)
+    CLASS(Monomial2D_), INTENT(INOUT) :: obj
     !! ans = f1*f2
-  CLASS( Monomial1D_ ), INTENT( IN ) :: f1
+    CLASS(Monomial1D_), INTENT(IN) :: f1
     !! monomial for first variable
-  CLASS( Monomial1D_ ), INTENT( IN ) :: f2
+    CLASS(Monomial1D_), INTENT(IN) :: f2
     !! monomial for second variable
-END SUBROUTINE func_Initiate2
+  END SUBROUTINE func_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -144,19 +144,19 @@ END INTERFACE
 ! summary: Construct function for Monomial2D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Monomial2D1( n1, n2, name1, name2 ) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: n1
+  MODULE ELEMENTAL FUNCTION func_Monomial2D1(n1, n2, varname1, varname2) &
+    & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: n1
     !! power of variable 1
-  INTEGER( I4B ), INTENT( IN ) :: n2
+    INTEGER(I4B), INTENT(IN) :: n2
     !! power for variable 2
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-    !! name of variable 1
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-    !! name of variable 2
-  TYPE( Monomial2D_ ) :: ans
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    !! varname of variable 1
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    !! varname of variable 2
+    TYPE(Monomial2D_) :: ans
     !! monomial2d = $x^{n1} y^{n2}$
-END FUNCTION func_Monomial2D1
+  END FUNCTION func_Monomial2D1
 END INTERFACE
 
 INTERFACE Monomial2D
@@ -174,14 +174,14 @@ PUBLIC :: Monomial2D
 ! summary: Constructor function the Monomial2D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Monomial2D2( f1, f2 ) RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: f1
+  MODULE ELEMENTAL FUNCTION func_Monomial2D2(f1, f2) RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: f1
     !! monomial for first variable
-  CLASS( Monomial1D_ ), INTENT( IN ) :: f2
+    CLASS(Monomial1D_), INTENT(IN) :: f2
     !! monomial for second variable
-  TYPE( Monomial2D_ ) :: ans
+    TYPE(Monomial2D_) :: ans
     !! ans = f1*f2
-END FUNCTION func_Monomial2D2
+  END FUNCTION func_Monomial2D2
 END INTERFACE
 
 INTERFACE Monomial2D
@@ -197,19 +197,19 @@ END INTERFACE Monomial2D
 ! summary: Construct function to return a pointer to the Monomial2D
 
 INTERFACE
-MODULE FUNCTION func_Monomial2D_Pointer1( n1, n2, name1, name2 ) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: n1
+  MODULE FUNCTION func_Monomial2D_Pointer1(n1, n2, varname1, varname2) &
+    & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: n1
     !! power of variable 1
-  INTEGER( I4B ), INTENT( IN ) :: n2
+    INTEGER(I4B), INTENT(IN) :: n2
     !! power of variable 2
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
-    !! name of variable 1
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
-    !! name of variable 2
-  CLASS( Monomial2D_ ), POINTER :: ans
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    !! varname of variable 1
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    !! varname of variable 2
+    CLASS(Monomial2D_), POINTER :: ans
     !! returned 2D monomial
-END FUNCTION func_Monomial2D_Pointer1
+  END FUNCTION func_Monomial2D_Pointer1
 END INTERFACE
 
 INTERFACE Monomial2D_Pointer
@@ -227,11 +227,11 @@ PUBLIC :: Monomial2D_Pointer
 ! summary: Construct function to return a pointer to the Monomial2D
 
 INTERFACE
-MODULE FUNCTION func_Monomial2D_Pointer2( f1, f2 ) RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: f1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: f2
-  CLASS( Monomial2D_ ), POINTER :: ans
-END FUNCTION func_Monomial2D_Pointer2
+  MODULE FUNCTION func_Monomial2D_Pointer2(f1, f2) RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: f1
+    CLASS(Monomial1D_), INTENT(IN) :: f2
+    CLASS(Monomial2D_), POINTER :: ans
+  END FUNCTION func_Monomial2D_Pointer2
 END INTERFACE
 
 INTERFACE Monomial2D_Pointer
@@ -247,8 +247,8 @@ END INTERFACE Monomial2D_Pointer
 ! summary: Deallocate the object
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate( obj )
-    CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate(obj)
+    CLASS(Monomial2D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate
 END INTERFACE
 
@@ -259,8 +259,8 @@ END INTERFACE Monomial2DDeallocate
 PUBLIC :: Monomial2DDeallocate
 
 INTERFACE
-  MODULE SUBROUTINE func_Final( obj )
-    TYPE( Monomial2D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Final(obj)
+    TYPE(Monomial2D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Final
 END INTERFACE
 
@@ -273,10 +273,10 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_eval( obj, x, y ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x, y
-    REAL( DFP ) :: ans
+  MODULE ELEMENTAL FUNCTION func_eval(obj, x, y) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x, y
+    REAL(DFP) :: ans
   END FUNCTION func_eval
 END INTERFACE
 
@@ -289,12 +289,12 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_EvalGradient( obj, x, y, dim ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ), INTENT( IN ) :: y
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    REAL( DFP ) :: ans
+  MODULE ELEMENTAL FUNCTION func_EvalGradient(obj, x, y, dim) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP), INTENT(IN) :: y
+    INTEGER(I4B), INTENT(IN) :: dim
+    REAL(DFP) :: ans
   END FUNCTION func_EvalGradient
 END INTERFACE
 
@@ -307,10 +307,10 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_Grad( obj, dim ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    TYPE( Monomial2D_ ) :: ans
+  MODULE ELEMENTAL FUNCTION func_Grad(obj, dim) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    TYPE(Monomial2D_) :: ans
   END FUNCTION func_Grad
 END INTERFACE
 
@@ -323,9 +323,9 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_GetStringForUID( obj ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    TYPE( String ) :: ans
+  MODULE ELEMENTAL FUNCTION func_GetStringForUID(obj) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    TYPE(String) :: ans
   END FUNCTION func_GetStringForUID
 END INTERFACE
 
@@ -338,9 +338,9 @@ END INTERFACE
 ! summary: Get the display string
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_GetDisplayString( obj ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    TYPE( String ) :: ans
+  MODULE ELEMENTAL FUNCTION func_GetDisplayString(obj) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    TYPE(String) :: ans
   END FUNCTION func_GetDisplayString
 END INTERFACE
 
@@ -353,9 +353,9 @@ END INTERFACE
 ! summary: Evaluate the gradient of function df/dx
 
 INTERFACE
-  MODULE PURE FUNCTION func_GetDegree( obj ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    INTEGER( I4B ) :: ans(2)
+  MODULE PURE FUNCTION func_GetDegree(obj) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans(2)
   END FUNCTION func_GetDegree
 END INTERFACE
 
@@ -368,9 +368,9 @@ END INTERFACE
 ! summary: Get the coefficient
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_GetCoeff( obj ) RESULT( ans )
-    CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ) :: ans
+  MODULE ELEMENTAL FUNCTION func_GetCoeff(obj) RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
   END FUNCTION func_GetCoeff
 END INTERFACE
 
@@ -383,11 +383,11 @@ END INTERFACE
 ! summary: Display the content of Monomial2D
 
 INTERFACE
-MODULE SUBROUTINE func_Display( obj, msg, unitno )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE func_Display
+  MODULE SUBROUTINE func_Display(obj, msg, unitno)
+    CLASS(Monomial2D_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE func_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -399,12 +399,12 @@ END INTERFACE
 ! summary: Multiplication two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_obj_obj( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj1
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-  TYPE( Monomial2D_ ) :: ans
-END FUNCTION func_Multiplication_obj_obj
+  MODULE ELEMENTAL FUNCTION func_Multiplication_obj_obj(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial2D_), INTENT(IN) :: obj1
+    CLASS(Monomial2D_), INTENT(IN) :: obj2
+    TYPE(Monomial2D_) :: ans
+  END FUNCTION func_Multiplication_obj_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -412,10 +412,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE func_AssignObjObj( obj, obj2 )
-  CLASS( Monomial2D_ ), INTENT( INOUT ) :: obj
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2
-END SUBROUTINE func_AssignObjObj
+  MODULE PURE SUBROUTINE func_AssignObjObj(obj, obj2)
+    CLASS(Monomial2D_), INTENT(INOUT) :: obj
+    CLASS(Monomial2D_), INTENT(IN) :: obj2
+  END SUBROUTINE func_AssignObjObj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -423,10 +423,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE SUBROUTINE func_AssignObjVecObjVec( obj, obj2 )
-  CLASS( Monomial2D_ ), ALLOCATABLE, INTENT( INOUT ) :: obj( : )
-  CLASS( Monomial2D_ ), INTENT( IN ) :: obj2( : )
-END SUBROUTINE func_AssignObjVecObjVec
+  MODULE PURE SUBROUTINE func_AssignObjVecObjVec(obj, obj2)
+    CLASS(Monomial2D_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    CLASS(Monomial2D_), INTENT(IN) :: obj2(:)
+  END SUBROUTINE func_AssignObjVecObjVec
 END INTERFACE
 
 INTERFACE ASSIGNMENT(=)
@@ -444,20 +444,20 @@ PUBLIC :: ASSIGNMENT(=)
 ! summary: Returns monomial basis for lagrange polynomials
 
 INTERFACE
-MODULE FUNCTION func_Monomials2D( order, name1, name2, elemType ) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: order
+  MODULE FUNCTION func_Monomials2D(order, varname1, varname2, elemType) &
+    & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: order
     !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: name1
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
     !! "x"
-  CHARACTER( LEN = * ), INTENT( IN ) :: name2
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
     !! "y"
-  INTEGER( I4B ), INTENT( IN ) :: elemType
+    INTEGER(I4B), INTENT(IN) :: elemType
     !! "P", "Triangle" then monomial for triangle
     !! "Q", "Quadrangle" then monomials for quadrangle
-  TYPE( Monomial2D_ ), ALLOCATABLE :: ans( : )
+    TYPE(Monomial2D_), ALLOCATABLE :: ans(:)
     !! Monomials in 2D
-END FUNCTION func_Monomials2D
+  END FUNCTION func_Monomials2D
 END INTERFACE
 
 INTERFACE Monomials2D

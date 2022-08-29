@@ -29,15 +29,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_EvalScalar
-  INTEGER( I4B ) :: ii
-  REAL( DFP ) :: temp
-  ans = 0.0_DFP
-  IF( ALLOCATED( obj%x ) ) THEN
-    DO ii = 1, SIZE( obj%x )
-      temp = obj%x( ii )%Eval( x=x, y=y, z=z )
-      ans = ans + temp
-    END DO
-  END IF
+INTEGER(I4B) :: ii
+REAL(DFP) :: temp
+ans = 0.0_DFP
+IF (ALLOCATED(obj%x)) THEN
+  DO ii = 1, SIZE(obj%x)
+    temp = obj%x(ii)%Eval(x=x, y=y, z=z)
+    ans = ans + temp
+  END DO
+END IF
 END PROCEDURE func_EvalScalar
 
 !----------------------------------------------------------------------------
@@ -45,15 +45,15 @@ END PROCEDURE func_EvalScalar
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_EvalGradient
-  INTEGER( I4B ) :: ii
-  REAL( DFP ) :: temp
-  ans = 0.0_DFP
-  IF( ALLOCATED( obj%x ) ) THEN
-    DO ii = 1, SIZE( obj%x )
-      temp = obj%x( ii )%EvalGradient( x=x, y=y, z=z, dim=dim )
-      ans = ans + temp
-    END DO
-  END IF
+INTEGER(I4B) :: ii
+REAL(DFP) :: temp
+ans = 0.0_DFP
+IF (ALLOCATED(obj%x)) THEN
+  DO ii = 1, SIZE(obj%x)
+    temp = obj%x(ii)%EvalGradient(x=x, y=y, z=z, dim=dim)
+    ans = ans + temp
+  END DO
+END IF
 END PROCEDURE func_EvalGradient
 
 !----------------------------------------------------------------------------
@@ -61,31 +61,31 @@ END PROCEDURE func_EvalGradient
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Grad
-  INTEGER( I4B ) :: ii
-  INTEGER( I4B ), ALLOCATABLE :: degree( :, : )
-  REAL( DFP ), ALLOCATABLE :: coeff( : )
-  TYPE(String) :: name(3)
+INTEGER(I4B) :: ii
+INTEGER(I4B), ALLOCATABLE :: degree(:, :)
+REAL(DFP), ALLOCATABLE :: coeff(:)
+TYPE(String) :: varname(3)
   !!
-  IF( ALLOCATED( obj%x ) ) THEN
+IF (ALLOCATED(obj%x)) THEN
     !!
-    degree = obj%degree
-    coeff = obj%coeff * obj%degree(:,dim)
+  degree = obj%degree
+  coeff = obj%coeff * obj%degree(:, dim)
     !!
-    DO ii = 1, SIZE( coeff )
-      degree( ii, dim ) = MAX( 0_I4B, degree( ii, dim ) - 1_I4B )
-    END DO
+  DO ii = 1, SIZE(coeff)
+    degree(ii, dim) = MAX(0_I4B, degree(ii, dim) - 1_I4B)
+  END DO
     !!
-    name = obj%GetVarname()
+  varname = obj%GetVarname()
     !!
-    CALL ans%Initiate( &
-      & coeff=coeff, &
-      & degree=degree, &
-      & name1=name(1)%chars(), &
-      & name2=name(2)%chars(), &
-      & name3=name(3)%chars() )
+  CALL ans%Initiate( &
+    & coeff=coeff, &
+    & degree=degree, &
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars(), &
+    & varname3=varname(3)%chars())
     !!
-    DEALLOCATE( coeff, degree )
-  END IF
+  DEALLOCATE (coeff, degree)
+END IF
 END PROCEDURE func_Grad
 
 !----------------------------------------------------------------------------
@@ -93,13 +93,13 @@ END PROCEDURE func_Grad
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetStringForUID
-  INTEGER( I4B ) :: ii
-  ans = ""
-  IF( ALLOCATED( obj%x ) ) THEN
-    DO ii = 1, SIZE( obj%x )
-      ans = TRIM(ans) // TRIM(obj%x(ii)%GetStringForUID())
-    END DO
-  END IF
+INTEGER(I4B) :: ii
+ans = ""
+IF (ALLOCATED(obj%x)) THEN
+  DO ii = 1, SIZE(obj%x)
+    ans = TRIM(ans)//TRIM(obj%x(ii)%GetStringForUID())
+  END DO
+END IF
 END PROCEDURE func_GetStringForUID
 
 !----------------------------------------------------------------------------
@@ -108,11 +108,11 @@ END PROCEDURE func_GetStringForUID
 
 MODULE PROCEDURE func_GetDegree
   !!
-  IF( ALLOCATED( obj%degree ) ) THEN
-    ans = obj%degree
-  ELSE
-    ALLOCATE( ans( 0, 0 ) )
-  END IF
+IF (ALLOCATED(obj%degree)) THEN
+  ans = obj%degree
+ELSE
+  ALLOCATE (ans(0, 0))
+END IF
 END PROCEDURE func_GetDegree
 
 !----------------------------------------------------------------------------
@@ -120,28 +120,28 @@ END PROCEDURE func_GetDegree
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetDisplayString
-  INTEGER( I4B ) :: ii
-  REAL( DFP ), PARAMETER :: tol=1.0E-10
+INTEGER(I4B) :: ii
+REAL(DFP), PARAMETER :: tol = 1.0E-10
   !!
-  ans=""
+ans = ""
   !!
-  IF( ALLOCATED( obj%x ) ) THEN
+IF (ALLOCATED(obj%x)) THEN
     !!
-    DO ii = 1, SIZE( obj%x )
-      IF( SOFTEQ(obj%coeff( ii ), 0.0_DFP, tol) ) THEN
-        CYCLE
-      ELSEIF( obj%coeff( ii ) .GT. 0.0_DFP ) THEN
-        ans = TRIM( ans ) // "+" // &
-          & TOSTRING(obj%coeff(ii)) // &
-          & TRIM( obj%x(ii)%GetDisplayString() )
-      ELSE
-        ans = TRIM( ans ) // &
-          & TOSTRING(obj%coeff(ii)) // &
-          & TRIM( obj%x(ii)%GetDisplayString() )
-      END IF
-    END DO
+  DO ii = 1, SIZE(obj%x)
+    IF (SOFTEQ(obj%coeff(ii), 0.0_DFP, tol)) THEN
+      CYCLE
+    ELSEIF (obj%coeff(ii) .GT. 0.0_DFP) THEN
+      ans = TRIM(ans)//"+"// &
+        & TOSTRING(obj%coeff(ii))// &
+        & TRIM(obj%x(ii)%GetDisplayString())
+    ELSE
+      ans = TRIM(ans)// &
+        & TOSTRING(obj%coeff(ii))// &
+        & TRIM(obj%x(ii)%GetDisplayString())
+    END IF
+  END DO
     !!
-  END IF
+END IF
   !!
 END PROCEDURE func_GetDisplayString
 
@@ -150,11 +150,11 @@ END PROCEDURE func_GetDisplayString
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetCoeff
-  IF( ALLOCATED( obj%x ) ) THEN
-    ans = obj%coeff
-  ELSE
-    ALLOCATE( ans( 0 ) )
-  END IF
+IF (ALLOCATED(obj%x)) THEN
+  ans = obj%coeff
+ELSE
+  ALLOCATE (ans(0))
+END IF
 END PROCEDURE func_GetCoeff
 
 !----------------------------------------------------------------------------
@@ -162,11 +162,11 @@ END PROCEDURE func_GetCoeff
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_GetOrder
-  IF( ALLOCATED( obj%degree ) ) THEN
-    ans = MAXVAL( obj%degree(:,1) + obj%degree(:,2) + obj%degree(:,3) )
-  ELSE
-    ans = 0_I4B
-  END IF
+IF (ALLOCATED(obj%degree)) THEN
+  ans = MAXVAL(obj%degree(:, 1) + obj%degree(:, 2) + obj%degree(:, 3))
+ELSE
+  ans = 0_I4B
+END IF
 END PROCEDURE func_GetOrder
 
 END SUBMODULE GetMethods

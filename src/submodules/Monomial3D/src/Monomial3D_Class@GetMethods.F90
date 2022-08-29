@@ -56,7 +56,7 @@ END PROCEDURE func_EvalGradient
 
 MODULE PROCEDURE func_Grad
   INTEGER( I4B ) :: n1, n2, n3
-  TYPE(String) :: name(3)
+  TYPE(String) :: varname(3)
   !!
   IF( dim .EQ. 1_I4B ) THEN
     n1 = MAX( 0_I4B, obj%n1-1_I4B )
@@ -72,15 +72,15 @@ MODULE PROCEDURE func_Grad
     n3 = MAX( 0_I4B, obj%n3-1_I4B )
   END IF
   !!
-  name = obj%GetVarname()
+  varname = obj%GetVarname()
   !!
   CALL ans%Initiate( &
     & n1=n1, &
     & n2=n2, &
     & n3=n3, &
-    & name1=name(1)%chars(), &
-    & name2=name(2)%chars(), &
-    & name3=name(3)%chars() )
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars(), &
+    & varname3=varname(3)%chars() )
   !!
 END PROCEDURE func_Grad
 

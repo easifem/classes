@@ -16,6 +16,7 @@
 !
 
 MODULE RefElementFactory
+USE GlobalData
 USE Topology_Class
 USE AbstractRefElement_Class
 USE RefPoint_Class
@@ -26,4 +27,41 @@ USE RefTetrahedron_Class
 USE RefHexahedron_Class
 USE RefPyramid_Class
 USE RefPrism_Class
+IMPLICIT NONE
+
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                         RefElement_Pointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary: Reference element pointer
+
+FUNCTION RefElement_Pointer(elemType) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: elemType
+  CLASS(AbstractRefElement_), POINTER :: ans
+  !!
+  SELECT CASE (elemType)
+  CASE (Point)
+    ALLOCATE (RefPoint_ :: ans)
+  CASE (Line)
+    ALLOCATE (RefLine_ :: ans)
+  CASE (Triangle)
+    ALLOCATE (RefTriangle_ :: ans)
+  CASE (Quadrangle)
+    ALLOCATE (RefQuadrangle_ :: ans)
+  CASE (Tetrahedron)
+    ALLOCATE (RefTetrahedron_ :: ans)
+  CASE (Hexahedron)
+    ALLOCATE (RefHexahedron_ :: ans)
+  CASE (Prism)
+    ALLOCATE (RefPrism_ :: ans)
+  CASE (Pyramid)
+    ALLOCATE (RefPyramid_ :: ans)
+  END SELECT
+  !!
+END FUNCTION RefElement_Pointer
+
 END MODULE RefElementFactory

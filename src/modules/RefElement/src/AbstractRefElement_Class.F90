@@ -34,7 +34,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "AbstractRefElement_Class"
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
 ! update: 18 Aug 2022
-! summary:         AbstractRefElement class is defined
+! summary: AbstractRefElement class is defined
 !
 !{!pages/AbstractRefElement_.md!}
 
@@ -108,6 +108,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => &
     & refelem_GetNodeCoord
   !! Returns the node coord
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoint => &
+    & refelem_GetInterpolationPoint
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => refelem_SetParam
     !! Set the parameter at once
 END TYPE AbstractRefElement_
@@ -125,7 +127,7 @@ END TYPE AbstractRefElementPointer_
 PUBLIC :: AbstractRefElementPointer_
 
 !----------------------------------------------------------------------------
-!                                                    GetName@DeferredMethods
+!                                                            GetName@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -146,7 +148,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetFacetElements@DeferredMethods
+!                                                   GetFacetElements@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -167,7 +169,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetFacetTopology@DeferredMethods
+!                                                  GetFacetTopology@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -183,7 +185,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Initiate@Methods
+!                                                          Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -265,10 +267,12 @@ END INTERFACE
 ! summary: Display the AbstractRefElement
 
 INTERFACE
-  MODULE SUBROUTINE refelem_Display(obj, msg, unitno)
+  MODULE SUBROUTINE refelem_Display(obj, msg, unitno, notFull)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: msg
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
+    !! if present and true then only a summary is printed
   END SUBROUTINE refelem_Display
 END INTERFACE
 
@@ -380,7 +384,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     LocalNodeCoord@Methods
+!                                                    LocalNodeCoord@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -395,11 +399,30 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           SetParam@Methods
+!                                              GetInterpolationPoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Aug 2022
+! summary: Get the lattice points on reference element
+
+INTERFACE
+  MODULE PURE FUNCTION refelem_GetInterpolationPoint(obj, order, ipType) &
+    & RESULT(ans)
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_GetInterpolationPoint
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          SetParam@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE SUBROUTINE refelem_SetParam(obj, xij, entityCounts, &
+  MODULE PURE SUBROUTINE refelem_SetParam(&
+    & obj, xij, entityCounts, &
     & xidimension, name, nameStr, nsd, &
     & pointTopology, edgeTopology, faceTopology, cellTopology)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj

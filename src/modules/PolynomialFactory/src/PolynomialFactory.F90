@@ -16,20 +16,31 @@
 !
 
 MODULE PolynomialFactory
-  USE AbstractFunction_Class
-  USE AbstractBasis_Class
-  USE MonomialFactory
+USE AbstractFunction_Class
+USE AbstractBasis_Class
+USE MonomialFactory
+USE AbstractPolynomialSpace1D_Class
+USE AbstractPolynomialSpace2D_Class
+USE AbstractPolynomialSpace3D_Class
 ! USE AbstractPolynomial_Class
-  USE Polynomial1D_Class
-  USE AbstractOrthopol1D_Class
-  USE AbstractOrthopolSpace1D_Class
-  USE Lagrange1D_Class
-  USE ChebyshevFirst1D_Class
-  USE ChebyshevFirstSpace1D_Class
-  USE Jacobi1D_Class
-  USE JacobiSpace1D_Class
-  USE Polynomial2D_Class
-  USE Lagrange2D_Class
-  USE Polynomial3D_Class
+!
+USE Polynomial1D_Class
+USE AbstractOrthopol1D_Class
+USE AbstractOrthopolSpace1D_Class
+USE Lagrange1D_Class
+USE LagrangeSpace1D_Class
+USE ChebyshevFirst1D_Class
+USE ChebyshevFirstSpace1D_Class
+USE Jacobi1D_Class
+USE JacobiSpace1D_Class
+!!
+USE Polynomial2D_Class
+USE Lagrange2D_Class
+USE LagrangeSpace2D_Class
+!!
+USE Polynomial3D_Class
+USE Lagrange3D_Class
+USE LagrangeSpace3D_Class
+!!
 ! USE PolynomialND_Class
 END MODULE PolynomialFactory

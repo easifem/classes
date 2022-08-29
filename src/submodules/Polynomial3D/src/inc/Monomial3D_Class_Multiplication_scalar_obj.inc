@@ -28,7 +28,7 @@ varname = obj2%GetVarname()
 CALL ans%Initiate( &
   & coeff=coeff, &
   & degree=degree, &
-  & name1=varname(1)%chars(), &
-  & name3=varname(3)%chars(), &
-  & name2=varname(2)%chars() )
+  & varname1=varname(1)%chars(), &
+  & varname3=varname(3)%chars(), &
+  & varname2=varname(2)%chars() )
 !!

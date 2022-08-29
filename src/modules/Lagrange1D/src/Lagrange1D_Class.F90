@@ -30,13 +30,15 @@ PRIVATE
 ! summary: Lagrange1D class is defined
 !
 
-TYPE, EXTENDS( Polynomial1D_ ) :: Lagrange1D_
-  CONTAINS
-    !!
-    !! @ConstructorMethods
-    !!
-    FINAL :: func_Final
-    !!
+TYPE, EXTENDS(Polynomial1D_) :: Lagrange1D_
+  PRIVATE
+CONTAINS
+  PRIVATE
+  PROCEDURE, PASS(obj) :: Initiate1
+  PROCEDURE, PASS(obj) :: Initiate2
+  PROCEDURE, PASS(obj) :: Initiate3
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
+  FINAL :: func_Final
 END TYPE Lagrange1D_
 
 PUBLIC :: Lagrange1D_
@@ -46,7 +48,7 @@ PUBLIC :: Lagrange1D_
 !----------------------------------------------------------------------------
 
 TYPE :: Lagrange1DPointer_
-  CLASS( Lagrange1D_ ), POINTER :: ptr => NULL()
+  CLASS(Lagrange1D_), POINTER :: ptr => NULL()
 END TYPE Lagrange1DPointer_
 
 PUBLIC :: Lagrange1DPointer_
@@ -60,9 +62,72 @@ PUBLIC :: Lagrange1DPointer_
 ! summary: Finalizer
 
 INTERFACE
-MODULE SUBROUTINE func_final( obj )
-  TYPE( Lagrange1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE func_final
+  MODULE SUBROUTINE func_final(obj)
+    TYPE(Lagrange1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE func_final
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary:         Initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE Initiate1(obj, i, x, varname)
+    CLASS(Lagrange1D_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: i
+  !! ith lagrange polynomial
+    REAL(DFP), INTENT(IN) :: x(:)
+  !! points, order = size(x) - 1
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+  END SUBROUTINE Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary:         Initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE Initiate2(obj, i, v, varname)
+    CLASS(Lagrange1D_), INTENT(INOUT) :: obj
+    !! lagrange1d
+    INTEGER(I4B), INTENT(IN) :: i
+    !! ith lagrange polynomial
+    REAL(DFP), INTENT(IN) :: v(:, :)
+    !! Vandermonde matrix
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+    !! variable varname
+  END SUBROUTINE Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary: Initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE Initiate3(obj, i, v, ipiv, varname)
+    CLASS(Lagrange1D_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: i
+    !! ith lagrange polynomial
+    REAL(DFP), INTENT(INOUT) :: v(:, :)
+    !! LU decomposition of Vandermonde matrix
+    INTEGER(I4B), INTENT(IN) :: ipiv(:)
+    !! inverse pivoting mapping, compes from LU decomposition
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+    !! variable varname
+  END SUBROUTINE Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -79,17 +144,17 @@ END INTERFACE
 !- It solves a linear system by LU decomposition by using Lapack lib
 
 INTERFACE
-MODULE FUNCTION func_Lagrange1D1( i, x, order, varname ) RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange1D1(i, x, order, varname) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( IN ) :: x( : )
+    REAL(DFP), INTENT(IN) :: x(:)
   !! points, order = size(x) - 1
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  !! variable name
-  TYPE( Lagrange1D_ ) :: ans
-END FUNCTION func_Lagrange1D1
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+    TYPE(Lagrange1D_) :: ans
+  END FUNCTION func_Lagrange1D1
 END INTERFACE
 
 INTERFACE Lagrange1D
@@ -115,17 +180,17 @@ PUBLIC :: Lagrange1D
 !
 
 INTERFACE
-MODULE FUNCTION func_Lagrange1D2( i, v, order, varname ) RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange1D2(i, v, order, varname) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( IN ) :: v( :, : )
+    REAL(DFP), INTENT(IN) :: v(:, :)
   !! Vandermonde matrix
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  !! variable name
-  TYPE( Lagrange1D_ ) :: ans
-END FUNCTION func_Lagrange1D2
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+    TYPE(Lagrange1D_) :: ans
+  END FUNCTION func_Lagrange1D2
 END INTERFACE
 
 INTERFACE Lagrange1D
@@ -149,20 +214,20 @@ END INTERFACE Lagrange1D
 !- linear system of equations is solved by using Lapack lib
 !
 INTERFACE
-MODULE FUNCTION func_Lagrange1D3( i, v, order, ipiv, varname) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange1D3(i, v, order, ipiv, varname) &
+    & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( INOUT ) :: v( :, : )
+    REAL(DFP), INTENT(INOUT) :: v(:, :)
   !! LU decomposition of Vandermonde matrix
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  INTEGER( I4B ), INTENT( IN ) :: ipiv( : )
+    INTEGER(I4B), INTENT(IN) :: ipiv(:)
   !! inverse pivoting mapping, compes from LU decomposition
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  !! variable name
-  TYPE( Lagrange1D_ ) :: ans
-END FUNCTION func_Lagrange1D3
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+    TYPE(Lagrange1D_) :: ans
+  END FUNCTION func_Lagrange1D3
 END INTERFACE
 
 INTERFACE Lagrange1D
@@ -183,17 +248,17 @@ END INTERFACE Lagrange1D
 !- It solves a linear system by LU decomposition by using Lapack lib
 
 INTERFACE
-MODULE FUNCTION func_Lagrange1D_P1( i, x, order, varname ) RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange1D_P1(i, x, order, varname) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( IN ) :: x( : )
+    REAL(DFP), INTENT(IN) :: x(:)
   !! points, order = size(x) - 1
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  !! variable name
-  CLASS( Lagrange1D_ ), POINTER :: ans
-END FUNCTION func_Lagrange1D_P1
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+    CLASS(Lagrange1D_), POINTER :: ans
+  END FUNCTION func_Lagrange1D_P1
 END INTERFACE
 
 INTERFACE Lagrange1D_Pointer
@@ -219,17 +284,17 @@ PUBLIC :: Lagrange1D_Pointer
 !
 
 INTERFACE
-MODULE FUNCTION func_Lagrange1D_P2( i, v, order, varname ) RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange1D_P2(i, v, order, varname) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( IN ) :: v( :, : )
+    REAL(DFP), INTENT(IN) :: v(:, :)
   !! Vandermonde matrix
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  !! variable name
-  CLASS( Lagrange1D_ ), POINTER :: ans
-END FUNCTION func_Lagrange1D_P2
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+    CLASS(Lagrange1D_), POINTER :: ans
+  END FUNCTION func_Lagrange1D_P2
 END INTERFACE
 
 INTERFACE Lagrange1D_Pointer
@@ -253,20 +318,20 @@ END INTERFACE Lagrange1D_Pointer
 !- linear system of equations is solved by using Lapack lib
 !
 INTERFACE
-MODULE FUNCTION func_Lagrange1D_P3( i, v, order, ipiv, varname) &
-  & RESULT( ans )
-  INTEGER( I4B ), INTENT( IN ) :: i
+  MODULE FUNCTION func_Lagrange1D_P3(i, v, order, ipiv, varname) &
+    & RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
   !! ith lagrange polynomial
-  REAL( DFP ), INTENT( INOUT ) :: v( :, : )
+    REAL(DFP), INTENT(INOUT) :: v(:, :)
   !! LU decomposition of Vandermonde matrix
-  INTEGER( I4B ), INTENT( IN ) :: order
+    INTEGER(I4B), INTENT(IN) :: order
   !! order
-  INTEGER( I4B ), INTENT( IN ) :: ipiv( : )
+    INTEGER(I4B), INTENT(IN) :: ipiv(:)
   !! inverse pivoting mapping, compes from LU decomposition
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  !! variable name
-  CLASS( Lagrange1D_ ), POINTER :: ans
-END FUNCTION func_Lagrange1D_P3
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+  !! variable varname
+    CLASS(Lagrange1D_), POINTER :: ans
+  END FUNCTION func_Lagrange1D_P3
 END INTERFACE
 
 INTERFACE Lagrange1D_Pointer

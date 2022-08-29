@@ -52,8 +52,8 @@ MODULE PROCEDURE func_Initiate1
   !!
   obj%n1 = n1
   obj%n2 = n2
-  obj%varname(1) = TRIM(name1)
-  obj%varname(2) = TRIM(name2)
+  obj%varname(1) = TRIM(varname1)
+  obj%varname(2) = TRIM(varname2)
   astr = obj%GetStringForUID( )
   obj%uid = StringToUID(astr%chars())
   !!
@@ -66,14 +66,14 @@ END PROCEDURE func_Initiate1
 MODULE PROCEDURE func_Initiate2
   !!
   INTEGER( I4B ) :: n1, n2
-  TYPE( String ) :: name1, name2
+  TYPE( String ) :: varname1, varname2
   !!
   n1 = f1%GetDegree()
   n2 = f2%GetDegree()
-  name1 = f1%GetVarname()
-  name2 = f2%GetVarname()
+  varname1 = f1%GetVarname()
+  varname2 = f2%GetVarname()
   !!
-  CALL obj%Initiate(n1=n1, n2=n2, name1=name1%chars(), name2=name2%chars())
+  CALL obj%Initiate(n1=n1, n2=n2, varname1=varname1%chars(), varname2=varname2%chars())
   !!
 END PROCEDURE func_Initiate2
 
@@ -82,7 +82,7 @@ END PROCEDURE func_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomial2D1
-  CALL ans%Initiate( n1=n1, n2=n2, name1=name1, name2=name2)
+  CALL ans%Initiate( n1=n1, n2=n2, varname1=varname1, varname2=varname2)
 END PROCEDURE func_Monomial2D1
 
 !----------------------------------------------------------------------------
@@ -99,7 +99,7 @@ END PROCEDURE func_Monomial2D2
 
 MODULE PROCEDURE func_Monomial2D_Pointer1
   ALLOCATE( Monomial2D_::ans )
-  CALL ans%Initiate( n1=n1, n2=n2, name1=name1, name2=name2)
+  CALL ans%Initiate( n1=n1, n2=n2, varname1=varname1, varname2=varname2)
 END PROCEDURE func_Monomial2D_Pointer1
 
 !----------------------------------------------------------------------------
