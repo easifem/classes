@@ -4,11 +4,7 @@
     {
       "label": "clean",
       "type": "shell",
-      "command": "rm",
-      "args": [
-        "-rf",
-        "~/temp/tests/easifem-classes"
-      ],
+      "command": "rm -rf ~/temp/tests/easifem-classes",
       "problemMatcher": []
     },
     {
@@ -30,6 +26,6 @@
         "kind": "test",
         "isDefault": true
       }
-    },
+    }
   ]
 }
