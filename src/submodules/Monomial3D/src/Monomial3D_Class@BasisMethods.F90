@@ -43,9 +43,9 @@ MODULE PROCEDURE func_Monomials3D
       & n1=degree(ii,1), &
       & n2=degree(ii,2), &
       & n3=degree(ii,3), &
-      & name1=name1, &
-      & name2=name2, &
-      & name3=name3 )
+      & varname1=varname1, &
+      & varname2=varname2, &
+      & varname3=varname3 )
   END DO
   !!
   IF(ALLOCATED(degree)) DEALLOCATE(degree)

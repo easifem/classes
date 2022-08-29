@@ -42,9 +42,9 @@ MODULE PROCEDURE func_Multiplication_obj_obj
     & n1=n1, &
     & n2=n2, &
     & n3=n3, &
-    & name1=varname(1)%chars(), &
-    & name2=varname(2)%chars(), &
-    & name3=varname(3)%chars() )
+    & varname1=varname(1)%chars(), &
+    & varname2=varname(2)%chars(), &
+    & varname3=varname(3)%chars() )
   !!
 END PROCEDURE func_Multiplication_obj_obj
 
