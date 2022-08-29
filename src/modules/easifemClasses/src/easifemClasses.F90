@@ -62,6 +62,7 @@ USE PolynomialFactory
 USE UserFunction_Class
 
 USE RefElementFactory
+USE FiniteElementFactory
 
 USE Tree3R_Class
 
