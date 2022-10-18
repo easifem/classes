@@ -29,11 +29,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Monomials1D
-  INTEGER( I4B ) :: ii
-  ALLOCATE( ans( order + 1 ) )
-  DO ii = 1, order+1
-    CALL ans( ii )%Initiate( degree=ii-1_I4B, varname=varname )
-  END DO
+INTEGER(I4B) :: ii
+ALLOCATE (ans(order + 1))
+DO ii = 1, order + 1
+  CALL ans(ii)%Initiate(degree=ii - 1_I4B, varname=varname)
+END DO
 END PROCEDURE func_Monomials1D
 
 !----------------------------------------------------------------------------
@@ -41,15 +41,15 @@ END PROCEDURE func_Monomials1D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_EvenMonomials1D
-  INTEGER( I4B ) :: ii, order0, jj
+INTEGER(I4B) :: ii, order0, jj
   !!
-  order0 = order/2
-  ALLOCATE( ans( order0 + 1 ) )
+order0 = order / 2
+ALLOCATE (ans(order0 + 1))
   !!
-  DO ii = 1, order0+1
-    jj = 2*(ii-1_I4B)
-    CALL ans( ii )%Initiate( degree=jj, varname=varname )
-  END DO
+DO ii = 1, order0 + 1
+  jj = 2 * (ii - 1_I4B)
+  CALL ans(ii)%Initiate(degree=jj, varname=varname)
+END DO
 END PROCEDURE func_EvenMonomials1D
 
 !----------------------------------------------------------------------------
@@ -57,15 +57,15 @@ END PROCEDURE func_EvenMonomials1D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_OddMonomials1D
-  INTEGER( I4B ) :: ii, order0, jj
+INTEGER(I4B) :: ii, order0, jj
   !!
-  order0 = (order+1)/2
-  ALLOCATE( ans( order0 ) )
+order0 = (order + 1) / 2
+ALLOCATE (ans(order0))
   !!
-  DO ii = 1, order0
-    jj = 2*ii-1_I4B
-    CALL ans( ii )%Initiate( degree=jj, varname=varname )
-  END DO
+DO ii = 1, order0
+  jj = 2 * ii - 1_I4B
+  CALL ans(ii)%Initiate(degree=jj, varname=varname)
+END DO
 END PROCEDURE func_OddMonomials1D
 
 END SUBMODULE BasisMethods
