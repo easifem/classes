@@ -22,6 +22,5 @@ TARGET_SOURCES(
   ${src_path}/AbstractOrthopol1D_Class@IOMethods.F90
   ${src_path}/AbstractOrthopol1D_Class@GetMethods.F90
   ${src_path}/AbstractOrthopol1D_Class@SetMethods.F90
-  ${src_path}/AbstractOrthopolSpace1D_Class@ConstructorMethods.F90
-  ${src_path}/AbstractOrthopolSpace1D_Class@SetMethods.F90
+  ${src_path}/AbstractOrthopolSpace1D_Class@Methods.F90
 )
