@@ -25,19 +25,19 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE JacobiSpace1D1
-  REAL( DFP ), DIMENSION( 0:n-1, 2 ) :: coeff, scale
+REAL(DFP), DIMENSION(0:n - 1, 2) :: coeff, scale
   !!
-  ans%x = Jacobi1D( varname=varname, n=n, alpha=alpha, beta=beta,  &
-    & isMonic=isMonic, isOrthonormal=isOrthonormal )
+ans%x = Jacobi1D(varname=varname, n=n, alpha=alpha, beta=beta,  &
+  & isMonic=isMonic, isOrthonormal=isOrthonormal)
   !!
-  CALL ans%x%GetCoeffScale( n=n, coeff=coeff, scale=scale  )
+CALL ans%x%GetCoeffScale(n=n, coeff=coeff, scale=scale)
   !!
-  CALL ans%setParam( &
-    & isMonic=isMonic, &
-    & isOrthonormal=isOrthonormal, &
-    & n=n, &
-    & coeff=coeff, &
-    & scale=scale)
+CALL ans%setParam( &
+  & isMonic=isMonic, &
+  & isOrthonormal=isOrthonormal, &
+  & n=n, &
+  & coeff=coeff, &
+  & scale=scale)
   !!
 END PROCEDURE JacobiSpace1D1
 
@@ -46,21 +46,21 @@ END PROCEDURE JacobiSpace1D1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE JacobiSpace1D_Pointer1
-  REAL( DFP ), DIMENSION( 0:n-1, 2 ) :: coeff, scale
+REAL(DFP), DIMENSION(0:n - 1, 2) :: coeff, scale
   !!
-  ALLOCATE( ans )
+ALLOCATE (ans)
   !!
-  ans%x = Jacobi1D( varname=varname, n=n, alpha=alpha, beta=beta,  &
-    & isMonic=isMonic, isOrthonormal=isOrthonormal )
+ans%x = Jacobi1D(varname=varname, n=n, alpha=alpha, beta=beta,  &
+  & isMonic=isMonic, isOrthonormal=isOrthonormal)
   !!
-  CALL ans%x%GetCoeffScale( n=n, coeff=coeff, scale=scale  )
+CALL ans%x%GetCoeffScale(n=n, coeff=coeff, scale=scale)
   !!
-  CALL ans%setParam( &
-    & isMonic=isMonic, &
-    & isOrthonormal=isOrthonormal, &
-    & n=n, &
-    & coeff=coeff, &
-    & scale=scale)
+CALL ans%setParam( &
+  & isMonic=isMonic, &
+  & isOrthonormal=isOrthonormal, &
+  & n=n, &
+  & coeff=coeff, &
+  & scale=scale)
   !!
 END PROCEDURE JacobiSpace1D_Pointer1
 
@@ -69,8 +69,8 @@ END PROCEDURE JacobiSpace1D_Pointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Deallocate
-  CALL AbstractOrthopolSpace1DDeallocate(obj)
-  CALL obj%x%Deallocate()
+CALL AbstractOrthopolSpace1DDeallocate(obj)
+CALL obj%x%Deallocate()
 END PROCEDURE Orthopol_Deallocate
 
 !----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ END PROCEDURE Orthopol_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Final
-  CALL obj%x%Deallocate()
+CALL obj%x%Deallocate()
 END PROCEDURE Orthopol_Final
 
 END SUBMODULE ConstructorMethods
