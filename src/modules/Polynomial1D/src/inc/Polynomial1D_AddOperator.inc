@@ -23,11 +23,11 @@
 ! summary: Add two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_mono_obj( obj1, obj2 ) RESULT( Ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_mono_obj
+  MODULE ELEMENTAL FUNCTION func_Add_mono_obj(obj1, obj2) RESULT(Ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_mono_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -39,11 +39,11 @@ END INTERFACE
 ! summary: Add two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_mono( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_mono
+  MODULE ELEMENTAL FUNCTION func_Add_obj_mono(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -55,11 +55,11 @@ END INTERFACE
 ! summary: Add two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_obj( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_obj
+  MODULE ELEMENTAL FUNCTION func_Add_obj_obj(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -71,11 +71,11 @@ END INTERFACE
 ! summary: Add two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_Int8( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int8 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_Int8
+  MODULE ELEMENTAL FUNCTION func_Add_obj_Int8(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int8), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_Int8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -83,11 +83,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_Int16( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int16 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_Int16
+  MODULE ELEMENTAL FUNCTION func_Add_obj_Int16(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int16), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_Int16
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -95,11 +95,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_Int32( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int32 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_Int32
+  MODULE ELEMENTAL FUNCTION func_Add_obj_Int32(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int32), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_Int32
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -107,11 +107,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_Int64( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int64 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_Int64
+  MODULE ELEMENTAL FUNCTION func_Add_obj_Int64(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int64), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_Int64
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -119,11 +119,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_Real32( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  REAL( Real32 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_Real32
+  MODULE ELEMENTAL FUNCTION func_Add_obj_Real32(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    REAL(Real32), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_Real32
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -131,11 +131,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_obj_Real64( obj1, obj2 ) RESULT( Ans )
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj1
-  REAL( Real64 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_obj_Real64
+  MODULE ELEMENTAL FUNCTION func_Add_obj_Real64(obj1, obj2) RESULT(Ans)
+    CLASS(Polynomial1D_), INTENT(IN) :: obj1
+    REAL(Real64), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_obj_Real64
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -147,11 +147,11 @@ END INTERFACE
 ! summary: Add two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_Int8_obj( obj1, obj2 ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_Int8_obj
+  MODULE ELEMENTAL FUNCTION func_Add_Int8_obj(obj1, obj2) RESULT(Ans)
+    INTEGER(Int8), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_Int8_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -159,11 +159,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_Int16_obj( obj1, obj2 ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_Int16_obj
+  MODULE ELEMENTAL FUNCTION func_Add_Int16_obj(obj1, obj2) RESULT(Ans)
+    INTEGER(Int16), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_Int16_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -171,11 +171,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_Int32_obj( obj1, obj2 ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_Int32_obj
+  MODULE ELEMENTAL FUNCTION func_Add_Int32_obj(obj1, obj2) RESULT(Ans)
+    INTEGER(Int32), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_Int32_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -183,11 +183,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_Int64_obj( obj1, obj2 ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_Int64_obj
+  MODULE ELEMENTAL FUNCTION func_Add_Int64_obj(obj1, obj2) RESULT(Ans)
+    INTEGER(Int64), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_Int64_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -195,11 +195,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_Real32_obj( obj1, obj2 ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_Real32_obj
+  MODULE ELEMENTAL FUNCTION func_Add_Real32_obj(obj1, obj2) RESULT(Ans)
+    REAL(Real32), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_Real32_obj
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -207,9 +207,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Add_Real64_obj( obj1, obj2 ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: obj1
-  CLASS( Polynomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Add_Real64_obj
+  MODULE ELEMENTAL FUNCTION func_Add_Real64_obj(obj1, obj2) RESULT(Ans)
+    REAL(Real64), INTENT(IN) :: obj1
+    CLASS(Polynomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Add_Real64_obj
 END INTERFACE
