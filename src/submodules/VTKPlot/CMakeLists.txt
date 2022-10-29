@@ -20,4 +20,5 @@ TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/VTKPlot_Class@ConstructorMethods.F90
   ${src_path}/VTKPlot_Class@StructuredGridMethods.F90
+  ${src_path}/VTKPlot_Class@ScatterMethods.F90
 )
