@@ -394,7 +394,7 @@ END PROCEDURE refelem_GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetInterpolationPoint
-ans = InterpolationPoint(order=order, ipType=ipType, elemType=obj%name)
+ans = InterpolationPoint(order=order, ipType=ipType, elemType=obj%name, layout=layout)
 END PROCEDURE refelem_GetInterpolationPoint
 
 !----------------------------------------------------------------------------
