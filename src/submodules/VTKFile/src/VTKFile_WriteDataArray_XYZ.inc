@@ -15,21 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SELECT CASE( obj%DataFormat )
-CASE( VTK_ASCII )
-  content = encodeVTKDataArray( x=x, y=y, z=z, fmt="ASCII" )
-CASE( VTK_BINARY )
-  content = encodeVTKDataArray( x=x, y=y, z=z, fmt="BINARY" )
-CASE( VTK_APPENDED )
+SELECT CASE (obj%DataFormat)
+CASE (VTK_ASCII)
+  content = encodeVTKDataArray(x=x, y=y, z=z, fmt="ASCII")
+CASE (VTK_BINARY)
+  content = encodeVTKDataArray(x=x, y=y, z=z, fmt="BINARY")
+CASE (VTK_APPENDED)
   isOffset = .TRUE.
 END SELECT
 !!
-CALL obj%WriteDataArrayTag( dataType=dataType, &
+CALL obj%WriteDataArrayTag(dataType=dataType, &
   & numberOfComponents=noc, &
   & name=name, isTuples=isTuples, &
-  & isOffset=isOffset, content=content )
+  & isOffset=isOffset, content=content)
 !!
-IF( isOffset) THEN
-  CALL obj%WriteToScratch( x=x, y=y, z=z )
-  CALL Obj%UpdateOffset( nByte=nByte )
+IF (isOffset) THEN
+  CALL obj%WriteToScratch(x=x, y=y, z=z)
+  CALL Obj%UpdateOffset(nByte=nByte)
 END IF
