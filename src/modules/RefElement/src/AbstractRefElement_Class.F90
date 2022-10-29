@@ -407,11 +407,12 @@ END INTERFACE
 ! summary: Get the lattice points on reference element
 
 INTERFACE
-  MODULE PURE FUNCTION refelem_GetInterpolationPoint(obj, order, ipType) &
+  MODULE FUNCTION refelem_GetInterpolationPoint(obj, order, ipType, layout) &
     & RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
+    CHARACTER(LEN=*), INTENT(IN) :: layout
     REAL(DFP), ALLOCATABLE :: ans(:, :)
   END FUNCTION refelem_GetInterpolationPoint
 END INTERFACE
