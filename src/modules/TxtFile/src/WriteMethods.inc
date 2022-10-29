@@ -28,7 +28,7 @@ INTERFACE
   MODULE SUBROUTINE txt_convertMarkdownToSource(obj, outfile, lang)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(TxtFile_), INTENT(INOUT) :: outfile
-    CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: lang
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lang
   END SUBROUTINE txt_convertMarkdownToSource
 END INTERFACE
 
@@ -56,12 +56,12 @@ END INTERFACE
 ! summary: Write a single line (record)
 
 INTERFACE
-  MODULE SUBROUTINE txt_write_Line(obj, val, iostat, iomsg, advance )
+  MODULE SUBROUTINE txt_write_Line(obj, val, iostat, iomsg, advance)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
     CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: advance
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
     !! YES or NO
   END SUBROUTINE txt_write_Line
 END INTERFACE
@@ -81,12 +81,12 @@ PUBLIC :: TxtFileWrite
 ! summary: Write a single line (record)
 
 INTERFACE
-  MODULE SUBROUTINE txt_write_Lines(obj, val, iostat, iomsg, advance )
+  MODULE SUBROUTINE txt_write_Lines(obj, val, iostat, iomsg, advance)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(String), INTENT(IN) :: val( : )
+    TYPE(String), INTENT(IN) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
     CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-    CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: advance
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
     !! YES, NO
   END SUBROUTINE txt_write_Lines
 END INTERFACE
@@ -105,12 +105,12 @@ END INTERFACE TxtFileWrite
 
 INTERFACE
   MODULE SUBROUTINE txt_write_Char(obj, val, iostat, iomsg, &
-    &  advance )
+    &  advance)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
-    CHARACTER( LEN = * ), INTENT(IN) :: val
+    CHARACTER(LEN=*), INTENT(IN) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
     CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: advance
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
     !! YES, NO
   END SUBROUTINE txt_write_Char
 END INTERFACE
@@ -152,7 +152,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_Int8, txt_write_Int16, txt_write_Int32, &
+  MODULE PROCEDURE txt_write_Int8, txt_write_Int16, txt_write_Int32, &
     & txt_write_Int64
 END INTERFACE TxtFileWrite
 
@@ -177,7 +177,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_Real32, txt_write_Real64
+  MODULE PROCEDURE txt_write_Real32, txt_write_Real64
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -213,7 +213,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_vec_Int8, &
+  MODULE PROCEDURE txt_write_vec_Int8, &
     & txt_write_vec_Int16, &
     & txt_write_vec_Int32, &
     & txt_write_vec_Int64
@@ -234,7 +234,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_IntVector
+  MODULE PROCEDURE txt_write_IntVector
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_vec_IntVector
+  MODULE PROCEDURE txt_write_vec_IntVector
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -276,7 +276,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_vec_Real32, txt_write_vec_Real64
+  MODULE PROCEDURE txt_write_vec_Real32, txt_write_vec_Real64
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -294,7 +294,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_RealVector
+  MODULE PROCEDURE txt_write_RealVector
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------
@@ -312,7 +312,7 @@ END INTERFACE TxtFileWrite
 #undef __DATA_TYPE__
 
 INTERFACE TxtFileWrite
-  MODULE PROCEDURE  txt_write_vec_RealVector
+  MODULE PROCEDURE txt_write_vec_RealVector
 END INTERFACE TxtFileWrite
 
 !----------------------------------------------------------------------------

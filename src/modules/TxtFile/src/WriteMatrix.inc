@@ -16,13 +16,15 @@
 !
 
 INTERFACE
-MODULE SUBROUTINE __SUBROUTINE_NAME__ ( obj, val, iostat, iomsg, &
-  & advance, orient )
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: obj
-  __DATA_TYPE__, INTENT( IN ) :: val(:,:)
-  INTEGER( I4B ), OPTIONAL, INTENT( OUT ) :: iostat
-  CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: advance
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: orient
-END SUBROUTINE __SUBROUTINE_NAME__
+  MODULE SUBROUTINE __SUBROUTINE_NAME__(obj, val, iostat, iomsg, &
+    & advance, orient)
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
+    __DATA_TYPE__, INTENT(IN) :: val(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
+    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
+  !! "ROW" write lines rowwise, that is row-1 is line-1, row-2 is line-2, etc.
+  !! "COL" or "TRANSPOSE" write lines columnwise.
+  END SUBROUTINE __SUBROUTINE_NAME__
 END INTERFACE
