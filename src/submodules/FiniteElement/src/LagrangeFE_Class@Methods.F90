@@ -48,7 +48,7 @@ CALL obj%SetParam( &
 !!
 !! generate lattice point
 !!
-xij = obj%refelem%GetInterpolationPoint(order=order, ipType=ipType)
+xij = obj%refelem%GetInterpolationPoint(order=order, ipType=ipType, layout="VEFC")
 !!
 !! Generate shape functions
 !!
