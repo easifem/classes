@@ -107,7 +107,7 @@ ndata = SIZE(z, 2)
 CALL aVTKfile%InitiateVTKFile( &
   & filename=filename, &
   & mode="NEW", &
-  & DataFormat=VTK_ASCII, &
+  & DataFormat=VTK_BINARY, &
   & DataStructureType=VTK_PolyData)
 !!
 CALL aVTKfile%WritePiece(nPoints=nPoints, &
