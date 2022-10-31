@@ -15,34 +15,34 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-INTEGER( I4B ) :: ii
+INTEGER(I4B) :: ii
 TYPE(String) :: aline, orient0
 !!
-IF( PRESENT( orient ) ) THEN
-  orient0=UpperCase(orient)
+IF (PRESENT(orient)) THEN
+  orient0 = UpperCase(orient)
 ELSE
-  orient0="COL"
+  orient0 = "COL"
 END IF
 !!
-SELECT CASE( orient0%chars() )
+SELECT CASE (orient0%chars())
 !!
-CASE( "ROW" )
+CASE ("ROW")
   !!
-  aline = STR( val, separator=obj%separator )
+  aline = STR(val, separator=obj%separator)
   !!
   CALL obj%writeLine( &
     & val=aline, &
     & iostat=iostat, &
     & iomsg=iomsg, &
-    & advance=advance )
+    & advance=advance)
 !!
-CASE( "COL" )
-  DO ii = 1, SIZE( val )
+CASE ("COL", "TRANSPOSE")
+  DO ii = 1, SIZE(val)
     CALL obj%write( &
       & val=val(ii), &
       & iostat=iostat, &
       & iomsg=iomsg, &
-      & advance=advance )
+      & advance=advance)
   END DO
 !!
 END SELECT

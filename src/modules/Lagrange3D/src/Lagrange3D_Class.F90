@@ -31,6 +31,9 @@ PRIVATE
 
 TYPE, EXTENDS(Polynomial3D_) :: Lagrange3D_
 CONTAINS
+  PROCEDURE, PASS(obj) :: Initiate1
+  PROCEDURE, PASS(obj) :: Initiate2
+  PROCEDURE, PASS(obj) :: Initiate3
   FINAL :: func_Final
 END TYPE Lagrange3D_
 
@@ -47,7 +50,7 @@ END TYPE Lagrange3DPointer_
 PUBLIC :: Lagrange3DPointer_
 
 !----------------------------------------------------------------------------
-!                                                  Final@ConstructorMethods
+!                                                  Final@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -69,11 +72,11 @@ END INTERFACE
 ! summary: Initiate the object
 
 INTERFACE
-  MODULE SUBROUTINE Initiate1(obj, i, x, order, varname1, varname2, &
+  MODULE SUBROUTINE Initiate1(obj, i, xij, order, varname1, varname2, &
     & varname3, elemType)
     CLASS(Lagrange3D_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: i
-    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), INTENT(IN) :: xij(:, :)
     INTEGER(I4B), INTENT(IN) :: order
     CHARACTER(LEN=*), INTENT(IN) :: varname1
     CHARACTER(LEN=*), INTENT(IN) :: varname2
@@ -128,7 +131,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             Lagrange3D@ConstructorMethods
+!                                                         Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 18 Oct 2022
+! summary:         Initiate the familt of lagrange polynomials
+
+INTERFACE
+  MODULE SUBROUTINE Initiate4(obj, xij, order, varname1, varname2, &
+    & varname3, elemType)
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    TYPE(Lagrange3D_), INTENT(INOUT) :: obj(SIZE(xij, 2))
+    INTEGER(I4B), INTENT(IN) :: order
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    CHARACTER(LEN=*), INTENT(IN) :: varname3
+    INTEGER(I4B), INTENT(IN) :: elemType
+  END SUBROUTINE Initiate4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Lagrange3D@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -141,11 +165,11 @@ END INTERFACE
 !- It solves a linear system by LU decomposition by using Lapack lib
 
 INTERFACE
-  MODULE FUNCTION func_Lagrange3D1(i, x, order, varname1, varname2, &
+  MODULE FUNCTION func_Lagrange3D1(i, xij, order, varname1, varname2, &
     & varname3, elemType) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: i
     !! ith lagrange polynomial
-    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), INTENT(IN) :: xij(:, :)
     !! interpolation points in $x_{iJ}$ format
     INTEGER(I4B), INTENT(IN) :: order
     !! order
@@ -169,7 +193,7 @@ END INTERFACE Lagrange3D
 PUBLIC :: Lagrange3D
 
 !----------------------------------------------------------------------------
-!                                              Lagrange3D@ConstructorMethods
+!                                                        Lagrange3D@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -182,7 +206,6 @@ PUBLIC :: Lagrange3D
 !- User provides the vandermonde matrix
 !- the routine copies vandermonde matrix internally and solves a
 ! linear system by using Lapack lib
-!
 
 INTERFACE
   MODULE FUNCTION func_Lagrange3D2(i, v, order, varname1, varname2, &
@@ -211,7 +234,7 @@ INTERFACE Lagrange3D
 END INTERFACE Lagrange3D
 
 !----------------------------------------------------------------------------
-!                                              Lagrange3D@ConstructorMethods
+!                                                        Lagrange3D@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -253,7 +276,7 @@ INTERFACE Lagrange3D
 END INTERFACE Lagrange3D
 
 !----------------------------------------------------------------------------
-!                                             Lagrange3D@ConstructorMethods
+!                                                        Lagrange3D@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -266,9 +289,9 @@ END INTERFACE Lagrange3D
 !- It solves a linear system by LU decomposition by using Lapack lib
 
 INTERFACE
-  MODULE FUNCTION func_Lagrange3D4(x, order, varname1, varname2, &
+  MODULE FUNCTION func_Lagrange3D4(xij, order, varname1, varname2, &
     & varname3, elemType) RESULT(ans)
-    REAL(DFP), INTENT(IN) :: x(:, :)
+    REAL(DFP), INTENT(IN) :: xij(:, :)
     !! interpolation points in $x_{iJ}$ format
     INTEGER(I4B), INTENT(IN) :: order
     !! order
@@ -288,5 +311,132 @@ END INTERFACE
 INTERFACE Lagrange3D
   MODULE PROCEDURE func_Lagrange3D4
 END INTERFACE Lagrange3D
+
+!----------------------------------------------------------------------------
+!                                                Lagrange3D_Pointer@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct the Lagrange polynomial in 3D
+!
+!# Introduction
+!
+!- This routine constructs the lagrange polynomial in 3D
+!- It solves a linear system by LU decomposition by using Lapack lib
+
+INTERFACE
+  MODULE FUNCTION func_Lagrange3P1(i, xij, order, varname1, varname2, &
+    & varname3, elemType) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
+    !! ith lagrange polynomial
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! interpolation points in $x_{iJ}$ format
+    INTEGER(I4B), INTENT(IN) :: order
+    !! order
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname3
+    !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
+    !! Triangle, Quadrangle
+    CLASS(Lagrange3D_), POINTER :: ans
+    !! Polynomial in 3D
+  END FUNCTION func_Lagrange3P1
+END INTERFACE
+
+INTERFACE Lagrange3D_Pointer
+  MODULE PROCEDURE func_Lagrange3P1
+END INTERFACE Lagrange3D_Pointer
+
+PUBLIC :: Lagrange3D_Pointer
+
+!----------------------------------------------------------------------------
+!                                              Lagrange3D_Pointer@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct the Lagrange3D_Pointer
+!
+!# Introduction
+!
+!- This routine returns the Lagrange polynomial in 3D
+!- User provides the vandermonde matrix
+!- the routine copies vandermonde matrix internally and solves a
+! linear system by using Lapack lib
+!
+
+INTERFACE
+  MODULE FUNCTION func_Lagrange3P2(i, v, order, varname1, varname2, &
+    & varname3, elemType, isVandermonde) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
+  !! ith lagrange polynomial
+    REAL(DFP), INTENT(IN) :: v(:, :)
+  !! Vandermonde matrix
+    INTEGER(I4B), INTENT(IN) :: order
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+  !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+  !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname3
+  !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
+  !! "Triangle" or "Quadrangle"
+    LOGICAL(LGT), INTENT(IN) :: isVandermonde
+  !! This is just to resolve interface issue
+    CLASS(Lagrange3D_), POINTER :: ans
+    !! Polynomial in 3D
+  END FUNCTION func_Lagrange3P2
+END INTERFACE
+
+INTERFACE Lagrange3D_Pointer
+  MODULE PROCEDURE func_Lagrange3P2
+END INTERFACE Lagrange3D_Pointer
+
+!----------------------------------------------------------------------------
+!                                              Lagrange3D_Pointer@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct the Lagrange3D_Pointer
+!
+!# Introduction
+!
+!- This routine returns the Lagrange polynomial in 3D
+!- User provides the LU deomposition of vandermonde matrix
+!- The LU decomposition should be obtained by calling Lapack lib
+!- The GetLU method should be used to obtain LU decomposition and ipiv
+!- linear system of equations is solved by using Lapack lib
+
+INTERFACE
+  MODULE FUNCTION func_Lagrange3P3(i, v, order, ipiv, varname1, varname2, &
+    & varname3, elemType) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: i
+    !! ith lagrange polynomial
+    REAL(DFP), INTENT(INOUT) :: v(:, :)
+    !! LU decomposition of Vandermonde matrix
+    INTEGER(I4B), INTENT(IN) :: order
+    INTEGER(I4B), INTENT(IN) :: ipiv(:)
+    !! inverse pivoting mapping, compes from LU decomposition
+    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    !! variable varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname3
+    !! variable varname
+    INTEGER(I4B), INTENT(IN) :: elemType
+    !! "Triangle" or "Quadrangle"
+    CLASS(Lagrange3D_), POINTER :: ans
+    !! Polynomial in 3D
+  END FUNCTION func_Lagrange3P3
+END INTERFACE
+
+INTERFACE Lagrange3D_Pointer
+  MODULE PROCEDURE func_Lagrange3P3
+END INTERFACE Lagrange3D_Pointer
 
 END MODULE Lagrange3D_Class

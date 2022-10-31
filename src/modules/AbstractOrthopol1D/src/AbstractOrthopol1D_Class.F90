@@ -28,115 +28,115 @@ PRIVATE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 3 Aug 2022
-! summary: 	Abstract orthogonal polynomial
+! summary:         Abstract orthogonal polynomial
 
-TYPE, ABSTRACT,  EXTENDS( AbstractBasis1D_ ) :: &
+TYPE, ABSTRACT, EXTENDS(AbstractBasis1D_) :: &
   & AbstractOrthopol1D_
   PRIVATE
-  INTEGER( I4B ) :: n = 0
+  INTEGER(I4B) :: n = 0
     !! order of orthogonal polynomial
-  REAL( DFP ) :: an_1= 0.0_DFP
+  REAL(DFP) :: an_1 = 0.0_DFP
     !! $\alpha_{n-1}$
-  REAL( DFP ) :: bn_1 = 0.0_DFP
+  REAL(DFP) :: bn_1 = 0.0_DFP
     !! $\beta_{n-1}$
-  REAL( DFP ) :: sn_1 = 1.0_DFP
+  REAL(DFP) :: sn_1 = 1.0_DFP
     !! scale for $Orthopol_{n-1}$
-  REAL( DFP ) :: sn_2 = 1.0_DFP
+  REAL(DFP) :: sn_2 = 1.0_DFP
     !! scale for $Orthopol_{n-2}$
-  CLASS( AbstractOrthopol1D_ ), POINTER :: Jn_1 => NULL()
+  CLASS(AbstractOrthopol1D_), POINTER :: Jn_1 => NULL()
     !! Jacobi polynomial of order n-1
-  CLASS( AbstractOrthopol1D_ ), POINTER :: Jn_2 => NULL()
+  CLASS(AbstractOrthopol1D_), POINTER :: Jn_2 => NULL()
     !! Jacobi polynomial of order n-2
-  CONTAINS
+CONTAINS
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => Orthopol_Initiate
-  PROCEDURE, PRIVATE, PASS( obj ) :: Initiate1 => &
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => Orthopol_Initiate
+  PROCEDURE, PRIVATE, PASS(obj) :: Initiate1 => &
     & Orthopol_Initiate1
-  PROCEDURE, PRIVATE, PASS( obj ) :: Initiate2 => &
+  PROCEDURE, PRIVATE, PASS(obj) :: Initiate2 => &
     & Orthopol_Initiate2
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => Orthopol_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Orthopol_Deallocate
   !! Deallocate the data
-  PROCEDURE, PRIVATE, PASS( obj ) :: Deallocate1 => Orthopol_Deallocate1
+  PROCEDURE, PRIVATE, PASS(obj) :: Deallocate1 => Orthopol_Deallocate1
   !! Deallocate the data
-  PROCEDURE, PRIVATE, PASS( obj ) :: Deallocate2 => Orthopol_Deallocate2
+  PROCEDURE, PRIVATE, PASS(obj) :: Deallocate2 => Orthopol_Deallocate2
   !! Deallocate the data
-  PROCEDURE, PUBLIC, PASS( obj ) :: isInitiated => Orthopol_isInitiated
+  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => Orthopol_isInitiated
   !! Returns true if the object is initiated
   !!
   !! @IOMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => Orthopol_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => Orthopol_Display
   !! Display the content
   !!
   !! @GetMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetJn1Pointer => Orthopol_GetJn1Pointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetJn1Pointer => Orthopol_GetJn1Pointer
   !! Return pointer to Jn_1
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetJn2Pointer => Orthopol_GetJn2Pointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetJn2Pointer => Orthopol_GetJn2Pointer
   !! Return pointer to Jn_2
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetOrder => Orthopol_GetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => Orthopol_GetOrder
   !! Return the order of the polynomial
-  PROCEDURE, PUBLIC, PASS( obj ) :: EvalScalar => Orthopol_EvalScalar
+  PROCEDURE, PUBLIC, PASS(obj) :: EvalScalar => Orthopol_EvalScalar
   !! Evaluate the polynomial
-  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalScalar => &
+  PROCEDURE, PUBLIC, PASS(obj) :: BasisEvalScalar => &
     & Orthopol_BasisEvalScalar
   !! Evaluate all the basis from n=0 to n=n at a given point
-  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalVector => &
+  PROCEDURE, PUBLIC, PASS(obj) :: BasisEvalVector => &
     & Orthopol_BasisEvalVector
   !! Evaluate all the basis (n=0,1,...,n) at several points
   GENERIC, PUBLIC :: BasisEval => &
     & BasisEvalScalar, BasisEvalVector
   !! Generic function for evaluating values of all basis
-  PROCEDURE, PUBLIC, PASS( obj ) :: P0 => Orthopol_P0
+  PROCEDURE, PUBLIC, PASS(obj) :: P0 => Orthopol_P0
   !! When n=0 this function is called for evaluting polynomial
-  PROCEDURE, PUBLIC, PASS( obj ) :: Pm1 => Orthopol_Pm1
+  PROCEDURE, PUBLIC, PASS(obj) :: Pm1 => Orthopol_Pm1
   !! When n=-1 this function is called for evaluting polynomial
-  PROCEDURE, PUBLIC, PASS( obj ) :: dP0 => Orthopol_dP0
+  PROCEDURE, PUBLIC, PASS(obj) :: dP0 => Orthopol_dP0
   !! When n=0 this function is called for evaluting polynomial
-  PROCEDURE, PUBLIC, PASS( obj ) :: dPm1 => Orthopol_dPm1
+  PROCEDURE, PUBLIC, PASS(obj) :: dPm1 => Orthopol_dPm1
   !! When n=-1 this function is called for evaluting polynomial
-  PROCEDURE, PUBLIC, PASS( obj ) :: EvalGradient => &
+  PROCEDURE, PUBLIC, PASS(obj) :: EvalGradient => &
     & Orthopol_EvalGradientScalar
   !! Evaluate the polynomial Gradient
-  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalGradientScalar => &
+  PROCEDURE, PUBLIC, PASS(obj) :: BasisEvalGradientScalar => &
     & Orthopol_BasisEvalGradientScalar
   !! Evaluate grad of all the basis (n=0,1,...,n) at a given point
-  PROCEDURE, PUBLIC, PASS( obj ) :: BasisEvalGradientVector => &
+  PROCEDURE, PUBLIC, PASS(obj) :: BasisEvalGradientVector => &
     & Orthopol_BasisEvalGradientVector
   !! Evaluate grad of all the basis (n=0,1,...,n) at several points
   GENERIC, PUBLIC :: BasisEvalGradient => &
     & BasisEvalGradientScalar, BasisEvalGradientVector
   !! Generic function for evaluating gradient of all basis
-  PROCEDURE, PUBLIC, PASS( obj ) :: GetStringToDisplay => &
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStringToDisplay => &
     & Orthopol_GetStringToDisplay
   !! Get the string for display
-  PROCEDURE(Orthopol_GetStringForUID), DEFERRED, PUBLIC, PASS( obj ) :: &
+  PROCEDURE(Orthopol_GetStringForUID), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetStringForUID
   !! Get String for unique ID
-  PROCEDURE(Orthopol_Weight), DEFERRED,  PUBLIC, PASS( obj ) :: Weight
+  PROCEDURE(Orthopol_Weight), DEFERRED, PUBLIC, PASS(obj) :: Weight
   !! Weight function
-  PROCEDURE(Orthopol_GetRecurrenceCoeff), DEFERRED,  PUBLIC, PASS( obj ) :: &
+  PROCEDURE(Orthopol_GetRecurrenceCoeff), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetRecurrenceCoeff
-  PROCEDURE(Orthopol_GetCoeffScale), DEFERRED,  PUBLIC, PASS( obj ) :: &
+  PROCEDURE(Orthopol_GetCoeffScale), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetCoeffScale
   !! Get recurrence coefficient
-  PROCEDURE(Orthopol_Zeros), DEFERRED, PUBLIC, PASS( obj ) :: Zeros
+  PROCEDURE(Orthopol_Zeros), DEFERRED, PUBLIC, PASS(obj) :: Zeros
   !! zeros of polynomial
-  PROCEDURE(Orthopol_GaussQuadrature), DEFERRED, PUBLIC, PASS( obj ) :: &
+  PROCEDURE(Orthopol_GaussQuadrature), DEFERRED, PUBLIC, PASS(obj) :: &
     & GaussQuadrature
   !! Gauss quadrature points and weights
-  PROCEDURE(Orthopol_GaussRadauQuadrature), DEFERRED, PUBLIC, PASS( obj ) :: &
+  PROCEDURE(Orthopol_GaussRadauQuadrature), DEFERRED, PUBLIC, PASS(obj) :: &
     & GaussRadauQuadrature
   !! Gauss-Radau quadrature points
-  PROCEDURE(Orthopol_GaussLobattoQuadrature), DEFERRED, PUBLIC, PASS( obj ) &
+  PROCEDURE(Orthopol_GaussLobattoQuadrature), DEFERRED, PUBLIC, PASS(obj) &
     & :: GaussLobattoQuadrature
   !! Gauss-Lobatto quadrature points and weights
   !!
   !! @SetMethods
   !!
-  PROCEDURE, PRIVATE, PASS( obj ) :: SetParam => Orthopol_SetParam
+  PROCEDURE, PRIVATE, PASS(obj) :: SetParam => Orthopol_SetParam
   !!
 END TYPE AbstractOrthopol1D_
 
@@ -147,7 +147,7 @@ PUBLIC :: AbstractOrthopol1D_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractOrthopol1DPointer_
-  CLASS( AbstractOrthopol1D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractOrthopol1D_), POINTER :: ptr => NULL()
 END TYPE AbstractOrthopol1DPointer_
 
 PUBLIC :: AbstractOrthopol1DPointer_
@@ -161,9 +161,9 @@ PUBLIC :: AbstractOrthopol1DPointer_
 ! summary: Deallocate the object
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Deallocate( obj )
-  CLASS( AbstractOrthopol1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Orthopol_Deallocate
+  MODULE RECURSIVE SUBROUTINE Orthopol_Deallocate(obj)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE Orthopol_Deallocate
 END INTERFACE
 
 INTERFACE AbstractOrthopol1DDeallocate
@@ -181,9 +181,9 @@ PUBLIC :: AbstractOrthopol1DDeallocate
 ! summary: Deallocate the object
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Deallocate1( obj )
-  CLASS( AbstractOrthopol1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Orthopol_Deallocate1
+  MODULE RECURSIVE SUBROUTINE Orthopol_Deallocate1(obj)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE Orthopol_Deallocate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -195,9 +195,9 @@ END INTERFACE
 ! summary: Deallocate the object
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Deallocate2( obj )
-  CLASS( AbstractOrthopol1D_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Orthopol_Deallocate2
+  MODULE RECURSIVE SUBROUTINE Orthopol_Deallocate2(obj)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE Orthopol_Deallocate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -209,10 +209,10 @@ END INTERFACE
 ! summary: If left or right is associated then it returns true
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION Orthopol_isInitiated( obj ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION Orthopol_isInitiated
+  MODULE ELEMENTAL FUNCTION Orthopol_isInitiated(obj) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION Orthopol_isInitiated
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -224,19 +224,19 @@ END INTERFACE
 ! summary: Build the 3 term recurrence tree
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Initiate( obj, varname, n, &
-  & coeff, scale )
-  CLASS( AbstractOrthopol1D_ ), INTENT( INOUT ) :: obj
+  MODULE RECURSIVE SUBROUTINE Orthopol_Initiate(obj, varname, n, &
+    & coeff, scale)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
     !! tree to be built
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname
     !! variable
-  INTEGER( I4B ), INTENT( IN ) :: n
+    INTEGER(I4B), INTENT(IN) :: n
     !! order of polynomial
-  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1: )
+    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
     !! additional scaling coefficient
-END SUBROUTINE Orthopol_Initiate
+  END SUBROUTINE Orthopol_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -248,16 +248,16 @@ END INTERFACE
 ! summary: Build the 3 term recurrence tree
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Initiate1( obj, varname, n, &
-    & coeff, scale )
-  CLASS( AbstractOrthopol1D_ ), INTENT( INOUT ) :: obj
+  MODULE RECURSIVE SUBROUTINE Orthopol_Initiate1(obj, varname, n, &
+      & coeff, scale)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
     !! tree to be built
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
-  INTEGER( I4B ), INTENT( IN ) :: n
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+    INTEGER(I4B), INTENT(IN) :: n
     !! order of polynomial
-  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
-  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1: )
-END SUBROUTINE Orthopol_Initiate1
+    REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
+    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+  END SUBROUTINE Orthopol_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -269,10 +269,10 @@ END INTERFACE
 ! summary: Build the 3 term recurrence tree
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Initiate2( obj, j1 )
-  CLASS( AbstractOrthopol1D_  ), INTENT( INOUT ) :: obj
-  CLASS( AbstractOrthopol1D_  ), TARGET, INTENT( INOUT ) :: j1
-END SUBROUTINE Orthopol_Initiate2
+  MODULE RECURSIVE SUBROUTINE Orthopol_Initiate2(obj, j1)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
+    CLASS(AbstractOrthopol1D_), TARGET, INTENT(INOUT) :: j1
+  END SUBROUTINE Orthopol_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -284,11 +284,11 @@ END INTERFACE
 ! summary: Display the orthogonal polynomial
 
 INTERFACE
-MODULE RECURSIVE SUBROUTINE Orthopol_Display( obj, msg, unitno )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE Orthopol_Display
+  MODULE RECURSIVE SUBROUTINE Orthopol_Display(obj, msg, unitno)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE Orthopol_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -300,10 +300,10 @@ END INTERFACE
 ! summary: Return the pointer to Jn_1
 
 INTERFACE
-MODULE FUNCTION Orthopol_GetJn1Pointer( obj ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  CLASS( AbstractOrthopol1D_ ), POINTER :: ans
-END FUNCTION Orthopol_GetJn1Pointer
+  MODULE FUNCTION Orthopol_GetJn1Pointer(obj) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    CLASS(AbstractOrthopol1D_), POINTER :: ans
+  END FUNCTION Orthopol_GetJn1Pointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -315,10 +315,10 @@ END INTERFACE
 ! summary: Return the pointer to Jn_1
 
 INTERFACE
-MODULE FUNCTION Orthopol_GetJn2Pointer( obj ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  CLASS( AbstractOrthopol1D_ ), POINTER :: ans
-END FUNCTION Orthopol_GetJn2Pointer
+  MODULE FUNCTION Orthopol_GetJn2Pointer(obj) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    CLASS(AbstractOrthopol1D_), POINTER :: ans
+  END FUNCTION Orthopol_GetJn2Pointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -330,10 +330,10 @@ END INTERFACE
 ! summary: Returnt the order of polynomial
 
 INTERFACE
-MODULE PURE FUNCTION Orthopol_GetOrder( obj ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION Orthopol_GetOrder
+  MODULE PURE FUNCTION Orthopol_GetOrder(obj) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION Orthopol_GetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -345,11 +345,11 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION Orthopol_EvalScalar( obj, x ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x
-  REAL( DFP ) :: ans
-END FUNCTION Orthopol_EvalScalar
+  MODULE ELEMENTAL FUNCTION Orthopol_EvalScalar(obj, x) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
+  END FUNCTION Orthopol_EvalScalar
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -361,11 +361,11 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION Orthopol_P0( obj, x ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x
-  REAL( DFP ) :: ans
-END FUNCTION Orthopol_P0
+  MODULE ELEMENTAL FUNCTION Orthopol_P0(obj, x) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
+  END FUNCTION Orthopol_P0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -377,10 +377,10 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_Pm1( obj, x ) RESULT( ans )
-    CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
+  MODULE ELEMENTAL FUNCTION Orthopol_Pm1(obj, x) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
   END FUNCTION Orthopol_Pm1
 END INTERFACE
 
@@ -393,10 +393,10 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_dP0( obj, x ) RESULT( ans )
-    CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
+  MODULE ELEMENTAL FUNCTION Orthopol_dP0(obj, x) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
   END FUNCTION Orthopol_dP0
 END INTERFACE
 
@@ -409,10 +409,10 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_dPm1( obj, x ) RESULT( ans )
-    CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
+  MODULE ELEMENTAL FUNCTION Orthopol_dPm1(obj, x) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
   END FUNCTION Orthopol_dPm1
 END INTERFACE
 
@@ -425,12 +425,12 @@ END INTERFACE
 ! summary: Evaluate gradient for 1d argument function
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION Orthopol_EvalGradientScalar( obj, x ) &
-  & RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x
-  REAL( DFP ) :: ans
-END FUNCTION Orthopol_EvalGradientScalar
+  MODULE ELEMENTAL FUNCTION Orthopol_EvalGradientScalar(obj, x) &
+    & RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
+  END FUNCTION Orthopol_EvalGradientScalar
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -442,18 +442,18 @@ END INTERFACE
 ! summary: Evaluate all basis at given point
 
 INTERFACE
-MODULE PURE FUNCTION Orthopol_BasisEvalScalar( obj, x, &
-  & coeff, scale ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x
+  MODULE PURE FUNCTION Orthopol_BasisEvalScalar(obj, x, &
+    & coeff, scale) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
     !! scalar value of argument
-  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
     !! scale coefficient
-  REAL( DFP ) :: ans( obj%n + 1 )
+    REAL(DFP) :: ans(obj%n + 1)
     !! n+1 values of basis (n=0,1,2,..n)
-END FUNCTION Orthopol_BasisEvalScalar
+  END FUNCTION Orthopol_BasisEvalScalar
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -476,20 +476,20 @@ END INTERFACE
 !
 
 INTERFACE
-MODULE PURE FUNCTION Orthopol_BasisEvalVector( obj, x, &
-  & coeff, scale ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x( : )
+  MODULE PURE FUNCTION Orthopol_BasisEvalVector(obj, x, &
+    & coeff, scale) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
     !! several values of x
-  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
     !! scale coefficient
-  REAL( DFP ) :: ans( SIZE(x), obj%n+1 )
+    REAL(DFP) :: ans(SIZE(x), obj%n + 1)
     !! ans(i, :), denotes the n+1 values of basis (n=0,1,...,n) at x(i).
     !! ans(:, I), denotes the value $J_{I-1}$ at points $x$.
     !!  the number of rows = `size(x)` and number of cols = `obj%n+1`.
-END FUNCTION Orthopol_BasisEvalVector
+  END FUNCTION Orthopol_BasisEvalVector
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -501,20 +501,20 @@ END INTERFACE
 ! summary: Evaluate grad of all basis at given point
 
 INTERFACE
-MODULE PURE FUNCTION Orthopol_BasisEvalGradientScalar( obj, x, &
-  & coeff, scale, n ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x
+  MODULE PURE FUNCTION Orthopol_BasisEvalGradientScalar(obj, x, &
+    & coeff, scale, n) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
     !! scalar value of argument
-  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
     !! scale coefficient
-  INTEGER( I4B ), INTENT( IN ) :: n
+    INTEGER(I4B), INTENT(IN) :: n
     !! order of polynomial
-  REAL( DFP ) :: ans( n+1 )
+    REAL(DFP) :: ans(n + 1)
     !! n+1 values of grad of basis (n=0,1,2,..n)
-END FUNCTION Orthopol_BasisEvalGradientScalar
+  END FUNCTION Orthopol_BasisEvalGradientScalar
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -526,18 +526,18 @@ END INTERFACE
 ! summary: Evaluate all basis at given points
 
 INTERFACE
-MODULE PURE FUNCTION Orthopol_BasisEvalGradientVector( obj, x, &
-  & coeff, scale, n ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x( : )
+  MODULE PURE FUNCTION Orthopol_BasisEvalGradientVector(obj, x, &
+    & coeff, scale, n) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
     !! several values of x
-  REAL( DFP ), INTENT( IN ) :: coeff( 0:, 1: )
+    REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-  REAL( DFP ), INTENT( IN ) :: scale( 0:, 1:)
+    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
     !! scale coefficient
-  INTEGER( I4B ), INTENT( IN ) :: n
-  REAL( DFP ) :: ans( SIZE(x), n+1 )
-END FUNCTION Orthopol_BasisEvalGradientVector
+    INTEGER(I4B), INTENT(IN) :: n
+    REAL(DFP) :: ans(SIZE(x), n + 1)
+  END FUNCTION Orthopol_BasisEvalGradientVector
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -549,11 +549,11 @@ END INTERFACE
 ! summary: Return the string for UID
 
 ABSTRACT INTERFACE
-ELEMENTAL FUNCTION Orthopol_GetStringForUID( obj ) RESULT( ans )
-  IMPORT AbstractOrthopol1D_, String
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: ans
-END FUNCTION Orthopol_GetStringForUID
+  ELEMENTAL FUNCTION Orthopol_GetStringForUID(obj) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, String
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION Orthopol_GetStringForUID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -562,13 +562,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 3 Aug 2022
-! summary: 	Return the string to display
+! summary:         Return the string to display
 
 INTERFACE
-MODULE PURE FUNCTION Orthopol_GetStringToDisplay( obj ) RESULT( ans )
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: ans
-END FUNCTION Orthopol_GetStringToDisplay
+  MODULE PURE FUNCTION Orthopol_GetStringToDisplay(obj) RESULT(ans)
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION Orthopol_GetStringToDisplay
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -580,12 +580,12 @@ END INTERFACE
 ! summary: Evaluate the weight function
 
 ABSTRACT INTERFACE
-ELEMENTAL FUNCTION Orthopol_Weight( obj, x ) RESULT( ans )
-  IMPORT AbstractOrthopol1D_, DFP
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x
-  REAL( DFP ) :: ans
-END FUNCTION Orthopol_Weight
+  ELEMENTAL FUNCTION Orthopol_Weight(obj, x) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, DFP
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
+  END FUNCTION Orthopol_Weight
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -597,12 +597,12 @@ END INTERFACE
 ! summary: Returns the recurrence coefficient
 
 ABSTRACT INTERFACE
-PURE FUNCTION Orthopol_GetRecurrenceCoeff(obj, n) RESULT(ans)
-  IMPORT AbstractOrthopol1D_, I4B, DFP
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: n
-  REAL( DFP ) :: ans( 0:n-1, 2 )
-END FUNCTION Orthopol_GetRecurrenceCoeff
+  PURE FUNCTION Orthopol_GetRecurrenceCoeff(obj, n) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, I4B, DFP
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+    REAL(DFP) :: ans(0:n - 1, 2)
+  END FUNCTION Orthopol_GetRecurrenceCoeff
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -610,16 +610,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-PURE SUBROUTINE Orthopol_GetCoeffScale( obj, n, coeff, scale, &
-  & isMonic, isOrthonormal )
-  IMPORT AbstractOrthopol1D_, I4B, DFP, LGT
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: n
-  REAL( DFP ), INTENT( OUT ) :: coeff(0:,1:)
-  REAL( DFP ), INTENT( OUT ) :: scale(0:,1:)
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isMonic
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isOrthonormal
-END SUBROUTINE Orthopol_GetCoeffScale
+  PURE SUBROUTINE Orthopol_GetCoeffScale(obj, n, coeff, scale, &
+    & isMonic, isOrthonormal)
+    IMPORT AbstractOrthopol1D_, I4B, DFP, LGT
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+    REAL(DFP), INTENT(OUT) :: coeff(0:, 1:)
+    REAL(DFP), INTENT(OUT) :: scale(0:, 1:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isMonic
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrthonormal
+  END SUBROUTINE Orthopol_GetCoeffScale
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -628,14 +628,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2 Aug 2022
-! summary: 	Returns zeros of jacobi polynomial
+! summary:         Returns zeros of jacobi polynomial
 
 ABSTRACT INTERFACE
-FUNCTION Orthopol_Zeros( obj ) RESULT( ans )
-  IMPORT AbstractOrthopol1D_, DFP
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE :: ans( : )
-END FUNCTION Orthopol_Zeros
+  FUNCTION Orthopol_Zeros(obj) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, DFP
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE :: ans(:)
+  END FUNCTION Orthopol_Zeros
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -644,14 +644,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 3 Aug 2022
-! summary: 	Returns Gauss quadrature points and weights
+! summary:         Returns Gauss quadrature points and weights
 
 ABSTRACT INTERFACE
-FUNCTION Orthopol_GaussQuadrature( obj ) RESULT( ans )
-  IMPORT AbstractOrthopol1D_, DFP
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE :: ans( :, : )
-END FUNCTION Orthopol_GaussQuadrature
+  FUNCTION Orthopol_GaussQuadrature(obj) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, DFP
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION Orthopol_GaussQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -660,16 +660,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 3 Aug 2022
-! summary: 	Returns GaussRadau quadrature points and weights
+! summary:         Returns GaussRadau quadrature points and weights
 
 ABSTRACT INTERFACE
-FUNCTION Orthopol_GaussRadauQuadrature( obj, a ) RESULT( ans )
-  IMPORT AbstractOrthopol1D_, DFP
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( IN ) :: a
+  FUNCTION Orthopol_GaussRadauQuadrature(obj, a) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, DFP
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: a
   !! it should be either + 1 or -1
-  REAL( DFP ), ALLOCATABLE :: ans( :, : )
-END FUNCTION Orthopol_GaussRadauQuadrature
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION Orthopol_GaussRadauQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -678,14 +678,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 3 Aug 2022
-! summary: 	Returns GaussLobatto quadrature points and weights
+! summary:         Returns GaussLobatto quadrature points and weights
 
 ABSTRACT INTERFACE
-FUNCTION Orthopol_GaussLobattoQuadrature( obj ) RESULT( ans )
-  IMPORT AbstractOrthopol1D_, DFP
-  CLASS( AbstractOrthopol1D_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE :: ans( :, : )
-END FUNCTION Orthopol_GaussLobattoQuadrature
+  FUNCTION Orthopol_GaussLobattoQuadrature(obj) RESULT(ans)
+    IMPORT AbstractOrthopol1D_, DFP
+    CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION Orthopol_GaussLobattoQuadrature
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -697,22 +697,22 @@ END INTERFACE
 ! summary: Setting the parameters of orthogonal polynomial
 
 INTERFACE
-MODULE PURE SUBROUTINE Orthopol_SetParam( obj, n, an_1, bn_1, sn_1, &
-  & sn_2, varname )
-  CLASS( AbstractOrthopol1D_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: n
+  MODULE PURE SUBROUTINE Orthopol_SetParam(obj, n, an_1, bn_1, sn_1, &
+    & sn_2, varname)
+    CLASS(AbstractOrthopol1D_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
     !! order of orthopol
-  REAL( DFP ), INTENT( IN ) :: an_1
+    REAL(DFP), INTENT(IN) :: an_1
     !! alpha recurrence coeff
-  REAL( DFP ), INTENT( IN ) :: bn_1
+    REAL(DFP), INTENT(IN) :: bn_1
     !! beta recurrence coeff
-  REAL( DFP ), INTENT( IN ) :: sn_1
+    REAL(DFP), INTENT(IN) :: sn_1
     !! scalae for n-1 term
-  REAL( DFP ), INTENT( IN ) :: sn_2
+    REAL(DFP), INTENT(IN) :: sn_2
     !! scale for n-2 term
-  CHARACTER( LEN = * ), INTENT( IN ) :: varname
+    CHARACTER(LEN=*), INTENT(IN) :: varname
     !! variable name
-END SUBROUTINE Orthopol_SetParam
+  END SUBROUTINE Orthopol_SetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------

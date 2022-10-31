@@ -22,5 +22,5 @@ TARGET_SOURCES(
   ${src_path}/ChebyshevFirst1D_Class@IOMethods.F90
   ${src_path}/ChebyshevFirst1D_Class@GetMethods.F90
   ${src_path}/ChebyshevFirst1D_Class@SetMethods.F90
-  ${src_path}/ChebyshevFirstSpace1D_Class@ConstructorMethods.F90
+  ${src_path}/Chebyshev1Space1D_Class@Methods.F90
 )

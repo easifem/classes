@@ -15,8 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-INTERFACE OPERATOR( * )
+INTERFACE OPERATOR(*)
   MODULE PROCEDURE &
+    ! & func_Multiplication_mono_mono, &
     & func_Multiplication_mono_Int8, &
     & func_Multiplication_mono_Int16, &
     & func_Multiplication_mono_Int32, &
@@ -29,9 +30,9 @@ INTERFACE OPERATOR( * )
     & func_Multiplication_Int64_mono, &
     & func_Multiplication_Real32_mono, &
     & func_Multiplication_Real64_mono
-END INTERFACE OPERATOR( * )
+END INTERFACE OPERATOR(*)
 
-PUBLIC :: OPERATOR( * )
+PUBLIC :: OPERATOR(*)
 
 !----------------------------------------------------------------------------
 !                                            Multiplication@OperatorMethods
@@ -42,11 +43,12 @@ PUBLIC :: OPERATOR( * )
 ! summary: Multiplication two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_mono( obj1, obj2 ) RESULT( Ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_mono(obj1, obj2) &
+      & RESULT(Ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -58,12 +60,12 @@ END INTERFACE
 ! summary: Multiplication two Monomial1D
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int8( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int8 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_Int8
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int8(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int8), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_Int8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -71,12 +73,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int16( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int16 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_Int16
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int16(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int16), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_Int16
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -84,12 +86,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int32( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int32 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_Int32
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int32(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int32), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_Int32
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -97,12 +99,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int64( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  INTEGER( Int64 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_Int64
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Int64(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    INTEGER(Int64), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_Int64
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -110,12 +112,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Real32( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  REAL( Real32 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_Real32
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Real32(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    REAL(Real32), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_Real32
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -123,12 +125,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Real64( obj1, obj2 ) &
-  & RESULT( ans )
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj1
-  REAL( Real64 ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_mono_Real64
+  MODULE ELEMENTAL FUNCTION func_Multiplication_mono_Real64(obj1, obj2) &
+    & RESULT(ans)
+    CLASS(Monomial1D_), INTENT(IN) :: obj1
+    REAL(Real64), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_mono_Real64
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -136,12 +138,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_Int8_mono( obj1, obj2 ) &
-  & RESULT( ans )
-  INTEGER( Int8 ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_Int8_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_Int8_mono(obj1, obj2) &
+    & RESULT(ans)
+    INTEGER(Int8), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_Int8_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -149,12 +151,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_Int16_mono( obj1, obj2 ) &
-  & RESULT( ans )
-  INTEGER( Int16 ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_Int16_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_Int16_mono(obj1, obj2) &
+    & RESULT(ans)
+    INTEGER(Int16), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_Int16_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -162,12 +164,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_Int32_mono( obj1, obj2 ) &
-  & RESULT( ans )
-  INTEGER( Int32 ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_Int32_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_Int32_mono(obj1, obj2) &
+    & RESULT(ans)
+    INTEGER(Int32), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_Int32_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -175,12 +177,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_Int64_mono( obj1, obj2 ) &
-  & RESULT( ans )
-  INTEGER( Int64 ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_Int64_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_Int64_mono(obj1, obj2) &
+    & RESULT(ans)
+    INTEGER(Int64), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_Int64_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -188,12 +190,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_Real32_mono( obj1, obj2 ) &
-  & RESULT( ans )
-  REAL( Real32 ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_Real32_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_Real32_mono(obj1, obj2) &
+    & RESULT(ans)
+    REAL(Real32), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_Real32_mono
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -201,10 +203,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE ELEMENTAL FUNCTION func_Multiplication_Real64_mono( obj1, obj2 ) &
-  & RESULT( ans )
-  REAL( Real64 ), INTENT( IN ) :: obj1
-  CLASS( Monomial1D_ ), INTENT( IN ) :: obj2
-  TYPE( Polynomial1D_ ) :: ans
-END FUNCTION func_Multiplication_Real64_mono
+  MODULE ELEMENTAL FUNCTION func_Multiplication_Real64_mono(obj1, obj2) &
+    & RESULT(ans)
+    REAL(Real64), INTENT(IN) :: obj1
+    CLASS(Monomial1D_), INTENT(IN) :: obj2
+    TYPE(Polynomial1D_) :: ans
+  END FUNCTION func_Multiplication_Real64_mono
 END INTERFACE

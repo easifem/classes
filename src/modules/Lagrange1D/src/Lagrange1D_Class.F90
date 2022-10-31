@@ -73,17 +73,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2022
-! summary:         Initiate the object
+! summary: Initiate the object
 
 INTERFACE
   MODULE SUBROUTINE Initiate1(obj, i, x, varname)
     CLASS(Lagrange1D_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: i
-  !! ith lagrange polynomial
+    !! ith lagrange polynomial
     REAL(DFP), INTENT(IN) :: x(:)
-  !! points, order = size(x) - 1
+    !! points, order = size(x) - 1
     CHARACTER(LEN=*), INTENT(IN) :: varname
-  !! variable varname
+    !! variable varname
   END SUBROUTINE Initiate1
 END INTERFACE
 
@@ -93,7 +93,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2022
-! summary:         Initiate the object
+! summary: Initiate the object
 
 INTERFACE
   MODULE SUBROUTINE Initiate2(obj, i, v, varname)
@@ -128,6 +128,25 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: varname
     !! variable varname
   END SUBROUTINE Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary: Initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE Initiate4(obj, x, varname)
+    CLASS(Lagrange1D_), INTENT(OUT) :: obj(:)
+    !! ith lagrange polynomial
+    REAL(DFP), INTENT(IN) :: x(:)
+    !! points, order = size(x) - 1
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+    !! variable varname
+  END SUBROUTINE Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -177,7 +196,6 @@ PUBLIC :: Lagrange1D
 !- User provides the vandermonde matrix
 !- the routine copies vandermonde matrix internally and solves a
 ! linear system by using Lapack lib
-!
 
 INTERFACE
   MODULE FUNCTION func_Lagrange1D2(i, v, order, varname) RESULT(ans)
@@ -232,6 +250,30 @@ END INTERFACE
 
 INTERFACE Lagrange1D
   MODULE PROCEDURE func_Lagrange1D3
+END INTERFACE Lagrange1D
+
+!----------------------------------------------------------------------------
+!                                             Lagrange1D@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Construct the set of Lagrange polynomials in 1D
+
+INTERFACE
+  MODULE FUNCTION func_Lagrange1D4(x, order, varname) RESULT(ans)
+    REAL(DFP), INTENT(IN) :: x(:)
+    !! points, order = size(x) - 1
+    INTEGER(I4B), INTENT(IN) :: order
+    !! order
+    CHARACTER(LEN=*), INTENT(IN) :: varname
+    !! variable varname
+    TYPE(Lagrange1D_) :: ans(SIZE(x))
+  END FUNCTION func_Lagrange1D4
+END INTERFACE
+
+INTERFACE Lagrange1D
+  MODULE PROCEDURE func_Lagrange1D4
 END INTERFACE Lagrange1D
 
 !----------------------------------------------------------------------------

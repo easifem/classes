@@ -19,24 +19,23 @@
 ! date: 14 May 2022
 ! summary: Abstract Function Class is defined
 
-MODULE  AbstractFunction_Class
-  USE String_Class, ONLY: String
-  USE GlobalData
-  IMPLICIT NONE
-  PRIVATE
+MODULE AbstractFunction_Class
+USE String_Class, ONLY: String
+USE GlobalData
+IMPLICIT NONE
+PRIVATE
 
 !----------------------------------------------------------------------------
 !                                                  AbstractFunction_Class
 !----------------------------------------------------------------------------
-
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
 ! summary: Abstract Expression class is defined
 
 TYPE, ABSTRACT :: AbstractFunction_
-  CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate
 END TYPE AbstractFunction_
 
 PUBLIC :: AbstractFunction_
@@ -46,7 +45,7 @@ PUBLIC :: AbstractFunction_
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: AbstractFunctionPointer_
-  CLASS( AbstractFunction_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractFunction_), POINTER :: ptr => NULL()
 END TYPE AbstractFunctionPointer_
 
 PUBLIC :: AbstractFunctionPointer_
@@ -55,21 +54,20 @@ PUBLIC :: AbstractFunctionPointer_
 !                                                  AbstractFunction_Class
 !----------------------------------------------------------------------------
 
-
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
 ! summary: Abstract Expression class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunction1D_
+TYPE, ABSTRACT, EXTENDS(AbstractFunction_) :: AbstractFunction1D_
   TYPE(String) :: varname
-  CONTAINS
-    PRIVATE
-    PROCEDURE(func_EvalScalar1), DEFERRED, PUBLIC, PASS( Obj ) :: EvalScalar
-    GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
-    PROCEDURE(func_EvalGradient1), DEFERRED, PUBLIC, PASS( Obj ) :: &
-      & EvalGradient
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate1
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetVarName => func_GetVarName1
+CONTAINS
+  PRIVATE
+  PROCEDURE(func_EvalScalar1), DEFERRED, PUBLIC, PASS(Obj) :: EvalScalar
+  GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
+  PROCEDURE(func_EvalGradient1), DEFERRED, PUBLIC, PASS(Obj) :: &
+    & EvalGradient
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarName1
 END TYPE AbstractFunction1D_
 
 PUBLIC :: AbstractFunction1D_
@@ -79,7 +77,7 @@ PUBLIC :: AbstractFunction1D_
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: AbstractFunctionPointer1D_
-  CLASS( AbstractFunction1D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractFunction1D_), POINTER :: ptr => NULL()
 END TYPE AbstractFunctionPointer1D_
 
 PUBLIC :: AbstractFunctionPointer1D_
@@ -88,21 +86,20 @@ PUBLIC :: AbstractFunctionPointer1D_
 !                                                       AbstractFunction2D_
 !----------------------------------------------------------------------------
 
-
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
 ! summary: Abstract Expression class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunction2D_
+TYPE, ABSTRACT, EXTENDS(AbstractFunction_) :: AbstractFunction2D_
   TYPE(String) :: varname(2)
-  CONTAINS
-    PRIVATE
-    PROCEDURE(func_Eval2), DEFERRED, PUBLIC, PASS( Obj ) :: EvalScalar
-    GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
-    PROCEDURE(func_EvalGradient2), DEFERRED, PUBLIC, PASS( Obj ) :: &
-      & EvalGradient
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate2
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetVarName => func_GetVarName2
+CONTAINS
+  PRIVATE
+  PROCEDURE(func_Eval2), DEFERRED, PUBLIC, PASS(Obj) :: EvalScalar
+  GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
+  PROCEDURE(func_EvalGradient2), DEFERRED, PUBLIC, PASS(Obj) :: &
+    & EvalGradient
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarName2
 END TYPE AbstractFunction2D_
 
 PUBLIC :: AbstractFunction2D_
@@ -112,7 +109,7 @@ PUBLIC :: AbstractFunction2D_
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: AbstractFunctionPointer2D_
-  CLASS( AbstractFunction2D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractFunction2D_), POINTER :: ptr => NULL()
 END TYPE AbstractFunctionPointer2D_
 
 PUBLIC :: AbstractFunctionPointer2D_
@@ -121,21 +118,20 @@ PUBLIC :: AbstractFunctionPointer2D_
 !                                                       AbstractFunction3D_
 !----------------------------------------------------------------------------
 
-
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
 ! summary: Abstract Expression class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunction3D_
-  TYPE(String) :: varname( 3 )
-  CONTAINS
-    PRIVATE
-    PROCEDURE(func_Eval3), DEFERRED, PUBLIC, PASS( Obj ) :: EvalScalar
-    GENERIC, PUBLIC :: Eval => EvalScalar
-    PROCEDURE(func_EvalGradient3), DEFERRED, PUBLIC, PASS( Obj ) :: &
-      & EvalGradient
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate3
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetVarName => func_GetVarName3
+TYPE, ABSTRACT, EXTENDS(AbstractFunction_) :: AbstractFunction3D_
+  TYPE(String) :: varname(3)
+CONTAINS
+  PRIVATE
+  PROCEDURE(func_Eval3), DEFERRED, PUBLIC, PASS(Obj) :: EvalScalar
+  GENERIC, PUBLIC :: Eval => EvalScalar
+  PROCEDURE(func_EvalGradient3), DEFERRED, PUBLIC, PASS(Obj) :: &
+    & EvalGradient
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate3
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarName3
 END TYPE AbstractFunction3D_
 
 PUBLIC :: AbstractFunction3D_
@@ -145,7 +141,7 @@ PUBLIC :: AbstractFunction3D_
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: AbstractFunctionPointer3D_
-  CLASS( AbstractFunction3D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractFunction3D_), POINTER :: ptr => NULL()
 END TYPE AbstractFunctionPointer3D_
 
 PUBLIC :: AbstractFunctionPointer3D_
@@ -158,15 +154,15 @@ PUBLIC :: AbstractFunctionPointer3D_
 ! date: 14 May 2022
 ! summary: Abstract Expression class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction_ ) :: AbstractFunctionND_
-  TYPE(String), ALLOCATABLE :: varname( : )
-  CONTAINS
-    PRIVATE
-    PROCEDURE(func_EvalN), DEFERRED, PUBLIC, PASS( Obj ) :: Eval
-    PROCEDURE(func_EvalGradientN), DEFERRED, PUBLIC, PASS( Obj ) :: &
-      & EvalGradient
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_DeallocateN
-    PROCEDURE, PUBLIC, PASS( obj ) :: GetVarName => func_GetVarNameN
+TYPE, ABSTRACT, EXTENDS(AbstractFunction_) :: AbstractFunctionND_
+  TYPE(String), ALLOCATABLE :: varname(:)
+CONTAINS
+  PRIVATE
+  PROCEDURE(func_EvalN), DEFERRED, PUBLIC, PASS(Obj) :: Eval
+  PROCEDURE(func_EvalGradientN), DEFERRED, PUBLIC, PASS(Obj) :: &
+    & EvalGradient
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_DeallocateN
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarNameN
 END TYPE AbstractFunctionND_
 
 PUBLIC :: AbstractFunctionND_
@@ -176,7 +172,7 @@ PUBLIC :: AbstractFunctionND_
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: AbstractFunctionPointerND_
-  CLASS( AbstractFunctionND_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractFunctionND_), POINTER :: ptr => NULL()
 END TYPE AbstractFunctionPointerND_
 
 PUBLIC :: AbstractFunctionPointerND_
@@ -190,11 +186,11 @@ PUBLIC :: AbstractFunctionPointerND_
 ! summary: Evaluate for single variable function
 
 ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_evalscalar1( obj, x ) RESULT( ans )
+  ELEMENTAL FUNCTION func_evalscalar1(obj, x) RESULT(ans)
     IMPORT AbstractFunction1D_, DFP
-    CLASS( AbstractFunction1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
   END FUNCTION func_evalscalar1
 END INTERFACE
 
@@ -207,11 +203,11 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 ABSTRACT INTERFACE
-  PURE FUNCTION func_evalvector1( obj, x ) RESULT( ans )
+  PURE FUNCTION func_evalvector1(obj, x) RESULT(ans)
     IMPORT AbstractFunction1D_, DFP
-    CLASS( AbstractFunction1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x( : )
-    REAL( DFP ) :: ans( SIZE(x) )
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP) :: ans(SIZE(x))
   END FUNCTION func_evalvector1
 END INTERFACE
 
@@ -224,12 +220,12 @@ END INTERFACE
 ! summary: Evaluate for double variable function
 
 ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_eval2( obj, x, y ) RESULT( ans )
+  ELEMENTAL FUNCTION func_eval2(obj, x, y) RESULT(ans)
     IMPORT AbstractFunction2D_, DFP
-    CLASS( AbstractFunction2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ), INTENT( IN ) :: y
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunction2D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP), INTENT(IN) :: y
+    REAL(DFP) :: ans
   END FUNCTION func_eval2
 END INTERFACE
 
@@ -242,13 +238,13 @@ END INTERFACE
 ! summary: Evaluate for three variable function
 
 ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_eval3( obj, x, y, z ) RESULT( ans )
+  ELEMENTAL FUNCTION func_eval3(obj, x, y, z) RESULT(ans)
     IMPORT AbstractFunction3D_, DFP
-    CLASS( AbstractFunction3D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ), INTENT( IN ) :: y
-    REAL( DFP ), INTENT( IN ) :: z
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunction3D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP), INTENT(IN) :: y
+    REAL(DFP), INTENT(IN) :: z
+    REAL(DFP) :: ans
   END FUNCTION func_eval3
 END INTERFACE
 
@@ -261,11 +257,11 @@ END INTERFACE
 ! summary: Evaluate for N variable function
 
 ABSTRACT INTERFACE
-  PURE FUNCTION func_evalN( obj, x ) RESULT( ans )
+  PURE FUNCTION func_evalN(obj, x) RESULT(ans)
     IMPORT AbstractFunctionND_, DFP
-    CLASS( AbstractFunctionND_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x( : )
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunctionND_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP) :: ans
   END FUNCTION func_evalN
 END INTERFACE
 
@@ -278,11 +274,11 @@ END INTERFACE
 ! summary: Evaluate gradient for 1d argument function
 
 ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_EvalGradient1( obj, x ) RESULT( ans )
+  ELEMENTAL FUNCTION func_EvalGradient1(obj, x) RESULT(ans)
     IMPORT AbstractFunction1D_, DFP
-    CLASS( AbstractFunction1D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
   END FUNCTION func_EvalGradient1
 END INTERFACE
 
@@ -295,13 +291,13 @@ END INTERFACE
 ! summary: Evaluate gradient for 2d argument function
 
 ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_EvalGradient2( obj, x, y, dim ) RESULT( ans )
+  ELEMENTAL FUNCTION func_EvalGradient2(obj, x, y, dim) RESULT(ans)
     IMPORT AbstractFunction2D_, DFP, I4B
-    CLASS( AbstractFunction2D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ), INTENT( IN ) :: y
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunction2D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP), INTENT(IN) :: y
+    INTEGER(I4B), INTENT(IN) :: dim
+    REAL(DFP) :: ans
   END FUNCTION func_EvalGradient2
 END INTERFACE
 
@@ -314,15 +310,15 @@ END INTERFACE
 ! summary: Evaluate gradient for 3d argument function
 
 ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_EvalGradient3( obj, x, y, z, dim)  &
-    & RESULT( ans )
+  ELEMENTAL FUNCTION func_EvalGradient3(obj, x, y, z, dim)  &
+    & RESULT(ans)
     IMPORT AbstractFunction3D_, DFP, I4B
-    CLASS( AbstractFunction3D_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x
-    REAL( DFP ), INTENT( IN ) :: y
-    REAL( DFP ), INTENT( IN ) :: z
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunction3D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP), INTENT(IN) :: y
+    REAL(DFP), INTENT(IN) :: z
+    INTEGER(I4B), INTENT(IN) :: dim
+    REAL(DFP) :: ans
   END FUNCTION func_EvalGradient3
 END INTERFACE
 
@@ -335,12 +331,12 @@ END INTERFACE
 ! summary: Evaluate gradient for Nd argument function
 
 ABSTRACT INTERFACE
-  PURE FUNCTION func_EvalGradientN( obj, x, dim ) RESULT( ans )
+  PURE FUNCTION func_EvalGradientN(obj, x, dim) RESULT(ans)
     IMPORT AbstractFunctionND_, DFP, I4B
-    CLASS( AbstractFunctionND_ ), INTENT( IN ) :: obj
-    REAL( DFP ), INTENT( IN ) :: x( : )
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    REAL( DFP ) :: ans
+    CLASS(AbstractFunctionND_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    INTEGER(I4B), INTENT(IN) :: dim
+    REAL(DFP) :: ans
   END FUNCTION func_EvalGradientN
 END INTERFACE
 
@@ -353,8 +349,8 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate( obj )
-    CLASS( AbstractFunction_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate(obj)
+    CLASS(AbstractFunction_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate
 END INTERFACE
 
@@ -373,8 +369,8 @@ PUBLIC :: AbstractFunctionDeallocate
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate1( obj )
-    CLASS( AbstractFunction1D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate1(obj)
+    CLASS(AbstractFunction1D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate1
 END INTERFACE
 
@@ -393,8 +389,8 @@ PUBLIC :: AbstractFunction1DDeallocate
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate2( obj )
-    CLASS( AbstractFunction2D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate2(obj)
+    CLASS(AbstractFunction2D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate2
 END INTERFACE
 
@@ -413,8 +409,8 @@ PUBLIC :: AbstractFunction2DDeallocate
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate3( obj )
-    CLASS( AbstractFunction3D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate3(obj)
+    CLASS(AbstractFunction3D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate3
 END INTERFACE
 
@@ -433,8 +429,8 @@ PUBLIC :: AbstractFunction3DDeallocate
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE SUBROUTINE func_DeallocateN( obj )
-    CLASS( AbstractFunctionND_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_DeallocateN(obj)
+    CLASS(AbstractFunctionND_), INTENT(INOUT) :: obj
   END SUBROUTINE func_DeallocateN
 END INTERFACE
 
@@ -449,10 +445,10 @@ PUBLIC :: AbstractFunctionNDDeallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_GetVarname1( obj ) RESULT( ans )
-  CLASS( AbstractFunction1D_ ), INTENT( IN ) :: obj
-  TYPE(String) :: ans
-END FUNCTION func_GetVarname1
+  MODULE PURE FUNCTION func_GetVarname1(obj) RESULT(ans)
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION func_GetVarname1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -460,10 +456,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_GetVarname2( obj ) RESULT( ans )
-  CLASS( AbstractFunction2D_ ), INTENT( IN ) :: obj
-  TYPE(String) :: ans(2)
-END FUNCTION func_GetVarname2
+  MODULE PURE FUNCTION func_GetVarname2(obj) RESULT(ans)
+    CLASS(AbstractFunction2D_), INTENT(IN) :: obj
+    TYPE(String) :: ans(2)
+  END FUNCTION func_GetVarname2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -471,10 +467,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_GetVarname3( obj ) RESULT( ans )
-  CLASS( AbstractFunction3D_ ), INTENT( IN ) :: obj
-  TYPE(String) :: ans(3)
-END FUNCTION func_GetVarname3
+  MODULE PURE FUNCTION func_GetVarname3(obj) RESULT(ans)
+    CLASS(AbstractFunction3D_), INTENT(IN) :: obj
+    TYPE(String) :: ans(3)
+  END FUNCTION func_GetVarname3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -482,10 +478,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION func_GetVarnameN( obj ) RESULT( ans )
-  CLASS( AbstractFunctionND_ ), INTENT( IN ) :: obj
-  TYPE(String), ALLOCATABLE :: ans(:)
-END FUNCTION func_GetVarnameN
+  MODULE PURE FUNCTION func_GetVarnameN(obj) RESULT(ans)
+    CLASS(AbstractFunctionND_), INTENT(IN) :: obj
+    TYPE(String), ALLOCATABLE :: ans(:)
+  END FUNCTION func_GetVarnameN
 END INTERFACE
 
 !----------------------------------------------------------------------------

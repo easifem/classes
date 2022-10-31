@@ -59,7 +59,7 @@ n = SIZE(x, 2)
 ALLOCATE (V(n, n), ipiv(n), degree(n, 3))
 ipiv = 0_I4B
 degree = LagrangeDegree(order=order, elemType=elemType)
-V = LagrangeVanderMonde(order=order, x=x, elemType=elemType)
+V = LagrangeVanderMonde(order=order, xij=x, elemType=elemType)
 CALL GetLU(A=V, IPIV=ipiv, info=info)
 CALL GETRI(A=V, IPIV=ipiv, info=info)
 CALL obj%SetParam(n=order)

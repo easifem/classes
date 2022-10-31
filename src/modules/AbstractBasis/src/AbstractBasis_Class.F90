@@ -23,21 +23,21 @@ PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "AbstractBasis_Class"
 
 !----------------------------------------------------------------------------
-!                                                        AbstractBasis1D_
+!                                                          AbstractBasis1D_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
 ! summary: AbstractMonomial class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction1D_ ) :: AbstractBasis1D_
-  INTEGER( I4B ) :: uid = 0
-  CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate1
+TYPE, ABSTRACT, EXTENDS(AbstractFunction1D_) :: AbstractBasis1D_
+  INTEGER(I4B) :: uid = 0
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate1
 END TYPE AbstractBasis1D_
 
 TYPE :: AbstractBasis1DPointer_
-  CLASS( AbstractBasis1D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractBasis1D_), POINTER :: ptr => NULL()
 END TYPE AbstractBasis1DPointer_
 
 PUBLIC :: AbstractBasis1D_
@@ -51,14 +51,14 @@ PUBLIC :: AbstractBasis1DPointer_
 ! date: 14 May 2022
 ! summary: AbstractBasis class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction2D_ ) :: AbstractBasis2D_
-  INTEGER( I4B ) :: uid = 0
-  CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate2
+TYPE, ABSTRACT, EXTENDS(AbstractFunction2D_) :: AbstractBasis2D_
+  INTEGER(I4B) :: uid = 0
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate2
 END TYPE AbstractBasis2D_
 
 TYPE :: AbstractBasis2DPointer_
-  CLASS( AbstractBasis2D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractBasis2D_), POINTER :: ptr => NULL()
 END TYPE AbstractBasis2DPointer_
 
 PUBLIC :: AbstractBasis2D_
@@ -72,14 +72,14 @@ PUBLIC :: AbstractBasis2DPointer_
 ! date: 14 May 2022
 ! summary: AbstractBasis class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunction3D_ ) :: AbstractBasis3D_
-  INTEGER( I4B ) :: uid = 0
-  CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_Deallocate3
+TYPE, ABSTRACT, EXTENDS(AbstractFunction3D_) :: AbstractBasis3D_
+  INTEGER(I4B) :: uid = 0
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate3
 END TYPE AbstractBasis3D_
 
 TYPE :: AbstractBasis3DPointer_
-  CLASS( AbstractBasis3D_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractBasis3D_), POINTER :: ptr => NULL()
 END TYPE AbstractBasis3DPointer_
 
 PUBLIC :: AbstractBasis3D_
@@ -93,14 +93,14 @@ PUBLIC :: AbstractBasis3DPointer_
 ! date: 14 May 2022
 ! summary: AbstractBasis class is defined
 
-TYPE, ABSTRACT, EXTENDS( AbstractFunctionND_ ) :: AbstractBasisND_
-  INTEGER( I4B ) :: uid = 0
-  CONTAINS
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => func_DeallocateN
+TYPE, ABSTRACT, EXTENDS(AbstractFunctionND_) :: AbstractBasisND_
+  INTEGER(I4B) :: uid = 0
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_DeallocateN
 END TYPE AbstractBasisND_
 
 TYPE :: AbstractBasisNDPointer_
-  CLASS( AbstractBasisND_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractBasisND_), POINTER :: ptr => NULL()
 END TYPE AbstractBasisNDPointer_
 
 PUBLIC :: AbstractBasisND_
@@ -115,8 +115,8 @@ PUBLIC :: AbstractBasisNDPointer_
 ! summary: Deallocate
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate1( obj )
-    CLASS( AbstractBasis1D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate1(obj)
+    CLASS(AbstractBasis1D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate1
 END INTERFACE
 
@@ -135,8 +135,8 @@ PUBLIC :: AbstractBasis1DDeallocate
 ! summary: Evaluate the Basis
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate2( obj )
-    CLASS( AbstractBasis2D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate2(obj)
+    CLASS(AbstractBasis2D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate2
 END INTERFACE
 
@@ -155,8 +155,8 @@ PUBLIC :: AbstractBasis2DDeallocate
 ! summary: Evaluate the Basis
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate3( obj )
-    CLASS( AbstractBasis3D_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_Deallocate3(obj)
+    CLASS(AbstractBasis3D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate3
 END INTERFACE
 
@@ -175,8 +175,8 @@ PUBLIC :: AbstractBasis3DDeallocate
 ! summary: Evaluate the Basis
 
 INTERFACE
-  MODULE SUBROUTINE func_DeallocateN( obj )
-    CLASS( AbstractBasisND_ ), INTENT( INOUT ) :: obj
+  MODULE SUBROUTINE func_DeallocateN(obj)
+    CLASS(AbstractBasisND_), INTENT(INOUT) :: obj
   END SUBROUTINE func_DeallocateN
 END INTERFACE
 

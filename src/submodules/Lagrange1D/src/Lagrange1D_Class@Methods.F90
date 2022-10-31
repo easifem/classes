@@ -37,20 +37,17 @@ END PROCEDURE func_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Initiate1
-REAL(DFP), DIMENSION(SIZE(x), SIZE(x)) :: V
+REAL(DFP) :: xij(1, SIZE(x))
 REAL(DFP), DIMENSION(SIZE(x)) :: coeff
-INTEGER(I4B) :: order, info, ipiv(SIZE(x)), degree(SIZE(x))
+INTEGER(I4B), DIMENSION(SIZE(x)) :: degree
+INTEGER(I4B) :: order
 !!
+xij(1, :) = x
 order = SIZE(x) - 1_I4B
 degree = arange(0_I4B, order, 1_I4B)
-ipiv = 0_I4B
-V = VanderMondeMatrix(order=order, x=x)
-CALL GetLU(A=V, IPIV=ipiv, info=info)
-coeff = 0.0_DFP
-coeff(i) = 1.0_DFP
-CALL LUSolve(A=V, B=coeff, IPIV=ipiv, info=info)
-!!
+coeff = LagrangeCoeff(order=order, i=i, elemType=Line, xij=xij)
 obj = Polynomial1D(coeff=coeff, degree=degree, varname=varname)
+!!
 END PROCEDURE Initiate1
 
 !----------------------------------------------------------------------------
@@ -59,19 +56,15 @@ END PROCEDURE Initiate1
 
 MODULE PROCEDURE Initiate2
 REAL(DFP), DIMENSION(SIZE(v, 1)) :: coeff
-REAL(DFP), DIMENSION(SIZE(v, 1), SIZE(v, 2)) :: v0
-INTEGER(I4B), DIMENSION(SIZE(v, 1)) :: ipiv, degree
-INTEGER(I4B) :: order, info
+INTEGER(I4B), DIMENSION(SIZE(v, 1)) :: degree
+INTEGER(I4B) :: order
 !!
-v0 = v
-order = SIZE(degree) - 1_I4B
+order = SIZE(v, 1) - 1_I4B
 degree = arange(0_I4B, order, 1_I4B)
-ipiv = 0_I4B
-CALL getLU(A=v0, IPIV=ipiv, info=info)
-coeff = 0.0_DFP
-coeff(i) = 1.0_DFP
-CALL LUSolve(A=v0, B=coeff, IPIV=ipiv, info=info)
+coeff = LagrangeCoeff_Line(order=order, i=i, v=v, &
+  & isVandermonde=.TRUE.)
 obj = Polynomial1D(coeff=coeff, degree=degree, varname=varname)
+!!
 END PROCEDURE Initiate2
 
 !----------------------------------------------------------------------------
@@ -81,14 +74,33 @@ END PROCEDURE Initiate2
 MODULE PROCEDURE Initiate3
 REAL(DFP), DIMENSION(SIZE(v, 1)) :: coeff
 INTEGER(I4B), DIMENSION(SIZE(v, 1)) :: degree
-INTEGER(I4B) :: order, info
+INTEGER(I4B) :: order
 !!
-order = SIZE(degree) - 1_I4B
+order = SIZE(v, 1) - 1_I4B
 degree = arange(0_I4B, order, 1_I4B)
-coeff = 0.0_DFP; coeff(i) = 1.0_DFP
-CALL LUSolve(A=v, B=coeff, IPIV=ipiv, info=info)
+coeff = LagrangeCoeff_Line(order=order, i=i, v=v, ipiv=ipiv)
 obj = Polynomial1D(coeff=coeff, degree=degree, varname=varname)
 END PROCEDURE Initiate3
+
+!----------------------------------------------------------------------------
+!                                                         Lagrange1D@Methods
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Initiate4
+REAL(DFP) :: xij(1, SIZE(x))
+REAL(DFP), DIMENSION(SIZE(x), SIZE(x)) :: coeff
+INTEGER(I4B), DIMENSION(SIZE(x)) :: degree
+INTEGER(I4B) :: order, ii
+!!
+xij(1, :) = x
+order = SIZE(x) - 1_I4B
+degree = arange(0_I4B, order, 1_I4B)
+coeff = LagrangeCoeff(order=order, elemType=Line, xij=xij)
+DO ii = 1, SIZE(x)
+  obj(ii) = Polynomial1D(coeff=coeff(:, ii), degree=degree, varname=varname)
+END DO
+!!
+END PROCEDURE Initiate4
 
 !----------------------------------------------------------------------------
 !                                                                Lagrange1D
@@ -113,6 +125,14 @@ END PROCEDURE func_Lagrange1D2
 MODULE PROCEDURE func_Lagrange1D3
 CALL ans%Initiate(i=i, v=v, ipiv=ipiv, varname=varname)
 END PROCEDURE func_Lagrange1D3
+
+!----------------------------------------------------------------------------
+!                                                                Lagrange1D
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Lagrange1D4
+CALL Initiate4(obj=ans, x=x, varname=varname)
+END PROCEDURE func_Lagrange1D4
 
 !----------------------------------------------------------------------------
 !                                                                Lagrange1D

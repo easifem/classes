@@ -16,14 +16,16 @@
 !
 
 INTERFACE
-MODULE SUBROUTINE __SUBROUTINE_NAME__ ( obj, val, iostat, iomsg, &
-  & advance, orient )
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: obj
-  __DATA_TYPE__, INTENT( IN ) :: val(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( OUT ) :: iostat
-  CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: advance
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: orient
-    !! COL or ROW, default is COL
-END SUBROUTINE __SUBROUTINE_NAME__
+  MODULE SUBROUTINE __SUBROUTINE_NAME__(obj, val, iostat, iomsg, &
+    & advance, orient)
+    CLASS(TxtFile_), INTENT(INOUT) :: obj
+    __DATA_TYPE__, INTENT(IN) :: val(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
+    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: iomsg
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: advance
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: orient
+    !! ROW: Write vector as a row
+    !! COL, TRANSPOSE: Write vector as column
+    !! default is COL
+  END SUBROUTINE __SUBROUTINE_NAME__
 END INTERFACE

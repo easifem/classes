@@ -186,11 +186,17 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Lagrange3D/CMakeLists.txt)
 # AbstractOrthopol1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractOrthopol1D/CMakeLists.txt)
 
-# ChebyshevFirst1D
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
-
 # Jacobi1D
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Jacobi1D/CMakeLists.txt)
+
+# Ultraspherical1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Ultraspherical1D/CMakeLists.txt)
+
+# Legendre1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Legendre1D/CMakeLists.txt)
+
+# ChebyshevFirst1D
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ChebyshevFirst1D/CMakeLists.txt)
 
 # PolynomialFactory
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)

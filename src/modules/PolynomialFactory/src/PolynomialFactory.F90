@@ -18,7 +18,9 @@
 MODULE PolynomialFactory
 USE AbstractFunction_Class
 USE AbstractBasis_Class
-USE MonomialFactory
+USE Monomial1D_Class
+USE Monomial2D_Class
+USE Monomial3D_Class
 USE AbstractPolynomialSpace1D_Class
 USE AbstractPolynomialSpace2D_Class
 USE AbstractPolynomialSpace3D_Class
@@ -27,12 +29,14 @@ USE AbstractPolynomialSpace3D_Class
 USE Polynomial1D_Class
 USE AbstractOrthopol1D_Class
 USE AbstractOrthopolSpace1D_Class
+USE Jacobi1D_Class
+USE ChebyshevFirst1D_Class
+USE JacobiSpace1D_Class
+USE UltrasphericalSpace1D_Class
+USE LegendreSpace1D_Class
+USE Chebyshev1Space1D_Class
 USE Lagrange1D_Class
 USE LagrangeSpace1D_Class
-USE ChebyshevFirst1D_Class
-USE ChebyshevFirstSpace1D_Class
-USE Jacobi1D_Class
-USE JacobiSpace1D_Class
 !!
 USE Polynomial2D_Class
 USE Lagrange2D_Class

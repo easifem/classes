@@ -25,11 +25,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Orthopol_Deallocate
-  obj%n=0
-  obj%isMonic=.FALSE.
-  obj%isOrthonormal=.FALSE.
-  IF( ALLOCATED( obj%coeff ) ) DEALLOCATE( obj%coeff )
-  IF( ALLOCATED( obj%scale ) ) DEALLOCATE( obj%scale )
+obj%n = 0
+obj%isMonic = .FALSE.
+obj%isOrthonormal = .FALSE.
+IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
+IF (ALLOCATED(obj%scale)) DEALLOCATE (obj%scale)
 END PROCEDURE Orthopol_Deallocate
 
 END SUBMODULE ConstructorMethods

@@ -66,7 +66,7 @@ PUBLIC :: AbstractPolynomialSpace3DPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2022
-! summary:         Deallocate the object
+! summary: Deallocate the object
 
 INTERFACE
   MODULE SUBROUTINE func_Deallocate(obj)
@@ -104,7 +104,7 @@ PUBLIC :: AbstractPolynomialSpace3DDisplay
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 8 Aug 2022
-! summary:         Set the parameters
+! summary: Set the parameters
 
 INTERFACE
   MODULE PURE SUBROUTINE func_SetParam(obj, n)

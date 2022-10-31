@@ -38,14 +38,14 @@ TYPE, EXTENDS(AbstractFunction1D_) :: Polynomial1D_
   REAL(DFP), ALLOCATABLE :: coeff(:)
   TYPE(Monomial1D_), ALLOCATABLE :: x(:)
 CONTAINS
-    !!
-    !! @ConstructorMethods
-    !!
+  !!
+  !! @ConstructorMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => func_Deallocate
   FINAL :: func_Final
-    !!
-    !! @GetMethods
-    !!
+  !!
+  !! @GetMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: EvalScalar => func_EvalScalar
   PROCEDURE, PUBLIC, PASS(obj) :: EvalVector => func_EvalVector
   PROCEDURE, PUBLIC, PASS(obj) :: EvalGradient => func_EvalGradient
@@ -58,41 +58,41 @@ CONTAINS
     & func_GetCoeff
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
     & func_GetOrder
-    !!
+  !!
   GENERIC, PUBLIC :: OPERATOR(.Grad.) => Grad
-    !!
-    !! @IOMethods
-    !!
+  !!
+  !! @IOMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: Display => func_Display
-    !!
-    !! @OperatorMethods
-    !!
-    !! OPERATOR(+)
-    !!
+  !!
+  !! @OperatorMethods
+  !!
+  !! OPERATOR(+)
+  !!
   PROCEDURE, PUBLIC, PASS(obj2) :: AddMonoObj => &
     & func_Add_mono_obj
   PROCEDURE, PUBLIC, PASS(obj1) :: AddObjMono => &
     & func_Add_obj_mono
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjObj => func_Add_obj_obj
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjInt8 => func_Add_obj_Int8
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjInt16 => func_Add_obj_Int16
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjInt32 => func_Add_obj_Int32
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjInt64 => func_Add_obj_Int64
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjReal32 => func_Add_obj_Real32
-  PROCEDURE, PUBLIC, PASS(obj1) :: AddObjReal64 => func_Add_obj_Real64
-  PROCEDURE, PUBLIC, PASS(obj2) :: AddInt8Obj => func_Add_Int8_obj
-  PROCEDURE, PUBLIC, PASS(obj2) :: AddInt16Obj => func_Add_Int16_obj
-  PROCEDURE, PUBLIC, PASS(obj2) :: AddInt32Obj => func_Add_Int32_obj
-  PROCEDURE, PUBLIC, PASS(obj2) :: AddInt64Obj => func_Add_Int64_obj
-  PROCEDURE, PUBLIC, PASS(obj2) :: AddReal32Obj => func_Add_Real32_obj
-  PROCEDURE, PUBLIC, PASS(obj2) :: AddReal64Obj => func_Add_Real64_obj
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjObj => func_Add_obj_obj
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjInt8 => func_Add_obj_Int8
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjInt16 => func_Add_obj_Int16
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjInt32 => func_Add_obj_Int32
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjInt64 => func_Add_obj_Int64
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjReal32 => func_Add_obj_Real32
+  PROCEDURE, PRIVATE, PASS(obj1) :: AddObjReal64 => func_Add_obj_Real64
+  PROCEDURE, PRIVATE, PASS(obj2) :: AddInt8Obj => func_Add_Int8_obj
+  PROCEDURE, PRIVATE, PASS(obj2) :: AddInt16Obj => func_Add_Int16_obj
+  PROCEDURE, PRIVATE, PASS(obj2) :: AddInt32Obj => func_Add_Int32_obj
+  PROCEDURE, PRIVATE, PASS(obj2) :: AddInt64Obj => func_Add_Int64_obj
+  PROCEDURE, PRIVATE, PASS(obj2) :: AddReal32Obj => func_Add_Real32_obj
+  PROCEDURE, PRIVATE, PASS(obj2) :: AddReal64Obj => func_Add_Real64_obj
   GENERIC, PUBLIC :: OPERATOR(+) => AddObjObj, AddObjInt8, AddObjInt16, &
     & AddObjInt32, AddObjInt64, AddObjReal32, AddObjReal64, &
     & AddInt8Obj, AddInt16Obj, AddInt32Obj, AddInt64Obj, &
-    & AddReal32Obj, AddReal64Obj
-    !!
-    !! OPERATOR(-)
-    !!
+    & AddReal32Obj, AddReal64Obj, AddObjMono, AddMonoObj
+  !!
+  !! OPERATOR(-)
+  !!
   PROCEDURE, PUBLIC, PASS(obj2) :: SubtractMonoObj => &
     & func_Subtract_mono_obj
   PROCEDURE, PUBLIC, PASS(obj1) :: SubtractObjMono => &
@@ -128,10 +128,11 @@ CONTAINS
     & SubtractObjReal64, &
     & SubtractInt8Obj, SubtractInt16Obj, SubtractInt32Obj, &
     & SubtractInt64Obj, &
-    & SubtractReal32Obj, SubtractReal64Obj
-    !!
-    !! OPERATOR(*)
-    !!
+    & SubtractReal32Obj, SubtractReal64Obj, &
+    & SubtractMonoObj, SubtractObjMono
+  !!
+  !! OPERATOR(*)
+  !!
   PROCEDURE, PUBLIC, PASS(obj2) :: MultiplicationMonoObj => &
     & func_Multiplication_mono_obj
   PROCEDURE, PUBLIC, PASS(obj1) :: MultiplicationObjMono => &
@@ -170,10 +171,12 @@ CONTAINS
     & MultiplicationInt8Obj, MultiplicationInt16Obj, &
     & MultiplicationInt32Obj, &
     & MultiplicationInt64Obj, &
-    & MultiplicationReal32Obj, MultiplicationReal64Obj
-    !!
-    !! @AssignmentMethods
-    !!
+    & MultiplicationReal32Obj, MultiplicationReal64Obj, &
+    & MultiplicationMonoObj, MultiplicationObjMono
+  !!
+  !! @AssignmentMethods
+  !!
+  PROCEDURE, PUBLIC, PASS(obj) :: AssignObjMono => func_AssignObjMono
   PROCEDURE, PUBLIC, PASS(obj) :: AssignObjObj => func_AssignObjObj
   PROCEDURE, PUBLIC, PASS(obj) :: AssignObjInt8 => &
     & func_AssignObjInt8
@@ -191,7 +194,7 @@ CONTAINS
     & AssignObjObj, AssignObjInt8, &
     & AssignObjInt16, AssignObjInt32, &
     & AssignObjInt64, AssignObjReal32, &
-    & AssignObjReal64
+    & AssignObjReal64, AssignObjMono
 END TYPE Polynomial1D_
 
 PUBLIC :: Polynomial1D_
@@ -218,9 +221,13 @@ INTERFACE
   MODULE PURE FUNCTION func_Polynomial1D1(coeff, degree, varname) &
     & RESULT(ans)
     REAL(DFP), INTENT(IN) :: coeff(:)
+      !! coefficient of monomial
     INTEGER(I4B), INTENT(IN) :: degree(:)
+      !! degree of monomial
     CHARACTER(LEN=*), INTENT(IN) :: varname
+      !! variable name
     TYPE(Polynomial1D_) :: ans
+      !! instance of polynomial
   END FUNCTION func_Polynomial1D1
 END INTERFACE
 
@@ -242,9 +249,13 @@ INTERFACE
   MODULE FUNCTION func_Polynomial1D_Pointer1(coeff, degree, varname) &
     & RESULT(ans)
     REAL(DFP), INTENT(IN) :: coeff(:)
+      !! coefficient of polynomials
     INTEGER(I4B), INTENT(IN) :: degree(:)
+      !! degreee of monomials
     CHARACTER(LEN=*), INTENT(IN) :: varname
+      !! variable names
     CLASS(Polynomial1D_), POINTER :: ans
+      !! resultant polynomial
   END FUNCTION func_Polynomial1D_Pointer1
 END INTERFACE
 
@@ -318,7 +329,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Evaluate the function f(x)
+! summary: Evaluate the first derivative of function f(x)
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION func_EvalGradient(obj, x) RESULT(ans)
@@ -334,7 +345,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Evaluate the gradient of function df/dx
+! summary: Returns the Gradient of polynomials as polynomial
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION func_Grad(obj) RESULT(ans)
@@ -349,7 +360,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Evaluate the gradient of function df/dx
+! summary: Returns the string for UID
 
 INTERFACE
   MODULE ELEMENTAL FUNCTION func_GetStringForUID(obj) RESULT(ans)
@@ -364,7 +375,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Evaluate the gradient of function df/dx
+! summary: Returns the degree of monomials in the polynomial
 
 INTERFACE
   MODULE PURE FUNCTION func_GetDegree(obj) RESULT(ans)
@@ -394,7 +405,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 14 May 2022
-! summary: Evaluate the gradient of function df/dx
+! summary: Returns the coefficient of the polynomials
 
 INTERFACE
   MODULE PURE FUNCTION func_GetCoeff(obj) RESULT(ans)

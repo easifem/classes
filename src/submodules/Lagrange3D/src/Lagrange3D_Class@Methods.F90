@@ -21,7 +21,7 @@
 
 SUBMODULE(Lagrange3D_Class) ConstructorMethods
 USE BaseMethod
-USE PolynomialFactory
+! USE PolynomialFactory
 IMPLICIT NONE
 CONTAINS
 
@@ -38,20 +38,11 @@ END PROCEDURE func_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Initiate1
-REAL(DFP), ALLOCATABLE :: V(:, :)
-REAL(DFP), ALLOCATABLE :: coeff(:)
-INTEGER(I4B), ALLOCATABLE :: ipiv(:)
-INTEGER(I4B), ALLOCATABLE :: degree(:, :)
-INTEGER(I4B) :: n, info, nsd
+REAL(DFP) :: coeff(SIZE(xij, 2))
+INTEGER(I4B) :: degree(SIZE(xij, 2), 3)
 !!
-n = SIZE(x, 2); nsd = SIZE(x, 1)
-ALLOCATE (V(n, n), coeff(n), ipiv(n), degree(n, nsd))
-coeff = 0.0_DFP; coeff(i) = 1.0_DFP
-V = LagrangeVandermonde(order=order, x=x, elemType=elemType)
 degree = LagrangeDegree(order=order, elemType=elemType)
-ipiv = 0_I4B
-CALL GetLU(A=V, IPIV=ipiv, info=info)
-CALL LUSolve(A=V, B=coeff, IPIV=ipiv, info=info)
+coeff = LagrangeCoeff(order=order, elemType=elemType, i=i, xij=xij)
 !!
 obj = Polynomial3D( &
   & coeff=coeff, &
@@ -68,24 +59,18 @@ END PROCEDURE Initiate1
 
 MODULE PROCEDURE Initiate2
 REAL(DFP), DIMENSION(SIZE(v, 1)) :: coeff
-REAL(DFP), DIMENSION(SIZE(v, 1), SIZE(v, 2)) :: v0
-INTEGER(I4B), DIMENSION(SIZE(v, 1)) :: ipiv
-INTEGER(I4B), DIMENSION(SIZE(v, 1), 2) :: degree
-INTEGER(I4B) :: info
+INTEGER(I4B), DIMENSION(SIZE(v, 1), 3) :: degree
 !!
-v0 = v; coeff = 0.0_DFP; coeff(i) = 1.0_DFP
 degree = LagrangeDegree(order=order, elemType=elemType)
-!!
-ipiv = 0_I4B
-CALL GetLU(A=v0, IPIV=ipiv, info=info)
-CALL LUSolve(A=v0, B=coeff, IPIV=ipiv, info=info)
+coeff = LagrangeCoeff(order=order, elemType=elemType, i=i, v=v, &
+  & isVandermonde=.TRUE.)
 obj = Polynomial3D( &
   & coeff=coeff, &
   & degree=degree, &
   & varname1=varname1, &
   & varname2=varname2, &
   & varname3=varname3)
-!!
+  !!
 END PROCEDURE Initiate2
 
 !----------------------------------------------------------------------------
@@ -94,12 +79,10 @@ END PROCEDURE Initiate2
 
 MODULE PROCEDURE Initiate3
 REAL(DFP), DIMENSION(SIZE(v, 1)) :: coeff
-INTEGER(I4B), DIMENSION(SIZE(v, 1), 2) :: degree
-INTEGER(I4B) :: info
+INTEGER(I4B), DIMENSION(SIZE(v, 1), 3) :: degree
 !!
-coeff = 0.0_DFP; coeff(i) = 1.0_DFP
 degree = LagrangeDegree(order=order, elemType=elemType)
-CALL LUSolve(A=v, B=coeff, IPIV=ipiv, info=info)
+coeff = LagrangeCoeff(order=order, elemType=elemType, i=i, v=v, ipiv=ipiv)
 obj = Polynomial3D( &
   & coeff=coeff, &
   & degree=degree, &
@@ -113,53 +96,33 @@ END PROCEDURE Initiate3
 !                                             Lagrange3D@ConstructorMethods
 !----------------------------------------------------------------------------
 
-SUBROUTINE Initiate4(ans, x, order, varname1, varname2, varname3, elemType)
-  TYPE(Lagrange3D_), ALLOCATABLE, INTENT(INOUT) :: ans(:)
-  REAL(DFP), INTENT(IN) :: x(:, :)
-  INTEGER(I4B), INTENT(IN) :: order
-  CHARACTER(LEN=*), INTENT(IN) :: varname1
-  CHARACTER(LEN=*), INTENT(IN) :: varname2
-  CHARACTER(LEN=*), INTENT(IN) :: varname3
-  INTEGER(I4B), INTENT(IN) :: elemType
-  !! main
-  REAL(DFP), ALLOCATABLE :: V(:, :)
-  REAL(DFP), ALLOCATABLE :: coeff(:, :)
-  INTEGER(I4B), ALLOCATABLE :: ipiv(:)
-  INTEGER(I4B), ALLOCATABLE :: degree(:, :)
-  INTEGER(I4B) :: n, info, ii, nsd
-  !!
-  degree = LagrangeDegree(order=order, elemType=elemType)
-  n = SIZE(x, 2); nsd = SIZE(x, 1)
-  ALLOCATE (V(n, n), coeff(n, n), ipiv(n), degree(n, nsd))
-  coeff = eye(n)
-  !!
-  V = LagrangeVandermonde(order=order, x=x, elemType=elemType)
-  !!
-  ipiv = 0_I4B
-  CALL GetLU(A=V, IPIV=ipiv, info=info)
-  CALL LUSolve(A=V, B=coeff, IPIV=ipiv, info=info)
-  ALLOCATE (ans(n))
-  !!
-  DO ii = 1, n
-    ans(ii) = Polynomial3D( &
-      & coeff=coeff(:, ii), &
-      & degree=degree, &
-      & varname1=varname1, &
-      & varname3=varname3, &
-      & varname2=varname2)
-  END DO
-  !!
-END SUBROUTINE Initiate4
+MODULE PROCEDURE Initiate4
+REAL(DFP) :: coeff(SIZE(xij, 2), SIZE(xij, 2))
+INTEGER(I4B) :: degree(SIZE(xij, 2), 3), n, ii
+!!
+n = SIZE(xij, 2)
+degree = LagrangeDegree(order=order, elemType=elemType)
+coeff = LagrangeCoeff(order=order, elemType=elemType, xij=xij)
+!!
+DO ii = 1, n
+  obj(ii) = Polynomial3D( &
+    & coeff=coeff(:, ii), &
+    & degree=degree, &
+    & varname1=varname1, &
+    & varname3=varname3, &
+    & varname2=varname2)
+END DO
+!!
+END PROCEDURE Initiate4
 
 !----------------------------------------------------------------------------
 !                                                                Lagrange3D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Lagrange3D1
-CALL Initiate1( &
-  & obj=ans, &
+CALL ans%Initiate1( &
   & i=i, &
-  & x=x, &
+  & xij=xij, &
   & order=order, &
   & varname1=varname1, &
   & varname2=varname2, &
@@ -172,8 +135,7 @@ END PROCEDURE func_Lagrange3D1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Lagrange3D2
-CALL Initiate2( &
-  & obj=ans, &
+CALL ans%Initiate2( &
   & i=i, &
   & v=v, &
   & order=order, &
@@ -188,8 +150,7 @@ END PROCEDURE func_Lagrange3D2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE func_Lagrange3D3
-CALL Initiate3( &
-  & obj=ans, &
+CALL ans%Initiate3( &
   & i=i, &
   & v=v, &
   & ipiv=ipiv, &
@@ -206,8 +167,8 @@ END PROCEDURE func_Lagrange3D3
 
 MODULE PROCEDURE func_Lagrange3D4
 CALL Initiate4( &
-  & ans=ans, &
-  & x=x, &
+  & obj=ans, &
+  & xij=xij, &
   & order=order, &
   & varname1=varname1, &
   & varname2=varname2, &
@@ -215,4 +176,52 @@ CALL Initiate4( &
   & elemType=elemType)
 END PROCEDURE func_Lagrange3D4
 
+!----------------------------------------------------------------------------
+!                                                        Lagrange3D_Pointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Lagrange3P1
+ALLOCATE (ans)
+CALL ans%Initiate1( &
+  & i=i, &
+  & xij=xij, &
+  & order=order, &
+  & varname1=varname1, &
+  & varname2=varname2, &
+  & varname3=varname3, &
+  & elemType=elemType)
+END PROCEDURE func_Lagrange3P1
+
+!----------------------------------------------------------------------------
+!                                                        Lagrange3D_Pointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Lagrange3P2
+ALLOCATE (ans)
+CALL ans%Initiate2( &
+  & i=i, &
+  & v=v, &
+  & order=order, &
+  & varname1=varname1, &
+  & varname2=varname2, &
+  & varname3=varname3, &
+  & elemType=elemType)
+END PROCEDURE func_Lagrange3P2
+
+!----------------------------------------------------------------------------
+!                                                        Lagrange3D_Pointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE func_Lagrange3P3
+ALLOCATE (ans)
+CALL ans%Initiate3( &
+  & i=i, &
+  & v=v, &
+  & ipiv=ipiv, &
+  & order=order, &
+  & varname1=varname1, &
+  & varname2=varname2, &
+  & varname3=varname3, &
+  & elemType=elemType)
+END PROCEDURE func_Lagrange3P3
 END SUBMODULE ConstructorMethods
