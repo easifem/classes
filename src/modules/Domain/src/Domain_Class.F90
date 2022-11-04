@@ -57,18 +57,18 @@ TYPE(ExceptionHandler_) :: e
 ! all meshfacets.
 
 TYPE MeshFacetData_
-  INTEGER( I4B ) :: masterMesh = 0
-  INTEGER( I4B ) :: slaveMesh = 0
-  INTEGER( I4B ), ALLOCATABLE :: masterCellNumber( : )
-  INTEGER( I4B ), ALLOCATABLE :: slaveCellNumber( : )
-  INTEGER( I4B ), ALLOCATABLE :: masterLocalFacetID( : )
-  INTEGER( I4B ), ALLOCATABLE :: slaveLocalFacetID( : )
+  INTEGER(I4B) :: masterMesh = 0
+  INTEGER(I4B) :: slaveMesh = 0
+  INTEGER(I4B), ALLOCATABLE :: masterCellNumber(:)
+  INTEGER(I4B), ALLOCATABLE :: slaveCellNumber(:)
+  INTEGER(I4B), ALLOCATABLE :: masterLocalFacetID(:)
+  INTEGER(I4B), ALLOCATABLE :: slaveLocalFacetID(:)
   ! CLASS( Halo_ ), POINTER :: halo => NULL()
-  CONTAINS
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => MeshFacetData_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => MeshFacetData_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: isInitiated => MeshFacetData_isInitiated
-  PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacetData_Size
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => MeshFacetData_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => MeshFacetData_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => MeshFacetData_isInitiated
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => MeshFacetData_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Set => MeshFacet_Set
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacet_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveCellNumber => &
@@ -144,7 +144,7 @@ TYPE :: Domain_
     !! meshList( 1 ) list of meshes of line entities
     !! meshList( 2 ) list of meshes of surface entities
     !! meshList( 3 ) list of meshes of volume entities
-  TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData( : )
+  TYPE(MeshFacetData_), ALLOCATABLE, PUBLIC :: meshFacetData(:)
   TYPE(CSRSparsity_) :: meshMap
 CONTAINS
   PRIVATE
@@ -162,9 +162,9 @@ CONTAINS
   PROCEDURE, PASS(Obj) :: IMPORT => Domain_Import
       !! Initiates an instance of domain by importing data from meshfile
       !! TODO Add an export method to [[Domain_]] class
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => Domain_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => Domain_Display
     !! TODO Add a display method to [[Domain_]] class
-  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayMeshFacetData => &
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshFacetData => &
     & Domain_DisplayMeshFacetData
     !! Display mesh facet data
   ! @getMethods
@@ -244,9 +244,9 @@ CONTAINS
   !! returns bounding box
   PROCEDURE, PUBLIC, PASS(Obj) :: getNSD => Domain_getNSD
   !! Returns the spatial dimension of each physical entities
-  PROCEDURE, PUBLIC, PASS( obj ) :: getOrder => Domain_getOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: getOrder => Domain_getOrder
   !! Get Order
-  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalMeshFacetData => &
+  PROCEDURE, PUBLIC, PASS(obj) :: getTotalMeshFacetData => &
     & Domain_getTotalMeshFacetData
   ! @setMethods
   PROCEDURE, PASS(obj) :: setSparsity1 => Domain_setSparsity1
@@ -256,15 +256,15 @@ CONTAINS
   !! set the total number of materials
   PROCEDURE, PUBLIC, PASS(obj) :: setMaterial => Domain_setMaterial
   !! set the material
-  PROCEDURE, PUBLIC, PASS( obj ) :: setDomainFacetElement => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setDomainFacetElement => &
     & Domain_setDomainFacetElement
   !! Set facet element of meshes
-  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetElementType => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setFacetElementType => &
     & Domain_setFacetElementType
   !! Set facet element of meshes
-  PROCEDURE, PUBLIC, PASS( obj ) :: setMeshmap => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setMeshmap => &
     & Domain_setMeshmap
-  PROCEDURE, PUBLIC, PASS( obj ) :: setMeshFacetElement => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setMeshFacetElement => &
     & Domain_setMeshFacetElement
   !! @ShapedataMethods
   PROCEDURE, PASS(obj) :: initiateElemSD1 => Domain_initiateElemSD1
@@ -362,10 +362,10 @@ END INTERFACE
 ! summary: Initiate an instance of MeshFacetData
 
 INTERFACE
-MODULE PURE SUBROUTINE MeshFacetData_Initiate( obj, n )
-  CLASS( MeshFacetData_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: n
-END SUBROUTINE MeshFacetData_Initiate
+  MODULE PURE SUBROUTINE MeshFacetData_Initiate(obj, n)
+    CLASS(MeshFacetData_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+  END SUBROUTINE MeshFacetData_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -377,10 +377,10 @@ END INTERFACE
 ! summary: Returns true if MeshFacetData initiated
 
 INTERFACE
-MODULE PURE FUNCTION MeshFacetData_isInitiated( obj ) RESULT( ans )
-  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION MeshFacetData_isInitiated
+  MODULE PURE FUNCTION MeshFacetData_isInitiated(obj) RESULT(ans)
+    CLASS(MeshFacetData_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION MeshFacetData_isInitiated
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -392,10 +392,10 @@ END INTERFACE
 ! summary: Returns the size of MeshFacetData
 
 INTERFACE
-MODULE PURE FUNCTION MeshFacetData_Size( obj ) RESULT( ans )
-  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION MeshFacetData_Size
+  MODULE PURE FUNCTION MeshFacetData_Size(obj) RESULT(ans)
+    CLASS(MeshFacetData_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION MeshFacetData_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -502,28 +502,11 @@ END INTERFACE
 ! summary: Display the domain
 
 INTERFACE
-MODULE SUBROUTINE Domain_Display( obj, msg, unitno )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE Domain_Display
-END INTERFACE
-
-
-!----------------------------------------------------------------------------
-!                                                          Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 20 May 2022
-! summary: Display mesh facet data
-
-INTERFACE
-MODULE SUBROUTINE Domain_DisplayMeshFacetData( obj, msg, unitno )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE Domain_DisplayMeshFacetData
+  MODULE SUBROUTINE Domain_Display(obj, msg, unitno)
+    CLASS(Domain_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE Domain_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -535,11 +518,27 @@ END INTERFACE
 ! summary: Display mesh facet data
 
 INTERFACE
-MODULE SUBROUTINE MeshFacetData_Display( obj, msg, unitno )
-  CLASS( MeshFacetData_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE MeshFacetData_Display
+  MODULE SUBROUTINE Domain_DisplayMeshFacetData(obj, msg, unitno)
+    CLASS(Domain_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE Domain_DisplayMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display mesh facet data
+
+INTERFACE
+  MODULE SUBROUTINE MeshFacetData_Display(obj, msg, unitno)
+    CLASS(MeshFacetData_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE MeshFacetData_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1104,7 +1103,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION Domain_getOrder(obj, dim) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: dim
+    INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION Domain_getOrder
 END INTERFACE
@@ -1133,12 +1132,12 @@ END INTERFACE
 ! summary: returns size of meshFacetData
 
 INTERFACE
-MODULE PURE FUNCTION Domain_getTotalMeshFacetData( obj, imeshFacetData ) &
-  & RESULT( ans )
-  CLASS( Domain_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: imeshFacetData
-  INTEGER( I4B ) :: ans
-END FUNCTION Domain_getTotalMeshFacetData
+  MODULE PURE FUNCTION Domain_getTotalMeshFacetData(obj, imeshFacetData) &
+    & RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_getTotalMeshFacetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1217,9 +1216,9 @@ END INTERFACE
 ! summary: This routine sets the domain boundary element for cells and faces
 
 INTERFACE
-MODULE SUBROUTINE Domain_setFacetElementType( obj )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Domain_setFacetElementType
+  MODULE SUBROUTINE Domain_setFacetElementType(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE Domain_setFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1231,9 +1230,9 @@ END INTERFACE
 ! summary: This routine sets the domain boundary element for cells and faces
 
 INTERFACE
-MODULE SUBROUTINE Domain_setDomainFacetElement( obj )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Domain_setDomainFacetElement
+  MODULE SUBROUTINE Domain_setDomainFacetElement(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE Domain_setDomainFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1245,9 +1244,9 @@ END INTERFACE
 ! summary: This routine sets meshMap
 
 INTERFACE
-MODULE SUBROUTINE Domain_setMeshmap( obj )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Domain_setMeshmap
+  MODULE SUBROUTINE Domain_setMeshmap(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE Domain_setMeshmap
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1259,9 +1258,9 @@ END INTERFACE
 ! summary: This routine sets meshFacetData
 
 INTERFACE
-MODULE SUBROUTINE Domain_setMeshFacetElement( obj )
-  CLASS( Domain_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE Domain_setMeshFacetElement
+  MODULE SUBROUTINE Domain_setMeshFacetElement(obj)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+  END SUBROUTINE Domain_setMeshFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1389,7 +1388,7 @@ INTERFACE
   MODULE SUBROUTINE Domain_initiateElemSD4(obj, dim, tvec)
     CLASS(Domain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    REAL( DFP ), INTENT( IN ) :: tvec(:)
+    REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE Domain_initiateElemSD4
 END INTERFACE
 
@@ -1446,7 +1445,7 @@ INTERFACE
     CLASS(Domain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN) :: orderSpace( : )
+    INTEGER(I4B), INTENT(IN) :: orderSpace(:)
       !! integrand order in space
     CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
       !! quadrature type for space
@@ -1483,7 +1482,7 @@ INTERFACE
   MODULE SUBROUTINE Domain_initiateFacetElemSD3(obj, dim, tvec)
     CLASS(Domain_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    REAL( DFP ), INTENT( IN ) :: tvec(:)
+    REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE Domain_initiateFacetElemSD3
 END INTERFACE
 

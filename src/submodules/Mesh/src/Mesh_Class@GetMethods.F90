@@ -24,7 +24,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_size
-  ans = obj%tElements
+ans = obj%tElements
 END PROCEDURE mesh_size
 
 !----------------------------------------------------------------------------
@@ -32,12 +32,12 @@ END PROCEDURE mesh_size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getElemNum
-  INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii
   !! main
-  CALL Reallocate(ans, obj%getTotalElements())
-  DO ii = 1, SIZE(ans)
-    ans(ii) = obj%getGlobalElemNumber(localElement=ii)
-  END DO
+CALL Reallocate(ans, obj%getTotalElements())
+DO ii = 1, SIZE(ans)
+  ans(ii) = obj%getGlobalElemNumber(localElement=ii)
+END DO
 END PROCEDURE mesh_getElemNum
 
 !----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ END PROCEDURE mesh_getElemNum
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getRefElemPointer
-  ans => obj%refelem
+ans => obj%refelem
 END PROCEDURE mesh_getRefElemPointer
 
 !----------------------------------------------------------------------------
@@ -53,11 +53,11 @@ END PROCEDURE mesh_getRefElemPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getBoundingEntity
-  IF (ALLOCATED(obj%boundingEntity)) THEN
-    ans = obj%boundingEntity
-  ELSE
-    ALLOCATE (ans(0))
-  END IF
+IF (ALLOCATED(obj%boundingEntity)) THEN
+  ans = obj%boundingEntity
+ELSE
+  ALLOCATE (ans(0))
+END IF
 END PROCEDURE mesh_getBoundingEntity
 
 !----------------------------------------------------------------------------
@@ -65,11 +65,11 @@ END PROCEDURE mesh_getBoundingEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNptrs
-  INTEGER(I4B) :: ii
-  ALLOCATE (ans(obj%tNodes))
-  DO CONCURRENT(ii=1:SIZE(ans))
-    ans(ii) = obj%nodeData(ii)%globalNodeNum
-  END DO
+INTEGER(I4B) :: ii
+ALLOCATE (ans(obj%tNodes))
+DO CONCURRENT(ii=1:SIZE(ans))
+  ans(ii) = obj%nodeData(ii)%globalNodeNum
+END DO
 END PROCEDURE mesh_getNptrs
 
 !----------------------------------------------------------------------------
@@ -77,15 +77,15 @@ END PROCEDURE mesh_getNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getInternalNptrs
-  INTEGER(I4B) :: ii, dummy
-  ALLOCATE (ans(obj%getTotalInternalNodes()))
-  dummy = 0
-  DO ii = 1, obj%tNodes
-    IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
-      dummy = dummy + 1
-      ans(dummy) = obj%nodeData(ii)%globalNodeNum
-    END IF
-  END DO
+INTEGER(I4B) :: ii, dummy
+ALLOCATE (ans(obj%getTotalInternalNodes()))
+dummy = 0
+DO ii = 1, obj%tNodes
+  IF (obj%nodeData(ii)%nodeType .EQ. INTERNAL_NODE) THEN
+    dummy = dummy + 1
+    ans(dummy) = obj%nodeData(ii)%globalNodeNum
+  END IF
+END DO
 END PROCEDURE mesh_getInternalNptrs
 
 !----------------------------------------------------------------------------
@@ -93,15 +93,15 @@ END PROCEDURE mesh_getInternalNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getBoundaryNptrs
-  INTEGER(I4B) :: ii, dummy
-  ALLOCATE (ans(obj%getTotalBoundaryNodes()))
-  dummy = 0
-  DO ii = 1, obj%tNodes
-    IF (obj%nodeData(ii)%nodeType .EQ. BOUNDARY_NODE) THEN
-      dummy = dummy + 1
-      ans(dummy) = obj%nodeData(ii)%globalNodeNum
-    END IF
-  END DO
+INTEGER(I4B) :: ii, dummy
+ALLOCATE (ans(obj%getTotalBoundaryNodes()))
+dummy = 0
+DO ii = 1, obj%tNodes
+  IF (obj%nodeData(ii)%nodeType .EQ. BOUNDARY_NODE) THEN
+    dummy = dummy + 1
+    ans(dummy) = obj%nodeData(ii)%globalNodeNum
+  END IF
+END DO
 END PROCEDURE mesh_getBoundaryNptrs
 
 !----------------------------------------------------------------------------
@@ -109,13 +109,13 @@ END PROCEDURE mesh_getBoundaryNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isBoundaryNode
-  INTEGER(I4B) :: localnode
-  localnode = obj%getLocalNodeNumber(GlobalNode)
-  IF (obj%nodeData(localnode)%nodeType .NE. INTERNAL_NODE) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
+INTEGER(I4B) :: localnode
+localnode = obj%getLocalNodeNumber(GlobalNode)
+IF (obj%nodeData(localnode)%nodeType .NE. INTERNAL_NODE) THEN
+  ans = .TRUE.
+ELSE
+  ans = .FALSE.
+END IF
 END PROCEDURE mesh_isBoundaryNode
 
 !----------------------------------------------------------------------------
@@ -123,12 +123,12 @@ END PROCEDURE mesh_isBoundaryNode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isNodePresent
-  ans = .TRUE.
-  IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
-    ans = .FALSE.
-  ELSE IF (obj%local_nptrs(globalNode) .EQ. 0) THEN
-    ans = .FALSE.
-  END IF
+ans = .TRUE.
+IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
+  ans = .FALSE.
+ELSE IF (obj%local_nptrs(globalNode) .EQ. 0) THEN
+  ans = .FALSE.
+END IF
 END PROCEDURE mesh_isNodePresent
 
 !----------------------------------------------------------------------------
@@ -136,19 +136,19 @@ END PROCEDURE mesh_isNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isAnyNodePresent
-  LOGICAL( LGT ), ALLOCATABLE :: cond( : )
-  INTEGER( I4B ) :: ii, n
+LOGICAL(LGT), ALLOCATABLE :: cond(:)
+INTEGER(I4B) :: ii, n
   !!
-  n = SIZE( globalNode )
-  ALLOCATE( cond( n ) )
+n = SIZE(globalNode)
+ALLOCATE (cond(n))
   !!
-  DO ii = 1, n
-    cond( ii ) = obj%isNodePresent( globalNode=globalNode( ii ) )
-  END DO
+DO ii = 1, n
+  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii))
+END DO
   !!
-  ans = ANY( cond )
+ans = ANY(cond)
   !!
-  IF( ALLOCATED( cond ) ) DEALLOCATE( cond )
+IF (ALLOCATED(cond)) DEALLOCATE (cond)
   !!
 END PROCEDURE mesh_isAnyNodePresent
 
@@ -157,18 +157,18 @@ END PROCEDURE mesh_isAnyNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isAllNodePresent
-  LOGICAL( LGT ), ALLOCATABLE :: cond( : )
-  INTEGER( I4B ) :: ii, n
+LOGICAL(LGT), ALLOCATABLE :: cond(:)
+INTEGER(I4B) :: ii, n
   !!
-  n = SIZE( globalNode )
-  ALLOCATE( cond( n ) )
+n = SIZE(globalNode)
+ALLOCATE (cond(n))
   !!
-  DO ii = 1, n
-    cond( ii ) = obj%isNodePresent( globalNode=globalNode( ii ) )
-  END DO
+DO ii = 1, n
+  cond(ii) = obj%isNodePresent(globalNode=globalNode(ii))
+END DO
   !!
-  ans = ALL( cond )
-  IF( ALLOCATED( cond ) ) DEALLOCATE( cond )
+ans = ALL(cond)
+IF (ALLOCATED(cond)) DEALLOCATE (cond)
   !!
 END PROCEDURE mesh_isAllNodePresent
 
@@ -177,13 +177,13 @@ END PROCEDURE mesh_isAllNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isElementPresent
-  IF (GlobalElement .GT. obj%maxElemNum &
-    & .OR. GlobalElement .LT. obj%minElemNum &
-    & .OR. obj%local_elemNumber(GlobalElement) .EQ. 0) THEN
-    ans = .FALSE.
-  ELSE
-    ans = .TRUE.
-  END IF
+IF (GlobalElement .GT. obj%maxElemNum &
+  & .OR. GlobalElement .LT. obj%minElemNum &
+  & .OR. obj%local_elemNumber(GlobalElement) .EQ. 0) THEN
+  ans = .FALSE.
+ELSE
+  ans = .TRUE.
+END IF
 END PROCEDURE mesh_isElementPresent
 
 !----------------------------------------------------------------------------
@@ -191,13 +191,13 @@ END PROCEDURE mesh_isElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isBoundaryElement
-  INTEGER(I4B) :: iel
-  iel = obj%getLocalElemNumber(globalElement)
-  IF (obj%elementData(iel)%elementType .LE. BOUNDARY_ELEMENT) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
+INTEGER(I4B) :: iel
+iel = obj%getLocalElemNumber(globalElement)
+IF (obj%elementData(iel)%elementType .LE. BOUNDARY_ELEMENT) THEN
+  ans = .TRUE.
+ELSE
+  ans = .FALSE.
+END IF
 END PROCEDURE mesh_isBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -205,13 +205,13 @@ END PROCEDURE mesh_isBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_isDomainBoundaryElement
-  INTEGER(I4B) :: iel
-  iel = obj%getLocalElemNumber(globalElement)
-  IF (obj%elementData(iel)%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
+INTEGER(I4B) :: iel
+iel = obj%getLocalElemNumber(globalElement)
+IF (obj%elementData(iel)%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
+  ans = .TRUE.
+ELSE
+  ans = .FALSE.
+END IF
 END PROCEDURE mesh_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -220,12 +220,12 @@ END PROCEDURE mesh_isDomainBoundaryElement
 
 MODULE PROCEDURE mesh_isDomainFacetElement
   !!
-  IF (obj%boundaryFacetData(facetElement)%elementType  &
-    & .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
+IF (obj%boundaryFacetData(facetElement)%elementType  &
+  & .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
+  ans = .TRUE.
+ELSE
+  ans = .FALSE.
+END IF
   !!
 END PROCEDURE mesh_isDomainFacetElement
 
@@ -234,7 +234,7 @@ END PROCEDURE mesh_isDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalInternalNodes
-  ans = obj%tIntNodes
+ans = obj%tIntNodes
 END PROCEDURE mesh_getTotalInternalNodes
 
 !----------------------------------------------------------------------------
@@ -242,7 +242,7 @@ END PROCEDURE mesh_getTotalInternalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalNodes
-  ans = obj%tNodes
+ans = obj%tNodes
 END PROCEDURE mesh_getTotalNodes
 
 !----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ END PROCEDURE mesh_getTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalBoundaryNodes
-  ans = obj%tNodes - obj%tIntNodes
+ans = obj%tNodes - obj%tIntNodes
 END PROCEDURE mesh_getTotalBoundaryNodes
 
 !----------------------------------------------------------------------------
@@ -258,7 +258,7 @@ END PROCEDURE mesh_getTotalBoundaryNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalBoundaryElements
-  ans = COUNT(obj%elementData(:)%elementType == BOUNDARY_ELEMENT)
+ans = COUNT(obj%elementData(:)%elementType == BOUNDARY_ELEMENT)
 END PROCEDURE mesh_getTotalBoundaryElements
 
 !----------------------------------------------------------------------------
@@ -266,14 +266,14 @@ END PROCEDURE mesh_getTotalBoundaryElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getBoundingBox1
-  REAL(DFP) :: lim(6)
-  lim(1) = obj%minX
-  lim(2) = obj%maxX
-  lim(3) = obj%minY
-  lim(4) = obj%maxY
-  lim(5) = obj%minZ
-  lim(6) = obj%maxZ
-  CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
+REAL(DFP) :: lim(6)
+lim(1) = obj%minX
+lim(2) = obj%maxX
+lim(3) = obj%minY
+lim(4) = obj%maxY
+lim(5) = obj%minZ
+lim(6) = obj%maxZ
+CALL Initiate(obj=ans, nsd=3_I4B, lim=lim)
 END PROCEDURE mesh_getBoundingBox1
 
 !----------------------------------------------------------------------------
@@ -281,27 +281,27 @@ END PROCEDURE mesh_getBoundingBox1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getBoundingBox2
-  INTEGER(I4B) :: nsd
-  REAL(DFP) :: lim(6)
-  !> main
-  lim = 0.0_DFP
-  nsd = SIZE(nodes, 1)
-  IF (PRESENT(local_nptrs)) THEN
-    lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd,  &
-      & local_nptrs(obj%getNptrs())),  &
-      & dim=2)
-    lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd,  &
-      & local_nptrs(obj%getNptrs())),  &
-      & dim=2)
-  ELSE
-    lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, &
-      & obj%getNptrs()), &
-      & dim=2)
-    lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, &
-      & obj%getNptrs()), &
-      & dim=2)
-  END IF
-  CALL Initiate(obj=ans, nsd=nsd, lim=lim)
+INTEGER(I4B) :: nsd
+REAL(DFP) :: lim(6)
+!> main
+lim = 0.0_DFP
+nsd = SIZE(nodes, 1)
+IF (PRESENT(local_nptrs)) THEN
+  lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd,  &
+    & local_nptrs(obj%getNptrs())),  &
+    & dim=2)
+  lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd,  &
+    & local_nptrs(obj%getNptrs())),  &
+    & dim=2)
+ELSE
+  lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, &
+    & obj%getNptrs()), &
+    & dim=2)
+  lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, &
+    & obj%getNptrs()), &
+    & dim=2)
+END IF
+CALL Initiate(obj=ans, nsd=nsd, lim=lim)
 END PROCEDURE mesh_getBoundingBox2
 
 !----------------------------------------------------------------------------
@@ -310,7 +310,7 @@ END PROCEDURE mesh_getBoundingBox2
 
 MODULE PROCEDURE mesh_getConnectivity
   !!
-  ans = obj%elementData(obj%getLocalElemNumber(globalElement))%globalNodes
+ans = obj%elementData(obj%getLocalElemNumber(globalElement))%globalNodes
   !!
 END PROCEDURE mesh_getConnectivity
 
@@ -319,10 +319,10 @@ END PROCEDURE mesh_getConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalNodeNumber1
-  INTEGER(I4B) :: ii
-  DO ii = 1, SIZE(GlobalNode)
-    ans(ii) = mesh_getLocalNodeNumber2(obj, GlobalNode(ii))
-  END DO
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(GlobalNode)
+  ans(ii) = mesh_getLocalNodeNumber2(obj, GlobalNode(ii))
+END DO
 END PROCEDURE mesh_getLocalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -330,12 +330,12 @@ END PROCEDURE mesh_getLocalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalNodeNumber2
-  IF (GlobalNode .LT. obj%MinNptrs &
-    & .OR. GlobalNode .GT. obj%maxNptrs) THEN
-    ans = 0
-  ELSE
-    ans = obj%Local_Nptrs(GlobalNode)
-  END IF
+IF (GlobalNode .LT. obj%MinNptrs &
+  & .OR. GlobalNode .GT. obj%maxNptrs) THEN
+  ans = 0
+ELSE
+  ans = obj%Local_Nptrs(GlobalNode)
+END IF
 END PROCEDURE mesh_getLocalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -343,10 +343,10 @@ END PROCEDURE mesh_getLocalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getGlobalNodeNumber1
-  INTEGER(I4B) :: ii
-  DO ii = 1, SIZE(LocalNode)
-    ans(ii) = mesh_getGlobalNodeNumber2(obj, LocalNode(ii))
-  END DO
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(LocalNode)
+  ans(ii) = mesh_getGlobalNodeNumber2(obj, LocalNode(ii))
+END DO
 END PROCEDURE mesh_getGlobalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -354,13 +354,13 @@ END PROCEDURE mesh_getGlobalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getGlobalNodeNumber2
-  IF (localNode .EQ. 0) THEN
-    ans = 0
-  ELSE IF (localNode .LE. obj%tNodes) THEN
-    ans = obj%nodeData(localNode)%globalNodeNum
-  ELSE
-    ans = 0
-  END IF
+IF (localNode .EQ. 0) THEN
+  ans = 0
+ELSE IF (localNode .LE. obj%tNodes) THEN
+  ans = obj%nodeData(localNode)%globalNodeNum
+ELSE
+  ans = 0
+END IF
 END PROCEDURE mesh_getGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -368,10 +368,10 @@ END PROCEDURE mesh_getGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getGlobalElemNumber1
-  INTEGER(I4B) :: ii
-  DO ii = 1, SIZE(localElement)
-    ans(ii) = mesh_getGlobalElemNumber2(obj, localElement(ii))
-  END DO
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(localElement)
+  ans(ii) = mesh_getGlobalElemNumber2(obj, localElement(ii))
+END DO
 END PROCEDURE mesh_getGlobalElemNumber1
 
 !----------------------------------------------------------------------------
@@ -379,13 +379,13 @@ END PROCEDURE mesh_getGlobalElemNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getGlobalElemNumber2
-  IF (localElement .EQ. 0) THEN
-    ans = 0
-  ELSE IF (localElement .LE. obj%tElements) THEN
-    ans = obj%elementData(localElement)%globalElemNum
-  ELSE
-    ans = 0
-  END IF
+IF (localElement .EQ. 0) THEN
+  ans = 0
+ELSE IF (localElement .LE. obj%tElements) THEN
+  ans = obj%elementData(localElement)%globalElemNum
+ELSE
+  ans = 0
+END IF
 END PROCEDURE mesh_getGlobalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -393,10 +393,10 @@ END PROCEDURE mesh_getGlobalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalElemNumber1
-  INTEGER(I4B) :: ii
-  DO ii = 1, SIZE(GlobalElement)
-    ans(ii) = mesh_getLocalElemNumber2(obj, GlobalElement(ii))
-  END DO
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(GlobalElement)
+  ans(ii) = mesh_getLocalElemNumber2(obj, GlobalElement(ii))
+END DO
 END PROCEDURE mesh_getLocalElemNumber1
 
 !----------------------------------------------------------------------------
@@ -404,12 +404,12 @@ END PROCEDURE mesh_getLocalElemNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getLocalElemNumber2
-  IF (GlobalElement .LT. obj%MinElemNum &
-    & .OR. GlobalElement .GT. obj%maxElemNum) THEN
-    ans = 0
-  ELSE
-    ans = obj%local_elemNumber(GlobalElement)
-  END IF
+IF (GlobalElement .LT. obj%MinElemNum &
+  & .OR. GlobalElement .GT. obj%maxElemNum) THEN
+  ans = 0
+ELSE
+  ans = obj%local_elemNumber(GlobalElement)
+END IF
 END PROCEDURE mesh_getLocalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -417,13 +417,13 @@ END PROCEDURE mesh_getLocalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNodeToElements1
-  INTEGER(I4B) :: ii
-  IF (.NOT. obj%isNodePresent(GlobalNode)) THEN
-    ALLOCATE (ans(0))
-  ELSE
-    ii = obj%getLocalNodeNumber(GlobalNode)
-    ans = obj%nodeData(ii)%globalElements
-  END IF
+INTEGER(I4B) :: ii
+IF (.NOT. obj%isNodePresent(GlobalNode)) THEN
+  ALLOCATE (ans(0))
+ELSE
+  ii = obj%getLocalNodeNumber(GlobalNode)
+  ans = obj%nodeData(ii)%globalElements
+END IF
 END PROCEDURE mesh_getNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -431,20 +431,20 @@ END PROCEDURE mesh_getNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNodeToElements2
-  TYPE(IntVector_) :: intvec
-  INTEGER(I4B), ALLOCATABLE :: ivec(:)
-  INTEGER(I4B) :: ii
-  !> main
-  DO ii = 1, SIZE(GlobalNode)
-    ivec = obj%getNodeToElements(GlobalNode=GlobalNode(ii))
-    IF (ALLOCATED(ivec)) THEN
-      IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
-    END IF
-  END DO
-  CALL RemoveDuplicates( intvec )
-  ans = intvec
-  CALL DEALLOCATE (intvec)
-  IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: ivec(:)
+INTEGER(I4B) :: ii
+!> main
+DO ii = 1, SIZE(GlobalNode)
+  ivec = obj%getNodeToElements(GlobalNode=GlobalNode(ii))
+  IF (ALLOCATED(ivec)) THEN
+    IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
+  END IF
+END DO
+CALL RemoveDuplicates(intvec)
+ans = intvec
+CALL DEALLOCATE (intvec)
+IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
 END PROCEDURE mesh_getNodeToElements2
 
 !----------------------------------------------------------------------------
@@ -455,60 +455,62 @@ MODULE PROCEDURE mesh_getNodeToNodes1
   !!
   !! Define internal variable
   !!
-  INTEGER(I4B), ALLOCATABLE :: nptrs(:), extranptrs( : )
-  INTEGER(I4B) :: i, j
-  CHARACTER(LEN=*), PARAMETER :: myName = "mesh_getNodeToNodes1"
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), extranptrs(:)
+INTEGER(I4B) :: i, j
+CHARACTER(LEN=*), PARAMETER :: myName = "mesh_getNodeToNodes1"
   !!
   !!
   !!
-  i = obj%getLocalNodeNumber(GlobalNode=GlobalNode)
+i = obj%getLocalNodeNumber(GlobalNode=GlobalNode)
   !!
   !! check
   !!
-  IF( obj%isExtraNodeToNodesInitiated ) THEN
+IF (obj%isExtraNodeToNodesInitiated) THEN
     !!
-    IF (i .EQ. 0) THEN
-      ALLOCATE (ans(0))
-    ELSE
-      IF (IncludeSelf) THEN
-        nptrs = obj%nodeData(i)%globalNodes
-        extranptrs = obj%nodeData(i)%extraGlobalNodes
-        i = SIZE( nptrs )
-        j = SIZE( extranptrs )
-        CALL Reallocate( ans, i + j + 1 )
-        ans(1) = GlobalNode
-        ans(2:1+i) = nptrs
-        ans(2+i:1+i+j) = extranptrs
-      ELSE
-        CALL APPEND( &
-          & ans, &
-          & obj%nodeData(i)%globalNodes, &
-          & obj%nodeData(i)%extraGlobalNodes )
-      END IF
-    END IF
-    !!
+  call display(myname//" debug, inside is extranodeto")
+  IF (i .EQ. 0) THEN
+    ALLOCATE (ans(0))
   ELSE
-    !!
-    IF (i .EQ. 0) THEN
-      ALLOCATE (ans(0))
+    IF (IncludeSelf) THEN
+      nptrs = obj%nodeData(i)%globalNodes
+      extranptrs = obj%nodeData(i)%extraGlobalNodes
+      i = SIZE(nptrs)
+      j = SIZE(extranptrs)
+      CALL Reallocate(ans, i + j + 1)
+      ans(1) = GlobalNode
+      ans(2:1 + i) = nptrs
+      ans(2 + i:1 + i + j) = extranptrs
     ELSE
-      IF (IncludeSelf) THEN
-        nptrs = obj%nodeData(i)%globalNodes
-        i = SIZE(nptrs)
-        ALLOCATE (ans(i + 1))
-        ans(1) = GlobalNode
-        ans(2:) = nptrs
-      ELSE
-        ans = obj%nodeData(i)%globalNodes
-      END IF
+      CALL APPEND( &
+        & ans, &
+        & obj%nodeData(i)%globalNodes, &
+        & obj%nodeData(i)%extraGlobalNodes)
     END IF
+  END IF
     !!
+ELSE
+  !!
+  IF (i .EQ. 0) THEN
+    ALLOCATE (ans(0))
+  ELSE
+    IF (IncludeSelf) THEN
+      nptrs = obj%nodeData(i)%globalNodes
+      call display(nptrs, myname//" debug, nptrs=")
+      i = SIZE(nptrs)
+      ALLOCATE (ans(i + 1))
+      ans(1) = GlobalNode
+      ans(2:) = nptrs
+    ELSE
+      ans = obj%nodeData(i)%globalNodes
+    END IF
   END IF
   !!
+END IF
   !!
   !!
-  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-  IF (ALLOCATED(extranptrs)) DEALLOCATE (extranptrs)
+  !!
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+IF (ALLOCATED(extranptrs)) DEALLOCATE (extranptrs)
   !!
 END PROCEDURE mesh_getNodeToNodes1
 
@@ -517,21 +519,21 @@ END PROCEDURE mesh_getNodeToNodes1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNodeToNodes2
-  TYPE(IntVector_) :: intvec
-  INTEGER(I4B), ALLOCATABLE :: ivec(:)
-  INTEGER(I4B) :: ii
-  !> main
-  DO ii = 1, SIZE(GlobalNode)
-    ivec = obj%getNodeToNodes(GlobalNode=GlobalNode(ii), &
-      & IncludeSelf=IncludeSelf)
-    IF (ALLOCATED(ivec)) THEN
-      IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
-    END IF
-  END DO
-  CALL RemoveDuplicates( intvec )
-  ans = intvec
-  CALL DEALLOCATE (intvec)
-  IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
+TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: ivec(:)
+INTEGER(I4B) :: ii
+!> main
+DO ii = 1, SIZE(GlobalNode)
+  ivec = obj%getNodeToNodes(GlobalNode=GlobalNode(ii), &
+    & IncludeSelf=IncludeSelf)
+  IF (ALLOCATED(ivec)) THEN
+    IF (SIZE(ivec) .NE. 0) CALL append(intvec, ivec)
+  END IF
+END DO
+CALL RemoveDuplicates(intvec)
+ans = intvec
+CALL DEALLOCATE (intvec)
+IF (ALLOCATED(ivec)) DEALLOCATE (ivec)
 END PROCEDURE mesh_getNodeToNodes2
 
 !----------------------------------------------------------------------------
@@ -539,27 +541,27 @@ END PROCEDURE mesh_getNodeToNodes2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getElementToElements
-  LOGICAL(LGT) :: onlyElem
-  INTEGER(I4B), ALLOCATABLE :: Indx(:)
-  INTEGER(I4B) :: tSize, iel
+LOGICAL(LGT) :: onlyElem
+INTEGER(I4B), ALLOCATABLE :: Indx(:)
+INTEGER(I4B) :: tSize, iel
   !!
-  onlyElem = .FALSE.
-  IF (PRESENT(onlyElements)) onlyElem = onlyElements
-  iel = obj%getLocalElemNumber(globalElement)
+onlyElem = .FALSE.
+IF (PRESENT(onlyElements)) onlyElem = onlyElements
+iel = obj%getLocalElemNumber(globalElement)
   !!
-  IF( ALLOCATED( obj%elementData(iel)%globalElements ) ) THEN
-    IF (onlyElem) THEN
-      Indx = obj%elementData(iel)%globalElements
-      ALLOCATE (ans(SIZE(Indx) / 3, 1))
-      ans(:, 1) = Indx(1 :: 3)
-      DEALLOCATE (Indx)
-    ELSE
-      Indx = obj%elementData(iel)%globalElements
-      ans = TRANSPOSE(RESHAPE(Indx, [3, SIZE(Indx) / 3]))
-    END IF
+IF (ALLOCATED(obj%elementData(iel)%globalElements)) THEN
+  IF (onlyElem) THEN
+    Indx = obj%elementData(iel)%globalElements
+    ALLOCATE (ans(SIZE(Indx) / 3, 1))
+    ans(:, 1) = Indx(1 :: 3)
+    DEALLOCATE (Indx)
   ELSE
-    ALLOCATE( ans( 0, 0 ) )
+    Indx = obj%elementData(iel)%globalElements
+    ans = TRANSPOSE(RESHAPE(Indx, [3, SIZE(Indx) / 3]))
   END IF
+ELSE
+  ALLOCATE (ans(0, 0))
+END IF
 
 END PROCEDURE mesh_getElementToElements
 
@@ -568,14 +570,14 @@ END PROCEDURE mesh_getElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getBoundaryElementData
-  INTEGER(I4B) :: iel
+INTEGER(I4B) :: iel
   !!
-  IF (obj%isBoundaryElement(globalElement)) THEN
-    iel = obj%getLocalElemNumber(globalElement)
-    ans = obj%elementData(iel)%boundaryData
-  ELSE
-    ALLOCATE (ans(0))
-  END IF
+IF (obj%isBoundaryElement(globalElement)) THEN
+  iel = obj%getLocalElemNumber(globalElement)
+  ans = obj%elementData(iel)%boundaryData
+ELSE
+  ALLOCATE (ans(0))
+END IF
   !!
 END PROCEDURE mesh_getBoundaryElementData
 
@@ -584,7 +586,7 @@ END PROCEDURE mesh_getBoundaryElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getOrder
-  ans = obj%refelem%order
+ans = obj%refelem%order
 END PROCEDURE mesh_getOrder
 
 !----------------------------------------------------------------------------
@@ -592,7 +594,7 @@ END PROCEDURE mesh_getOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getNSD
-  ans = obj%NSD
+ans = obj%NSD
 END PROCEDURE mesh_getNSD
 
 !----------------------------------------------------------------------------
@@ -600,7 +602,7 @@ END PROCEDURE mesh_getNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getXidimension
-  ans = obj%xidim
+ans = obj%xidim
 END PROCEDURE mesh_getXidimension
 
 !----------------------------------------------------------------------------
@@ -608,11 +610,11 @@ END PROCEDURE mesh_getXidimension
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getMaterial
-  IF(medium .LE. SIZE(obj%material)) THEN
-    ans = obj%material(medium)
-  ELSE
-    ans = 0
-  END IF
+IF (medium .LE. SIZE(obj%material)) THEN
+  ans = obj%material(medium)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE mesh_getMaterial
 
 !----------------------------------------------------------------------------
@@ -620,8 +622,8 @@ END PROCEDURE mesh_getMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalFacetElements
-  ans = obj%getTotalInternalFacetElements( ) &
-    & + obj%getTotalBoundaryFacetElements( )
+ans = obj%getTotalInternalFacetElements() &
+  & + obj%getTotalBoundaryFacetElements()
 END PROCEDURE mesh_getTotalFacetElements
 
 !----------------------------------------------------------------------------
@@ -629,11 +631,11 @@ END PROCEDURE mesh_getTotalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalInternalFacetElements
-  IF( ALLOCATED( obj%internalFacetData ) ) THEN
-    ans = SIZE( obj%internalFacetData )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%internalFacetData)) THEN
+  ans = SIZE(obj%internalFacetData)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE mesh_getTotalInternalFacetElements
 
 !----------------------------------------------------------------------------
@@ -641,11 +643,11 @@ END PROCEDURE mesh_getTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getTotalBoundaryFacetElements
-  IF( ALLOCATED( obj%boundaryFacetData ) ) THEN
-    ans = SIZE( obj%boundaryFacetData )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%boundaryFacetData)) THEN
+  ans = SIZE(obj%boundaryFacetData)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE mesh_getTotalBoundaryFacetElements
 
 !----------------------------------------------------------------------------
@@ -654,12 +656,12 @@ END PROCEDURE mesh_getTotalBoundaryFacetElements
 
 MODULE PROCEDURE mesh_getMasterCellNumber
   !!
-  SELECT CASE( elementType )
-  CASE( INTERNAL_ELEMENT )
-    ans = obj%internalFacetData( facetElement )%masterCellNumber
-  CASE( DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT )
-    ans = obj%boundaryFacetData( facetElement )%masterCellNumber
-  END SELECT
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  ans = obj%internalFacetData(facetElement)%masterCellNumber
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans = obj%boundaryFacetData(facetElement)%masterCellNumber
+END SELECT
   !!
 END PROCEDURE mesh_getMasterCellNumber
 
@@ -669,12 +671,12 @@ END PROCEDURE mesh_getMasterCellNumber
 
 MODULE PROCEDURE mesh_getSlaveCellNumber
   !!
-  SELECT CASE( elementType )
-  CASE( INTERNAL_ELEMENT )
-    ans = obj%internalFacetData( facetElement )%slaveCellNumber
-  CASE( DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT )
-    ans = 0
-  END SELECT
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  ans = obj%internalFacetData(facetElement)%slaveCellNumber
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans = 0
+END SELECT
   !!
 END PROCEDURE mesh_getSlaveCellNumber
 
@@ -684,14 +686,14 @@ END PROCEDURE mesh_getSlaveCellNumber
 
 MODULE PROCEDURE mesh_getCellNumber
   !!
-  SELECT CASE( elementType )
-  CASE( INTERNAL_ELEMENT )
-    ans(1) = obj%internalFacetData( facetElement )%masterCellNumber
-    ans(2) = obj%internalFacetData( facetElement )%slaveCellNumber
-  CASE( DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT )
-    ans(1) = obj%boundaryFacetData( facetElement )%masterCellNumber
-    ans(2) = 0
-  END SELECT
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  ans(1) = obj%internalFacetData(facetElement)%masterCellNumber
+  ans(2) = obj%internalFacetData(facetElement)%slaveCellNumber
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans(1) = obj%boundaryFacetData(facetElement)%masterCellNumber
+  ans(2) = 0
+END SELECT
   !!
 END PROCEDURE mesh_getCellNumber
 
@@ -701,16 +703,16 @@ END PROCEDURE mesh_getCellNumber
 
 MODULE PROCEDURE mesh_getLocalFacetID
   !!
-  SELECT CASE( elementType )
-  CASE( INTERNAL_ELEMENT )
-    IF( isMaster ) THEN
-      ans = obj%internalFacetData( facetElement )%masterLocalFacetID
-    ELSE
-      ans = obj%internalFacetData( facetElement )%slaveLocalFacetID
-    END IF
-  CASE( DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT )
-    ans = obj%boundaryFacetData( facetElement )%masterLocalFacetID
-  END SELECT
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
+  IF (isMaster) THEN
+    ans = obj%internalFacetData(facetElement)%masterLocalFacetID
+  ELSE
+    ans = obj%internalFacetData(facetElement)%slaveLocalFacetID
+  END IF
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+  ans = obj%boundaryFacetData(facetElement)%masterLocalFacetID
+END SELECT
   !!
 END PROCEDURE mesh_getLocalFacetID
 
@@ -720,39 +722,39 @@ END PROCEDURE mesh_getLocalFacetID
 
 MODULE PROCEDURE mesh_getFacetConnectivity1
   !!
-  INTEGER( I4B ), ALLOCATABLE :: cellNptrs( : )
-  INTEGER( I4B ) :: localFaceID, cellNum
+INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
+INTEGER(I4B) :: localFaceID, cellNum
   !!
-  SELECT CASE( elementType )
-  CASE( INTERNAL_ELEMENT )
+SELECT CASE (elementType)
+CASE (INTERNAL_ELEMENT)
     !!
-    IF( isMaster ) THEN
+  IF (isMaster) THEN
       !!
-      cellNum = obj%internalFacetData( facetElement )%masterCellNumber
-      localFaceID = obj%internalFacetData( facetElement )%masterLocalFacetID
+    cellNum = obj%internalFacetData(facetElement)%masterCellNumber
+    localFaceID = obj%internalFacetData(facetElement)%masterLocalFacetID
       !!
-    ELSE
-      !!
-      cellNum = obj%internalFacetData( facetElement )%slaveCellNumber
-      localFaceID = obj%internalFacetData( facetElement )%slaveLocalFacetID
-      !!
-    END IF
-    !!
-  CASE( DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT )
-    !!
-    cellNum = obj%boundaryFacetData( facetElement )%masterCellNumber
-    localFaceID = obj%boundaryFacetData( facetElement )%masterLocalFacetID
-    !!
-  END SELECT
-  !!
-  IF( cellNum .NE. 0 ) THEN
-    cellNptrs = obj%getConnectivity( globalElement=cellNum )
-    ans = cellNptrs( getConnectivity( obj%facetElements( localFaceID )))
   ELSE
-    ALLOCATE( ans( 0 ) )
+      !!
+    cellNum = obj%internalFacetData(facetElement)%slaveCellNumber
+    localFaceID = obj%internalFacetData(facetElement)%slaveLocalFacetID
+      !!
   END IF
+    !!
+CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
+    !!
+  cellNum = obj%boundaryFacetData(facetElement)%masterCellNumber
+  localFaceID = obj%boundaryFacetData(facetElement)%masterLocalFacetID
+    !!
+END SELECT
   !!
-  IF( ALLOCATED( cellNptrs ) ) DEALLOCATE( cellNptrs )
+IF (cellNum .NE. 0) THEN
+  cellNptrs = obj%getConnectivity(globalElement=cellNum)
+  ans = cellNptrs(getConnectivity(obj%facetElements(localFaceID)))
+ELSE
+  ALLOCATE (ans(0))
+END IF
+  !!
+IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
   !!
 END PROCEDURE mesh_getFacetConnectivity1
 
@@ -761,14 +763,14 @@ END PROCEDURE mesh_getFacetConnectivity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getFacetConnectivity2
-  INTEGER( I4B ), ALLOCATABLE :: nptrs( : ), indx( : )
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), indx(:)
   !!
-  nptrs = obj%getConnectivity( globalElement=globalElement )
-  indx = getConnectivity( obj%facetElements( iface ) )
-  ans = nptrs( indx )
+nptrs = obj%getConnectivity(globalElement=globalElement)
+indx = getConnectivity(obj%facetElements(iface))
+ans = nptrs(indx)
   !!
-  IF( ALLOCATED( nptrs ) ) DEALLOCATE( nptrs )
-  IF( ALLOCATED( indx ) ) DEALLOCATE( indx )
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
 END PROCEDURE mesh_getFacetConnectivity2
 
 !----------------------------------------------------------------------------
@@ -776,9 +778,9 @@ END PROCEDURE mesh_getFacetConnectivity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_getFacetElementType
-  INTEGER( I4B ) :: iel
-  iel = obj%getLocalElemNumber( globalElement=globalElement )
-  ans = obj%facetElementType( :, iel )
+INTEGER(I4B) :: iel
+iel = obj%getLocalElemNumber(globalElement=globalElement)
+ans = obj%facetElementType(:, iel)
 END PROCEDURE mesh_getFacetElementType
 
 !----------------------------------------------------------------------------

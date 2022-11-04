@@ -69,7 +69,9 @@ CONTAINS
   !!
   PROCEDURE, PASS(obj) :: plot_scatter3D_1
   PROCEDURE, PASS(obj) :: plot_scatter3D_2
-  GENERIC, PUBLIC :: Scatter3D => plot_scatter3D_1, plot_scatter3D_2
+  PROCEDURE, PASS(obj) :: plot_scatter3D_3
+  GENERIC, PUBLIC :: Scatter3D => plot_scatter3D_1, &
+    & plot_scatter3D_2, plot_scatter3D_3
 END TYPE VTKPlot_
 
 PUBLIC :: VTKPlot_
@@ -239,6 +241,23 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: label
     CHARACTER(LEN=*), INTENT(IN) :: filename
   END SUBROUTINE plot_scatter3D_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Scatter3D@ScatterMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE plot_scatter3D_3(obj, x, y, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    !! x coordinates
+    REAL(DFP), INTENT(IN) :: y(:)
+    !! y coordinates
+    CHARACTER(LEN=*), INTENT(IN) :: label
+    !! dummy label
+    CHARACTER(LEN=*), INTENT(IN) :: filename
+  END SUBROUTINE plot_scatter3D_3
 END INTERFACE
 
 CONTAINS
