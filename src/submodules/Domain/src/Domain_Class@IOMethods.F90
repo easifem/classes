@@ -107,7 +107,7 @@ END PROCEDURE MeshFacetData_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Import
-INTEGER(I4B) :: tEntities, ii, jj, kk
+INTEGER(I4B) :: ii, jj, kk
 TYPE(String) :: dsetname
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
 TYPE(MeshPointer_) :: meshObj
@@ -405,25 +405,17 @@ DO jj = 0, 3
     obj%tElements(jj) = obj%tElements(jj) + meshObj%ptr%getTotalElements()
   END DO
 END DO
-  !!
-  !! Setting the data of domain boundary element for cell elements
-  !! and facet elements
-  !!
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "Calling SetFacetElementType()")
-CALL obj%SetFacetElementType()
-  !!
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "Calling SetDomainFacetElement()")
-CALL obj%SetDomainFacetElement()
-! !!
-! CALL e%raiseInformation( modName//"::"//myName//" - "// &
-!   & "Calling SetMeshMap()" )
-! CALL obj%SetMeshMap()
-! !!
-! CALL e%raiseInformation( modName//"::"//myName//" - "// &
-!   & "Calling SetMeshFacetElement()" )
-! CALL obj%SetMeshFacetElement()
+!   !!
+!   !! Setting the data of domain boundary element for cell elements
+!   !! and facet elements
+!   !!
+! CALL e%raiseInformation(modName//"::"//myName//" - "// &
+!   & "Calling SetFacetElementType()")
+! CALL obj%SetFacetElementType()
+!   !!
+! CALL e%raiseInformation(modName//"::"//myName//" - "// &
+!   & "Calling SetDomainFacetElement()")
+! CALL obj%SetDomainFacetElement()
   !!
 NULLIFY (meshObj%ptr)
   !!

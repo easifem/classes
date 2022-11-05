@@ -467,19 +467,27 @@ i = obj%getLocalNodeNumber(GlobalNode=GlobalNode)
   !!
 IF (obj%isExtraNodeToNodesInitiated) THEN
     !!
-  call display(myname//" debug, inside is extranodeto")
   IF (i .EQ. 0) THEN
     ALLOCATE (ans(0))
   ELSE
     IF (IncludeSelf) THEN
+      !!
       nptrs = obj%nodeData(i)%globalNodes
-      extranptrs = obj%nodeData(i)%extraGlobalNodes
       i = SIZE(nptrs)
-      j = SIZE(extranptrs)
-      CALL Reallocate(ans, i + j + 1)
-      ans(1) = GlobalNode
-      ans(2:1 + i) = nptrs
-      ans(2 + i:1 + i + j) = extranptrs
+      !!
+      IF (ALLOCATED(obj%nodeData(i)%extraGlobalNodes)) THEN
+        extranptrs = obj%nodeData(i)%extraGlobalNodes
+        j = SIZE(extranptrs)
+        CALL Reallocate(ans, i + j + 1)
+        ans(1) = GlobalNode
+        ans(2:1 + i) = nptrs
+        ans(2 + i:1 + i + j) = extranptrs
+      ELSE
+        CALL Reallocate(ans, i + 1)
+        ans(1) = GlobalNode
+        ans(2:1 + i) = nptrs
+      END IF
+
     ELSE
       CALL APPEND( &
         & ans, &
@@ -487,7 +495,7 @@ IF (obj%isExtraNodeToNodesInitiated) THEN
         & obj%nodeData(i)%extraGlobalNodes)
     END IF
   END IF
-    !!
+  !!
 ELSE
   !!
   IF (i .EQ. 0) THEN
@@ -495,7 +503,6 @@ ELSE
   ELSE
     IF (IncludeSelf) THEN
       nptrs = obj%nodeData(i)%globalNodes
-      call display(nptrs, myname//" debug, nptrs=")
       i = SIZE(nptrs)
       ALLOCATE (ans(i + 1))
       ans(1) = GlobalNode
@@ -543,7 +550,7 @@ END PROCEDURE mesh_getNodeToNodes2
 MODULE PROCEDURE mesh_getElementToElements
 LOGICAL(LGT) :: onlyElem
 INTEGER(I4B), ALLOCATABLE :: Indx(:)
-INTEGER(I4B) :: tSize, iel
+INTEGER(I4B) :: iel
   !!
 onlyElem = .FALSE.
 IF (PRESENT(onlyElements)) onlyElem = onlyElements

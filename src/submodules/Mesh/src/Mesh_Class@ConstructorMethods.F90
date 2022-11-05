@@ -65,35 +65,35 @@ CALL e%raiseInformation(modName//'::'//myName//" - "// &
   !!
   !!
   !!
-IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) THEN
-  RETURN
-ELSE
-    !!
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'InitiateNodeToElements()')
-  CALL obj%InitiateNodeToElements()
-    !!
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'InitiateNodeToNodes()')
-  CALL obj%InitiateNodeToNodes()
-    !!
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'InitiateElementToElements()')
-  CALL obj%InitiateElementToElements()
-    !!
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'InitiateBoundaryData()')
-  CALL obj%InitiateBoundaryData()
-    !!
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'InitiateFacetElements()')
-  CALL obj%InitiateFacetElements()
-    !!
-  CALL e%raiseInformation(modName//'::'//myName//" - "// &
-    & 'InitiateExtraNodeToNodes()')
-  CALL obj%InitiateExtraNodeToNodes()
-    !!
-END IF
+! IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) THEN
+!   RETURN
+! ELSE
+!     !!
+!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
+!     & 'InitiateNodeToElements()')
+!   CALL obj%InitiateNodeToElements()
+!     !!
+!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
+!     & 'InitiateNodeToNodes()')
+!   CALL obj%InitiateNodeToNodes()
+!     !!
+!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
+!     & 'InitiateElementToElements()')
+!   CALL obj%InitiateElementToElements()
+!     !!
+!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
+!     & 'InitiateBoundaryData()')
+!   CALL obj%InitiateBoundaryData()
+!     !!
+!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
+!     & 'InitiateFacetElements()')
+!   CALL obj%InitiateFacetElements()
+!     !!
+!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
+!     & 'InitiateExtraNodeToNodes()')
+!   CALL obj%InitiateExtraNodeToNodes()
+!     !!
+! END IF
   !!
   !!
   !!

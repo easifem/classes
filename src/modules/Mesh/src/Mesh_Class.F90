@@ -132,7 +132,7 @@ TYPE InternalFacetData_
   INTEGER(I4B) :: masterLocalFacetID = 0
     !! local facet ID in master cell
   INTEGER(I4B) :: slaveLocalFacetID = 0
-    !! slave facet ID in master cell
+    !! slave facet ID in slave cell
 CONTAINS
   !!
   !! Contains
@@ -171,7 +171,7 @@ END TYPE BoundaryFacetData_
 ! PUBLIC :: BoundaryFacetData_
 
 !----------------------------------------------------------------------------
-!                                                                 Mesh_
+!                                                                     Mesh_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -351,7 +351,9 @@ TYPE :: Mesh_
   !!
 CONTAINS
   PRIVATE
-  ! @ConstructorMethods
+  !!
+  !! @ConstructorMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => mesh_addSurrogate
     !! Add surrogate to module error handler
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => mesh_initiate
@@ -360,7 +362,9 @@ CONTAINS
     !! mesh finalizer
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mesh_Deallocate
     !! Deallocate memory occupied by the mesh instance
-  ! @IOMethods
+  !!
+  !! @IOMethods
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mesh_Import
     !! Read mesh from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: getNodeCoord => mesh_getNodeCoord
@@ -388,24 +392,36 @@ CONTAINS
     !! Display facet element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & mesh_DisplayFacetElements
-  ! @GetMethods
-  PROCEDURE, PASS(obj) :: InitiateNodeToElements => &
+  !
+  !@NodeDataMethods
+  !
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & mesh_InitiateNodeToElements
   !! Initiate node to node data
-  PROCEDURE, PASS(obj) :: InitiateNodeToNodes => &
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
     & mesh_InitiateNodetoNodes
   !! Initiate Node to nodes mapping
-  PROCEDURE, PASS(obj) :: InitiateExtraNodeToNodes => &
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
     & mesh_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping
+  !
+  !@ElementDataMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & mesh_InitiateElementToElements
   !! Initiate element to elements mapping
+  !
+  !@BoundaryDataMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
     & mesh_InitiateBoundaryData
+  !
+  !@FacetDataMethods
+  !
   !! Initiate boundary data
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     & mesh_InitiateFacetElements
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryNode => &
     & mesh_isBoundaryNode
   !! Returns true if a given global node number is a boundary node
@@ -560,9 +576,9 @@ CONTAINS
   !! Return the NSD
   PROCEDURE, PUBLIC, PASS(obj) :: getMaterial => mesh_getMaterial
   !! returns the material id of a given medium
-  !!
-  !! @SetMethods
-  !!
+  !
+  ! @SetMethods
+  !
   !! Returns the order of reference element
   PROCEDURE, PASS(obj) :: setBoundingBox1 => mesh_setBoundingBox1
   !! Set the bounding box of the mesh
@@ -584,7 +600,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: setFacetElementType => &
     & mesh_setFacetElementType
   !! Set the facet element type of a given cell number
-  !! @ShapeDataMethods
+  !
+  ! @ShapeDataMethods
+  !
   PROCEDURE, PASS(obj) :: initiateElemSD1 => mesh_initiateElemSD1
   PROCEDURE, PASS(obj) :: initiateElemSD2 => mesh_initiateElemSD2
   PROCEDURE, PASS(obj) :: initiateElemSD3 => mesh_initiateElemSD3
@@ -1132,7 +1150,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getBoundingEntity@GetMethods
+!                                               getBoundingEntity@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1200,7 +1218,7 @@ END INTERFACE
 ! summary: This function returns true if given global node is a boundary node
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_isBoundaryNode(obj, globalNode) RESULT(ans)
+  MODULE ELEMENTAL FUNCTION mesh_isBoundaryNode(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT) :: ans
@@ -1216,7 +1234,7 @@ END INTERFACE
 ! summary: Returns  TRUE if a given global node number is present
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_isNodePresent(obj, globalNode) RESULT(ans)
+  MODULE ELEMENTAL FUNCTION mesh_isNodePresent(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT) :: ans
@@ -1264,7 +1282,8 @@ END INTERFACE
 ! summary: Returns  TRUE if a given global Element number is present
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_isElementPresent(obj, GlobalElement) RESULT(ans)
+  MODULE ELEMENTAL FUNCTION mesh_isElementPresent(obj, GlobalElement) &
+    & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: GlobalElement
     LOGICAL(LGT) :: ans
@@ -1284,7 +1303,7 @@ END INTERFACE
 ! A boundary element is one which contains a boundary node.
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_isBoundaryElement(obj, globalElement) &
+  MODULE ELEMENTAL FUNCTION mesh_isBoundaryElement(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1308,7 +1327,7 @@ END INTERFACE
 ! no connection with the other mesh.
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_isDomainBoundaryElement(obj, globalElement) &
+  MODULE ELEMENTAL FUNCTION mesh_isDomainBoundaryElement(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1332,7 +1351,7 @@ END INTERFACE
 ! no connection with the other mesh.
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_isDomainFacetElement(obj, facetElement) &
+  MODULE ELEMENTAL FUNCTION mesh_isDomainFacetElement(obj, facetElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -2065,7 +2084,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     initiateNodeToElements@MeshDataMethods
+!                                     InitiateNodeToElements@NodeDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2074,10 +2093,11 @@ END INTERFACE
 !
 !# Introduction
 !
-! - This subroutine generates Elements surrounding a node mapping.
-! - Elements numbers are global element number.
-! - This mapping is stored inside obj%nodeData array
-! - For a local node number ii, obj%nodeData(ii)%globalElements(:)
+! - This subroutine generates elements surrounding a node mapping, in other
+! words it generates node to element
+! - Element numbers returned by this routine are global element number.
+! - This mapping is stored inside `obj%nodeData` array
+! - For a local node number `ii`, `obj%nodeData(ii)%globalElements(:)`
 ! contains the global element numbers.
 !
 !@note
@@ -2097,20 +2117,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         InitiateNodeToNode@MeshDataMethods
+!                                         InitiateNodeToNode@NodeDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         15 June 2021
-! summary:         Initiate node to node connectivity data
+! date: 15 June 2021
+! summary: Initiate node to node connectivity data
 !
 !# Introduction
-! This routine generate the node to nodes mapping
-! This mapping is stored inside `obj%nodeData%globalNodeNum`
 !
-! For a local node number i, obj%nodeData(i)%globalNodeNum denotes the
+!- This routine generate the node to nodes mapping
+!- In other words, it generates info of node-numbers in mesh
+! surrounding a node number
+!- This mapping is stored inside `obj%nodeData%globalNodeNum`
+!- For a local node number i, obj%nodeData(i)%globalNodeNum denotes the
 ! global node data surrounding the local node number.
-! This list does not include self node.
+!- This list does not include self node.
+!- This methods needs node-to-elements data, therefore if this data
+! is not initiated, then this method calls `InitiateNodeToElements()`
+!
 
 INTERFACE
   MODULE SUBROUTINE mesh_InitiateNodetoNodes(obj)
@@ -2120,20 +2145,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   InitiateExtraNodeToNode@MeshDataMethods
+!                                   InitiateExtraNodeToNode@NodeDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         15 June 2021
-! summary:         Initiate node to node connectivity data
+! date: 15 June 2021
+! summary: Initiate node to node connectivity data
 !
 !# Introduction
-! This routine generate the node to nodes mapping
-! This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
 !
-! For a local node number i, obj%nodeData(i)%ExtraGlobalNodeNum denotes the
-! global node data surrounding the local node number used for
-! edge-based stabilization. This list does not include self node.
+!- This routine generate the node to nodes mapping
+!- This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
+!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes the
+! global node data surrounding the local node number used for edge-based
+!  stabilization. This list does not include self node.
+!
+!- This methods needs information about `nodeToNodes`, `nodeToElements`,
+! and `elementToElements`. Therefore,
+!- If `nodeToNodes` is not initiated, then this method initiates it.
+!- If `nodeToElements` is not initiated, then this method initiates it.
+!- If `elementToElements` is not initiated, then this method initiates it.
 
 INTERFACE
   MODULE SUBROUTINE mesh_InitiateExtraNodetoNodes(obj)
@@ -2143,12 +2174,29 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  InitiateElementToElements@MeshDataMethods
+!                               InitiateElementToElements@ElementDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date:  15 June 2021
-! summary: Initiate boundary data
+! summary: Initiate element to element data
+!
+!# Introduction
+!
+!- This routine creates the element surrounding a given element data
+!- Before calling this routine make sure the `refelem` in mesh is allocated.
+!- By using `refelem`, this routine forms the FacetElements.
+!- This routine needs `nodeToElements` information, therefore, if
+! `nodeToElements` is not initiated then it calls `initiateNodeToelements`
+! method
+!- This method forms the following data:
+!- `obj%elementData(ielem)%globalElements`
+!- It also identifies those elements which are boundary element of mesh, and
+!- set `obj%elementData(ielem)%elementType=BOUNDARY_ELEMENT` for those element
+!- Note that at this point boundary element are those which has at least
+! one orphan face.
+!- Note that at this point these boundary element can be interface element
+! between two mesh, or domain-boundary element.
 
 INTERFACE
   MODULE SUBROUTINE mesh_InitiateElementToElements(obj)
@@ -2158,12 +2206,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       InitiateBoundaryData@MeshDataMethods
+!                                  InitiateBoundaryData@BoundaryDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 15 June 2021
 ! summary: Initiate boundary data
+!
+!# Introduction
+!
+! This method construct the boundary element data.
+! It marks elements of mesh as BOUNDARY_ELEMENT and INTERNAL_ELEMENT
+! In this case boundary elements are those which contains the boundary node.
+! Boundary node information is available by reading the mesh file, see
+! mesh import method.
+! It also forms `obj%elementData(ii)%boundaryData`
+!
+! This methods needs following information:
+!
+!- `ElementToElements`
+!- `refelem` to construct the FacetElements
 
 INTERFACE
   MODULE SUBROUTINE mesh_InitiateBoundaryData(obj)
@@ -2173,12 +2235,31 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     InitiateFacetElements@MeshDataMethods
+!                                     InitiateFacetElements@FacetDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 11 April 2022
 ! summary: Compute the total number of facet elements in the mesh
+!
+!# Introduction
+!
+! This routine needs following information:
+!
+!- `ElementToElements`
+!- `BoundaryData`
+!
+! It makes following data
+!
+!- `InternalFacetData`
+!- `BoundaryFacetData`
+!- `FacetElementType`
+!
+! Note that at this point all boundaryFacet element are of type
+! `DOMAIN_BOUNDARY_ELEMENT`. This information can be corrected only when
+! we call SetFacetElementType from Domain_ class. This is because,
+! at this point we only know that a boundary facet is a domain boundary
+! element, as we have no information about the neighbouring mesh.
 
 INTERFACE
   MODULE SUBROUTINE mesh_InitiateFacetElements(obj)

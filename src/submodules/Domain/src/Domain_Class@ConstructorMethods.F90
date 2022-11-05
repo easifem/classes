@@ -29,7 +29,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_addSurrogate
-  CALL e%addSurrogate(userObj)
+CALL e%addSurrogate(userObj)
 END PROCEDURE Domain_addSurrogate
 
 !----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ END PROCEDURE Domain_addSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE addSurrogate_Domain
-  CALL e%addSurrogate(userObj)
+CALL e%addSurrogate(userObj)
 END PROCEDURE addSurrogate_Domain
 
 !----------------------------------------------------------------------------
@@ -45,14 +45,14 @@ END PROCEDURE addSurrogate_Domain
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Initiate
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_Initiate"
-  ! > Exception related to Mesh_ data type wil be printed in the
-  ! domain only
-  CALL e%raiseInformation( modName//'::'//myName//'-'// &
-    & 'INITIATING DOMAIN BY IMPORTING FROM MESH-FILE' )
-  CALL obj%import( hdf5=hdf5, group=group )
-  CALL e%raiseInformation( modName//'::'//myName//'-'// &
-    & 'MESH-FILE IS READ & DOMAIN HAS BEEN CREATED' )
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_Initiate"
+! > Exception related to Mesh_ data type wil be printed in the
+! domain only
+CALL e%raiseInformation(modName//'::'//myName//'-'// &
+  & 'INITIATING DOMAIN BY IMPORTING FROM MESH-FILE')
+CALL obj%import(hdf5=hdf5, group=group)
+CALL e%raiseInformation(modName//'::'//myName//'-'// &
+  & 'MESH-FILE IS READ & DOMAIN HAS BEEN CREATED')
 END PROCEDURE Domain_Initiate
 
 !----------------------------------------------------------------------------
@@ -60,10 +60,10 @@ END PROCEDURE Domain_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MeshFacetData_Initiate
-  CALL Reallocate( obj%masterCellNumber, n  )
-  CALL Reallocate( obj%slaveCellNumber, n  )
-  CALL Reallocate( obj%masterLocalFacetID, n  )
-  CALL Reallocate( obj%slaveLocalFacetID, n  )
+CALL Reallocate(obj%masterCellNumber, n)
+CALL Reallocate(obj%slaveCellNumber, n)
+CALL Reallocate(obj%masterLocalFacetID, n)
+CALL Reallocate(obj%slaveLocalFacetID, n)
 END PROCEDURE MeshFacetData_Initiate
 
 !----------------------------------------------------------------------------
@@ -72,11 +72,11 @@ END PROCEDURE MeshFacetData_Initiate
 
 MODULE PROCEDURE MeshFacetData_isInitiated
   !!
-  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
-    ans = .TRUE.
-  ELSE
-    ans = .FALSE.
-  END IF
+IF (ALLOCATED(obj%masterCellNumber)) THEN
+  ans = .TRUE.
+ELSE
+  ans = .FALSE.
+END IF
   !!
 END PROCEDURE MeshFacetData_isInitiated
 
@@ -86,11 +86,11 @@ END PROCEDURE MeshFacetData_isInitiated
 
 MODULE PROCEDURE MeshFacetData_Size
   !!
-  IF( ALLOCATED( obj%masterCellNumber ) ) THEN
-    ans = SIZE( obj%masterCellNumber )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%masterCellNumber)) THEN
+  ans = SIZE(obj%masterCellNumber)
+ELSE
+  ans = 0
+END IF
   !!
 END PROCEDURE MeshFacetData_Size
 
@@ -99,33 +99,32 @@ END PROCEDURE MeshFacetData_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Deallocate
-  CHARACTER( LEN = * ), PARAMETER :: myName="Domain_Deallocate"
-  INTEGER( I4B ) :: ii, jj
-  obj%isInitiated = .FALSE.
-  obj%engine = ''
-  obj%majorVersion = 0
-  obj%minorVersion = 0
-  obj%version = 0.0_DFP
-  obj%nsd = 0
-  obj%maxNptrs = 0
-  obj%minNptrs = 0
-  obj%tNodes = 0
-  obj%isNodeNumberSparse = .FALSE.
-  obj%maxElemNum = 0
-  obj%minElemNum = 0
-  obj%isElemNumberSparse = .FALSE.
-  obj%tEntitiesForNodes = 0
-  obj%tEntitiesForElements = 0
-  obj%tElements( 0:3 ) = 0
-  obj%tEntities( 0:3 ) = 0
-  CALL Deallocate( obj%meshmap )
-  IF( ALLOCATED( obj%meshFacetData ) ) DEALLOCATE( obj%meshFacetData )
+CHARACTER(LEN=*), PARAMETER :: myName = "Domain_Deallocate"
+obj%isInitiated = .FALSE.
+obj%engine = ''
+obj%majorVersion = 0
+obj%minorVersion = 0
+obj%version = 0.0_DFP
+obj%nsd = 0
+obj%maxNptrs = 0
+obj%minNptrs = 0
+obj%tNodes = 0
+obj%isNodeNumberSparse = .FALSE.
+obj%maxElemNum = 0
+obj%minElemNum = 0
+obj%isElemNumberSparse = .FALSE.
+obj%tEntitiesForNodes = 0
+obj%tEntitiesForElements = 0
+obj%tElements(0:3) = 0
+obj%tEntities(0:3) = 0
+CALL Deallocate (obj%meshmap)
+IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
   !! BUG
-  CALL e%raiseDebug( modName//'::'//myName//'-'// &
-    & 'There should be better way to deallocate obj%meshList...' )
-  IF( ALLOCATED( obj%meshList ) ) DEALLOCATE( obj%meshList )
-  IF( ALLOCATED( obj%nodeCoord ) ) DEALLOCATE( obj%nodeCoord )
-  IF( ALLOCATED( obj%local_nptrs ) ) DEALLOCATE( obj%local_nptrs )
+CALL e%raiseDebug(modName//'::'//myName//'-'// &
+  & 'There should be better way to deallocate obj%meshList...')
+IF (ALLOCATED(obj%meshList)) DEALLOCATE (obj%meshList)
+IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
+IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
 END PROCEDURE Domain_Deallocate
 
 !----------------------------------------------------------------------------
@@ -133,7 +132,7 @@ END PROCEDURE Domain_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Final
-  CALL Obj%Deallocate()
+CALL Obj%Deallocate()
 END PROCEDURE Domain_Final
 
 !----------------------------------------------------------------------------
@@ -141,7 +140,7 @@ END PROCEDURE Domain_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Constructor1
-  CALL ans%initiate( hdf5=hdf5, group=group )
+CALL ans%initiate(hdf5=hdf5, group=group)
 END PROCEDURE Domain_Constructor1
 
 !----------------------------------------------------------------------------
@@ -149,8 +148,8 @@ END PROCEDURE Domain_Constructor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Constructor_1
-  ALLOCATE( Domain_::ans )
-  CALL ans%initiate( hdf5=hdf5, group=group )
+ALLOCATE (Domain_ :: ans)
+CALL ans%initiate(hdf5=hdf5, group=group)
 END PROCEDURE Domain_Constructor_1
 
 !----------------------------------------------------------------------------

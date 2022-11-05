@@ -40,6 +40,38 @@ ierr = param%set(key="MatrixField/fieldType", value=INPUT(  &
 END PROCEDURE setMatrixFieldParam
 
 !----------------------------------------------------------------------------
+!                                               SetRectangleMatrixFieldParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetRectangleMatrixFieldParam
+INTEGER(I4B) :: ierr0, ii
+CHARACTER(LEN=*), PARAMETER :: myName = "SetRectangleMatrixFieldParam"
+!!
+ierr0 = param%set(key="MatrixField/name", value=TRIM(name))
+!!
+ierr0 = param%set(key="MatrixField/matrixProp", &
+  & value=TRIM(matrixProp))
+!!
+ii = SIZE(physicalVarNames)
+ierr0 = param%set(key="MatrixField/tPhysicalVarNames", value=ii)
+!!
+DO ii = 1, SIZE(physicalVarNames)
+  ierr0 = param%set(key="MatrixField/physicalVarName"//TOSTRING(ii), &
+    & value=physicalVarNames(ii))
+END DO
+!!
+ierr0 = param%set(key="MatrixField/spaceCompo",  &
+  &  value=spaceCompo)
+!!
+ierr0 = param%set(key="MatrixField/timeCompo",  &
+  & value=timeCompo)
+!!
+ierr0 = param%set(key="MatrixField/fieldType", value=INPUT( &
+  & option=fieldType, default=FIELD_TYPE_NORMAL))
+!!
+END PROCEDURE SetRectangleMatrixFieldParam
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -48,11 +80,11 @@ CALL e%addSurrogate(UserObj)
 END PROCEDURE mField_addSurrogate
 
 !----------------------------------------------------------------------------
-!
+!                                             MatrixFieldCheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_checkEssentialParam
-CHARACTER(LEN=*), PARAMETER :: myName = "mField_checkEssentialParam"
+MODULE PROCEDURE MatrixFieldCheckEssentialParam
+CHARACTER(LEN=*), PARAMETER :: myName = "MatrixFieldCheckEssentialParam"
 IF (.NOT. param%isPresent(key="MatrixField/name")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'MatrixField/name should be present in param')
@@ -61,7 +93,60 @@ IF (.NOT. param%isPresent(key="MatrixField/matrixProp")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'MatrixField/matrixProp should be present in param')
 END IF
-END PROCEDURE mField_checkEssentialParam
+END PROCEDURE MatrixFieldCheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                    RectangleMatrixFieldCheckEssentialParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE RectangleMatrixFieldCheckEssentialParam
+CHARACTER(LEN=*), PARAMETER :: myName = &
+  &  "RectangleMatrixFieldCheckEssentialParam"
+INTEGER(I4B) :: ii, n
+!!
+IF (.NOT. param%isPresent(key="MatrixField/name")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField/name should be present in param')
+END IF
+!!
+IF (.NOT. param%isPresent(key="MatrixField/matrixProp")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField/matrixProp should be present in param')
+END IF
+!!
+IF (.NOT. param%isPresent(key="MatrixField/tPhysicalVarNames")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField/tPhysicalVarNames should be present in param')
+ELSE
+  ii = param%get(key='MatrixField/tPhysicalVarNames', value=n)
+END IF
+!!
+IF (.NOT. param%isPresent(key="MatrixField/spaceCompo")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField/spaceCompo should be present in param')
+END IF
+!!
+IF (.NOT. param%isPresent(key="MatrixField/timeCompo")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField/timeCompo should be present in param')
+END IF
+!!
+IF (.NOT. param%isPresent(key="MatrixField/fieldType")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField/fieldType should be present in param')
+END IF
+!!
+DO ii = 1, n
+  IF (.NOT. param%isPresent(key="MatrixField/physicalVarName" &
+    & //TOSTRING(ii))) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'MatrixField/physicalVarName' &
+    & //TOSTRING(ii) &
+    & //' should be present in param')
+  END IF
+END DO
+!!
+END PROCEDURE RectangleMatrixFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
@@ -105,19 +190,11 @@ END IF
 !!
 !! spaceCompo
 !!
-IF (param%isPresent(key="MatrixField/spaceCompo")) THEN
-  ierror = param%get(key="MatrixField/spaceCompo", value=spaceCompo(1))
-ELSE
-  spaceCompo(1) = 1
-END IF
+ierror = param%get(key="MatrixField/spaceCompo", value=spaceCompo(1))
 !!
 !! timeCompo
 !!
-IF (param%isPresent(key="MatrixField/timeCompo")) THEN
-  ierror = param%get(key="MatrixField/timeCompo", value=timeCompo(1))
-ELSE
-  timeCompo(1) = 1
-END IF
+ierror = param%get(key="MatrixField/timeCompo", value=timeCompo(1))
 !!
 !! storage format
 !!
@@ -177,8 +254,124 @@ END PROCEDURE mField_Initiate2
 
 MODULE PROCEDURE mField_Initiate3
 CHARACTER(LEN=*), PARAMETER :: myName = "mField_Initiate3"
-CALL e%raiseInformation(modName//'::'//myName//" - "// &
-  & 'Presently, this subroutine does nothing')
+INTEGER(I4B), PARAMETER :: tVar = 2
+INTEGER(I4B) :: ierror, nrow, ncol, storageFMT, tNodes(tVar), &
+  & timeCompo(tVar), spaceCompo(tVar), ii
+CHARACTER(LEN=1) :: physicalVarNames(2)
+CHARACTER(LEN=:), ALLOCATABLE :: matrixProp
+CHARACTER(LEN=:), ALLOCATABLE :: char_var
+TYPE(DOF_) :: dofobj
+!!
+!! check
+!!
+IF (obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'Matrix field object is already initiated')
+!!
+CALL RectangleMatrixFieldCheckEssentialParam(obj, param)
+!!
+!!
+!! matrixProp
+!!
+ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes(  &
+  & key="MatrixField/matrixProp")) :: matrixProp)
+ierror = param%get(key="MatrixField/matrixProp", value=matrixProp)
+!!
+IF (TRIM(matrixProp) .NE. "RECTANGLE") THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'matrixProp should be RECTANGLE')
+END IF
+!!
+!! engine
+!!
+obj%engine = "NATIVE_SERIAL"
+!!
+!! name
+!!
+ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes(  &
+  & key="MatrixField/name")) :: char_var)
+ierror = param%get(key="MatrixField/name", value=char_var)
+obj%name = char_var
+DEALLOCATE (char_var)
+!!
+!! fieldType
+!!
+ierror = param%get(key="MatrixField/fieldType", value=obj%fieldType)
+!!
+!! check domain
+!!
+IF (SIZE(dom) .NE. tVar) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'Size of dom should be equal to 2, that is two domains.')
+!!
+DO ii = 1, tVar
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'dom( '//TOSTRING(ii)//')%ptr is NOT ASSOCIATED!')
+  END IF
+END DO
+!!
+!! physicalVarName
+!!
+DO ii = 1, tVar
+  !!
+  ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes( &
+    & key="MatrixField/physicalVarName"//TOSTRING(ii))) :: char_var)
+  !!
+  ierror = param%get(key="MatrixField/physicalVarName" &
+    & //TOSTRING(ii), value=char_var)
+  !!
+  physicalVarNames(ii) (1:1) = char_var(1:1)
+  !!
+  DEALLOCATE (char_var)
+  !!
+END DO
+!!
+!! spaceCompo
+!!
+IF (param%isPresent(key="MatrixField/spaceCompo")) THEN
+  ierror = param%get(key="MatrixField/spaceCompo", value=spaceCompo)
+END IF
+!!
+!! timeCompo
+!!
+IF (param%isPresent(key="MatrixField/timeCompo")) THEN
+  ierror = param%get(key="MatrixField/timeCompo", value=timeCompo)
+END IF
+!!
+!! storage format
+!!
+storageFMT = FMT_DOF
+!!
+!! domains
+!!
+ALLOCATE (obj%domains(tvar))
+DO ii = 1, tVar
+  obj%domains(ii)%ptr => dom(ii)%ptr
+  tNodes(ii) = obj%domains(ii)%ptr%getTotalNodes()
+END DO
+!!
+!! make [[DOF_]]
+!!
+CALL Initiate(obj=dofobj, tNodes=tNodes, names=physicalVarNames, &
+  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
+!!
+!! CSRMatrix/Initiate
+!!
+nrow = tNodes(1) * spaceCompo(1) * timeCompo(1)
+ncol = tNodes(2) * spaceCompo(2) * timeCompo(2)
+!!
+CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, dof=dofobj, &
+  & matrixProp=matrixProp)
+DEALLOCATE (matrixProp)
+!!
+obj%isInitiated = .TRUE.
+obj%isPmatInitiated = .FALSE.
+!!
+!! setting the sparsity
+!!
+CALL DomainSetSparsity(mat=obj%mat, domains=obj%domains)
+CALL Deallocate (dofobj)
 END PROCEDURE mField_Initiate3
 
 !----------------------------------------------------------------------------
@@ -186,7 +379,7 @@ END PROCEDURE mField_Initiate3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Deallocate
-CALl Deallocate (obj%mat)
+CALL Deallocate (obj%mat)
 CALL Deallocate (obj%Pmat)
 CALL AbstractMatrixFieldDeallocate(obj)
 END PROCEDURE mField_Deallocate

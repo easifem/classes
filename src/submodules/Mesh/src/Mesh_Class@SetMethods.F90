@@ -16,6 +16,7 @@
 
 SUBMODULE(Mesh_Class) SetMethods
 USE BaseMethod
+USE MeshUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -49,8 +50,6 @@ END PROCEDURE mesh_setBoundingBox2
 
 MODULE PROCEDURE mesh_setSparsity1
 CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity1"
-INTEGER(I4B) :: i, j, k
-INTEGER(I4B), ALLOCATABLE :: n2n(:)
 !!
 !! check
 !!
@@ -66,26 +65,11 @@ IF (.NOT. obj%isNodeToNodesInitiated) THEN
     & 'In mesh NodeToNodeData is not initiated')
 END IF
 !!
-!! main
+!! Call from MeshUtility
 !!
-DO i = 1, obj%tNodes
-  call display(i, myname//"debug, i = ")
-  j = obj%getGlobalNodeNumber(LocalNode=i)
-  call display(j, myname//"debug, j = ")
-  k = localNodeNumber(j)
-  call display(k, myname//"debug, k = ")
-  IF (k .NE. 0) THEN
-    call display(myname//"debug, before n2n ")
-    call display(localnodeNumber, myname//"debug, localnodenumber ")
-    call display(obj%getNodeToNodes(GlobalNode=j, IncludeSelf=.TRUE.), myname//"debug, getNodeToNodes = ")
-    n2n = localNodeNumber( &
-    & obj%getNodeToNodes(GlobalNode=j, IncludeSelf=.TRUE.))
-    call display(n2n, myname//"debug, after n2n ")
-    CALL SetSparsity(obj=Mat, Row=k, Col=n2n)
-    call display(myname//"debug, setSparsity ")
-  END IF
-END DO
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+CALL SetSparsity1(obj=obj, mat=mat, localNodeNumber=localNodeNumber, &
+  & lbound=lbound, ubound=ubound)
+!!
 END PROCEDURE mesh_setSparsity1
 
 !----------------------------------------------------------------------------
@@ -94,19 +78,25 @@ END PROCEDURE mesh_setSparsity1
 
 MODULE PROCEDURE mesh_setSparsity2
 CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity2"
-INTEGER(I4B) :: i, j
-INTEGER(I4B), ALLOCATABLE :: n2n(:)
-!> main
+!!
+!! check
+!!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-DO i = 1, obj%tNodes
-  j = obj%getGlobalNodeNumber(LocalNode=i)
-  n2n = obj%getNodeToNodes(GlobalNode=j, IncludeSelf=.TRUE.)
-  CALL SetSparsity(obj=Mat, Row=j, Col=n2n)
-END DO
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+!!
+!! check
+!!
+IF (.NOT. obj%isNodeToNodesInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'In mesh NodeToNodeData is not initiated')
+END IF
+!!
+!! Call from MeshUtility
+!!
+CALL SetSparsity2(obj=obj, mat=mat)
+!!
 END PROCEDURE mesh_setSparsity2
 
 !----------------------------------------------------------------------------
@@ -115,36 +105,33 @@ END PROCEDURE mesh_setSparsity2
 
 MODULE PROCEDURE mesh_SetSparsity3
 CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity3"
-INTEGER(I4B) :: ii, jj
-INTEGER(I4B), ALLOCATABLE :: n2n(:)
-!> main
-!> check
+!!
+!! check
+!!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!> check
+!!
+!! check
+!!
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "colMesh data is not initiated, first initiate")
 END IF
-!> check
+!!
+!! check
+!!
 IF (SIZE(nodeToNode) .NE. obj%maxNptrs) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
-!>
-DO ii = obj%minNptrs, obj%maxNptrs
-  IF (.NOT. obj%isNodePresent(globalNode=ii)) CYCLE
-  jj = nodeToNode(ii)
-  IF (jj .EQ. 0) CYCLE
-  IF (colMesh%isNodePresent(GlobalNode=jj)) THEN
-    n2n = colMesh%getNodeToNodes(GlobalNode=jj, IncludeSelf=.TRUE.)
-    CALL SetSparsity(obj=Mat, Row=ii, Col=n2n, ivar=ivar,  &
-      & jvar=jvar)
-  END IF
-END DO
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+!!
+!! Call from MeshUtility
+!!
+CALL SetSparsity3(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
+  & mat=mat, ivar=ivar, jvar=jvar)
+!!
 END PROCEDURE mesh_SetSparsity3
 
 !----------------------------------------------------------------------------
@@ -153,40 +140,37 @@ END PROCEDURE mesh_SetSparsity3
 
 MODULE PROCEDURE mesh_setSparsity4
 CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity4"
-INTEGER(I4B) :: ii, jj, kk
-INTEGER(I4B), ALLOCATABLE :: n2n(:)
-LOGICAL(LGT) :: chk
-!> main
+!!
+!! Check
+!!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!> check
+!!
+!! Check
+!!
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "colMesh data is not initiated, first initiate")
 END IF
-!> check
+!!
+!! Check
+!!
 IF (SIZE(nodeToNode) .LT. obj%maxNptrs) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .LT. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
-!> main
-DO ii = obj%minNptrs, obj%maxNptrs
-  jj = nodeToNode(ii)
-  kk = rowGlobalToLocalNodeNum(ii)
-  chk = (  &
-    & .NOT. obj%isNodePresent(globalNode=ii))  &
-    & .OR. (jj .EQ. 0)  &
-    & .OR. (.NOT. colMesh%isNodePresent(globalNode=jj))  &
-    & .OR. (kk .EQ. 0)
-  IF (chk) CYCLE
-  n2n = colGlobalToLocalNodeNum( &
-    & colMesh%getNodeToNodes(GlobalNode=jj, IncludeSelf=.TRUE.))
-  CALL SetSparsity(obj=Mat, Row=kk, Col=n2n, ivar=ivar,  &
-    & jvar=jvar)
-END DO
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+!!
+!! Call from MeshUtility
+!!
+CALL SetSparsity4(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
+  & mat=mat, rowGlobalToLocalNodeNum=rowGlobalToLocalNodeNum, &
+  & colGlobalToLocalNodeNum=colGlobalToLocalNodeNum, &
+  & rowLBOUND=rowLBOUND, rowUBOUND=rowUBOUND, &
+  & colLBOUND=colLBOUND, colUBOUND=colUBOUND, &
+  & ivar=ivar, jvar=jvar)
+!!
 END PROCEDURE mesh_setSparsity4
 
 !----------------------------------------------------------------------------
