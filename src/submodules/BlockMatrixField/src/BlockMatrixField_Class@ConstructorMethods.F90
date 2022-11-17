@@ -169,6 +169,7 @@ INTEGER(I4B) :: ierror, nrow, ncol, storageFMT, tVar, ii
 INTEGER(I4B), ALLOCATABLE :: tNodes(:), timeCompo(:), spaceCompo(:)
 CHARACTER(LEN=1), ALLOCATABLE :: physicalVarNames(:)
 CHARACTER(LEN=:), ALLOCATABLE :: char_var
+CHARACTER(LEN=:), ALLOCATABLE :: matProp
 TYPE(DOF_) :: dofobj
 !!
 !! check
@@ -254,22 +255,22 @@ CALL Initiate(obj=dofobj, tNodes=tNodes, names=physicalVarNames, &
 !! matrixProp
 !!
 ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes(  &
-  & key="BlockMatrixField/matrixProp")) :: char_var)
-ierror = param%get(key="BlockMatrixField/matrixProp", value=char_var)
+  & key="BlockMatrixField/matrixProp")) :: matProp)
+ierror = param%get(key="BlockMatrixField/matrixProp", value=matProp)
 !!
 !! CSRMatrix/Initiate
 !!
 nrow = .tNodes.dofobj
 ncol = nrow
-CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, dof=dofobj, &
-  & matrixProp=char_var)
-DEALLOCATE (char_var)
+CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
+  & jdof=dofobj, matrixProp=matProp)
+DEALLOCATE (matProp)
 obj%isInitiated = .TRUE.
 obj%isPmatInitiated = .FALSE.
 !!
 !! setting the sparsity
 !!
-CALL obj%domains(1)%ptr%SetSparsity(mat=obj%mat, domains=obj%domains)
+CALL DomainSetSparsity(mat=obj%mat, domains=obj%domains)
 CALL Deallocate (dofobj)
 IF (ALLOCATED(tNodes)) DEALLOCATE (tNodes)
 IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
