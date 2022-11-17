@@ -76,8 +76,6 @@ IF (ANY(nsd .NE. nsd(1))) &
 !! Call SetSparsity2 From DomainUtility
 !!
 matProp = GetMatrixProp(mat)
-
-CALL Display(myName//" debug matprop = "//trim(matProp))
 !!
 IF (TRIM(matProp) .EQ. "RECTANGLE") THEN
   CALL SetSparsity3(domains=domains, mat=mat)
@@ -107,7 +105,6 @@ END PROCEDURE Domain_setTotalMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_setMaterial
-INTEGER(I4B) :: ii
 CLASS(mesh_), POINTER :: meshptr
   !!
 meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
