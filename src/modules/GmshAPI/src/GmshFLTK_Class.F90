@@ -15,55 +15,58 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#ifdef USE_GMSH_SDK
 MODULE GmshFLTK_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE Utility, ONLY: Reallocate, INPUT
 USE GmshInterface
+USE GmshUtility
 USE CInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "GMSHFLTK_CLASS"
-INTEGER( C_INT ) :: ierr
+CHARACTER(LEN=*), PARAMETER :: modName = "GMSHFLTK_CLASS"
+INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
-INTEGER( I4B ), PARAMETER :: maxStrLen = 256
+INTEGER(C_INT) :: cintvar
+!$OMP THREADPRIVATE(cintvar)
+INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: GmshFLTK_
-  CONTAINS
+CONTAINS
   PRIVATE
-    PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => fltk_Initiate
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Initialize => fltk_Initialize
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Wait => fltk_Wait
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Update => fltk_Update
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Awake => fltk_Awake
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Lock => fltk_Lock
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Unlock => fltk_Unlock
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Run => fltk_Run
-    PROCEDURE, PUBLIC, PASS( Obj ) :: IsAvailable => fltk_IsAvailable
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SelectEntities => fltk_SelectEntities
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SelectElements => fltk_SelectElements
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SelectViews => fltk_SelectViews
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SplitCurrentWindow => fltk_SplitCurrentWindow
-    PROCEDURE, PUBLIC, PASS( Obj ) :: SetStatusMessage => fltk_SetStatusMessage
-    PROCEDURE, PUBLIC, PASS( Obj ) ::  ShowContextWindow => Fltk_ShowContextWindow
-    PROCEDURE, PUBLIC, PASS( Obj ) ::  OpenTreeItem => Fltk_OpenTreeItem
-    PROCEDURE, PUBLIC, PASS( Obj ) ::  CloseTreeItem => Fltk_CloseTreeItem
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fltk_Initiate
+  PROCEDURE, PUBLIC, NOPASS :: Initialize => fltk_Initialize
+  PROCEDURE, PUBLIC, NOPASS :: Wait => fltk_Wait
+  PROCEDURE, PUBLIC, NOPASS :: Update => fltk_Update
+  PROCEDURE, PUBLIC, NOPASS :: Awake => fltk_Awake
+  PROCEDURE, PUBLIC, NOPASS :: Lock => fltk_Lock
+  PROCEDURE, PUBLIC, NOPASS :: Unlock => fltk_Unlock
+  PROCEDURE, PUBLIC, NOPASS :: Run => fltk_Run
+  PROCEDURE, PUBLIC, NOPASS :: IsAvailable => fltk_IsAvailable
+  PROCEDURE, PUBLIC, NOPASS :: SelectEntities => fltk_SelectEntities
+  PROCEDURE, PUBLIC, NOPASS :: SelectElements => fltk_SelectElements
+  PROCEDURE, PUBLIC, NOPASS :: SelectViews => fltk_SelectViews
+  PROCEDURE, PUBLIC, NOPASS :: SplitCurrentWindow => &
+  & fltk_SplitCurrentWindow
+  PROCEDURE, PUBLIC, NOPASS :: SetStatusMessage => fltk_SetStatusMessage
+  PROCEDURE, PUBLIC, NOPASS :: ShowContextWindow => Fltk_ShowContextWindow
+  PROCEDURE, PUBLIC, NOPASS :: OpenTreeItem => Fltk_OpenTreeItem
+  PROCEDURE, PUBLIC, NOPASS :: CloseTreeItem => Fltk_CloseTreeItem
 END TYPE GmshFLTK_
 
 PUBLIC :: GmshFLTK_
-TYPE( GmshFLTK_ ), PUBLIC, PARAMETER :: TypeGmshFLTK = GmshFLTK_()
+TYPE(GmshFLTK_), PUBLIC, PARAMETER :: TypeGmshFLTK = GmshFLTK_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: GmshFLTKPointer_
-  CLASS( GmshFLTK_ ), POINTER :: Ptr => NULL()
+  CLASS(GmshFLTK_), POINTER :: Ptr => NULL()
 END TYPE
 
 PUBLIC :: GmshFLTKPointer_
@@ -78,8 +81,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE fltk_Initiate( obj )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
+SUBROUTINE fltk_Initiate(obj)
+  CLASS(GmshFLTK_), INTENT(INOUT) :: obj
 END SUBROUTINE fltk_Initiate
 
 !----------------------------------------------------------------------------
@@ -88,14 +91,11 @@ END SUBROUTINE fltk_Initiate
 
 ! Create the FLTK graphical user interface. Can only be called in the main
 !  * thread.
-!
-! GMSH_API void gmshFltkInitialize(int *ierr);
 
-FUNCTION fltk_Initialize(obj) RESULT( ans )
-  CLASS( GmshFltk_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+FUNCTION fltk_Initialize() RESULT(ans)
+  INTEGER(I4B) :: ans
   CALL gmshFltkInitialize(ierr);
-  ans = int( ierr, i4b )
+  ans = int(ierr, i4b)
 END FUNCTION fltk_Initialize
 
 !----------------------------------------------------------------------------
@@ -104,16 +104,15 @@ END FUNCTION fltk_Initialize
 
 ! Wait at most `time' seconds for user interface events and return. If `time'
 ! < 0, wait indefinitely. First automatically create the user interface if it
-! has not yet been initialized. Can only be called in the main thread. */
-!
-! GMSH_API void gmshFltkWait(const double time,
-!                            int *ierr);
+! has not yet been initialized. Can only be called in the main thread.
 
-FUNCTION fltk_Wait(obj, time) RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: time
-  INTEGER( I4B ) :: ans
-  CALL gmshFltkWait(INPUT(option=time, default=-1.0_DFP), ierr)
+FUNCTION fltk_Wait(time) RESULT(ans)
+  CLASS(*), OPTIONAL, INTENT(IN) :: time
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshFltkWait( &
+    & time=gmsh_opt_cdouble(option=time, default=-1.0_DFP), &
+    & ierr=ierr)
   ans = int(ierr, i4b)
 END FUNCTION fltk_Wait
 
@@ -125,14 +124,11 @@ END FUNCTION fltk_Wait
 ! First automatically create the user interface if it has not yet been
 ! initialized. Can only be called in the main thread: use `awake("update")'
 ! to trigger an update of the user interface from another thread. */
-!
-! GMSH_API void gmshFltkUpdate(int *ierr);
 
-FUNCTION fltk_Update(obj) RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+FUNCTION fltk_Update() RESULT(ans)
+  INTEGER(I4B) :: ans
   CALL gmshFltkUpdate(ierr)
-  ans = int( ierr, i4b )
+  ans = int(ierr, i4b)
 END FUNCTION fltk_Update
 
 !----------------------------------------------------------------------------
@@ -142,19 +138,19 @@ END FUNCTION fltk_Update
 ! Awake the main user interface thread and process pending events, and
 ! optionally perform an action (currently the only `action' allowed is
 ! "update").
-!
-! GMSH_API void gmshFltkAwake(const char *action,
-!                             int *ierr);
 
-FUNCTION fltk_Awake(obj, action) RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
-  CHARACTER( LEN = * ), INTENT( IN ) :: action
+FUNCTION fltk_Awake(action) RESULT(ans)
+  INTEGER(I4B) :: ans
+  CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: action
   !internal
-  CHARACTER( LEN = maxStrLen ), TARGET :: action_
-  action_ = TRIM(action) // C_NULL_CHAR
-  CALL gmshFltkAwake(C_LOC(action_), ierr)
-  ans = int( ierr, i4b )
+  CHARACTER(LEN=maxStrLen), TARGET :: action_
+  !!
+  action_ = gmsh_CString(input(option=action, default=""))
+  !!
+  CALL gmshFltkAwake( &
+    & action=action_, ierr=ierr)
+  !!
+  ans = int(ierr, i4b)
 END FUNCTION fltk_Awake
 
 !----------------------------------------------------------------------------
@@ -162,12 +158,9 @@ END FUNCTION fltk_Awake
 !----------------------------------------------------------------------------
 
 ! Block the current thread until it can safely modify the user interface. */
-!
-! GMSH_API void gmshFltkLock(int *ierr);
 
-FUNCTION Fltk_Lock(obj) RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_Lock() RESULT(ans)
+  INTEGER(I4B) :: ans
   CALL gmshFltkUnlock(ierr)
   ans = int(ierr, i4b)
 END FUNCTION Fltk_Lock
@@ -177,14 +170,11 @@ END FUNCTION Fltk_Lock
 !----------------------------------------------------------------------------
 
 ! Release the lock that was set using lock. */
-!
-! GMSH_API void gmshFltkUnlock(int *ierr);
 
-FUNCTION Fltk_Unlock(obj) RESULT(ans)
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_Unlock() RESULT(ans)
+  INTEGER(I4B) :: ans
   CALL gmshFltkUnlock(ierr)
-  ans = int( ierr, i4b )
+  ans = int(ierr, i4b)
 END FUNCTION Fltk_Unlock
 
 !----------------------------------------------------------------------------
@@ -194,12 +184,9 @@ END FUNCTION Fltk_Unlock
 ! Run the event loop of the graphical user interface, i.e. repeatedly call
 ! `wait()'. First automatically create the user interface if it has not yet
 ! been initialized. Can only be called in the main thread. */
-!
-! GMSH_API void gmshFltkRun(int *ierr);
 
-FUNCTION Fltk_Run(obj) RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_Run() RESULT(ans)
+  INTEGER(I4B) :: ans
   CALL gmshFltkRun(ierr)
   ans = int(ierr, i4b)
 END FUNCTION Fltk_Run
@@ -210,16 +197,12 @@ END FUNCTION Fltk_Run
 
 ! Check if the user interface is available (e.g. to detect if it has been
 ! closed).
-!
-! GMSH_API int gmshFltkIsAvailable(int *ierr);
 
-FUNCTION Fltk_IsAvailable(obj) RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ) :: ans
+FUNCTION Fltk_IsAvailable() RESULT(ans)
+  LOGICAL(LGT) :: ans
   !> main
-  INTEGER( I4B ) :: n
-  n = gmshFltkIsAvailable(ierr)
-  IF( n .EQ. 1 ) THEN
+  cintvar = gmshFltkIsAvailable(ierr)
+  IF (cintvar .EQ. 1_c_int) THEN
     ans = .TRUE.
   ELSE
     ans = .FALSE.
@@ -231,24 +214,25 @@ END FUNCTION Fltk_IsAvailable
 !----------------------------------------------------------------------------
 
 ! Select entities in the user interface. If `dim' is >= 0, return only the
-! entities of the specified dimension (e.g. points if `dim' == 0). */
-!
-! GMSH_API int gmshFltkSelectEntities(int **dimTags, size_t *dimTags_n,
-!                                     const int dim,
-!                                     int *ierr);
+! entities of the specified dimension (e.g. points if `dim' == 0).
 
-FUNCTION Fltk_SelectEntities(obj, dimTags, dim) &
-  RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: dimTags( : )
-  INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_SelectEntities(dim) &
+  RESULT(dimTags)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+  INTEGER(I4B), ALLOCATABLE :: dimTags(:, :)
+  !
   ! internal
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: dimTags_n
-  ans = gmshFltkSelectEntities(cptr, dimTags_n, dim, ierr)
-  CALL Reallocate( dimTags, int(dimTags_n, I4B) )
-  CALL C_PTR_TO_INT_VEC( cptr = cptr, vec=dimTags )
+  !
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: dimTags_n
+  !
+  cintvar = gmshFltkSelectEntities( &
+    & dimTags=cptr, &
+    & dimTags_n=dimTags_n, &
+    & dim=gmsh_opt_cint(default=-1, option=dim), &
+    & ierr=ierr)
+  !
+  dimTags = gmsh_dimtag_c2f(cptr, dimTags_n)
 END FUNCTION Fltk_SelectEntities
 
 !----------------------------------------------------------------------------
@@ -256,21 +240,23 @@ END FUNCTION Fltk_SelectEntities
 !----------------------------------------------------------------------------
 
 ! Select elements in the user interface. */
-!
-! GMSH_API int gmshFltkSelectElements(size_t **elementTags, size_t *elementTags_n,
-!                                     int *ierr);
 
-FUNCTION Fltk_SelectElements(obj, elementTags) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: elementTags(:)
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_SelectElements() &
+  & RESULT(elementTags)
+  INTEGER(I4B), ALLOCATABLE :: elementTags(:)
+  !
   ! internal
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: elementTags_n
-  ans = gmshFltkSelectElements(cptr, elementTags_n, ierr)
-  CALL Reallocate( elementTags, int(elementTags_n, I4B) )
-  CALL C_PTR_TO_INT_VEC( cptr = cptr, vec=elementTags )
+  !
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: elementTags_n
+  !
+  cintvar = gmshFltkSelectElements( &
+    & elementTags=cptr, &
+    & elementTags_n=elementTags_n, &
+    & ierr=ierr)
+  !
+  elementTags = gmsh_intvec_c2f(cptr, elementTags_n)
+  !
 END FUNCTION Fltk_SelectElements
 
 !----------------------------------------------------------------------------
@@ -278,21 +264,21 @@ END FUNCTION Fltk_SelectElements
 !----------------------------------------------------------------------------
 
 ! Select views in the user interface.
-!
-! GMSH_API int gmshFltkSelectViews(int **viewTags, size_t *viewTags_n,
-!                                  int *ierr);
 
-FUNCTION Fltk_SelectViews(obj, viewTags) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: viewTags( : )
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_SelectViews() &
+  & RESULT(viewTags)
+  INTEGER(I4B), ALLOCATABLE :: viewTags(:)
   ! internal
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: viewTags_n
-  ans = gmshFltkSelectViews(cptr, viewTags_n, ierr)
-  CALL Reallocate( viewTags, int(viewTags_n, I4B) )
-  CALL C_PTR_TO_INT_VEC( cptr = cptr, vec=viewTags )
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: viewTags_n
+  !
+  cintvar = gmshFltkSelectViews( &
+    & viewTags=cptr, &
+    & viewTags_n=viewTags_n, &
+    & ierr=ierr)
+  !
+  viewTags = gmsh_intvec_c2f(cptr, viewTags_n)
+  !
 END FUNCTION Fltk_SelectViews
 
 !----------------------------------------------------------------------------
@@ -301,21 +287,24 @@ END FUNCTION Fltk_SelectViews
 
 ! Split the current window horizontally (if `how' = "h") or vertically (if
 ! `how' = "v"), using ratio `ratio'. If `how' = "u", restore a single window.
-!
-! GMSH_API void gmshFltkSplitCurrentWindow(const char *how,
-!                                          const double ratio,
-!                                          int *ierr);
 
-FUNCTION Fltk_SplitCurrentWindow(obj, how, ratio) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: how
-  REAL( DFP ), INTENT( IN ) :: ratio
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_SplitCurrentWindow(how, ratio) &
+  & RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: how
+  CLASS(*), OPTIONAL, INTENT(IN) :: ratio
+  INTEGER(I4B) :: ans
+  !
   ! internal values
-  CHARACTER( LEN = maxStrLen ), TARGET :: how_
-  how_ = TRIM( how ) // C_NULL_CHAR
-  CALL gmshFltkSplitCurrentWindow(C_LOC(how_), ratio, ierr)
+  !
+  CHARACTER(LEN=maxStrLen), TARGET :: how_
+  !
+  how_ = gmsh_CString(how)
+  !
+  CALL gmshFltkSplitCurrentWindow( &
+    & how=how_, &
+    & ratio=gmsh_opt_cdouble(option=ratio, default=0.5_DFP), &
+    & ierr=ierr)
+  !
   ans = int(ierr, i4b)
 END FUNCTION Fltk_SplitCurrentWindow
 
@@ -326,16 +315,16 @@ END FUNCTION Fltk_SplitCurrentWindow
 ! Set the current window by speficying its index (starting at 0) in the list
 ! of all windows. When new windows are created by splits, new windows are
 ! appended at the end of the list.
-!
-! GMSH_API void gmshFltkSetCurrentWindow(const int windowIndex,
-!                                        int *ierr);
 
-FUNCTION Fltk_SetCurrentWindow(obj, windowIndex) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: windowIndex
-  INTEGER( I4B ) :: ans
-  CALL gmshFltkSetCurrentWindow(windowIndex, ierr)
+FUNCTION Fltk_SetCurrentWindow(windowIndex) &
+  & RESULT(ans)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: windowIndex
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshFltkSetCurrentWindow( &
+    & windowIndex=gmsh_opt_cint(option=windowIndex, default=0_I4B), &
+    & ierr=ierr)
+  !!
   ans = int(ierr, i4b)
 END FUNCTION Fltk_SetCurrentWindow
 
@@ -344,22 +333,23 @@ END FUNCTION Fltk_SetCurrentWindow
 !----------------------------------------------------------------------------
 
 ! Set a status message in the current window. If `graphics' is set, display
-! the message inside the graphic window instead of the status bar. */
-!
-! GMSH_API void gmshFltkSetStatusMessage(const char *message,
-!                                        const int graphics,
-!                                        int *ierr);
+! the message inside the graphic window instead of the status bar.
 
-FUNCTION Fltk_SetStatusMessage(obj, message, graphics) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: message
-  INTEGER( I4B ), INTENT( IN ) :: graphics
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_SetStatusMessage(message, graphics) &
+  & RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: message
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: graphics
+  INTEGER(I4B) :: ans
   ! internal
-  CHARACTER( LEN = maxStrLen ), TARGET :: message_
-  message_ = TRIM(message) // C_NULL_CHAR
-  CALL gmshFltkSetStatusMessage(C_LOC(message_), graphics, ierr)
+  CHARACTER(LEN=maxStrLen), TARGET :: message_
+  !!
+  message_ = gmsh_CString(message)
+  !!
+  CALL gmshFltkSetStatusMessage( &
+    & message=message_, &
+    & graphics=optval_c_bool(.FALSE., graphics), &
+    & ierr=ierr)
+  !!
   ans = int(ierr, i4b)
 END FUNCTION Fltk_SetStatusMessage
 
@@ -368,18 +358,16 @@ END FUNCTION Fltk_SetStatusMessage
 !----------------------------------------------------------------------------
 
 ! Show context window for the entity of dimension `dim' and tag `tag'.
-!
-! GMSH_API void gmshFltkShowContextWindow(const int dim,
-!                                         const int tag,
-!                                         int *ierr);
 
-FUNCTION Fltk_ShowContextWindow(obj, dim, tag) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim, tag
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_ShowContextWindow(dim, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dim, tag
+  INTEGER(I4B) :: ans
   ! internal
-  CALL gmshFltkShowContextWindow(dim, tag, ierr)
+  CALL gmshFltkShowContextWindow( &
+    & dim=gmsh_cint(dim), &
+    & tag=gmsh_cint(tag), &
+    & ierr=ierr)
   ans = int(ierr, i4b)
 END FUNCTION Fltk_ShowContextWindow
 
@@ -392,16 +380,19 @@ END FUNCTION Fltk_ShowContextWindow
 ! GMSH_API void gmshFltkOpenTreeItem(const char *name,
 !                                    int *ierr);
 
-FUNCTION Fltk_OpenTreeItem(obj, name) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) ::  name
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_OpenTreeItem(name) &
+  & RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: name
+  INTEGER(I4B) :: ans
   ! internal
-  CHARACTER( LEN = maxStrLen ), TARGET :: name_
-  name_ = TRIM(name) // C_NULL_CHAR
-  CALL gmshFltkOpenTreeItem(C_LOC(name_), ierr)
-  ans = int( ierr, i4b )
+  CHARACTER(LEN=maxStrLen) :: name_
+  !
+  name_ = gmsh_CString(name)
+  !
+  CALL gmshFltkOpenTreeItem( &
+    & name=name_, ierr=ierr)
+  !
+  ans = int(ierr, i4b)
 END FUNCTION Fltk_OpenTreeItem
 
 !----------------------------------------------------------------------------
@@ -413,16 +404,18 @@ END FUNCTION Fltk_OpenTreeItem
 ! GMSH_API void gmshFltkCloseTreeItem(const char *name,
 !                                     int *ierr);
 
-FUNCTION Fltk_CloseTreeItem(obj, name) &
-  & RESULT( ans )
-  CLASS( GmshFLTK_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ) :: ans
+FUNCTION Fltk_CloseTreeItem(name) &
+  & RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: name
+  INTEGER(I4B) :: ans
 ! internal
-  CHARACTER( LEN = maxStrLen ), TARGET :: name_
-  name_ = TRIM(name) // C_NULL_CHAR
-  CALL gmshFltkCloseTreeItem(C_LOC(name_), ierr)
-  ans = int( ierr, i4b )
+  CHARACTER(LEN=maxStrLen) :: name_
+  !
+  name_ = gmsh_CString(name)
+  !
+  CALL gmshFltkCloseTreeItem(name=name_, ierr=ierr)
+  !
+  ans = int(ierr, i4b)
 END FUNCTION Fltk_CloseTreeItem
 
 !----------------------------------------------------------------------------
@@ -430,4 +423,3 @@ END FUNCTION Fltk_CloseTreeItem
 !----------------------------------------------------------------------------
 
 END MODULE GmshFLTK_Class
-#endif

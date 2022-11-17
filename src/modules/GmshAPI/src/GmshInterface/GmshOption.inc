@@ -16,8 +16,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
-! /* Set a numerical option to `value'. `name' is of the form "category.option"
+! /* Set a numerical option to `value'.
+! `name' is of the form "category.option"
 !  * or "category[num].option". Available categories and options are listed in
 !  * the Gmsh reference manual. */
 !
@@ -26,17 +26,17 @@
 !                                   int *ierr);
 
 INTERFACE
-SUBROUTINE gmshOptionSetNumber(name, val, ierr) &
-  & BIND( C, NAME="gmshOptionSetNumber" )
-  USE ISO_C_BINDING, ONLY : C_PTR, C_DOUBLE, C_INT
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: name
-  REAL( C_DOUBLE ), VALUE, INTENT( IN ) :: val
-  INTEGER( C_INT ), INTENT(OUT) :: ierr
-END SUBROUTINE gmshOptionSetNumber
+  SUBROUTINE gmshOptionSetNumber(name, value, ierr) &
+    & BIND(C, NAME="gmshOptionSetNumber")
+    USE ISO_C_BINDING, ONLY: C_PTR, C_DOUBLE, C_INT
+    TYPE(C_PTR), VALUE, INTENT(IN) :: name
+    ! CHARACTER(LEN=1, KIND=C_CHAR), INTENT(IN) :: name(*)
+    REAL(C_DOUBLE), VALUE, INTENT(IN) :: value
+    INTEGER(C_INT), INTENT(OUT) :: ierr
+  END SUBROUTINE gmshOptionSetNumber
 END INTERFACE
 
 PUBLIC :: gmshOptionSetNumber
-
 
 ! /* Get the `value' of a numerical option. `name' is of the form
 !  * "category.option" or "category[num].option". Available categories and
@@ -47,19 +47,22 @@ PUBLIC :: gmshOptionSetNumber
 !                                   int *ierr);
 
 INTERFACE
-SUBROUTINE gmshOptionGetNumber(name, val, ierr) &
-  & BIND( C, NAME="gmshOptionGetNumber" )
-  USE ISO_C_BINDING, ONLY : C_PTR, C_DOUBLE, C_INT
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: name
-  REAL( C_DOUBLE ), INTENT( OUT ) :: val
-  INTEGER( C_INT ), INTENT(OUT) :: ierr
-END SUBROUTINE gmshOptionGetNumber
+  SUBROUTINE gmshOptionGetNumber(name, value, ierr) &
+    & BIND(C, NAME="gmshOptionGetNumber")
+    USE ISO_C_BINDING, ONLY: C_PTR, C_DOUBLE, C_INT
+    TYPE(C_PTR), VALUE, INTENT(IN) :: name
+    ! CHARACTER(LEN=1, KIND=C_CHAR), INTENT(IN) :: name(*)
+    REAL(C_DOUBLE), INTENT(OUT) :: value
+    INTEGER(C_INT), INTENT(OUT) :: ierr
+  END SUBROUTINE gmshOptionGetNumber
 END INTERFACE
 
 PUBLIC :: gmshOptionGetNumber
 
-! /* Set a string option to `value'. `name' is of the form "category.option" or
-!  * "category[num].option". Available categories and options are listed in the
+! /* Set a string option to `value'.
+! `name' is of the form "category.option" or
+!  * "category[num].option".
+! Available categories and options are listed in the
 !  * Gmsh reference manual. */
 !
 ! GMSH_API void gmshOptionSetString(const char *name,
@@ -67,18 +70,19 @@ PUBLIC :: gmshOptionGetNumber
 !                                   int *ierr);
 
 INTERFACE
-SUBROUTINE gmshOptionSetString(name, val, ierr) &
-  & BIND( C, NAME="gmshOptionSetString" )
-  USE ISO_C_BINDING, ONLY : C_PTR, C_INT
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: name
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: val
-  INTEGER( C_INT ), INTENT(OUT) :: ierr
-END SUBROUTINE gmshOptionSetString
+  SUBROUTINE gmshOptionSetString(name, value, ierr) &
+    & BIND(C, NAME="gmshOptionSetString")
+    USE ISO_C_BINDING, ONLY: C_PTR, C_INT
+    TYPE(C_PTR), VALUE, INTENT(IN) :: name
+    TYPE(C_PTR), VALUE, INTENT(IN) :: value
+    INTEGER(C_INT), INTENT(OUT) :: ierr
+  END SUBROUTINE gmshOptionSetString
 END INTERFACE
 
 PUBLIC :: gmshOptionSetString
 
-! /* Get the `value' of a string option. `name' is of the form "category.option"
+! /* Get the `value' of a string option.
+! `name' is of the form "category.option"
 !  * or "category[num].option". Available categories and options are listed in
 !  * the Gmsh reference manual. */
 ! GMSH_API void gmshOptionGetString(const char *name,
@@ -86,20 +90,22 @@ PUBLIC :: gmshOptionSetString
 !                                   int *ierr);
 
 INTERFACE
-SUBROUTINE gmshOptionGetString(name, val, ierr) &
-  & BIND( C, NAME="gmshOptionGetString" )
-  USE ISO_C_BINDING, ONLY : C_PTR, C_INT
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: name
-  TYPE( C_PTR ), INTENT( IN ) :: val
-  INTEGER( C_INT ), INTENT(OUT) :: ierr
-END SUBROUTINE gmshOptionGetString
+  SUBROUTINE gmshOptionGetString(name, value, ierr) &
+    & BIND(C, NAME="gmshOptionGetString")
+    USE ISO_C_BINDING, ONLY: C_PTR, C_INT
+    TYPE(C_PTR), VALUE, INTENT(IN) :: name
+    TYPE(C_PTR), INTENT(IN) :: value
+    INTEGER(C_INT), INTENT(OUT) :: ierr
+  END SUBROUTINE gmshOptionGetString
 END INTERFACE
 
 PUBLIC :: gmshOptionGetString
 
-! /* Set a color option to the RGBA value (`r', `g', `b', `a'), where where `r',
+! /* Set a color option to the RGBA value
+! (`r', `g', `b', `a'), where where `r',
 !  * `g', `b' and `a' should be integers between 0 and 255. `name' is of the
-!  * form "category.option" or "category[num].option". Available categories and
+!  * form "category.option" or "category[num].option".
+! Available categories and
 !  * options are listed in the Gmsh reference manual, with the "Color." middle
 !  * string removed. */
 ! GMSH_API void gmshOptionSetColor(const char *name,
@@ -110,13 +116,13 @@ PUBLIC :: gmshOptionGetString
 !                                  int *ierr);
 
 INTERFACE
-SUBROUTINE gmshOptionSetColor(name, r, g, b, a, ierr) &
-  & BIND( C, NAME="gmshOptionSetColor" )
-  USE ISO_C_BINDING, ONLY : C_PTR, C_INT
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: name
-  INTEGER( C_INT ), VALUE, INTENT(IN) :: r, g, b, a
-  INTEGER( C_INT ), INTENT(OUT) :: ierr
-END SUBROUTINE gmshOptionSetColor
+  SUBROUTINE gmshOptionSetColor(name, r, g, b, a, ierr) &
+    & BIND(C, NAME="gmshOptionSetColor")
+    USE ISO_C_BINDING, ONLY: C_PTR, C_INT
+    TYPE(C_PTR), VALUE, INTENT(IN) :: name
+    INTEGER(C_INT), VALUE, INTENT(IN) :: r, g, b, a
+    INTEGER(C_INT), INTENT(OUT) :: ierr
+  END SUBROUTINE gmshOptionSetColor
 END INTERFACE
 
 PUBLIC :: gmshOptionSetColor
@@ -133,13 +139,13 @@ PUBLIC :: gmshOptionSetColor
 !                                  int *ierr);
 
 INTERFACE
-SUBROUTINE gmshOptionGetColor(name, r, g, b, a, ierr) &
-  & BIND( C, NAME="gmshOptionGetColor" )
-  USE ISO_C_BINDING, ONLY : C_PTR, C_INT
-  TYPE( C_PTR ), VALUE, INTENT( IN ) :: name
-  INTEGER( C_INT ), INTENT(OUT) :: r, g, b, a
-  INTEGER( C_INT ), INTENT(OUT) :: ierr
-END SUBROUTINE gmshOptionGetColor
+  SUBROUTINE gmshOptionGetColor(name, r, g, b, a, ierr) &
+    & BIND(C, NAME="gmshOptionGetColor")
+    USE ISO_C_BINDING, ONLY: C_PTR, C_INT
+    TYPE(C_PTR), VALUE, INTENT(IN) :: name
+    INTEGER(C_INT), INTENT(OUT) :: r, g, b, a
+    INTEGER(C_INT), INTENT(OUT) :: ierr
+  END SUBROUTINE gmshOptionGetColor
 END INTERFACE
 
 PUBLIC :: gmshOptionGetColor

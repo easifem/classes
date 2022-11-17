@@ -15,23 +15,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#ifdef USE_GMSH_SDK
 MODULE GmshModelGeo_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE Utility, ONLY: Reallocate, Input
+USE GmshUtility
 USE GmshInterface
 USE GmshModelGeoMesh_Class
 USE ExceptionHandler_Class, ONLY: ExceptionHandler_
-USE CInterface, ONLY: C_PTR_TO_INT_VEC
+USE CInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "GMSHOPTION_CLASS"
-INTEGER( C_INT ) :: ierr
+CHARACTER(LEN=*), PARAMETER :: modName = "GMSHOPTION_CLASS"
+INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
-TYPE( ExceptionHandler_ ) :: e
+INTEGER(C_INT) :: cintvar
+!$OMP THREADPRIVATE(cintvar)
+!!
+TYPE(ExceptionHandler_) :: e
 !$OMP THREADPRIVATE(e)
-INTEGER( I4B ), PARAMETER :: maxStrLen = 120
+INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
 
 !----------------------------------------------------------------------------
 !
@@ -40,59 +43,61 @@ INTEGER( I4B ), PARAMETER :: maxStrLen = 120
 #define _DT_ GmshModelGeo_
 
 TYPE :: GmshModelGeo_
-  TYPE( GmshModelGeoMesh_ ), POINTER :: mesh => NULL()
-  CONTAINS
+  TYPE(GmshModelGeoMesh_), POINTER :: mesh => NULL()
+CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => geo_Initiate
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddPoint => geo_AddPoint
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddLine => geo_AddLine
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCircleArc => geo_AddCircleArc
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddEllipseArc => geo_AddEllipseArc
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddSpline => geo_AddSpline
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddBSpline => geo_AddBSpline
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddBezier => geo_AddBezier
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddPolyline => geo_AddPolyline
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCompoundSpline => geo_AddCompoundSpline
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCompoundBSpline => &
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => geo_Initiate
+  PROCEDURE, PUBLIC, NOPASS :: AddPoint => geo_AddPoint
+  PROCEDURE, PUBLIC, NOPASS :: AddLine => geo_AddLine
+  PROCEDURE, PUBLIC, NOPASS :: AddCircleArc => geo_AddCircleArc
+  PROCEDURE, PUBLIC, NOPASS :: AddEllipseArc => geo_AddEllipseArc
+  PROCEDURE, PUBLIC, NOPASS :: AddSpline => geo_AddSpline
+  PROCEDURE, PUBLIC, NOPASS :: AddBSpline => geo_AddBSpline
+  PROCEDURE, PUBLIC, NOPASS :: AddBezier => geo_AddBezier
+  PROCEDURE, PUBLIC, NOPASS :: AddPolyline => geo_AddPolyline
+  PROCEDURE, PUBLIC, NOPASS :: AddCompoundSpline => geo_AddCompoundSpline
+  PROCEDURE, PUBLIC, NOPASS :: AddCompoundBSpline => &
     & geo_AddCompoundBSpline
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCurveLoop => geo_AddCurveLoop
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddCurveLoops => geo_AddCurveLoops
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddPlaneSurface => geo_AddPlaneSurface
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddSurfaceFilling => geo_AddSurfaceFilling
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddSurfaceLoop => geo_AddSurfaceLoop
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddVolume => geo_AddVolume
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Extrude => geo_Extrude
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Revolve => geo_GeoRevolve
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Twist => geo_Twist
-  PROCEDURE, PUBLIC, PASS( Obj ) :: ExtrudeBoundaryLayer => &
+  PROCEDURE, PUBLIC, NOPASS :: AddCurveLoop => geo_AddCurveLoop
+  PROCEDURE, PUBLIC, NOPASS :: AddCurveLoops => geo_AddCurveLoops
+  PROCEDURE, PUBLIC, NOPASS :: AddPlaneSurface => geo_AddPlaneSurface
+  PROCEDURE, PUBLIC, NOPASS :: AddSurfaceFilling => geo_AddSurfaceFilling
+  PROCEDURE, PUBLIC, NOPASS :: AddSurfaceLoop => geo_AddSurfaceLoop
+  PROCEDURE, PUBLIC, NOPASS :: AddVolume => geo_AddVolume
+  PROCEDURE, PUBLIC, NOPASS :: AddGeometry => geo_AddGeometry
+  PROCEDURE, PUBLIC, NOPASS :: AddPointOnGeometry => geo_AddPointOnGeometry
+  PROCEDURE, PUBLIC, NOPASS :: Extrude => geo_Extrude
+  PROCEDURE, PUBLIC, NOPASS :: Revolve => geo_GeoRevolve
+  PROCEDURE, PUBLIC, NOPASS :: Twist => geo_Twist
+  PROCEDURE, PUBLIC, NOPASS :: ExtrudeBoundaryLayer => &
     & geo_ExtrudeBoundaryLayer
-  PROCEDURE, PUBLIC, PASS( Obj ) :: GeoTranslate => geo_GeoTranslate
-  PROCEDURE, PUBLIC, PASS( Obj ) :: GeoRotate => geo_GeoRotate
-  PROCEDURE, PUBLIC, PASS( Obj ) :: GeoDilate => geo_GeoDilate
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Mirror => geo_Mirror
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Symmetrize => geo_Symmetrize
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Copy => geo_Copy
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Remove => geo_Remove
-  PROCEDURE, PUBLIC, PASS( Obj ) :: RemoveAllDuplicates => &
+  PROCEDURE, PUBLIC, NOPASS :: GeoTranslate => geo_GeoTranslate
+  PROCEDURE, PUBLIC, NOPASS :: GeoRotate => geo_GeoRotate
+  PROCEDURE, PUBLIC, NOPASS :: GeoDilate => geo_GeoDilate
+  PROCEDURE, PUBLIC, NOPASS :: Mirror => geo_Mirror
+  PROCEDURE, PUBLIC, NOPASS :: Symmetrize => geo_Symmetrize
+  PROCEDURE, PUBLIC, NOPASS :: Copy => geo_Copy
+  PROCEDURE, PUBLIC, NOPASS :: Remove => geo_Remove
+  PROCEDURE, PUBLIC, NOPASS :: RemoveAllDuplicates => &
     & geo_RemoveAllDuplicates
-  PROCEDURE, PUBLIC, PASS( Obj ) :: SplitCurve => geo_SplitCurve
-  PROCEDURE, PUBLIC, PASS( Obj ) :: GetMaxTag => geo_GetMaxTag
-  PROCEDURE, PUBLIC, PASS( Obj ) :: SetMaxTag => geo_SetMaxTag
-  PROCEDURE, PUBLIC, PASS( Obj ) :: AddPhysicalGroup => geo_AddPhysicalGroup
-  PROCEDURE, PUBLIC, PASS( Obj ) :: RemovePhysicalGroups => &
+  PROCEDURE, PUBLIC, NOPASS :: SplitCurve => geo_SplitCurve
+  PROCEDURE, PUBLIC, NOPASS :: GetMaxTag => geo_GetMaxTag
+  PROCEDURE, PUBLIC, NOPASS :: SetMaxTag => geo_SetMaxTag
+  PROCEDURE, PUBLIC, NOPASS :: AddPhysicalGroup => geo_AddPhysicalGroup
+  PROCEDURE, PUBLIC, NOPASS :: RemovePhysicalGroups => &
     & geo_RemovePhysicalGroups
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Synchronize => geo_Synchronize
+  PROCEDURE, PUBLIC, NOPASS :: Synchronize => geo_Synchronize
 END TYPE GmshModelGeo_
 
 PUBLIC :: GmshModelGeo_
-TYPE( GmshModelGeo_ ), PUBLIC, PARAMETER :: TypeGmshModelGeo = GmshModelGeo_()
+TYPE(GmshModelGeo_), PUBLIC, PARAMETER :: TypeGmshModelGeo = GmshModelGeo_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: GmshModelGeoPointer_
-  CLASS( GmshModelGeo_ ), POINTER :: Ptr => NULL()
+  CLASS(GmshModelGeo_), POINTER :: Ptr => NULL()
 END TYPE
 
 PUBLIC :: GmshModelGeoPointer_
@@ -108,391 +113,785 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE geo_Initiate(obj)
-  CLASS( GmshModelGeo_ ), INTENT( INOUT ) :: obj
+  CLASS(GmshModelGeo_), INTENT(INOUT) :: obj
   !> internal var
-  CHARACTER( LEN = * ), PARAMETER :: myName="geo_Initiate"
+  CHARACTER(LEN=*), PARAMETER :: myName = "geo_Initiate"
   !> main program
-  IF( ASSOCIATED( obj%Mesh )  ) THEN
+  IF (ASSOCIATED(obj%Mesh)) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
       & "gmsh::Model::Geo::Mesh is already associated;")
   END IF
-  ALLOCATE( obj%Mesh )
+  ALLOCATE (obj%Mesh)
 END SUBROUTINE geo_Initiate
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddPoint(obj, x, y, z, meshSize, tag) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: x, y, z, meshSize
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: ans
+!! Add a geometrical point in the built-in CAD representation, at coordinates
+!! (`x', `y', `z'). If `meshSize' is > 0, add a meshing constraint at that
+!! point. If `tag' is positive, set the tag explicitly; otherwise a new tag is
+!! selected automatically. Return the tag of the point. (Note that the point
+!! will be added in the current model only after `synchronize' is called. This
+!! behavior holds for all the entities added in the geo module.)
+
+FUNCTION geo_AddPoint(x, y, z, meshSize, tag) RESULT(ans)
+  CLASS(*), INTENT(IN) :: x, y, z, meshSize
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
   ! Internal variable
-  ans = gmshModelGeoAddPoint(x,y,z,meshSize, INPUT(default=-1, option=tag), &
-    & ierr )
+  cintvar = gmshModelGeoAddPoint( &
+    & x=gmsh_cdouble(x), &
+    & y=gmsh_cdouble(y), &
+    & z=gmsh_cdouble(z), &
+    & meshSize=gmsh_cdouble(meshSize), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !
+  ans = int(cintvar, i4b)
+  !
 END FUNCTION geo_AddPoint
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddLine(obj, startTag, endTag, tag) RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: startTag, endTag
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddLine(startTag, endTag, INPUT(default=-1,option=tag), &
-    & ierr)
+!> Add a straight line segment in the built-in CAD representation, between the
+!! two points with tags `startTag' and `endTag'. If `tag' is positive, set the
+!! tag explicitly; otherwise a new tag is selected automatically. Return the
+!! tag of the line.
+
+FUNCTION geo_AddLine(startTag, endTag, tag) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: startTag, endTag
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddLine(&
+    & startTag=gmsh_cint(startTag), &
+    & endTag=gmsh_cint(endTag), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddLine
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddCircleArc(obj,startTag, centerTag, endTag, tag, nx, ny, &
-  & nz ) RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: startTag, endTag, centerTag
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  REAL( DFP ), INTENT( IN ) ::  nx, ny, nz
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddCircleArc(startTag, centerTag, endTag, &
-    & INPUT(default=-1, option=tag), nx, &
-    & ny, nz, ierr)
+!> Add a circle arc (strictly smaller than Pi) in the built-in CAD
+!! representation, between the two points with tags `startTag' and `endTag',
+!! and with center `centerTag'. If `tag' is positive, set the tag explicitly;
+!! otherwise a new tag is selected automatically. If (`nx', `ny', `nz') != (0,
+!! 0, 0), explicitly set the plane of the circle arc. Return the tag of the
+!! circle arc.
+
+FUNCTION geo_AddCircleArc(startTag, centerTag, endTag, tag, nx, ny, &
+  & nz) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: startTag, endTag, centerTag
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  CLASS(*), OPTIONAL, INTENT(IN) :: nx, ny, nz
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddCircleArc( &
+    & startTag=gmsh_cint(startTag), &
+    & centerTag=gmsh_cint(centerTag), &
+    & endTag=gmsh_cint(endTag), &
+    & tag=gmsh_opt_cint(default=-1, option=tag), &
+    & nx=gmsh_opt_cdouble(0.0_DFP, nx), &
+    & ny=gmsh_opt_cdouble(0.0_DFP, ny), &
+    & nz=gmsh_opt_cdouble(0.0_DFP, nz), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddCircleArc
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddEllipseArc(obj, startTag, centerTag, majorTag, endTag, &
-  & tag, nx, ny, nz ) RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) ::  startTag, centerTag, majorTag, endTag
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  REAL( DFP ), INTENT( IN ) ::  nx, ny, nz
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddEllipseArc( startTag, centerTag, majorTag, &
-    & endTag, input(default=-1, option=tag), nx, ny, nz, ierr )
+!> Add an ellipse arc (strictly smaller than Pi) in the built-in CAD
+!! representation, between the two points `startTag' and `endTag', and with
+!! center `centerTag' and major axis point `majorTag'. If `tag' is positive,
+!! set the tag explicitly; otherwise a new tag is selected automatically. If
+!! (`nx', `ny', `nz') != (0, 0, 0), explicitly set the plane of the circle
+!! arc. Return the tag of the ellipse arc.
+
+FUNCTION geo_AddEllipseArc(startTag, centerTag, majorTag, endTag, &
+  & tag, nx, ny, nz) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: startTag, centerTag, majorTag, endTag
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  CLASS(*), INTENT(IN) :: nx, ny, nz
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddEllipseArc( &
+    & startTag=gmsh_cint(startTag), &
+    & centerTag=gmsh_cint(centerTag), &
+    & majorTag=gmsh_cint(majorTag), &
+    & endTag=gmsh_cint(endTag), &
+    & tag=gmsh_cint(input(default=-1, option=tag)), &
+    & nx=gmsh_cdouble(nx), &
+    & ny=gmsh_cdouble(ny), &
+    & nz=gmsh_cdouble(nz), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddEllipseArc
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddSpline(obj, pointTags, tag) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
+!> Add a spline (Catmull-Rom) curve in the built-in CAD representation, going
+!! through the points `pointTags'. If `tag' is positive, set the tag
+!! explicitly; otherwise a new tag is selected automatically. Create a
+!! periodic curve if the first and last points are the same. Return the tag of
+!! the spline curve.
+
+FUNCTION geo_AddSpline(pointTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: pointTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
   ! internal
-  Ans = gmshModelGeoAddSpline(pointTags,  &
-    & INT(SIZE(pointTags), KIND=C_SIZE_T),  &
-    & INPUT(default=-1,option=tag), ierr)
+  cintvar = gmshModelGeoAddSpline( &
+    & pointTags=gmsh_cint(pointTags),  &
+    & pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T),  &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddSpline
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddBSpline(obj, pointTags, tag) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddBSpline(pointTags, &
-    & INT(SIZE(pointTags),KIND=C_SIZE_T), INPUT(default=-1,option=tag), ierr)
+!> Add a cubic b-spline curve in the built-in CAD representation, with
+!! `pointTags' control points. If `tag' is positive, set the tag explicitly;
+!! otherwise a new tag is selected automatically. Creates a periodic curve if
+!! the first and last points are the same. Return the tag of the b-spline
+!! curve.
+
+FUNCTION geo_AddBSpline(pointTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: pointTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddBSpline( &
+    & pointTags=gmsh_cint(pointTags), &
+    & pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddBSpline
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddBezier(obj, pointTags, tag) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddBezier(pointTags, &
-    & INT(SIZE(pointTags),KIND=C_SIZE_T), INPUT(default=-1,option=tag), ierr)
+!> Add a Bezier curve in the built-in CAD representation, with `pointTags'
+!! control points. If `tag' is positive, set the tag explicitly; otherwise a
+!! new tag is selected automatically.  Return the tag of the Bezier curve.
+
+FUNCTION geo_AddBezier(pointTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: pointTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddBezier( &
+    & pointTags=gmsh_cint(pointTags), &
+    & pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddBezier
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
+!> Add a polyline curve in the built-in CAD representation, going through the
+!! points `pointTags'. If `tag' is positive, set the tag explicitly; otherwise
+!! a new tag is selected automatically. Create a periodic curve if the first
+!! and last points are the same. Return the tag of the polyline curve.
 
-FUNCTION geo_AddPolyline(obj, pointTags, tag) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddPolyline(pointTags, &
-    & INT(SIZE(pointTags),KIND=C_SIZE_T), INPUT(default=-1,option=tag), ierr)
+FUNCTION geo_AddPolyline(pointTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: pointTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddPolyline( &
+    & pointTags=gmsh_cint(pointTags), &
+    & pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddPolyline
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddCompoundSpline(obj,curveTags, &
-  & numIntervals, tag) RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: numIntervals
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddCompoundSpline(curveTags, &
-    & INT(SIZE(curveTags), KIND=C_SIZE_T), &
-      & numIntervals, INPUT(default=-1,option=tag), ierr)
+!> Add a spline (Catmull-Rom) curve in the built-in CAD representation, going
+!! through points sampling the curves in `curveTags'. The density of sampling
+!! points on each curve is governed by `numIntervals'. If `tag' is positive,
+!! set the tag explicitly; otherwise a new tag is selected automatically.
+!! Return the tag of the spline.
+
+FUNCTION geo_AddCompoundSpline(curveTags, &
+  & numIntervals, tag) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: curveTags(:)
+  INTEGER(I4B), INTENT(IN) :: numIntervals
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddCompoundSpline( &
+    & curveTags=gmsh_cint(curveTags), &
+    & curveTags_n=INT(SIZE(curveTags), KIND=C_SIZE_T), &
+    & numIntervals=gmsh_cint(numIntervals), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddCompoundSpline
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddCompoundBSpline(obj,curveTags, &
-  & numIntervals, tag) RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: numIntervals
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddCompoundBSpline(curveTags, &
-    & INT(SIZE(curveTags), KIND=C_SIZE_T), &
-    & numIntervals, INPUT(default=-1,option=tag), ierr)
+!> Add a b-spline curve in the built-in CAD representation, with control
+!! points sampling the curves in `curveTags'. The density of sampling points
+!! on each curve is governed by `numIntervals'. If `tag' is positive, set the
+!! tag explicitly; otherwise a new tag is selected automatically. Return the
+!! tag of the b-spline.
+
+FUNCTION geo_AddCompoundBSpline(curveTags, &
+  & numIntervals, tag) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: curveTags(:)
+  INTEGER(I4B), INTENT(IN) :: numIntervals
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddCompoundBSpline( &
+    & curveTags=gmsh_cint(curveTags), &
+    & curveTags_n=INT(SIZE(curveTags), KIND=C_SIZE_T), &
+    & numIntervals=gmsh_cint(numIntervals), &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddCompoundBSpline
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddCurveLoop(obj,curveTags, tag, reorient) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) ::  tag
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: reorient
-  INTEGER( I4B ) :: Ans
+!! Add a curve loop (a closed wire) in the built-in CAD representation, formed
+!! by the curves `curveTags'. `curveTags' should contain (signed) tags of
+!! model entities of dimension 1 forming a closed loop: a negative tag
+!! signifies that the underlying curve is considered with reversed
+!! orientation. If `tag' is positive, set the tag explicitly; otherwise a new
+!! tag is selected automatically. If `reorient' is set, automatically reorient
+!! the curves if necessary. Return the tag of the curve loop.
+
+FUNCTION geo_AddCurveLoop(curveTags, tag, reorient) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: curveTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: reorient
+  INTEGER(I4B) :: ans
   !
-  INTEGER( I4B ) :: reorient_
-  reorient_ = 1; IF( PRESENT( reorient ) ) reorient_ = reorient
-  Ans = gmshModelGeoAddCurveLoop(curveTags, &
-    & INT(SIZE(curveTags), C_SIZE_T),  &
-    & INPUT(default=-1,option=tag), reorient_, ierr)
+  cintvar = gmshModelGeoAddCurveLoop( &
+    & curveTags=gmsh_cint(curveTags), &
+    & curveTags_n=INT(SIZE(curveTags), C_SIZE_T),  &
+    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & reorient=optval_c_bool(.false., reorient), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddCurveLoop
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+!> Add curve loops in the built-in CAD representation based on the curves
+!! `curveTags'. Return the `tags' of found curve loops, if any.
 
-FUNCTION geo_AddCurveLoops(obj, curveTags, tags ) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: curveTags(:)
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: tags(:)
-  INTEGER( I4B ) :: ans
+FUNCTION geo_AddCurveLoops(curveTags, tags) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: curveTags(:)
+  INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: tags(:)
+  INTEGER(I4B) :: ans
   !
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: tags_n
-
-  CALL gmshModelGeoAddCurveLoops(curveTags, &
-    & INT(SIZE(curveTags), C_SIZE_T), cptr, tags_n, ierr)
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: tags_n
+  !
+  CALL gmshModelGeoAddCurveLoops( &
+    & curveTags=gmsh_cint(curveTags), &
+    & curveTags_n=INT(SIZE(curveTags), C_SIZE_T), &
+    & tags=cptr, &
+    & tags_n=tags_n, &
+    & ierr=ierr)
+  !
   ans = INT(ierr, I4B)
-  IF( ALLOCATED( tags ) ) DEALLOCATE( tags )
-  ALLOCATE( tags( tags_n ) )
-  CALL C_PTR_TO_INT_VEC( vec=tags, cptr = cptr )
+  !
+  tags = gmsh_intvec_c2f(cptr, tags_n)
+  !
 END FUNCTION geo_AddCurveLoops
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddPlaneSurface(obj,wireTags, tag) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: wireTags( : )
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddPlaneSurface(wireTags, &
-    & INT(SIZE(wireTags), C_SIZE_T), input(default=-1, option=tag), ierr)
+!> Add a plane surface in the built-in CAD representation, defined by one or
+!! more curve loops `wireTags'. The first curve loop defines the exterior
+!! contour; additional curve loop define holes. If `tag' is positive, set the
+!! tag explicitly; otherwise a new tag is selected automatically. Return the
+!! tag of the surface
+
+FUNCTION geo_AddPlaneSurface(wireTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: wireTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddPlaneSurface( &
+    & wireTags=gmsh_cint(wireTags), &
+    & wireTags_n=INT(SIZE(wireTags), C_SIZE_T), &
+    & tag=gmsh_cint(input(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddPlaneSurface
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddSurfaceFilling(obj, wireTags, tag, &
-  & sphereCenterTag) RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: wireTags(:)
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: tag
-  INTEGER( I4B ), INTENT( IN ) :: sphereCenterTag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddSurfaceFilling(wireTags,  &
-    & INT(SIZE(wireTags), C_SIZE_T), &
-      & input(default=-1, option=tag), sphereCenterTag, ierr)
+!> Add a surface in the built-in CAD representation, filling the curve loops
+!! in `wireTags' using transfinite interpolation. Currently only a single
+!! curve loop is supported; this curve loop should be composed by 3 or 4
+!! curves only. If `tag' is positive, set the tag explicitly; otherwise a new
+!! tag is selected automatically. Return the tag of the surface.
+
+FUNCTION geo_AddSurfaceFilling(wireTags, tag, &
+  & sphereCenterTag) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: wireTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B), INTENT(IN) :: sphereCenterTag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddSurfaceFilling( &
+    & wireTags=gmsh_cint(wireTags),  &
+    & wireTags_n=INT(SIZE(wireTags), C_SIZE_T), &
+    & tag=gmsh_cint(input(default=-1, option=tag)), &
+    & sphereCenterTag=gmsh_cint(sphereCenterTag), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddSurfaceFilling
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddSurfaceLoop(obj,surfaceTags, tag ) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: surfaceTags(:)
-  INTEGER( I4B ), INTENT( IN ) ::  tag
-  INTEGER( I4B ) :: Ans
+!> Add a surface loop (a closed shell) formed by `surfaceTags' in the built-in
+!! CAD representation.  If `tag' is positive, set the tag explicitly;
+!! otherwise a new tag is selected automatically. Return the tag of the shell.
 
-  Ans = gmshModelGeoAddSurfaceLoop(surfaceTags,  &
-    & INT(SIZE(surfaceTags), C_SIZE_T), tag, ierr)
+FUNCTION geo_AddSurfaceLoop(surfaceTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: surfaceTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !
+  cintvar = gmshModelGeoAddSurfaceLoop( &
+    & surfaceTags=gmsh_cint(surfaceTags),  &
+    & surfaceTags_n=INT(SIZE(surfaceTags), C_SIZE_T), &
+    & tag=gmsh_cint(input(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddsurfaceLoop
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddVolume(obj, shellTags, tag) &
-  & RESULT( Ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) ::  shellTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
-  INTEGER( I4B ) :: Ans
-  Ans = gmshModelGeoAddVolume(shellTags,  &
-    & INT(SIZE(shellTags), C_SIZE_T), tag, ierr)
+!> Add a volume (a region) in the built-in CAD representation, defined by one
+!! or more shells `shellTags'. The first surface loop defines the exterior
+!! boundary; additional surface loop define holes. If `tag' is positive, set
+!! the tag explicitly; otherwise a new tag is selected automatically. Return
+!! the tag of the volume.
+
+FUNCTION geo_AddVolume(shellTags, tag) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: shellTags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddVolume( &
+    & shellTags=gmsh_cint(shellTags),  &
+    & shellTags_n=INT(SIZE(shellTags), C_SIZE_T), &
+    & tag=gmsh_cint(input(default=-1, option=tag)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
 END FUNCTION geo_AddVolume
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Extrude(obj, dimTags, dx, dy, dz, &
-  & outDimTags, numElements, heights, recombine ) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: dx, dy, dz
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
-  INTEGER( I4B ), INTENT( IN ) :: numElements(:)
-  REAL( DFP ), INTENT( IN ) :: heights(:)
-  INTEGER( I4B ), INTENT( IN ) :: recombine
-  INTEGER( I4B ) :: ans
+!> Add a `geometry' in the built-in CAD representation. `geometry' can
+!! currently be one of "Sphere" or "PolarSphere" (where `numbers' should
+!! contain the x, y, z coordinates of the center, followed by the radius), or
+!! "Parametric" (where `strings' should contains three expression evaluating
+!! to the x, y and z coordinates. If `tag' is positive, set the tag of the
+!! geometry explicitly; otherwise a new tag is selected automatically. Return
+!! the tag of the geometry.
 
-  INTEGER( C_SIZE_T ) :: outDimTags_n
-  TYPE( C_PTR ) :: cptr
+function geo_AddGeometry(geometry, numbers, &
+  & strings, tag) result(ans)
+  !!
+  character(len=*), intent(in) :: geometry
+  class(*), intent(in), optional :: numbers(:)
+  character(len=*), intent(in), optional :: strings(:)
+  integer(i4b), intent(in), optional :: tag
+  integer(i4b) :: ans
+  !!
+  character(len=maxStrLen, kind=c_char), allocatable :: strings_strs(:)
+  type(c_ptr), allocatable :: strings_(:)
+  real(c_double), allocatable :: numbers0(:)
+  !!
+  call gmsh_GetCharArray_cPtr(strings, strings_strs, strings_)
+  !
+  if (present(numbers)) then
+    numbers0 = gmsh_cdouble(numbers)
+  else
+    allocate (numbers0(0))
+  end if
+  !
+  cintvar = gmshModelGeoAddGeometry( &
+    & geometry=gmsh_CString(geometry), &
+    & numbers=numbers0, &
+    & numbers_n=size(numbers0, kind=c_size_t), &
+    & strings=strings_, &
+    & strings_n=gmsh_size_str(strings), &
+    & tag=gmsh_cint(input(default=-1, option=tag)), &
+    & ierr=ierr)
+  !
+  ans = int(cintvar, i4b)
+  !
+end function geo_AddGeometry
 
-  CALL gmshModelGeoExtrude(dimTags, INT(SIZE(dimTags), C_SIZE_T), dx, &
-    & dy, dz, cptr, outDimTags_n, numElements, INT(SIZE(numElements), &
-    & C_SIZE_T), heights, INT(SIZE(heights), C_SIZE_T), recombine, &
-    & ierr )
-  ans = INT(ierr, I4B)
-  CALL Reallocate( outDimTags, INT(outDimTags_n, I4B) )
-  CALL C_PTR_TO_INT_VEC( vec = outDimTags, cptr = cptr )
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!! Add a point in the built-in CAD representation, at coordinates (`x', `y',
+!! `z') on the geometry `geometryTag'. If `meshSize' is > 0, add a meshing
+!! constraint at that point. If `tag' is positive, set the tag explicitly;
+!! otherwise a new tag is selected automatically. Return the tag of the point.
+!! For surface geometries, only the `x' and `y' coordinates are used.
+
+function geo_AddPointOnGeometry(geometryTag, x, y, z, meshSize, &
+  & tag) result(ans)
+  integer(i4b), intent(in) :: geometryTag
+  class(*), intent(in) :: x
+  class(*), intent(in) :: y
+  class(*), intent(in), optional :: z
+  class(*), intent(in), optional :: meshSize
+  integer(i4b), intent(in), optional :: tag
+  integer(i4b) :: ans
+  !!
+  cintvar = gmshModelGeoAddPointOnGeometry( &
+    & geometryTag=gmsh_cint(geometryTag), &
+    & x=gmsh_cdouble(x), &
+    & y=gmsh_cdouble(y), &
+    & z=gmsh_opt_cdouble(default=0.0_DFP, option=z), &
+    & meshSize=gmsh_opt_cdouble(default=0.0_DFP, option=meshSize), &
+    & tag=gmsh_opt_cint(default=-1_I4B, option=tag), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
+  !!
+end function geo_AddPointOnGeometry
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> Extrude the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation, using a translation along (`dx', `dy',
+!! `dz'). Return extruded entities in `outDimTags'. If the `numElements'
+!! vector is not empty, also extrude the mesh: the entries in `numElements'
+!! give the number of elements in each layer. If the `height' vector is not
+!! empty, it provides the (cumulative) height of the different layers,
+!! normalized to 1. If `recombine' is set, recombine the mesh in the layers.
+
+FUNCTION geo_Extrude(dimTags, dx, dy, dz, &
+  & numElements, heights, recombine) RESULT(outDimTags)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: dx, dy, dz
+  INTEGER(I4B), INTENT(IN) :: numElements(:)
+  CLASS(*), INTENT(IN) :: heights(:)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombine
+  INTEGER(I4B), ALLOCATABLE :: outDimTags(:, :)
+  !!
+  INTEGER(C_SIZE_T) :: outDimTags_n
+  TYPE(C_PTR) :: cptr
+  !!
+  CALL gmshModelGeoExtrude( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=INT(SIZE(dimTags), C_SIZE_T), &
+    & dx=gmsh_cdouble(dx), &
+    & dy=gmsh_cdouble(dy), &
+    & dz=gmsh_cdouble(dz), &
+    & outDimTags=cptr, &
+    & outDimTags_n=outDimTags_n, &
+    & numElements=gmsh_cint(numElements), &
+    & numElements_n=SIZE(numElements, KIND=C_SIZE_T), &
+    & heights=gmsh_cdouble(heights), &
+    & heights_n=SIZE(heights, KIND=C_SIZE_T), &
+    & recombine=optval_c_bool(.false., recombine), &
+    & ierr=ierr)
+  !!
+  outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
+  !!
 END FUNCTION geo_Extrude
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_GeoRevolve(obj, dimTags, x, y, z, ax, ay, az, &
-  & angle, outDimTags, numElements, heights, recombine) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: x, y, z, ax, ay, az, angle
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
-  INTEGER( I4B ), INTENT( IN ) :: numElements( : )
-  REAL( DFP ), INTENT( IN ) :: heights( : )
-  INTEGER( I4B ), INTENT( IN ) :: recombine
-  INTEGER( I4B ) :: ans
+!> Extrude the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation, using a rotation of `angle' radians around
+!! the axis of revolution defined by the point (`x', `y', `z') and the
+!! direction (`ax', `ay', `az'). The angle should be strictly smaller than Pi.
+!! Return extruded entities in `outDimTags'. If the `numElements' vector is
+!! not empty, also extrude the mesh: the entries in `numElements' give the
+!! number of elements in each layer. If the `height' vector is not empty, it
+!! provides the (cumulative) height of the different layers, normalized to 1.
+!! If `recombine' is set, recombine the mesh in the layers.
 
-  INTEGER( C_SIZE_T ) :: outDimTags_n
-  TYPE( C_PTR ) :: cptr
-  CALL gmshModelGeoRevolve( dimTags, INT(SIZE(dimTags), C_SIZE_T), x, &
-    & y, z, ax, ay, az, angle, cptr, outDimTags_n, numElements, &
-    & INT(SIZE(numElements), C_SIZE_T), heights, &
-    & INT(SIZE(heights), C_SIZE_T), recombine, ierr )
-  ans = INT(ierr, I4B)
-  CALL Reallocate( outDimTags, INT(outDimTags_n, I4B) )
-  CALL C_PTR_TO_INT_VEC( vec=outDimTags, cptr=cptr )
+FUNCTION geo_GeoRevolve(dimTags, x, y, z, ax, ay, az, &
+  & angle, numElements, heights, recombine) &
+  & RESULT(outDimTags)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: x, y, z, ax, ay, az, angle
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: numElements(:)
+  CLASS(*), OPTIONAL, INTENT(IN) :: heights(:)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombine
+  INTEGER(I4B), ALLOCATABLE :: outDimTags(:, :)
+  !!
+  INTEGER(C_SIZE_T) :: outDimTags_n
+  TYPE(C_PTR) :: cptr
+  REAL(C_DOUBLE), ALLOCATABLE :: heights0(:)
+  INTEGER(C_INT), ALLOCATABLE :: numElements0(:)
+  !!
+  IF (PRESENT(numElements)) THEN
+    numElements0 = gmsh_cint(numElements)
+  ELSE
+    ALLOCATE (numElements0(0))
+  END IF
+  !!
+  IF (PRESENT(heights)) THEN
+    heights0 = gmsh_cdouble(heights)
+  ELSE
+    ALLOCATE (heights0(0))
+  END IF
+  !!
+  CALL gmshModelGeoRevolve( &
+    & dimTags=dimTags, &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & x=gmsh_cdouble(x), &
+    & y=gmsh_cdouble(y), &
+    & z=gmsh_cdouble(z), &
+    & ax=gmsh_cdouble(ax), &
+    & ay=gmsh_cdouble(ay), &
+    & az=gmsh_cdouble(az), &
+    & angle=gmsh_cdouble(angle), &
+    & outDimTags=cptr, &
+    & outDimTags_n=outDimTags_n,&
+    & numElements=numElements0, &
+    & numElements_n=SIZE(numElements0, KIND=C_SIZE_T), &
+    & heights=heights0, &
+    & heights_n=SIZE(heights0, KIND=C_SIZE_T), &
+    & recombine=optval_c_bool(.false., recombine), &
+    & ierr=ierr)
+  !!
+  outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
+  !!
+  DEALLOCATE (heights0, numElements0)
+  !!
 END FUNCTION geo_GeoRevolve
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Twist( obj, dimTags, x, y, z, dx, dy, dz, ax, &
-  & ay, az, angle, outDimTags, numElements, heights, recombine ) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags( : )
-  REAL( DFP ), INTENT( IN ) :: x, y, z, dx, dy, dz, ax, ay, az, angle
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
-  INTEGER( I4B ), INTENT( IN ) :: numElements(:)
-  REAL( DFP ), INTENT( IN ) :: heights(:)
-  INTEGER( I4B ), INTENT( IN ) :: recombine
-  INTEGER( I4B ) :: ans
+!> Extrude the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation, using a combined translation and rotation
+!! of `angle' radians, along (`dx', `dy', `dz') and around the axis of
+!! revolution defined by the point (`x', `y', `z') and the direction (`ax',
+!! `ay', `az'). The angle should be strictly smaller than Pi. Return extruded
+!! entities in `outDimTags'. If the `numElements' vector is not empty, also
+!! extrude the mesh: the entries in `numElements' give the number of elements
+!! in each layer. If the `height' vector is not empty, it provides the
+!! (cumulative) height of the different layers, normalized to 1. If
+!! `recombine' is set, recombine the mesh in the layers.
+
+FUNCTION geo_Twist(dimTags, x, y, z, dx, dy, dz, ax, &
+  & ay, az, angle, numElements, heights, recombine) &
+  & RESULT(outDimTags)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: x, y, z, dx, dy, dz, ax, ay, az, angle
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: numElements(:)
+  CLASS(*), OPTIONAL, INTENT(IN) :: heights(:)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombine
+  INTEGER(I4B), ALLOCATABLE :: outDimTags(:, :)
   !
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: outDimTags_n
-  CALL gmshModelGeoTwist(dimTags, SIZE(dimTags, KIND=C_SIZE_T), x, y, &
-    & z, dx, dy, dz, ax, ay, az, angle, cptr, outDimTags_n, &
-    & numElements, SIZE(numElements, KIND=C_SIZE_T), heights, &
-    & SIZE(heights, KIND=C_SIZE_T), recombine, ierr)
-  ans = INT(ierr, I4B)
-  CALL Reallocate(outDimTags, int(outDimTags_n, i4b))
-  CALL C_PTR_TO_INT_VEC( vec=outDimTags, cptr=cptr )
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: outDimTags_n
+  REAL(C_DOUBLE), ALLOCATABLE :: heights0(:)
+  INTEGER(C_INT), ALLOCATABLE :: numElements0(:)
+  !!
+  IF (PRESENT(numElements)) THEN
+    numElements0 = gmsh_cint(numElements)
+  ELSE
+    ALLOCATE (numElements0(0))
+  END IF
+  !!
+  IF (PRESENT(heights)) THEN
+    heights0 = gmsh_cdouble(heights)
+  ELSE
+    ALLOCATE (heights0(0))
+  END IF
+  !!
+  CALL gmshModelGeoTwist( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & x=gmsh_cdouble(x), &
+    & y=gmsh_cdouble(y), &
+    & z=gmsh_cdouble(z), &
+    & dx=gmsh_cdouble(dx), &
+    & dy=gmsh_cdouble(dy), &
+    & dz=gmsh_cdouble(dz), &
+    & ax=gmsh_cdouble(ax), &
+    & ay=gmsh_cdouble(ay), &
+    & az=gmsh_cdouble(az), &
+    & angle=gmsh_cdouble(angle), &
+    & outDimTags=cptr, &
+    & outDimTags_n=outDimTags_n, &
+    & numElements=numElements0, &
+    & numElements_n=SIZE(numElements0, KIND=C_SIZE_T), &
+    & heights=heights0, &
+    & heights_n=SIZE(heights0, KIND=C_SIZE_T), &
+    & recombine=optval_c_bool(.false., recombine), &
+    & ierr=ierr)
+  !!
+  outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
+  !!
+  DEALLOCATE (heights0, numElements0)
+  !!
 END FUNCTION geo_Twist
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_ExtrudeBoundaryLayer( obj, dimTags, &
-  & outDimTags, numElements, &
-  & heights, recombine, second, viewIndex ) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags( : )
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
-  INTEGER( I4B ), INTENT( IN ) :: numElements(:)
-  REAL( DFP ), INTENT( IN ) :: heights(:)
-  INTEGER( I4B ), INTENT( IN ) :: recombine, second, viewIndex
-  INTEGER( I4B ) :: ans
+!> Extrude the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation along the normals of the mesh, creating
+!! discrete boundary layer entities. Return extruded entities in `outDimTags'.
+!! The entries in `numElements' give the number of elements in each layer. If
+!! the `height' vector is not empty, it provides the (cumulative) height of
+!! the different layers. If `recombine' is set, recombine the mesh in the
+!! layers. A second boundary layer can be created from the same entities if
+!! `second' is set. If `viewIndex' is >= 0, use the corresponding view to
+!! either specify the normals (if the view contains a vector field) or scale
+!! the normals (if the view is scalar).
+
+FUNCTION geo_ExtrudeBoundaryLayer(dimTags, &
+  & numElements, heights, recombine, second, viewIndex) &
+  & RESULT(outDimTags)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: numElements(:)
+  CLASS(*), OPTIONAL, INTENT(IN) :: heights(:)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombine, second, viewIndex
+  INTEGER(I4B), ALLOCATABLE :: outDimTags(:, :)
   !
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: outDimTags_n
-  CALL gmshModelGeoExtrudeBoundaryLayer( dimTags, &
-    & SIZE(dimTags, kind=c_size_t), cptr, outDimTags_n, &
-    & numElements, SIZE(numElements, kind=c_size_t), &
-    & heights, SIZE(heights, kind=c_size_t), recombine, second, &
-    & viewIndex, ierr )
-  ans = INT(ierr, I4B)
-  CALL Reallocate(outDimTags, int(outDimTags_n, i4b))
-  CALL C_PTR_TO_INT_VEC( vec=outDimTags, cptr=cptr )
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: outDimTags_n
+  REAL(C_DOUBLE), ALLOCATABLE :: heights0(:)
+  INTEGER(C_INT), ALLOCATABLE :: numElements0(:)
+  !!
+  IF (PRESENT(numElements)) THEN
+    numElements0 = gmsh_cint(numElements)
+  ELSE
+    ALLOCATE (numElements0(0))
+  END IF
+  !!
+  IF (PRESENT(heights)) THEN
+    heights0 = gmsh_cdouble(heights)
+  ELSE
+    ALLOCATE (heights0(0))
+  END IF
+  !!
+  CALL gmshModelGeoExtrudeBoundaryLayer( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, kind=c_size_t), &
+    & outDimTags=cptr, &
+    & outDimTags_n=outDimTags_n, &
+    & numElements=numElements0, &
+    & numElements_n=SIZE(numElements0, kind=c_size_t), &
+    & heights=heights0, &
+    & heights_n=SIZE(heights0, kind=c_size_t), &
+    & recombine=optval_c_bool(.false., recombine), &
+    & second=optval_c_bool(.false., second), &
+    & viewIndex=optval_c_bool(.false., viewIndex), &
+    & ierr=ierr)
+  !!
+  outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
+  !!
+  DEALLOCATE (heights0, numElements0)
 END FUNCTION geo_ExtrudeBoundaryLayer
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_GeoTranslate(obj, dimTags, dx, dy, dz) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: dx, dy, dz
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoTranslate(dimTags, &
-    & size(dimTags, kind=c_size_t), dx, dy, dz, ierr)
+!> Translate the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation along (`dx', `dy', `dz').
+
+FUNCTION geo_GeoTranslate(dimTags, dx, dy, dz) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: dx, dy, dz
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshModelGeoTranslate( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & dx=gmsh_cdouble(dx), &
+    & dy=gmsh_cdouble(dy), &
+    & dz=gmsh_cdouble(dz), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_GeoTranslate
 
@@ -500,14 +899,29 @@ END FUNCTION geo_GeoTranslate
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_GeoRotate(obj, dimTags, x, y, z, ax, ay, az, &
-  & angle) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: x, y, z, ax, ay, az, angle
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoRotate(dimTags, size(dimTags, kind=c_size_t), x, &
-    & y, z, ax, ay, az, angle, ierr)
+!> Rotate the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation by `angle' radians around the axis of
+!! revolution defined by the point (`x', `y', `z') and the direction (`ax',
+!! `ay', `az').
+
+FUNCTION geo_GeoRotate(dimTags, x, y, z, ax, ay, az, &
+  & angle) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: x, y, z, ax, ay, az, angle
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshModelGeoRotate( &
+    & dimTags=dimTags, &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & x=gmsh_cdouble(x), &
+    & y=gmsh_cdouble(y), &
+    & z=gmsh_cdouble(z), &
+    & ax=gmsh_cdouble(ax), &
+    & ay=gmsh_cdouble(ay), &
+    & az=gmsh_cdouble(az), &
+    & angle=gmsh_cdouble(angle), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_GeoRotate
 
@@ -515,15 +929,28 @@ END FUNCTION geo_GeoRotate
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_GeoDilate(obj, dimTags, x, y, z, a, b, c) &
-  & RESULT(ans)
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: x, y, z, a, b, c
-  INTEGER( I4B ) :: ans
+!> Scale the entities `dimTags' (given as a vector of (dim, tag) pairs) in the
+!! built-in CAD representation by factors `a', `b' and `c' along the three
+!! coordinate axes; use (`x', `y', `z') as the center of the homothetic
+!! transformation.
 
-  CALL gmshModelGeoDilate(dimTags, size(dimTags, kind=c_size_t), x, &
-    & y, z, a, b, c, ierr)
+FUNCTION geo_GeoDilate(dimTags, x, y, z, a, b, c) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: x, y, z, a, b, c
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshModelGeoDilate( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & x=gmsh_cdouble(x), &
+    & y=gmsh_cdouble(y), &
+    & z=gmsh_cdouble(z), &
+    & a=gmsh_cdouble(a), &
+    & b=gmsh_cdouble(b), &
+    & c=gmsh_cdouble(c), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_GeoDilate
 
@@ -531,14 +958,25 @@ END FUNCTION geo_GeoDilate
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Mirror(obj, dimTags, a, b, c, d) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: a, b, c, d
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoMirror(dimTags, size(dimTags, kind=c_size_t), a, b, &
-    & c, d, ierr)
+!> Mirror the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation, with respect to the plane of equation `a'
+!! * x + `b' * y + `c' * z + `d' = 0.
+
+FUNCTION geo_Mirror(dimTags, a, b, c, d) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: a, b, c, d
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshModelGeoMirror( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & a=gmsh_cdouble(a), &
+    & b=gmsh_cdouble(b), &
+    & c=gmsh_cdouble(c), &
+    & d=gmsh_cdouble(d), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_Mirror
 
@@ -546,14 +984,26 @@ END FUNCTION geo_Mirror
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Symmetrize(obj, dimTags, a, b, c, d) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  REAL( DFP ), INTENT( IN ) :: a, b, c, d
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoSymmetrize(dimTags, size(dimTags, kind=c_size_t), a, &
-    & b, c, d, ierr)
+!> Mirror the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation, with respect to the plane of equation `a'
+!! * x + `b' * y + `c' * z + `d' = 0. (This is a synonym for `mirror', which
+!! will be deprecated in a future release.)
+
+FUNCTION geo_Symmetrize(dimTags, a, b, c, d) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  CLASS(*), INTENT(IN) :: a, b, c, d
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshModelGeoSymmetrize( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & a=gmsh_cdouble(a), &
+    & b=gmsh_cdouble(b), &
+    & c=gmsh_cdouble(c), &
+    & d=gmsh_cdouble(d), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_Symmetrize
 
@@ -561,35 +1011,46 @@ END FUNCTION geo_Symmetrize
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Copy(obj, dimTags, outDimTags ) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: outDimTags( : )
-  INTEGER( I4B ) :: ans
-  ! internal
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: outDimTags_n
+!> Copy the entities `dimTags' (given as a vector of (dim, tag) pairs) in the
+!! built-in CAD representation; the new entities are returned in `outDimTags'.
 
-  CALL gmshModelGeoCopy(dimTags, size(dimTags, kind=c_size_t), cptr, &
-    & outDimTags_n, ierr)
-  ans = INT(ierr, I4B)
-  CALL Reallocate(outDimTags, int(outDimTags_n, kind=i4b))
-  CALL C_PTR_TO_INT_VEC( vec=outDimTags, cptr=cptr )
+FUNCTION geo_Copy(dimTags) RESULT(outDimTags)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  INTEGER(I4B), ALLOCATABLE :: outDimTags(:, :)
+  ! internal
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: outDimTags_n
+  !!
+  CALL gmshModelGeoCopy( &
+    & dimTags=gmsh_cint(dimTags), &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & outDimTags=cptr, &
+    & outDimTags_n=outDimTags_n, &
+    & ierr=ierr)
+  !!
+  outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
 END FUNCTION geo_Copy
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Remove(obj, dimTags, recursive) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  INTEGER( I4B ), INTENT( IN ) :: recursive
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoRemove(dimTags, size(dimTags, kind=c_size_t), &
-    & recursive, ierr)
+!> Remove the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+!! the built-in CAD representation, provided that they are not on the boundary
+!! of higher-dimensional entities. If `recursive' is true, remove all the
+!! entities on their boundaries, down to dimension 0.
+
+FUNCTION geo_Remove(dimTags, recursive) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recursive
+  INTEGER(I4B) :: ans
+  !!
+  CALL gmshModelGeoRemove( &
+    & dimTags=dimTags, &
+    & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+    & recursive=optval_c_bool(.false., recursive), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_Remove
 
@@ -597,9 +1058,9 @@ END FUNCTION geo_Remove
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_RemoveAllDuplicates(obj) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+FUNCTION geo_RemoveAllDuplicates() RESULT(ans)
+
+  INTEGER(I4B) :: ans
   CALL gmshModelGeoRemoveAllDuplicates(ierr)
   ans = INT(ierr, I4B)
 END FUNCTION geo_RemoveAllDuplicates
@@ -608,73 +1069,116 @@ END FUNCTION geo_RemoveAllDuplicates
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_SplitCurve(obj, tag, pointTags, curveTags) &
-  RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: tag
-  INTEGER( I4B ), INTENT( IN ) :: pointTags(:)
-  INTEGER( I4B ), ALLOCATABLE, INTENT( OUT ) :: curveTags( : )
-  INTEGER( I4B ) :: ans
+!> Split the curve of tag `tag' in the built-in CAD representation, on the
+!! specified control points `pointTags'. This feature is only available for
+!! lines, splines and b-splines. Return the tag(s) `curveTags' of the newly
+!! created curve(s).
 
+FUNCTION geo_SplitCurve(tag, pointTags) &
+  & RESULT(curveTags)
+  INTEGER(I4B), INTENT(IN) :: tag
+  INTEGER(I4B), INTENT(IN) :: pointTags(:)
+  INTEGER(I4B), ALLOCATABLE :: curveTags(:)
   ! internal
-  TYPE( C_PTR ) :: cptr
-  INTEGER( C_SIZE_T ) :: curveTags_n
-  CALL gmshModelGeoSplitCurve(tag, pointTags, &
-    & size(pointTags, kind=c_size_t), cptr, curveTags_n, ierr)
-
-  CALL Reallocate( curveTags, int(curveTags_n, i4b))
-  CALL C_PTR_TO_INT_VEC( vec=curveTags, cptr=cptr )
+  TYPE(C_PTR) :: cptr
+  INTEGER(C_SIZE_T) :: curveTags_n
+  !
+  CALL gmshModelGeoSplitCurve( &
+    & tag=gmsh_cint(tag), &
+    & pointTags=gmsh_cint(pointTags), &
+    & pointTags_n=size(pointTags, kind=c_size_t), &
+    & curveTags=cptr, &
+    & curveTags_n=curveTags_n, &
+    & ierr=ierr)
+  !
+  curveTags = gmsh_intvec_c2f(cptr, curveTags_n)
+  !
 END FUNCTION geo_SplitCurve
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_GetMaxTag(obj,dim) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ) :: ans
-  ans = gmshModelGeoGetMaxTag( dim, ierr )
+!> Get the maximum tag of entities of dimension `dim' in the built-in CAD
+!! representation.
+
+FUNCTION geo_GetMaxTag(dim) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dim
+  INTEGER(I4B) :: ans
+  cintvar = gmshModelGeoGetMaxTag(dim=gmsh_cint(dim), ierr=ierr)
+  ans = int(cintvar, i4b)
 END FUNCTION geo_GetMaxTag
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_SetMaxTag(obj, dim, maxTag) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim, maxTag
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoSetMaxTag( dim, maxTag, ierr )
-  ans = INT( ierr, I4B )
+!> Set the maximum tag `maxTag' for entities of dimension `dim' in the built-
+!! in CAD representation.
+
+FUNCTION geo_SetMaxTag(dim, maxTag) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dim, maxTag
+  INTEGER(I4B) :: ans
+  CALL gmshModelGeoSetMaxTag( &
+    & dim=gmsh_cint(dim), maxTag=gmsh_cint(maxTag), ierr=ierr)
+  ans = INT(ierr, I4B)
 END FUNCTION geo_SetMaxTag
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_AddPhysicalGroup(obj, dim, tags, tag) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dim
-  INTEGER( I4B ), INTENT( IN ) :: tags(:)
-  INTEGER( I4B ), INTENT( IN ) :: tag
-  INTEGER( I4B ) :: ans
-  ans = gmshModelGeoAddPhysicalGroup(dim, tags, &
-    & size(tags,kind=c_size_t), tag, ierr)
+!> Add a physical group of dimension `dim', grouping the entities with tags
+!! `tags' in the built-in CAD representation. Return the tag of the physical
+!! group, equal to `tag' if `tag' is positive, or a new tag if `tag' < 0. Set
+!! the name of the physical group if `name' is not empty.
+
+FUNCTION geo_AddPhysicalGroup(dim, tags, tag, name) &
+  & RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: dim
+  INTEGER(I4B), INTENT(IN) :: tags(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
+  CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: name
+  INTEGER(I4B) :: ans
+  !!
+  cintvar = gmshModelGeoAddPhysicalGroup( &
+    & dim=gmsh_cint(dim), &
+    & tags=gmsh_cint(tags), &
+    & tags_n=size(tags, kind=c_size_t), &
+    & tag=gmsh_opt_cint(default=-1_I4B, option=tag), &
+    & name=gmsh_CString(input(default="", option=name)), &
+    & ierr=ierr)
+  !!
+  ans = int(cintvar, i4b)
 END FUNCTION geo_AddPhysicalGroup
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_RemovePhysicalGroups(obj, dimTags) &
-  & RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: dimTags(:)
-  INTEGER( I4B ) :: ans
-  CALL gmshModelGeoRemovePhysicalGroups( dimTags, &
-    & size(dimTags, kind=c_size_t), ierr)
+!> Remove the physical groups `dimTags' (given as a vector of (dim, tag)
+!! pairs) from the built-in CAD representation. If `dimTags' is empty, remove
+!! all groups.
+
+FUNCTION geo_RemovePhysicalGroups(dimTags) &
+  & RESULT(ans)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: dimTags(:, :)
+  INTEGER(I4B) :: ans
+  !!
+  !!
+  INTEGER(C_INT), ALLOCATABLE :: dimTags0(:, :)
+  !!
+  IF (PRESENT(dimTags)) THEN
+    dimTags0 = gmsh_cint(dimTags)
+  ELSE
+    ALLOCATE (dimTags0(0, 0))
+  END IF
+  !!
+  CALL gmshModelGeoRemovePhysicalGroups( &
+    & dimTags=dimTags0, &
+    & dimTags_n=SIZE(dimTags0, KIND=c_size_t), &
+    & ierr=ierr)
+  !!
   ans = INT(ierr, I4B)
 END FUNCTION geo_RemovePhysicalGroups
 
@@ -682,12 +1186,21 @@ END FUNCTION geo_RemovePhysicalGroups
 !
 !----------------------------------------------------------------------------
 
-FUNCTION geo_Synchronize(obj) RESULT( ans )
-  CLASS( _DT_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+!> Synchronize the built-in CAD representation with the current Gmsh model.
+!! This can be called at any time, but since it involves a non trivial amount
+!! of processing, the number of synchronization points should normally be
+!! minimized. Without synchronization the entities in the built-in CAD
+!! representation are not available to any function outside of the built-in
+!! CAD kernel functions.
+
+FUNCTION geo_Synchronize() RESULT(ans)
+  INTEGER(I4B) :: ans
   CALL gmshModelGeoSynchronize(ierr)
   ans = INT(ierr, I4B)
 END FUNCTION geo_Synchronize
 
 END MODULE GmshModelGeo_Class
+
+#ifdef _DT_
+#undef _DT_
 #endif
