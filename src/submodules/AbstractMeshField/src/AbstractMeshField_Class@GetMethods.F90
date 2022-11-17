@@ -24,32 +24,32 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Get
-  CHARACTER( LEN = * ), PARAMETER :: myName="aField_Get"
-  INTEGER( I4B ) :: iel
+CHARACTER(LEN=*), PARAMETER :: myName = "aField_Get"
+INTEGER(I4B) :: iel
+!!
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   !!
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    !!
-    fevar%val = obj%val( :, 1 )
-    fevar%s=obj%s
-    fevar%defineOn=obj%defineOn
-    fevar%varType=obj%varType
-    fevar%rank=obj%rank
-    !!
-  ELSE
-    !!
-    IF( .NOT. PRESENT( globalElement ) ) THEN
-      CALL e%raiseError(modName //'::'//myName// ' - '// &
-        & 'globalElement should be present, when mesh field is not constant')
-    END IF
-    !!
-    iel = obj%mesh%getLocalElemNumber( globalElement )
-    fevar%val = obj%val( :, iel )
-    fevar%s=obj%s
-    fevar%defineOn=obj%defineOn
-    fevar%varType=obj%varType
-    fevar%rank=obj%rank
+  fevar%val = obj%val(:, 1)
+  fevar%s = obj%s
+  fevar%defineOn = obj%defineOn
+  fevar%varType = obj%varType
+  fevar%rank = obj%rank
+  !!
+ELSE
+  !!
+  IF (.NOT. PRESENT(globalElement)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'globalElement should be present, when mesh field is not constant')
   END IF
   !!
+  iel = obj%mesh%getLocalElemNumber(globalElement)
+  fevar%val = obj%val(:, iel)
+  fevar%s = obj%s
+  fevar%defineOn = obj%defineOn
+  fevar%varType = obj%varType
+  fevar%rank = obj%rank
+END IF
+!!
 END PROCEDURE aField_Get
 
 !----------------------------------------------------------------------------
