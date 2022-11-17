@@ -29,14 +29,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set1
-  !!
 #ifdef DEBUG_VER
 CHARACTER(LEN=*), PARAMETER :: myName = "mField_set1"
-#endif
-  !!
-  !! Main
-  !!
-#ifdef DEBUG_VER
   !!
   !! check
   !!
@@ -48,22 +42,21 @@ IF (SIZE(value, 1) .NE. SIZE(value, 2)  &
 #endif
   !!
 IF (PRESENT(addContribution)) THEN
-    !!
+  !!
   CALL add(obj=obj%mat,  &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode),  &
     & value=value, &
     & storageFMT=storageFMT, &
     & scale=INPUT(default=1.0_DFP, option=scale))
-    !!
+  !!
 ELSE
-    !!
+  !!
   CALL set(obj=obj%mat,  &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & value=value, &
     & storageFMT=storageFMT)
-    !!
-END IF
   !!
+END IF
 END PROCEDURE mField_set1
 
 !----------------------------------------------------------------------------
@@ -76,42 +69,41 @@ CHARACTER(LEN=*), PARAMETER :: myName = "mField_set2"
   !! Main
   !!
 IF (PRESENT(addContribution)) THEN
-    !!
-    !! Add
-    !!
+  !!
+  !! Add
+  !!
   IF (PRESENT(globalNode)) THEN
     !!
     CALL add(obj=obj%mat,  &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & scale=INPUT(default=1.0_DFP, option=scale), &
       & value=value)
-      !!
+    !!
   ELSE
-      !!
+    !!
     CALL add(obj=obj%mat,  &
       & value=value, &
       & scale=INPUT(default=1.0_DFP, option=scale))
-      !!
+    !!
   END IF
-    !!
-    !! Set
-    !!
+  !!
+  !! Set
+  !!
 ELSE
-    !!
+  !!
   IF (PRESENT(globalNode)) THEN
-      !!
+    !!
     CALL set(obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & value=value)
-      !!
-  ELSE
-      !!
-    CALL set(obj=obj%mat, value=value)
-      !!
-  END IF
     !!
-END IF
+  ELSE
+    !!
+    CALL set(obj=obj%mat, value=value)
+    !!
+  END IF
   !!
+END IF
 END PROCEDURE mField_set2
 
 !----------------------------------------------------------------------------
@@ -119,13 +111,8 @@ END PROCEDURE mField_set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set3
-  !!
-  !! main
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
-    !!
+  !!
   CALL add(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -146,7 +133,6 @@ ELSE
     & value=value)
     !!
 END IF
-  !!
 END PROCEDURE mField_set3
 
 !----------------------------------------------------------------------------
@@ -154,13 +140,8 @@ END PROCEDURE mField_set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set4
-  !!
-  !! main
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
-    !!
+  !!
   CALL add(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -172,16 +153,15 @@ IF (PRESENT(addContribution)) THEN
   !! Set
   !!
 ELSE
-    !!
+  !!
   CALL set(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
     & ivar=ivar, &
     & jvar=jvar, &
     & value=value)
-    !!
-END IF
   !!
+END IF
 END PROCEDURE mField_set4
 
 !----------------------------------------------------------------------------
@@ -189,13 +169,8 @@ END PROCEDURE mField_set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set5
-  !!
-  !! main
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
-    !!
+  !!
   CALL add(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -209,7 +184,7 @@ IF (PRESENT(addContribution)) THEN
   !! Set
   !!
 ELSE
-    !!
+  !!
   CALL set(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -220,7 +195,6 @@ ELSE
     & value=value)
     !!
 END IF
-  !!
 END PROCEDURE mField_set5
 
 !----------------------------------------------------------------------------
@@ -228,11 +202,8 @@ END PROCEDURE mField_set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set6
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
-    !!
+  !!
   CALL add(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -243,10 +214,8 @@ IF (PRESENT(addContribution)) THEN
     & value=value, &
     & scale=INPUT(default=1.0_DFP, option=scale))
   !!
-  !! Set
-  !!
 ELSE
-    !!
+  !!
   CALL set(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -255,9 +224,8 @@ ELSE
     & idof=idof, &
     & jdof=jdof, &
     & value=value)
-    !!
-END IF
   !!
+END IF
 END PROCEDURE mField_set6
 
 !----------------------------------------------------------------------------
@@ -265,9 +233,6 @@ END PROCEDURE mField_set6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set7
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
     !!
   CALL add(obj=obj%mat, &
@@ -281,8 +246,6 @@ IF (PRESENT(addContribution)) THEN
     & jtimecompo=jtimecompo, &
     & value=value, &
     & scale=INPUT(default=1.0_DFP, option=scale))
-  !!
-  !! Set
   !!
 ELSE
     !!
@@ -298,7 +261,6 @@ ELSE
     & value=value)
     !!
 END IF
-  !!
 END PROCEDURE mField_set7
 
 !----------------------------------------------------------------------------
@@ -306,9 +268,6 @@ END PROCEDURE mField_set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set8
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
     !!
   CALL add(obj=obj%mat, &
@@ -322,8 +281,6 @@ IF (PRESENT(addContribution)) THEN
     & jtimecompo=jtimecompo, &
     & value=value, &
     & scale=INPUT(default=1.0_DFP, option=scale))
-  !!
-  !! Set
   !!
 ELSE
     !!
@@ -339,7 +296,6 @@ ELSE
     & value=value)
     !!
 END IF
-  !!
 END PROCEDURE mField_set8
 
 !----------------------------------------------------------------------------
@@ -347,9 +303,6 @@ END PROCEDURE mField_set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set9
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
     !!
   CALL add(obj=obj%mat, &
@@ -364,10 +317,8 @@ IF (PRESENT(addContribution)) THEN
     & value=value, &
     & scale=INPUT(default=1.0_DFP, option=scale))
   !!
-  !! Set
-  !!
 ELSE
-    !!
+  !!
   CALL set(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
@@ -380,7 +331,6 @@ ELSE
     & value=value)
     !!
 END IF
-  !!
 END PROCEDURE mField_set9
 
 !----------------------------------------------------------------------------
@@ -388,9 +338,6 @@ END PROCEDURE mField_set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_set10
-  !!
-  !! Add
-  !!
 IF (PRESENT(addContribution)) THEN
     !!
   CALL add(obj=obj%mat, &
@@ -404,8 +351,6 @@ IF (PRESENT(addContribution)) THEN
     & jtimecompo=jtimecompo, &
     & value=value, &
     & scale=INPUT(default=1.0_DFP, option=scale))
-  !!
-  !! Set
   !!
 ELSE
     !!
@@ -421,7 +366,6 @@ ELSE
     & value=value)
     !!
 END IF
-  !!
 END PROCEDURE mField_set10
 
 END SUBMODULE SetMethods
