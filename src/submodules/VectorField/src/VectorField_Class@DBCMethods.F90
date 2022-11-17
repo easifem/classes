@@ -25,25 +25,24 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_applyDirichletBC1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "vField_applyDirichletBC1"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: idof
-  !!
-  !! main
-  !!
-  CALL dbc%get( &
-    & nodalvalue=nodalvalue, &
-    & nodenum=nodenum )
-  !!
-  CALL obj%Set( &
-    & globalNode=nodenum, &
-    & value=nodalvalue(:,1), &
-    & spaceCompo=dbc%getDOFNo() )
-  !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+CHARACTER(LEN=*), PARAMETER :: myName = "vField_applyDirichletBC1"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+!!
+!! main
+!!
+CALL dbc%get( &
+  & nodalvalue=nodalvalue, &
+  & nodenum=nodenum)
+!!
+CALL obj%Set( &
+  & globalNode=nodenum, &
+  & value=nodalvalue(:, 1), &
+  & spaceCompo=dbc%getDOFNo())
+!!
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+!!
 END PROCEDURE vField_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -51,29 +50,29 @@ END PROCEDURE vField_applyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_applyDirichletBC2
-  CHARACTER( LEN = * ), PARAMETER :: myName = "vField_applyDirichletBC2"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: idof
+CHARACTER(LEN=*), PARAMETER :: myName = "vField_applyDirichletBC2"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: idof
+!!
+!! main
+!!
+DO idof = 1, SIZE(dbc)
   !!
-  !! main
+  CALL dbc(idof)%ptr%get( &
+    & nodalvalue=nodalvalue, &
+    & nodenum=nodenum)
   !!
-  DO idof = 1, SIZE( dbc )
-    !!
-    CALL dbc(idof)%ptr%get( &
-      & nodalvalue=nodalvalue, &
-      & nodenum=nodenum )
-    !!
-    CALL obj%Set( &
-      & globalNode=nodenum, &
-      & value=nodalvalue(:,1), &
-      & spaceCompo=dbc(idof)%ptr%getDOFNo() )
-    !!
-  END DO
+  CALL obj%Set( &
+    & globalNode=nodenum, &
+    & value=nodalvalue(:, 1), &
+    & spaceCompo=dbc(idof)%ptr%getDOFNo())
   !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+END DO
+!!
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+!!
 END PROCEDURE vField_applyDirichletBC2
 
 !----------------------------------------------------------------------------

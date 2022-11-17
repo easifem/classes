@@ -215,8 +215,8 @@ nrow = tNodes(1) * spaceCompo(1) * timeCompo(1)
 ncol = nrow
 obj%domain => dom
 !!
-CALL initiate(obj=obj%mat, nrow=nrow, ncol=ncol, dof=dofobj, &
-  & matrixProp=char_var)
+CALL initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
+  & jdof=dofobj, matrixProp=char_var)
 !!
 DEALLOCATE (char_var)
 obj%isInitiated = .TRUE.
@@ -260,7 +260,7 @@ INTEGER(I4B) :: ierror, nrow, ncol, storageFMT, tNodes(tVar), &
 CHARACTER(LEN=1) :: physicalVarNames(2)
 CHARACTER(LEN=:), ALLOCATABLE :: matrixProp
 CHARACTER(LEN=:), ALLOCATABLE :: char_var
-TYPE(DOF_) :: dofobj
+TYPE(DOF_) :: idofobj, jdofobj
 !!
 !! check
 !!
@@ -269,7 +269,6 @@ IF (obj%isInitiated) &
   & 'Matrix field object is already initiated')
 !!
 CALL RectangleMatrixFieldCheckEssentialParam(obj, param)
-!!
 !!
 !! matrixProp
 !!
@@ -341,7 +340,7 @@ END IF
 !!
 !! storage format
 !!
-storageFMT = FMT_DOF
+storageFMT = FMT_NODES
 !!
 !! domains
 !!
@@ -353,16 +352,35 @@ END DO
 !!
 !! make [[DOF_]]
 !!
-CALL Initiate(obj=dofobj, tNodes=tNodes, names=physicalVarNames, &
-  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
+CALL Initiate( &
+  & obj=idofobj, &
+  & tNodes=tNodes(1:1), &
+  & names=physicalVarNames(1:1), &
+  & spaceCompo=spaceCompo(1:1), &
+  & timeCompo=timeCompo(1:1), &
+  & storageFMT=storageFMT)
+!!
+CALL Initiate( &
+  & obj=jdofobj, &
+  & tNodes=tNodes(2:2), &
+  & names=physicalVarNames(2:2), &
+  & spaceCompo=spaceCompo(2:2), &
+  & timeCompo=timeCompo(2:2), &
+  & storageFMT=storageFMT)
 !!
 !! CSRMatrix/Initiate
 !!
-nrow = tNodes(1) * spaceCompo(1) * timeCompo(1)
-ncol = tNodes(2) * spaceCompo(2) * timeCompo(2)
+nrow = .tNodes.idofobj
+ncol = .tNodes.jdofobj
 !!
-CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, dof=dofobj, &
+CALL Initiate( &
+  & obj=obj%mat, &
+  & nrow=nrow, &
+  & ncol=ncol, &
+  & idof=idofobj, &
+  & jdof=jdofobj, &
   & matrixProp=matrixProp)
+!!
 DEALLOCATE (matrixProp)
 !!
 obj%isInitiated = .TRUE.
@@ -371,7 +389,8 @@ obj%isPmatInitiated = .FALSE.
 !! setting the sparsity
 !!
 CALL DomainSetSparsity(mat=obj%mat, domains=obj%domains)
-CALL Deallocate (dofobj)
+CALL Deallocate (idofobj)
+CALL Deallocate (jdofobj)
 END PROCEDURE mField_Initiate3
 
 !----------------------------------------------------------------------------

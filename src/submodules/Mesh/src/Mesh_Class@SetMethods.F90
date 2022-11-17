@@ -127,6 +127,13 @@ IF (SIZE(nodeToNode) .NE. obj%maxNptrs) THEN
     & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
 !!
+!! check
+!!
+IF (.NOT. obj%isNodeToNodesInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'In mesh NodeToNodeData is not initiated')
+END IF
+!!
 !! Call from MeshUtility
 !!
 CALL SetSparsity3(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
@@ -160,6 +167,13 @@ END IF
 IF (SIZE(nodeToNode) .LT. obj%maxNptrs) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .LT. obj%maxNptrs [easifemClasses ISSUE#63]")
+END IF
+!!
+!! check
+!!
+IF (.NOT. obj%isNodeToNodesInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'In mesh NodeToNodeData is not initiated')
 END IF
 !!
 !! Call from MeshUtility

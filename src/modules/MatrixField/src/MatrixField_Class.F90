@@ -45,10 +45,10 @@ USE AbstractMatrixField_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "MatrixField_Class"
-TYPE(ExceptionHandler_) :: e
-INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
-INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
+CHARACTER(LEN=*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
+TYPE(ExceptionHandler_), PRIVATE :: e
+INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
+INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 
 !----------------------------------------------------------------------------
 !                                                               MSRSparsity_
@@ -121,6 +121,9 @@ TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   TYPE(MatrixFieldPrecondition_) :: Pmat
 CONTAINS
   PRIVATE
+  !
+  ! @ConstructorMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: AddSurrogate => mField_AddSurrogate
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & MatrixFieldCheckEssentialParam
@@ -132,6 +135,9 @@ CONTAINS
       !! Initiate for block matrices
   PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => mField_Deallocate
       !! Deallocate the field
+  !
+  ! @IOMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: Display => mField_Display
       !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: Import => mField_Import
@@ -142,26 +148,43 @@ CONTAINS
       !! export matrix field in hdf5file_
   PROCEDURE, PUBLIC, PASS(obj) :: ExportPmat => mField_ExportPmat
       !! export PMat
+  PROCEDURE, PUBLIC, PASS(obj) :: SPY => mField_SPY
+    !! Get the sparsity pattern in various file formats
+  !
+  ! @GetMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: Size => mField_Size
       !! Returns the size of the matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => mField_Shape
       !! Returns the shape of the matrix
+  !
+  ! @MatvecMethods
+  !
   PROCEDURE, PASS(obj) :: Matvec1 => mField_Matvec1
-      !! Matrix vector multiplication, here vector is fortran array
+  !! Matrix vector multiplication
   PROCEDURE, PASS(obj) :: Matvec2 => mField_Matvec2
-      !! Matrix vector multiplication, here vector is AbstractNodeField_
+  !! Matrix vector multiplication
+  !
+  ! @LUSolveMethods
+  !
   PROCEDURE, PASS(obj) :: LUSOLVE1 => mField_LUSOLVE1
-      !! Solve (LU) sol = rhs
+  !! Solve (LU) sol = rhs
   PROCEDURE, PASS(obj) :: LUSOLVE2 => mField_LUSOLVE2
-      !! Solve (LU) sol = rhs
+  !! Solve (LU) sol = rhs
+  !
+  ! @PreconditionMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetPrecondition => &
     & mField_SetPrecondition
-      !! Building precondition matrix
+  !! Building precondition matrix
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrecondition => &
     & mField_GetPrecondition
       !! Get the precondition matrix
   PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => &
     & mField_ReversePermutation
+  !
+  ! @SetMethods
+  !
   PROCEDURE, PASS(obj) :: Set1 => mField_Set1
   PROCEDURE, PASS(obj) :: Set2 => mField_Set2
   PROCEDURE, PASS(obj) :: Set3 => mField_Set3
@@ -172,7 +195,9 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set8 => mField_Set8
   PROCEDURE, PASS(obj) :: Set9 => mField_Set9
   PROCEDURE, PASS(obj) :: Set10 => mField_Set10
-    !!
+  !
+  ! @SetColMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => mField_SetColumn1
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn2 => mField_SetColumn2
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn3 => mField_SetColumn3
@@ -180,7 +205,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => mField_SetColumn5
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => mField_SetColumn6
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => mField_SetColumn7
-    !!
+  !
+  ! @SetRowMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => mField_SetRow1
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow2 => mField_SetRow2
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow3 => mField_SetRow3
@@ -188,7 +215,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow5 => mField_SetRow5
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => mField_SetRow6
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow7 => mField_SetRow7
-    !!
+  !
+  ! @GetColMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => mField_GetColumn1
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => mField_GetColumn2
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => mField_GetColumn3
@@ -196,7 +225,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => mField_GetColumn5
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => mField_GetColumn6
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => mField_GetColumn7
-    !!
+  !
+  ! @GetRowMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => mField_GetRow1
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow2 => mField_GetRow2
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow3 => mField_GetRow3
@@ -204,12 +235,17 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => mField_GetRow5
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => mField_GetRow6
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => mField_GetRow7
-    !!
-  PROCEDURE, PUBLIC, PASS(obj) :: SPY => mField_SPY
-    !! Get the sparsity pattern in various file formats
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDiagonal => mField_GetDiagonal
+  !
+  ! @DiagonalMethods
+  !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDiagonal => &
+    & mField_GetDiagonal
+  !
+  ! @DiagonalScalingMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: DiagonalScaling => &
     & mField_DiagonalScaling
+  !
 END TYPE MatrixField_
 
 PUBLIC :: MatrixField_
@@ -218,7 +254,7 @@ TYPE(MatrixField_), PARAMETER, PUBLIC :: TypeMatrixField = &
   & MatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
-!                                                 AddSurrogate@Constructor
+!                                           AddSurrogate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -233,7 +269,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            SetMatrixFieldParam@Constructor
+!                                    SetMatrixFieldParam@sConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -313,7 +349,7 @@ END INTERFACE
 PUBLIC :: SetRectangleMatrixFieldParam
 
 !----------------------------------------------------------------------------
-!                                                 Deallocate@Constructor
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -333,7 +369,7 @@ END INTERFACE Deallocate
 PUBLIC :: Deallocate
 
 !----------------------------------------------------------------------------
-!                                           CheckEssentialParam@Constructor
+!                                    CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -355,7 +391,7 @@ END INTERFACE
 PUBLIC :: MatrixFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                           CheckEssentialParam@Constructor
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -377,7 +413,7 @@ END INTERFACE
 PUBLIC :: RectangleMatrixFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -417,7 +453,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Initiate@Constructor
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -463,7 +499,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
+!                                               Initiate@sConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -479,7 +515,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 Deallocate@Constructor
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

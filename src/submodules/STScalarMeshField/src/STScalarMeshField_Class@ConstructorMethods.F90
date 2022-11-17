@@ -24,11 +24,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setSTScalarMeshFieldParam
-  !!
-  INTEGER( I4B ) :: s( 2 )
-  !!
-  s = [nns, nnt]
-  !!
+!!
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   CALL setAbstractMeshFieldParam( &
     & param=param, &
     & prefix="STScalarMeshField", &
@@ -38,8 +35,20 @@ MODULE PROCEDURE setSTScalarMeshFieldParam
     & engine=engine, &
     & defineOn=defineOn, &
     & rank=Scalar, &
-    & s=s )
-  !!
+    & s=[1])
+ELSE
+  CALL setAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix="STScalarMeshField", &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Scalar, &
+    & s=[nns, nnt])
+END IF
+!!
 END PROCEDURE setSTScalarMeshFieldParam
 
 !----------------------------------------------------------------------------
@@ -47,7 +56,7 @@ END PROCEDURE setSTScalarMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_addSurrogate
-  CALL e%addSurrogate(UserObj)
+CALL e%addSurrogate(UserObj)
 END PROCEDURE aField_addSurrogate
 
 !----------------------------------------------------------------------------
@@ -55,10 +64,10 @@ END PROCEDURE aField_addSurrogate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_checkEssentialParam
-  CALL AbstractFieldCheckEssentialParam( &
-    & obj=obj, &
-    & prefix="STScalarMeshField", &
-    & param=param )
+CALL AbstractFieldCheckEssentialParam( &
+  & obj=obj, &
+  & prefix="STScalarMeshField", &
+  & param=param)
 END PROCEDURE aField_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -66,10 +75,10 @@ END PROCEDURE aField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-  CALL AbstractMeshFieldInitiate( &
-    & obj=obj, &
-    & prefix="STScalarMeshField", &
-    & param=param, mesh=mesh )
+CALL AbstractMeshFieldInitiate( &
+  & obj=obj, &
+  & prefix="STScalarMeshField", &
+  & param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------

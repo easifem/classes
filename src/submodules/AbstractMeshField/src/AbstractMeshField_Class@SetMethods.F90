@@ -24,22 +24,22 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Set
-  !!
-  INTEGER( I4B ) :: iel
-  !!
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    obj%val( :, 1 )=fevar%val(:)
+!!
+INTEGER(I4B) :: iel
+!!
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  obj%val(:, 1) = fevar%val(:)
+ELSE
+  IF (PRESENT(globalElement)) THEN
+    iel = obj%mesh%getLocalElemNumber(globalElement)
+    obj%val(:, iel) = fevar%val(:)
   ELSE
-    IF( PRESENT( globalElement ) ) THEN
-      iel = obj%mesh%getLocalElemNumber( globalElement )
-      obj%val( :, iel )=fevar%val(:)
-    ELSE
-      DO iel = 1, obj%mesh%getTotalElements()
-        obj%val( :, iel )=fevar%val(:)
-      END DO
-    END IF
+    DO iel = 1, obj%mesh%getTotalElements()
+      obj%val(:, iel) = fevar%val(:)
+    END DO
   END IF
-  !!
+END IF
+!!
 END PROCEDURE aField_Set
 
 !----------------------------------------------------------------------------

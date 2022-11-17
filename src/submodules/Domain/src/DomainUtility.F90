@@ -161,7 +161,7 @@ SUBROUTINE SetSparsity3(domains, mat)
   CLASS(DomainPointer_), INTENT(IN) :: domains(2)
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
   !!
-  INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 2
+  INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
   INTEGER(I4B) :: rowMeshID, colMeshID, rowMeshSize, colMeshSize,  &
     & nsd(tvar), ii
   CLASS(Mesh_), POINTER :: rowMesh, colMesh
