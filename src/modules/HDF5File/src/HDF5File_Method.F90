@@ -112,7 +112,8 @@ SUBROUTINE ExportCSRSparsity(obj, hdf5, group)
   CALL hdf5%write(dsetname=dsetname%chars(), &
     & vals=obj%isSparsityLock)
   !>
-  CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=trim(group)//"/dof")
+  CALL ExportDOF(obj=obj%idof, hdf5=hdf5, group=trim(group)//"/idof")
+  CALL ExportDOF(obj=obj%jdof, hdf5=hdf5, group=trim(group)//"/jdof")
   !>
   IF (ALLOCATED(obj%IA)) THEN
     dsetname = trim(group)//"/IA"
@@ -156,7 +157,8 @@ SUBROUTINE ImportCSRSparsity(obj, hdf5, group)
   dsetname = trim(group)//"/isSparsityLock"
   CALL hdf5%read(dsetname=dsetname%chars(), vals=obj%isSparsityLock)
   !> dof
-  CALL ImportDOF(obj=obj%dof, hdf5=hdf5, group=trim(group)//"/dof")
+  CALL ImportDOF(obj=obj%idof, hdf5=hdf5, group=trim(group)//"/idof")
+  CALL ImportDOF(obj=obj%jdof, hdf5=hdf5, group=trim(group)//"/jdof")
   !> IA
   dsetname = trim(group)//"/IA"
   IF (hdf5%pathExists(dsetname%chars())) THEN
