@@ -40,15 +40,13 @@ MODULE MODULE_NAME
 #endif
 USE BaseType
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 #ifdef FTL_TEMPLATE_TYPE_MODULE
 USE FTL_TEMPLATE_TYPE_MODULE
 #endif
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN=* ), PARAMETER :: modName="<T>POINTERVECTOR"
-TYPE( ExceptionHandler_ ), SAVE, PUBLIC :: ePointerVector
-!$OMP THREADPRIVATE(ePointerVector)
+CHARACTER( LEN=* ), PARAMETER :: modName="<T>PointerVector"
 
 !----------------------------------------------------------------------------
 !                              CAT3(FTL_TEMPLATE_TYPE_NAME,PointerVector,_)
@@ -345,7 +343,7 @@ FUNCTION T_Begin(obj) RESULT(ans)
   CHARACTER( LEN = * ), PARAMETER :: myName="Begin()"
 
   IF( obj%isEmpty() )THEN
-    CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
       & "Vector is empty")
   ELSE
     ans%dynArray => obj
@@ -365,7 +363,7 @@ FUNCTION T_End(obj) RESULT(ans)
   ! Internal variables
   CHARACTER( LEN = * ), PARAMETER :: myName="End()"
   IF( obj%isEmpty() )THEN
-    CALL ePointerVector%RaiseError( modName//"::"//myName//" - "// &
+    CALL e%RaiseError( modName//"::"//myName//" - "// &
       & "Vector is empty" )
   ELSE
     ans%dynArray => obj
@@ -472,7 +470,7 @@ SUBROUTINE T_Pushback( obj, val )
     obj%storage(obj%psize)%ptr => val%ptr
     CALL obj%FixValuePtrs()
   ELSE
-    CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
       & "val%ptr should be associated.")
   END IF
 END SUBROUTINE T_Pushback
@@ -489,7 +487,7 @@ SUBROUTINE T_Popback( obj, val )
   CHARACTER( LEN=* ), PARAMETER :: myName = "Popback()"
 
   IF( ASSOCIATED( val%ptr ) ) THEN
-    CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
         "val%ptr should be associated.")
   ELSE
     val%ptr => obj%storage(obj%psize)%ptr
@@ -608,7 +606,7 @@ SUBROUTINE T_SetSingleAtIndex(obj, pos, val)
   & "T_SetSingleAtIndex(obj, pos, val)"
 
   IF( pos .GT. obj%psize ) THEN
-    CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+    CALL e%RaiseError(modName//"::"//myName//" - "// &
       & "While setting the value pos is greater than the length of list")
   ELSE
     IF( ASSOCIATED( obj%storage(pos)%ptr ) ) THEN
@@ -651,7 +649,7 @@ SUBROUTINE T_SetFillAtIndex(obj, pos, n, val)
   DO ii = 1, n
     pos0 = pos-1+ii
     IF( pos0 .GT. obj%psize ) THEN
-      CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+      CALL e%RaiseError(modName//"::"//myName//" - "// &
         & "While setting the value pos0 is greater than the length of list")
     ELSE
       IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
@@ -693,7 +691,7 @@ SUBROUTINE T_SetArrayAtIndex( obj, pos, array )
   DO ii = 1, n
     pos0 = pos-1+ii
     IF( pos0 .GT. obj%psize ) THEN
-      CALL ePointerVector%RaiseError(modName//"::"//myName//" - "// &
+      CALL e%RaiseError(modName//"::"//myName//" - "// &
         & "While setting the value pos0 is greater than the length of list")
     ELSE
       IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN

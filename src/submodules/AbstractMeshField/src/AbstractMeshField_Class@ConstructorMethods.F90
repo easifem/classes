@@ -37,14 +37,6 @@ ierr = param%set(key=TRIM(prefix)//"/s", value=s)
 END PROCEDURE setAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_addSurrogate
-CALL e%addSurrogate(UserObj)
-END PROCEDURE aField_addSurrogate
-
-!----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 

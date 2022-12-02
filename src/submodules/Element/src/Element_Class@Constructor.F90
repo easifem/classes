@@ -35,7 +35,7 @@ MODULE PROCEDURE elem_init_from_fpl
   CHARACTER( LEN=* ), PARAMETER :: myName="elem_init_from_fpl()"
 
   IF( .NOT. param%ispresent(key="nptrs") ) THEN
-    CALL eElement%raiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
         "nptrs key should be present in param")
   ELSE
     ierr = param%getShape(key="nptrs", shape=s)
@@ -44,7 +44,7 @@ MODULE PROCEDURE elem_init_from_fpl
   END IF
 
   IF( .NOT. param%ispresent(key="mat_type") ) THEN
-    CALL eElement%raiseError(modName//"::"//myName//" - "// &
+    CALL e%raiseError(modName//"::"//myName//" - "// &
         "mat_type should be present in param")
   ELSE
     ierr = param%get(key="mat_type", value=obj%mat_type)

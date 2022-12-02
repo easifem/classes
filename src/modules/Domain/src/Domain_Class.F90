@@ -29,12 +29,11 @@ USE GlobalData
 USE Mesh_Class
 USE MeshPointerVector_Class
 USE ElementFactory
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "Domain_Class"
-TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                             MeshFacetData_
@@ -152,26 +151,24 @@ CONTAINS
   !
   ! @ConstructorMethods
   !
-  PROCEDURE, PUBLIC, PASS(obj) :: AddSurrogate => Domain_AddSurrogate
-      !! Add surrogate to the module error handler
   PROCEDURE, PUBLIC, PASS(Obj) :: Initiate => Domain_Initiate
-      !! Initiate an instance of domain
+  !! Initiate an instance of domain
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => Domain_Deallocate
-      !! Deallocate data stored inside an instance of domain
-      !! TODO Rename Deallocate to Deallocate
+  !! Deallocate data stored inside an instance of domain
+  !! TODO Rename Deallocate to Deallocate
   FINAL :: Domain_Final
-      !! Finalizer for domain
+  !! Finalizer for domain
   !
   ! @IOMethods
   !
   PROCEDURE, PASS(Obj) :: IMPORT => Domain_Import
-      !! Initiates an instance of domain by importing data from meshfile
-      !! TODO Add an export method to [[Domain_]] class
+  !! Initiates an instance of domain by importing data from meshfile
+  !! TODO Add an export method to [[Domain_]] class
   PROCEDURE, PUBLIC, PASS(obj) :: Display => Domain_Display
-    !! TODO Add a display method to [[Domain_]] class
+  !! TODO Add a display method to [[Domain_]] class
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshFacetData => &
     & Domain_DisplayMeshFacetData
-    !! Display mesh facet data
+  !! Display mesh facet data
   !
   ! @getMethods
   !
@@ -202,17 +199,17 @@ CONTAINS
     & Domain_tNodes2,  &
     & Domain_tNodes3
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => Domain_GetTotalElements
-      !! returns the total number of Elements in domain, mesh, or part of mesh
+  !! returns the total number of Elements in domain, mesh, or part of mesh
   PROCEDURE, PASS(obj) :: &
     & Domain_tElements1,  &
     & Domain_tElements2,  &
     & Domain_tElements3
-      !! returns total number of elements in domain, mesh, or part of domain
+  !! returns total number of elements in domain, mesh, or part of domain
   GENERIC, PUBLIC :: OPERATOR(.tElements.) => &
     & Domain_tElements1,  &
     & Domain_tElements2,  &
     & Domain_tElements3
-    !! return total number of elements in domain, mesh, or part of domain
+  !! return total number of elements in domain, mesh, or part of domain
   PROCEDURE, PASS(obj) :: Domain_GetLocalNodeNumber1
   PROCEDURE, PASS(obj) :: Domain_GetLocalNodeNumber2
   GENERIC, PUBLIC :: &
@@ -220,14 +217,14 @@ CONTAINS
     & Domain_GetLocalNodeNumber1, &
     & Domain_GetLocalNodeNumber2
   PROCEDURE, PASS(obj) :: Domain_GetGlobalNodeNumber1
-      !! Returns the global node number of a local node number
+  !! Returns the global node number of a local node number
   PROCEDURE, PASS(obj) :: Domain_GetGlobalNodeNumber2
-      !! Returns the global node number of a local node number
+  !! Returns the global node number of a local node number
   GENERIC, PUBLIC :: GetGlobalNodeNumber => &
     & Domain_GetGlobalNodeNumber1, &
     & Domain_GetGlobalNodeNumber2
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => Domain_GetTotalMesh
-      !! This routine returns total number of meshes of given dimension
+  !! This routine returns total number of meshes of given dimension
   PROCEDURE, PASS(obj) :: Domain_GetMeshPointer1
   PROCEDURE, PASS(obj) :: Domain_GetMeshPointer2
   GENERIC, PUBLIC :: GetMeshPointer => &
@@ -334,37 +331,6 @@ TYPE :: DomainPointer_
 END TYPE DomainPointer_
 
 PUBLIC :: DomainPointer_
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 1 Sept 2021
-! summary: This routine addes surrogate to module exception handler
-
-INTERFACE
-  MODULE SUBROUTINE Domain_addSurrogate(obj, userObj)
-    CLASS(Domain_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: userObj
-  END SUBROUTINE Domain_addSurrogate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 1 Sept 2021
-! summary: This routine addes surrogate to module exception handler
-
-INTERFACE
-  MODULE SUBROUTINE addSurrogate_Domain(userObj)
-    TYPE(ExceptionHandler_), INTENT(IN) :: userObj
-  END SUBROUTINE addSurrogate_Domain
-END INTERFACE
-
-PUBLIC :: addSurrogate_Domain
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods

@@ -20,7 +20,7 @@ USE BaseMethod
 USE MatrixField_Class
 USE HDF5File_Class
 USE HDF5File_Method
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 IMPLICIT NONE
 PRIVATE
@@ -38,14 +38,14 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_PhysicalVar(obj, hdf5, group, e, myName, modName, &
+SUBROUTINE Import_PhysicalVar(obj, hdf5, group, myName, modName, &
   & matrixProp, tvar1, tvar2, name1, name2, spaceCompo1, spaceCompo2, &
   & timeCompo1, timeCompo2)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
-  TYPE(ExceptionHandler_), INTENT(INOUT) :: e
-  CHARACTER(LEN=*), INTENT(IN) :: myName, modName
+  CHARACTER(LEN=*), INTENT(IN) :: myName
+  CHARACTER(LEN=*), INTENT(IN) :: modName
   TYPE(String), INTENT(INOUT) :: matrixProp
   INTEGER(I4B), INTENT(INOUT) :: tvar1, tvar2
   TYPE(String), INTENT(INOUT) :: name1, name2
@@ -201,13 +201,13 @@ END SUBROUTINE Import_PhysicalVar
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_Header(obj, hdf5, group, e, modName, myName, &
+SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, &
   & fieldType, name, engine, matrixProp)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
-  TYPE(ExceptionHandler_), INTENT(INOUT) :: e
-  CHARACTER(LEN=*), INTENT(IN) :: modName, myName
+  CHARACTER(LEN=*), INTENT(IN) :: modName
+  CHARACTER(LEN=*), INTENT(IN) :: myName
   INTEGER(I4B), INTENT(INOUT) :: fieldType
   TYPE(String), INTENT(INOUT) :: name, engine, matrixProp
   !!
@@ -257,11 +257,10 @@ END SUBROUTINE Import_Header
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_CheckError(obj, hdf5, group, e, myName, modName)
+SUBROUTINE Import_CheckError(obj, hdf5, group, myName, modName)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
-  TYPE(ExceptionHandler_), INTENT(INOUT) :: e
   CHARACTER(LEN=*), INTENT(IN) :: myName
   CHARACTER(LEN=*), INTENT(IN) :: modName
   !!
@@ -296,11 +295,10 @@ END SUBROUTINE Import_CheckError
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Export_CheckError(obj, hdf5, group, e, myName, modName)
+SUBROUTINE Export_CheckError(obj, hdf5, group, myName, modName)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
-  TYPE(ExceptionHandler_), INTENT(INOUT) :: e
   CHARACTER(LEN=*), INTENT(IN) :: myName
   CHARACTER(LEN=*), INTENT(IN) :: modName
   !!
@@ -333,11 +331,10 @@ END SUBROUTINE Export_CheckError
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Export_Header(obj, hdf5, group, e, dname, matprop)
+SUBROUTINE Export_Header(obj, hdf5, group, dname, matprop)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
-  TYPE(ExceptionHandler_), INTENT(INOUT) :: e
   TYPE(String), INTENT(INOUT) :: dname, matprop
   !!
   !! fieldType
@@ -376,7 +373,7 @@ SUBROUTINE Export_Header(obj, hdf5, group, e, dname, matprop)
   !! physical variables from MatrixFieldUtility
   !!
   CALL Export_PhysicalVar(obj=obj, hdf5=hdf5, group=group, &
-    & e=e, dname=dname, matprop=matprop)
+    & dname=dname, matprop=matprop)
   !!
 END SUBROUTINE Export_Header
 
@@ -384,11 +381,10 @@ END SUBROUTINE Export_Header
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Export_PhysicalVar(obj, hdf5, group, e, dname, matprop)
+SUBROUTINE Export_PhysicalVar(obj, hdf5, group, dname, matprop)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
-  TYPE(ExceptionHandler_), INTENT(INOUT) :: e
   TYPE(String), INTENT(INOUT) :: dname, matprop
   !!
   !! internal variables

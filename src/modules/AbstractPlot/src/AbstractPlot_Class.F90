@@ -17,19 +17,18 @@
 
 MODULE AbstractPlot_Class
 USE GlobalData
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="AbstractPlot_Class"
-TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_PLPLOT = 1
-INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_GNUPLOT = 2
-INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_MATPLOTLIB = 3
-INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_VTK = 4
-INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_GMSH = 5
-INTEGER( I4B ), PUBLIC, PARAMETER :: PLOT_ENGINE_PYPLOT = 6
-CHARACTER( LEN = * ), PUBLIC, PARAMETER, DIMENSION(6) :: PLOT_ENGINE_NAME = &
+CHARACTER(LEN=*), PARAMETER :: modName = "AbstractPlot_Class"
+INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_PLPLOT = 1
+INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_GNUPLOT = 2
+INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_MATPLOTLIB = 3
+INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_VTK = 4
+INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_GMSH = 5
+INTEGER(I4B), PUBLIC, PARAMETER :: PLOT_ENGINE_PYPLOT = 6
+CHARACTER(LEN=*), PUBLIC, PARAMETER, DIMENSION(6) :: PLOT_ENGINE_NAME = &
   & [ &
   & "PLPLOT    ", &
   & "GNUPLOT   ", &
@@ -44,12 +43,12 @@ CHARACTER( LEN = * ), PUBLIC, PARAMETER, DIMENSION(6) :: PLOT_ENGINE_NAME = &
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT :: AbstractPlot_
-  INTEGER( I4B ) :: plotEngine = PLOT_ENGINE_VTK
-  CONTAINS
+  INTEGER(I4B) :: plotEngine = PLOT_ENGINE_VTK
+CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => plot_Initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => plot_Deallocate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => plot_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => plot_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => plot_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => plot_Display
 END TYPE AbstractPlot_
 
 PUBLIC :: AbstractPlot_
@@ -59,7 +58,7 @@ PUBLIC :: AbstractPlot_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractPlotPointer_
-  CLASS( AbstractPlot_ ), POINTER :: ptr => NULL( )
+  CLASS(AbstractPlot_), POINTER :: ptr => NULL()
 END TYPE AbstractPlotPointer_
 
 PUBLIC :: AbstractPlotPointer_
@@ -73,10 +72,10 @@ PUBLIC :: AbstractPlotPointer_
 ! summary: Initiate the plotting engine
 
 INTERFACE
-MODULE SUBROUTINE plot_Initiate( obj, param )
-  CLASS( AbstractPlot_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), OPTIONAL, INTENT( IN ) :: param
-END SUBROUTINE plot_Initiate
+  MODULE SUBROUTINE plot_Initiate(obj, param)
+    CLASS(AbstractPlot_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+  END SUBROUTINE plot_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -88,9 +87,9 @@ END INTERFACE
 ! summary: Deallocate the data stored inside the plot
 
 INTERFACE
-MODULE SUBROUTINE plot_Deallocate( obj )
-  CLASS( AbstractPlot_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE plot_Deallocate
+  MODULE SUBROUTINE plot_Deallocate(obj)
+    CLASS(AbstractPlot_), INTENT(INOUT) :: obj
+  END SUBROUTINE plot_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -102,11 +101,11 @@ END INTERFACE
 ! summary: Display the content of Plot
 
 INTERFACE
-MODULE SUBROUTINE plot_Display( obj, msg, unitno )
-  CLASS( AbstractPlot_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE plot_Display
+  MODULE SUBROUTINE plot_Display(obj, msg, unitno)
+    CLASS(AbstractPlot_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE plot_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------

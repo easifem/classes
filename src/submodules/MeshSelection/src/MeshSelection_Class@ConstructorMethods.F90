@@ -24,14 +24,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE meshSelect_addSurrogate
-CALL e%addSurrogate(UserObj)
-END PROCEDURE meshSelect_addSurrogate
-
-!----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
@@ -84,15 +76,15 @@ obj%isSelectionByElemNum = .FALSE.
 obj%isSelectionByNodeNum = .FALSE.
 obj%isSelectionByMeshID = .FALSE.
 obj%isSelectionByBox = .FALSE.
-CALL Deallocate(obj%PointMeshID)
-CALL Deallocate(obj%CurveMeshID)
-CALL Deallocate(obj%SurfaceMeshID)
-CALL Deallocate(obj%VolumeMeshID)
-CALL Deallocate(obj%PointElemNum)
-CALL Deallocate(obj%CurveElemNum)
-CALL Deallocate(obj%SurfaceElemNum)
-CALL Deallocate(obj%VolumeElemNum)
-CALL Deallocate(obj%NodeNum)
+CALL Deallocate (obj%PointMeshID)
+CALL Deallocate (obj%CurveMeshID)
+CALL Deallocate (obj%SurfaceMeshID)
+CALL Deallocate (obj%VolumeMeshID)
+CALL Deallocate (obj%PointElemNum)
+CALL Deallocate (obj%CurveElemNum)
+CALL Deallocate (obj%SurfaceElemNum)
+CALL Deallocate (obj%VolumeElemNum)
+CALL Deallocate (obj%NodeNum)
 END PROCEDURE meshSelect_Deallocate
 
 !----------------------------------------------------------------------------

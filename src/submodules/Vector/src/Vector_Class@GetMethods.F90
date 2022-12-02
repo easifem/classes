@@ -25,14 +25,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vec_get1
-  CHARACTER( LEN = * ), PARAMETER :: myName="vec_get1"
-  IF( .NOT. obj%isInitiated ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Vector object is not initiated')
-  IF( nodenum .GT. obj%tsize ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Out of bound index')
-  ans = get( obj=obj%realVec, nodenum=nodenum, dataType= 1.0_DFP )
+CHARACTER(LEN=*), PARAMETER :: myName = "vec_get1"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Vector object is not initiated')
+IF (nodenum .GT. obj%tsize) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Out of bound index')
+ans = get(obj=obj%realVec, nodenum=nodenum, dataType=1.0_DFP)
 END PROCEDURE vec_get1
 
 !----------------------------------------------------------------------------
@@ -40,11 +40,11 @@ END PROCEDURE vec_get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vec_get2
-  CHARACTER( LEN = * ), PARAMETER :: myName="vec_get2"
-  IF( .NOT. obj%isInitiated ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Vector object is not initiated')
-  ans = get( obj=obj%realVec, dataType= 1.0_DFP )
+CHARACTER(LEN=*), PARAMETER :: myName = "vec_get2"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Vector object is not initiated')
+ans = get(obj=obj%realVec, dataType=1.0_DFP)
 END PROCEDURE vec_get2
 
 !----------------------------------------------------------------------------
@@ -52,14 +52,14 @@ END PROCEDURE vec_get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vec_get3
-  CHARACTER( LEN = * ), PARAMETER :: myName="vec_get3"
-  IF( .NOT. obj%isInitiated ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Vector object is not initiated')
-  IF( ANY(nodenum .GT. obj%tsize) ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Out of bound index')
-  ans = get( obj=obj%realVec, nodenum=nodenum, dataType= 1.0_DFP )
+CHARACTER(LEN=*), PARAMETER :: myName = "vec_get3"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Vector object is not initiated')
+IF (ANY(nodenum .GT. obj%tsize)) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Out of bound index')
+ans = get(obj=obj%realVec, nodenum=nodenum, dataType=1.0_DFP)
 END PROCEDURE vec_get3
 
 !----------------------------------------------------------------------------
@@ -67,15 +67,15 @@ END PROCEDURE vec_get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vec_get4
-  CHARACTER( LEN = * ), PARAMETER :: myName="vec_get4"
-  IF( .NOT. obj%isInitiated ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Vector object is not initiated')
-  IF( istart .GT. obj%tsize .OR. iend .GT. obj%tsize ) &
-    & CALL eVector%raiseInformation(modName//'::'//myName// " - "// &
-    & 'Out of bound index')
-  ans = get( obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
-    & dataType= 1.0_DFP )
+CHARACTER(LEN=*), PARAMETER :: myName = "vec_get4"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Vector object is not initiated')
+IF (istart .GT. obj%tsize .OR. iend .GT. obj%tsize) &
+  & CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Out of bound index')
+ans = get(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+  & dataType=1.0_DFP)
 END PROCEDURE vec_get4
 
 !----------------------------------------------------------------------------
@@ -83,9 +83,9 @@ END PROCEDURE vec_get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vec_get5
-  CHARACTER( LEN = * ), PARAMETER :: myName="vec_get5"
-  CALL eVector%raiseInformation( modName//'::'//myName// " - "// &
-    & 'Vector object is not initiated' )
+CHARACTER(LEN=*), PARAMETER :: myName = "vec_get5"
+CALL e%raiseInformation(modName//'::'//myName//" - "// &
+  & 'Vector object is not initiated')
 END PROCEDURE vec_get5
 
 END SUBMODULE GetMethods

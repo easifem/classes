@@ -21,11 +21,10 @@
 
 MODULE FieldFactory
 USE Field
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "FieldFactory"
-TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory

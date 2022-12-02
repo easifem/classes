@@ -24,7 +24,7 @@ USE GlobalData
 USE BaseType
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
 USE DirichletBC_Class
 USE Field
@@ -98,15 +98,13 @@ TYPE, ABSTRACT :: AbstractLinSolver_
     !! Size of the global problem;
   INTEGER(I4B) :: localNumRow = 0, localNumColumn = 0
     !! Size of the problem on a single process
-  INTEGER( I4B ), ALLOCATABLE :: dbcIndx( : )
+  INTEGER(I4B), ALLOCATABLE :: dbcIndx(:)
     !! Indices where Dirichlet boundary conditions is prescribed
   REAL(DFP), ALLOCATABLE :: RES(:)
     !! Residual in each iteration
   CLASS(AbstractMatrixField_), POINTER :: Amat => NULL()
     !! Pointer to child of [[AbstractMatrixField_]]
 CONTAINS
-  PROCEDURE(als_addSurrogate), PUBLIC, DEFERRED, PASS(obj) :: AddSurrogate
-    !! add surrogate to the module exception handler
   PROCEDURE(als_checkEssentialParam), PUBLIC, DEFERRED, PASS(obj) :: &
     & checkEssentialParam
   PROCEDURE(als_initiate), PUBLIC, DEFERRED, PASS(obj) :: Initiate
@@ -125,9 +123,9 @@ CONTAINS
     !! exporting linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: GetPreconditionOption => &
     & als_getPreconditionOption
-  PROCEDURE, PUBLIC, PASS( obj ) :: setTolerance => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setTolerance => &
     & als_setTolerance
-  PROCEDURE, PUBLIC, PASS( obj ) :: setDirichletBCIndices => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setDirichletBCIndices => &
     & als_setDirichletBCIndices
   !!
 END TYPE AbstractLinSolver_
@@ -143,22 +141,6 @@ TYPE :: AbstractLinSolverPointer_
 END TYPE
 
 PUBLIC :: AbstractLinSolverPointer_
-
-!----------------------------------------------------------------------------
-!                                                              addSurrogate
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 Aug 2021
-! summary: Add surrogates to exceptionHandler of the module
-
-ABSTRACT INTERFACE
-  SUBROUTINE als_addSurrogate(obj, UserObj)
-    IMPORT :: AbstractLinSolver_, ExceptionHandler_
-    CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE als_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                        checkEssentialParam
@@ -188,10 +170,10 @@ INTERFACE
   MODULE SUBROUTINE setAbstractLinSolverParam(param, prefix, &
     & engine, solverName, preconditionOption, &
     & maxIter, atol, rtol, convergenceIn, convergenceType, &
-    & relativeToRHS, KrylovSubspaceSize )
+    & relativeToRHS, KrylovSubspaceSize)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER( LEN = * ), INTENT( IN ) :: prefix
-    CHARACTER( LEN = * ), INTENT( IN ) :: engine
+    CHARACTER(LEN=*), INTENT(IN) :: prefix
+    CHARACTER(LEN=*), INTENT(IN) :: engine
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
@@ -218,10 +200,10 @@ INTERFACE
   MODULE SUBROUTINE getAbstractLinSolverParam(param, prefix, &
     & engine, solverName, preconditionOption, &
     & maxIter, atol, rtol, convergenceIn, convergenceType, &
-    & relativeToRHS, KrylovSubspaceSize )
+    & relativeToRHS, KrylovSubspaceSize)
     TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER( LEN = * ), INTENT( IN ) :: prefix
-    CHARACTER( LEN = * ), OPTIONAL, INTENT( OUT ) :: engine
+    CHARACTER(LEN=*), INTENT(IN) :: prefix
+    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: engine
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: solverName
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: preconditionOption
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: maxIter
@@ -358,8 +340,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE SUBROUTINE als_setTolerance(obj, atol, rtol)
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
-    REAL( DFP ), OPTIONAL, INTENT( IN ) :: atol
-    REAL( DFP ), OPTIONAL, INTENT( IN ) :: rtol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
   END SUBROUTINE als_setTolerance
 END INTERFACE
 
@@ -374,7 +356,7 @@ END INTERFACE
 INTERFACE
   MODULE PURE SUBROUTINE als_setDirichletBCIndices(obj, indx)
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
-    INTEGER( I4B ), INTENT( IN ) :: indx(:)
+    INTEGER(I4B), INTENT(IN) :: indx(:)
   END SUBROUTINE als_setDirichletBCIndices
 END INTERFACE
 

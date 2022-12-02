@@ -25,22 +25,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                            addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Domain_addSurrogate
-CALL e%addSurrogate(userObj)
-END PROCEDURE Domain_addSurrogate
-
-!----------------------------------------------------------------------------
-!                                                            addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE addSurrogate_Domain
-CALL e%addSurrogate(userObj)
-END PROCEDURE addSurrogate_Domain
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 

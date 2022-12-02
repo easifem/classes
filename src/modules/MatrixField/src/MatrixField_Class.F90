@@ -38,7 +38,7 @@ USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE FPL_Method
 USE HDF5File_Class
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE AbstractMatrixField_Class
@@ -46,7 +46,6 @@ USE Domain_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
-TYPE(ExceptionHandler_), PRIVATE :: e
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 
@@ -124,7 +123,6 @@ CONTAINS
   !
   ! @ConstructorMethods
   !
-  PROCEDURE, PUBLIC, PASS(obj) :: AddSurrogate => mField_AddSurrogate
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & MatrixFieldCheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => mField_Initiate1
@@ -252,21 +250,6 @@ PUBLIC :: MatrixField_
 
 TYPE(MatrixField_), PARAMETER, PUBLIC :: TypeMatrixField = &
   & MatrixField_(domains=NULL())
-
-!----------------------------------------------------------------------------
-!                                           AddSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine add surrogate to module [[ExceptionHandler_]]
-
-INTERFACE
-  MODULE SUBROUTINE mField_AddSurrogate(obj, UserObj)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE mField_AddSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                    SetMatrixFieldParam@sConstructorMethods

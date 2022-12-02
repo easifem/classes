@@ -22,11 +22,10 @@
 MODULE LinSolverFactory
 USE AbstractLinSolver_Class
 USE LinSolver_Class
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="LinSolverFactory"
-TYPE( ExceptionHandler_ ) :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "LinSolverFactory"
 
 !----------------------------------------------------------------------------
 !                                                         LinSolverFactory
@@ -37,10 +36,10 @@ TYPE( ExceptionHandler_ ) :: e
 ! summary: Returns child of [[AbstractLinSolver_]] based on engine
 
 INTERFACE
-MODULE FUNCTION LinearSolverFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( AbstractLinSolver_ ), POINTER :: ans
-END FUNCTION LinearSolverFactory
+  MODULE FUNCTION LinearSolverFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(AbstractLinSolver_), POINTER :: ans
+  END FUNCTION LinearSolverFactory
 END INTERFACE
 
 PUBLIC :: LinearSolverFactory

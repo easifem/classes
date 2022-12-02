@@ -52,14 +52,6 @@ END IF
 END PROCEDURE setVectorMeshFieldParam
 
 !----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_addSurrogate
-CALL e%addSurrogate(UserObj)
-END PROCEDURE aField_addSurrogate
-
-!----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 

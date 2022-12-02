@@ -18,16 +18,15 @@
 MODULE AbstractBC_Class
 USE GlobalData
 USE BaseType
-USE String_Class, ONLY:String
-USE ExceptionHandler_Class
+USE String_Class, ONLY: String
+USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class
 USE Domain_Class
 USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="DirichletBC_Class"
-TYPE( ExceptionHandler_ ) ::  e
+CHARACTER(LEN=*), PARAMETER :: modName = "DirichletBC_Class"
 
 !----------------------------------------------------------------------------
 !                                                                AbstractBC_
@@ -38,43 +37,42 @@ TYPE( ExceptionHandler_ ) ::  e
 ! summary: This is an abstract data type for boundary conditions
 
 TYPE, ABSTRACT :: AbstractBC_
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
-  TYPE( String ) :: name
-  INTEGER( I4B ) :: idof = 0
-  INTEGER( I4B ) :: nodalValueType = -1
+  LOGICAL(LGT) :: isInitiated = .FALSE.
+  TYPE(String) :: name
+  INTEGER(I4B) :: idof = 0
+  INTEGER(I4B) :: nodalValueType = -1
     !! Constant, Space, Time, SpaceTime
-  LOGICAL( LGT ) :: useFunction = .FALSE.
+  LOGICAL(LGT) :: useFunction = .FALSE.
     !! True if the boundary condition is analytical
-  REAL( DFP ), ALLOCATABLE :: nodalValue( :, : )
+  REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
     !! nodal values are kept here,
     !! nodalValues( :, its ) denotes nodal values at
     !! time step its
-  PROCEDURE( iface_SpaceTimeFunction ), POINTER, NOPASS :: &
+  PROCEDURE(iface_SpaceTimeFunction), POINTER, NOPASS :: &
     & SpaceTimeFunction => NULL()
     !! SpaceTime Functions
-  PROCEDURE( iface_SpaceFunction ), POINTER, NOPASS :: &
+  PROCEDURE(iface_SpaceFunction), POINTER, NOPASS :: &
     & SpaceFunction => NULL()
     !! Space Function
-  PROCEDURE( iface_TimeFunction ), POINTER, NOPASS :: &
+  PROCEDURE(iface_TimeFunction), POINTER, NOPASS :: &
     & TimeFunction => NULL()
     !! Time Function
-  TYPE( MeshSelection_ ) :: boundary
+  TYPE(MeshSelection_) :: boundary
     !! Boundary
-  CLASS( Domain_ ), POINTER :: dom => NULL()
+  CLASS(Domain_), POINTER :: dom => NULL()
     !! Domain
-  CONTAINS
+CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => bc_Deallocate
-  PROCEDURE, PUBLIC, PASS( obj ) :: getMeshID => bc_getMeshID
-  PROCEDURE, PUBLIC, PASS( obj ) :: Get => bc_Get
-  PROCEDURE, PUBLIC, PASS( obj ) :: getDOFNo => bc_getDOFNo
-  PROCEDURE( bc_checkEssentialParam ), DEFERRED, PUBLIC, PASS( obj ) ::  &
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => bc_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: getMeshID => bc_getMeshID
+  PROCEDURE, PUBLIC, PASS(obj) :: Get => bc_Get
+  PROCEDURE, PUBLIC, PASS(obj) :: getDOFNo => bc_getDOFNo
+  PROCEDURE(bc_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) ::  &
     & checkEssentialParam
-  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => bc_addSurrogate
-  PROCEDURE( bc_Initiate ), DEFERRED, PUBLIC, PASS( obj ) :: Initiate
-  PROCEDURE( bc_Import ), DEFERRED, PUBLIC, PASS( obj ) :: Import
-  PROCEDURE( bc_Export ), DEFERRED, PUBLIC, PASS( obj ) :: Export
-  PROCEDURE( bc_Display ), DEFERRED, PUBLIC, PASS( obj ) :: Display
+  PROCEDURE(bc_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
+  PROCEDURE(bc_Import), DEFERRED, PUBLIC, PASS(obj) :: Import
+  PROCEDURE(bc_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
+  PROCEDURE(bc_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
 END TYPE AbstractBC_
 
 PUBLIC :: AbstractBC_
@@ -84,7 +82,7 @@ PUBLIC :: AbstractBC_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractBCPointer_
-  CLASS( AbstractBC_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractBC_), POINTER :: ptr => NULL()
 END TYPE AbstractBCPointer_
 
 PUBLIC :: AbstractBCPointer_
@@ -93,11 +91,11 @@ PUBLIC :: AbstractBCPointer_
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE bc_checkEssentialParam( obj, param )
-  IMPORT
-  CLASS( AbstractBC_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE bc_checkEssentialParam
+  SUBROUTINE bc_checkEssentialParam(obj, param)
+    IMPORT
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE bc_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -105,13 +103,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE bc_Initiate( obj, param, boundary, dom )
-  IMPORT
-  CLASS( AbstractBC_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( MeshSelection_ ), INTENT( IN ) :: boundary
-  CLASS( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE bc_Initiate
+  SUBROUTINE bc_Initiate(obj, param, boundary, dom)
+    IMPORT
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE bc_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -119,13 +117,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE bc_Import( obj, hdf5, group, dom )
-  IMPORT
-  CLASS( AbstractBC_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-  CLASS( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE bc_Import
+  SUBROUTINE bc_Import(obj, hdf5, group, dom)
+    IMPORT
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE bc_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -133,12 +131,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE bc_Export( obj, hdf5, group )
-  IMPORT
-  CLASS( AbstractBC_ ), INTENT( IN ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE bc_Export
+  SUBROUTINE bc_Export(obj, hdf5, group)
+    IMPORT
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE bc_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -146,12 +144,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE bc_Display( obj, msg, unitNo )
-  IMPORT
-  CLASS( AbstractBC_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE bc_Display
+  SUBROUTINE bc_Display(obj, msg, unitNo)
+    IMPORT
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -159,9 +157,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE bc_Deallocate( obj )
-  CLASS( AbstractBC_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE bc_Deallocate
+  MODULE SUBROUTINE bc_Deallocate(obj)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  END SUBROUTINE bc_Deallocate
 END INTERFACE
 
 INTERFACE AbstractBCDeallocate
@@ -169,23 +167,6 @@ INTERFACE AbstractBCDeallocate
 END INTERFACE AbstractBCDeallocate
 
 PUBLIC :: AbstractBCDeallocate
-
-!----------------------------------------------------------------------------
-!                                                       addSurrogate@Methods
-!----------------------------------------------------------------------------
-
-INTERFACE
-MODULE SUBROUTINE bc_addSurrogate( obj, userObj )
-  CLASS( AbstractBC_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: userObj
-END SUBROUTINE bc_addSurrogate
-END INTERFACE
-
-INTERFACE AbstractBCAddSurrogate
-  MODULE PROCEDURE bc_addSurrogate
-END INTERFACE AbstractBCAddSurrogate
-
-PUBLIC :: AbstractBCAddSurrogate
 
 !----------------------------------------------------------------------------
 !                                                          GetMeshID@Methods
@@ -208,12 +189,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE bc_Get( obj, nodeNum, nodalValue, times )
-  CLASS( AbstractBC_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE, INTENT( INOUT ) :: nodeNum( : )
-  REAL( DFP ), OPTIONAL, ALLOCATABLE, INTENT( INOUT ) :: nodalValue( :, : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: times( : )
-END SUBROUTINE bc_Get
+  MODULE SUBROUTINE bc_Get(obj, nodeNum, nodalValue, times)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: nodeNum(:)
+    REAL(DFP), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE bc_Get
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -221,10 +202,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION bc_getDOFNo( obj ) RESULT( Ans )
-  CLASS( AbstractBC_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION bc_getDOFNo
+  MODULE PURE FUNCTION bc_getDOFNo(obj) RESULT(Ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_getDOFNo
 END INTERFACE
 
 END MODULE AbstractBC_Class

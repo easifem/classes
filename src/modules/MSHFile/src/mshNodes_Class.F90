@@ -16,68 +16,67 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This module implements a class for handling nodes in mesh file
+! date:         11 June 2021
+! summary:         This module implements a class for handling nodes in mesh file
 
 MODULE mshNodes_Class
 USE BaseType
 USE GlobalData
 USE mshFormat_Class
 USE TxtFile_Class
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-TYPE( ExceptionHandler_ ) :: e
-CHARACTER( LEN = * ), PARAMETER :: modName = "MSHNODES_CLASS"
+CHARACTER(LEN=*), PARAMETER :: modName = "mshNodes_Class"
 
 !----------------------------------------------------------------------------
 !                                                                 mshNodes_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 JUNE 2021
-! summary: 	This class is defined to handle the nodes in mesh file
+! date:         11 JUNE 2021
+! summary:         This class is defined to handle the nodes in mesh file
 
 TYPE :: mshNodes_
   PRIVATE
-  INTEGER( I4B ) :: numNodes = 0
+  INTEGER(I4B) :: numNodes = 0
     !! number of nodes
-  INTEGER( I4B ) :: numEntityBlocks = 0
+  INTEGER(I4B) :: numEntityBlocks = 0
     !! number of entity blocks which contains the nodes
-  INTEGER( I4B ) :: minNodeTag = 0
+  INTEGER(I4B) :: minNodeTag = 0
     !! minimum node number
-  INTEGER( I4B ) :: maxNodeTag = 0
+  INTEGER(I4B) :: maxNodeTag = 0
     !! maximum node number
-  LOGICAL( LGT ) :: isSparse = .FALSE.
+  LOGICAL(LGT) :: isSparse = .FALSE.
     !! isSparse
 
-  CONTAINS
-    FINAL :: n_Final
-    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => n_Deallocate
+CONTAINS
+  FINAL :: n_Final
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => n_Deallocate
       !! Deallocate From the object
-    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => n_GotoTag
+  PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => n_GotoTag
       !! Go to the node tag in mesh file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Read => n_Read
+  PROCEDURE, PUBLIC, PASS(obj) :: Read => n_Read
       !! read content from file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Write => n_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: Write => n_Write
       !! write data to file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Display => n_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => n_Display
       !! Display the content of msh Nodes
-    PROCEDURE, PUBLIC, PASS( obj ) :: getNumEntityBlocks => n_getNumEntityBlocks
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getNumNodes => n_getNumNodes
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getMaxNodeTag => n_getMaxNodeTag
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getMinNodeTag => n_getMinNodeTag
+  PROCEDURE, PUBLIC, PASS(obj) :: getNumEntityBlocks => n_getNumEntityBlocks
+  PROCEDURE, PUBLIC, PASS(Obj) :: getNumNodes => n_getNumNodes
+  PROCEDURE, PUBLIC, PASS(Obj) :: getMaxNodeTag => n_getMaxNodeTag
+  PROCEDURE, PUBLIC, PASS(Obj) :: getMinNodeTag => n_getMinNodeTag
 END TYPE mshNodes_
 
 PUBLIC :: mshNodes_
-TYPE( mshNodes_ ), PUBLIC, PARAMETER :: TypeMshNodes = mshNodes_( )
+TYPE(mshNodes_), PUBLIC, PARAMETER :: TypeMshNodes = mshNodes_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: mshNodesPointer_
-  CLASS( mshNodes_ ),  POINTER :: Ptr => NULL( )
+  CLASS(mshNodes_), POINTER :: Ptr => NULL()
 END TYPE mshNodesPointer_
 PUBLIC :: mshNodesPointer_
 
@@ -86,9 +85,9 @@ PUBLIC :: mshNodesPointer_
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE n_Final( obj )
-  TYPE( mshNodes_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE n_Final
+  MODULE SUBROUTINE n_Final(obj)
+    TYPE(mshNodes_), INTENT(INOUT) :: obj
+  END SUBROUTINE n_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -96,13 +95,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary: This subroutine deallocate the data form the instance
 
 INTERFACE
-MODULE SUBROUTINE n_Deallocate( obj )
-  CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE n_Deallocate
+  MODULE SUBROUTINE n_Deallocate(obj)
+    CLASS(mshNodes_), INTENT(INOUT) :: obj
+  END SUBROUTINE n_Deallocate
 END INTERFACE
 
 INTERFACE Deallocate
@@ -116,15 +115,15 @@ PUBLIC :: Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary: This subroutine go to the position where nodes are defined
 
 INTERFACE
-MODULE SUBROUTINE n_GotoTag( obj, mshFile, error )
-  CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
-  INTEGER( I4B ), INTENT( INOUT ) :: error
-END SUBROUTINE n_GotoTag
+  MODULE SUBROUTINE n_GotoTag(obj, mshFile, error)
+    CLASS(mshNodes_), INTENT(IN) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
+    INTEGER(I4B), INTENT(INOUT) :: error
+  END SUBROUTINE n_GotoTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -132,16 +131,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This subroutine read data from mesh file
+! date:         11 June 2021
+! summary:         This subroutine read data from mesh file
 
 INTERFACE
-MODULE SUBROUTINE n_Read( obj, mshFile, mshFormat, error )
-  CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
-  TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
-  INTEGER( I4B ), INTENT( INOUT ) :: error
-END SUBROUTINE n_Read
+  MODULE SUBROUTINE n_Read(obj, mshFile, mshFormat, error)
+    CLASS(mshNodes_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
+    TYPE(mshFormat_), INTENT(INOUT) :: mshFormat
+    INTEGER(I4B), INTENT(INOUT) :: error
+  END SUBROUTINE n_Read
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -153,12 +152,12 @@ END INTERFACE
 ! summary: This subroutine write data to a file
 
 INTERFACE
-MODULE SUBROUTINE n_Write( obj, mshFile, mshFormat, Str, EndStr )
-  CLASS( mshNodes_ ), INTENT( INOUT ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
-  CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
-  TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
-END SUBROUTINE n_Write
+  MODULE SUBROUTINE n_Write(obj, mshFile, mshFormat, Str, EndStr)
+    CLASS(mshNodes_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Str, EndStr
+    TYPE(mshFormat_), INTENT(INOUT) :: mshFormat
+  END SUBROUTINE n_Write
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -166,15 +165,15 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary: This subroutine display contents of [[mshNodes_]]
 
 INTERFACE
-MODULE SUBROUTINE n_Display( obj, Msg, UnitNo )
-  CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
-END SUBROUTINE n_Display
+  MODULE SUBROUTINE n_Display(obj, Msg, UnitNo)
+    CLASS(mshNodes_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
+  END SUBROUTINE n_Display
 END INTERFACE
 
 INTERFACE Display
@@ -188,14 +187,14 @@ PUBLIC :: Display
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This function returns the number of entities blocks
+! date:         11 June 2021
+! summary:         This function returns the number of entities blocks
 
 INTERFACE
-MODULE PURE FUNCTION n_getNumEntityBlocks( obj ) RESULT( Ans )
-  CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION n_getNumEntityBlocks
+  MODULE PURE FUNCTION n_getNumEntityBlocks(obj) RESULT(Ans)
+    CLASS(mshNodes_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION n_getNumEntityBlocks
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -203,14 +202,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This function returns the number of entities blocks
+! date:         11 June 2021
+! summary:         This function returns the number of entities blocks
 
 INTERFACE
-MODULE PURE FUNCTION n_getNumNodes( obj ) RESULT( Ans )
-  CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION n_getNumNodes
+  MODULE PURE FUNCTION n_getNumNodes(obj) RESULT(Ans)
+    CLASS(mshNodes_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION n_getNumNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -218,10 +217,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION n_getMaxNodeTag( obj ) RESULT( Ans )
-  CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION n_getMaxNodeTag
+  MODULE PURE FUNCTION n_getMaxNodeTag(obj) RESULT(Ans)
+    CLASS(mshNodes_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION n_getMaxNodeTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -229,12 +228,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION n_getMinNodeTag( obj ) RESULT( Ans )
-  CLASS( mshNodes_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION n_getMinNodeTag
+  MODULE PURE FUNCTION n_getMinNodeTag(obj) RESULT(Ans)
+    CLASS(mshNodes_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION n_getMinNodeTag
 END INTERFACE
-
 
 !----------------------------------------------------------------------------
 !

@@ -21,22 +21,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mesh_addSurrogate
-CALL e%addSurrogate(userObj)
-END PROCEDURE mesh_addSurrogate
-
-!----------------------------------------------------------------------------
-!                                                             addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE addSurrogate_mesh
-CALL e%addSurrogate(userObj)
-END PROCEDURE addSurrogate_mesh
-
-!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 

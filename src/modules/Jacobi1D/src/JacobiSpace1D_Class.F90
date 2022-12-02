@@ -25,12 +25,11 @@ USE BaseType, ONLY: iface_1DFunction
 USE String_Class, ONLY: String
 USE GlobalData
 USE AbstractOrthopolSpace1D_Class
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 
 CHARACTER(LEN=*), PARAMETER :: modName = "JacobiSpace1D_Class"
-TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                            JacobiSpace1D_

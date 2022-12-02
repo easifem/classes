@@ -20,13 +20,13 @@ USE BaseType
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE HDF5File_Class
+USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "AbstractMeshField_Class"
-TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -77,8 +77,6 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Domain contains the information of the finite element meshes.
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => aField_addSurrogate
-  !! check essential parameters
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & aField_checkEssentialParam
   !! check essential parameters
@@ -123,21 +121,6 @@ TYPE :: AbstractMeshFieldPointer_
 END TYPE AbstractMeshFieldPointer_
 
 PUBLIC :: AbstractMeshFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_addSurrogate(obj, UserObj)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE aField_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                              setAbstractMeshFieldParam@ConstructorMethods

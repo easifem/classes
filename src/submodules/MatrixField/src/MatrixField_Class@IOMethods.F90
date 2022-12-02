@@ -84,13 +84,13 @@ INTEGER(I4B) :: ii
 !!
 !! Check error
 !!
-CALL Export_CheckError(obj=obj, hdf5=hdf5, group=group, e=e, &
+CALL Export_CheckError(obj=obj, hdf5=hdf5, group=group, &
   & myName=myName, modName=modName)
 !!
 !! export header from MatrixFieldUtility
 !!
 CALL Export_Header(obj=obj, hdf5=hdf5, group=group, &
-  & e=e, dname=dname, matprop=matprop)
+  & dname=dname, matprop=matprop)
 !!
 !! mat
 !!
@@ -242,13 +242,13 @@ TYPE(ParameterList_) :: param
 !!
 !! main program
 !!
-CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, e=e, &
+CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, &
   & myName=myName, modName=modName)
 !!
 !! Import header
 !!
 CALL Import_Header( &
-  & obj=obj, hdf5=hdf5, group=group, e=e, &
+  & obj=obj, hdf5=hdf5, group=group, &
   & modName=modName, myName=myName, &
   & fieldType=fieldType, name=name, engine=engine, &
   & matrixProp=matrixProp)
@@ -300,7 +300,7 @@ ELSE
   !!
   CALL Import_PhysicalVar( &
     & obj=obj, hdf5=hdf5, &
-    & group=group, e=e, myName=myName, &
+    & group=group, myName=myName, &
     & modName=modName, matrixProp=matrixProp, &
     & tvar1=tvar1, tvar2=tvar2, name1=name1, &
     & name2=name2, spaceCompo1=spaceCompo1, &

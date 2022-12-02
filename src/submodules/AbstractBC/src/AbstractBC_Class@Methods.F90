@@ -21,22 +21,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_addSurrogate
-  CALL e%addSurrogate(userObj)
-END PROCEDURE bc_addSurrogate
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Deallocate
-  obj%isInitiated = .FALSE.
-  obj%name = ''
-  CALL obj%boundary%Deallocate()
-  obj%dom => NULL()
+obj%isInitiated = .FALSE.
+obj%name = ''
+CALL obj%boundary%Deallocate()
+obj%dom => NULL()
 END PROCEDURE bc_Deallocate
 
 !----------------------------------------------------------------------------
@@ -44,7 +36,7 @@ END PROCEDURE bc_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_getMeshID
-  ans = obj%boundary%getMeshID( dim=dim )
+ans = obj%boundary%getMeshID(dim=dim)
 END PROCEDURE bc_getMeshID
 
 !----------------------------------------------------------------------------
@@ -52,7 +44,7 @@ END PROCEDURE bc_getMeshID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_getDOFNo
-  ans = obj%idof
+ans = obj%idof
 END PROCEDURE bc_getDOFNo
 
 !----------------------------------------------------------------------------
@@ -60,108 +52,108 @@ END PROCEDURE bc_getDOFNo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Get
-  INTEGER(I4B) :: ii
-  CHARACTER(LEN=*), PARAMETER :: myName = "bc_Get"
+INTEGER(I4B) :: ii
+CHARACTER(LEN=*), PARAMETER :: myName = "bc_Get"
   !!
 #ifdef DEBUG_VER
   !!
   !! check
   !!
-  IF (.NOT. obj%isInitiated) &
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'DiricheltBC object is not initiated, initiate it first.')
+IF (.NOT. obj%isInitiated) &
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'DiricheltBC object is not initiated, initiate it first.')
 #endif
   !!
   !! get node numbers
   !!
-  nodeNum = obj%Boundary%getNodeNum(domain=obj%dom)
+nodeNum = obj%Boundary%getNodeNum(domain=obj%dom)
   !!
   !! get nodal values
   !!
-  IF( PRESENT( nodalValue ) ) THEN
+IF (PRESENT(nodalValue)) THEN
     !!
     !! Use function case
     !!
-    IF (obj%UseFunction) THEN
-      CALL GetUserFunction(obj=obj, nodeNum=nodeNum, &
-        & nodalValue=nodalValue, times=times )
-      RETURN
-    END IF
+  IF (obj%UseFunction) THEN
+    CALL GetUserFunction(obj=obj, nodeNum=nodeNum, &
+      & nodalValue=nodalValue, times=times)
+    RETURN
+  END IF
     !!
     !! check
     !!
 #ifdef DEBUG_VER
-    IF (.NOT. ALLOCATED(obj%nodalValue)) &
-      & CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'nodalValue is not allocated!')
+  IF (.NOT. ALLOCATED(obj%nodalValue)) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'nodalValue is not allocated!')
 #endif
     !!
     !! Getting nodal values
     !!
-    SELECT CASE (obj%nodalValueType)
+  SELECT CASE (obj%nodalValueType)
     !!
     !! Constant
     !!
-    CASE (CONSTANT)
+  CASE (CONSTANT)
       !!
-      IF (PRESENT(times)) THEN
-        CALL Reallocate(nodalValue, SIZE(nodeNum), SIZE(times))
-      ELSE
-        CALL Reallocate(nodalValue, SIZE(nodeNum), 1)
-      END IF
+    IF (PRESENT(times)) THEN
+      CALL Reallocate(nodalValue, SIZE(nodeNum), SIZE(times))
+    ELSE
+      CALL Reallocate(nodalValue, SIZE(nodeNum), 1)
+    END IF
       !!
-      nodalValue = obj%nodalValue(1, 1)
+    nodalValue = obj%nodalValue(1, 1)
     !!
     !! Space
     !!
-    CASE (SPACE)
+  CASE (SPACE)
       !!
 #ifdef DEBUG_VER
-      IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) &
-        & CALL e%raiseError(modName//'::'//myName//" - "// &
-        & 'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
+    IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
 #endif
       !!
-      nodalValue = obj%nodalValue
+    nodalValue = obj%nodalValue
       !!
       !! Time
       !!
-    CASE (TIME)
+  CASE (TIME)
       !!
 #ifdef DEBUG_VER
-      IF (PRESENT(times)) THEN
-        IF (SIZE(obj%nodalValue, 1) .NE. SIZE(times)) &
-          & CALL e%raiseError(modName//'::'//myName//" - "// &
-          & 'SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
-      END IF
+    IF (PRESENT(times)) THEN
+      IF (SIZE(obj%nodalValue, 1) .NE. SIZE(times)) &
+        & CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
+    END IF
 #endif
       !!
-      CALL Reallocate( nodalValue, SIZE(nodeNum), SIZE(obj%nodalValue, 1) )
+    CALL Reallocate(nodalValue, SIZE(nodeNum), SIZE(obj%nodalValue, 1))
       !!
-      DO ii = 1, SIZE(obj%nodalValue, 1)
-        nodalValue(:, ii) = obj%nodalValue(ii, 1)
-      END DO
+    DO ii = 1, SIZE(obj%nodalValue, 1)
+      nodalValue(:, ii) = obj%nodalValue(ii, 1)
+    END DO
     !!
     !! SpaceTime
     !!
-    CASE (SpaceTime)
+  CASE (SpaceTime)
       !!
 #ifdef DEBUG_VER
-      IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) &
-        & CALL e%raiseError(modName//'::'//myName//" - "// &
-        & 'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
+    IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
       !!
-      IF (PRESENT(times)) THEN
-        IF (SIZE(obj%nodalValue, 2) .NE. SIZE(times)) &
-          & CALL e%raiseError(modName//'::'//myName//" - "// &
-          & 'SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
-      END IF
+    IF (PRESENT(times)) THEN
+      IF (SIZE(obj%nodalValue, 2) .NE. SIZE(times)) &
+        & CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
+    END IF
 #endif
       !!
-      nodalValue = obj%nodalValue
+    nodalValue = obj%nodalValue
       !!
-    END SELECT
-  END IF
+  END SELECT
+END IF
   !!
   !!
 END PROCEDURE bc_Get
@@ -170,12 +162,12 @@ END PROCEDURE bc_Get
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE GetUserFunction(obj, nodeNum, nodalValue, times )
+SUBROUTINE GetUserFunction(obj, nodeNum, nodalValue, times)
   !! Intent of dummy variable
-  CLASS( AbstractBC_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN) :: nodeNum( : )
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: nodalValue( :, : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: times( : )
+  CLASS(AbstractBC_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: nodeNum(:)
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   !!
   !! Define internal variable
   !!
@@ -209,7 +201,7 @@ SUBROUTINE GetUserFunction(obj, nodeNum, nodalValue, times )
     !!
     DO ii = 1, SIZE(nodeNum)
       nodalValue(ii, 1) = obj%SpaceFunction( &
-        & x=xij(:, obj%dom%getLocalNodeNumber(globalNode=nodeNum(ii) )))
+        & x=xij(:, obj%dom%getLocalNodeNumber(globalNode=nodeNum(ii))))
     END DO
   !!
   !! Time

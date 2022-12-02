@@ -19,14 +19,13 @@ MODULE VTKPlot_Class
 USE GlobalData
 USE BaseType
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 USE AbstractPlot_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "VTKPlot_Class"
-TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                                     VTKPlot_

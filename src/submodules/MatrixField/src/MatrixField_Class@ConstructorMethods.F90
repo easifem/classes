@@ -28,14 +28,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setMatrixFieldParam
-INTEGER(I4B) :: ierr
-ierr = param%set(key="MatrixField/name", value=TRIM(name))
-ierr = param%set(key="MatrixField/matrixProp", value=TRIM(matrixProp))
-ierr = param%set(key="MatrixField/spaceCompo",  &
+INTEGER(I4B) :: ierr0
+ierr0 = param%set(key="MatrixField/name", value=TRIM(name))
+ierr0 = param%set(key="MatrixField/matrixProp", value=TRIM(matrixProp))
+ierr0 = param%set(key="MatrixField/spaceCompo",  &
   &  value=INPUT(option=spaceCompo, default=1))
-ierr = param%set(key="MatrixField/timeCompo",  &
+ierr0 = param%set(key="MatrixField/timeCompo",  &
   & value=INPUT(option=timeCompo, default=1))
-ierr = param%set(key="MatrixField/fieldType", value=INPUT(  &
+ierr0 = param%set(key="MatrixField/fieldType", value=INPUT(  &
   & option=fieldType, default=FIELD_TYPE_NORMAL))
 END PROCEDURE setMatrixFieldParam
 
@@ -70,14 +70,6 @@ ierr0 = param%set(key="MatrixField/fieldType", value=INPUT( &
   & option=fieldType, default=FIELD_TYPE_NORMAL))
 !!
 END PROCEDURE SetRectangleMatrixFieldParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_addSurrogate
-CALL e%addSurrogate(UserObj)
-END PROCEDURE mField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                             MatrixFieldCheckEssentialParam

@@ -16,8 +16,8 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	2 May 2021
-! summary: 	module for I/O defines the base file type object.
+! date:         2 May 2021
+! summary:         module for I/O defines the base file type object.
 !
 ! The developement of this module is inspired from the
 ! `FileType_Base.F90` of Futility package. The original source is located at
@@ -38,14 +38,14 @@
 
 MODULE AbstractFile_Class
 USE GlobalData
-USE String_Class, ONLY:String
-USE ExceptionHandler_Class
+USE String_Class, ONLY: String
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 !List of Public Members
-CHARACTER(LEN=*),PARAMETER :: modName='AbstractFile_Class'
-INTEGER(I4B), PARAMETER :: maxStrLen=256
-TYPE(ExceptionHandler_), PRIVATE :: e
+CHARACTER(LEN=*), PARAMETER :: modName = 'AbstractFile_Class'
+INTEGER(I4B), PARAMETER :: maxStrLen = 256
+!! TYPE(ExceptionHandler_), PRIVATE :: e
   !! The exception handler for the object
   !! List of type bound procedures (methods) for the Base File Type object
 
@@ -54,16 +54,16 @@ TYPE(ExceptionHandler_), PRIVATE :: e
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	2 May 2021
+! date:         2 May 2021
 ! summary: This is an abstract type which means it has no basic implementation
 
-TYPE,ABSTRACT :: AbstractFile_
+TYPE, ABSTRACT :: AbstractFile_
   PRIVATE
-  INTEGER(I4B) :: pathlen=0
+  INTEGER(I4B) :: pathlen = 0
     !! The length of the path of the file
-  INTEGER(I4B) :: fnamelen=0
+  INTEGER(I4B) :: fnamelen = 0
     !! The length of the file name string
-  INTEGER(I4B) :: extlen=0
+  INTEGER(I4B) :: extlen = 0
     !! The length of the file name extension string
   TYPE(String) :: path
     !! The path of the file
@@ -71,52 +71,51 @@ TYPE,ABSTRACT :: AbstractFile_
     !! The name of the file (without the file extension)
   TYPE(String) :: ext
     !! The extension of the file name
-  LOGICAL(LGT) :: openstat=.FALSE.
+  LOGICAL(LGT) :: openstat = .FALSE.
     !! Whether or not the file is open
-  LOGICAL(LGT) :: EOFstat=.FALSE.
+  LOGICAL(LGT) :: EOFstat = .FALSE.
     !! Whether or not the end of file has been reached
-  LOGICAL(LGT) :: readstat=.FALSE.
+  LOGICAL(LGT) :: readstat = .FALSE.
     !! Whether or not the file is open for reading
-  LOGICAL(LGT) :: writestat=.FALSE.
+  LOGICAL(LGT) :: writestat = .FALSE.
     !! Whether or not the file is open for writing
-  CONTAINS
-    PRIVATE
+CONTAINS
+  PRIVATE
     !!
     !! ConstructorMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => aFile_addSurrogate
-    PROCEDURE, PUBLIC, PASS( Obj ) :: Deallocate => AbstractFileDeallocate
+  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => AbstractFileDeallocate
     !!
     !! @SetMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: setFilePath => aFile_setFilePath
-    PROCEDURE, PUBLIC, PASS( obj ) :: setFileName => aFile_setFileName
-    PROCEDURE, PUBLIC, PASS( obj ) :: setFileExt => aFile_setFileExt
-    PROCEDURE, PUBLIC, PASS( obj ) :: setEOFstat => aFile_setEOFStat
-    PROCEDURE, PUBLIC, PASS( obj ) :: setOpenStat => aFile_setOpenStat
-    PROCEDURE, PUBLIC, PASS( obj ) :: setReadStat => aFile_setReadStat
-    PROCEDURE, PUBLIC, PASS( obj ) :: setWriteStat => aFile_setWriteStat
+  PROCEDURE, PUBLIC, PASS(obj) :: setFilePath => aFile_setFilePath
+  PROCEDURE, PUBLIC, PASS(obj) :: setFileName => aFile_setFileName
+  PROCEDURE, PUBLIC, PASS(obj) :: setFileExt => aFile_setFileExt
+  PROCEDURE, PUBLIC, PASS(obj) :: setEOFstat => aFile_setEOFStat
+  PROCEDURE, PUBLIC, PASS(obj) :: setOpenStat => aFile_setOpenStat
+  PROCEDURE, PUBLIC, PASS(obj) :: setReadStat => aFile_setReadStat
+  PROCEDURE, PUBLIC, PASS(obj) :: setWriteStat => aFile_setWriteStat
     !!
     !! @GetMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFilePath => aFile_getFilePath
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileName => aFile_getFileName
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileExt => aFile_getFileExt
-    PROCEDURE, PUBLIC, PASS( obj ) :: getFileParts => aFile_getFileParts
+  PROCEDURE, PUBLIC, PASS(obj) :: getFilePath => aFile_getFilePath
+  PROCEDURE, PUBLIC, PASS(obj) :: getFileName => aFile_getFileName
+  PROCEDURE, PUBLIC, PASS(obj) :: getFileExt => aFile_getFileExt
+  PROCEDURE, PUBLIC, PASS(obj) :: getFileParts => aFile_getFileParts
     !!
     !! @EnquireMethods
     !!
-    PROCEDURE, PUBLIC, PASS( obj ) :: isOpen => aFile_isOpen
-    PROCEDURE, PUBLIC, PASS( obj ) :: isEOF => aFile_isEOF
-    PROCEDURE, PUBLIC, PASS( obj ) :: isRead => aFile_isRead
-    PROCEDURE, PUBLIC, PASS( obj ) :: isWrite => aFile_isWrite
+  PROCEDURE, PUBLIC, PASS(obj) :: isOpen => aFile_isOpen
+  PROCEDURE, PUBLIC, PASS(obj) :: isEOF => aFile_isEOF
+  PROCEDURE, PUBLIC, PASS(obj) :: isRead => aFile_isRead
+  PROCEDURE, PUBLIC, PASS(obj) :: isWrite => aFile_isWrite
     !!
     !! Deferred Methods
     !!
-    PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS( obj ) :: open
-    PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS( obj ) :: close
-    PROCEDURE(aFile_delete), PUBLIC, DEFERRED, PASS( obj ) :: delete
-ENDTYPE AbstractFile_
+  PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS(obj) :: open
+  PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS(obj) :: close
+  PROCEDURE(aFile_delete), PUBLIC, DEFERRED, PASS(obj) :: delete
+END TYPE AbstractFile_
 
 PUBLIC :: AbstractFile_
 
@@ -125,25 +124,10 @@ PUBLIC :: AbstractFile_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractFilePointer_
-CLASS( AbstractFile_ ), POINTER :: ptr => NULL()
+  CLASS(AbstractFile_), POINTER :: ptr => NULL()
 END TYPE AbstractFilePointer_
 
 PUBLIC :: AbstractFilePointer_
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2022
-! summary: Add surrogate to the module exception handler.
-
-INTERFACE
-MODULE SUBROUTINE aFile_addSurrogate( obj, UserObj )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE aFile_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                             Dealalocate@ConstructorMethods
@@ -154,10 +138,10 @@ END INTERFACE
 ! summary: Deallocate the data stored in the file
 
 INTERFACE
-MODULE SUBROUTINE AbstractFileDeallocate( obj, delete )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
-END SUBROUTINE AbstractFileDeallocate
+  MODULE SUBROUTINE AbstractFileDeallocate(obj, delete)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: delete
+  END SUBROUTINE AbstractFileDeallocate
 END INTERFACE
 
 PUBLIC :: AbstractFileDeallocate
@@ -171,10 +155,10 @@ PUBLIC :: AbstractFileDeallocate
 ! summary: Set the path of file
 
 INTERFACE
-MODULE SUBROUTINE aFile_setFilePath( obj, path )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: path
-END SUBROUTINE aFile_setFilePath
+  MODULE SUBROUTINE aFile_setFilePath(obj, path)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: path
+  END SUBROUTINE aFile_setFilePath
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -186,10 +170,10 @@ END INTERFACE
 ! summary: Set the file name
 
 INTERFACE
-MODULE SUBROUTINE aFile_setFileName( obj, fileName )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: fileName
-END SUBROUTINE aFile_setFileName
+  MODULE SUBROUTINE aFile_setFileName(obj, fileName)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: fileName
+  END SUBROUTINE aFile_setFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -201,10 +185,10 @@ END INTERFACE
 ! summary: Set the file extension
 
 INTERFACE
-MODULE SUBROUTINE aFile_setFileExt( obj, Ext )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  TYPE( String ), INTENT( IN ) :: Ext
-END SUBROUTINE aFile_setFileExt
+  MODULE SUBROUTINE aFile_setFileExt(obj, Ext)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: Ext
+  END SUBROUTINE aFile_setFileExt
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -216,10 +200,10 @@ END INTERFACE
 ! summary: Set the end of file status of file
 
 INTERFACE
-MODULE SUBROUTINE aFile_setEOFstat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setEOFstat
+  MODULE SUBROUTINE aFile_setEOFstat(obj, stat)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: stat
+  END SUBROUTINE aFile_setEOFstat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -231,10 +215,10 @@ END INTERFACE
 ! summary: Set the openStat
 
 INTERFACE
-MODULE SUBROUTINE aFile_setOpenStat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setOpenStat
+  MODULE SUBROUTINE aFile_setOpenStat(obj, stat)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: stat
+  END SUBROUTINE aFile_setOpenStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -246,10 +230,10 @@ END INTERFACE
 ! summary: Set the readStat
 
 INTERFACE
-MODULE SUBROUTINE aFile_setReadStat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setReadStat
+  MODULE SUBROUTINE aFile_setReadStat(obj, stat)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: stat
+  END SUBROUTINE aFile_setReadStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -261,10 +245,10 @@ END INTERFACE
 ! summary: Set the writeStat
 
 INTERFACE
-MODULE SUBROUTINE aFile_setWriteStat( obj, stat )
-  CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), INTENT( IN ) :: stat
-END SUBROUTINE aFile_setWriteStat
+  MODULE SUBROUTINE aFile_setWriteStat(obj, stat)
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: stat
+  END SUBROUTINE aFile_setWriteStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -276,10 +260,10 @@ END INTERFACE
 ! summary: Returns the path of the file
 
 INTERFACE
-MODULE FUNCTION aFile_getFilePath( obj ) RESULT( path )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: path
-END FUNCTION aFile_getFilePath
+  MODULE FUNCTION aFile_getFilePath(obj) RESULT(path)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    TYPE(String) :: path
+  END FUNCTION aFile_getFilePath
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -291,10 +275,10 @@ END INTERFACE
 ! summary: Returns the name of the file
 
 INTERFACE
-MODULE FUNCTION aFile_getFileName( obj ) RESULT( fileName )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: fileName
-END FUNCTION aFile_getFileName
+  MODULE FUNCTION aFile_getFileName(obj) RESULT(fileName)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    TYPE(String) :: fileName
+  END FUNCTION aFile_getFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -306,10 +290,10 @@ END INTERFACE
 ! summary: Returns the extension of the file
 
 INTERFACE
-MODULE FUNCTION aFile_getFileExt( obj ) RESULT( Ext )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ) :: Ext
-END FUNCTION aFile_getFileExt
+  MODULE FUNCTION aFile_getFileExt(obj) RESULT(Ext)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    TYPE(String) :: Ext
+  END FUNCTION aFile_getFileExt
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -321,12 +305,12 @@ END INTERFACE
 ! summary: Returns the path, filename, and extension of the file
 
 INTERFACE
-MODULE PURE SUBROUTINE aFile_getFileParts( obj, path, fileName, ext )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  TYPE( String ), INTENT( OUT ) :: path
-  TYPE( String ), INTENT( OUT ) :: fileName
-  TYPE( String ), INTENT( OUT ) :: ext
-END SUBROUTINE aFile_getFileParts
+  MODULE PURE SUBROUTINE aFile_getFileParts(obj, path, fileName, ext)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    TYPE(String), INTENT(OUT) :: path
+    TYPE(String), INTENT(OUT) :: fileName
+    TYPE(String), INTENT(OUT) :: ext
+  END SUBROUTINE aFile_getFileParts
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -338,10 +322,10 @@ END INTERFACE
 ! summary: Returns true if the file is open
 
 INTERFACE
-MODULE FUNCTION aFile_isOpen( obj ) RESULT( ans )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION aFile_isOpen
+  MODULE FUNCTION aFile_isOpen(obj) RESULT(ans)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION aFile_isOpen
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -353,10 +337,10 @@ END INTERFACE
 ! summary: Returns true if the end of the file is reached
 
 INTERFACE
-MODULE FUNCTION aFile_isEOF( obj ) RESULT( ans )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION aFile_isEOF
+  MODULE FUNCTION aFile_isEOF(obj) RESULT(ans)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION aFile_isEOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -368,10 +352,10 @@ END INTERFACE
 ! summary: Returns true if the file has read access
 
 INTERFACE
-MODULE FUNCTION aFile_isRead( obj ) RESULT( ans )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION aFile_isRead
+  MODULE FUNCTION aFile_isRead(obj) RESULT(ans)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION aFile_isRead
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -383,10 +367,10 @@ END INTERFACE
 ! summary: Returns true if the file has write access
 
 INTERFACE
-MODULE FUNCTION aFile_isWrite( obj ) RESULT( ans )
-  CLASS( AbstractFile_ ), INTENT( IN ) :: obj
-  LOGICAL( LGT ) :: ans
-END FUNCTION aFile_isWrite
+  MODULE FUNCTION aFile_isWrite(obj) RESULT(ans)
+    CLASS(AbstractFile_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION aFile_isWrite
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -400,14 +384,13 @@ END INTERFACE
 ABSTRACT INTERFACE
   SUBROUTINE aFile_Open(obj)
     IMPORT :: AbstractFile_
-    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
   END SUBROUTINE aFile_Open
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 8 May 2022
@@ -416,7 +399,7 @@ END INTERFACE
 ABSTRACT INTERFACE
   SUBROUTINE aFile_Close(obj)
     IMPORT :: AbstractFile_
-    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
   END SUBROUTINE aFile_Close
 END INTERFACE
 
@@ -431,7 +414,7 @@ END INTERFACE
 ABSTRACT INTERFACE
   SUBROUTINE aFile_Delete(obj)
     IMPORT :: AbstractFile_
-    CLASS( AbstractFile_ ), INTENT( INOUT ) :: obj
+    CLASS(AbstractFile_), INTENT(INOUT) :: obj
   END SUBROUTINE aFile_Delete
 END INTERFACE
 

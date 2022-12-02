@@ -23,7 +23,7 @@ MODULE Gmsh_Class
 USE ISO_C_BINDING
 USE GlobalData, ONLY: I4B, LGT, DFP
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE GmshUtility
 USE GmshInterface
 USE GmshGraphics_Class
@@ -37,8 +37,6 @@ PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "Gmsh_Class"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
-TYPE(ExceptionHandler_) :: e
-!$OMP THREADPRIVATE(e)
 INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
 PUBLIC :: GMSH_API_MAX_STR_LEN
 PUBLIC :: GMSH_API_VERSION_MAJOR

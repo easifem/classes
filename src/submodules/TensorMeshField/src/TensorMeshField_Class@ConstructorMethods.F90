@@ -25,36 +25,28 @@ CONTAINS
 
 MODULE PROCEDURE setTensorMeshFieldParam
   !!
-  CALL setAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="TensorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2, nns] )
+CALL setAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix="TensorMeshField", &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Matrix, &
+  & s=[dim1, dim2, nns])
   !!
 END PROCEDURE setTensorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_addSurrogate
-  CALL e%addSurrogate(UserObj)
-END PROCEDURE aField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_checkEssentialParam
-  CALL AbstractFieldCheckEssentialParam( &
-    & obj=obj, &
-    & prefix="TensorMeshField", &
-    & param=param )
+CALL AbstractFieldCheckEssentialParam( &
+  & obj=obj, &
+  & prefix="TensorMeshField", &
+  & param=param)
 END PROCEDURE aField_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -62,10 +54,10 @@ END PROCEDURE aField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-  CALL AbstractMeshFieldInitiate( &
-    & obj=obj, &
-    & prefix="TensorMeshField", &
-    & param=param, mesh=mesh )
+CALL AbstractMeshFieldInitiate( &
+  & obj=obj, &
+  & prefix="TensorMeshField", &
+  & param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------

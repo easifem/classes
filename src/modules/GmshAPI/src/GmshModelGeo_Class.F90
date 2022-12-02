@@ -21,7 +21,7 @@ USE Utility, ONLY: Reallocate, Input
 USE GmshUtility
 USE GmshInterface
 USE GmshModelGeoMesh_Class
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE CInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
@@ -32,8 +32,6 @@ INTEGER(C_INT) :: ierr
 INTEGER(C_INT) :: cintvar
 !$OMP THREADPRIVATE(cintvar)
 !!
-TYPE(ExceptionHandler_) :: e
-!$OMP THREADPRIVATE(e)
 INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
 
 !----------------------------------------------------------------------------

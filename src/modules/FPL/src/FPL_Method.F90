@@ -21,23 +21,23 @@
 
 MODULE FPL_Method
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE BaseMethod
 USE FPL, ONLY: ParameterList_
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "FPL_Method"
-TYPE(ExceptionHandler_) :: e
+!! TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-INTERFACE set
-  MODULE PROCEDURE fpl_set1
-END INTERFACE set
+INTERFACE Set
+  MODULE PROCEDURE fpl_Set1
+END INTERFACE Set
 
-PUBLIC :: set
+PUBLIC :: Set
 
 !----------------------------------------------------------------------------
 !
@@ -56,20 +56,20 @@ PUBLIC :: getValue
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 fpl_set1
+!                                                                 fpl_Set1
 !----------------------------------------------------------------------------
 
-SUBROUTINE fpl_set1(obj, key, value)
+SUBROUTINE fpl_Set1(obj, key, value)
   ! Define dummy variables
   TYPE(ParameterList_), INTENT(INOUT) :: obj
   CHARACTER(LEN=*), INTENT(IN) :: key
   TYPE(DOF_), INTENT(IN) :: value
   ! Internal variable
   INTEGER(I4B) :: ierr
-  ierr = obj%set(key=TRIM(key)//"/map", value=value%map)
-  ierr = obj%set(key=TRIM(key)//"/valmap", value=value%valmap)
-  ierr = obj%set(key=TRIM(key)//"/storageFMT", value=value%storageFMT)
-END SUBROUTINE fpl_set1
+  ierr = obj%Set(key=TRIM(key)//"/map", value=value%map)
+  ierr = obj%Set(key=TRIM(key)//"/valmap", value=value%valmap)
+  ierr = obj%Set(key=TRIM(key)//"/storageFMT", value=value%storageFMT)
+END SUBROUTINE fpl_Set1
 
 !----------------------------------------------------------------------------
 !                                                                 fpl_get

@@ -19,7 +19,7 @@ MODULE PLPlot_Class
 USE GlobalData
 USE BaseType
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 USE AbstractPlot_Class
 USE EasyPlplot, ONLY: binData
@@ -27,7 +27,6 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: binData
 CHARACTER(LEN=*), PARAMETER :: modName = "PLPlot_Class"
-TYPE(ExceptionHandler_) :: e
 CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_PLUS = "+"
 CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_CROSS = "x"
 CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_ASTERIC = "*"
@@ -609,7 +608,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE plot_Hist(obj, d, N, db, relWidth, fillColor, fillPattern, &
-            & lineColor, lineWidth)
+              & lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
   !!
     REAL(DFP), INTENT(IN) :: d(:)

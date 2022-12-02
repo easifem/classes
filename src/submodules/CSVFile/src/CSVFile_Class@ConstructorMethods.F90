@@ -21,32 +21,24 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                              addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE txt_addSurrogate
-  CALL e%addSurrogate(UserObj)
-END PROCEDURE txt_addSurrogate
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_initiate
-  CALL TxtFileInitiate( &
-  & obj=obj, &
-  & filename=filename, &
-  & unit=unit, &
-  & status=status, &
-  & access=access, &
-  & form=form, &
-  & position=position, &
-  & action=action, &
-  & pad=pad, &
-  & recl=recl, &
-  & comment=comment, &
-  & separator=INPUT(option=separator, default=comma), &
-  & delimiter=delimiter)
+CALL TxtFileInitiate( &
+& obj=obj, &
+& filename=filename, &
+& unit=unit, &
+& status=status, &
+& access=access, &
+& form=form, &
+& position=position, &
+& action=action, &
+& pad=pad, &
+& recl=recl, &
+& comment=comment, &
+& separator=INPUT(option=separator, default=comma), &
+& delimiter=delimiter)
 END PROCEDURE txt_initiate
 
 !----------------------------------------------------------------------------
@@ -54,19 +46,19 @@ END PROCEDURE txt_initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_Deallocate
-  CALL TxtFileDeallocate(obj, delete)
-  obj%nrows = 0
-  obj%ncols = 0
-  obj%chunk_size = MAX_CHUNK_SIZE
-  obj%icol = 0
-  obj%isQuotedStrings = .TRUE.
-  obj%isQuotedData = .FALSE.
-  obj%TrueChar = "T"
-  obj%FalseChar = "F"
-  obj%headerIndx=0
-  IF( ALLOCATED( obj%header ) ) DEALLOCATE( obj%header )
-  IF( ALLOCATED( obj%data ) ) DEALLOCATE( obj%data )
-  IF( ALLOCATED( obj%skipRows ) ) DEALLOCATE( obj%skipRows )
+CALL TxtFileDeallocate(obj, delete)
+obj%nrows = 0
+obj%ncols = 0
+obj%chunk_size = MAX_CHUNK_SIZE
+obj%icol = 0
+obj%isQuotedStrings = .TRUE.
+obj%isQuotedData = .FALSE.
+obj%TrueChar = "T"
+obj%FalseChar = "F"
+obj%headerIndx = 0
+IF (ALLOCATED(obj%header)) DEALLOCATE (obj%header)
+IF (ALLOCATED(obj%data)) DEALLOCATE (obj%data)
+IF (ALLOCATED(obj%skipRows)) DEALLOCATE (obj%skipRows)
 END PROCEDURE txt_Deallocate
 
 !----------------------------------------------------------------------------
@@ -74,7 +66,7 @@ END PROCEDURE txt_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_Final
-  CALL obj%Deallocate()
+CALL obj%Deallocate()
 END PROCEDURE txt_Final
 
 !----------------------------------------------------------------------------

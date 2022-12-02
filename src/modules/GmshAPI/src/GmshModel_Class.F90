@@ -17,7 +17,7 @@
 
 MODULE GmshModel_Class
 USE GlobalData, ONLY: DFP => Real64, I4B => Int32, LGT
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE CInterface
 USE String_Class
 USE Utility, ONLY: Input, Reallocate
@@ -32,8 +32,6 @@ PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "GmshModel_Class"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
-TYPE(ExceptionHandler_), SAVE :: e
-!$OMP THREADPRIVATE(e)
 INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
 
 !----------------------------------------------------------------------------

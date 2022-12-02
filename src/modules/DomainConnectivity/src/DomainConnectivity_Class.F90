@@ -24,15 +24,14 @@ USE BaseType
 USE GlobalData
 USE Mesh_Class
 USE Domain_Class
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "DomainConnectivity_Class"
-TYPE(ExceptionHandler_) :: e
-INTEGER( I4B ), PUBLIC, PARAMETER :: pType = 1
-INTEGER( I4B ), PUBLIC, PARAMETER :: hType = 2
-INTEGER( I4B ), PUBLIC, PARAMETER :: rType = 3
-INTEGER( I4B ), PUBLIC, PARAMETER :: oversetType = 4
+INTEGER(I4B), PUBLIC, PARAMETER :: pType = 1
+INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
+INTEGER(I4B), PUBLIC, PARAMETER :: rType = 3
+INTEGER(I4B), PUBLIC, PARAMETER :: oversetType = 4
 
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
@@ -41,7 +40,7 @@ INTEGER( I4B ), PUBLIC, PARAMETER :: oversetType = 4
 TYPE :: FacetConnectivity_
   INTEGER(I4B) :: facetID = 0
     !! global element number of facet element in facet mesh
-  INTEGER(I4B) :: GlobalCellData(4,2) = 0
+  INTEGER(I4B) :: GlobalCellData(4, 2) = 0
     !! 1,1 --> Global element number of master cell
     !! 2,1 --> master cell's local facet number connected to facet-elem
     !! 3,1 --> master mesh dimension
@@ -94,7 +93,7 @@ TYPE :: DomainConnectivity_
     !! CellToCell(ielem) => global elem number in domain-2,
     !! corresponding to
     !! global node number `ielem` in domain-1
-  INTEGER(I4B), ALLOCATABLE :: cellToCellExtraData(:,:)
+  INTEGER(I4B), ALLOCATABLE :: cellToCellExtraData(:, :)
     !! Currently, cellToCellExtraData has two rows
     !! the first row is dim
     !! the second row is entityNum
@@ -115,8 +114,6 @@ TYPE :: DomainConnectivity_
     !! ElemToElem connectivity  data
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => dc_addSurrogate
-  !! Add surrogate to the module error handler
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => dc_Deallocate
   !! Deallocate data stored in the object
   FINAL :: dc_Final
@@ -188,7 +185,7 @@ CONTAINS
     & dc_facetLocalID2
   !! Return the facet local id in cell element
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: DisplayFacetToCellData => &
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetToCellData => &
     & dc_DisplayFacetToCellData
 END TYPE DomainConnectivity_
 
@@ -203,21 +200,6 @@ TYPE :: DomainConnectivityPointer_
 END TYPE DomainConnectivityPointer_
 
 PUBLIC :: DomainConnectivityPointer_
-
-!----------------------------------------------------------------------------
-!                                            AddSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 Oct 2021
-! summary: This routine addes surrogate to module exception handler
-
-INTERFACE
-  MODULE SUBROUTINE dc_AddSurrogate(obj, userObj)
-    CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: userObj
-  END SUBROUTINE dc_AddSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods
@@ -528,17 +510,17 @@ END INTERFACE
 ! - This routine should not be used for internal boundary.
 
 INTERFACE
-  MODULE SUBROUTINE dc_InitiateFacetToCellData1( obj, facetMesh, &
-    & cellMesh, dim, entityNum, isMaster )
+  MODULE SUBROUTINE dc_InitiateFacetToCellData1(obj, facetMesh, &
+    & cellMesh, dim, entityNum, isMaster)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
     CLASS(Mesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
     CLASS(Mesh_), INTENT(INOUT) :: cellMesh
     !! Master mesh
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    INTEGER( I4B ), INTENT( IN ) :: entityNum
-    LOGICAL( LGT ), INTENT( IN ) :: isMaster
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    LOGICAL(LGT), INTENT(IN) :: isMaster
     !! if true then cell Mesh is master cell
     !! if false then cell mesh is slave cell
   END SUBROUTINE dc_InitiateFacetToCellData1
@@ -563,7 +545,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE dc_InitiateFacetToCellData2(obj, facetMesh, &
-    & masterDomain, slaveDomain )
+    & masterDomain, slaveDomain)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Mesh connectivity data
     CLASS(Mesh_), INTENT(INOUT) :: facetMesh
@@ -589,16 +571,16 @@ END INTERFACE
 ! - In this case facetMesh can be an internal boundary of cellMesh
 
 INTERFACE
-  MODULE SUBROUTINE dc_InitiateFacetToCellData3( obj, facetMesh, &
-    & cellMesh, dim, entityNum )
+  MODULE SUBROUTINE dc_InitiateFacetToCellData3(obj, facetMesh, &
+    & cellMesh, dim, entityNum)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
     CLASS(Mesh_), INTENT(INOUT) :: facetMesh
     !! Mesh of facet elements
     CLASS(Mesh_), INTENT(INOUT) :: cellMesh
     !! Master mesh
-    INTEGER( I4B ), INTENT( IN ) :: dim
-    INTEGER( I4B ), INTENT( IN ) :: entityNum
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: entityNum
   END SUBROUTINE dc_InitiateFacetToCellData3
 END INTERFACE
 
@@ -616,7 +598,7 @@ END INTERFACE
 ! - In this case facetMesh can be an internal boundary of cellMesh
 
 INTERFACE
-  MODULE SUBROUTINE dc_InitiateFacetToCellData4( obj, facetMesh, cellDomain )
+  MODULE SUBROUTINE dc_InitiateFacetToCellData4(obj, facetMesh, cellDomain)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Domain connectivity data
     CLASS(Mesh_), INTENT(INOUT) :: facetMesh
@@ -785,11 +767,11 @@ END INTERFACE
 ! summary: Display FaceToCellData
 
 INTERFACE
-MODULE SUBROUTINE dc_DisplayFacetToCellData( obj, msg, unitno )
-  CLASS( DomainConnectivity_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-END SUBROUTINE dc_DisplayFacetToCellData
+  MODULE SUBROUTINE dc_DisplayFacetToCellData(obj, msg, unitno)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE dc_DisplayFacetToCellData
 END INTERFACE
 
 !----------------------------------------------------------------------------

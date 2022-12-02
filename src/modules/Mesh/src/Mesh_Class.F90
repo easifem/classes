@@ -23,15 +23,13 @@ USE GlobalData
 USE BaseType
 USE String_Class, ONLY: String
 USE ElementFactory
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, Only: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "Mesh_Class"
-TYPE(ExceptionHandler_) :: e
-  !! Exception handler
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_NODE = -2
@@ -354,8 +352,6 @@ CONTAINS
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => mesh_addSurrogate
-    !! Add surrogate to module error handler
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => mesh_initiate
     !! Allocate size of a mesh
   FINAL :: mesh_final
@@ -642,29 +638,6 @@ TYPE :: MeshPointer_
 END TYPE MeshPointer_
 
 PUBLIC :: MeshPointer_
-
-!----------------------------------------------------------------------------
-!                                            addSurrogte@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE mesh_addSurrogate(obj, userObj)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: userObj
-  END SUBROUTINE mesh_addSurrogate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             addSurrogte@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE addSurrogate_mesh(userObj)
-    TYPE(ExceptionHandler_), INTENT(IN) :: userObj
-  END SUBROUTINE addSurrogate_mesh
-END INTERFACE
-
-PUBLIC :: addSurrogate_Mesh
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
