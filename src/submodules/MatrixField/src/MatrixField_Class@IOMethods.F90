@@ -44,6 +44,11 @@ CALL Display("#"//TRIM(msg), unitNo=unitNo)
 CALL Display(obj%name//'', msg="# name : ", unitNo=unitNo)
 CALL Display(obj%fieldType, msg='# fieldType : ', unitNo=unitNo)
 CALL Display(obj%engine, msg='# engine : ', unitNo=unitNo)
+IF (obj%isRectangle) THEN
+  CALL Display("# Shape: Rectangle", unitNo=unitNo)
+ELSE
+  CALL Display("# Shape: Square", unitNo=unitNo)
+END IF
 !!
 IF (ASSOCIATED(obj%domain)) THEN
   CALL Display("# domain : ASSOCIATED", unitNo=unitNo)
@@ -238,6 +243,7 @@ INTEGER(I4B) :: tvar1, tvar2
 TYPE(String) :: name1, name2
 CHARACTER(LEN=20) :: varnames(2)
 INTEGER(I4B) :: fieldType
+LOGICAL(LGT) :: isRectangle
 TYPE(ParameterList_) :: param
 !!
 !! main program
@@ -251,7 +257,8 @@ CALL Import_Header( &
   & obj=obj, hdf5=hdf5, group=group, &
   & modName=modName, myName=myName, &
   & fieldType=fieldType, name=name, engine=engine, &
-  & matrixProp=matrixProp)
+  & matrixProp=matrixProp, &
+  & isRectangle=isRectangle)
 !!
 !! mat
 !!
@@ -265,6 +272,7 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
   obj%engine = engine
   obj%name = name
   obj%fieldType = fieldType
+  obj%isRectangle = isRectangle
   !!
   IF (ASSOCIATED(obj%domain)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
