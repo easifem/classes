@@ -116,6 +116,7 @@ END TYPE MatrixFieldPrecondition_
 !{!pages/MatrixField_.md!}
 
 TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
+  LOGICAL(LGT) :: isRectangle = .FALSE.
   TYPE(CSRMatrix_) :: mat
   TYPE(MatrixFieldPrecondition_) :: Pmat
 CONTAINS
@@ -854,9 +855,13 @@ END INTERFACE
 ! storageFMT is the storage format of value(:,:), it can be DOF_FMT, or
 ! `FMT_NODES`.
 ! scale is scaling used for value.
+!
+!@note
+! This matrix should not be called for rectangle matrix.
+!@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_Set1(obj, globalNode, value, storageFMT, scale,  &
+  MODULE SUBROUTINE mField_Set1(obj, globalNode, value, storageFMT, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -899,6 +904,10 @@ END INTERFACE
 ! denotes the global node numbers.
 ! symbolically it does the following:
 ! `obj(glocalNode)=obj(globalNode)+scale*value`
+!
+!@note
+!         This method cannot be called for Rectangle matrix field
+!@endnote
 
 INTERFACE
   MODULE SUBROUTINE mField_Set2(obj, globalNode, value, scale, &
