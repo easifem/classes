@@ -195,8 +195,9 @@ tNodes = dom%getTotalNodes()
 !!
 !! make [[DOF_]]
 !!
-CALL initiate(obj=dofobj, tNodes=tNodes, names=names_char, &
-  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
+CALL Initiate(obj=dofobj, tNodes=tNodes, names=names_char, &
+  & spaceCompo=spaceCompo, timeCompo=timeCompo, &
+  & storageFMT=storageFMT)
 !!
 !! matrixProp
 !!
@@ -207,12 +208,13 @@ nrow = tNodes(1) * spaceCompo(1) * timeCompo(1)
 ncol = nrow
 obj%domain => dom
 !!
-CALL initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
+CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
   & jdof=dofobj, matrixProp=char_var)
 !!
 DEALLOCATE (char_var)
 obj%isInitiated = .TRUE.
 obj%isPmatInitiated = .FALSE.
+obj%isRectangle = .FALSE.
 !!
 !! setting the sparsity
 !!
@@ -237,6 +239,7 @@ CLASS IS (MatrixField_)
   obj%mat = obj2%mat
   obj%isPmatInitiated = .FALSE.
   obj%engine = obj2%engine
+  obj%isRectangle = obj2%isRectangle
 END SELECT
 END PROCEDURE mField_Initiate2
 
@@ -377,6 +380,7 @@ DEALLOCATE (matrixProp)
 !!
 obj%isInitiated = .TRUE.
 obj%isPmatInitiated = .FALSE.
+obj%isRectangle = .TRUE.
 !!
 !! setting the sparsity
 !!
@@ -392,6 +396,7 @@ END PROCEDURE mField_Initiate3
 MODULE PROCEDURE mField_Deallocate
 CALL Deallocate (obj%mat)
 CALL Deallocate (obj%Pmat)
+obj%isRectangle = .FALSE.
 CALL AbstractMatrixFieldDeallocate(obj)
 END PROCEDURE mField_Deallocate
 
