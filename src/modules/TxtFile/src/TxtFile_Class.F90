@@ -22,13 +22,12 @@ MODULE TxtFile_Class
 USE GlobalData
 USE String_Class
 USE BaseType
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 USE FortranFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = 'TxtFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
-TYPE(ExceptionHandler_), PRIVATE :: e
 
 !----------------------------------------------------------------------------
 !                                                                 TxtFile_
@@ -48,19 +47,18 @@ TYPE, EXTENDS(FortranFile_) :: TxtFile_
   LOGICAL(LGT) :: echostat = .FALSE.
   INTEGER(I4B) :: echounit = -1
   !
-  CONTAINS
+CONTAINS
   PRIVATE
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => txt_addSurrogate
   PROCEDURE, PUBLIC, PASS(obj) :: initiate => txt_initiate
   PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => txt_Deallocate
   FINAL :: txt_final
   !!
   !! @EnquireMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: isValidRecord => txt_isValidRecord
+  PROCEDURE, PUBLIC, PASS(obj) :: isValidRecord => txt_isValidRecord
   !!
   !! @SetMethods
   !!
@@ -78,32 +76,32 @@ TYPE, EXTENDS(FortranFile_) :: TxtFile_
   !! read strings and chars
   PROCEDURE, PUBLIC, PASS(obj) :: readLine => txt_read_Line
   PROCEDURE, PUBLIC, PASS(obj) :: readLines => txt_read_Lines
-  PROCEDURE, PASS( obj ) :: readChar => txt_read_Char
+  PROCEDURE, PASS(obj) :: readChar => txt_read_Char
   !! scalars
-  PROCEDURE, PASS( obj ) :: readInt8 => txt_read_Int8
-  PROCEDURE, PASS( obj ) :: readInt16 => txt_read_Int16
-  PROCEDURE, PASS( obj ) :: readInt32 => txt_read_Int32
-  PROCEDURE, PASS( obj ) :: readInt64 => txt_read_Int64
-  PROCEDURE, PASS( obj ) :: readReal32 => txt_read_Real32
-  PROCEDURE, PASS( obj ) :: readReal64 => txt_read_Real64
+  PROCEDURE, PASS(obj) :: readInt8 => txt_read_Int8
+  PROCEDURE, PASS(obj) :: readInt16 => txt_read_Int16
+  PROCEDURE, PASS(obj) :: readInt32 => txt_read_Int32
+  PROCEDURE, PASS(obj) :: readInt64 => txt_read_Int64
+  PROCEDURE, PASS(obj) :: readReal32 => txt_read_Real32
+  PROCEDURE, PASS(obj) :: readReal64 => txt_read_Real64
   !! vectors
-  PROCEDURE, PASS( obj ) :: readVecInt8 => txt_read_vec_Int8
-  PROCEDURE, PASS( obj ) :: readVecInt16 => txt_read_vec_Int16
-  PROCEDURE, PASS( obj ) :: readVecInt32 => txt_read_vec_Int32
-  PROCEDURE, PASS( obj ) :: readVecInt64 => txt_read_vec_Int64
-  PROCEDURE, PASS( obj ) :: readIntVector => txt_read_IntVector
-  PROCEDURE, PASS( obj ) :: readVecIntVector => txt_read_vec_IntVector
-  PROCEDURE, PASS( obj ) :: readVecReal32 => txt_read_vec_Real32
-  PROCEDURE, PASS( obj ) :: readVecReal64 => txt_read_vec_Real64
-  PROCEDURE, PASS( obj ) :: readRealVector => txt_read_RealVector
-  PROCEDURE, PASS( obj ) :: readVecRealVector => txt_read_vec_RealVector
+  PROCEDURE, PASS(obj) :: readVecInt8 => txt_read_vec_Int8
+  PROCEDURE, PASS(obj) :: readVecInt16 => txt_read_vec_Int16
+  PROCEDURE, PASS(obj) :: readVecInt32 => txt_read_vec_Int32
+  PROCEDURE, PASS(obj) :: readVecInt64 => txt_read_vec_Int64
+  PROCEDURE, PASS(obj) :: readIntVector => txt_read_IntVector
+  PROCEDURE, PASS(obj) :: readVecIntVector => txt_read_vec_IntVector
+  PROCEDURE, PASS(obj) :: readVecReal32 => txt_read_vec_Real32
+  PROCEDURE, PASS(obj) :: readVecReal64 => txt_read_vec_Real64
+  PROCEDURE, PASS(obj) :: readRealVector => txt_read_RealVector
+  PROCEDURE, PASS(obj) :: readVecRealVector => txt_read_vec_RealVector
   !! matrix
-  PROCEDURE, PASS( obj ) :: readMatReal32 => txt_read_Mat_Real32
-  PROCEDURE, PASS( obj ) :: readMatReal64 => txt_read_Mat_Real64
-  PROCEDURE, PASS( obj ) :: readMatInt8 => txt_read_Mat_Int8
-  PROCEDURE, PASS( obj ) :: readMatInt16 => txt_read_Mat_Int16
-  PROCEDURE, PASS( obj ) :: readMatInt32 => txt_read_Mat_Int32
-  PROCEDURE, PASS( obj ) :: readMatInt64 => txt_read_Mat_Int64
+  PROCEDURE, PASS(obj) :: readMatReal32 => txt_read_Mat_Real32
+  PROCEDURE, PASS(obj) :: readMatReal64 => txt_read_Mat_Real64
+  PROCEDURE, PASS(obj) :: readMatInt8 => txt_read_Mat_Int8
+  PROCEDURE, PASS(obj) :: readMatInt16 => txt_read_Mat_Int16
+  PROCEDURE, PASS(obj) :: readMatInt32 => txt_read_Mat_Int32
+  PROCEDURE, PASS(obj) :: readMatInt64 => txt_read_Mat_Int64
   !! generic
   GENERIC, PUBLIC :: read => &
     & readLine, readLines, readChar, &
@@ -122,35 +120,35 @@ TYPE, EXTENDS(FortranFile_) :: TxtFile_
     & txt_convertMarkDownToSource
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: writeBlank => txt_write_Blank
-  PROCEDURE, PUBLIC, PASS( obj ) :: nextRow => txt_write_Blank
+  PROCEDURE, PUBLIC, PASS(obj) :: nextRow => txt_write_Blank
   PROCEDURE, PUBLIC, PASS(obj) :: writeLine => txt_write_Line
   PROCEDURE, PUBLIC, PASS(obj) :: writeLines => txt_write_Lines
-  PROCEDURE, PASS( obj ) :: writeChar => txt_write_Char
+  PROCEDURE, PASS(obj) :: writeChar => txt_write_Char
   !! scalars
-  PROCEDURE, PASS( obj ) :: writeInt8 => txt_write_Int8
-  PROCEDURE, PASS( obj ) :: writeInt16 => txt_write_Int16
-  PROCEDURE, PASS( obj ) :: writeInt32 => txt_write_Int32
-  PROCEDURE, PASS( obj ) :: writeInt64 => txt_write_Int64
-  PROCEDURE, PASS( obj ) :: writeReal32 => txt_write_Real32
-  PROCEDURE, PASS( obj ) :: writeReal64 => txt_write_Real64
+  PROCEDURE, PASS(obj) :: writeInt8 => txt_write_Int8
+  PROCEDURE, PASS(obj) :: writeInt16 => txt_write_Int16
+  PROCEDURE, PASS(obj) :: writeInt32 => txt_write_Int32
+  PROCEDURE, PASS(obj) :: writeInt64 => txt_write_Int64
+  PROCEDURE, PASS(obj) :: writeReal32 => txt_write_Real32
+  PROCEDURE, PASS(obj) :: writeReal64 => txt_write_Real64
   !! vectors
-  PROCEDURE, PASS( obj ) :: writeVecInt8 => txt_write_vec_Int8
-  PROCEDURE, PASS( obj ) :: writeVecInt16 => txt_write_vec_Int16
-  PROCEDURE, PASS( obj ) :: writeVecInt32 => txt_write_vec_Int32
-  PROCEDURE, PASS( obj ) :: writeVecInt64 => txt_write_vec_Int64
-  PROCEDURE, PASS( obj ) :: writeIntVector => txt_write_IntVector
-  PROCEDURE, PASS( obj ) :: writeVecIntVector => txt_write_vec_IntVector
-  PROCEDURE, PASS( obj ) :: writeVecReal32 => txt_write_vec_Real32
-  PROCEDURE, PASS( obj ) :: writeVecReal64 => txt_write_vec_Real64
-  PROCEDURE, PASS( obj ) :: writeRealVector => txt_write_RealVector
-  PROCEDURE, PASS( obj ) :: writeVecRealVector => txt_write_vec_RealVector
+  PROCEDURE, PASS(obj) :: writeVecInt8 => txt_write_vec_Int8
+  PROCEDURE, PASS(obj) :: writeVecInt16 => txt_write_vec_Int16
+  PROCEDURE, PASS(obj) :: writeVecInt32 => txt_write_vec_Int32
+  PROCEDURE, PASS(obj) :: writeVecInt64 => txt_write_vec_Int64
+  PROCEDURE, PASS(obj) :: writeIntVector => txt_write_IntVector
+  PROCEDURE, PASS(obj) :: writeVecIntVector => txt_write_vec_IntVector
+  PROCEDURE, PASS(obj) :: writeVecReal32 => txt_write_vec_Real32
+  PROCEDURE, PASS(obj) :: writeVecReal64 => txt_write_vec_Real64
+  PROCEDURE, PASS(obj) :: writeRealVector => txt_write_RealVector
+  PROCEDURE, PASS(obj) :: writeVecRealVector => txt_write_vec_RealVector
   !! matrix
-  PROCEDURE, PASS( obj ) :: writeMatReal32 => txt_write_Mat_Real32
-  PROCEDURE, PASS( obj ) :: writeMatReal64 => txt_write_Mat_Real64
-  PROCEDURE, PASS( obj ) :: writeMatInt8 => txt_write_Mat_Int8
-  PROCEDURE, PASS( obj ) :: writeMatInt16 => txt_write_Mat_Int16
-  PROCEDURE, PASS( obj ) :: writeMatInt32 => txt_write_Mat_Int32
-  PROCEDURE, PASS( obj ) :: writeMatInt64 => txt_write_Mat_Int64
+  PROCEDURE, PASS(obj) :: writeMatReal32 => txt_write_Mat_Real32
+  PROCEDURE, PASS(obj) :: writeMatReal64 => txt_write_Mat_Real64
+  PROCEDURE, PASS(obj) :: writeMatInt8 => txt_write_Mat_Int8
+  PROCEDURE, PASS(obj) :: writeMatInt16 => txt_write_Mat_Int16
+  PROCEDURE, PASS(obj) :: writeMatInt32 => txt_write_Mat_Int32
+  PROCEDURE, PASS(obj) :: writeMatInt64 => txt_write_Mat_Int64
   !! generic
   GENERIC, PUBLIC :: write => &
     & writeBlank, &

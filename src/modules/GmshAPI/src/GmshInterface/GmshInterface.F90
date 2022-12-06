@@ -28,17 +28,26 @@
 #define _R_OUT_ REAL( C_DOUBLE ), INTENT( OUT )
 #define _CPTR_V_IN_ TYPE(C_PTR), VALUE, INTENT( IN )
 #define _CPTR_IN_ TYPE(C_PTR), INTENT( IN )
+#define _CPTR_OUT_ TYPE(C_PTR), INTENT( OUT )
 
 MODULE GmshInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
 
+INTEGER(I4B), PARAMETER :: maxStrLen = 256
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_MAJOR = 4
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_MINOR = 11
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_PATCH = 0
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_MAX_STR_LEN = maxStrLen
+CHARACTER(LEN=100), PARAMETER, PUBLIC :: GMSH_API_VERSION = "4.11.0"
+
 #include "./Gmsh.inc"
-#include "./GmshGraphics.inc"
 #include "./GmshOption.inc"
-#include "./GmshFLTK.inc"
 #include "./GmshModel.inc"
+! 🏁
+#include "./GmshGraphics.inc"
+#include "./GmshFLTK.inc"
 #include "./GmshModelGeo.inc"
 #include "./GmshModelGeoMesh.inc"
 #include "./GmshModelOcc.inc"

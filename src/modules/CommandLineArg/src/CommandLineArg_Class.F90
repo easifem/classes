@@ -267,10 +267,14 @@ SUBROUTINE check(self, pref)
   !< Check data consistency.
   CLASS(CommandLineArg_), INTENT(inout) :: self  !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
-  CALL self%check_envvar_consistency(pref=pref); IF (self%error /= 0) RETURN
-  CALL self%check_action_consistency(pref=pref); IF (self%error /= 0) RETURN
-  CALL self%check_optional_consistency(pref=pref); IF (self%error /= 0) RETURN
-  CALL self%check_m_exclude_consistency(pref=pref); IF (self%error /= 0) RETURN
+  CALL self%check_envvar_consistency(pref=pref)
+  IF (self%error /= 0) RETURN
+  CALL self%check_action_consistency(pref=pref)
+  IF (self%error /= 0) RETURN
+  CALL self%check_optional_consistency(pref=pref)
+  IF (self%error /= 0) RETURN
+  CALL self%check_m_exclude_consistency(pref=pref)
+  IF (self%error /= 0) RETURN
   CALL self%check_named_consistency(pref=pref); IF (self%error /= 0) RETURN
   CALL self%check_positional_consistency(pref=pref)
 END SUBROUTINE check

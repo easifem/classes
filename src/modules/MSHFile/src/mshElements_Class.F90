@@ -16,19 +16,18 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This module defines a class to handle elements in mesh file
+! date:         11 June 2021
+! summary:         This module defines a class to handle elements in mesh file
 
 MODULE mshElements_Class
 USE BaseType
 USE GlobalData
 USE mshFormat_Class
 USE TxtFile_Class
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "MSHELEMENT_CLASS"
-TYPE(ExceptionHandler_), PRIVATE :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "MSHELEMENT_CLASS"
 
 !----------------------------------------------------------------------------
 !                                                              mshElements_
@@ -40,29 +39,29 @@ TYPE(ExceptionHandler_), PRIVATE :: e
 
 TYPE :: mshElements_
   PRIVATE
-  INTEGER( I4B ) :: numElements = 0
-  INTEGER( I4B ) :: numEntityBlocks = 0
-  INTEGER( I4B ) :: minElementTag = 0
-  INTEGER( I4B ) :: maxElementTag = 0
-  LOGICAL( LGT ) :: isSparse = .FALSE.
-  CONTAINS
-    PRIVATE
-    FINAL :: el_Final
+  INTEGER(I4B) :: numElements = 0
+  INTEGER(I4B) :: numEntityBlocks = 0
+  INTEGER(I4B) :: minElementTag = 0
+  INTEGER(I4B) :: maxElementTag = 0
+  LOGICAL(LGT) :: isSparse = .FALSE.
+CONTAINS
+  PRIVATE
+  FINAL :: el_Final
       !! Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => el_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => el_Deallocate
       !! deallocate data
-    PROCEDURE, PUBLIC, PASS( obj ) :: GotoTag => el_GotoTag
+  PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => el_GotoTag
       !! go to the tag
-    PROCEDURE, PUBLIC, PASS( obj ) :: Read => el_Read
+  PROCEDURE, PUBLIC, PASS(obj) :: Read => el_Read
       !! Read data form file
-    PROCEDURE, PUBLIC, PASS( obj ) :: Write => el_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: Write => el_Write
       !! Write data to file
-    PROCEDURE, PUBLIC, PASS( obj ) :: getNumElements => el_getNumElements
+  PROCEDURE, PUBLIC, PASS(obj) :: getNumElements => el_getNumElements
       !! total elements
-    PROCEDURE, PUBLIC, PASS( obj ) :: getNumEntityBlocks => el_getNumEntityBlocks
+  PROCEDURE, PUBLIC, PASS(obj) :: getNumEntityBlocks => el_getNumEntityBlocks
       !! Returns the number of entity blocks
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getMinElementTag => el_getMinElementTag
-    PROCEDURE, PUBLIC, PASS( Obj ) :: getMaxElementTag => el_getMaxElementTag
+  PROCEDURE, PUBLIC, PASS(Obj) :: getMinElementTag => el_getMinElementTag
+  PROCEDURE, PUBLIC, PASS(Obj) :: getMaxElementTag => el_getMaxElementTag
 END TYPE mshElements_
 
 !----------------------------------------------------------------------------
@@ -70,14 +69,14 @@ END TYPE mshElements_
 !----------------------------------------------------------------------------
 
 PUBLIC :: mshElements_
-TYPE( mshElements_ ), PUBLIC, PARAMETER :: TypemshElements = mshElements_( )
+TYPE(mshElements_), PUBLIC, PARAMETER :: TypemshElements = mshElements_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: mshElementsPointer_
-  CLASS( mshElements_ ), POINTER :: Ptr => NULL()
+  CLASS(mshElements_), POINTER :: Ptr => NULL()
 END TYPE mshElementsPointer_
 PUBLIC :: mshElementsPointer_
 
@@ -86,25 +85,23 @@ PUBLIC :: mshElementsPointer_
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE el_Final( obj )
-  TYPE( mshElements_ ), INTENT( INOUT ) ::  obj
-END SUBROUTINE el_Final
+  MODULE SUBROUTINE el_Final(obj)
+    TYPE(mshElements_), INTENT(INOUT) :: obj
+  END SUBROUTINE el_Final
 END INTERFACE
-
-
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary: This subroutine deallocates the data from obj
 
 INTERFACE
-MODULE SUBROUTINE el_Deallocate( obj )
-  CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE el_Deallocate
+  MODULE SUBROUTINE el_Deallocate(obj)
+    CLASS(mshElements_), INTENT(INOUT) :: obj
+  END SUBROUTINE el_Deallocate
 END INTERFACE
 
 INTERFACE Deallocate
@@ -118,15 +115,15 @@ PUBLIC :: Deallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary: This subroutine go the location of element in mesh file
 
 INTERFACE
-MODULE SUBROUTINE el_GotoTag( obj, mshFile, error )
-  CLASS( mshElements_ ), INTENT( IN ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
-  INTEGER( I4B ), INTENT( INOUT ) :: error
-END SUBROUTINE el_GotoTag
+  MODULE SUBROUTINE el_GotoTag(obj, mshFile, error)
+    CLASS(mshElements_), INTENT(IN) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
+    INTEGER(I4B), INTENT(INOUT) :: error
+  END SUBROUTINE el_GotoTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -134,16 +131,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This subroutine reads data from a file
+! date:         11 June 2021
+! summary:         This subroutine reads data from a file
 
 INTERFACE
-MODULE SUBROUTINE el_Read( obj, mshFile, mshFormat, error )
-  CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
-  TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
-  INTEGER( I4B ), INTENT( INOUT ) :: error
-END SUBROUTINE el_Read
+  MODULE SUBROUTINE el_Read(obj, mshFile, mshFormat, error)
+    CLASS(mshElements_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
+    TYPE(mshFormat_), INTENT(INOUT) :: mshFormat
+    INTEGER(I4B), INTENT(INOUT) :: error
+  END SUBROUTINE el_Read
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -155,12 +152,12 @@ END INTERFACE
 ! summary: This subroutine writes the data to a file
 
 INTERFACE
-MODULE SUBROUTINE el_Write( obj, mshFile, mshFormat, Str, EndStr )
-  CLASS( mshElements_ ), INTENT( INOUT ) :: obj
-  CLASS( TxtFile_ ), INTENT( INOUT ) :: mshFile
-  CHARACTER( LEN = * ), INTENT( IN ), OPTIONAL :: Str, EndStr
-  TYPE( mshFormat_ ), INTENT( INOUT ) :: mshFormat
-END SUBROUTINE el_Write
+  MODULE SUBROUTINE el_Write(obj, mshFile, mshFormat, Str, EndStr)
+    CLASS(mshElements_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Str, EndStr
+    TYPE(mshFormat_), INTENT(INOUT) :: mshFormat
+  END SUBROUTINE el_Write
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -168,15 +165,15 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This data displays the content of [[mshElements_]]
+! date:         11 June 2021
+! summary:         This data displays the content of [[mshElements_]]
 
 INTERFACE
-MODULE SUBROUTINE el_display( obj, Msg, UnitNo )
-  CLASS( mshElements_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: UnitNo
-END SUBROUTINE el_display
+  MODULE SUBROUTINE el_display(obj, Msg, UnitNo)
+    CLASS(mshElements_), INTENT(IN) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
+  END SUBROUTINE el_display
 END INTERFACE
 
 INTERFACE Display
@@ -190,14 +187,14 @@ PUBLIC :: Display
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	 This function returns total number of elements
+! date:         11 June 2021
+! summary:          This function returns total number of elements
 
 INTERFACE
-MODULE PURE FUNCTION el_getNumElements( obj ) RESULT( ans )
-  CLASS( mshElements_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION el_getNumElements
+  MODULE PURE FUNCTION el_getNumElements(obj) RESULT(ans)
+    CLASS(mshElements_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION el_getNumElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -205,14 +202,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This function returns the number of entities blocks
+! date:         11 June 2021
+! summary:         This function returns the number of entities blocks
 
 INTERFACE
-MODULE PURE FUNCTION el_getNumEntityBlocks( obj ) RESULT( Ans )
-  CLASS( mshElements_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION el_getNumEntityBlocks
+  MODULE PURE FUNCTION el_getNumEntityBlocks(obj) RESULT(Ans)
+    CLASS(mshElements_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION el_getNumEntityBlocks
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -220,14 +217,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	12 June 2021
+! date:         12 June 2021
 ! summary: This routine returns the minimum element tag
 
 INTERFACE
-MODULE PURE FUNCTION el_getMinElementTag( obj ) RESULT( Ans )
-  CLASS( mshElements_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION el_getMinElementTag
+  MODULE PURE FUNCTION el_getMinElementTag(obj) RESULT(Ans)
+    CLASS(mshElements_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION el_getMinElementTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -235,14 +232,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	12 June 2021
+! date:         12 June 2021
 ! summary: This routine returns the Maximum element tag
 
 INTERFACE
-MODULE PURE FUNCTION el_getMaxElementTag( obj ) RESULT( Ans )
-  CLASS( mshElements_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION el_getMaxElementTag
+  MODULE PURE FUNCTION el_getMaxElementTag(obj) RESULT(Ans)
+    CLASS(mshElements_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION el_getMaxElementTag
 END INTERFACE
 
 !----------------------------------------------------------------------------

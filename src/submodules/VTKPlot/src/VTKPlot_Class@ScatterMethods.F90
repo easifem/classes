@@ -147,4 +147,14 @@ IF (ALLOCATED(temp)) DEALLOCATE (temp)
 !!
 END PROCEDURE plot_scatter3D_2
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE plot_scatter3D_3
+REAL(DFP) :: z(SIZE(x))
+z = Zeros(SIZE(x), 1.0_DFP)
+CALL obj%Scatter3D(x=x, y=y, z=z, label=label, filename=filename)
+END PROCEDURE plot_scatter3D_3
+
 END SUBMODULE ScatterMethods

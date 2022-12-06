@@ -25,30 +25,34 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateNodeToElements
-  ! Define internal  variables
-  INTEGER( I4B ) :: ii, jj,  globalElemNum
-  INTEGER( I4B ), ALLOCATABLE :: local_nptrs( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName="mesh_InitiateNodeToElements"
+! Define internal  variables
+INTEGER(I4B) :: ii, jj, globalElemNum
+INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
+CHARACTER(LEN=*), PARAMETER :: myName = "mesh_InitiateNodeToElements"
+!!
+!! check
+!!
+IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
+!!
+!! check
+!!
+IF (obj%isNodeToElementsInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "NodeToElements information is already initiated. If you want to &
+    & Reinitiate it then deallocate nodeData, first!!")
+  RETURN
+END IF
   !!
-  !! check
-  !!
-  IF( obj%isNodeToElementsInitiated ) THEN
-    CALL e%raiseWarning(modName//"::"//myName//" - "// &
-      & "NodeToElements information is already initiated. If you want to &
-      & Reinitiate it then deallocate nodeData, first!!" )
-    RETURN
-  END IF
-  !!
-  obj%isNodeToElementsInitiated = .TRUE.
-  DO ii = 1, obj%tElements
-    globalElemNum = obj%getGlobalElemNumber( ii )
-    local_nptrs = obj%getLocalNodeNumber(obj%getConnectivity(globalElemNum))
-    DO jj = 1, SIZE( local_nptrs )
-      CALL Append( obj%nodeData( local_nptrs( jj ) )%globalElements, &
-        & globalElemNum )
-    END DO
+obj%isNodeToElementsInitiated = .TRUE.
+DO ii = 1, obj%tElements
+  globalElemNum = obj%getGlobalElemNumber(ii)
+  local_nptrs = obj%getLocalNodeNumber(obj%getConnectivity(globalElemNum))
+  DO jj = 1, SIZE(local_nptrs)
+    CALL Append(obj%nodeData(local_nptrs(jj))%globalElements, &
+      & globalElemNum)
   END DO
-  IF( ALLOCATED( local_nptrs ) ) DEALLOCATE( local_nptrs )
+END DO
+IF (ALLOCATED(local_nptrs)) DEALLOCATE (local_nptrs)
 END PROCEDURE mesh_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
@@ -56,36 +60,40 @@ END PROCEDURE mesh_InitiateNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateNodetoNodes
-  ! Define internal  variables
-  INTEGER( I4B ) :: iel, iLocalNode, tSize, iGlobalNode
-  INTEGER( I4B ), ALLOCATABLE ::  globalNodes( : ), NearElements( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateNodetoNodes"
+! Define internal  variables
+INTEGER(I4B) :: iel, iLocalNode, iGlobalNode
+INTEGER(I4B), ALLOCATABLE :: globalNodes(:), NearElements(:)
+CHARACTER(LEN=*), PARAMETER :: myName = "mesh_InitiateNodetoNodes"
+!!
+!! check
+!!
+IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
+!!
+!! check
+!!
+IF (obj%isNodeToNodesInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "Node to node information is already initiated. If you want to &
+    & Reinitiate it then deallocate nodeData, first!!")
+  RETURN
+END IF
   !!
-  !! check
+IF (.NOT. obj%isNodeToElementsInitiated) &
+  & CALL obj%InitiateNodeToElements()
   !!
-  IF( obj%isNodeToNodesInitiated ) THEN
-    CALL e%raiseWarning(modName//"::"//myName//" - "// &
-      & "Node to node information is already initiated. If you want to &
-      & Reinitiate it then deallocate nodeData, first!!" )
-    RETURN
-  END IF
-  !!
-  IF( .NOT. obj%isNodeToElementsInitiated ) &
-    & CALL obj%InitiateNodeToElements( )
-  !!
-  obj%isNodeToNodesInitiated = .TRUE.
-  DO iLocalNode = 1, obj%tNodes
-    iGlobalNode = obj%getGlobalNodeNumber( iLocalNode )
-    NearElements = obj%getNodeToElements( iGlobalNode )
-    DO iel = 1, SIZE ( NearElements )
-      globalNodes = obj%getConnectivity( NearElements(iel) )
-      globalNodes = PACK( globalNodes, globalNodes .NE. iGlobalNode )
-      CALL Append( obj%nodeData( iLocalNode )%globalNodes, globalNodes )
-    END DO
-    CALL RemoveDuplicates( obj%nodeData( iLocalNode )%globalNodes )
+obj%isNodeToNodesInitiated = .TRUE.
+DO iLocalNode = 1, obj%tNodes
+  iGlobalNode = obj%getGlobalNodeNumber(iLocalNode)
+  NearElements = obj%getNodeToElements(iGlobalNode)
+  DO iel = 1, SIZE(NearElements)
+    globalNodes = obj%getConnectivity(NearElements(iel))
+    globalNodes = PACK(globalNodes, globalNodes .NE. iGlobalNode)
+    CALL Append(obj%nodeData(iLocalNode)%globalNodes, globalNodes)
   END DO
-  IF( ALLOCATED( globalNodes ) ) DEALLOCATE( globalNodes )
-  IF( ALLOCATED( NearElements ) ) DEALLOCATE( NearElements )
+  CALL RemoveDuplicates(obj%nodeData(iLocalNode)%globalNodes)
+END DO
+IF (ALLOCATED(globalNodes)) DEALLOCATE (globalNodes)
+IF (ALLOCATED(NearElements)) DEALLOCATE (NearElements)
 END PROCEDURE mesh_InitiateNodetoNodes
 
 !----------------------------------------------------------------------------
@@ -97,69 +105,73 @@ END PROCEDURE mesh_InitiateNodetoNodes
 !! elementToElements
 
 MODULE PROCEDURE mesh_InitiateExtraNodetoNodes
-  ! Define internal  variables
-  INTEGER( I4B ) :: iel, iel2, iLocalNode, tSize, iGlobalNode
-  INTEGER( I4B ), ALLOCATABLE :: n2n( : ), e2e( :, : ), n2e( : ), &
-    & indx( : )
-  LOGICAL( LGT ), ALLOCATABLE :: mask_elem( : ), mask_nptrs( : )
-  CHARACTER( LEN = * ), PARAMETER :: myName = "mesh_InitiateExtraNodetoNodes"
+! Define internal  variables
+INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
+INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
+  & indx(:)
+LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
+CHARACTER(LEN=*), PARAMETER :: myName = "mesh_InitiateExtraNodetoNodes"
+!!
+!! check
+!!
+IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
+!!
+!! check
+!!
+IF (obj%isExtraNodeToNodesInitiated) THEN
+  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+    & "Node to node information is already initiated. If you want to &
+    & Reinitiate it then deallocate nodeData, first!!")
+  RETURN
+END IF
   !!
-  !! check
+IF (.NOT. obj%isNodeToNodesInitiated) &
+  & CALL obj%InitiateNodeToNodes()
   !!
-  IF( obj%isExtraNodeToNodesInitiated ) THEN
-    CALL e%raiseWarning(modName//"::"//myName//" - "// &
-      & "Node to node information is already initiated. If you want to &
-      & Reinitiate it then deallocate nodeData, first!!" )
-    RETURN
-  END IF
+IF (.NOT. obj%isNodeToElementsInitiated) &
+  & CALL obj%InitiateNodeToElements()
   !!
-  IF( .NOT. obj%isNodeToNodesInitiated ) &
-    & CALL obj%InitiateNodeToNodes( )
+IF (.NOT. obj%isElementToElementsInitiated) &
+  & CALL obj%InitiateElementToElements()
   !!
-  IF( .NOT. obj%isNodeToElementsInitiated ) &
-    & CALL obj%InitiateNodeToElements( )
+DO iLocalNode = 1, obj%tNodes
+  iGlobalNode = obj%getGlobalNodeNumber(iLocalNode)
+  n2n = obj%getNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
+  n2e = obj%getNodeToElements(globalNode=iGlobalNode)
   !!
-  IF( .NOT. obj%isElementToElementsInitiated ) &
-    & CALL obj%InitiateElementToElements( )
-  !!
-  DO iLocalNode = 1, obj%tNodes
-    iGlobalNode = obj%getGlobalNodeNumber( iLocalNode )
-    n2n = obj%getNodeToNodes( globalNode=iGlobalNode, IncludeSelf=.FALSE. )
-    n2e = obj%getNodeToElements( globalNode=iGlobalNode )
+  DO iel = 1, SIZE(n2e)
+    e2e = obj%getElementToElements(globalElement=n2e(iel), &
+      & onlyElements=.TRUE.)
     !!
-    DO iel = 1, SIZE(n2e)
-      e2e = obj%getElementToElements( globalElement=n2e( iel ), &
-        & onlyElements=.TRUE. )
+    mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
+    !!
+    DO iel2 = 1, SIZE(mask_elem)
       !!
-      mask_elem = .NOT. (e2e( :, 1 ) .ISIN. n2e)
-      !!
-      DO iel2 = 1, SIZE( mask_elem )
+      IF (mask_elem(iel2)) THEN
         !!
-        IF( mask_elem( iel2 ) ) THEN
-          !!
-          indx = obj%getConnectivity( globalElement=e2e(iel2, 1) )
-          mask_nptrs = .NOT. ( indx .ISIN. n2n )
-          CALL APPEND( obj%nodeData( iLocalNode )%extraGlobalNodes, &
-            & indx, mask_nptrs )
-          !!
-        END IF
+        indx = obj%getConnectivity(globalElement=e2e(iel2, 1))
+        mask_nptrs = .NOT. (indx.ISIN.n2n)
+        CALL APPEND(obj%nodeData(iLocalNode)%extraGlobalNodes, &
+          & indx, mask_nptrs)
         !!
-      END DO
-      !!
-      CALL RemoveDuplicates( obj%nodeData( iLocalNode )%extraGlobalNodes )
-      !!
+      END IF
+        !!
     END DO
     !!
+    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%extraGlobalNodes)
+    !!
   END DO
+    !!
+END DO
   !!
-  obj%isExtraNodeToNodesInitiated = .TRUE.
+obj%isExtraNodeToNodesInitiated = .TRUE.
   !!
-  IF( ALLOCATED( n2n ) ) DEALLOCATE( n2n )
-  IF( ALLOCATED( n2e ) ) DEALLOCATE( n2e )
-  IF( ALLOCATED( e2e ) ) DEALLOCATE( e2e )
-  IF( ALLOCATED( indx ) ) DEALLOCATE( indx )
-  IF( ALLOCATED( mask_elem ) ) DEALLOCATE( mask_elem )
-  IF( ALLOCATED( mask_nptrs ) ) DEALLOCATE( mask_nptrs )
+IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
+IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+IF (ALLOCATED(mask_elem)) DEALLOCATE (mask_elem)
+IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
   !!
 END PROCEDURE mesh_InitiateExtraNodetoNodes
 

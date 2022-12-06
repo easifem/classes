@@ -20,13 +20,12 @@ USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "STTensorMeshField_Class"
-TYPE( ExceptionHandler_ ) :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "STTensorMeshField_Class"
 
 !----------------------------------------------------------------------------
 !                                                     STTensorMeshField_Class
@@ -36,15 +35,13 @@ TYPE( ExceptionHandler_ ) :: e
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS( AbstractMeshField_ ) :: STTensorMeshField_
-  CONTAINS
+TYPE, EXTENDS(AbstractMeshField_) :: STTensorMeshField_
+CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => aField_addSurrogate
-    !! check essential parameters
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & aField_checkEssentialParam
     !! check essential parameters
-  PROCEDURE, PASS( obj ) :: Initiate1 => aField_Initiate1
+  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
     !! Initiate the field by reading param and a given mesh
 END TYPE STTensorMeshField_
 
@@ -55,7 +52,7 @@ PUBLIC :: STTensorMeshField_
 !----------------------------------------------------------------------------
 
 TYPE :: STTensorMeshFieldPointer_
-  CLASS( STTensorMeshField_ ), POINTER :: ptr => NULL()
+  CLASS(STTensorMeshField_), POINTER :: ptr => NULL()
 END TYPE STTensorMeshFieldPointer_
 
 PUBLIC :: STTensorMeshFieldPointer_
@@ -69,39 +66,24 @@ PUBLIC :: STTensorMeshFieldPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-MODULE SUBROUTINE setSTTensorMeshFieldParam( param, name, &
-  & fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt )
-  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
-  CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ), INTENT( IN ) :: fieldType
-  INTEGER( I4B ), INTENT( IN ) :: varType
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  INTEGER( I4B ), INTENT( IN ) :: defineOn
+  MODULE SUBROUTINE setSTTensorMeshFieldParam(param, name, &
+    & fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(LEN=*), INTENT(IN) :: name
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    INTEGER(I4B), INTENT(IN) :: varType
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    INTEGER(I4B), INTENT(IN) :: defineOn
   !! Nodal, Quadrature
-  INTEGER( I4B ), INTENT( IN ) :: dim1
-  INTEGER( I4B ), INTENT( IN ) :: dim2
-  INTEGER( I4B ), INTENT( IN ) :: nns
-  INTEGER( I4B ), INTENT( IN ) :: nnt
+    INTEGER(I4B), INTENT(IN) :: dim1
+    INTEGER(I4B), INTENT(IN) :: dim2
+    INTEGER(I4B), INTENT(IN) :: nns
+    INTEGER(I4B), INTENT(IN) :: nnt
   !! Number of node in space
-END SUBROUTINE setSTTensorMeshFieldParam
+  END SUBROUTINE setSTTensorMeshFieldParam
 END INTERFACE
 
 PUBLIC :: setSTTensorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-MODULE SUBROUTINE aField_addSurrogate( obj, UserObj )
-  CLASS( STTensorMeshField_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE aField_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -112,10 +94,10 @@ END INTERFACE
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-MODULE SUBROUTINE aField_checkEssentialParam( obj, param )
-  CLASS( STTensorMeshField_ ), INTENT( IN ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE aField_checkEssentialParam
+  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
+    CLASS(STTensorMeshField_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE aField_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -127,11 +109,11 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given domain
 
 INTERFACE
-MODULE SUBROUTINE aField_Initiate1( obj, param, mesh )
-  CLASS( STTensorMeshField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( Mesh_ ), TARGET, INTENT( IN ) :: mesh
-END SUBROUTINE aField_Initiate1
+  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
+    CLASS(STTensorMeshField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE aField_Initiate1
 END INTERFACE
 
 END MODULE STTensorMeshField_Class

@@ -19,14 +19,11 @@ MODULE Vector_Class
 USE GlobalData
 USE BaseType
 USE AbstractVector_Class
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "VECTOR_CLASS"
-TYPE( ExceptionHandler_ ), PUBLIC :: eVector
-INTEGER( I4B ), PARAMETER :: eUnitNo = 1004
-CHARACTER( LEN = * ), PARAMETER :: eLogFile = "VECTOR_CLASS.txt"
+CHARACTER(LEN=*), PARAMETER :: modName = "Vector_Class"
 
 !----------------------------------------------------------------------------
 !                                                                 Vector_
@@ -38,42 +35,42 @@ CHARACTER( LEN = * ), PARAMETER :: eLogFile = "VECTOR_CLASS.txt"
 !
 !{!pages/Vector.md}
 
-TYPE, EXTENDS( AbstractVector_ ) :: Vector_
+TYPE, EXTENDS(AbstractVector_) :: Vector_
   PRIVATE
-  TYPE( RealVector_ ) :: RealVec
-  TYPE( DOF_ ) :: dof
-  CONTAINS
+  TYPE(RealVector_) :: RealVec
+  TYPE(DOF_) :: dof
+CONTAINS
   PRIVATE
-  PROCEDURE, PASS( obj ) :: checkEssentialParam => vec_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS( obj ) :: initiate => vec_initiate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => vec_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => vec_Deallocate
+  PROCEDURE, PASS(obj) :: checkEssentialParam => vec_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: initiate => vec_initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => vec_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => vec_Deallocate
   FINAL :: vec_Final
-  PROCEDURE, PASS( obj ) :: set1 => vec_set1
-  PROCEDURE, PASS( obj ) :: set2 => vec_set2
-  PROCEDURE, PASS( obj ) :: set3 => vec_set3
-  PROCEDURE, PASS( obj ) :: set4 => vec_set4
-  PROCEDURE, PASS( obj ) :: set5 => vec_set5
-  PROCEDURE, PASS( obj ) :: set6 => vec_set6
-  PROCEDURE, PASS( obj ) :: set7 => vec_set7
+  PROCEDURE, PASS(obj) :: set1 => vec_set1
+  PROCEDURE, PASS(obj) :: set2 => vec_set2
+  PROCEDURE, PASS(obj) :: set3 => vec_set3
+  PROCEDURE, PASS(obj) :: set4 => vec_set4
+  PROCEDURE, PASS(obj) :: set5 => vec_set5
+  PROCEDURE, PASS(obj) :: set6 => vec_set6
+  PROCEDURE, PASS(obj) :: set7 => vec_set7
 
-  PROCEDURE, PASS( obj ) :: get1 => vec_get1
-  PROCEDURE, PASS( obj ) :: get2 => vec_get2
-  PROCEDURE, PASS( obj ) :: get3 => vec_get3
-  PROCEDURE, PASS( obj ) :: get4 => vec_get4
-  PROCEDURE, PASS( obj ) :: get5 => vec_get5
+  PROCEDURE, PASS(obj) :: get1 => vec_get1
+  PROCEDURE, PASS(obj) :: get2 => vec_get2
+  PROCEDURE, PASS(obj) :: get3 => vec_get3
+  PROCEDURE, PASS(obj) :: get4 => vec_get4
+  PROCEDURE, PASS(obj) :: get5 => vec_get5
 
 END TYPE Vector_
 
 PUBLIC :: Vector_
-TYPE( Vector_ ), PARAMETER, PUBLIC :: TypeVector = Vector_()
+TYPE(Vector_), PARAMETER, PUBLIC :: TypeVector = Vector_()
 
 !----------------------------------------------------------------------------
 !                                                             VectorPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: VectorPointer_
-  CLASS( Vector_ ), POINTER :: ptr => NULL()
+  CLASS(Vector_), POINTER :: ptr => NULL()
 END TYPE VectorPointer_
 
 PUBLIC :: VectorPointer_
@@ -87,10 +84,10 @@ PUBLIC :: VectorPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-MODULE SUBROUTINE vec_checkEssentialParam( obj, param )
-  CLASS( Vector_ ), INTENT( IN ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE vec_checkEssentialParam
+  MODULE SUBROUTINE vec_checkEssentialParam(obj, param)
+    CLASS(Vector_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE vec_checkEssentialParam
 END INTERFACE
 
 PUBLIC :: vec_checkEssentialParam
@@ -121,10 +118,10 @@ PUBLIC :: vec_checkEssentialParam
 ! Note that the total number of names should be same as the total number of physical variables present inside the vector.
 
 INTERFACE
-MODULE SUBROUTINE vec_Initiate( obj, param )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE vec_Initiate
+  MODULE SUBROUTINE vec_Initiate(obj, param)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE vec_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -136,9 +133,9 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the Vector_ obj
 
 INTERFACE
-MODULE SUBROUTINE vec_Deallocate( obj )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE vec_Deallocate
+  MODULE SUBROUTINE vec_Deallocate(obj)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+  END SUBROUTINE vec_Deallocate
 END INTERFACE
 
 INTERFACE Deallocate
@@ -152,9 +149,9 @@ PUBLIC :: Deallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE vec_Final( obj )
-  TYPE( Vector_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE vec_Final
+  MODULE SUBROUTINE vec_Final(obj)
+    TYPE(Vector_), INTENT(INOUT) :: obj
+  END SUBROUTINE vec_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -163,13 +160,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: 	This function returns an instance of [[Vector_]]
+! summary:         This function returns an instance of [[Vector_]]
 
 INTERFACE
-MODULE FUNCTION vec_Constructor1( param ) RESULT( Ans )
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( Vector_ ) :: ans
-END FUNCTION vec_Constructor1
+  MODULE FUNCTION vec_Constructor1(param) RESULT(Ans)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Vector_) :: ans
+  END FUNCTION vec_Constructor1
 END INTERFACE
 
 INTERFACE RealVector
@@ -184,13 +181,13 @@ PUBLIC :: RealVector
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: 	This function returns an instance of [[Vector_]]
+! summary:         This function returns an instance of [[Vector_]]
 
 INTERFACE
-MODULE FUNCTION vec_Constructor_1( param ) RESULT( Ans )
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  CLASS( Vector_ ), POINTER :: ans
-END FUNCTION vec_Constructor_1
+  MODULE FUNCTION vec_Constructor_1(param) RESULT(Ans)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CLASS(Vector_), POINTER :: ans
+  END FUNCTION vec_Constructor_1
 END INTERFACE
 
 INTERFACE RealVector_Pointer
@@ -208,11 +205,11 @@ PUBLIC :: RealVector_Pointer
 ! summary: Display the content of [[Vector_]]
 
 INTERFACE
-MODULE SUBROUTINE vec_Display( obj, msg, unitNo )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE vec_Display
+  MODULE SUBROUTINE vec_Display(obj, msg, unitNo)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE vec_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -224,11 +221,11 @@ END INTERFACE
 ! summary: This routine sets the single entry of the vector
 
 INTERFACE
-MODULE SUBROUTINE vec_set1( obj, nodenum, value )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nodenum
-  REAL( DFP ), INTENT( IN ) :: value
-END SUBROUTINE vec_set1
+  MODULE SUBROUTINE vec_set1(obj, nodenum, value)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodenum
+    REAL(DFP), INTENT(IN) :: value
+  END SUBROUTINE vec_set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -240,10 +237,10 @@ END INTERFACE
 ! summary: This routine sets all the entries of a vector
 
 INTERFACE
-MODULE SUBROUTINE vec_set2( obj, value )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value
-END SUBROUTINE vec_set2
+  MODULE SUBROUTINE vec_set2(obj, value)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value
+  END SUBROUTINE vec_set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -255,10 +252,10 @@ END INTERFACE
 ! summary: This routine set all the entries by using given vector
 
 INTERFACE
-MODULE SUBROUTINE vec_set3( obj, value )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value( : )
-END SUBROUTINE vec_set3
+  MODULE SUBROUTINE vec_set3(obj, value)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value(:)
+  END SUBROUTINE vec_set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -270,11 +267,11 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE vec_set4(obj, nodenum, value)
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nodenum( : )
-  REAL( DFP ), INTENT( IN ) :: value( : )
-END SUBROUTINE vec_set4
+  MODULE SUBROUTINE vec_set4(obj, nodenum, value)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodenum(:)
+    REAL(DFP), INTENT(IN) :: value(:)
+  END SUBROUTINE vec_set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -286,11 +283,11 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE vec_set5( obj, iStart, iEnd, stride, value )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: istart, iend, stride
-  REAL( DFP ), INTENT( IN ) :: value
-END SUBROUTINE vec_set5
+  MODULE SUBROUTINE vec_set5(obj, iStart, iEnd, stride, value)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    REAL(DFP), INTENT(IN) :: value
+  END SUBROUTINE vec_set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -302,13 +299,13 @@ END INTERFACE
 ! summary: set the vector values using triplet
 
 INTERFACE
-MODULE SUBROUTINE vec_set6( obj, istart, iend, stride, value )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: istart
-  INTEGER( I4B ), INTENT( IN ) :: iend
-  INTEGER( I4B ), INTENT( IN ) :: stride
-  REAL( DFP ), INTENT( IN ) :: value( : )
-END SUBROUTINE vec_set6
+  MODULE SUBROUTINE vec_set6(obj, istart, iend, stride, value)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart
+    INTEGER(I4B), INTENT(IN) :: iend
+    INTEGER(I4B), INTENT(IN) :: stride
+    REAL(DFP), INTENT(IN) :: value(:)
+  END SUBROUTINE vec_set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -320,13 +317,13 @@ END INTERFACE
 ! summary: set the selected values of vector
 
 INTERFACE
-MODULE SUBROUTINE vec_set7( obj, nodeNum, value, storageFMT, dofs )
-  CLASS( Vector_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nodeNum( : )
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  INTEGER( I4B ), INTENT( IN ) :: storageFMT
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dofs(:)
-END SUBROUTINE vec_set7
+  MODULE SUBROUTINE vec_set7(obj, nodeNum, value, storageFMT, dofs)
+    CLASS(Vector_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
+    REAL(DFP), INTENT(IN) :: value(:)
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofs(:)
+  END SUBROUTINE vec_set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -338,11 +335,11 @@ END INTERFACE
 ! summary: Returns the single entry of the vector
 
 INTERFACE
-MODULE FUNCTION vec_get1( obj, nodenum ) RESULT( ans )
-  CLASS( Vector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nodenum
-  REAL( DFP ) :: ans
-END FUNCTION vec_get1
+  MODULE FUNCTION vec_get1(obj, nodenum) RESULT(ans)
+    CLASS(Vector_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodenum
+    REAL(DFP) :: ans
+  END FUNCTION vec_get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -354,10 +351,10 @@ END INTERFACE
 ! summary: Returns all the entries of the vector
 
 INTERFACE
-MODULE MODULE FUNCTION vec_get2( obj ) RESULT( ans )
-  CLASS( Vector_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE:: ans( : )
-END FUNCTION vec_get2
+  MODULE MODULE FUNCTION vec_get2(obj) RESULT(ans)
+    CLASS(Vector_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE :: ans(:)
+  END FUNCTION vec_get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -369,11 +366,11 @@ END INTERFACE
 ! summary: Returns selected values of vector
 
 INTERFACE
-MODULE FUNCTION vec_get3( obj, nodenum ) RESULT( ans )
-  CLASS( Vector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nodenum( : )
-  REAL( DFP ) :: ans( SIZE( nodenum ) )
-END FUNCTION vec_get3
+  MODULE FUNCTION vec_get3(obj, nodenum) RESULT(ans)
+    CLASS(Vector_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodenum(:)
+    REAL(DFP) :: ans(SIZE(nodenum))
+  END FUNCTION vec_get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -385,11 +382,11 @@ END INTERFACE
 ! summary: Get values using triplets
 
 INTERFACE
-MODULE FUNCTION vec_get4( obj, istart, iend, stride ) RESULT( ans )
-  CLASS( Vector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: istart, iend, stride
-  REAL( DFP ), ALLOCATABLE :: ans( : )
-END FUNCTION vec_get4
+  MODULE FUNCTION vec_get4(obj, istart, iend, stride) RESULT(ans)
+    CLASS(Vector_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    REAL(DFP), ALLOCATABLE :: ans(:)
+  END FUNCTION vec_get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -401,13 +398,13 @@ END INTERFACE
 ! summary: Get values using triplets
 
 INTERFACE
-MODULE FUNCTION vec_get5( obj, nodeNum, storageFMT, dofs ) RESULT( ans )
-  CLASS( Vector_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nodeNum( : )
-  INTEGER( I4B ), INTENT( IN ) :: storageFMT
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: dofs(:)
-  REAL( DFP ), ALLOCATABLE :: ans( : )
-END FUNCTION vec_get5
+  MODULE FUNCTION vec_get5(obj, nodeNum, storageFMT, dofs) RESULT(ans)
+    CLASS(Vector_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofs(:)
+    REAL(DFP), ALLOCATABLE :: ans(:)
+  END FUNCTION vec_get5
 END INTERFACE
 
 END MODULE Vector_Class

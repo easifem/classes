@@ -31,15 +31,14 @@
 MODULE FortranFile_Class
 USE GlobalData
 USE String_Class, ONLY: String
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e, EXCEPTION_ERROR
 USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*),PARAMETER :: modName='FortranFile_Class'
-CHARACTER(LEN=*),PARAMETER :: hash="#"
-CHARACTER(LEN=*),PARAMETER :: comma=","
+CHARACTER(LEN=*), PARAMETER :: modName = 'FortranFile_Class'
+CHARACTER(LEN=*), PARAMETER :: hash = "#"
+CHARACTER(LEN=*), PARAMETER :: comma = ","
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
-TYPE(ExceptionHandler_), PRIVATE :: e
 
 !----------------------------------------------------------------------------
 !
@@ -93,7 +92,6 @@ CONTAINS
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => ff_addSurrogate
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => ff_initiate
   PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => ff_Deallocate
   FINAL :: ff_final
@@ -132,21 +130,6 @@ END TYPE
 PUBLIC :: FortranFilePointer_
 
 !----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 19 July, 2022
-! summary: Add surrogate to the module
-
-INTERFACE
-  MODULE SUBROUTINE ff_addSurrogate(obj, UserObj)
-    CLASS(FortranFile_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE ff_addSurrogate
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -155,7 +138,7 @@ END INTERFACE
 ! summary: Initiate the fortran file
 
 INTERFACE
-  MODULE SUBROUTINE ff_initiate( obj, filename, unit, status, access, form, &
+  MODULE SUBROUTINE ff_initiate(obj, filename, unit, status, access, form, &
     & position, action, pad, recl, comment, separator, delimiter)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: filename
@@ -199,7 +182,7 @@ PUBLIC :: FortranFileInitiate
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 19 July, 2022
-! summary: 	Clear the content of fortran file
+! summary:         Clear the content of fortran file
 
 INTERFACE
   MODULE SUBROUTINE ff_Deallocate(obj, delete)
@@ -220,7 +203,7 @@ PUBLIC :: FortranFileDeallocate
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 19 July, 2022
-! summary: 	Deallocate the content of fortran file
+! summary:         Deallocate the content of fortran file
 
 INTERFACE
   MODULE SUBROUTINE ff_Final(obj)
@@ -296,7 +279,7 @@ PUBLIC :: FortranFileBackspace
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 19 July 2022
-! summary: 	Move to the begining
+! summary:         Move to the begining
 
 INTERFACE
   MODULE SUBROUTINE ff_rewind(obj)
@@ -434,7 +417,6 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                isInitiated@EnquireMethods
 !----------------------------------------------------------------------------
-
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 19 July 2022

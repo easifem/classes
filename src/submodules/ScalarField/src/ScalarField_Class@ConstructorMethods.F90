@@ -25,42 +25,34 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setScalarFieldParam
-  INTEGER( I4B ) :: ierr
-  ierr = param%set( key="ScalarField/name", value=name )
-  ierr = param%set( key="ScalarField/engine", value="NATIVE_SERIAL" )
-  IF( PRESENT( fieldType ) ) THEN
-    ierr = param%set( key="ScalarField/fieldType", value=fieldType )
-  ELSE
-    ierr = param%set( key="ScalarField/fieldType", value=FIELD_TYPE_NORMAL )
-  END IF
+INTEGER(I4B) :: ierr
+ierr = param%set(key="ScalarField/name", value=name)
+ierr = param%set(key="ScalarField/engine", value="NATIVE_SERIAL")
+IF (PRESENT(fieldType)) THEN
+  ierr = param%set(key="ScalarField/fieldType", value=fieldType)
+ELSE
+  ierr = param%set(key="ScalarField/fieldType", value=FIELD_TYPE_NORMAL)
+END IF
 END PROCEDURE setScalarFieldParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE sField_addSurrogate
-  CALL e%addSurrogate(UserObj)
-END PROCEDURE sField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_checkEssentialParam
-  CHARACTER( LEN = * ), PARAMETER :: myName = "sField_checkEssentialParam"
-  IF( .NOT. param%isPresent(key="ScalarField/name") ) THEN
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'names should be present in param')
-  END IF
-  IF( .NOT. param%isPresent(key="ScalarField/engine") ) THEN
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'engine should be present in param')
-  END IF
-  IF( .NOT. param%isPresent(key="ScalarField/fieldType") ) THEN
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'fieldType should be present in param')
-  END IF
+CHARACTER(LEN=*), PARAMETER :: myName = "sField_checkEssentialParam"
+IF (.NOT. param%isPresent(key="ScalarField/name")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'names should be present in param')
+END IF
+IF (.NOT. param%isPresent(key="ScalarField/engine")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'engine should be present in param')
+END IF
+IF (.NOT. param%isPresent(key="ScalarField/fieldType")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'fieldType should be present in param')
+END IF
 END PROCEDURE sField_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -68,68 +60,68 @@ END PROCEDURE sField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Initiate1
-  CHARACTER( LEN = * ), PARAMETER :: myName="sField_Initiate"
-  INTEGER( I4B ) :: ierr, storageFMT
-  INTEGER( I4B ) :: tNodes( 1 ), spaceCompo( 1 ), timeCompo( 1 )
-  CHARACTER( LEN=: ), ALLOCATABLE :: char_var
-  CHARACTER( LEN=1 ) :: names_char( 1 )
+CHARACTER(LEN=*), PARAMETER :: myName = "sField_Initiate"
+INTEGER(I4B) :: ierr, storageFMT
+INTEGER(I4B) :: tNodes(1), spaceCompo(1), timeCompo(1)
+CHARACTER(LEN=:), ALLOCATABLE :: char_var
+CHARACTER(LEN=1) :: names_char(1)
   !!
   !! main program
   !!
-  IF( obj%isInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Scalar object is already initiated')
+IF (obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'Scalar object is already initiated')
   !!
   !! check
   !!
-  CALL obj%checkEssentialParam(param)
+CALL obj%checkEssentialParam(param)
   !!
   !! name
   !!
-  ALLOCATE( CHARACTER( LEN = &
-    & param%DataSizeInBytes( key="ScalarField/name" ) ) :: char_var )
-  ierr = param%get( key="ScalarField/name", value=char_var )
-  obj%name = char_var
-  names_char( 1 )(1:1) = char_var( 1:1 )
+ALLOCATE (CHARACTER(LEN= &
+  & param%DataSizeInBytes(key="ScalarField/name")) :: char_var)
+ierr = param%get(key="ScalarField/name", value=char_var)
+obj%name = char_var
+names_char(1) (1:1) = char_var(1:1)
   !!
   !! fieldType
   !!
-  IF( param%isPresent(key="ScalarField/fieldType") ) THEN
-    ierr = param%get( key="ScalarField/fieldType", value=obj%fieldType )
-  ELSE
-    obj%fieldType = FIELD_TYPE_NORMAL
-  END IF
+IF (param%isPresent(key="ScalarField/fieldType")) THEN
+  ierr = param%get(key="ScalarField/fieldType", value=obj%fieldType)
+ELSE
+  obj%fieldType = FIELD_TYPE_NORMAL
+END IF
   !!
   !! engine
   !!
-  obj%engine="NATIVE_SERIAL"
+obj%engine = "NATIVE_SERIAL"
   !!
   !!
   !!
-  spaceCompo = [1]
-  timeCompo = [1]
-  storageFMT = FMT_NODES
-  obj%domain => dom
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    tNodes = 1
-    obj%tSize = obj%domain%getTotalNodes()
-  ELSE
-    tNodes = obj%domain%getTotalNodes()
-    obj%tSize = tNodes( 1 )
-  END IF
+spaceCompo = [1]
+timeCompo = [1]
+storageFMT = FMT_NODES
+obj%domain => dom
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  tNodes = 1
+  obj%tSize = obj%domain%getTotalNodes()
+ELSE
+  tNodes = obj%domain%getTotalNodes()
+  obj%tSize = tNodes(1)
+END IF
   !!
   !!
   !!
-  CALL initiate( obj=obj%dof, tNodes=tNodes, names=names_char, &
-    & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT )
+CALL initiate(obj=obj%dof, tNodes=tNodes, names=names_char, &
+  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
   !!
   !!
   !!
-  CALL initiate( obj%realVec, obj%dof )
+CALL initiate(obj%realVec, obj%dof)
   !!
-  obj%isInitiated = .TRUE.
+obj%isInitiated = .TRUE.
   !!
-  IF( ALLOCATED( char_var ) ) DEALLOCATE( char_var )
+IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
   !!
 END PROCEDURE sField_Initiate1
 
@@ -138,7 +130,7 @@ END PROCEDURE sField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Deallocate
-  CALL AbstractNodeFieldDeallocate(obj)
+CALL AbstractNodeFieldDeallocate(obj)
 END PROCEDURE sField_Deallocate
 
 !----------------------------------------------------------------------------
@@ -146,7 +138,7 @@ END PROCEDURE sField_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Final
-  CALL obj%Deallocate()
+CALL obj%Deallocate()
 END PROCEDURE sField_Final
 
 !----------------------------------------------------------------------------
@@ -154,7 +146,7 @@ END PROCEDURE sField_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Constructor1
-  CALL ans%initiate( param, dom )
+CALL ans%initiate(param, dom)
 END PROCEDURE sField_Constructor1
 
 !----------------------------------------------------------------------------
@@ -162,8 +154,8 @@ END PROCEDURE sField_Constructor1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Constructor_1
-  ALLOCATE( ans )
-  CALL ans%initiate( param, dom )
+ALLOCATE (ans)
+CALL ans%initiate(param, dom)
 END PROCEDURE sField_Constructor_1
 
 !----------------------------------------------------------------------------

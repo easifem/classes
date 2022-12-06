@@ -67,45 +67,30 @@
 ! *meshDataFormat* It can be Float32, Float64
 
 INTERFACE
-MODULE SUBROUTINE InitiateVTKFile( obj, filename, mode, DataFormat, &
-  & DataStructureType, WholeExtent, isVolatile, meshDataFormat, &
-  & Spacing, Origin )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: filename
+  MODULE SUBROUTINE InitiateVTKFile(obj, filename, mode, DataFormat, &
+    & DataStructureType, WholeExtent, isVolatile, meshDataFormat, &
+    & Spacing, Origin)
+    CLASS(VTKFile_), INTENT(INOUT) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: filename
     !! Name of the file, where xml data will be printed
-  CHARACTER( LEN = * ), INTENT( IN ) :: mode
+    CHARACTER(LEN=*), INTENT(IN) :: mode
     !! READ, WRITE, NEW, REPLACE
-  INTEGER( I4B ), INTENT( IN ) :: DataFormat
+    INTEGER(I4B), INTENT(IN) :: DataFormat
     !! VTK_ASCII, VTK_APPENEDED, VTK_BINARY
-  INTEGER( I4B ), INTENT( IN ) :: DataStructureType
+    INTEGER(I4B), INTENT(IN) :: DataStructureType
     !! VTK_IMAGEDATA, VTK_STRUCTUREDGRID, etc.
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: WholeExtent( : )
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: WholeExtent(:)
     !! Required for structured data set
     !! [x1, x2, y1, y2, z1, z2]
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isVolatile
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isVolatile
     !! True if volatileBuffer is used to keep the xml file
-  CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: meshDataFormat
+    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: meshDataFormat
     !! Float32, Float64, etc
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Spacing( : )
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: Spacing(:)
     !! dx, dy, dz, needed in case of ImageData
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Origin( : )
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: Origin(:)
     !! x0, y0, z0, needed in case of ImageData
-END SUBROUTINE InitiateVTKFile
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           AddSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 Sept 2021
-! summary: Add surrogate to the module exception handler
-
-INTERFACE
-MODULE SUBROUTINE VTKFile_AddSurrogate( obj, UserObj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE VTKFile_AddSurrogate
+  END SUBROUTINE InitiateVTKFile
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -117,10 +102,10 @@ END INTERFACE
 ! summary: Deallocates the content of VTKFile and close or delete it.
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_Deallocate( obj, delete )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: delete
-END SUBROUTINE VTKFile_Deallocate
+  MODULE SUBROUTINE VTKFile_Deallocate(obj, delete)
+    CLASS(VTKFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: delete
+  END SUBROUTINE VTKFile_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -132,9 +117,9 @@ END INTERFACE
 ! summary: Finalizer for VTKFile
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_Final( obj )
-  TYPE( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_Final
+  MODULE SUBROUTINE VTKFile_Final(obj)
+    TYPE(VTKFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE VTKFile_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -151,10 +136,10 @@ END INTERFACE
 ! bytes `nByte`
 
 INTERFACE
-MODULE ELEMENTAL SUBROUTINE VTKFile_UpdateOffset( obj, nByte )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nByte
-END SUBROUTINE VTKFile_UpdateOffset
+  MODULE ELEMENTAL SUBROUTINE VTKFile_UpdateOffset(obj, nByte)
+    CLASS(VTKFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nByte
+  END SUBROUTINE VTKFile_UpdateOffset
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -166,9 +151,9 @@ END INTERFACE
 ! summary: Close the file
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_Close( obj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_Close
+  MODULE SUBROUTINE VTKFile_Close(obj)
+    CLASS(VTKFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE VTKFile_Close
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -180,9 +165,9 @@ END INTERFACE
 ! summary: Open the scratch file if data format is `VTK_APPENDED`
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_OpenScratchFile( obj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_OpenScratchFile
+  MODULE SUBROUTINE VTKFile_OpenScratchFile(obj)
+    CLASS(VTKFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE VTKFile_OpenScratchFile
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -194,7 +179,7 @@ END INTERFACE
 ! summary: Close the scratch file
 
 INTERFACE
-MODULE SUBROUTINE VTKFile_CloseScratchFile( obj )
-  CLASS( VTKFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE VTKFile_CloseScratchFile
+  MODULE SUBROUTINE VTKFile_CloseScratchFile(obj)
+    CLASS(VTKFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE VTKFile_CloseScratchFile
 END INTERFACE

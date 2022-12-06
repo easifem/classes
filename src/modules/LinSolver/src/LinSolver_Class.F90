@@ -24,7 +24,7 @@ USE GlobalData
 USE BaseType
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE Field
 USE AbstractLinSolver_Class
 USE HDF5File_Class
@@ -32,7 +32,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(LEN=*), PARAMETER :: modName = "Linsolver_Class"
-TYPE(ExceptionHandler_) :: e
 INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 
@@ -60,8 +59,6 @@ TYPE, EXTENDS(AbstractLinSolver_) :: LinSolver_
   REAL(DFP), ALLOCATABLE :: W(:)
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => ls_addSurrogate
-    !! Add surrogate to the module exception handler
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & ls_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
@@ -78,7 +75,7 @@ CONTAINS
     !! Importing linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => ls_Export
     !! Exporting linsolver from external file
-  PROCEDURE, PUBLIC, PASS( obj ) :: setTolerance => ls_setTolerance
+  PROCEDURE, PUBLIC, PASS(obj) :: setTolerance => ls_setTolerance
 END TYPE LinSolver_
 
 PUBLIC :: LinSolver_
@@ -125,21 +122,6 @@ INTERFACE
 END INTERFACE
 
 PUBLIC :: getLinSolverNameFromCode
-
-!----------------------------------------------------------------------------
-!                                                 addSurrogate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Aug 2021
-! summary:         Add surrogate to the module [[ExceptionHandler_]]
-
-INTERFACE
-  MODULE SUBROUTINE ls_addSurrogate(obj, UserObj)
-    CLASS(LinSolver_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE ls_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                            setLinSolverParam@Constructor
@@ -264,8 +246,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE SUBROUTINE ls_setTolerance(obj, atol, rtol)
     CLASS(LinSolver_), INTENT(INOUT) :: obj
-    REAL( DFP ), OPTIONAL, INTENT( IN ) :: atol
-    REAL( DFP ), OPTIONAL, INTENT( IN ) :: rtol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
   END SUBROUTINE ls_setTolerance
 END INTERFACE
 

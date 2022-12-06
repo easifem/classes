@@ -25,46 +25,46 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_applyDirichletBC1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_applyDirichletBC1"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: idof
+CHARACTER(LEN=*), PARAMETER :: myName = "stvField_applyDirichletBC1"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: idof
+!!
+!! main
+!!
+CALL dbc%get(nodalvalue=nodalvalue, nodenum=nodenum)
+!!
+IF (size(nodalvalue, 2) .EQ. 1) THEN
   !!
-  !! main
+  DO idof = 1, obj%timecompo
+    CALL obj%Set( &
+      & globalNode=nodenum, &
+      & value=nodalvalue(:, 1), &
+      & timecompo=idof, &
+      & spacecompo=dbc%getDOFNo())
+  END DO
   !!
-  CALL dbc%get( nodalvalue=nodalvalue, nodenum=nodenum )
+ELSE
   !!
-  IF( size( nodalvalue, 2 ) .EQ. 1 ) THEN
-    !!
-    DO idof = 1, obj%timecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & value=nodalvalue(:,1), &
-        & timecompo=idof, &
-        & spacecompo=dbc%getDOFNo() )
-    END DO
-    !!
-  ELSE
-    !!
-    !! check
-    !!
-    IF( SIZE( nodalvalue, 2 ) .NE. obj%timeCompo ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
-    !!
-    DO idof = 1, obj%timecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & value=nodalvalue(:,idof), &
-        & timecompo=idof, &
-        & spacecompo=dbc%getDOFNo() )
-    END DO
-    !!
-  END IF
+  !! check
   !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
+  IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
   !!
+  DO idof = 1, obj%timecompo
+    CALL obj%Set( &
+      & globalNode=nodenum, &
+      & value=nodalvalue(:, idof), &
+      & timecompo=idof, &
+      & spacecompo=dbc%getDOFNo())
+  END DO
+  !!
+END IF
+!!
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+!!
 END PROCEDURE stvField_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -72,50 +72,50 @@ END PROCEDURE stvField_applyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_applyDirichletBC2
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stvField_applyDirichletBC2"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: ibc, idof
+CHARACTER(LEN=*), PARAMETER :: myName = "stvField_applyDirichletBC2"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: ibc, idof
+!!
+!! main
+!!
+DO ibc = 1, SIZE(dbc)
   !!
-  !! main
+  CALL dbc(ibc)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum)
   !!
-  DO ibc = 1, SIZE( dbc )
+  IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
     !!
-    CALL dbc(ibc)%ptr%get( nodalvalue=nodalvalue, nodenum=nodenum )
+    DO idof = 1, obj%timecompo
+      CALL obj%Set( &
+        & globalNode=nodenum, &
+        & value=nodalvalue(:, 1), &
+        & timecompo=idof, &
+        & spacecompo=dbc(ibc)%ptr%getDOFNo())
+    END DO
     !!
-    IF( SIZE( nodalvalue, 2 ) .EQ. 1 ) THEN
-      !!
-      DO idof = 1, obj%timecompo
-        CALL obj%Set( &
-          & globalNode=nodenum, &
-          & value=nodalvalue(:,1), &
-          & timecompo=idof, &
-          & spacecompo=dbc(ibc)%ptr%getDOFNo() )
-      END DO
-      !!
-    ELSE
-      !!
-      !! check
-      !!
-      IF( SIZE( nodalvalue, 2 ) .NE. obj%timeCompo ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
-      !!
-      DO idof = 1, obj%timecompo
-        CALL obj%Set( &
-          & globalNode=nodenum, &
-          & value=nodalvalue(:,idof), &
-          & timecompo=idof, &
-          & spacecompo=dbc(ibc)%ptr%getDOFNo() )
-      END DO
-      !!
-    END IF
+  ELSE
     !!
-  END DO
+    !! check
+    !!
+    IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
+    !!
+    DO idof = 1, obj%timecompo
+      CALL obj%Set( &
+        & globalNode=nodenum, &
+        & value=nodalvalue(:, idof), &
+        & timecompo=idof, &
+        & spacecompo=dbc(ibc)%ptr%getDOFNo())
+    END DO
+    !!
+  END IF
   !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+END DO
+!!
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+!!
 END PROCEDURE stvField_applyDirichletBC2
 
 !----------------------------------------------------------------------------

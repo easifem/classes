@@ -15,22 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 19 July 2022
-! summary: Add surrogate to exception handler of the module
-
-INTERFACE
-  MODULE SUBROUTINE txt_addSurrogate(obj, UserObj)
-    CLASS(TxtFile_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE txt_addSurrogate
-END INTERFACE
-
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -103,7 +87,7 @@ PUBLIC :: TxtFileDeallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE txt_final( obj )
-  TYPE(TxtFile_), INTENT( INOUT ) :: obj
-END SUBROUTINE txt_final
+  MODULE SUBROUTINE txt_final(obj)
+    TYPE(TxtFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE txt_final
 END INTERFACE

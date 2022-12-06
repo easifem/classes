@@ -16,14 +16,15 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	26 April 2021
+! date:         26 April 2021
 ! summary:Gmsh-Fortran Interface
 
-#ifdef USE_GMSH_SDK
 MODULE Gmsh_Class
 USE ISO_C_BINDING
 USE GlobalData, ONLY: I4B, LGT, DFP
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE BaseMethod
+USE ExceptionHandler_Class, ONLY: e
+USE GmshUtility
 USE GmshInterface
 USE GmshGraphics_Class
 USE GmshFLTK_Class
@@ -33,29 +34,30 @@ USE GmshOnelab_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER( LEN = * ), PARAMETER :: modName = "GMSH_CLASS"
-INTEGER( C_INT ) :: ierr
+CHARACTER(LEN=*), PARAMETER :: modName = "Gmsh_Class"
+INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
-TYPE( ExceptionHandler_ ) :: e
-!$OMP THREADPRIVATE(e)
-INTEGER( I4B ), PARAMETER :: maxStrLen = 256
-
-PUBLIC :: GMSH_INIT
-PUBLIC :: GMSH_FINAL
+INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
+PUBLIC :: GMSH_API_MAX_STR_LEN
+PUBLIC :: GMSH_API_VERSION_MAJOR
+PUBLIC :: GMSH_API_VERSION_MINOR
+PUBLIC :: GMSH_API_VERSION_PATCH
+PUBLIC :: GMSH_API_VERSION
 
 !----------------------------------------------------------------------------
 !                                                                      Gmsh_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	26 April
-! summary: This a data type for prepossing/ post-processing/ mesh handling using Gmsh
+! date:         26 April
+! summary: This a data type for prepossing/ post-processing/
+! mesh handling using Gmsh
 !
 !
 !### Usage
 !
 ! ```fortran
-!	type( Gmsh_ ) :: Gmsh
+!        type( Gmsh_ ) :: Gmsh
 ! ierr = Gmsh%initialize()
 ! ierr = Gmsh%open( filename )
 ! ierr = Gmsh%merge( filename )
@@ -66,41 +68,56 @@ PUBLIC :: GMSH_FINAL
 
 TYPE :: Gmsh_
   PRIVATE
-  TYPE( GmshGraphics_ ), PUBLIC, POINTER :: Graphics => NULL()
-  TYPE( GmshOption_ ), PUBLIC, POINTER :: Option => NULL()
-  TYPE( GmshFLTK_ ), PUBLIC, POINTER :: FLTK => NULL()
-  TYPE( GmshOnelab_ ), PUBLIC, POINTER :: Onelab => NULL()
-  TYPE( GmshModel_ ), PUBLIC, POINTER :: Model => NULL( )
+  TYPE(GmshOption_), PUBLIC, POINTER :: option => NULL()
+  !! Gmsh option
+  TYPE(GmshModel_), PUBLIC, POINTER :: model => NULL()
+  !! Gmsh model
+  ! TYPE( GmshView_ ), PUBLIC, POINTER :: view => NULL( )
+  !! TODO
+  ! TYPE( GmshPlugin_ ), PUBLIC, POINTER :: plugin => NULL( )
+  !! TODO
+  TYPE(GmshGraphics_), PUBLIC, POINTER :: graphics => NULL()
+  !! Gmsh graphics
+  TYPE(GmshFLTK_), PUBLIC, POINTER :: fltk => NULL()
+  !! Gmsh FLTK
+  !! TYPE( GmshParser_ ), PUBLIC, POINTER :: parser => NULL()
+  !! TODO Gmsh Parser
+  TYPE(GmshOnelab_), PUBLIC, POINTER :: onelab => NULL()
+  !! Gmsh onelab
+  ! TYPE( GmshLogger_ ), PUBLIC, POINTER :: logger => NULL( )
+  !! TODO
   ! INTEGER( I4B ) :: nsd = 0
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInitiated = .FALSE.
 
-  CONTAINS
-    PRIVATE
-    PROCEDURE, PUBLIC, PASS( obj ) :: initialize => Gmsh_initialize
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: initialize => Gmsh_initialize
       !! Initialize the Gmsh engine
-    PROCEDURE, PUBLIC, PASS( obj ) :: finalize => Gmsh_finalize
+  PROCEDURE, PUBLIC, NOPASS :: isInitialized => Gmsh_isInitialized
+      !! is Gmsh engine initiated
+  PROCEDURE, PUBLIC, PASS(obj) :: finalize => Gmsh_finalize
       !! Closes the Gmsh engine
-    FINAL :: Gmsh_finalize_
+  FINAL :: Gmsh_finalize_
       !! Final for Gmsh_
-    PROCEDURE, PUBLIC, PASS( obj ) :: open => Gmsh_open
+  PROCEDURE, PUBLIC, NOPASS :: open => Gmsh_open
       !! open file to load
-    PROCEDURE, PUBLIC, PASS( obj ) :: merge => Gmsh_merge
+  PROCEDURE, PUBLIC, NOPASS :: merge => Gmsh_merge
       !! merge model
-    PROCEDURE, PUBLIC, PASS( obj ) :: write => Gmsh_write
+  PROCEDURE, PUBLIC, NOPASS :: write => Gmsh_write
       !! Write content in a file
-    PROCEDURE, PUBLIC, PASS( obj ) :: clear => Gmsh_clear
+  PROCEDURE, PUBLIC, NOPASS :: clear => Gmsh_clear
       !! Clear the content
 END TYPE Gmsh_
 
 PUBLIC :: Gmsh_
-TYPE( Gmsh_ ), PUBLIC, PARAMETER :: TypeGmsh = Gmsh_( )
+TYPE(Gmsh_), PUBLIC, PARAMETER :: TypeGmsh = Gmsh_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: GmshPointer_
-  CLASS( Gmsh_ ), POINTER :: Ptr => NULL()
+  CLASS(Gmsh_), POINTER :: Ptr => NULL()
 END TYPE GmshPointer_
 
 PUBLIC :: GmshPointer_
@@ -130,78 +147,121 @@ CONTAINS
 ! ierr = obj%initialize( NSD )
 !```
 
-FUNCTION Gmsh_initialize( obj ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
-  ! Internal variables
-  CHARACTER( LEN=* ), PARAMETER :: myName="Gmsh_initialize()"
-
+FUNCTION Gmsh_initialize(obj, argv, readConfigFiles, run) &
+  & RESULT(ans)
+  CLASS(Gmsh_), INTENT(INOUT) :: obj
+  CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: argv(:)
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: readConfigFiles
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: run
+  INTEGER(I4B) :: ans
+  !!
+  !! Internal variables
+  !!
+  CHARACTER(LEN=*), PARAMETER :: myName = "Gmsh_initialize()"
+  CHARACTER(LEN=maxStrLen, KIND=c_char), ALLOCATABLE :: argv_strs(:)
+  TYPE(C_PTR), ALLOCATABLE :: argv_cptr(:)
+  !!
   ans = 0
-  IF( .NOT. obj%isInitiated ) THEN
-    !> Graphics
-    IF( ASSOCIATED( obj%Graphics )  ) THEN
+  !!
+  IF (.NOT. obj%isInitiated) THEN
+    !!
+    call gmsh_GetCharArray_cPtr( &
+      & gmsh_InputStr(default=[''], &
+          & option=argv), &
+      & argv_strs, &
+      & argv_cptr)
+    !!
+    CALL gmshInitialize( &
+      & argc=gmsh_strArraySize(argv), &
+      & argv=argv_cptr, &
+      & readConfigFiles=optval_c_bool(default=.TRUE., &
+                          & option=readConfigFiles), &
+      & run=optval_c_bool(default=.FALSE., option=run), &
+      & ierr=ierr)
+    !!
+    ans = INT(ierr, I4B)
+    !!
+    !! Graphics
+    !!
+    IF (ASSOCIATED(obj%Graphics)) THEN
       CALL e%raiseError(modName//"::"//myName//" - "// &
-        "Gmsh%Graphics is already associated; hint: You can try, first Nullifying it")
+        "Gmsh%Graphics is already associated; hint: &
+        & You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Graphics ); CALL obj%Graphics%Initiate()
-    !> Option
-    IF( ASSOCIATED( obj%Option )  ) THEN
+    !!
+    ALLOCATE (obj%Graphics); CALL obj%Graphics%Initiate()
+    !!
+    !! Option
+    !!
+    IF (ASSOCIATED(obj%Option)) THEN
       CALL e%raiseError(modName//"::"//myName//" - "// &
-        "Gmsh%option is already associated; hint: You can try, first Nullifying it")
+        "Gmsh%option is already associated; &
+        & hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Option ); Call obj%Option%Initiate()
-    !> FLTK
-    IF( ASSOCIATED( obj%FLTK )  ) THEN
+    ALLOCATE (obj%Option); Call obj%Option%Initiate()
+    !!
+    !! FLTK
+    !!
+    IF (ASSOCIATED(obj%FLTK)) THEN
       CALL e%raiseError(modName//"::"//myName//" - "// &
-        "Gmsh%FLTK is already associated; hint: You can try, first Nullifying it")
+        "Gmsh%FLTK is already associated; &
+        & hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%FLTK ); CALL obj%FLTK%Initiate()
-    !> Onelab
-    IF( ASSOCIATED( obj%Onelab )  ) THEN
+    ALLOCATE (obj%FLTK); CALL obj%FLTK%Initiate()
+    !!
+    !! Onelab
+    !!
+    IF (ASSOCIATED(obj%Onelab)) THEN
       CALL e%raiseError(modName//"::"//myName//" - "// &
-        "Gmsh%Onelab is already associated; hint: You can try, first Nullifying it")
+        "Gmsh%Onelab is already associated; hint: &
+        & You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Onelab ); CALL obj%Onelab%Initiate()
-    !> Model
-    IF( ASSOCIATED( obj%Model )  ) THEN
+    !!
+    ALLOCATE (obj%Onelab); CALL obj%Onelab%Initiate()
+    !!
+    !! Model
+    !!
+    IF (ASSOCIATED(obj%Model)) THEN
       CALL e%raiseError(modName//"::"//myName//" - "// &
-        "Gmsh%model is already associated; hint: You can try, first Nullifying it")
+        "Gmsh%model is already associated; hint: &
+        & You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE( obj%Model ); CALL obj%Model%Initiate()
+    !!
+    ALLOCATE (obj%Model); CALL obj%Model%Initiate()
+    !!
     obj%isInitiated = .TRUE.
+    !!
   ELSE
+    !!
     CALL e%raiseError(modName//"::"//myName//" - "// &
-      & "Gmsh is already initiated; hint: You can run finalize(), &
+      & "Gmsh is already initiated; &
+      & hint: You can run finalize(), &
       & the initialize()")
+    !!
   END IF
+  !!
 END FUNCTION Gmsh_initialize
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 Sept 2021
-! summary: This function will start the Gmsh engine
-!
-!# Introduction
-!
-! This function will start the Gmsh engine.
-!
-!### Usage
-!
-!```fortran
-!  CALL GMSH_INIT
-!```
+!> author: Vikas Sharma, Ph. D.
+! date: 3 Nov 2022
+! summary: Returns 1 if Gmsh engine is initialized, 0 if not
 
-SUBROUTINE GMSH_INIT
-  CALL gmshInitialize( 0, C_NULL_PTR, 1, ierr )
-END SUBROUTINE GMSH_INIT
+FUNCTION Gmsh_IsInitialized() RESULT(ans)
+  INTEGER(I4B) :: ans
+  !!
+  INTEGER(C_INT) :: ans0
+  ans0 = gmshIsInitialized(ierr=ierr)
+  ans = INT(ans0, KIND=I4B)
+END FUNCTION Gmsh_IsInitialized
 
 !----------------------------------------------------------------------------
 !                                                                 Finalize
@@ -217,68 +277,48 @@ END SUBROUTINE GMSH_INIT
 !### Usage
 !
 !```fortran
-!	ierr = obj%finalize()
+!        ierr = obj%finalize()
 !```
 
-FUNCTION Gmsh_finalize( obj ) RESULT( ans )
-  CLASS( Gmsh_  ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
-
-  IF( ASSOCIATED( obj%Graphics ) ) THEN
-    DEALLOCATE( obj%Graphics )
+FUNCTION Gmsh_finalize(obj) RESULT(ans)
+  CLASS(Gmsh_), INTENT(INOUT) :: obj
+  INTEGER(I4B) :: ans
+  !!
+  IF (ASSOCIATED(obj%Graphics)) THEN
+    DEALLOCATE (obj%Graphics)
   END IF
-  IF( ASSOCIATED( obj%Option ) ) THEN
-    DEALLOCATE( obj%Option )
+  IF (ASSOCIATED(obj%Option)) THEN
+    DEALLOCATE (obj%Option)
   END IF
-  IF( ASSOCIATED( obj%FLTK ) ) THEN
-    DEALLOCATE( obj%FLTK )
+  IF (ASSOCIATED(obj%FLTK)) THEN
+    DEALLOCATE (obj%FLTK)
   END IF
-  IF( ASSOCIATED( obj%Model ) ) THEN
-    IF( ASSOCIATED( obj%Model%Geo ) ) THEN
-      DEALLOCATE( obj%Model%Geo )
+  IF (ASSOCIATED(obj%Model)) THEN
+    IF (ASSOCIATED(obj%Model%Geo)) THEN
+      DEALLOCATE (obj%Model%Geo)
     END IF
-    IF( ASSOCIATED( obj%Model%Occ ) ) THEN
-      DEALLOCATE( obj%Model%Occ )
+    IF (ASSOCIATED(obj%Model%Occ)) THEN
+      DEALLOCATE (obj%Model%Occ)
     END IF
-    IF( ASSOCIATED( obj%Model%Mesh ) ) THEN
-      DEALLOCATE( obj%Model%Mesh )
+    IF (ASSOCIATED(obj%Model%Mesh)) THEN
+      DEALLOCATE (obj%Model%Mesh)
     END IF
-    DEALLOCATE( obj%Model )
+    DEALLOCATE (obj%Model)
   END IF
   obj%Option => null()
   obj%Model => null()
   obj%isInitiated = .FALSE.
   ans = 0
+  CALL gmshFinalize(ierr=ierr)
 END FUNCTION Gmsh_finalize
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 Sept 2021
-! summary: This function will stop the Gmsh engine
-!
-!# Introduction
-! This function will stop the Gmsh engine
-!
-!### Usage
-!
-!```fortran
-!	CALL GMSH_FINAL
-!```
-
-SUBROUTINE GMSH_FINAL
-  CALL gmshFinalize( ierr = ierr )
-END SUBROUTINE GMSH_FINAL
 
 !----------------------------------------------------------------------------
 !                                                                 Finalize
 !----------------------------------------------------------------------------
 
-SUBROUTINE Gmsh_finalize_( obj )
-  TYPE( Gmsh_  ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+SUBROUTINE Gmsh_finalize_(obj)
+  TYPE(Gmsh_), INTENT(INOUT) :: obj
+  INTEGER(I4B) :: ans
   ans = obj%Finalize()
 END SUBROUTINE Gmsh_finalize_
 
@@ -311,15 +351,14 @@ END SUBROUTINE Gmsh_finalize_
 ! CALL GMSH_FINAL
 !```
 
-FUNCTION Gmsh_Open( obj, fileName ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: fileName
-  INTEGER( I4B ) :: ans
+FUNCTION Gmsh_Open(fileName) RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: fileName
+  INTEGER(I4B) :: ans
   ! Internal variables
-  CHARACTER( LEN = maxStrLen ), TARGET :: C_STR
-  C_STR = TRIM( fileName ) // C_NULL_CHAR
-  CALL gmshOpen( fileName = C_LOC(C_STR), ierr=ierr )
-  ans = INT( ierr, KIND=I4B )
+  CHARACTER(LEN=maxStrLen), TARGET :: C_STR
+  C_STR = TRIM(fileName)//C_NULL_CHAR
+  CALL gmshOpen(fileName=C_LOC(C_STR), ierr=ierr)
+  ans = INT(ierr, KIND=I4B)
 END FUNCTION Gmsh_Open
 
 !----------------------------------------------------------------------------
@@ -350,15 +389,14 @@ END FUNCTION Gmsh_Open
 ! CALL GMSH_FINAL
 !```
 
-FUNCTION Gmsh_Merge( obj, fileName ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: fileName
-  INTEGER( I4B ) :: ans
+FUNCTION Gmsh_Merge(fileName) RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: fileName
+  INTEGER(I4B) :: ans
   ! Internal variables
-  CHARACTER( LEN = maxStrLen ), TARGET :: C_STR
-  C_STR = TRIM( fileName ) // C_NULL_CHAR
-  CALL gmshMerge( fileName = C_LOC(C_STR), ierr=ierr )
-  ans = INT( ierr, KIND=I4B )
+  CHARACTER(LEN=maxStrLen), TARGET :: C_STR
+  C_STR = TRIM(fileName)//C_NULL_CHAR
+  CALL gmshMerge(fileName=C_LOC(C_STR), ierr=ierr)
+  ans = INT(ierr, KIND=I4B)
 END FUNCTION Gmsh_Merge
 
 !----------------------------------------------------------------------------
@@ -388,22 +426,19 @@ END FUNCTION Gmsh_Merge
 ! CALL GMSH_FINAL
 !```
 
-FUNCTION Gmsh_Write( obj, fileName ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: fileName
-  INTEGER( I4B ) :: ans
+FUNCTION Gmsh_Write(fileName) RESULT(ans)
+  CHARACTER(LEN=*), INTENT(IN) :: fileName
+  INTEGER(I4B) :: ans
   ! Internal variables
-  CHARACTER( LEN = maxStrLen ), TARGET :: C_STR
-
-  C_STR = TRIM( fileName ) // C_NULL_CHAR
-  CALL gmshWrite( fileName = C_LOC(C_STR), ierr=ierr )
-  ans = INT( ierr, KIND=I4B )
+  CHARACTER(LEN=maxStrLen) :: C_STR
+  C_STR = gmsh_CString(fileName)
+  CALL gmshWrite(fileName=C_STR, ierr=ierr)
+  ans = INT(ierr, KIND=I4B)
 END FUNCTION Gmsh_Write
 
 !----------------------------------------------------------------------------
 !                                                                     Clear
 !----------------------------------------------------------------------------
-
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 Sept 2021
@@ -428,11 +463,10 @@ END FUNCTION Gmsh_Write
 ! CALL GMSH_FINAL
 !```
 
-FUNCTION Gmsh_Clear( obj ) RESULT( ans )
-  CLASS( Gmsh_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
-  CALL gmshClear( ierr=ierr )
-  ans = INT( ierr, KIND=I4B )
+FUNCTION Gmsh_Clear() RESULT(ans)
+  INTEGER(I4B) :: ans
+  CALL gmshClear(ierr=ierr)
+  ans = INT(ierr, KIND=I4B)
 END FUNCTION Gmsh_Clear
 
 !----------------------------------------------------------------------------
@@ -440,4 +474,3 @@ END FUNCTION Gmsh_Clear
 !----------------------------------------------------------------------------
 
 END MODULE Gmsh_Class
-#endif

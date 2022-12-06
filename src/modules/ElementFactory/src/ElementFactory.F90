@@ -22,11 +22,13 @@ USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE Element_Class
 USE FacetElement_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: Element_, ElementPointer_, Element, Element_Pointer, TypeElement
-PUBLIC :: FacetElement_, FacetElementPointer_, FacetElement, FacetElement_Pointer, TypeFacetElement
-CHARACTER( LEN=* ), PARAMETER :: modName="FACETELEMENT_CLASS"
+PUBLIC :: FacetElement_, FacetElementPointer_, &
+  & FacetElement, FacetElement_Pointer, TypeFacetElement
+CHARACTER(LEN=*), PARAMETER :: modName = "ElementFactory"
 
 !----------------------------------------------------------------------------
 !
@@ -55,34 +57,34 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	25 March 2021
+! date:         25 March 2021
 ! summary: Dynamically returns the finite element
 
-FUNCTION elem_factory_from_fpl( param, refelem ) RESULT( ans )
+FUNCTION elem_factory_from_fpl(param, refelem) RESULT(ans)
   ! Define internal variable
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: refelem
-  CLASS( Element_ ), POINTER :: ans
+  TYPE(ParameterList_), INTENT(IN) :: param
+  CLASS(ReferenceElement_), TARGET, INTENT(IN) :: refelem
+  CLASS(Element_), POINTER :: ans
   ! Define internal variables
-  INTEGER( I4B ) :: ierr
-  CHARACTER( LEN=* ), PARAMETER :: myName="elem_factory_from_fpl()"
-  CHARACTER( LEN=100 ) :: elemTypeName
-  TYPE( String ) :: elemType
+  INTEGER(I4B) :: ierr
+  CHARACTER(LEN=*), PARAMETER :: myName = "elem_factory_from_fpl()"
+  CHARACTER(LEN=100) :: elemTypeName
+  TYPE(String) :: elemType
 
-  IF( .NOT. param%ispresent(key="type") ) THEN
-    CALL eElement%raiseError(modName//"::"//myName//" - "// &
-        "'type' keyword should be present")
+  IF (.NOT. param%ispresent(key="type")) THEN
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+                      "'type' keyword should be present")
   ELSE
     ierr = param%get(key="type", value=elemTypeName)
     elemType = String(elemTypeName)
     elemType = elemType%lower()
   END IF
-  SELECT CASE( TRIM(elemType%chars()) )
-  CASE( "element_", "element" )
-    ALLOCATE( Element_::ans )
+  SELECT CASE (TRIM(elemType%chars()))
+  CASE ("element_", "element")
+    ALLOCATE (Element_ :: ans)
     CALL ans%initiate(param=param, refelem=refelem)
-  CASE( "facetelement_", "facetelement" )
-    ALLOCATE( FacetElement_::ans )
+  CASE ("facetelement_", "facetelement")
+    ALLOCATE (FacetElement_ :: ans)
     CALL ans%initiate(param=param, refelem=refelem)
   END SELECT
   CALL elemType%free()
@@ -92,21 +94,21 @@ END FUNCTION elem_factory_from_fpl
 !                                                                 Factory
 !----------------------------------------------------------------------------
 
-FUNCTION elem_factory_elem( obj ) RESULT( ans )
-  CLASS( Element_ ), INTENT( IN ) :: obj
-  CLASS( Element_ ), POINTER :: ans
+FUNCTION elem_factory_elem(obj) RESULT(ans)
+  CLASS(Element_), INTENT(IN) :: obj
+  CLASS(Element_), POINTER :: ans
   ! Define internal type
-  CHARACTER( LEN=* ), PARAMETER :: myName="elem_factory_elem()"
-  SELECT TYPE( obj )
-  TYPE IS( Element_ )
-    ALLOCATE( Element_ :: ans )
-    CALL ans%Initiate( obj )
-  TYPE IS( FacetElement_ )
-    ALLOCATE( FacetElement_ :: ans )
-    CALL ans%Initiate( obj )
+  CHARACTER(LEN=*), PARAMETER :: myName = "elem_factory_elem()"
+  SELECT TYPE (obj)
+  TYPE IS (Element_)
+    ALLOCATE (Element_ :: ans)
+    CALL ans%Initiate(obj)
+  TYPE IS (FacetElement_)
+    ALLOCATE (FacetElement_ :: ans)
+    CALL ans%Initiate(obj)
   CLASS DEFAULT
-    CALL eElement%raiseError(modName//"::"//myName//" - "// &
-        "unknown type found")
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+                      "unknown type found")
   END SELECT
 END FUNCTION elem_factory_elem
 
@@ -114,21 +116,21 @@ END FUNCTION elem_factory_elem
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-SUBROUTINE elem_factor_display( obj, msg, unitno, FullDisp )
-  CLASS( Element_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN=* ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
+SUBROUTINE elem_factor_display(obj, msg, unitno, FullDisp)
+  CLASS(Element_), INTENT(IN) :: obj
+  CHARACTER(LEN=*), INTENT(IN) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: FullDisp
   ! Define internal variables
-  CHARACTER( LEN=* ), PARAMETER :: myName="elem_factor_display()"
-  SELECT TYPE( obj )
-  TYPE IS( Element_ )
+  CHARACTER(LEN=*), PARAMETER :: myName = "elem_factor_display()"
+  SELECT TYPE (obj)
+  TYPE IS (Element_)
     CALL obj%display(msg=msg, unitno=unitno, FullDisp=FullDisp)
-  TYPE IS( FacetElement_ )
+  TYPE IS (FacetElement_)
     CALL obj%display(msg=msg, unitno=unitno, FullDisp=FullDisp)
   CLASS DEFAULT
-    CALL eElement%raiseError(modName//"::"//myName//" - "// &
-        "unknown type found")
+    CALL e%raiseError(modName//"::"//myName//" - "// &
+                      "unknown type found")
   END SELECT
 END SUBROUTINE elem_factor_display
 
@@ -139,8 +141,8 @@ END MODULE ElementFactory
 !----------------------------------------------------------------------------
 
 ! !> authors: Vikas Sharma, Ph. D.
-! ! date: 	24 March 2021
-! ! summary: 	Returns the element shape data
+! ! date:         24 March 2021
+! ! summary:         Returns the element shape data
 
 ! INTERFACE
 ! MODULE PURE SUBROUTINE elem_get_elemsd_H1_Lagrange( obj, ElemSD, Quad, xiJ, &
@@ -154,7 +156,6 @@ END MODULE ElementFactory
 ! END SUBROUTINE elem_get_elemsd_H1_Lagrange
 ! END INTERFACE
 
-
 ! MODULE PROCEDURE get_elemsd_H1_Lagrange
 !   CALL initiate( obj = ElemSD, Quad = Quad, &
 !     & refelem = obj%refelem, &
@@ -163,9 +164,8 @@ END MODULE ElementFactory
 !   CALL setValue( obj = ElemSD, Val = XiJ, N =ElemSD%N, dNdXi=ElemSD%dNdXi )
 ! END PROCEDURE get_elemsd_H1_Lagrange
 
-
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
+! date:         24 March 2021
 ! summary: Returns [[ElemShapeData_]]
 
 ! INTERFACE

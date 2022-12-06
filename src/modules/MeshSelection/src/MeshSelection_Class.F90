@@ -22,13 +22,12 @@ MODULE MeshSelection_Class
 USE GlobalData
 USE BaseType
 USE String_Class, ONLY: String
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE Domain_Class, ONLY: Domain_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(LEN=*), PARAMETER :: modName = "MeshSelection_Class"
-TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
@@ -74,8 +73,6 @@ TYPE :: MeshSelection_
   !! Accordingly, modify the initiate method.
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: addSurrogate => meshSelect_addSurrogate
-    !! add surrogates to the module's [[ExceptionHandler_]]
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => meshSelect_Initiate
     !! Initiates an instance of [[MeshSelection_]]
   PROCEDURE, PASS(obj) :: Copy => meshSelect_Copy
@@ -150,21 +147,6 @@ TYPE :: MeshSelectionPointer_
 END TYPE MeshSelectionPointer_
 
 PUBLIC :: MeshSelectionPointer_
-
-!----------------------------------------------------------------------------
-!                                            addSurrogate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 Aug 2021
-! summary: Adds surrogate to the module exceptionHandler_
-
-INTERFACE
-  MODULE SUBROUTINE meshSelect_addSurrogate(obj, UserObj)
-    CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    TYPE(ExceptionHandler_), INTENT(IN) :: UserObj
-  END SUBROUTINE meshSelect_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods

@@ -40,14 +40,15 @@
 !```
 
 INTERFACE
-SUBROUTINE gmshInitialize( argc, argv, readConfigFiles, ierr ) &
-  & BIND(C,name="gmshInitialize")
-  IMPORT
-  _I_V_IN_ :: argc
-  _CPTR_IN_ :: argv
-  _I_V_IN_ :: readConfigFiles
-  _I_OUT_ :: ierr
-END SUBROUTINE
+  SUBROUTINE gmshInitialize(argc, argv, readConfigFiles, run, ierr) &
+    & BIND(C, name="gmshInitialize")
+    IMPORT
+    _I_V_IN_ :: argc
+    _CPTR_IN_ :: argv(*)
+    _I_V_IN_ :: readConfigFiles
+    _I_V_IN_ :: run
+    _I_OUT_ :: ierr
+  END SUBROUTINE
 END INTERFACE
 
 PUBLIC :: gmshInitialize
@@ -56,12 +57,29 @@ PUBLIC :: gmshInitialize
 !
 !----------------------------------------------------------------------------
 
+INTERFACE
+  FUNCTION gmshIsInitialized(ierr) &
+    & BIND(C, name="gmshIsInitialized")
+    IMPORT
+    _I_OUT_ :: ierr
+    INTEGER(C_INT) :: gmshIsInitialized
+  END FUNCTION gmshIsInitialized
+END INTERFACE
+
+PUBLIC :: gmshIsInitialized
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 Sept 2021
-! summary: Finalize the Gmsh API. This must be called when you are done using the Gmsh API.
+! summary: Finalize the Gmsh API. This must be called when you are done
+! using the Gmsh API.
 !
 !# Introduction
-! Finalize the Gmsh API. This must be called when you are done using the Gmsh API.
+! Finalize the Gmsh API. This must be called when you are done using the
+! Gmsh API.
 !
 !### CInterface
 !
@@ -70,10 +88,10 @@ PUBLIC :: gmshInitialize
 !```
 
 INTERFACE
-SUBROUTINE gmshFinalize( ierr ) BIND(C,name="gmshFinalize")
-  IMPORT
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshFinalize
+  SUBROUTINE gmshFinalize(ierr) BIND(C, name="gmshFinalize")
+    IMPORT
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshFinalize
 END INTERFACE
 
 PUBLIC :: gmshFinalize
@@ -101,12 +119,13 @@ PUBLIC :: gmshFinalize
 !```
 
 INTERFACE
-SUBROUTINE gmshOpen( fileName, ierr ) &
-  & BIND( C, name="gmshOpen" )
-  IMPORT
-  _CPTR_V_IN_ :: fileName
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshOpen
+  SUBROUTINE gmshOpen(fileName, ierr) &
+    & BIND(C, name="gmshOpen")
+    IMPORT
+    _CPTR_V_IN_ :: fileName
+    ! CHARACTER(LEN=1, KIND=C_CHAR), INTENT(IN) :: fileName(*)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshOpen
 END INTERFACE
 
 PUBLIC :: gmshOpen
@@ -129,12 +148,13 @@ PUBLIC :: gmshOpen
 !                         int *ierr);
 
 INTERFACE
-SUBROUTINE gmshMerge( fileName, ierr ) &
-  & BIND( C, name="gmshMerge" )
-  IMPORT
-  _CPTR_V_IN_ :: fileName
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshMerge
+  SUBROUTINE gmshMerge(fileName, ierr) &
+    & BIND(C, name="gmshMerge")
+    IMPORT
+    _CPTR_V_IN_ :: fileName
+    ! CHARACTER(LEN=1, KIND=C_CHAR), INTENT(IN) :: fileName(*)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshMerge
 END INTERFACE
 
 PUBLIC :: gmshMerge
@@ -160,12 +180,13 @@ PUBLIC :: gmshMerge
 !```
 
 INTERFACE
-SUBROUTINE gmshWrite( fileName, ierr ) &
-  & BIND( C, name="gmshWrite" )
-  IMPORT
-  _CPTR_V_IN_ :: fileName
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshWrite
+  SUBROUTINE gmshWrite(fileName, ierr) &
+    & BIND(C, name="gmshWrite")
+    IMPORT
+    ! _CPTR_V_IN_ :: fileName
+    CHARACTER(LEN=1, KIND=C_CHAR), INTENT(IN) :: fileName(*)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshWrite
 END INTERFACE
 
 PUBLIC :: gmshWrite
@@ -190,12 +211,11 @@ PUBLIC :: gmshWrite
 ! GMSH_API void gmshClear(int *ierr);
 !```
 
-
 INTERFACE
-SUBROUTINE gmshClear( ierr ) BIND(C,name="gmshClear")
-  IMPORT
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshClear
+  SUBROUTINE gmshClear(ierr) BIND(C, name="gmshClear")
+    IMPORT
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshClear
 END INTERFACE
 
 PUBLIC :: gmshClear

@@ -25,12 +25,12 @@
 !                                     int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGenerate(dim, ierr) &
-  & BIND( C, NAME="gmshModelMeshGenerate" )
-  IMPORT
-  _I_V_IN_ :: dim
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGenerate
+  SUBROUTINE gmshModelMeshGenerate(dim, ierr) &
+    & BIND(C, NAME="gmshModelMeshGenerate")
+    IMPORT
+    _I_V_IN_ :: dim
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGenerate
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGenerate
@@ -45,12 +45,12 @@ PUBLIC :: gmshModelMeshGenerate
 !                                      int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshPartition(numPart, ierr) &
-  & BIND( C, NAME="gmshModelMeshPartition" )
-  IMPORT
-  _I_V_IN_ :: numPart
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshPartition
+  SUBROUTINE gmshModelMeshPartition(numPart, ierr) &
+    & BIND(C, NAME="gmshModelMeshPartition")
+    IMPORT
+    _I_V_IN_ :: numPart
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshPartition
 END INTERFACE
 
 PUBLIC :: gmshModelMeshPartition
@@ -64,11 +64,11 @@ PUBLIC :: gmshModelMeshPartition
 ! GMSH_API void gmshModelMeshUnpartition(int * ierr)
 
 INTERFACE
-SUBROUTINE gmshModelMeshUnpartition(ierr) &
-  & BIND( C, NAME="gmshModelMeshUnpartition" )
-  IMPORT
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshUnpartition
+  SUBROUTINE gmshModelMeshUnpartition(ierr) &
+    & BIND(C, NAME="gmshModelMeshUnpartition")
+    IMPORT
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshUnpartition
 END INTERFACE
 
 PUBLIC :: gmshModelMeshUnpartition
@@ -92,16 +92,16 @@ PUBLIC :: gmshModelMeshUnpartition
 !                                     int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshOptimize(method, force, niter, dimTags, &
-  & dimTags_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshOptimize" )
-  IMPORT
-  _CPTR_V_IN_ :: method
-  _I_V_IN_ :: force, niter
-  _ST_V_IN_ :: dimTags_n
-  _I_IN_ :: dimTags( dimTags_n )
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshOptimize
+  SUBROUTINE gmshModelMeshOptimize(method, force, niter, dimTags, &
+    & dimTags_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshOptimize")
+    IMPORT
+    _CPTR_V_IN_ :: method
+    _I_V_IN_ :: force, niter
+    _ST_V_IN_ :: dimTags_n
+    _I_IN_ :: dimTags(dimTags_n)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshOptimize
 END INTERFACE
 
 PUBLIC :: gmshModelMeshOptimize
@@ -115,11 +115,11 @@ PUBLIC :: gmshModelMeshOptimize
 ! GMSH_API void gmshModelMeshRecombine(int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshRecombine(ierr) &
-  & BIND( C, NAME="gmshModelMeshRecombine" )
-  IMPORT
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshRecombine
+  SUBROUTINE gmshModelMeshRecombine(ierr) &
+    & BIND(C, NAME="gmshModelMeshRecombine")
+    IMPORT
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshRecombine
 END INTERFACE
 
 PUBLIC :: gmshModelMeshRecombine
@@ -133,11 +133,11 @@ PUBLIC :: gmshModelMeshRecombine
 ! GMSH_API void gmshModelMeshRefine(int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshRefine(ierr) &
-  & BIND( C, NAME="gmshModelMeshRefine" )
-  IMPORT
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshRefine
+  SUBROUTINE gmshModelMeshRefine(ierr) &
+    & BIND(C, NAME="gmshModelMeshRefine")
+    IMPORT
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshRefine
 END INTERFACE
 
 PUBLIC :: gmshModelMeshRefine
@@ -152,12 +152,12 @@ PUBLIC :: gmshModelMeshRefine
 !                                     int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshSetOrder(order, ierr) &
-  & BIND( C, NAME="gmshModelMeshSetOrder" )
-  IMPORT
-  _I_V_IN_ :: order
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshSetOrder
+  SUBROUTINE gmshModelMeshSetOrder(order, ierr) &
+    & BIND(C, NAME="gmshModelMeshSetOrder")
+    IMPORT
+    _I_V_IN_ :: order
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshSetOrder
 END INTERFACE
 
 PUBLIC :: gmshModelMeshSetOrder
@@ -173,13 +173,13 @@ PUBLIC :: gmshModelMeshSetOrder
 !                                               int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetLastEntityError(dimTags, dimTags_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetLastEntityError" )
-  IMPORT
-  _CPTR_IN_ :: dimTags
-  _ST_OUT_ :: dimTags_n
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetLastEntityError
+  SUBROUTINE gmshModelMeshGetLastEntityError(dimTags, dimTags_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetLastEntityError")
+    IMPORT
+    _CPTR_IN_ :: dimTags
+    _ST_OUT_ :: dimTags_n
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetLastEntityError
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetLastEntityError
@@ -195,13 +195,13 @@ PUBLIC :: gmshModelMeshGetLastEntityError
 !                                             int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetLastNodeError(nodeTags, nodeTags_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetLastNodeError" )
-  IMPORT
-  _CPTR_IN_ :: nodeTags
-  _ST_OUT_ :: nodeTags_n
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetLastNodeError
+  SUBROUTINE gmshModelMeshGetLastNodeError(nodeTags, nodeTags_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetLastNodeError")
+    IMPORT
+    _CPTR_IN_ :: nodeTags
+    _ST_OUT_ :: nodeTags_n
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetLastNodeError
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetLastNodeError
@@ -219,13 +219,13 @@ PUBLIC :: gmshModelMeshGetLastNodeError
 !                                  int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshClear(dimTags, dimTags_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshClear" )
-  IMPORT
-  _ST_V_IN_ :: dimTags_n
-  _I_IN_ :: dimTags( dimTags_n )
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshClear
+  SUBROUTINE gmshModelMeshClear(dimTags, dimTags_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshClear")
+    IMPORT
+    _ST_V_IN_ :: dimTags_n
+    _I_IN_ :: dimTags(dimTags_n)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshClear
 END INTERFACE
 
 PUBLIC :: gmshModelMeshClear
@@ -258,16 +258,16 @@ PUBLIC :: gmshModelMeshClear
 !                                     int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetNodes(nodeTags, nodeTags_n, coord, &
-  & coord_n, parametricCoord, parametricCoord_n, dim, tag, includeBoundary, &
-  & returnParametricCoord, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetNodes" )
-  IMPORT
-  _CPTR_IN_ :: nodeTags, coord, parametricCoord
-  _ST_OUT_ :: nodeTags_n, coord_n, parametricCoord_n
-  _I_V_IN_ :: dim, tag, includeBoundary, returnParametricCoord
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetNodes
+  SUBROUTINE gmshModelMeshGetNodes(nodeTags, nodeTags_n, coord, &
+   & coord_n, parametricCoord, parametricCoord_n, dim, tag, includeBoundary, &
+    & returnParametricCoord, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetNodes")
+    IMPORT
+    _CPTR_IN_ :: nodeTags, coord, parametricCoord
+    _ST_OUT_ :: nodeTags_n, coord_n, parametricCoord_n
+    _I_V_IN_ :: dim, tag, includeBoundary, returnParametricCoord
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetNodes
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetNodes
@@ -288,17 +288,17 @@ PUBLIC :: gmshModelMeshGetNodes
 !                                                  int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetNodesByElementType(elementType, &
-  & nodeTags, nodeTags_n, coord, &
-  & coord_n, parametricCoord, parametricCoord_n, tag, &
-  & returnParametricCoord, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetNodesByElementType" )
-  IMPORT
-  _CPTR_IN_ :: nodeTags, coord, parametricCoord
-  _ST_OUT_ :: nodeTags_n, coord_n, parametricCoord_n
-  _I_V_IN_ :: elementType, tag, returnParametricCoord
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetNodesByElementType
+  SUBROUTINE gmshModelMeshGetNodesByElementType(elementType, &
+    & nodeTags, nodeTags_n, coord, &
+    & coord_n, parametricCoord, parametricCoord_n, tag, &
+    & returnParametricCoord, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetNodesByElementType")
+    IMPORT
+    _CPTR_IN_ :: nodeTags, coord, parametricCoord
+    _ST_OUT_ :: nodeTags_n, coord_n, parametricCoord_n
+    _I_V_IN_ :: elementType, tag, returnParametricCoord
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetNodesByElementType
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetNodesByElementType
@@ -318,15 +318,15 @@ PUBLIC :: gmshModelMeshGetNodesByElementType
 !                                    int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetNode(nodeTag, coord, coord_n, parametricCoord,&
-  & parametricCoord_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetNode" )
-  IMPORT
-  _ST_V_IN_ :: nodeTag
-  _CPTR_IN_ :: coord, parametricCoord
-  _ST_OUT_ :: coord_n, parametricCoord_n
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetNode
+  SUBROUTINE gmshModelMeshGetNode(nodeTag, coord, coord_n, parametricCoord,&
+    & parametricCoord_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetNode")
+    IMPORT
+    _ST_V_IN_ :: nodeTag
+    _CPTR_IN_ :: coord, parametricCoord
+    _ST_OUT_ :: coord_n, parametricCoord_n
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetNode
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetNode
@@ -346,14 +346,14 @@ PUBLIC :: gmshModelMeshGetNode
 !                                    int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshSetNode(nodeTag, coord, coord_n, parametricCoord,&
-  & parametricCoord_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshSetNode" )
-  IMPORT
-  _ST_V_IN_ :: nodeTag, coord_n, parametricCoord_n
-  _CPTR_IN_ :: coord(coord_n), parametricCoord(parametricCoord_n)
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshSetNode
+  SUBROUTINE gmshModelMeshSetNode(nodeTag, coord, coord_n, parametricCoord,&
+    & parametricCoord_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshSetNode")
+    IMPORT
+    _ST_V_IN_ :: nodeTag, coord_n, parametricCoord_n
+    _CPTR_IN_ :: coord(coord_n), parametricCoord(parametricCoord_n)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshSetNode
 END INTERFACE
 
 PUBLIC :: gmshModelMeshSetNode
@@ -368,12 +368,12 @@ PUBLIC :: gmshModelMeshSetNode
 !                                             int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshRebuildNodeCache(onlyIfNecessary, ierr) &
-  & BIND( C, NAME="gmshModelMeshRebuildNodeCache" )
-  IMPORT
-  _I_V_IN_ :: onlyIfNecessary
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshRebuildNodeCache
+  SUBROUTINE gmshModelMeshRebuildNodeCache(onlyIfNecessary, ierr) &
+    & BIND(C, NAME="gmshModelMeshRebuildNodeCache")
+    IMPORT
+    _I_V_IN_ :: onlyIfNecessary
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshRebuildNodeCache
 END INTERFACE
 
 PUBLIC :: gmshModelMeshRebuildNodeCache
@@ -388,12 +388,12 @@ PUBLIC :: gmshModelMeshRebuildNodeCache
 !                                                int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshRebuildElementCache(onlyIfNecessary, ierr) &
-  & BIND( C, NAME="gmshModelMeshRebuildElementCache" )
-  IMPORT
-  _I_V_IN_ :: onlyIfNecessary
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshRebuildElementCache
+  SUBROUTINE gmshModelMeshRebuildElementCache(onlyIfNecessary, ierr) &
+    & BIND(C, NAME="gmshModelMeshRebuildElementCache")
+    IMPORT
+    _I_V_IN_ :: onlyIfNecessary
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshRebuildElementCache
 END INTERFACE
 
 PUBLIC :: gmshModelMeshRebuildElementCache
@@ -414,15 +414,15 @@ PUBLIC :: gmshModelMeshRebuildElementCache
 !                                                     int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetNodesForPhysicalGroup(dim, tag, nodeTags, &
-  & nodeTags_n, coord, coord_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetNodesForPhysicalGroup" )
-  IMPORT
-  _I_V_IN_ :: dim, tag
-  _CPTR_IN_ :: nodeTags, coord
-  _ST_OUT_ :: nodeTags_n, coord_n
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetNodesForPhysicalGroup
+  SUBROUTINE gmshModelMeshGetNodesForPhysicalGroup(dim, tag, nodeTags, &
+    & nodeTags_n, coord, coord_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetNodesForPhysicalGroup")
+    IMPORT
+    _I_V_IN_ :: dim, tag
+    _CPTR_IN_ :: nodeTags, coord
+    _ST_OUT_ :: nodeTags_n, coord_n
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetNodesForPhysicalGroup
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetNodesForPhysicalGroup
@@ -449,16 +449,16 @@ PUBLIC :: gmshModelMeshGetNodesForPhysicalGroup
 !                                     int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshAddNodes(dim, tag, nodeTags, &
-  & nodeTags_n, coord, coord_n, parametricCoord, parametricCoord_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshAddNodes" )
-  IMPORT
-  _I_V_IN_ :: dim, tag
-  _ST_V_IN_ :: nodeTags_n, coord_n, parametricCoord_n
-  _ST_IN_ :: nodeTags( nodeTags_n )
-  _R_IN_ :: coord(coord_n), parametricCoord(parametricCoord_n)
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshAddNodes
+  SUBROUTINE gmshModelMeshAddNodes(dim, tag, nodeTags, &
+    & nodeTags_n, coord, coord_n, parametricCoord, parametricCoord_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshAddNodes")
+    IMPORT
+    _I_V_IN_ :: dim, tag
+    _ST_V_IN_ :: nodeTags_n, coord_n, parametricCoord_n
+    _ST_IN_ :: nodeTags(nodeTags_n)
+    _R_IN_ :: coord(coord_n), parametricCoord(parametricCoord_n)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshAddNodes
 END INTERFACE
 
 PUBLIC :: gmshModelMeshAddNodes
@@ -475,11 +475,11 @@ PUBLIC :: gmshModelMeshAddNodes
 ! GMSH_API void gmshModelMeshReclassifyNodes(int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshReclassifyNodes(ierr) &
-  & BIND( C, NAME="gmshModelMeshReclassifyNodes" )
-  IMPORT
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshReclassifyNodes
+  SUBROUTINE gmshModelMeshReclassifyNodes(ierr) &
+    & BIND(C, NAME="gmshModelMeshReclassifyNodes")
+    IMPORT
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshReclassifyNodes
 END INTERFACE
 
 PUBLIC :: gmshModelMeshReclassifyNodes
@@ -498,12 +498,12 @@ PUBLIC :: gmshModelMeshReclassifyNodes
 !                                          int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshRelocateNodes(dim, tag, ierr) &
-  & BIND( C, NAME="gmshModelMeshRelocateNodes" )
-  IMPORT
-  _I_V_IN_ :: dim, tag
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshRelocateNodes
+  SUBROUTINE gmshModelMeshRelocateNodes(dim, tag, ierr) &
+    & BIND(C, NAME="gmshModelMeshRelocateNodes")
+    IMPORT
+    _I_V_IN_ :: dim, tag
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshRelocateNodes
 END INTERFACE
 
 PUBLIC :: gmshModelMeshRelocateNodes
@@ -534,17 +534,17 @@ PUBLIC :: gmshModelMeshRelocateNodes
 !                                        int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetElements(elementTypes, elementTypes_n, &
-  & elementTags, elementTags_n, elementTags_nn, nodeTags, nodeTags_n, &
-  & nodeTags_nn, dim, tag, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetElements" )
-  IMPORT
-  _I_V_IN_  :: dim, tag
-  _CPTR_IN_ :: elementTypes, elementTags, elementTags_n, nodeTags, &
-    & nodeTags_n
-  _ST_OUT_ :: elementTypes_n, elementTags_nn, nodeTags_nn
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetElements
+  SUBROUTINE gmshModelMeshGetElements(elementTypes, elementTypes_n, &
+    & elementTags, elementTags_n, elementTags_nn, nodeTags, nodeTags_n, &
+    & nodeTags_nn, dim, tag, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetElements")
+    IMPORT
+    _I_V_IN_ :: dim, tag
+    _CPTR_IN_ :: elementTypes, elementTags, elementTags_n, nodeTags, &
+      & nodeTags_n
+    _ST_OUT_ :: elementTypes_n, elementTags_nn, nodeTags_nn
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetElements
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetElements
@@ -564,16 +564,16 @@ PUBLIC :: gmshModelMeshGetElements
 !                                       int * ierr);
 
 INTERFACE
-SUBROUTINE gmshModelMeshGetElement(elementTag, elementType, nodeTags, &
-  & nodeTags_n, ierr) &
-  & BIND( C, NAME="gmshModelMeshGetElement" )
-  IMPORT
-  _ST_V_IN_ :: elementTag
-  _I_OUT_ :: elementType
-  _CPTR_IN_ :: nodeTags
-  _ST_OUT_ :: nodeTags_n
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelMeshGetElement
+  SUBROUTINE gmshModelMeshGetElement(elementTag, elementType, nodeTags, &
+    & nodeTags_n, ierr) &
+    & BIND(C, NAME="gmshModelMeshGetElement")
+    IMPORT
+    _ST_V_IN_ :: elementTag
+    _I_OUT_ :: elementType
+    _CPTR_IN_ :: nodeTags
+    _ST_OUT_ :: nodeTags_n
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelMeshGetElement
 END INTERFACE
 
 PUBLIC :: gmshModelMeshGetElement
@@ -600,7 +600,6 @@ PUBLIC :: gmshModelMeshGetElement
 !                                                    const int dim,
 !                                                    const int strict,
 !                                                    int * ierr);
-
 
 ! /* Search the mesh for element(s) located at coordinates (`x', `y', `z'). This
 !  * function performs a search in a spatial octree. Return the tags of all

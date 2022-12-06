@@ -21,28 +21,20 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                              addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_addSurrogate
-  CALL e%addSurrogate( UserObj )
-END PROCEDURE aFile_addSurrogate
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFileDeallocate
-  obj%path=''
-  obj%fileName=''
-  obj%ext=''
-  obj%pathlen=0
-  obj%fnamelen=0
-  obj%extlen=0
-  obj%openstat=.FALSE.
-  obj%EOFstat=.FALSE.
-  obj%readstat=.FALSE.
-  obj%writestat=.FALSE.
+obj%path = ''
+obj%fileName = ''
+obj%ext = ''
+obj%pathlen = 0
+obj%fnamelen = 0
+obj%extlen = 0
+obj%openstat = .FALSE.
+obj%EOFstat = .FALSE.
+obj%readstat = .FALSE.
+obj%writestat = .FALSE.
 END PROCEDURE AbstractFileDeallocate
 
 END SUBMODULE ConstructorMethods

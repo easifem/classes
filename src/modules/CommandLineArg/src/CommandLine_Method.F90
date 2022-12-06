@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
 ! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
 ! The FLAP lib is located at https://github.com/szaghi/FLAP
 ! I have made minor changes (mostly renaming)
 ! Most of the functionality is kept the same
@@ -25,7 +26,8 @@
 MODULE CommandLine_Method
 USE CommandLineArg_Class, ONLY: CommandLineArg_
 USE CommandLineGroupArg_Class, only: CommandLineGroupArg_
-USE CommandLineInterface_Class, only: CommandLineInterface_, ERROR_UNKNOWN_CLAS_IGNORED
+USE CommandLineInterface_Class, only: CommandLineInterface_, &
+  & ERROR_UNKNOWN_CLAS_IGNORED
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: CommandLineArg_

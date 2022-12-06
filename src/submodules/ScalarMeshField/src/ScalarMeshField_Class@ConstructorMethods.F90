@@ -24,50 +24,42 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setScalarMeshFieldParam
-  !!
-  IF( fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL setAbstractMeshFieldParam( &
-      & param=param, &
-      & prefix="ScalarMeshField", &
-      & name=name, &
-      & fieldType=fieldType, &
-      & varType=varType, &
-      & engine=engine, &
-      & defineOn=defineOn, &
-      & rank=Scalar, &
-      & s=[1] )
-  ELSE
-    CALL setAbstractMeshFieldParam( &
-      & param=param, &
-      & prefix="ScalarMeshField", &
-      & name=name, &
-      & fieldType=fieldType, &
-      & varType=varType, &
-      & engine=engine, &
-      & defineOn=defineOn, &
-      & rank=Scalar, &
-      & s=[nns] )
-  END IF
-  !!
+!!
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL setAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix="ScalarMeshField", &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Scalar, &
+    & s=[1])
+ELSE
+  CALL setAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix="ScalarMeshField", &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Scalar, &
+    & s=[nns])
+END IF
+!!
 END PROCEDURE setScalarMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_addSurrogate
-  CALL e%addSurrogate(UserObj)
-END PROCEDURE aField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_checkEssentialParam
-  CALL AbstractFieldCheckEssentialParam( &
-    & obj=obj, &
-    & prefix="ScalarMeshField", &
-    & param=param )
+CALL AbstractFieldCheckEssentialParam( &
+  & obj=obj, &
+  & prefix="ScalarMeshField", &
+  & param=param)
 END PROCEDURE aField_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -75,11 +67,11 @@ END PROCEDURE aField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-  CALL AbstractMeshFieldInitiate( &
-    & obj=obj, &
-    & prefix="ScalarMeshField", &
-    & param=param, &
-    & mesh=mesh )
+CALL AbstractMeshFieldInitiate( &
+  & obj=obj, &
+  & prefix="ScalarMeshField", &
+  & param=param, &
+  & mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------

@@ -24,7 +24,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setVectorMeshFieldParam
-  !!
+!!
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   CALL setAbstractMeshFieldParam( &
     & param=param, &
     & prefix="VectorMeshField", &
@@ -34,27 +35,31 @@ MODULE PROCEDURE setVectorMeshFieldParam
     & engine=engine, &
     & defineOn=defineOn, &
     & rank=Vector, &
-    & s=[spaceCompo, nns] )
-  !!
+    & s=[spaceCompo])
+ELSE
+  CALL setAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix="VectorMeshField", &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Vector, &
+    & s=[spaceCompo, nns])
+END IF
+!!
 END PROCEDURE setVectorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                               addSurrogate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_addSurrogate
-  CALL e%addSurrogate(UserObj)
-END PROCEDURE aField_addSurrogate
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_checkEssentialParam
-  CALL AbstractFieldCheckEssentialParam( &
-    & obj=obj, &
-    & prefix="VectorMeshField", &
-    & param=param )
+CALL AbstractFieldCheckEssentialParam( &
+  & obj=obj, &
+  & prefix="VectorMeshField", &
+  & param=param)
 END PROCEDURE aField_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -62,10 +67,10 @@ END PROCEDURE aField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-  CALL AbstractMeshFieldInitiate( &
-    & obj=obj, &
-    & prefix="VectorMeshField", &
-    & param=param, mesh=mesh )
+CALL AbstractMeshFieldInitiate( &
+  & obj=obj, &
+  & prefix="VectorMeshField", &
+  & param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------

@@ -25,15 +25,14 @@ USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ScalarField_Class, ONLY: ScalarField_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
 USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "STScalarField_Class"
-TYPE( ExceptionHandler_ ) :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "STScalarField_Class"
 
 !----------------------------------------------------------------------------
 !                                                              STScalarField_
@@ -45,71 +44,71 @@ TYPE( ExceptionHandler_ ) :: e
 !
 !{!pages/STScalarField.md}
 
-TYPE, EXTENDS( AbstractNodeField_ ) :: STScalarField_
-  INTEGER( I4B ) :: timeCompo = 0_I4B
-  CONTAINS
+TYPE, EXTENDS(AbstractNodeField_) :: STScalarField_
+  INTEGER(I4B) :: timeCompo = 0_I4B
+CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => stsField_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: checkEssentialParam => &
+  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & stsField_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS( obj ) :: initiate1 => stsField_initiate1
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => stsField_Display
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => stsField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: initiate1 => stsField_initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => stsField_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => stsField_Deallocate
   FINAL :: stsField_Final
-  PROCEDURE, PASS( obj ) :: set1 => stsField_set1
+  PROCEDURE, PASS(obj) :: set1 => stsField_set1
     !! set single entry
-  PROCEDURE, PASS( obj ) :: set2 => stsField_set2
+  PROCEDURE, PASS(obj) :: set2 => stsField_set2
     !! set all values to a STScalar values
-  PROCEDURE, PASS( obj ) :: set3 => stsField_set3
+  PROCEDURE, PASS(obj) :: set3 => stsField_set3
     !! set all values to a given STScalar
-  PROCEDURE, PASS( obj ) :: set4 => stsField_set4
+  PROCEDURE, PASS(obj) :: set4 => stsField_set4
     !! set selected values to given STScalar
-  PROCEDURE, PASS( obj ) :: set5 => stsField_set5
+  PROCEDURE, PASS(obj) :: set5 => stsField_set5
     !! set selected values to given STScalar
-  PROCEDURE, PASS( obj ) :: set6 => stsField_set6
+  PROCEDURE, PASS(obj) :: set6 => stsField_set6
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set7 => stsField_set7
+  PROCEDURE, PASS(obj) :: set7 => stsField_set7
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set8 => stsField_set8
+  PROCEDURE, PASS(obj) :: set8 => stsField_set8
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set9 => stsField_set9
+  PROCEDURE, PASS(obj) :: set9 => stsField_set9
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set10 => stsField_set10
+  PROCEDURE, PASS(obj) :: set10 => stsField_set10
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set11 => stsField_set11
+  PROCEDURE, PASS(obj) :: set11 => stsField_set11
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set12 => stsField_set12
+  PROCEDURE, PASS(obj) :: set12 => stsField_set12
     !! set values to a STScalar by using triplet
-  PROCEDURE, PASS( obj ) :: set13 => stsField_set13
+  PROCEDURE, PASS(obj) :: set13 => stsField_set13
     !! set values using FEVariable
-  PROCEDURE, PASS( obj ) :: set14 => stsField_set14
+  PROCEDURE, PASS(obj) :: set14 => stsField_set14
     !! set values using FEVariable
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
     & set7, set8, set9, set10, set11, set12, set13, set14
-  PROCEDURE, PASS( obj ) :: get1 => stsField_get1
-  PROCEDURE, PASS( obj ) :: get2 => stsField_get2
-  PROCEDURE, PASS( obj ) :: get3 => stsField_get3
-  PROCEDURE, PASS( obj ) :: get4 => stsField_get4
-  PROCEDURE, PASS( obj ) :: get5 => stsField_get5
-  PROCEDURE, PASS( obj ) :: get6 => stsField_get6
-  PROCEDURE, PASS( obj ) :: get7 => stsField_get7
-  PROCEDURE, PASS( obj ) :: get8 => stsField_get8
-  PROCEDURE, PASS( obj ) :: get9 => stsField_get9
+  PROCEDURE, PASS(obj) :: get1 => stsField_get1
+  PROCEDURE, PASS(obj) :: get2 => stsField_get2
+  PROCEDURE, PASS(obj) :: get3 => stsField_get3
+  PROCEDURE, PASS(obj) :: get4 => stsField_get4
+  PROCEDURE, PASS(obj) :: get5 => stsField_get5
+  PROCEDURE, PASS(obj) :: get6 => stsField_get6
+  PROCEDURE, PASS(obj) :: get7 => stsField_get7
+  PROCEDURE, PASS(obj) :: get8 => stsField_get8
+  PROCEDURE, PASS(obj) :: get9 => stsField_get9
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
     & get5, get6, get7, get8, get9
-  PROCEDURE, PASS( obj ) :: stsField_applyDirichletBC1
-  PROCEDURE, PASS( obj ) :: stsField_applyDirichletBC2
+  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC1
+  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC2
   GENERIC, PUBLIC :: applyDirichletBC => &
     & stsField_applyDirichletBC1, &
     & stsField_applyDirichletBC2
     !! get the entries of STScalar field
-  PROCEDURE, PASS( obj ) :: getPointerOfComponent => stsField_getPointerOfComponent
-  PROCEDURE, PUBLIC, PASS( obj ) :: Import => stsField_Import
-  PROCEDURE, PUBLIC, PASS( obj ) :: Export => stsField_Export
+  PROCEDURE, PASS(obj) :: getPointerOfComponent => &
+    & stsField_getPointerOfComponent
+  PROCEDURE, PUBLIC, PASS(obj) :: Import => stsField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => stsField_Export
 END TYPE STScalarField_
 
 PUBLIC :: STScalarField_
-TYPE( STScalarField_ ), PARAMETER, PUBLIC :: TypeScalarField = &
+TYPE(STScalarField_), PARAMETER, PUBLIC :: TypeScalarField = &
   & STScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -117,25 +116,10 @@ TYPE( STScalarField_ ), PARAMETER, PUBLIC :: TypeScalarField = &
 !----------------------------------------------------------------------------
 
 TYPE :: STScalarFieldPointer_
-  CLASS( STScalarField_ ), POINTER :: ptr => NULL()
+  CLASS(STScalarField_), POINTER :: ptr => NULL()
 END TYPE STScalarFieldPointer_
 
 PUBLIC :: STScalarFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                                 addSurrogate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-MODULE SUBROUTINE stsField_addSurrogate( obj, UserObj )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE stsField_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                         setSTScalarFieldParam@Constructor
@@ -146,13 +130,13 @@ END INTERFACE
 ! summary: This routine is used to for setting space time scalar field
 
 INTERFACE
-MODULE SUBROUTINE setSTScalarFieldParam( param, name, timeCompo, &
-  & fieldType )
-  TYPE( ParameterList_ ), INTENT( INOUT ) :: param
-  CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: fieldType
-END SUBROUTINE setSTScalarFieldParam
+  MODULE SUBROUTINE setSTScalarFieldParam(param, name, timeCompo, &
+    & fieldType)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(LEN=*), INTENT(IN) :: name
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+  END SUBROUTINE setSTScalarFieldParam
 END INTERFACE
 
 PUBLIC :: setSTScalarFieldParam
@@ -173,10 +157,10 @@ PUBLIC :: setSTScalarFieldParam
 ! - INTEGER( I4B ) :: tdof
 
 INTERFACE
-MODULE SUBROUTINE stsField_checkEssentialParam( obj, param )
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE stsField_checkEssentialParam
+  MODULE SUBROUTINE stsField_checkEssentialParam(obj, param)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE stsField_checkEssentialParam
 END INTERFACE
 
 PUBLIC :: stsField_checkEssentialParam
@@ -202,30 +186,30 @@ PUBLIC :: stsField_checkEssentialParam
 !### Usage
 !
 !```fortran
-  ! type( domain_ ) :: dom
-  ! type( STScalarField_ ) :: obj
-  ! type( ScalarField_ ) :: scalarObj
-  ! type( HDF5File_ ) :: meshfile
-  ! type( ParameterList_ ) :: param
-  ! integer( i4b ) :: ierr
-  ! real( DFP ), ALLOCATABLE :: real1( : ), real2( :, : )
-  ! call display( "Testing set methods for normal data" )
-  ! CALL FPL_INIT()
-  ! CALL param%initiate()
-  ! ierr = param%set(key="name", value="U" )
-  ! ierr = param%set(key="fieldType", value=FIELD_TYPE_NORMAL)
-  ! ierr = param%set(key="timeCompo", value=3)
-  ! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  ! call meshfile%open()
-  ! call dom%initiate( meshfile )
-  ! call obj%initiate( param, dom )
+! type( domain_ ) :: dom
+! type( STScalarField_ ) :: obj
+! type( ScalarField_ ) :: scalarObj
+! type( HDF5File_ ) :: meshfile
+! type( ParameterList_ ) :: param
+! integer( i4b ) :: ierr
+! real( DFP ), ALLOCATABLE :: real1( : ), real2( :, : )
+! call display( "Testing set methods for normal data" )
+! CALL FPL_INIT()
+! CALL param%initiate()
+! ierr = param%set(key="name", value="U" )
+! ierr = param%set(key="fieldType", value=FIELD_TYPE_NORMAL)
+! ierr = param%set(key="timeCompo", value=3)
+! call meshfile%initiate( filename="./mesh.h5", mode="READ" )
+! call meshfile%open()
+! call dom%initiate( meshfile )
+! call obj%initiate( param, dom )
 !```
 INTERFACE
-MODULE SUBROUTINE stsField_Initiate1( obj, param, dom )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE stsField_Initiate1
+  MODULE SUBROUTINE stsField_Initiate1(obj, param, dom)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE stsField_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -237,9 +221,9 @@ END INTERFACE
 ! summary: This routine deallocates the data stored inside the STScalarField_ obj
 
 INTERFACE
-MODULE SUBROUTINE stsField_Deallocate( obj )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE stsField_Deallocate
+  MODULE SUBROUTINE stsField_Deallocate(obj)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+  END SUBROUTINE stsField_Deallocate
 END INTERFACE
 
 INTERFACE Deallocate
@@ -253,9 +237,9 @@ PUBLIC :: Deallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE stsField_Final( obj )
-  TYPE( STScalarField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE stsField_Final
+  MODULE SUBROUTINE stsField_Final(obj)
+    TYPE(STScalarField_), INTENT(INOUT) :: obj
+  END SUBROUTINE stsField_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -264,14 +248,14 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: 	This function returns an instance of [[STScalarField_]]
+! summary:         This function returns an instance of [[STScalarField_]]
 
 INTERFACE
-MODULE FUNCTION stsField_Constructor1( param, dom ) RESULT( Ans )
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
-  TYPE( STScalarField_ ) :: ans
-END FUNCTION stsField_Constructor1
+  MODULE FUNCTION stsField_Constructor1(param, dom) RESULT(Ans)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    TYPE(STScalarField_) :: ans
+  END FUNCTION stsField_Constructor1
 END INTERFACE
 
 INTERFACE STScalarField
@@ -286,14 +270,14 @@ PUBLIC :: STScalarField
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: 	This function returns an instance of [[STScalarField_]]
+! summary:         This function returns an instance of [[STScalarField_]]
 
 INTERFACE
-MODULE FUNCTION stsField_Constructor_1( param, dom ) RESULT( Ans )
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
-  CLASS( STScalarField_ ), POINTER :: ans
-END FUNCTION stsField_Constructor_1
+  MODULE FUNCTION stsField_Constructor_1(param, dom) RESULT(Ans)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(STScalarField_), POINTER :: ans
+  END FUNCTION stsField_Constructor_1
 END INTERFACE
 
 INTERFACE STScalarField_Pointer
@@ -311,11 +295,11 @@ PUBLIC :: STScalarField_Pointer
 ! summary: Display the content of [[STScalarField_]]
 
 INTERFACE
-MODULE SUBROUTINE stsField_Display( obj, msg, unitNo )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE stsField_Display
+  MODULE SUBROUTINE stsField_Display(obj, msg, unitNo)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE stsField_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -327,13 +311,13 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-MODULE SUBROUTINE stsField_Import( obj, hdf5, group, dom, domains )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
-  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
-END SUBROUTINE stsField_Import
+  MODULE SUBROUTINE stsField_Import(obj, hdf5, group, dom, domains)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+  END SUBROUTINE stsField_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -345,11 +329,11 @@ END INTERFACE
 ! summary: This routine Exports the content
 
 INTERFACE
-MODULE SUBROUTINE stsField_Export( obj, hdf5, group )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE stsField_Export
+  MODULE SUBROUTINE stsField_Export(obj, hdf5, group)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE stsField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -371,19 +355,19 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-  ! call obj%set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
-  ! call obj%display( "test-1: STScalar field = ")
+! call obj%set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
+! call obj%display( "test-1: STScalar field = ")
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set1( obj, globalNode, value, scale, &
-    & addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalNode
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set1
+  MODULE SUBROUTINE stsField_set1(obj, globalNode, value, scale, &
+      & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -409,12 +393,12 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set2( obj, value, scale, addContribution )
-  CLASS( STScalarField_ ), TARGET, INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set2
+  MODULE SUBROUTINE stsField_set2(obj, value, scale, addContribution)
+    CLASS(STScalarField_), TARGET, INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -442,14 +426,14 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set3( obj, value, timeCompo, scale, &
-  & addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set3
+  MODULE SUBROUTINE stsField_set3(obj, value, timeCompo, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -477,12 +461,12 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set4( obj, value, scale, addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value( :, : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set4
+  MODULE SUBROUTINE stsField_set4(obj, value, scale, addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -510,14 +494,14 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set5( obj, value, timeCompo, scale, &
-  & addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set5
+  MODULE SUBROUTINE stsField_set5(obj, value, timeCompo, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -551,14 +535,14 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set6( obj, value, timeCompo, scale, &
-  & addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  TYPE( ScalarField_ ), INTENT( IN ) :: value
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set6
+  MODULE SUBROUTINE stsField_set6(obj, value, timeCompo, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    TYPE(ScalarField_), INTENT(IN) :: value
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -587,14 +571,14 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set7(obj, value, globalNode, scale, &
-  & addContribution)
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set7
+  MODULE SUBROUTINE stsField_set7(obj, value, globalNode, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -621,14 +605,14 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set8(obj, globalNode, value, scale, &
-  & addContribution)
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  REAL( DFP ), INTENT( IN ) :: value( :, : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set8
+  MODULE SUBROUTINE stsField_set8(obj, globalNode, value, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -655,15 +639,15 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE SUBROUTINE stsField_set9(obj, value, globalNode, timeCompo, scale, &
-  & addContribution)
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set9
+  MODULE SUBROUTINE stsField_set9(obj, value, globalNode, timeCompo, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value(:)
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -680,15 +664,15 @@ END INTERFACE
 ! STScalar( timeCompo, globalNode ) = value
 
 INTERFACE
-MODULE SUBROUTINE stsField_set10(obj, value, globalNode, timeCompo, scale, &
-  & addContribution)
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value
-  INTEGER( I4B ), INTENT( IN ) :: globalNode
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set10
+  MODULE SUBROUTINE stsField_set10(obj, value, globalNode, timeCompo, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -704,16 +688,16 @@ END INTERFACE
 !
 
 INTERFACE
-MODULE SUBROUTINE stsField_set11( obj, value, istart, iend, stride, scale, &
-  & addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: istart
-  INTEGER( I4B ), INTENT( IN ) :: iend
-  INTEGER( I4B ), INTENT( IN ) :: stride
-  REAL( DFP ), INTENT( IN ) :: value( : )
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set11
+  MODULE SUBROUTINE stsField_set11(obj, value, istart, iend, stride, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: istart
+    INTEGER(I4B), INTENT(IN) :: iend
+    INTEGER(I4B), INTENT(IN) :: stride
+    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set11
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -728,16 +712,16 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-MODULE SUBROUTINE stsField_set12( obj, value, istart, iend, stride, scale, &
-  & addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value( :, : )
-  INTEGER( I4B ), INTENT( IN ) :: istart
-  INTEGER( I4B ), INTENT( IN ) :: iend
-  INTEGER( I4B ), INTENT( IN ) :: stride
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set12
+  MODULE SUBROUTINE stsField_set12(obj, value, istart, iend, stride, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value(:, :)
+    INTEGER(I4B), INTENT(IN) :: istart
+    INTEGER(I4B), INTENT(IN) :: iend
+    INTEGER(I4B), INTENT(IN) :: stride
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -752,14 +736,14 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-MODULE SUBROUTINE stsField_set13( obj, value, globalNode, scale, &
-  & addContribution)
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  TYPE(FEVariable_), INTENT( IN ) :: value
-  INTEGER( I4B ), INTENT( IN ) :: globalNode(:)
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set13
+  MODULE SUBROUTINE stsField_set13(obj, value, globalNode, scale, &
+    & addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    TYPE(FEVariable_), INTENT(IN) :: value
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -774,12 +758,12 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-MODULE SUBROUTINE stsField_set14( obj, value, scale, addContribution )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  REAL( DFP ), INTENT( IN ) :: value
-  REAL( DFP ), OPTIONAL, INTENT( IN ) :: scale
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: addContribution
-END SUBROUTINE stsField_set14
+  MODULE SUBROUTINE stsField_set14(obj, value, scale, addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -799,16 +783,16 @@ END INTERFACE
 ! It returns the scalar field at time timecompo.
 !
 !@note
-! 	Both globalnode and timecompo should not be present
+!         Both globalnode and timecompo should not be present
 !@endnote
 
 INTERFACE
-MODULE SUBROUTINE stsField_get1( obj, value, globalNode, timeCompo )
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( : )
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: globalNode
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: timeCompo
-END SUBROUTINE stsField_get1
+  MODULE SUBROUTINE stsField_get1(obj, value, globalNode, timeCompo)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+  END SUBROUTINE stsField_get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -820,10 +804,10 @@ END INTERFACE
 ! summary: This routine get all the entries by using given STScalar field
 
 INTERFACE
-MODULE SUBROUTINE stsField_get2( obj, value )
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( :, : )
-END SUBROUTINE stsField_get2
+  MODULE SUBROUTINE stsField_get2(obj, value)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:, :)
+  END SUBROUTINE stsField_get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -835,11 +819,11 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-MODULE SUBROUTINE stsField_get3(obj, value, globalNode)
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value(:,:)
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-END SUBROUTINE stsField_get3
+  MODULE SUBROUTINE stsField_get3(obj, value, globalNode)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:, :)
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+  END SUBROUTINE stsField_get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -851,12 +835,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-MODULE SUBROUTINE stsField_get4(obj, value, globalNode, timeCompo)
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( : )
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-END SUBROUTINE stsField_get4
+  MODULE SUBROUTINE stsField_get4(obj, value, globalNode, timeCompo)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+  END SUBROUTINE stsField_get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -868,12 +852,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-MODULE SUBROUTINE stsField_get5(obj, value, globalNode, timeCompo)
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), INTENT( INOUT ) :: value
-  INTEGER( I4B ), INTENT( IN ) :: globalNode
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-END SUBROUTINE stsField_get5
+  MODULE SUBROUTINE stsField_get5(obj, value, globalNode, timeCompo)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: value
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+  END SUBROUTINE stsField_get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -885,13 +869,13 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE stsField_get6( obj, value, istart, iend, stride )
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( :, : )
-  INTEGER( I4B ), INTENT( IN ) :: istart
-  INTEGER( I4B ), INTENT( IN ) :: iend
-  INTEGER( I4B ), INTENT( IN ) :: stride
-END SUBROUTINE stsField_get6
+  MODULE SUBROUTINE stsField_get6(obj, value, istart, iend, stride)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:, :)
+    INTEGER(I4B), INTENT(IN) :: istart
+    INTEGER(I4B), INTENT(IN) :: iend
+    INTEGER(I4B), INTENT(IN) :: stride
+  END SUBROUTINE stsField_get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -903,14 +887,14 @@ END INTERFACE
 ! summary: This routine sets the selected entries
 
 INTERFACE
-MODULE SUBROUTINE stsField_get7( obj, value, istart, iend, stride, timeCompo )
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: value( : )
-  INTEGER( I4B ), INTENT( IN ) :: istart
-  INTEGER( I4B ), INTENT( IN ) :: iend
-  INTEGER( I4B ), INTENT( IN ) :: stride
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-END SUBROUTINE stsField_get7
+  MODULE SUBROUTINE stsField_get7(obj, value, istart, iend, stride, timeCompo)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    INTEGER(I4B), INTENT(IN) :: istart
+    INTEGER(I4B), INTENT(IN) :: iend
+    INTEGER(I4B), INTENT(IN) :: stride
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+  END SUBROUTINE stsField_get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -922,12 +906,12 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-MODULE SUBROUTINE stsField_get8( obj, value, globalNode)
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  TYPE(FEVariable_), INTENT( INOUT ) :: value
+  MODULE SUBROUTINE stsField_get8(obj, value, globalNode)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    TYPE(FEVariable_), INTENT(INOUT) :: value
   !! Nodal, Vector, SpaceTime
-  INTEGER( I4B ), INTENT( IN ) :: globalNode( : )
-END SUBROUTINE stsField_get8
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+  END SUBROUTINE stsField_get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -939,11 +923,11 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-MODULE SUBROUTINE stsField_get9( obj, value, timeCompo)
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  CLASS( ScalarField_ ), INTENT( INOUT ) :: value
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-END SUBROUTINE stsField_get9
+  MODULE SUBROUTINE stsField_get9(obj, value, timeCompo)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(ScalarField_), INTENT(INOUT) :: value
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+  END SUBROUTINE stsField_get9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -955,10 +939,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-MODULE SUBROUTINE stsField_applyDirichletBC1( obj, dbc )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  CLASS( DirichletBC_ ), INTENT( IN ) :: dbc
-END SUBROUTINE stsField_applyDirichletBC1
+  MODULE SUBROUTINE stsField_applyDirichletBC1(obj, dbc)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBC_), INTENT(IN) :: dbc
+  END SUBROUTINE stsField_applyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -970,10 +954,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-MODULE SUBROUTINE stsField_applyDirichletBC2( obj, dbc )
-  CLASS( STScalarField_ ), INTENT( INOUT ) :: obj
-  CLASS( DirichletBCPointer_ ), INTENT( IN ) :: dbc(:)
-END SUBROUTINE stsField_applyDirichletBC2
+  MODULE SUBROUTINE stsField_applyDirichletBC2(obj, dbc)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
+  END SUBROUTINE stsField_applyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -985,11 +969,11 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-MODULE FUNCTION stsField_getPointerOfComponent( obj, timeCompo ) RESULT( ans )
-  CLASS( STScalarField_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: timeCompo
-  REAL( DFP ), POINTER :: ans ( : )
-END FUNCTION stsField_getPointerOfComponent
+  MODULE FUNCTION stsField_getPointerOfComponent(obj, timeCompo) RESULT(ans)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), POINTER :: ans(:)
+  END FUNCTION stsField_getPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------

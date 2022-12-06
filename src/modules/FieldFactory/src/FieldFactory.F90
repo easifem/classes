@@ -21,11 +21,10 @@
 
 MODULE FieldFactory
 USE Field
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName="FieldFactory"
-TYPE( ExceptionHandler_ ) :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "FieldFactory"
 
 !----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory
@@ -36,10 +35,10 @@ TYPE( ExceptionHandler_ ) :: e
 ! summary: This function returns child of [[AbstractMatrixField_]]
 
 INTERFACE
-MODULE FUNCTION MatrixFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( AbstractMatrixField_ ), POINTER :: ans
-END FUNCTION MatrixFieldFactory
+  MODULE FUNCTION MatrixFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(AbstractMatrixField_), POINTER :: ans
+  END FUNCTION MatrixFieldFactory
 END INTERFACE
 
 PUBLIC :: MatrixFieldFactory
@@ -53,10 +52,10 @@ PUBLIC :: MatrixFieldFactory
 ! summary: This function returns child of [[AbstractMatrixField_]]
 
 INTERFACE
-MODULE FUNCTION BlockMatrixFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( AbstractMatrixField_ ), POINTER :: ans
-END FUNCTION BlockMatrixFieldFactory
+  MODULE FUNCTION BlockMatrixFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(AbstractMatrixField_), POINTER :: ans
+  END FUNCTION BlockMatrixFieldFactory
 END INTERFACE
 
 PUBLIC :: BlockMatrixFieldFactory
@@ -70,11 +69,11 @@ PUBLIC :: BlockMatrixFieldFactory
 ! summary: This function returns child of [[AbstractNodeField_]]
 
 INTERFACE
-MODULE FUNCTION NodeFieldFactory( engine, datatype ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CHARACTER( LEN = * ), INTENT( IN ) :: datatype
-  CLASS( AbstractNodeField_ ), POINTER :: ans
-END FUNCTION NodeFieldFactory
+  MODULE FUNCTION NodeFieldFactory(engine, datatype) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(LEN=*), INTENT(IN) :: datatype
+    CLASS(AbstractNodeField_), POINTER :: ans
+  END FUNCTION NodeFieldFactory
 END INTERFACE
 
 PUBLIC :: NodeFieldFactory
@@ -88,10 +87,10 @@ PUBLIC :: NodeFieldFactory
 ! summary: Returns child of [[BlockNodeField_]] based on engine
 
 INTERFACE
-MODULE FUNCTION BlockNodeFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( BlockNodeField_ ), POINTER :: ans
-END FUNCTION BlockNodeFieldFactory
+  MODULE FUNCTION BlockNodeFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(BlockNodeField_), POINTER :: ans
+  END FUNCTION BlockNodeFieldFactory
 END INTERFACE
 
 PUBLIC :: BlockNodeFieldFactory
@@ -105,10 +104,10 @@ PUBLIC :: BlockNodeFieldFactory
 ! summary: Returns child of [[AbstractNodeField_]] based on engine
 
 INTERFACE
-MODULE FUNCTION ScalarFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( ScalarField_ ), POINTER :: ans
-END FUNCTION ScalarFieldFactory
+  MODULE FUNCTION ScalarFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(ScalarField_), POINTER :: ans
+  END FUNCTION ScalarFieldFactory
 END INTERFACE
 
 PUBLIC :: ScalarFieldFactory
@@ -122,10 +121,10 @@ PUBLIC :: ScalarFieldFactory
 ! summary: This function returns child of [[AbstractNodeField_]]
 
 INTERFACE
-MODULE FUNCTION VectorFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( VectorField_ ), POINTER :: ans
-END FUNCTION VectorFieldFactory
+  MODULE FUNCTION VectorFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(VectorField_), POINTER :: ans
+  END FUNCTION VectorFieldFactory
 END INTERFACE
 
 PUBLIC :: VectorFieldFactory
@@ -139,10 +138,10 @@ PUBLIC :: VectorFieldFactory
 ! summary: Returns child of [[STScalarField_]] based on engine
 
 INTERFACE
-MODULE FUNCTION STScalarFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( STScalarField_ ), POINTER :: ans
-END FUNCTION STScalarFieldFactory
+  MODULE FUNCTION STScalarFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(STScalarField_), POINTER :: ans
+  END FUNCTION STScalarFieldFactory
 END INTERFACE
 
 PUBLIC :: STScalarFieldFactory
@@ -156,10 +155,10 @@ PUBLIC :: STScalarFieldFactory
 ! summary: Returns child of [[STVectorField_]] based on engine
 
 INTERFACE
-MODULE FUNCTION STVectorFieldFactory( engine ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: engine
-  CLASS( STVectorField_ ), POINTER :: ans
-END FUNCTION STVectorFieldFactory
+  MODULE FUNCTION STVectorFieldFactory(engine) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CLASS(STVectorField_), POINTER :: ans
+  END FUNCTION STVectorFieldFactory
 END INTERFACE
 
 PUBLIC :: STVectorFieldFactory

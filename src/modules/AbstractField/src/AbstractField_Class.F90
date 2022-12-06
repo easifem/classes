@@ -34,17 +34,17 @@
 MODULE AbstractField_Class
 USE GlobalData
 USE BaseType
-USE String_Class, ONLY:String
+USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
-USE HDF5File_Class, ONLY : HDF5File_
-USE ExceptionHandler_Class, ONLY : ExceptionHandler_
+USE HDF5File_Class, ONLY: HDF5File_
+USE ExceptionHandler_Class, ONLY: e
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 1
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 2
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
-INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 1
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 2
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
 ! CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
 !   & [ &
 !       & "NORMAL        ", &
@@ -53,7 +53,7 @@ INTEGER( I4B ), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
 !       & "CONSTANT_TIME " &
 !   & ]
 
-CHARACTER( LEN = * ), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(LEN=*), PARAMETER :: modName = "AbstractField_Class"
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -66,21 +66,21 @@ CHARACTER( LEN = * ), PARAMETER :: modName = "AbstractField_Class"
 !{!pages/AbstractField_.md!}
 
 TYPE, ABSTRACT :: AbstractField_
-  LOGICAL( LGT ) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInitiated = .FALSE.
     !! It is true if the object is initiated
-  INTEGER( I4B ) :: fieldType = FIELD_TYPE_NORMAL
+  INTEGER(I4B) :: fieldType = FIELD_TYPE_NORMAL
     !! fieldType can be normal, constant, can vary in space and/ or both.
-  TYPE( Domain_ ), POINTER :: domain => NULL()
+  TYPE(Domain_), POINTER :: domain => NULL()
     !! Domain contains the information of the finite element meshes.
-  TYPE( DomainPointer_ ), ALLOCATABLE :: domains( : )
+  TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
     !! Domain for each physical variables
     !! The size of `domains` should be equal to the total number of
     !! physical variables.
     !! It is used in the case of BlockNodeField
     !! and BlockMatrixField
-  TYPE( String ) :: name
+  TYPE(String) :: name
     !! name of the field
-  TYPE( String ) :: engine
+  TYPE(String) :: engine
     !! Engine of the field, for example
     !! NATIVE_SERIAL
     !! NATIVE_OMP,
@@ -89,49 +89,30 @@ TYPE, ABSTRACT :: AbstractField_
     !! LIS_SERIAL,
     !! LIS_OMP,
     !! LIS_MPI
-  CONTAINS
+CONTAINS
   PRIVATE
-    PROCEDURE(aField_addSurrogate), DEFERRED, PUBLIC, PASS( obj ) :: &
-      & addSurrogate
+  PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
+    & checkEssentialParam
       !! check essential parameters
-    PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS( obj ) :: &
-      & checkEssentialParam
-      !! check essential parameters
-    PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS( obj ) :: Initiate1
+  PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS(obj) :: Initiate1
       !! Initiate the field by reading param and given domain
-    PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS( obj ) :: Initiate2
+  PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS(obj) :: Initiate2
       !! Initiate by copying other fields, and different options
-    PROCEDURE(aField_Initiate3), DEFERRED, PUBLIC, PASS( obj ) :: Initiate3
+  PROCEDURE(aField_Initiate3), DEFERRED, PUBLIC, PASS(obj) :: Initiate3
       !! Initiate  block fields (different physical variables) defined
       !! over different order of meshes.
-    GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => aField_Deallocate
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => aField_Deallocate
       !! Deallocate the field
-    PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS( obj ) :: Display
+  PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
       !! Display the field
-    PROCEDURE(aField_Import), DEFERRED, PUBLIC, PASS( obj ) :: Import
+  PROCEDURE(aField_Import), DEFERRED, PUBLIC, PASS(obj) :: Import
       !! Import data from hdf5 file
-    PROCEDURE(aField_Export), DEFERRED, PUBLIC, PASS( obj ) :: Export
+  PROCEDURE(aField_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
       !! Export data in hdf5 file
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
-
-!----------------------------------------------------------------------------
-!                                           addSurrogate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
-
-ABSTRACT INTERFACE
-SUBROUTINE aField_addSurrogate( obj, UserObj )
-  IMPORT :: AbstractField_, ExceptionHandler_
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  TYPE( ExceptionHandler_ ), INTENT( IN ) :: UserObj
-END SUBROUTINE aField_addSurrogate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -142,11 +123,11 @@ END INTERFACE
 ! summary: This routine check the essential parameters in param.
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_checkEssentialParam( obj, param )
-  IMPORT :: AbstractField_, ParameterList_
-  CLASS( AbstractField_ ), INTENT( IN ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-END SUBROUTINE aField_checkEssentialParam
+  SUBROUTINE aField_checkEssentialParam(obj, param)
+    IMPORT :: AbstractField_, ParameterList_
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+  END SUBROUTINE aField_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -158,12 +139,12 @@ END INTERFACE
 ! summary: Initiate the field by reading param and given domain
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Initiate1( obj, param, dom )
-  IMPORT :: AbstractField_, ParameterList_, Domain_
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( Domain_ ), TARGET, INTENT( IN ) :: dom
-END SUBROUTINE aField_Initiate1
+  SUBROUTINE aField_Initiate1(obj, param, dom)
+    IMPORT :: AbstractField_, ParameterList_, Domain_
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE aField_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -175,15 +156,15 @@ END INTERFACE
 ! summary: Initiate by copying other fields, and different options
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Initiate2( obj, obj2, copyFull, copyStructure, &
-  & usePointer )
-  IMPORT :: AbstractField_, LGT
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj2
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyFull
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: copyStructure
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: usePointer
-END SUBROUTINE aField_Initiate2
+  SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
+    & usePointer)
+    IMPORT :: AbstractField_, LGT
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE aField_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -195,12 +176,12 @@ END INTERFACE
 ! summary: Initiate by reading options from [[ParameterList_]]
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Initiate3( obj, param, dom )
-  IMPORT :: AbstractField_, ParameterList_, DomainPointer_
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( DomainPointer_ ), TARGET, INTENT( IN ) :: dom( : )
-END SUBROUTINE aField_Initiate3
+  SUBROUTINE aField_Initiate3(obj, param, dom)
+    IMPORT :: AbstractField_, ParameterList_, DomainPointer_
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+  END SUBROUTINE aField_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -208,12 +189,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Display( obj, msg, unitNo )
-  IMPORT :: AbstractField_, I4B
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: msg
-  INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitNo
-END SUBROUTINE aField_Display
+  SUBROUTINE aField_Display(obj, msg, unitNo)
+    IMPORT :: AbstractField_, I4B
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE aField_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -221,14 +202,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Import( obj, hdf5, group, dom, domains )
-  IMPORT :: AbstractField_, I4B, HDF5File_, Domain_, DomainPointer_
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-  TYPE( Domain_ ), TARGET, OPTIONAL, INTENT( IN ) :: dom
-  TYPE( DomainPointer_ ), TARGET, OPTIONAL, INTENT( IN ) :: domains(:)
-END SUBROUTINE aField_Import
+  SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
+    IMPORT :: AbstractField_, I4B, HDF5File_, Domain_, DomainPointer_
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+  END SUBROUTINE aField_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -236,12 +217,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-SUBROUTINE aField_Export( obj, hdf5, group )
-  IMPORT :: AbstractField_, HDF5File_
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE aField_Export
+  SUBROUTINE aField_Export(obj, hdf5, group)
+    IMPORT :: AbstractField_, HDF5File_
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(LEN=*), INTENT(IN) :: group
+  END SUBROUTINE aField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -249,9 +230,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE aField_Deallocate( obj )
-  CLASS( AbstractField_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE aField_Deallocate
+  MODULE SUBROUTINE aField_Deallocate(obj)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+  END SUBROUTINE aField_Deallocate
 END INTERFACE
 
 INTERFACE AbstractFieldDeallocate
@@ -265,10 +246,10 @@ PUBLIC :: AbstractFieldDeallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION FIELD_TYPE_NUMBER( name ) RESULT( Ans )
-  CHARACTER( LEN = * ), INTENT( IN ) :: name
-  INTEGER( I4B ) :: ans
-END FUNCTION FIELD_TYPE_NUMBER
+  MODULE PURE FUNCTION FIELD_TYPE_NUMBER(name) RESULT(Ans)
+    CHARACTER(LEN=*), INTENT(IN) :: name
+    INTEGER(I4B) :: ans
+  END FUNCTION FIELD_TYPE_NUMBER
 END INTERFACE
 
 PUBLIC :: FIELD_TYPE_NUMBER
@@ -278,10 +259,10 @@ PUBLIC :: FIELD_TYPE_NUMBER
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE PURE FUNCTION FIELD_TYPE_NAME( id ) RESULT( Ans )
-  INTEGER( I4B ), INTENT( IN ) :: id
-  CHARACTER( LEN = 20 ) :: ans
-END FUNCTION FIELD_TYPE_NAME
+  MODULE PURE FUNCTION FIELD_TYPE_NAME(id) RESULT(Ans)
+    INTEGER(I4B), INTENT(IN) :: id
+    CHARACTER(LEN=20) :: ans
+  END FUNCTION FIELD_TYPE_NAME
 END INTERFACE
 
 PUBLIC :: FIELD_TYPE_NAME

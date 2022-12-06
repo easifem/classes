@@ -20,7 +20,7 @@ USE BaseType
 USE String_Class, ONLY:String
 USE GlobalData
 USE TxtFile_Class
-USE ExceptionHandler_Class
+USE ExceptionHandler_Class, ONLY: e
 USE mshFormat_Class
 USE mshPhysicalNames_Class
 USE mshEntity_Class
@@ -30,7 +30,6 @@ USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER( LEN = * ), PARAMETER :: modName = "MSHFile_CLASS"
-TYPE( ExceptionHandler_ ) :: e
 
 !----------------------------------------------------------------------------
 !                                                                 MSHFile_

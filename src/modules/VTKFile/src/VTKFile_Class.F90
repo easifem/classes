@@ -18,28 +18,27 @@
 MODULE VTKFile_Class
 USE GlobalData
 USE BaseType
-USE String_Class, ONLY:String
+USE String_Class, ONLY: String
 USE VTKDataArrayEncoder
 USE XMLFile_Class
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 !!
 PUBLIC :: encodeVTKDataArray
-CHARACTER( LEN = * ), PARAMETER :: modName="VTKFile_Class"
-TYPE( ExceptionHandler_ ) :: e
-INTEGER( I4B ), PARAMETER :: MAX_LEN_DATA_STRUCTURENAME = 256
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_ImageData = 1
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_RectilinearGrid = 2
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_StructuredGrid = 3
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_PolyData = 4
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_UnstructuredGrid = 5
-INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_ImageData = 6
-INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_RectilinearGrid = 7
-INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_StructuredGrid = 8
-INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_PolyData = 9
-INTEGER( I4B ), PARAMETER, PUBLIC :: PARALLEL_VTK_UnstructuredGrid = 10
-CHARACTER( LEN=* ), PARAMETER, DIMENSION( 10 ) :: DataStructureName = &
+CHARACTER(LEN=*), PARAMETER :: modName = "VTKFile_Class"
+INTEGER(I4B), PARAMETER :: MAX_LEN_DATA_STRUCTURENAME = 256
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_ImageData = 1
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_RectilinearGrid = 2
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_StructuredGrid = 3
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_PolyData = 4
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_UnstructuredGrid = 5
+INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_ImageData = 6
+INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_RectilinearGrid = 7
+INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_StructuredGrid = 8
+INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_PolyData = 9
+INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_UnstructuredGrid = 10
+CHARACTER(LEN=*), PARAMETER, DIMENSION(10) :: DataStructureName = &
   & [ &
   & "ImageData        ", &
   & "RectilinearGrid  ", &
@@ -52,12 +51,12 @@ CHARACTER( LEN=* ), PARAMETER, DIMENSION( 10 ) :: DataStructureName = &
   & "PPolyData        ", &
   & "PUnstructuredGrid"  &
   & ]
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_ASCII = 1
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_BINARY = 2
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_APPENDED = 3
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
-INTEGER( I4B ), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
-CHARACTER( LEN = * ), PARAMETER, DIMENSION( 3 ) :: DataFormatName = &
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_ASCII = 1
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY = 2
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_APPENDED = 3
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
+INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
+CHARACTER(LEN=*), PARAMETER, DIMENSION(3) :: DataFormatName = &
   & [ &
   & "ascii   ", &
   & "binary  ", &
@@ -72,11 +71,11 @@ CHARACTER( LEN = * ), PARAMETER, DIMENSION( 3 ) :: DataFormatName = &
 ! date: 7 July 2022
 ! summary: VTKFile
 
-TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
+TYPE, EXTENDS(XMLFile_) :: VTKFile_
   PRIVATE
-  LOGICAL( LGT ) :: isStructured = .FALSE.
+  LOGICAL(LGT) :: isStructured = .FALSE.
     !! Is dataset structured
-  INTEGER( I4B ) :: dataStructureType = 0
+  INTEGER(I4B) :: dataStructureType = 0
     !! 1 : VTK_ImageData
     !! 2 : VTK_RectilinearGrid
     !! 3 : VTK_StructuredGrid
@@ -87,7 +86,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     !! 8 : PARALLEL_VTK_StructuredGrid
     !! 9 : PARALLEL_VTK_PolyData
     !! 10: PARALLEL_VTK_UnstructuredGrid
-  CHARACTER( LEN = MAX_LEN_DATA_STRUCTURENAME ) :: dataStructureName
+  CHARACTER(LEN=MAX_LEN_DATA_STRUCTURENAME) :: dataStructureName
     !! ImageData,
     !! RectilinearGrid,
     !! StructuredGrid,
@@ -98,68 +97,67 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     !! PStructuredGrid
     !! PPolyData
     !! PUnstructuredGrid
-  INTEGER( I4B ) :: dataFormat = 0
+  INTEGER(I4B) :: dataFormat = 0
     !! VTK_ASCII
     !! VTK_BINARY
     !! VTK_APPENDED
     !! VTK_RAW_APPENDED
     !! VTK_BINARY_APPENDED
-  INTEGER( I4B ) :: wholeExtent( 6 ) = 0
+  INTEGER(I4B) :: wholeExtent(6) = 0
     !! Whole extent
-  INTEGER( I4B ) :: origin( 3 ) = 0
+  INTEGER(I4B) :: origin(3) = 0
     !! x0, y0, z0, Origin needed for ImageData
-  INTEGER( I4B ) :: spacing( 3 ) = 1
+  INTEGER(I4B) :: spacing(3) = 1
     !! dx, dy, dz needed for ImageData
-  INTEGER( I4B ) :: indent = 0
+  INTEGER(I4B) :: indent = 0
     !! Indent
-  INTEGER( I4B ) :: offset = 0
+  INTEGER(I4B) :: offset = 0
     !! offset for appended mode
-  TYPE( String ) :: encoding4Appended
+  TYPE(String) :: encoding4Appended
     !! appended data encoding: "raw" or "base64".
-  INTEGER( I4B ) :: scratch=0
+  INTEGER(I4B) :: scratch = 0
     !! Used for scratch file
-  LOGICAL( LGT ) :: isVolatile = .FALSE.
-  TYPE( String ) :: volatileBuffer
-  CONTAINS
+  LOGICAL(LGT) :: isVolatile = .FALSE.
+  TYPE(String) :: volatileBuffer
+CONTAINS
   PRIVATE
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: InitiateVTKFile
-  PROCEDURE, PUBLIC, PASS( obj ) :: addSurrogate => VTKFile_addSurrogate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => VTKFile_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKFile
+  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => VTKFile_Deallocate
   FINAL :: VTKFile_Final
-  PROCEDURE, PUBLIC, PASS( obj ) :: Close => VTKFile_Close
-  PROCEDURE, PASS( obj ) :: UpdateOffset => VTKFile_UpdateOffset
-  PROCEDURE, PASS( obj ) :: OpenScratchFile => VTKFile_OpenScratchFile
-  PROCEDURE, PASS( obj ) :: CloseScratchFile => VTKFile_CloseScratchFile
+  PROCEDURE, PUBLIC, PASS(obj) :: Close => VTKFile_Close
+  PROCEDURE, PASS(obj) :: UpdateOffset => VTKFile_UpdateOffset
+  PROCEDURE, PASS(obj) :: OpenScratchFile => VTKFile_OpenScratchFile
+  PROCEDURE, PASS(obj) :: CloseScratchFile => VTKFile_CloseScratchFile
   !!
   !! @TagsMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteRootTag => VTKFile_WriteRootTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteDataStructureTag => &
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteRootTag => VTKFile_WriteRootTag
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteDataStructureTag => &
     & VTKFile_WriteDataStructureTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteStartTag => VTKFile_WriteStartTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteEndTag => VTKFile_WriteEndTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteSelfClosingTag => &
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteStartTag => VTKFile_WriteStartTag
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteEndTag => VTKFile_WriteEndTag
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteSelfClosingTag => &
     & VTKFile_WriteSelfClosingTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteTag => VTKFile_WriteTag
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteTag => VTKFile_WriteTag
   !!
   !! @VertMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteVerts => VTKFile_WriteVerts
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteVerts => VTKFile_WriteVerts
   !!
   !! @CellMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteCells => VTKFile_WriteCells
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteCells => VTKFile_WriteCells
   !!
   !! @DataArrayMethods
   !!
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteDataArrayTag => &
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteDataArrayTag => &
     & VTKFile_WriteDataArrayTag
-  PROCEDURE, PUBLIC, PASS( obj ) :: WriteDataArrayLocationTag => &
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteDataArrayLocationTag => &
     & VTKFile_WriteDataArrayLocationTag
-  PROCEDURE, PASS( obj ) :: &
+  PROCEDURE, PASS(obj) :: &
     & VTKFile_WriteDataArrayLocationTag, &
     & VTKFile_WriteDataArray_Rank1_Real32, &
     & VTKFile_WriteDataArray_Rank1_Real64, &
@@ -250,7 +248,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
   !!
   !! @DataArrayAppendedMethods
   !!
-  PROCEDURE, PASS( obj ) :: &
+  PROCEDURE, PASS(obj) :: &
     & VTKFile_WriteDataArray_Appended, &
     & VTKFile_WriteToScratch1, &
     & VTKFile_WriteToScratch2, &
@@ -307,7 +305,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     & VTKFile_WriteFieldData_1, &
     & VTKFile_WriteFieldData_2
   !!
-  PROCEDURE, PASS( obj ) :: &
+  PROCEDURE, PASS(obj) :: &
     & VTKFile_WriteFieldData_1, &
     & VTKFile_WriteFieldData_2
   !!
@@ -321,7 +319,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     & VTKFile_WritePoints_5, &
     & VTKFile_WritePoints_6
   !!
-  PROCEDURE, PASS( obj ) :: &
+  PROCEDURE, PASS(obj) :: &
     & VTKFile_WritePoints_1, &
     & VTKFile_WritePoints_2, &
     & VTKFile_WritePoints_3, &
@@ -337,7 +335,7 @@ TYPE, EXTENDS( XMLFile_ ) :: VTKFile_
     & VTKFile_WritePiece_3, &
     & VTKFile_WritePiece_4
   !!
-  PROCEDURE, PASS( obj ) :: &
+  PROCEDURE, PASS(obj) :: &
     & VTKFile_WritePiece_1, &
     & VTKFile_WritePiece_2, &
     & VTKFile_WritePiece_3, &
@@ -354,7 +352,7 @@ PUBLIC :: VTKFile_
 !----------------------------------------------------------------------------
 
 TYPE :: VTKFilePointer_
-  CLASS( VTKFile_ ), POINTER :: ptr => NULL()
+  CLASS(VTKFile_), POINTER :: ptr => NULL()
 END TYPE VTKFilePointer_
 
 PUBLIC :: VTKFilePointer_
