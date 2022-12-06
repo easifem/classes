@@ -202,7 +202,7 @@ END SUBROUTINE Import_PhysicalVar
 !----------------------------------------------------------------------------
 
 SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, &
-  & fieldType, name, engine, matrixProp)
+  & fieldType, name, engine, matrixProp, isRectangle)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(LEN=*), INTENT(IN) :: group
@@ -210,6 +210,7 @@ SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, &
   CHARACTER(LEN=*), INTENT(IN) :: myName
   INTEGER(I4B), INTENT(INOUT) :: fieldType
   TYPE(String), INTENT(INOUT) :: name, engine, matrixProp
+  LOGICAL(LGT), INTENT(OUT) :: isRectangle
   !!
   TYPE(String) :: dsetname, strval
   !!
@@ -251,6 +252,16 @@ SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, &
   ELSE
     CALL hdf5%read(dsetname=dsetname%chars(), vals=matrixProp)
   END IF
+  !!
+  !! isRectangle
+  !!
+  dsetname = TRIM(group)//"/isRectangle "
+  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
+    isRectangle = .FALSE.
+  ELSE
+    CALL hdf5%read(dsetname=dsetname%chars(), vals=isRectangle)
+  END IF
+  !!
 END SUBROUTINE Import_Header
 
 !----------------------------------------------------------------------------
@@ -368,6 +379,12 @@ SUBROUTINE Export_Header(obj, hdf5, group, dname, matprop)
   dname = TRIM(group)//"/isPmatInitiated"
   CALL hdf5%write(dsetname=TRIM(dname%chars()), &
     & vals=obj%isPmatInitiated)
+  !!
+  !! isRectangle
+  !!
+  dname = TRIM(group)//"/isRectangle"
+  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    & vals=obj%isRectangle)
   !!
   !!
   !! physical variables from MatrixFieldUtility
