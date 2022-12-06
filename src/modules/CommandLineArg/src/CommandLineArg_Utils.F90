@@ -133,7 +133,7 @@ PURE FUNCTION replace_all(string, substring, restring) RESULT(newstring)
   DO
     IF (INDEX(newstring, substring) > 0) THEN
       newstring = replace(string=newstring, substring=substring, &
-           & restring=restring)
+        & restring=restring)
     ELSE
       EXIT
     END IF
@@ -263,9 +263,11 @@ ELEMENTAL FUNCTION upper_case(string)
 !! Characters counter.
   INTEGER :: n2
 !! Characters counter.
- CHARACTER(len=26), PARAMETER :: upper_alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  CHARACTER(len=26), PARAMETER :: &
+    & upper_alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 !! Upper case alphabet.
- CHARACTER(len=26), PARAMETER :: lower_alphabet = 'abcdefghijklmnopqrstuvwxyz'
+  CHARACTER(len=26), PARAMETER :: &
+    & lower_alphabet = 'abcdefghijklmnopqrstuvwxyz'
 !! Lower case alphabet.
 
   upper_case = string

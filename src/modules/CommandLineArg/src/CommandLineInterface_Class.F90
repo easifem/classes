@@ -23,7 +23,8 @@
 MODULE CommandLineInterface_Class
 USE FACE, ONLY: colorize
 USE CommandLineArg_Class, ONLY: CommandLineArg_, ACTION_STORE, ERROR_UNKNOWN
-USE CommandLineGroupArg_Class, ONLY : CommandLineGroupArg_, STATUS_PRINT_H, STATUS_PRINT_V
+USE CommandLineGroupArg_Class, ONLY: CommandLineGroupArg_, &
+  & STATUS_PRINT_H, STATUS_PRINT_V
 USE AbstractCommandLine_Class, ONLY: AbstractCommandLineArg_
 USE CommandLineArg_Utils
 USE PENF
@@ -215,9 +216,9 @@ END SUBROUTINE free
 !----------------------------------------------------------------------------
 
 SUBROUTINE init(self, progname, version, help, description, license, &
-     & authors, examples, epilog, disable_hv, &
-     & usage_lun, error_lun, version_lun, error_color, &
-     & error_style, ignore_unknown_clas)
+    & authors, examples, epilog, disable_hv, &
+    & usage_lun, error_lun, version_lun, error_color, &
+    & error_style, ignore_unknown_clas)
   !! Initialize CLI.
   CLASS(CommandLineInterface_), INTENT(inout) :: self
   !! CLI data.
