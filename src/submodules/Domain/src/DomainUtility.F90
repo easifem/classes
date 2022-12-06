@@ -21,12 +21,22 @@ USE BaseMethod
 USE Mesh_Class
 USE Domain_Class
 USE DomainConnectivity_Class
+USE ExceptionHandler_Class, ONLY: e
+USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: SetSparsity1
 PUBLIC :: SetSparsity2
 PUBLIC :: SetSparsity3
+
+CHARACTER(LEN=*), PARAMETER :: modName = "DomainUtility"
+
+INTERFACE Initiate
+  MODULE PROCEDURE InitiateDomainPointer1
+END INTERFACE Initiate
+
+PUBLIC :: Initiate
 
 CONTAINS
 
@@ -224,5 +234,77 @@ SUBROUTINE SetSparsity3(domains, mat)
   CALL domainConn%DEALLOCATE()
   !!
 END SUBROUTINE SetSparsity3
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:         2022-12-02
+! summary:         Initiate domain pointer from file names
+!
+!# Introduction
+!
+!- Initiate domain pointer from the file names.
+!- Create HDF5 file object, open it, read data and close those files.
+!- Please allocate obj before using it
+!- The size of `obj` should be same as the size of filename.
+
+SUBROUTINE InitiateDomainPointer1(domains, filename, group)
+  CLASS(DomainPointer_), INTENT(INOUT) :: domains(:)
+  !! domain pointers to be created
+  TYPE(String), INTENT(IN) :: filename(:)
+  !! filenames for domain
+  TYPE(String), OPTIONAL, INTENT(IN) :: group(:)
+  !! Path (address) in filename
+  !
+  ! Internal variables
+  !
+  CHARACTER(LEN=*), PARAMETER :: myName = "InitiateDomainPointer1"
+  TYPE(HDF5File_) :: domainFile
+  INTEGER(I4B) :: ii, n
+  !
+  ! check
+  !
+  IF (SIZE(filename) .NE. SIZE(domains)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'SIZE of domains should be same as the size of filename')
+  END IF
+  !
+  ! check
+  !
+  IF (PRESENT(group)) THEN
+    IF (SIZE(group) .NE. SIZE(filename)) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+        & 'SIZE of group should be same as the size of filename')
+    END IF
+  END IF
+  !
+  ! check
+  !
+  n = SIZE(filename)
+  !
+  DO ii = 1, n
+    IF (ASSOCIATED(domains(ii)%ptr)) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+        & 'domains( '//tostring(ii)//' ) is already associated.')
+    END IF
+  END DO
+  !
+  ! compute
+  !
+  DO ii = 1, SIZE(filename)
+    CALL domainFile%Initiate(filename=filename(ii)%chars(), MODE="READ")
+    CALL domainFile%Open()
+    IF (PRESENT(group)) THEN
+      domains(ii)%ptr => Domain_Pointer(hdf5=domainFile, &
+        & group=group(ii)%chars())
+    ELSE
+      domains(ii)%ptr => Domain_Pointer(hdf5=domainFile, group="")
+    END IF
+    CALL domainFile%Deallocate()
+  END DO
+  !
+END SUBROUTINE InitiateDomainPointer1
 
 END MODULE DomainUtility
