@@ -115,9 +115,9 @@ CONTAINS
     !! Solve system of linear equation
   PROCEDURE(als_display), PUBLIC, DEFERRED, PASS(obj) :: Display
     !! Display the content
-  PROCEDURE(als_Deallocate), PUBLIC, DEFERRED, PASS(obj) :: Deallocate
+  PROCEDURE(als_Deallocate), PUBLIC, DEFERRED, PASS(obj) :: DEALLOCATE
     !! Deallocate Data
-  PROCEDURE(als_Import), PUBLIC, DEFERRED, PASS(obj) :: Import
+  PROCEDURE(als_Import), PUBLIC, DEFERRED, PASS(obj) :: IMPORT
     !! importing linsolver from external file
   PROCEDURE(als_Export), PUBLIC, DEFERRED, PASS(obj) :: Export
     !! exporting linsolver from external file
@@ -172,8 +172,8 @@ INTERFACE
     & maxIter, atol, rtol, convergenceIn, convergenceType, &
     & relativeToRHS, KrylovSubspaceSize)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: prefix
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
@@ -202,8 +202,8 @@ INTERFACE
     & maxIter, atol, rtol, convergenceIn, convergenceType, &
     & relativeToRHS, KrylovSubspaceSize)
     TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: prefix
-    CHARACTER(LEN=*), OPTIONAL, INTENT(OUT) :: engine
+    CHARACTER(*), INTENT(IN) :: prefix
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: engine
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: solverName
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: preconditionOption
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: maxIter
@@ -275,7 +275,7 @@ ABSTRACT INTERFACE
   SUBROUTINE als_Display(obj, msg, unitno)
     IMPORT :: AbstractLinSolver_, I4B
     CLASS(AbstractLinSolver_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: Unitno
   END SUBROUTINE als_Display
 END INTERFACE
@@ -293,7 +293,7 @@ ABSTRACT INTERFACE
     IMPORT :: AbstractLinSolver_, HDF5File_
     CLASS(AbstractLinSolver_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE als_Import
 END INTERFACE
 
@@ -310,7 +310,7 @@ ABSTRACT INTERFACE
     IMPORT :: AbstractLinSolver_, HDF5File_
     CLASS(AbstractLinSolver_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE als_Export
 END INTERFACE
 

@@ -1,10 +1,19 @@
 {
   "source_dirs": [
-    "./src",
-    "../easifem-base/src"
-    ],
-  "excl_suffixes": ["_skip.F90", ".bk", ".ignore"],
-  "pp_suffixes": [".F90", ".inc", ".part", ".f90"],
+    "src/**",
+    "../easifem-base/src/**"
+  ],
+  "excl_suffixes": [
+    "_skip.F90",
+    ".bk",
+    ".ignore"
+  ],
+  "pp_suffixes": [
+    ".F90",
+    ".inc",
+    ".part",
+    ".f90"
+  ],
   "lowercase_intrinsics": false,
   "debug_log": false,
   "disable_diagnostics": false

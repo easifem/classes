@@ -121,68 +121,68 @@ IF (obj%isPmatInitiated) THEN
   !! pmat/pmatName
   !!
   dname = TRIM(group)//"/pmat/pmatName"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%pmatName)
   !!
   !! pmat/nnz
   !!
   dname = TRIM(group)//"/pmat/nnz"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%nnz)
   !!
   !! pmat/ncol
   !!
   dname = TRIM(group)//"/pmat/ncol"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%ncol)
   !!
   !! pmat/nrow
   !!
   dname = TRIM(group)//"/pmat/nrow"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%nrow)
   !!
   !! pmat/isInitiated
   !!
   dname = TRIM(group)//"/pmat/isInitiated"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%isInitiated)
   !!
   !! pmat/lfil
   !!
   dname = TRIM(group)//"/pmat/lfil"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%lfil)
   !!
   !! pmat/mbloc
   !!
   dname = TRIM(group)//"/pmat/mbloc"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%mbloc)
   !!
   !! pmat/alpha
   !!
   dname = TRIM(group)//"/pmat/alpha"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%alpha)
   !!
   !! pmat/droptol
   !!
   dname = TRIM(group)//"/pmat/droptol"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%droptol)
   !!
   !! pmat/permtol
   !!
   dname = TRIM(group)//"/pmat/permtol"
-  CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
   & vals=obj%pmat%permtol)
   !!
   !! pmat/A
   !!
   IF (ALLOCATED(obj%pmat%A)) THEN
     dname = TRIM(group)//"/pmat/A"
-    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%A)
   END IF
   !!
@@ -190,7 +190,7 @@ IF (obj%isPmatInitiated) THEN
   !!
   IF (ALLOCATED(obj%pmat%JA)) THEN
     dname = TRIM(group)//"/pmat/JA"
-    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%JA)
   END IF
   !!
@@ -198,7 +198,7 @@ IF (obj%isPmatInitiated) THEN
   !!
   IF (ALLOCATED(obj%pmat%IA)) THEN
     dname = TRIM(group)//"/pmat/IA"
-    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%IA)
   END IF
   !!
@@ -206,7 +206,7 @@ IF (obj%isPmatInitiated) THEN
   !!
   IF (ALLOCATED(obj%pmat%JU)) THEN
     dname = TRIM(group)//"/pmat/JU"
-    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%JU)
   END IF
   !!
@@ -214,7 +214,7 @@ IF (obj%isPmatInitiated) THEN
   !!
   IF (ALLOCATED(obj%pmat%IPERM)) THEN
     dname = TRIM(group)//"/pmat/IPERM"
-    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%IPERM)
   END IF
   !!
@@ -222,7 +222,7 @@ IF (obj%isPmatInitiated) THEN
   !!
   IF (ALLOCATED(obj%pmat%LEVS)) THEN
     dname = TRIM(group)//"/pmat/LEVS"
-    CALL hdf5%write(dsetname=TRIM(dname%chars()), &
+    CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
     & vals=obj%pmat%LEVS)
   END IF
   !!
@@ -347,7 +347,7 @@ ELSE
     !!
   END IF
   !!
-  CALL param%Deallocate(); CALL FPL_FINALIZE()
+  CALL param%DEALLOCATE(); CALL FPL_FINALIZE()
   !!
 END IF
 !!
@@ -387,7 +387,7 @@ obj%isPmatInitiated = .TRUE.
 !!
 dsetname = TRIM(group)//"/pmatName"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%pmatName)
 END IF
 !!
@@ -395,7 +395,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/nnz"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%nnz)
 END IF
 !!
@@ -403,7 +403,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/ncol"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%ncol)
 END IF
 !!
@@ -411,7 +411,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/nrow"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%nrow)
 END IF
 !!
@@ -419,7 +419,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/isInitiated"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%isInitiated)
 END IF
 !!
@@ -427,7 +427,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/lfil"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%lfil)
 END IF
 !!
@@ -435,7 +435,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/mbloc"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%mbloc)
 END IF
 !!
@@ -443,7 +443,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/alpha"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%alpha)
 END IF
 !!
@@ -451,7 +451,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/droptol"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%droptol)
 END IF
 !!
@@ -459,7 +459,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/permtol"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%permtol)
 END IF
 !!
@@ -467,7 +467,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/A"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%A)
 END IF
 !!
@@ -475,7 +475,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/JA"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%JA)
 END IF
 !!
@@ -483,7 +483,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/IA"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%IA)
 END IF
 !!
@@ -491,7 +491,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/JU"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%JU)
 END IF
 !!
@@ -499,7 +499,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/IPERM"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%IPERM)
 END IF
 !!
@@ -507,7 +507,7 @@ END IF
 !!
 dsetname = TRIM(group)//"/LEVS"
 IF (hdf5%PathExists(dsetname%chars())) THEN
-  CALL hdf5%Read(dsetname=dsetname%chars(), &
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
   & vals=obj%pmat%LEVS)
 END IF
 !!

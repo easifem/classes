@@ -15,9 +15,15 @@
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/Field.F90
-  ${src_path}/Field_AXPY.F90
-)
+OPTION(USE_ARPACK OFF)
+IF(USE_ARPACK)
+  FIND_PACKAGE(arpackng REQUIRED)
+  IF(arpackng_FOUND)
+    MESSAGE(STATUS "FOUND ARPACK-NG")
+    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_ARPACK" )
+    LIST( APPEND TARGET_COMPILE_OPT ${arpackng_Fortran_FLAGS} )
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ARPACK::ARPACK)
+  ELSE()
+    MESSAGE(ERROR "NOT FOUND ARPACK-NG")
+  ENDIF()
+ENDIF()

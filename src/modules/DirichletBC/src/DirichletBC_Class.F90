@@ -26,7 +26,7 @@ USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "DirichletBC_Class"
+CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
 
 !----------------------------------------------------------------------------
 !                                                               DirichletBC_
@@ -42,9 +42,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & bc_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => bc_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
   FINAL :: bc_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => bc_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
   PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
@@ -81,7 +81,7 @@ INTERFACE
   MODULE SUBROUTINE setDirichletBCParam(param, name, idof, nodalValueType, &
     & useFunction)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: nodalValueType
     !! Space
@@ -135,7 +135,7 @@ INTERFACE
   MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
     CLASS(DirichletBC_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE bc_Import
 END INTERFACE
@@ -148,7 +148,7 @@ INTERFACE
   MODULE SUBROUTINE bc_Export(obj, hdf5, group)
     CLASS(DirichletBC_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE bc_Export
 END INTERFACE
 
@@ -159,7 +159,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
     CLASS(DirichletBC_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE bc_Display
 END INTERFACE

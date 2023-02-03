@@ -35,7 +35,7 @@ USE Domain_Class
 USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "BlockNodeField_Class"
+CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class"
 
 !----------------------------------------------------------------------------
 !                                                           BlockNodeField_
@@ -54,20 +54,20 @@ CONTAINS
     & bnField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: initiate1 => bnField_initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: initiate3 => bnField_initiate3
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => bnField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bnField_Deallocate
   FINAL :: bnField_Final
   !! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => bnField_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => bnField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bnField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => bnField_Export
   !! @SetMethods
   PROCEDURE, PASS(obj) :: set1 => bnField_set1
     !! set single entry
   PROCEDURE, PASS(obj) :: set2 => bnField_set2
     !! set all values to a scalar values
-  PROCEDURE, PASS(obj) :: assign => bnField_assign
+  PROCEDURE, PASS(obj) :: ASSIGN => bnField_assign
     !! set all values to a scalar values
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => assign
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => ASSIGN
     !! Assignment, obj = scalar
   PROCEDURE, PASS(obj) :: set3 => bnField_set3
     !! set all values to a given vector
@@ -152,9 +152,9 @@ INTERFACE
     & spaceCompo, timeCompo, fieldType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[BlockNodeField_]] will be stored in param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     !! Name of the block node field
-    CHARACTER(LEN=*), INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
     !! Names of the physical variables
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     !! Space components in each physical variable
@@ -258,11 +258,11 @@ INTERFACE
   END SUBROUTINE bnField_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE bnField_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethod
@@ -285,7 +285,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE bnField_Display(obj, msg, unitNo)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE bnField_Display
 END INTERFACE
@@ -302,7 +302,7 @@ INTERFACE
   MODULE SUBROUTINE bnField_Import(obj, hdf5, group, dom, domains)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE bnField_Import
@@ -320,7 +320,7 @@ INTERFACE
   MODULE SUBROUTINE bnField_Export(obj, hdf5, group)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE bnField_Export
 END INTERFACE
 
@@ -333,9 +333,9 @@ END INTERFACE
 ! summary: This routine sets all values to a scalar
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set1(obj, value, scale, addContribution)
+  MODULE SUBROUTINE bnField_set1(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE bnField_set1
@@ -350,9 +350,9 @@ END INTERFACE
 ! summary: This routine sets all values to val
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set2(obj, value, scale, addContribution)
+  MODULE SUBROUTINE bnField_set2(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE bnField_set2
@@ -367,11 +367,11 @@ END INTERFACE
 ! summary: This routine sets the single value
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set3(obj, globalNode, value, ivar, idof, &
+  MODULE SUBROUTINE bnField_set3(obj, globalNode, VALUE, ivar, idof, &
     & scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
@@ -388,11 +388,11 @@ END INTERFACE
 ! summary: This routine sets selected values to a scalar value
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set4(obj, globalNode, value, ivar, scale, &
+  MODULE SUBROUTINE bnField_set4(obj, globalNode, VALUE, ivar, scale, &
     & addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -408,11 +408,11 @@ END INTERFACE
 ! summary: This routine sets selected values to a scalar value
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set5(obj, globalNode, value, ivar, scale, &
+  MODULE SUBROUTINE bnField_set5(obj, globalNode, VALUE, ivar, scale, &
     & addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -428,11 +428,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set6(obj, globalNode, value, ivar, idof, &
+  MODULE SUBROUTINE bnField_set6(obj, globalNode, VALUE, ivar, idof, &
     & scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
@@ -449,11 +449,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set7(obj, globalNode, value, ivar, idof, &
+  MODULE SUBROUTINE bnField_set7(obj, globalNode, VALUE, ivar, idof, &
     & scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
@@ -470,11 +470,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set8(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set8(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -492,11 +492,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set9(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set9(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -514,11 +514,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set10(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set10(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
@@ -536,11 +536,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set11(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set11(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
@@ -558,11 +558,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set12(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set12(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -580,11 +580,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set13(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set13(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -602,11 +602,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set14(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set14(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -624,11 +624,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set15(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set15(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
@@ -646,11 +646,11 @@ END INTERFACE
 ! summary: This routine sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set16(obj, globalNode, value, ivar, &
+  MODULE SUBROUTINE bnField_set16(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -685,9 +685,9 @@ END INTERFACE
 ! summary: This routine sets all values to a scalar
 
 INTERFACE
-  MODULE SUBROUTINE bnField_assign(obj, value)
+  MODULE SUBROUTINE bnField_assign(obj, VALUE)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
   END SUBROUTINE bnField_assign
 END INTERFACE
 
@@ -700,9 +700,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get1(obj, value, globalNode, ivar, idof)
+  MODULE SUBROUTINE bnField_get1(obj, VALUE, globalNode, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: value
+    REAL(DFP), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
   !! physical variable number
@@ -720,9 +720,9 @@ END INTERFACE
 ! summary: returns all the values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get2(obj, value)
+  MODULE SUBROUTINE bnField_get2(obj, VALUE)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
   END SUBROUTINE bnField_get2
 END INTERFACE
 
@@ -735,9 +735,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get3(obj, value, globalNode, ivar, idof)
+  MODULE SUBROUTINE bnField_get3(obj, VALUE, globalNode, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -753,10 +753,10 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get4(obj, value, istart, iend, stride,  &
+  MODULE SUBROUTINE bnField_get4(obj, VALUE, istart, iend, stride,  &
     & ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
@@ -774,10 +774,10 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get5(obj, value, globalNode, &
+  MODULE SUBROUTINE bnField_get5(obj, VALUE, globalNode, &
     & ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: value
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -793,9 +793,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get6(obj, value, globalNode, ivar)
+  MODULE SUBROUTINE bnField_get6(obj, VALUE, globalNode, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: value
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
   END SUBROUTINE bnField_get6
@@ -810,10 +810,10 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get7(obj, value, globalNode, ivar, &
+  MODULE SUBROUTINE bnField_get7(obj, VALUE, globalNode, ivar, &
     & spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
@@ -830,10 +830,10 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get8(obj, value, globalNode, ivar, &
+  MODULE SUBROUTINE bnField_get8(obj, VALUE, globalNode, ivar, &
     & spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    TYPE(FEVariable_), INTENT(INOUT) :: value
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
@@ -850,9 +850,9 @@ END INTERFACE
 ! summary: Returns ivar,idof in a scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get9(obj, value, ivar, idof)
+  MODULE SUBROUTINE bnField_get9(obj, VALUE, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: value
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
   END SUBROUTINE bnField_get9
@@ -867,9 +867,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get10(obj, value, ivar, spaceCompo, timeCompo)
+  MODULE SUBROUTINE bnField_get10(obj, VALUE, ivar, spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: value
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -885,9 +885,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get11(obj, value, ivar, spaceCompo, timeCompo)
+  MODULE SUBROUTINE bnField_get11(obj, VALUE, ivar, spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(STScalarField_), INTENT(INOUT) :: value
+    CLASS(STScalarField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
@@ -903,9 +903,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get12(obj, value, ivar, spaceCompo, timeCompo)
+  MODULE SUBROUTINE bnField_get12(obj, VALUE, ivar, spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(VectorField_), INTENT(INOUT) :: value
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
@@ -921,9 +921,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get13(obj, value, ivar)
+  MODULE SUBROUTINE bnField_get13(obj, VALUE, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: value
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
   END SUBROUTINE bnField_get13
 END INTERFACE
@@ -937,9 +937,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get14(obj, value, ivar)
+  MODULE SUBROUTINE bnField_get14(obj, VALUE, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(STScalarField_), INTENT(INOUT) :: value
+    CLASS(STScalarField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
   END SUBROUTINE bnField_get14
 END INTERFACE
@@ -953,9 +953,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get15(obj, value, ivar)
+  MODULE SUBROUTINE bnField_get15(obj, VALUE, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(VectorField_), INTENT(INOUT) :: value
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
   END SUBROUTINE bnField_get15
 END INTERFACE
@@ -969,9 +969,9 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get16(obj, value, ivar)
+  MODULE SUBROUTINE bnField_get16(obj, VALUE, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
-    CLASS(STVectorField_), INTENT(INOUT) :: value
+    CLASS(STVectorField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
   END SUBROUTINE bnField_get16
 END INTERFACE

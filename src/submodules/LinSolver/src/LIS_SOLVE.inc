@@ -20,76 +20,76 @@
 #define _y1 obj%IPAR(9)
 #define _y2 obj%IPAR(9) + n - 1
 
-SUBROUTINE _SUBROUTINE_NAME (obj, sol, rhs)
+SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   CLASS(LinSolver_), TARGET, INTENT(INOUT) :: obj
   REAL(DFP), INTENT(INOUT) :: sol(:)
   REAL(DFP), INTENT(INOUT) :: rhs(:)
-  !!
-  !! Internal variables
-  !!
+  !
+  ! Internal variables
+  !
   CHARACTER(LEN=*), PARAMETER :: myName = _MY_NAME
   INTEGER(I4B) :: n
-  !!
-  !! main
-  !!
+  !
+  ! main
+  !
   obj%IPAR(1) = 0
   obj%FPAR(11) = 0.0_DFP
-  n = obj%globalNumRow;
+  n = obj%globalNumRow; 
   obj%IPAR(7) = 1
-  !!
-  !!
-  !!
+  !
+  !
+  !
   DO
-    !!
-    CALL _LIS_NAME (n, rhs, sol, obj%IPAR, obj%FPAR, obj%W)
-    !!
-    !! obj%RES(obj%IPAR(7)) = obj%FPAR(6)
-    ! CALL Display( obj%FPAR(5), myname // ' debug, ||r|| : ' )
-    !!
-    !!
+    !
+    CALL _LIS_NAME(n, rhs, sol, obj%IPAR, obj%FPAR, obj%W)
+    !
+    ! obj%RES(obj%IPAR(7)) = obj%FPAR(6)
+    CALL Display(obj%FPAR(5), __FILE__//' debug, ||r|| : ')
+    !
+    !
     IF (obj%IPAR(1) .GT. 0) THEN
-      !!
+      !
       CALL PERFORM_TASK(obj%Amat, y=obj%W(_y1:_y2), x=obj%W(_x1:_x2), &
         & dbcIndx=obj%dbcIndx, ierr=obj%IPAR(1), myName=myName)
-    !!
-    !!
-    !!
+      !
+      !
+      !
     ELSE IF (obj%IPAR(1) .LT. 0) THEN
-      !!
+      !
       CALL CHECKERROR(IPAR=obj%IPAR, FPAR=obj%FPAR, myName=myName)
       EXIT
-    !!
-    !!
-    !!
+      !
+      !
+      !
     ELSE IF (obj%IPAR(1) .EQ. 0) THEN
-      !!
+      !
       obj%ierr = obj%IPAR(1)
       obj%iter = obj%IPAR(7)
       CALL DisplayConvergence(myName, obj%iter, obj%FPAR)
       EXIT
-    !!
-    !!
-    !!
+      !
+      !
+      !
     END IF
-    !!
+    !
   END DO
-  !!
-  !! Initial residual/error norm
-  !!
+  !
+  ! Initial residual/error norm
+  !
   obj%error0 = obj%fpar(3)
-  !!
-  !! Target residual/error norm
-  !!
+  !
+  ! Target residual/error norm
+  !
   obj%tol = obj%fpar(4)
-  !!
-  !! Current residual/error norm
-  !!
+  !
+  ! Current residual/error norm
+  !
   obj%error = obj%fpar(6)
-  !!
-  !! Current residual norm
-  !!
+  !
+  ! Current residual norm
+  !
   obj%normRes = obj%fpar(5)
-  !!
+  !
 END SUBROUTINE _SUBROUTINE_NAME
 
 #undef _x1

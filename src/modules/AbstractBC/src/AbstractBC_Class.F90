@@ -26,7 +26,7 @@ USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "DirichletBC_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 
 !----------------------------------------------------------------------------
 !                                                                AbstractBC_
@@ -63,14 +63,14 @@ TYPE, ABSTRACT :: AbstractBC_
     !! Domain
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => bc_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: getMeshID => bc_getMeshID
   PROCEDURE, PUBLIC, PASS(obj) :: Get => bc_Get
   PROCEDURE, PUBLIC, PASS(obj) :: getDOFNo => bc_getDOFNo
   PROCEDURE(bc_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) ::  &
     & checkEssentialParam
   PROCEDURE(bc_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
-  PROCEDURE(bc_Import), DEFERRED, PUBLIC, PASS(obj) :: Import
+  PROCEDURE(bc_Import), DEFERRED, PUBLIC, PASS(obj) :: IMPORT
   PROCEDURE(bc_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
   PROCEDURE(bc_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
 END TYPE AbstractBC_
@@ -121,7 +121,7 @@ ABSTRACT INTERFACE
     IMPORT
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE bc_Import
 END INTERFACE
@@ -135,7 +135,7 @@ ABSTRACT INTERFACE
     IMPORT
     CLASS(AbstractBC_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE bc_Export
 END INTERFACE
 
@@ -147,7 +147,7 @@ ABSTRACT INTERFACE
   SUBROUTINE bc_Display(obj, msg, unitNo)
     IMPORT
     CLASS(AbstractBC_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE bc_Display
 END INTERFACE

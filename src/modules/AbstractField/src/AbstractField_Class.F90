@@ -53,7 +53,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
 !       & "CONSTANT_TIME " &
 !   & ]
 
-CHARACTER(LEN=*), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -62,8 +62,6 @@ CHARACTER(LEN=*), PARAMETER :: modName = "AbstractField_Class"
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
 ! summary: Abstract field is designed to handle fields in FEM
-!
-!{!pages/AbstractField_.md!}
 
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isInitiated = .FALSE.
@@ -93,23 +91,24 @@ CONTAINS
   PRIVATE
   PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
     & checkEssentialParam
-      !! check essential parameters
+  !! check essential parameters
   PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS(obj) :: Initiate1
-      !! Initiate the field by reading param and given domain
+  !! Initiate the field by reading param and given domain
   PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS(obj) :: Initiate2
-      !! Initiate by copying other fields, and different options
+  !! Initiate by copying other fields, and different options
   PROCEDURE(aField_Initiate3), DEFERRED, PUBLIC, PASS(obj) :: Initiate3
-      !! Initiate  block fields (different physical variables) defined
-      !! over different order of meshes.
+  !! Initiate  block fields (different physical variables) defined
+  !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => aField_Deallocate
-      !! Deallocate the field
+  GENERIC, PUBLIC :: Copy => Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
+  !! Deallocate the field
   PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
-      !! Display the field
-  PROCEDURE(aField_Import), DEFERRED, PUBLIC, PASS(obj) :: Import
-      !! Import data from hdf5 file
+  !! Display the field
+  PROCEDURE(aField_Import), DEFERRED, PUBLIC, PASS(obj) :: IMPORT
+  !! Import data from hdf5 file
   PROCEDURE(aField_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
-      !! Export data in hdf5 file
+  !! Export data in hdf5 file
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
@@ -192,7 +191,7 @@ ABSTRACT INTERFACE
   SUBROUTINE aField_Display(obj, msg, unitNo)
     IMPORT :: AbstractField_, I4B
     CLASS(AbstractField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE aField_Display
 END INTERFACE
@@ -206,7 +205,7 @@ ABSTRACT INTERFACE
     IMPORT :: AbstractField_, I4B, HDF5File_, Domain_, DomainPointer_
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE aField_Import
@@ -221,7 +220,7 @@ ABSTRACT INTERFACE
     IMPORT :: AbstractField_, HDF5File_
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE aField_Export
 END INTERFACE
 
@@ -247,7 +246,7 @@ PUBLIC :: AbstractFieldDeallocate
 
 INTERFACE
   MODULE PURE FUNCTION FIELD_TYPE_NUMBER(name) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION FIELD_TYPE_NUMBER
 END INTERFACE
@@ -261,7 +260,7 @@ PUBLIC :: FIELD_TYPE_NUMBER
 INTERFACE
   MODULE PURE FUNCTION FIELD_TYPE_NAME(id) RESULT(Ans)
     INTEGER(I4B), INTENT(IN) :: id
-    CHARACTER(LEN=20) :: ans
+    CHARACTER(20) :: ans
   END FUNCTION FIELD_TYPE_NAME
 END INTERFACE
 

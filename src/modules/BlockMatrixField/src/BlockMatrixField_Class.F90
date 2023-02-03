@@ -46,7 +46,7 @@ USE MatrixField_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "BlockMatrixField_Class"
+CHARACTER(*), PARAMETER :: modName = "BlockMatrixField_Class"
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -69,11 +69,11 @@ CONTAINS
       !! Initiate by copying other object
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => mField_Initiate3
       !! Initiate for block matrices
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => mField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mField_Deallocate
       !! Deallocate the field
   FINAL :: mField_Final
       !! Finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => mField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mField_Import
       !! Import from hdf5 file
   PROCEDURE, PASS(obj) :: set1 => mField_set1
   PROCEDURE, PASS(obj) :: set2 => mField_set2
@@ -150,11 +150,11 @@ INTERFACE
     & physicalVarNames, spaceCompo, timeCompo, fieldType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[BlockMatrixField_]] will be stored in this
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     !! Name of the matrix field
-    CHARACTER(LEN=*), INTENT(IN) :: matrixProp
+    CHARACTER(*), INTENT(IN) :: matrixProp
     !! Matrix property, "SYM" or "UNSYM"
-    CHARACTER(LEN=*), INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
     !! Name of physical variables
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     !! Number of space-components in each physicalVarNames, see [[DOF_]]
@@ -170,6 +170,33 @@ INTERFACE
 END INTERFACE
 
 PUBLIC :: setBlockMatrixFieldParam
+
+!----------------------------------------------------------------------------
+!                           SetBlockMatrixFieldPrecondParam@sConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2021
+! summary: This routine Sets the parameter for precondition of BlockMatrixField_
+
+INTERFACE
+  MODULE SUBROUTINE SetBlockMatrixFieldPrecondParam(param, name, &
+    & lfil, mbloc, droptol, permtol, alpha)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    !! Options to create precondition of [[BlockMatrixField_]]
+    INTEGER(I4B), INTENT(IN) :: name
+    !! Name of precondition
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: lfil
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: mbloc
+    REAL(DFP), OPTIONAL, INTENT(IN) :: droptol
+    !! Droptoleranace
+    REAL(DFP), OPTIONAL, INTENT(IN) :: permtol
+    !! permutation tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+  END SUBROUTINE SetBlockMatrixFieldPrecondParam
+END INTERFACE
+
+PUBLIC :: SetBlockMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -329,7 +356,7 @@ INTERFACE
   MODULE SUBROUTINE mField_Import(obj, hdf5, group, dom, domains)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE mField_Import
@@ -344,11 +371,11 @@ END INTERFACE
 ! summary: This routine is not callable for BlockMatrixField
 
 INTERFACE
-  MODULE SUBROUTINE mField_set1(obj, globalNode, value, storageFMT, scale,  &
+  MODULE SUBROUTINE mField_set1(obj, globalNode, VALUE, storageFMT, scale,  &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: storageFMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -369,11 +396,11 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE SUBROUTINE mField_set2(obj, globalNode, value, scale, &
+  MODULE SUBROUTINE mField_set2(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set2
@@ -389,13 +416,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set3(obj, iNodeNum, jNodeNum, idof, &
-    & jdof, value, scale, addContribution)
+    & jdof, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set3
@@ -416,13 +443,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set4(obj, iNodeNum, jNodeNum, ivar, &
-    & jvar, value, scale, addContribution)
+    & jvar, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
-    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set4
@@ -443,7 +470,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set5(obj, iNodeNum, jNodeNum, ivar, &
-    & jvar, idof, jdof, value, scale, addContribution)
+    & jvar, idof, jdof, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -451,7 +478,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
-    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set5
@@ -481,7 +508,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & idof, jdof, value, scale, addContribution)
+    & idof, jdof, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
@@ -489,7 +516,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set6
@@ -519,7 +546,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
@@ -530,7 +557,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set7
@@ -560,7 +587,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -571,7 +598,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set8
@@ -601,7 +628,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -612,7 +639,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo(:)
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set9
@@ -642,7 +669,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -653,7 +680,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo
     INTEGER(I4B), INTENT(IN) :: jspacecompo(:)
     INTEGER(I4B), INTENT(IN) :: jtimecompo
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_set10
@@ -1136,12 +1163,12 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow1(obj, globalNode, idof, value, &
+  MODULE SUBROUTINE mField_getRow1(obj, globalNode, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1169,13 +1196,13 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow2(obj, globalNode, ivar, idof, value, &
+  MODULE SUBROUTINE mField_getRow2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1204,13 +1231,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getRow3(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1239,13 +1266,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getRow4(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1274,13 +1301,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getRow5(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1309,13 +1336,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getRow6(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1344,13 +1371,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getRow7(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1376,12 +1403,12 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn1(obj, globalNode, idof, value, &
+  MODULE SUBROUTINE mField_getColumn1(obj, globalNode, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1407,13 +1434,13 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn2(obj, globalNode, ivar, idof, value, &
+  MODULE SUBROUTINE mField_getColumn2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1440,13 +1467,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getColumn3(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1473,13 +1500,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getColumn4(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1506,13 +1533,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getColumn5(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1539,13 +1566,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getColumn6(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1572,13 +1599,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_getColumn7(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution

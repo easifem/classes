@@ -29,53 +29,46 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_LUSOLVE1
-  !!
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_LUSOLVE1"
-  INTEGER( I4B ) :: s( 2 )
-  !!
-  !! check
-  !!
-  IF( .NOT. obj%isInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'MatrixField_ object is not initiated.')
-  !!
-  !! check
-  !!
-  IF( .NOT. obj%isPmatInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'obj%Pmat is not associted/ allocated. LUSOLVE needs LU &
-    & decomposition, but it is not found, you can call &
-    & setPrecondition() method to build LU matrix in obj%Pmat.')
-  !!
-  s = obj%shape()
-  !!
-  !! check
-  !!
-  IF( SIZE( sol ) .NE. SIZE( rhs ) .OR. SIZE( sol ) .NE. s( 1 ) ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
+CHARACTER(*), PARAMETER :: myName = "mField_LUSOLVE1"
+INTEGER(I4B) :: s(2), info
+!
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'MatrixField_ object is not initiated.')
+IF (.NOT. obj%isPmatInitiated) THEN
+  CALL LinSolve( &
+    & A=obj%mat, &
+    & B=rhs, &
+    & X=sol, &
+    & isTranspose=.FALSE., &
+    & isFactored=.TRUE., &
+    & PrintStat=yes_no_t%NO, &
+    & info=info)
+  IF (info .NE. 0) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Failure in LinSolve()')
+  END IF
+ELSE
+  s = obj%SHAPE()
+  IF (SIZE(sol) .NE. SIZE(rhs) .OR. SIZE(sol) .NE. s(1)) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'Size of sol vector should be equal to the size of rhs')
-  !!
-#endif
-  !!
-  !!
-  !!
-  IF( INPUT( default=.FALSE., option=transp ) ) THEN
+  IF (INPUT(default=.FALSE., option=isTranspose)) THEN
     CALL LUTSOLVE( &
       & sol=sol, &
       & rhs=rhs, &
       & alu=obj%pmat%A, &
       & jlu=obj%pmat%JA, &
-      & ju=obj%pmat%JU )
+      & ju=obj%pmat%JU)
   ELSE
     CALL LUSOLVE( &
       & sol=sol, &
       & rhs=rhs, &
       & alu=obj%pmat%A, &
       & jlu=obj%pmat%JA, &
-      & ju=obj%pmat%JU )
+      & ju=obj%pmat%JU)
   END IF
-  !!
+END IF
 END PROCEDURE mField_LUSOLVE1
 
 !----------------------------------------------------------------------------
@@ -83,18 +76,12 @@ END PROCEDURE mField_LUSOLVE1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_LUSOLVE2
-  REAL( DFP ), POINTER :: solval( : )
-  REAL( DFP ), POINTER :: rhsval( : )
-  !!
-  !!
-  !!
-  solval => sol%getPointer()
-  rhsval => rhs%getPointer()
-  !!
-  CALL obj%LUSOLVE( sol=solval, rhs=rhsval, transp=transp )
-  !!
-  NULLIFY( solval, rhsval )
-  !!
+REAL(DFP), POINTER :: solval(:)
+REAL(DFP), POINTER :: rhsval(:)
+solval => sol%getPointer()
+rhsval => rhs%getPointer()
+CALL obj%LUSOLVE(sol=solval, rhs=rhsval, isTranspose=isTranspose)
+NULLIFY (solval, rhsval)
 END PROCEDURE mField_LUSOLVE2
 
 END SUBMODULE LUSolveMethods

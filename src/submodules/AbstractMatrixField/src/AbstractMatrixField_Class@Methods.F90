@@ -15,14 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
-SUBMODULE ( AbstractMatrixField_Class) Methods
+SUBMODULE(AbstractMatrixField_Class) Methods
 IMPLICIT NONE
 CONTAINS
 
 MODULE PROCEDURE amField_Deallocate
-  CALL AbstractFieldDeallocate(obj)
-  obj%isPmatInitiated = .FALSE.
+CALL AbstractFieldDeallocate(obj)
+obj%isPmatInitiated = .FALSE.
 END PROCEDURE amField_Deallocate
 
 !----------------------------------------------------------------------------
@@ -30,7 +29,37 @@ END PROCEDURE amField_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE amField_isPreconditionSet
-  ans = obj%isPmatInitiated
+ans = obj%isPmatInitiated
 END PROCEDURE amField_isPreconditionSet
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE amField_SPY
+CHARACTER(*), PARAMETER :: myName = "amField_SPY"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine has not been implemented by the child class.')
+END PROCEDURE amField_SPY
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE amField_SymSchurLargestEigenVal
+CHARACTER(*), PARAMETER :: myName = "amField_SymSchurLargestEigenVal"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine has not been implemented by the child class.')
+END PROCEDURE amField_SymSchurLargestEigenVal
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE amField_SymLargestEigenVal
+CHARACTER(*), PARAMETER :: myName = "amField_SymLargestEigenVal"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine has not been implemented by the child class.')
+END PROCEDURE amField_SymLargestEigenVal
 
 END SUBMODULE Methods

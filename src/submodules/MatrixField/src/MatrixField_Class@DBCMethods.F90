@@ -14,3 +14,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
+
+SUBMODULE(MatrixField_Class) DBCMethods
+USE BaseMethod
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_ApplyDBC
+CALL ApplyDBC(obj=obj%mat, dbcPtrs=dbcPtrs)
+END PROCEDURE mField_ApplyDBC
+
+END SUBMODULE DBCMethods

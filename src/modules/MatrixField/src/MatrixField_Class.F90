@@ -45,7 +45,7 @@ USE AbstractMatrixField_Class
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
+CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 
@@ -127,35 +127,35 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & MatrixFieldCheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => mField_Initiate1
-      !! Initiate from the parameter list
+  !! Initiate from the parameter list
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => mField_Initiate2
-      !! Initiate by copying other object
+  !! Initiate by copying other object
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => mField_Initiate3
-      !! Initiate for block matrices
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => mField_Deallocate
+  !! Initiate for block matrices
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mField_Deallocate
       !! Deallocate the field
   !
   ! @IOMethods
   !
   PROCEDURE, PUBLIC, PASS(obj) :: Display => mField_Display
-      !! Display the field
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => mField_Import
-      !! Import from hdf5 file
+  !! Display the field
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mField_Import
+  !! Import from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ImportPmat => mField_ImportPmat
-      !! Import from hdf5 file
+  !! Import from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => mField_Export
-      !! export matrix field in hdf5file_
+  !! export matrix field in hdf5file_
   PROCEDURE, PUBLIC, PASS(obj) :: ExportPmat => mField_ExportPmat
-      !! export PMat
+  !! export PMat
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => mField_SPY
-    !! Get the sparsity pattern in various file formats
+  !! Get the sparsity pattern in various file formats
   !
   ! @GetMethods
   !
   PROCEDURE, PUBLIC, PASS(obj) :: Size => mField_Size
-      !! Returns the size of the matrix
+  !! Returns the size of the matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => mField_Shape
-      !! Returns the shape of the matrix
+  !! Returns the shape of the matrix
   !
   ! @MatvecMethods
   !
@@ -178,7 +178,7 @@ CONTAINS
   !! Building precondition matrix
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrecondition => &
     & mField_GetPrecondition
-      !! Get the precondition matrix
+  !! Get the precondition matrix
   PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => &
     & mField_ReversePermutation
   !
@@ -245,6 +245,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DiagonalScaling => &
     & mField_DiagonalScaling
   !
+  ! @SpectralMethods
+  !
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    & SymSchurLargestEigenVal => mField_SymSchurLargestEigenVal
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    & SymLargestEigenVal => mField_SymLargestEigenVal
+
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => mField_ApplyDBC
 END TYPE MatrixField_
 
 PUBLIC :: MatrixField_
@@ -265,9 +273,9 @@ INTERFACE
     & timeCompo, fieldType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[MatrixField_]] will be stored in this
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     !! Name of the matrix field
-    CHARACTER(LEN=*), INTENT(IN) :: matrixProp
+    CHARACTER(*), INTENT(IN) :: matrixProp
     !! Matrix property, "SYM" or "UNSYM"
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
     !! Number of space-components, see [[DOF_]]
@@ -283,6 +291,33 @@ INTERFACE
 END INTERFACE
 
 PUBLIC :: SetMatrixFieldParam
+
+!----------------------------------------------------------------------------
+!                           SetMatrixFieldPrecondParam@sConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 July 2021
+! summary: This routine Sets the parameter for precondition of MatrixField_
+
+INTERFACE
+  MODULE SUBROUTINE SetMatrixFieldPrecondParam(param, name, &
+    & lfil, mbloc, droptol, permtol, alpha)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    !! Options to create precondition of [[MatrixField_]]
+    INTEGER(I4B), INTENT(IN) :: name
+    !! Name of precondition
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: lfil
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: mbloc
+    REAL(DFP), OPTIONAL, INTENT(IN) :: droptol
+    !! Droptoleranace
+    REAL(DFP), OPTIONAL, INTENT(IN) :: permtol
+    !! permutation tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+  END SUBROUTINE SetMatrixFieldPrecondParam
+END INTERFACE
+
+PUBLIC :: SetMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !                            SetRectangleMatrixFieldParam@ConstructorMethods
@@ -311,11 +346,11 @@ INTERFACE
     & physicalVarNames, spaceCompo, timeCompo, fieldType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[BlockMatrixField_]] will be stored in this
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     !! Name of the matrix field
-    CHARACTER(LEN=*), INTENT(IN) :: matrixProp
+    CHARACTER(*), INTENT(IN) :: matrixProp
     !! Matrix property, "SYM" or "UNSYM"
-    CHARACTER(LEN=*), INTENT(IN) :: physicalVarNames(2)
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(2)
     !! Name of physical variables
     INTEGER(I4B), INTENT(IN) :: spaceCompo(2)
     !! Number of space-components in each physicalVarNames, see [[DOF_]]
@@ -346,11 +381,11 @@ INTERFACE
   END SUBROUTINE Pmat_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE Pmat_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                    CheckEssentialParam@ConstructorMethods
@@ -523,7 +558,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mField_Display(obj, msg, unitNo)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE mField_Display
 END INTERFACE
@@ -540,7 +575,7 @@ INTERFACE
   MODULE SUBROUTINE mField_Import(obj, hdf5, group, dom, domains)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE mField_Import
@@ -558,7 +593,7 @@ INTERFACE
   MODULE SUBROUTINE mField_ImportPmat(obj, hdf5, group, dom, domains)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE mField_ImportPmat
@@ -576,7 +611,7 @@ INTERFACE
   MODULE SUBROUTINE mField_Export(obj, hdf5, group)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mField_Export
 END INTERFACE
 
@@ -592,7 +627,7 @@ INTERFACE
   MODULE SUBROUTINE mField_ExportPmat(obj, hdf5, group)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mField_ExportPmat
 END INTERFACE
 
@@ -607,8 +642,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mField_SPY(obj, filename, ext)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: filename
-    CHARACTER(LEN=*), INTENT(IN) :: ext
+    CHARACTER(*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: ext
   END SUBROUTINE mField_SPY
 END INTERFACE
 
@@ -660,13 +695,16 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE SUBROUTINE mField_Matvec1(obj, x, y, transp)
+  MODULE SUBROUTINE mField_Matvec1(obj, x, y, isTranspose, &
+    & addContribution, scale)
     CLASS(MatrixField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     !! Input vector in y=Ax
     REAL(DFP), INTENT(INOUT) :: y(:)
     !! Output vector y=Ax
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: transp
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE mField_Matvec1
 END INTERFACE
 
@@ -686,13 +724,16 @@ END INTERFACE
 ! outside and it should have same length as the input vector.
 
 INTERFACE
-  MODULE SUBROUTINE mField_Matvec2(obj, x, y, transp)
+  MODULE SUBROUTINE mField_Matvec2(obj, x, y, isTranspose, &
+    & addContribution, scale)
     CLASS(MatrixField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     !! Input vector in y=Ax
     CLASS(AbstractNodeField_), INTENT(INOUT) :: y
     !! Output vector y=Ax
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: transp
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE mField_Matvec2
 END INTERFACE
 
@@ -719,13 +760,13 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_LUSOLVE1(obj, sol, rhs, transp)
-    CLASS(MatrixField_), INTENT(IN) :: obj
+  MODULE SUBROUTINE mField_LUSOLVE1(obj, sol, rhs, isTranspose)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: sol(:)
     !! Output vector y=Ax
     REAL(DFP), INTENT(IN) :: rhs(:)
     !! Input vector in y=Ax
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: transp
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
   END SUBROUTINE mField_LUSOLVE1
 END INTERFACE
 
@@ -750,13 +791,13 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_LUSOLVE2(obj, sol, rhs, transp)
-    CLASS(MatrixField_), INTENT(IN) :: obj
+  MODULE SUBROUTINE mField_LUSOLVE2(obj, sol, rhs, isTranspose)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: sol
     !! Output vector y=Ax
     CLASS(AbstractNodeField_), INTENT(IN) :: rhs
     !! Input vector in y=Ax
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: transp
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
   END SUBROUTINE mField_LUSOLVE2
 END INTERFACE
 
@@ -784,9 +825,10 @@ END INTERFACE
 ! ILUK : preconditionName, lfil
 
 INTERFACE
-  MODULE SUBROUTINE mField_SetPrecondition(obj, param)
+  MODULE SUBROUTINE mField_SetPrecondition(obj, param, dbcPtrs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
   END SUBROUTINE mField_SetPrecondition
 END INTERFACE
 
@@ -861,11 +903,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_Set1(obj, globalNode, value, storageFMT, scale, &
+  MODULE SUBROUTINE mField_Set1(obj, globalNode, VALUE, storageFMT, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: storageFMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -910,11 +952,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_Set2(obj, globalNode, value, scale, &
+  MODULE SUBROUTINE mField_Set2(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set2
@@ -946,13 +988,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set3(obj, iNodeNum, jNodeNum, idof, &
-    & jdof, value, scale, addContribution)
+    & jdof, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set3
@@ -973,13 +1015,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set4(obj, iNodeNum, jNodeNum, ivar, &
-    & jvar, value, scale, addContribution)
+    & jvar, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
-    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set4
@@ -1000,7 +1042,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set5(obj, iNodeNum, jNodeNum, ivar, &
-    & jvar, idof, jdof, value, scale, addContribution)
+    & jvar, idof, jdof, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
     INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
@@ -1008,7 +1050,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
-    REAL(DFP), INTENT(IN) :: value(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set5
@@ -1038,7 +1080,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & idof, jdof, value, scale, addContribution)
+    & idof, jdof, VALUE, scale, addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
     INTEGER(I4B), INTENT(IN) :: jNodeNum
@@ -1046,7 +1088,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: jdof
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set6
@@ -1076,7 +1118,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
@@ -1087,7 +1129,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set7
@@ -1117,7 +1159,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -1128,7 +1170,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set8
@@ -1158,7 +1200,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -1169,7 +1211,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo(:)
     INTEGER(I4B), INTENT(IN) :: jspacecompo
     INTEGER(I4B), INTENT(IN) :: jtimecompo(:)
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set9
@@ -1199,7 +1241,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_Set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
-    & ispacecompo, itimecompo, jspacecompo, jtimecompo, value, scale, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -1210,7 +1252,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: itimecompo
     INTEGER(I4B), INTENT(IN) :: jspacecompo(:)
     INTEGER(I4B), INTENT(IN) :: jtimecompo
-    REAL(DFP), INTENT(IN) :: value
+    REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set10
@@ -1693,12 +1735,12 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_GetRow1(obj, globalNode, idof, value, &
+  MODULE SUBROUTINE mField_GetRow1(obj, globalNode, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1726,13 +1768,13 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_GetRow2(obj, globalNode, ivar, idof, value, &
+  MODULE SUBROUTINE mField_GetRow2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1761,13 +1803,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetRow3(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1796,13 +1838,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetRow4(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1831,13 +1873,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetRow5(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1866,13 +1908,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetRow6(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo
     INTEGER(I4B), INTENT(IN) :: timecompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1901,13 +1943,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetRow7(obj, globalNode, ivar, spacecompo, &
-    & timecompo, value, nodeFieldVal, scale, addContribution)
+    & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spacecompo(:)
     INTEGER(I4B), INTENT(IN) :: timecompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1933,12 +1975,12 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_GetColumn1(obj, globalNode, idof, value, &
+  MODULE SUBROUTINE mField_GetColumn1(obj, globalNode, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1964,13 +2006,13 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_GetColumn2(obj, globalNode, ivar, idof, value, &
+  MODULE SUBROUTINE mField_GetColumn2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1997,13 +2039,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetColumn3(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -2030,13 +2072,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetColumn4(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -2063,13 +2105,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetColumn5(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -2096,13 +2138,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetColumn6(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -2129,13 +2171,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE mField_GetColumn7(obj, globalNode, ivar, spaceCompo, &
-    & timeCompo, value, nodeFieldVal, scale, addContribution)
+    & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: value(:)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: VALUE(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -2166,12 +2208,89 @@ END INTERFACE
 ! summary: REturns the diagnoal
 
 INTERFACE
-  MODULE SUBROUTINE mField_DiagonalScaling(obj, side, diag, operator)
+  MODULE SUBROUTINE mField_DiagonalScaling(obj, side, diag, OPERATOR)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: side
+    CHARACTER(*), INTENT(IN) :: side
     REAL(DFP), OPTIONAL, INTENT(IN) :: diag(:)
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: operator
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: OPERATOR
   END SUBROUTINE mField_DiagonalScaling
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SymSchurLargestEigenVal@SpectralMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-01-30
+! summary: SymSchurLargestEigenVal
+
+INTERFACE
+  MODULE FUNCTION mField_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
+      & maxIter, tol) RESULT(ans)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    !! CSRMatrix, symmetric
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: B
+    !! B matrix, possibly rectangle
+    INTEGER(I4B), INTENT(IN) :: nev
+    !! number of eigenvalues requested
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
+    !! `which = "LM"` ⇨ absolute largest eigenvalue
+    !! `which = "LA"` ⇨ algebraic largest eigenvalue
+    !! default is "LA"
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
+    !! Number of Lanczos vectors generated
+    !! It must be greater than 1 and smaller than `size(mat,1)`
+    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! Maximum number of iteration default = `N*10`
+    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
+    !! tolerance, default = 0.0
+    REAL(DFP) :: ans(nev)
+    !! first k, largest eigenvalue
+  END FUNCTION mField_SymSchurLargestEigenVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SymSchurLargestEigenVal@SpectralMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-01-30
+! summary: SymSchurLargestEigenVal
+
+INTERFACE
+  MODULE FUNCTION mField_SymLargestEigenVal(obj, nev, which, NCV, &
+      & maxIter, tol) RESULT(ans)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    !! CSRMatrix, symmetric
+    INTEGER(I4B), INTENT(IN) :: nev
+    !! number of eigenvalues requested
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
+    !! `which = "LM"` ⇨ absolute largest eigenvalue
+    !! `which = "LA"` ⇨ algebraic largest eigenvalue
+    !! default is "LA"
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
+    !! Number of Lanczos vectors generated
+    !! It must be greater than 1 and smaller than `size(mat,1)`
+    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! Maximum number of iteration default = `N*10`
+    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
+    !! tolerance, default = 0.0
+    REAL(DFP) :: ans(nev)
+    !! first k, largest eigenvalue
+  END FUNCTION mField_SymLargestEigenVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE mField_ApplyDBC(obj, dbcPtrs)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcPtrs(:)
+  END SUBROUTINE mField_ApplyDBC
 END INTERFACE
 
 END MODULE MatrixField_Class

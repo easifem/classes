@@ -31,7 +31,7 @@ USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(LEN=*), PARAMETER :: modName = "Linsolver_Class"
+CHARACTER(*), PARAMETER :: modName = "Linsolver_Class"
 INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 
@@ -63,7 +63,7 @@ CONTAINS
     & ls_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => ls_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => ls_Deallocate
     !! Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Set => ls_Set
     !! Set the matrix and preconditioning matrix
@@ -71,7 +71,7 @@ CONTAINS
     !! Solve the system of linear equation
   PROCEDURE, PUBLIC, PASS(obj) :: Display => ls_display
     !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => ls_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => ls_Import
     !! Importing linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => ls_Export
     !! Exporting linsolver from external file
@@ -103,7 +103,7 @@ PUBLIC :: LinSolverPointer_
 
 INTERFACE
   MODULE PURE FUNCTION getLinSolverCodeFromName(name) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION getLinSolverCodeFromName
 END INTERFACE
@@ -117,7 +117,7 @@ PUBLIC :: getLinSolverCodeFromName
 INTERFACE
   MODULE PURE FUNCTION getLinSolverNameFromCode(name) RESULT(Ans)
     INTEGER(I4B), INTENT(IN) :: name
-    CHARACTER(LEN=15) :: ans
+    CHARACTER(15) :: ans
   END FUNCTION getLinSolverNameFromCode
 END INTERFACE
 
@@ -282,7 +282,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE ls_Display(obj, msg, unitno)
     CLASS(LinSolver_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: Unitno
   END SUBROUTINE ls_Display
 END INTERFACE
@@ -305,7 +305,7 @@ INTERFACE
   MODULE SUBROUTINE ls_Import(obj, hdf5, group)
     CLASS(LinSolver_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE ls_Import
 END INTERFACE
 
@@ -321,7 +321,7 @@ INTERFACE
   MODULE SUBROUTINE ls_Export(obj, hdf5, group)
     CLASS(LinSolver_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE ls_Export
 END INTERFACE
 

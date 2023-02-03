@@ -24,56 +24,56 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get1
-  INTEGER(I4B) :: localNode
-  CHARACTER(LEN=*), PARAMETER :: myName = "vField_get1"
-  !!
-  !! main
-  !!
-  IF (PRESENT(globalNode)) THEN
-    !!
-    SELECT CASE (obj%fieldType)
-    !!
-    !!
-    !!
-    !!
-    CASE (FIELD_TYPE_CONSTANT)
-      !!
-      CALL getValue( &
-        & obj=obj%realvec, &
-        & dofobj=obj%dof, &
-        & idof=arange(1, obj%spaceCompo), &
-        & value=value, &
-        & nodenum=[1])
-    !!
-    !!
-    !!
-    !!
-    CASE (FIELD_TYPE_NORMAL)
-      !!
-      CALL getValue( &
-        & obj=obj%realvec, &
-        & dofobj=obj%dof, &
-        & idof=arange(1, obj%spaceCompo), &
-        & value=value, &
-        & nodenum=obj%domain%getLocalNodeNumber([globalNode]) )
-      !!
-    END SELECT
-    !!
-  END IF
-  !!
-  !!
-  !!
-  !!
-  IF (PRESENT(spaceCompo)) THEN
-    !!
+INTEGER(I4B) :: localNode
+CHARACTER(*), PARAMETER :: myName = "vField_get1"
+!
+! main
+!
+IF (PRESENT(globalNode)) THEN
+  !
+  SELECT CASE (obj%fieldType)
+    !
+    !
+    !
+    !
+  CASE (FIELD_TYPE_CONSTANT)
+    !
     CALL getValue( &
       & obj=obj%realvec, &
       & dofobj=obj%dof, &
-      & idof=spaceCompo, &
-      & value=value )
-    !!
-  END IF
-  !!
+      & idof=arange(1, obj%spaceCompo), &
+      & VALUE=VALUE, &
+      & nodenum=[1])
+    !
+    !
+    !
+    !
+  CASE (FIELD_TYPE_NORMAL)
+    !
+    CALL getValue( &
+      & obj=obj%realvec, &
+      & dofobj=obj%dof, &
+      & idof=arange(1, obj%spaceCompo), &
+      & VALUE=VALUE, &
+      & nodenum=obj%domain%getLocalNodeNumber([globalNode]))
+    !
+  END SELECT
+  !
+END IF
+!
+!
+!
+!
+IF (PRESENT(spaceCompo)) THEN
+  !
+  CALL getValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & idof=spaceCompo, &
+    & VALUE=VALUE)
+  !
+END IF
+!
 END PROCEDURE vField_get1
 
 !----------------------------------------------------------------------------
@@ -81,14 +81,14 @@ END PROCEDURE vField_get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get2
-  !!
-  CALL getValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idof=arange(1, obj%spaceCompo), &
-    & value=value, &
-    & force3D=force3D )
-  !!
+!
+CALL getValue( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & idof=arange(1, obj%spaceCompo), &
+  & VALUE=VALUE, &
+  & force3D=force3D)
+!
 END PROCEDURE vField_get2
 
 !----------------------------------------------------------------------------
@@ -96,27 +96,27 @@ END PROCEDURE vField_get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get3
-  REAL(DFP), ALLOCATABLE :: v(:)
-  !!
-  !! main
-  !!
-  CALL getValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idof=arange(1, obj%spaceCompo), &
-    & value=v, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-  !!
-  IF( PRESENT( force3D ) ) THEN
-    CALL Reallocate( value, 3, SIZE( globalNode) )
-    value( 1:obj%spaceCompo, : ) = &
-      & RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)])
-  ELSE
-    value = RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)])
-  END IF
-  !!
-  DEALLOCATE (v)
-  !!
+REAL(DFP), ALLOCATABLE :: v(:)
+!
+! main
+!
+CALL getValue( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & idof=arange(1, obj%spaceCompo), &
+  & VALUE=v, &
+  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+!
+IF (PRESENT(force3D)) THEN
+  CALL Reallocate(VALUE, 3, SIZE(globalNode))
+  VALUE(1:obj%spaceCompo, :) = &
+    & RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)])
+ELSE
+  VALUE = RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)])
+END IF
+!
+DEALLOCATE (v)
+!
 END PROCEDURE vField_get3
 
 !----------------------------------------------------------------------------
@@ -124,15 +124,15 @@ END PROCEDURE vField_get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get4
-  !!
-  CALL getValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & ivar=1, &
-    & idof=spaceCompo, &
-    & value=value, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-  !!
+!
+CALL getValue( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & ivar=1, &
+  & idof=spaceCompo, &
+  & VALUE=VALUE, &
+  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+!
 END PROCEDURE vField_get4
 
 !----------------------------------------------------------------------------
@@ -140,15 +140,15 @@ END PROCEDURE vField_get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get5
-  !!
-  CALL getValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & ivar=1, &
-    & idof=spaceCompo, &
-    & value=value, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-  !!
+!
+CALL getValue( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & ivar=1, &
+  & idof=spaceCompo, &
+  & VALUE=VALUE, &
+  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+!
 END PROCEDURE vField_get5
 
 !----------------------------------------------------------------------------
@@ -156,17 +156,17 @@ END PROCEDURE vField_get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get6
-  !!
-  INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-  !!
-  jj = 0
-  DO ii = istart, iend, stride
-    jj = jj + 1
-    globalNode(jj) = ii
-  END DO
-  !!
-  CALL obj%get(globalNode=globalNode, value=value)
-  !!
+!
+INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
+!
+jj = 0
+DO ii = istart, iend, stride
+  jj = jj + 1
+  globalNode(jj) = ii
+END DO
+!
+CALL obj%get(globalNode=globalNode, VALUE=VALUE)
+!
 END PROCEDURE vField_get6
 
 !----------------------------------------------------------------------------
@@ -174,17 +174,17 @@ END PROCEDURE vField_get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get7
-  !!
-  INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
-  !!
-  jj = 0
-  DO ii = istart, iend, stride
-    jj = jj + 1
-    globalNode(jj) = ii
-  END DO
-  !!
-  CALL obj%get(globalNode=globalNode, value=value, spaceCompo=spaceCompo)
-  !!
+!
+INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
+!
+jj = 0
+DO ii = istart, iend, stride
+  jj = jj + 1
+  globalNode(jj) = ii
+END DO
+!
+CALL obj%get(globalNode=globalNode, VALUE=VALUE, spaceCompo=spaceCompo)
+!
 END PROCEDURE vField_get7
 
 !----------------------------------------------------------------------------
@@ -192,23 +192,23 @@ END PROCEDURE vField_get7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get8
-  REAL(DFP), ALLOCATABLE :: v(:)
-  !!
-  !! main
-  !!
-  CALL getValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idof=arange(1, obj%spaceCompo), &
-    & value=v, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-  !!
-  value = NodalVariable( &
-    & RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)]), &
-    & TypeFEVariableVector, TypeFEVariableSpace )
-  !!
-  DEALLOCATE (v)
-  !!
+REAL(DFP), ALLOCATABLE :: v(:)
+!
+! main
+!
+CALL getValue( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & idof=arange(1, obj%spaceCompo), &
+  & VALUE=v, &
+  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+!
+VALUE = NodalVariable( &
+  & RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)]), &
+  & TypeFEVariableVector, TypeFEVariableSpace)
+!
+DEALLOCATE (v)
+!
 END PROCEDURE vField_get8
 
 !----------------------------------------------------------------------------
@@ -216,32 +216,32 @@ END PROCEDURE vField_get8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get9
-  !!
+!
 #ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="vField_get9"
-  INTEGER( I4B ) :: n
-  !!
-  !! check
-  !!
-  n = (obj%dof .tspacecomponents. 1)
-  !!
-  IF( spacecompo .GT. n ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .tspacecomponents. 1)='//tostring(n)// &
-    & ' is lesser than ' // &
-    & ' spacecompo='//tostring(spacecompo) )
-  !!
+CHARACTER(LEN=*), PARAMETER :: myName = "vField_get9"
+INTEGER(I4B) :: n
+!
+! check
+!
+n = (obj%dof.tspacecomponents.1)
+!
+IF (spacecompo .GT. n) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'This routine is not callable as &
+  & (obj%dof .tspacecomponents. 1)='//tostring(n)// &
+  & ' is lesser than '// &
+  & ' spacecompo='//tostring(spacecompo))
+!
 #endif
-  !!
-  !!
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & value=value%realvec, &
-    & idof=spacecompo )
-  !!
+!
+!
+!
+CALL GetValue( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & VALUE=VALUE%realvec, &
+  & idof=spacecompo)
+!
 END PROCEDURE vField_get9
 
 !----------------------------------------------------------------------------
@@ -249,11 +249,11 @@ END PROCEDURE vField_get9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get10
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & value=value%realvec )
-  !!
+!
+CALL GetValue( &
+  & obj=obj%realvec, &
+  & VALUE=VALUE%realvec)
+!
 END PROCEDURE vField_get10
 
 !----------------------------------------------------------------------------
@@ -261,19 +261,19 @@ END PROCEDURE vField_get10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_getPointerOfComponent
-  !!
+!
 #ifdef DEBUG_VER
-  CHARACTER(LEN=*), PARAMETER :: myName = "vField_getPointerOfComponent"
-  IF (spaceCompo .GT. obj%spaceCompo) &
-    & CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'given spaceCompo should be less than or equal to obj%spaceCompo')
+CHARACTER(*), PARAMETER :: myName = "vField_getPointerOfComponent"
+IF (spaceCompo .GT. obj%spaceCompo) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'given spaceCompo should be less than or equal to obj%spaceCompo')
 #endif
-  !!
-  ans => getPointer( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idof=spaceCompo )
-  !!
+!
+ans => getPointer( &
+  & obj=obj%realvec, &
+  & dofobj=obj%dof, &
+  & idof=spaceCompo)
+!
 END PROCEDURE vField_getPointerOfComponent
 
 END SUBMODULE GetMethods

@@ -14,10 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/Field.F90
-  ${src_path}/Field_AXPY.F90
-)
+# SuperLU LIBRARY
+# -DUSE_SuperLU
+#
+IF( ${PROJECT_NAME} MATCHES "easifemBase" )
+  OPTION(USE_SUPERLU ON)
+  IF(USE_SUPERLU)
+    FIND_LIBRARY(SuperLU_Libs superlu)
+    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_SuperLU" )
+    MESSAGE(STATUS "SuperLU_Libs = ${SuperLU_Libs}")
+  ENDIF()
+  TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${SuperLU_Libs} )
+ENDIF()

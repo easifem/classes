@@ -16,6 +16,7 @@
 
 SUBMODULE(AbstractNodeField_Class) Methods
 USE BaseMethod
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 
@@ -24,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_getPointer
-  ans => getPointer( obj%realVec )
+ans => getPointer(obj%realVec)
 END PROCEDURE anf_getPointer
 
 !----------------------------------------------------------------------------
@@ -32,7 +33,7 @@ END PROCEDURE anf_getPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_size
-  ans = obj%tSize
+ans = obj%tSize
 END PROCEDURE anf_size
 
 !----------------------------------------------------------------------------
@@ -40,41 +41,51 @@ END PROCEDURE anf_size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_initiate2
-  !!
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="anf_initiate2"
-#endif
-  !!
-  INTEGER( I4B ) :: ii, tsize
-  !!
-#ifdef DEBUG_VER
-  !!
-  IF( .NOT. obj2%isInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Obj2 is not initiated!')
-#endif
-  !!
+CHARACTER(*), PARAMETER :: myName = "anf_initiate2"
+INTEGER(I4B) :: ii, tsize
+!
+IF (.NOT. obj2%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'Obj2 is not initiated!')
+!
+IF (.NOT. obj%isInitiated) THEN
+  !
   obj%isInitiated = .TRUE.
   obj%fieldType = obj2%fieldType
   obj%domain => obj2%domain
   obj%name = obj2%name
   obj%engine = obj2%engine
-  !!
-  if( allocated( obj2%domains ) ) then
-    tsize = size( obj2%domains )
-    allocate( obj%domains( tsize ) )
-    do ii = 1, tsize
+  !
+  IF (ALLOCATED(obj2%domains)) THEN
+    tsize = SIZE(obj2%domains)
+    ALLOCATE (obj%domains(tsize))
+    DO ii = 1, tsize
       obj%domains(ii)%ptr => obj2%domains(ii)%ptr
-    end do
-  end if
-  !!
-  SELECT TYPE ( obj2 )
-  CLASS IS ( AbstractNodeField_ )
+    END DO
+  END IF
+  !
+  SELECT TYPE (obj2)
+  CLASS IS (AbstractNodeField_)
     obj%tSize = obj2%tSize
     obj%realVec = obj2%realVec
     obj%dof = obj2%dof
+  CLASS DEFAULT
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'Obj2 is not a child of AbstractNodeField_!')
   END SELECT
-  !!
+  !
+ELSE
+  !
+  SELECT TYPE (obj2)
+  CLASS IS (AbstractNodeField_)
+    obj%realVec = obj2%realVec
+  CLASS DEFAULT
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'Obj2 is not a child of AbstractNodeField_!')
+  END SELECT
+  !
+END IF
+
 END PROCEDURE anf_initiate2
 
 !----------------------------------------------------------------------------
@@ -82,6 +93,9 @@ END PROCEDURE anf_initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_initiate3
+CHARACTER(*), PARAMETER :: myName = "anf_Initiate3"
+CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'Initiate3 should be implemented by the child of AbstractNodeField_')
 END PROCEDURE anf_initiate3
 
 !----------------------------------------------------------------------------
@@ -89,10 +103,10 @@ END PROCEDURE anf_initiate3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_Deallocate
-  CALL AbstractFieldDeallocate(obj)
-  obj%tSize = 0
-  CALL Deallocate(obj%realVec)
-  CALL Deallocate(obj%dof)
+CALL AbstractFieldDeallocate(obj)
+obj%tSize = 0
+CALL DEALLOCATE (obj%realVec)
+CALL DEALLOCATE (obj%dof)
 END PROCEDURE anf_Deallocate
 
 !----------------------------------------------------------------------------
@@ -100,7 +114,7 @@ END PROCEDURE anf_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_Norm2
-  ans = NORM2( obj=obj%realvec )
+ans = NORM2(obj=obj%realvec)
 END PROCEDURE anf_Norm2
 
 !----------------------------------------------------------------------------

@@ -93,13 +93,13 @@ CONTAINS
   !! @ConstructorMethods
   !!
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => ff_initiate
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => ff_Deallocate
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => ff_Deallocate
   FINAL :: ff_final
-  PROCEDURE, PUBLIC, PASS(Obj) :: open => ff_open
-  PROCEDURE, PUBLIC, PASS(Obj) :: close => ff_close
+  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => ff_open
+  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => ff_close
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => ff_delete
-  PROCEDURE, PUBLIC, PASS(Obj) :: backspace => ff_backspace
-  PROCEDURE, PUBLIC, PASS(Obj) :: rewind => ff_rewind
+  PROCEDURE, PUBLIC, PASS(Obj) :: BACKSPACE => ff_backspace
+  PROCEDURE, PUBLIC, PASS(Obj) :: REWIND => ff_rewind
   !!
   !! @SetMethods
   !!

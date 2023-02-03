@@ -25,7 +25,7 @@ USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "ScalarMeshField_Class"
+CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
 
 !----------------------------------------------------------------------------
 !                                                     ScalarMeshField_Class
@@ -69,10 +69,10 @@ INTERFACE
   MODULE SUBROUTINE setScalarMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
   !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: nns

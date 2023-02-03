@@ -32,4 +32,6 @@ TARGET_SOURCES(
   ${src_path}/MatrixField_Class@PreconditionMethods.F90
   ${src_path}/MatrixField_Class@DiagonalMethods.F90
   ${src_path}/MatrixField_Class@DiagonalScalingMethods.F90
+  ${src_path}/MatrixField_Class@SpectralMethods.F90
+  ${src_path}/MatrixField_Class@DBCMethods.F90
 )
