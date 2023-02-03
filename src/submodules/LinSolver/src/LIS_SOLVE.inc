@@ -28,7 +28,32 @@ SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   ! Internal variables
   !
   CHARACTER(LEN=*), PARAMETER :: myName = _MY_NAME
-  INTEGER(I4B) :: n
+  INTEGER(I4B) :: n, ii
+  REAL(DFP), ALLOCATABLE :: diag(:)
+
+  !
+  ! Applying dirichlet boundary condition
+  !
+  CALL display(__FILE__//"  debug: I am disabling rhs(obj%dbcIndx) = 0.0_DFP")
+  ! IF (SIZE(obj%dbcIndx) .GT. 0) rhs(obj%dbcIndx) = 0.0_DFP
+  !
+  ! Applying diagonal precondition
+  !
+  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
+    !
+    CALL e%raiseInformation(modName//'::'//myName//" - "// &
+      & 'No precondition = Diagonal precondition !')
+    !
+    CALL obj%Amat%GetDiagonal(diag=diag)
+    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
+    !
+    DO ii = 1, SIZE(diag)
+      rhs(ii) = rhs(ii) / SQRT(ABS(diag(ii)))
+      sol(ii) = sol(ii) * SQRT(ABS(diag(ii)))
+    END DO
+    !
+  END IF
+
   !
   ! main
   !
@@ -90,6 +115,14 @@ SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   !
   obj%normRes = obj%fpar(5)
   !
+  ! Applying diagnoal precondition
+  !
+  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
+    DO ii = 1, SIZE(diag)
+      sol(ii) = sol(ii) / SQRT(ABS(diag(ii)))
+    END DO
+    DEALLOCATE (diag)
+  END IF
 END SUBROUTINE _SUBROUTINE_NAME
 
 #undef _x1

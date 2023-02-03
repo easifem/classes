@@ -213,7 +213,6 @@ MODULE PROCEDURE ls_Solve
 !
 CHARACTER(*), PARAMETER :: myName = "ls_Solve"
 REAL(DFP), POINTER :: rhsvar(:), solvar(:)
-REAL(DFP), ALLOCATABLE :: diag(:)
 INTEGER(I4B) :: ii
 !
 ! main
@@ -230,418 +229,61 @@ CASE (LIS_GMRES)
 
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  CALL display(__FILE__//"  debug: I am disabling rhsvar(obj%dbcIndx) = 0.0_DFP")
-  ! IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  ! IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-  !
-  ! CALL e%raiseInformation(modName//'::'//myName//" - "// &
-  !   & 'No precondition = Diagonal precondition !')
-  !
-  CALL obj%Amat%GetDiagonal(diag=diag)
-  ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-  CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-  !
-  DO ii = 1, SIZE(diag)
-    rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-    solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-  END DO
-  !
-  ! END IF
-  !
   CALL LS_SOLVE_GMRES(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  ! IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-  DO ii = 1, SIZE(diag)
-    solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-  END DO
-  DEALLOCATE (diag)
-  ! END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_CG)
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_CG(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_CGNR)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_CGNR(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_BCG)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_BCG(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_DBCG)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_DBCG(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_BCGSTAB)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_BCGSTAB(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_TFQMR)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_TFQMR(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_FOM)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_FOM(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
+
 CASE (LIS_FGMRES)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_FGMRES(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
-  !
-  !
-  !
-CASE (LIS_DQGMRES)
 
+CASE (LIS_DQGMRES)
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
-  !
-  ! Applying dirichlet boundary condition
-  !
-  IF (SIZE(obj%dbcIndx) .GT. 0) rhsvar(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    ! CALL obj%Amat%DiagonalScaling( side='BOTH' )
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhsvar(ii) = rhsvar(ii) / SQRT(ABS(diag(ii)))
-      solvar(ii) = solvar(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
-  !
   CALL LS_SOLVE_DQGMRES(obj, sol=solvar, rhs=rhsvar)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      solvar(ii) = solvar(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
-  !
   rhsvar => NULL(); solvar => NULL()
 
 CASE (1000)
