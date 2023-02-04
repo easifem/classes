@@ -33,7 +33,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "Domain_Class"
+CHARACTER(*), PARAMETER :: modName = "Domain_Class"
 
 !----------------------------------------------------------------------------
 !                                                             MeshFacetData_
@@ -139,6 +139,8 @@ TYPE :: Domain_
     !! Number of rows are 3, and number of columns is total nodes
   INTEGER(I4B), ALLOCATABLE, PUBLIC :: local_nptrs(:)
     !! local_nptrs are required to access the nodeCoord
+  INTEGER(I4B), ALLOCATABLE, PUBLIC :: global_nptrs(:)
+    !! global nptrs
   TYPE(MeshPointerVector_), ALLOCATABLE :: meshList(:)
     !! meshList( 0 ) list of meshes of point entities
     !! meshList( 1 ) list of meshes of line entities
@@ -346,7 +348,7 @@ INTERFACE
     !! DomainData object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! HDF5 file
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     !! Group name (directory name)
   END SUBROUTINE Domain_Initiate
 END INTERFACE
@@ -442,7 +444,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION Domain_Constructor1(hdf5, group) RESULT(Ans)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_) :: ans
   END FUNCTION Domain_Constructor1
 END INTERFACE
@@ -464,7 +466,7 @@ PUBLIC :: Domain
 INTERFACE
   MODULE FUNCTION Domain_Constructor_1(hdf5, group) RESULT(Ans)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), POINTER :: ans
   END FUNCTION Domain_Constructor_1
 END INTERFACE
@@ -487,7 +489,7 @@ INTERFACE
   MODULE SUBROUTINE Domain_Import(obj, hdf5, group)
     CLASS(Domain_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE Domain_Import
 END INTERFACE
 
@@ -502,7 +504,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE Domain_Display(obj, msg, unitno)
     CLASS(Domain_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE Domain_Display
 END INTERFACE
@@ -518,7 +520,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE Domain_DisplayMeshFacetData(obj, msg, unitno)
     CLASS(Domain_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE Domain_DisplayMeshFacetData
 END INTERFACE
@@ -534,7 +536,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE MeshFacetData_Display(obj, msg, unitno)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE MeshFacetData_Display
 END INTERFACE
@@ -1233,9 +1235,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
   END SUBROUTINE Domain_InitiateElemSD1
 END INTERFACE
 
@@ -1269,15 +1271,15 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
     INTEGER(I4B), INTENT(IN) :: orderTime
     TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE Domain_InitiateElemSD2
 END INTERFACE
@@ -1311,15 +1313,15 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
     INTEGER(I4B), INTENT(IN) :: orderTime
     TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
   END SUBROUTINE Domain_InitiateElemSD3
 END INTERFACE
 
@@ -1362,9 +1364,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
   END SUBROUTINE Domain_InitiateFacetElemSD1
 END INTERFACE
 
@@ -1395,11 +1397,11 @@ INTERFACE
     !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
       !! integrand order in space
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature type for space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity type of base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpol type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
       !! integrand order in time
@@ -1407,11 +1409,11 @@ INTERFACE
       !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
       !! time element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
       !! quadrature type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
       !! continuity type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE Domain_InitiateFacetElemSD2

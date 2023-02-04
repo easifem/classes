@@ -61,18 +61,18 @@ END PROCEDURE Domain_isElementPresent
 
 MODULE PROCEDURE Domain_getConnectivity
 CLASS(Mesh_), POINTER :: meshptr
-  !!
-  !! main
-  !!
+!
+! main
+!
 meshptr => NULL()
 meshptr => obj%getMeshPointer(globalElement=globalElement)
-  !!
+!
 IF (ASSOCIATED(meshptr)) THEN
   ans = meshptr%getConnectivity(globalElement)
 ELSE
   ALLOCATE (ans(0))
 END IF
-  !!
+!
 NULLIFY (meshptr)
 END PROCEDURE Domain_getConnectivity
 
@@ -124,7 +124,7 @@ END PROCEDURE Domain_getNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getTotalNodes
-CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getTotalNodes"
+CHARACTER(*), PARAMETER :: myName = "Domain_getTotalNodes"
 CLASS(Mesh_), POINTER :: meshPtr
 INTEGER(I4B) :: ii
 !>
@@ -189,7 +189,7 @@ END PROCEDURE Domain_tNodes3
 
 MODULE PROCEDURE Domain_getTotalElements
 CLASS(Mesh_), POINTER :: meshptr
-  !! main
+! main
 IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
   meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
   ans = meshptr%getTotalElements()
@@ -243,11 +243,11 @@ END PROCEDURE Domain_getLocalNodeNumber1
 
 MODULE PROCEDURE Domain_getLocalNodeNumber2
 INTEGER(I4B) :: ii
-!!
+!
 DO ii = 1, SIZE(globalNode)
   ans(ii) = Domain_getLocalNodeNumber1(obj, globalNode(ii))
 END DO
-!!
+!
 END PROCEDURE Domain_getLocalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -269,6 +269,12 @@ END PROCEDURE Domain_getGlobalNodeNumber1
 MODULE PROCEDURE Domain_getGlobalNodeNumber2
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(localNode)
+  ! ans = getIndex(obj%local_nptrs, localNode)
+  ! IF (localNode(ii) .LE. obj%tNodes) THEN
+  !   ans(ii) = getIndex(obj%local_nptrs, localNode(ii))
+  ! ELSE
+  !   ans(ii) = 0
+  ! END IF
   ans(ii) = Domain_getGlobalNodeNumber1(obj, localNode(ii))
 END DO
 END PROCEDURE Domain_getGlobalNodeNumber2
@@ -278,7 +284,7 @@ END PROCEDURE Domain_getGlobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getTotalMesh
-CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getTotalMesh"
+CHARACTER(*), PARAMETER :: myName = "Domain_getTotalMesh"
 IF (dim .LT. 0 .OR. dim .GT. 3) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "dim of the mesh should be in [0,1,2,3]")
@@ -295,7 +301,7 @@ END PROCEDURE Domain_getTotalMesh
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getMeshPointer1
-CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getMeshPointer"
+CHARACTER(*), PARAMETER :: myName = "Domain_getMeshPointer"
 INTEGER(I4B) :: tsize, imesh
 TYPE(MeshPointerIterator_) :: iterator
 !> main
@@ -317,7 +323,7 @@ END PROCEDURE Domain_getMeshPointer1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getMeshPointer2
-CHARACTER(len=*), PARAMETER :: myname = "Domain_getMeshPointer2"
+CHARACTER(*), PARAMETER :: myname = "Domain_getMeshPointer2"
 INTEGER(i4b) :: dim, entityNum
 !> main
 ans => NULL()
@@ -340,9 +346,9 @@ END PROCEDURE Domain_getMeshPointer2
 MODULE PROCEDURE Domain_getDimEntityNum
 INTEGER(i4b) :: dim, entityNum
 CLASS(Mesh_), POINTER :: meshptr
-  !! main
+! main
 ans = 0
-  !!
+!
 dimloop: DO dim = 0, obj%nsd
   DO entityNum = 1, obj%getTotalMesh(dim=dim)
     meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
@@ -359,7 +365,7 @@ END PROCEDURE Domain_getDimEntityNum
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getNodeCoord
-CHARACTER(LEN=*), PARAMETER :: myName = "Domain_getNodeCoord"
+CHARACTER(*), PARAMETER :: myName = "Domain_getNodeCoord"
 CLASS(Mesh_), POINTER :: meshPtr
 INTEGER(I4B) :: np, ii, jj
 !> main, check
@@ -406,9 +412,9 @@ MODULE PROCEDURE Domain_getNptrs
 INTEGER(I4B) :: ii
 CLASS(Mesh_), POINTER :: meshptr
 TYPE(IntVector_) :: intvec
-  !!
-  !!
-  !!
+!
+!
+!
 meshptr => NULL()
 DO ii = 1, SIZE(entityNum)
   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
@@ -416,14 +422,14 @@ DO ii = 1, SIZE(entityNum)
     CALL APPEND(intvec, meshptr%getNptrs())
   END IF
 END DO
-  !!
+!
 CALL RemoveDuplicates(intvec)
-  !!
+!
 ans = intvec
-  !!
+!
 CALL DEALLOCATE (intvec)
 NULLIFY (meshptr)
-  !!
+!
 END PROCEDURE Domain_getNptrs
 
 !----------------------------------------------------------------------------
@@ -434,9 +440,9 @@ MODULE PROCEDURE Domain_getInternalNptrs
 INTEGER(I4B) :: ii
 CLASS(Mesh_), POINTER :: meshptr
 TYPE(IntVector_) :: intvec
-  !!
-  !!
-  !!
+!
+!
+!
 meshptr => NULL()
 DO ii = 1, SIZE(entityNum)
   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
@@ -444,14 +450,14 @@ DO ii = 1, SIZE(entityNum)
     CALL APPEND(intvec, meshptr%getInternalNptrs())
   END IF
 END DO
-  !!
+!
 CALL RemoveDuplicates(intvec)
-  !!
+!
 ans = intvec
-  !!
+!
 CALL DEALLOCATE (intvec)
 NULLIFY (meshptr)
-  !!
+!
 END PROCEDURE Domain_getInternalNptrs
 
 !----------------------------------------------------------------------------
@@ -469,15 +475,15 @@ END PROCEDURE Domain_getNSD
 MODULE PROCEDURE Domain_getOrder
 INTEGER(I4B) :: ii
 CLASS(Mesh_), POINTER :: meshptr
-  !!
+!
 CALL Reallocate(ans, obj%getTotalMesh(dim=dim))
-  !!
+!
 DO ii = 1, SIZE(ans)
   meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
   ans(ii) = meshptr%getOrder()
   meshptr => NULL()
 END DO
-  !!
+!
 END PROCEDURE Domain_getOrder
 
 !----------------------------------------------------------------------------
@@ -500,9 +506,9 @@ END PROCEDURE Domain_getBoundingBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_getTotalMeshFacetData
-  !!
+!
 IF (PRESENT(imeshFacetData)) THEN
-    !!
+  !
   IF (ALLOCATED(obj%meshFacetData)) THEN
     IF (obj%meshFacetData(imeshFacetData)%isInitiated()) THEN
       ans = obj%meshFacetData(imeshFacetData)%SIZE()
@@ -512,15 +518,15 @@ IF (PRESENT(imeshFacetData)) THEN
   ELSE
     ans = 0
   END IF
-    !!
+  !
 ELSE
-    !!
+  !
   IF (ALLOCATED(obj%meshFacetData)) THEN
     ans = SIZE(obj%meshFacetData)
   ELSE
     ans = 0
   END IF
-    !!
+  !
 END IF
 END PROCEDURE Domain_getTotalMeshFacetData
 

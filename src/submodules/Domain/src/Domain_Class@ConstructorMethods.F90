@@ -29,12 +29,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Initiate
-CHARACTER(LEN=*), PARAMETER :: myName = "Domain_Initiate"
-! > Exception related to Mesh_ data type wil be printed in the
+CHARACTER(*), PARAMETER :: myName = "Domain_Initiate"
+! Exception related to Mesh_ data type wil be printed in the
 ! domain only
 CALL e%raiseInformation(modName//'::'//myName//'-'// &
   & 'INITIATING DOMAIN BY IMPORTING FROM MESH-FILE')
-CALL obj%import(hdf5=hdf5, group=group)
+CALL obj%IMPORT(hdf5=hdf5, group=group)
 CALL e%raiseInformation(modName//'::'//myName//'-'// &
   & 'MESH-FILE IS READ & DOMAIN HAS BEEN CREATED')
 END PROCEDURE Domain_Initiate
@@ -55,13 +55,13 @@ END PROCEDURE MeshFacetData_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MeshFacetData_isInitiated
-  !!
+!
 IF (ALLOCATED(obj%masterCellNumber)) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
 END IF
-  !!
+!
 END PROCEDURE MeshFacetData_isInitiated
 
 !----------------------------------------------------------------------------
@@ -69,13 +69,13 @@ END PROCEDURE MeshFacetData_isInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE MeshFacetData_Size
-  !!
+!
 IF (ALLOCATED(obj%masterCellNumber)) THEN
   ans = SIZE(obj%masterCellNumber)
 ELSE
   ans = 0
 END IF
-  !!
+!
 END PROCEDURE MeshFacetData_Size
 
 !----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ END PROCEDURE MeshFacetData_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Deallocate
-CHARACTER(LEN=*), PARAMETER :: myName = "Domain_Deallocate"
+CHARACTER(*), PARAMETER :: myName = "Domain_Deallocate"
 obj%isInitiated = .FALSE.
 obj%engine = ''
 obj%majorVersion = 0
@@ -101,14 +101,15 @@ obj%tEntitiesForNodes = 0
 obj%tEntitiesForElements = 0
 obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
-CALL Deallocate (obj%meshmap)
+CALL DEALLOCATE (obj%meshmap)
 IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
-  !! BUG
+! BUG
 CALL e%raiseDebug(modName//'::'//myName//'-'// &
   & 'There should be better way to deallocate obj%meshList...')
 IF (ALLOCATED(obj%meshList)) DEALLOCATE (obj%meshList)
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
 IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
+IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)
 END PROCEDURE Domain_Deallocate
 
 !----------------------------------------------------------------------------
@@ -116,7 +117,7 @@ END PROCEDURE Domain_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_Final
-CALL Obj%Deallocate()
+CALL Obj%DEALLOCATE()
 END PROCEDURE Domain_Final
 
 !----------------------------------------------------------------------------
