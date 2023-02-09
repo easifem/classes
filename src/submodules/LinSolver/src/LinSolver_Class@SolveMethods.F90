@@ -60,7 +60,7 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, dbcIndx, ierr, myName)
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
     !
-    CALL Amat%LUSOLVE(sol=y, rhs=x, isTranspose=.FALSE.)
+    CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.FALSE.)
     CALL display(__FILE__//"  debug: ILU Solve")
     !
   CASE (4, 6)
@@ -68,7 +68,7 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, dbcIndx, ierr, myName)
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
     !
-    CALL Amat%LUSOLVE(sol=y, rhs=x, isTranspose=.TRUE.)
+    CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.TRUE.)
     CALL display(__FILE__//"  debug: Transpose ILU Solve")
     !
   END SELECT
@@ -213,7 +213,7 @@ MODULE PROCEDURE ls_Solve
 !
 CHARACTER(*), PARAMETER :: myName = "ls_Solve"
 REAL(DFP), POINTER :: rhsvar(:), solvar(:)
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, info
 !
 ! main
 !
@@ -226,7 +226,6 @@ END IF
 !
 SELECT CASE (obj%solverName)
 CASE (LIS_GMRES)
-
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
   CALL LS_SOLVE_GMRES(obj, sol=solvar, rhs=rhsvar)
@@ -286,19 +285,33 @@ CASE (LIS_DQGMRES)
   CALL LS_SOLVE_DQGMRES(obj, sol=solvar, rhs=rhsvar)
   rhsvar => NULL(); solvar => NULL()
 
-CASE (1000)
-  rhsvar => rhs%getPointer()
-  solvar => sol%getPointer()
+CASE (LIS_SUPERLU)
+  SELECT TYPE (Amat => obj%Amat)
+  CLASS IS (MatrixField_)
+    rhsvar => rhs%getPointer()
+    solvar => sol%getPointer()
+    CALL LinSolve( &
+      & A=Amat%mat, &
+      & B=rhsvar, &
+      & X=solvar, &
+      & isTranspose=.FALSE., &
+      & isFactored=.TRUE., &
+      & PrintStat=yes_no_t%YES, &
+      & info=info)
+    IF (info .NE. 0) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+        & 'Failure in LinSolve()')
+    END IF
+    rhsvar => NULL()
+    solvar => NULL()
+  CLASS DEFAULT
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'No case found for obj%Amat type')
+  END SELECT
 
-  CALL obj%Amat%LUSolve( &
-    & rhs=rhsvar, &
-    & sol=solvar)
-
-  rhsvar => NULL(); solvar => NULL()
 CASE DEFAULT
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'Unknown linear solver encountered')
-
 END SELECT
 !
 END PROCEDURE ls_Solve

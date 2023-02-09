@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Final
-  CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE ent_Final
 
 !----------------------------------------------------------------------------
@@ -33,24 +33,24 @@ END PROCEDURE ent_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Deallocate
-  obj%uid = 0
-  obj%xiDim = 0
-  obj%elemType = 0
-  obj%minX = 0.0
-  obj%minY = 0.0
-  obj%minZ = 0.0
-  obj%maxX = 0.0
-  obj%maxY = 0.0
-  obj%maxZ = 0.0
-  obj%x = 0.0
-  obj%y = 0.0
-  obj%z = 0.0
-  IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-  IF( ALLOCATED( obj%IntNodeNumber ) ) DEALLOCATE( obj%IntNodeNumber )
-  IF( ALLOCATED( obj%ElemNumber ) ) DEALLOCATE( obj%ElemNumber )
-  IF( ALLOCATED( obj%Connectivity ) ) DEALLOCATE( obj%Connectivity )
-  IF( ALLOCATED( obj%BoundingEntity ) ) DEALLOCATE( obj%BoundingEntity )
-  IF( ALLOCATED( obj%NodeCoord ) ) DEALLOCATE( obj%NodeCoord )
+obj%uid = 0
+obj%xiDim = 0
+obj%elemType = 0
+obj%minX = 0.0
+obj%minY = 0.0
+obj%minZ = 0.0
+obj%maxX = 0.0
+obj%maxY = 0.0
+obj%maxZ = 0.0
+obj%x = 0.0
+obj%y = 0.0
+obj%z = 0.0
+IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+IF (ALLOCATED(obj%IntNodeNumber)) DEALLOCATE (obj%IntNodeNumber)
+IF (ALLOCATED(obj%ElemNumber)) DEALLOCATE (obj%ElemNumber)
+IF (ALLOCATED(obj%Connectivity)) DEALLOCATE (obj%Connectivity)
+IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
+IF (ALLOCATED(obj%NodeCoord)) DEALLOCATE (obj%NodeCoord)
 END PROCEDURE ent_Deallocate
 
 !----------------------------------------------------------------------------
@@ -58,38 +58,38 @@ END PROCEDURE ent_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_GotoTag
-  ! Define internal variables
-  INTEGER( I4B ) :: IOSTAT, Reopen, unitNo
-  CHARACTER( LEN = 100 ) :: Dummy, IOMSG
-  CHARACTER( LEN = * ), PARAMETER :: myName = "ent_GotoTag"
-  !
-  ! Find $meshFormat
+! Define internal variables
+INTEGER(I4B) :: IOSTAT, Reopen, unitNo
+CHARACTER(100) :: Dummy, IOMSG
+CHARACTER(*), PARAMETER :: myName = "ent_GotoTag"
+!
+! Find $meshFormat
 
   IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() .OR. .NOT. mshFile%isInitiated() ) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'mshFile is either not opened or does not have read access!')
-    error = -1
-  ELSE
-    Reopen = 0; error = 0; CALL mshFile%Rewind()
-    DO
-      unitNo = mshFile%getUnitNo(); Dummy=""
-      READ( unitNo, "(A)", IOSTAT = IOSTAT, IOMSG=IOMSG ) Dummy
-      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
-        CALL mshFile%setEOFStat( .TRUE. )
-        Reopen = Reopen + 1
-      END IF
-      IF( IOSTAT .GT. 0 .AND. Reopen .GT. 1 ) THEN
-        CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'Could not find $Entities !' // ' :: Reopen=' // &
-        & TOSTRING( Reopen ) // ' :: IOSTAT=' // TOSTRING( IOSTAT ) &
-        & // " :: IOMSG=" // TRIM( IOMSG ) )
-        error = -2
-        EXIT
-      ELSE IF( TRIM( Dummy ) .EQ. '$Entities' ) THEN
-        EXIT
-      END IF
-    END DO
-  END IF
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'mshFile is either not opened or does not have read access!')
+  error = -1
+ELSE
+  Reopen = 0; error = 0; CALL mshFile%REWIND()
+  DO
+    unitNo = mshFile%getUnitNo(); Dummy = ""
+    READ (unitNo, "(A)", IOSTAT=IOSTAT, IOMSG=IOMSG) Dummy
+    IF (IS_IOSTAT_END(IOSTAT)) THEN
+      CALL mshFile%setEOFStat(.TRUE.)
+      Reopen = Reopen + 1
+    END IF
+    IF (IOSTAT .GT. 0 .AND. Reopen .GT. 1) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Could not find $Entities !'//' :: Reopen='// &
+      & TOSTRING(Reopen)//' :: IOSTAT='//TOSTRING(IOSTAT) &
+      & //" :: IOMSG="//TRIM(IOMSG))
+      error = -2
+      EXIT
+    ELSE IF (TRIM(Dummy) .EQ. '$Entities') THEN
+      EXIT
+    END IF
+  END DO
+END IF
 END PROCEDURE ent_GotoTag
 
 !----------------------------------------------------------------------------
@@ -104,58 +104,58 @@ END PROCEDURE ent_Write
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_display
-  CALL Display( Msg, UnitNo=UnitNo )
-  CALL Display( obj%UiD, Msg="Tag: ", unitNo=unitNo )
-  SELECT CASE( obj%XiDim )
-  CASE( 0 )
-    CALL Display( "Type: Point", unitNo=unitNo )
-    CALL Display( obj%X, "X: ", unitNo=unitNo )
-    CALL Display( obj%Y, "Y: ", unitNo=unitNo )
-    CALL Display( obj%Z, "Z: ", unitNo=unitNo )
-  CASE( 1 )
-    CALL Display( "Type: Curve", unitNo=unitNo )
-    CALL Display( obj%minX, "minX: ", unitNo=unitNo )
-    CALL Display( obj%minY, "minY: ", unitNo=unitNo )
-    CALL Display( obj%minZ, "minZ: ", unitNo=unitNo )
-    CALL Display( obj%maxX, "maxX: ", unitNo=unitNo )
-    CALL Display( obj%maxY, "maxY: ", unitNo=unitNo )
-    CALL Display( obj%maxZ, "maxZ: ", unitNo=unitNo )
-    CALL Display( obj%BoundingEntity, "Bounding points: ", unitNo=unitNo )
-  CASE( 2 )
-    CALL Display( "Type: Surface", unitNo=unitNo )
-    CALL Display( obj%minX, "minX: ", unitNo=unitNo )
-    CALL Display( obj%minY, "minY: ", unitNo=unitNo )
-    CALL Display( obj%minZ, "minZ: ", unitNo=unitNo )
-    CALL Display( obj%maxX, "maxX: ", unitNo=unitNo )
-    CALL Display( obj%maxY, "maxY: ", unitNo=unitNo )
-    CALL Display( obj%maxZ, "maxZ: ", unitNo=unitNo )
-    CALL Display( obj%BoundingEntity, "Bounding curves: ", unitNo=unitNo )
-  CASE( 3 )
-    CALL Display( "Type: Surface", unitNo=unitNo )
-    CALL Display( obj%minX, "minX: ", unitNo=unitNo )
-    CALL Display( obj%minY, "minY: ", unitNo=unitNo )
-    CALL Display( obj%minZ, "minZ: ", unitNo=unitNo )
-    CALL Display( obj%maxX, "maxX: ", unitNo=unitNo )
-    CALL Display( obj%maxY, "maxY: ", unitNo=unitNo )
-    CALL Display( obj%maxZ, "maxZ: ", unitNo=unitNo )
-    CALL Display( obj%BoundingEntity, "Bounding surfaces: ", unitNo=unitNo )
-  END SELECT
-  ! Physical Tag
-  IF( ALLOCATED( obj%physicalTag ) ) THEN
-    CALL Display( obj%physicalTag, "physicalTag: ", unitNo=unitNo )
-  END IF
-  ! Nodes
-  IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
-    CALL Display( obj%IntNodeNumber, "Internal Node Number: ", unitNo=unitNo )
-    CALL Display( TRANSPOSE(obj%NodeCoord), "Nodal Coordinates: ", &
-      & unitNo=unitNo )
-  END IF
-  ! Elements
-  IF( ALLOCATED( obj%ElemNumber ) ) THEN
-    CALL Display( obj%ElemNumber, "Element number: ", unitNo=unitNo )
-    CALL Display( TRANSPOSE(obj%Connectivity), "Connectivity: ", &
-      & unitNo=unitNo )
-  END IF
+CALL Display(Msg, UnitNo=UnitNo)
+CALL Display(obj%UiD, Msg="Tag: ", unitNo=unitNo)
+SELECT CASE (obj%XiDim)
+CASE (0)
+  CALL Display("Type: Point", unitNo=unitNo)
+  CALL Display(obj%X, "X: ", unitNo=unitNo)
+  CALL Display(obj%Y, "Y: ", unitNo=unitNo)
+  CALL Display(obj%Z, "Z: ", unitNo=unitNo)
+CASE (1)
+  CALL Display("Type: Curve", unitNo=unitNo)
+  CALL Display(obj%minX, "minX: ", unitNo=unitNo)
+  CALL Display(obj%minY, "minY: ", unitNo=unitNo)
+  CALL Display(obj%minZ, "minZ: ", unitNo=unitNo)
+  CALL Display(obj%maxX, "maxX: ", unitNo=unitNo)
+  CALL Display(obj%maxY, "maxY: ", unitNo=unitNo)
+  CALL Display(obj%maxZ, "maxZ: ", unitNo=unitNo)
+  CALL Display(obj%BoundingEntity, "Bounding points: ", unitNo=unitNo)
+CASE (2)
+  CALL Display("Type: Surface", unitNo=unitNo)
+  CALL Display(obj%minX, "minX: ", unitNo=unitNo)
+  CALL Display(obj%minY, "minY: ", unitNo=unitNo)
+  CALL Display(obj%minZ, "minZ: ", unitNo=unitNo)
+  CALL Display(obj%maxX, "maxX: ", unitNo=unitNo)
+  CALL Display(obj%maxY, "maxY: ", unitNo=unitNo)
+  CALL Display(obj%maxZ, "maxZ: ", unitNo=unitNo)
+  CALL Display(obj%BoundingEntity, "Bounding curves: ", unitNo=unitNo)
+CASE (3)
+  CALL Display("Type: Surface", unitNo=unitNo)
+  CALL Display(obj%minX, "minX: ", unitNo=unitNo)
+  CALL Display(obj%minY, "minY: ", unitNo=unitNo)
+  CALL Display(obj%minZ, "minZ: ", unitNo=unitNo)
+  CALL Display(obj%maxX, "maxX: ", unitNo=unitNo)
+  CALL Display(obj%maxY, "maxY: ", unitNo=unitNo)
+  CALL Display(obj%maxZ, "maxZ: ", unitNo=unitNo)
+  CALL Display(obj%BoundingEntity, "Bounding surfaces: ", unitNo=unitNo)
+END SELECT
+! Physical Tag
+IF (ALLOCATED(obj%physicalTag)) THEN
+  CALL Display(obj%physicalTag, "physicalTag: ", unitNo=unitNo)
+END IF
+! Nodes
+IF (ALLOCATED(obj%IntNodeNumber)) THEN
+  CALL Display(obj%IntNodeNumber, "Internal Node Number: ", unitNo=unitNo)
+  CALL Display(TRANSPOSE(obj%NodeCoord), "Nodal Coordinates: ", &
+    & unitNo=unitNo)
+END IF
+! Elements
+IF (ALLOCATED(obj%ElemNumber)) THEN
+  CALL Display(obj%ElemNumber, "Element number: ", unitNo=unitNo)
+  CALL Display(TRANSPOSE(obj%Connectivity), "Connectivity: ", &
+    & unitNo=unitNo)
+END IF
 END PROCEDURE ent_display
 
 !----------------------------------------------------------------------------
@@ -163,16 +163,16 @@ END PROCEDURE ent_display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Read
-  SELECT CASE( dim )
-  CASE( 0 )
-    CALL ReadPointEntity( obj, mshFile, readTag, error )
-  CASE( 1 )
-    CALL ReadCurveEntity( obj, mshFile, readTag, error )
-  CASE( 2 )
-    CALL ReadSurfaceEntity( obj, mshFile, readTag, error )
-  CASE( 3 )
-    CALL ReadVolumeEntity( obj, mshFile, readTag, error )
-  END SELECT
+SELECT CASE (dim)
+CASE (0)
+  CALL ReadPointEntity(obj, mshFile, readTag, error)
+CASE (1)
+  CALL ReadCurveEntity(obj, mshFile, readTag, error)
+CASE (2)
+  CALL ReadSurfaceEntity(obj, mshFile, readTag, error)
+CASE (3)
+  CALL ReadVolumeEntity(obj, mshFile, readTag, error)
+END SELECT
 END PROCEDURE ent_Read
 
 !----------------------------------------------------------------------------
@@ -180,27 +180,27 @@ END PROCEDURE ent_Read
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ReadPointEntity
-  ! Define internal variables
-  INTEGER( I4B ) :: dummyierr
-  INTEGER( I4B ) :: Intvec( 100 ), n, i
+! Define internal variables
+INTEGER(I4B) :: dummyierr
+INTEGER(I4B) :: Intvec(100), n, i
 
-  ! go to tag
-  IF( ReadTag ) THEN
-    CALL obj%GotoTag( mshFile, error )
-  ELSE
-    error = 0
-  END IF
+! go to tag
+IF (ReadTag) THEN
+  CALL obj%GotoTag(mshFile, error)
+ELSE
+  error = 0
+END IF
 
-  IF( error .EQ. 0 ) THEN
-    obj%XiDim = 0
-    READ( mshFile%getUnitNo(), * ) obj%Uid, obj%X, obj%Y, obj%Z, &
-      & n, (Intvec(i), i=1,n)
-    IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-    IF( n .NE. 0 ) THEN
-      ALLOCATE( obj%physicalTag( n ) )
-      obj%physicalTag( 1 : n ) = Intvec( 1 : n )
-    END IF
+IF (error .EQ. 0) THEN
+  obj%XiDim = 0
+  READ (mshFile%getUnitNo(), *) obj%Uid, obj%X, obj%Y, obj%Z, &
+    & n, (Intvec(i), i=1, n)
+  IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+  IF (n .NE. 0) THEN
+    ALLOCATE (obj%physicalTag(n))
+    obj%physicalTag(1:n) = Intvec(1:n)
   END IF
+END IF
 END PROCEDURE ReadPointEntity
 
 !----------------------------------------------------------------------------
@@ -208,34 +208,34 @@ END PROCEDURE ReadPointEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ReadCurveEntity
-  INTEGER( I4B ) :: Intvec1( 100 ), n, i, m, Intvec2( 100 )
+INTEGER(I4B) :: Intvec1(100), n, i, m, Intvec2(100)
 
-  IF( ReadTag ) THEN
-    CALL obj%GotoTag( mshFile, error )
-  ELSE
-    error = 0
-  END IF
+IF (ReadTag) THEN
+  CALL obj%GotoTag(mshFile, error)
+ELSE
+  error = 0
+END IF
 
-  IF( error .EQ. 0 ) THEN
-    obj%XiDim = 1
-    READ( mshFile%getUnitNo(), * ) &
-      & obj%Uid, obj%minX, obj%minY, obj%minZ, &
-      & obj%maxX, obj%maxY, obj%maxZ, &
-      & n, (Intvec1(i), i=1,n), &
-      & m, (Intvec2(i), i=1,m)
-    !
-    IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-    IF( ALLOCATED( obj%BoundingEntity ) ) DEALLOCATE( obj%BoundingEntity )
-    !
-    IF( n .NE. 0 ) THEN
-      ALLOCATE( obj%physicalTag( n ) )
-      obj%physicalTag( 1 : n ) = Intvec1( 1 : n )
-    END IF
-    IF( m .NE. 0 ) THEN
-      ALLOCATE( obj%BoundingEntity( m ) )
-      obj%BoundingEntity( 1 : m ) = Intvec2( 1 : m )
-    END IF
+IF (error .EQ. 0) THEN
+  obj%XiDim = 1
+  READ (mshFile%getUnitNo(), *) &
+    & obj%Uid, obj%minX, obj%minY, obj%minZ, &
+    & obj%maxX, obj%maxY, obj%maxZ, &
+    & n, (Intvec1(i), i=1, n), &
+    & m, (Intvec2(i), i=1, m)
+
+  IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+  IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
+
+  IF (n .NE. 0) THEN
+    ALLOCATE (obj%physicalTag(n))
+    obj%physicalTag(1:n) = Intvec1(1:n)
   END IF
+  IF (m .NE. 0) THEN
+    ALLOCATE (obj%BoundingEntity(m))
+    obj%BoundingEntity(1:m) = Intvec2(1:m)
+  END IF
+END IF
 END PROCEDURE ReadCurveEntity
 
 !----------------------------------------------------------------------------
@@ -243,65 +243,65 @@ END PROCEDURE ReadCurveEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ReadSurfaceEntity
-  ! Define internal variables
-  INTEGER( I4B ), ALLOCATABLE :: Intvec1( : ), Intvec2( : )
-  INTEGER( I4B ) :: n, i, m
-  TYPE( String ) :: aline
-  TYPE( String ), ALLOCATABLE :: entries( : )
-  !
-  IF( ReadTag ) THEN
-    CALL obj%GotoTag( mshFile, error )
-  ELSE
-    error = 0
+! Define internal variables
+INTEGER(I4B), ALLOCATABLE :: Intvec1(:), Intvec2(:)
+INTEGER(I4B) :: n, i, m
+TYPE(String) :: aline
+TYPE(String), ALLOCATABLE :: entries(:)
+!
+IF (ReadTag) THEN
+  CALL obj%GotoTag(mshFile, error)
+ELSE
+  error = 0
+END IF
+
+IF (error .EQ. 0) THEN
+  obj%XiDim = 2
+  CALL aline%read_line(unit=mshFile%getUnitno())
+  CALL aline%split(tokens=entries, sep=' ')
+  obj%Uid = entries(1)%to_number(kind=1_I4B)
+
+  obj%minX = entries(2)%to_number(kind=1.0_DFP)
+  obj%minY = entries(3)%to_number(kind=1.0_DFP)
+  obj%minZ = entries(4)%to_number(kind=1.0_DFP)
+
+  obj%maxX = entries(5)%to_number(kind=1.0_DFP)
+  obj%maxY = entries(6)%to_number(kind=1.0_DFP)
+  obj%maxZ = entries(7)%to_number(kind=1.0_DFP)
+
+  n = entries(8)%to_number(kind=I4B)
+  IF (n .NE. 0) THEN
+    ALLOCATE (IntVec1(n))
+    DO i = 1, n
+      IntVec1(i) = entries(8 + i)%to_number(kind=I4B)
+    END DO
   END IF
-
-  IF( error .EQ. 0 ) THEN
-    obj%XiDim = 2
-    CALL aline%read_line( unit = mshFile%getUnitno() )
-    CALL aline%split(tokens=entries, sep=' ')
-    obj%Uid = entries( 1 )%to_number( kind = I4B )
-
-    obj%minX = entries( 2 )%to_number( kind = DFP )
-    obj%minY = entries( 3 )%to_number( kind = DFP )
-    obj%minZ = entries( 4 )%to_number( kind = DFP )
-
-    obj%maxX = entries( 5 )%to_number( kind = DFP )
-    obj%maxY = entries( 6 )%to_number( kind = DFP )
-    obj%maxZ = entries( 7 )%to_number( kind = DFP )
-
-    n = entries( 8 )%to_number( kind = I4B )
-    IF( n .NE. 0 ) THEN
-      ALLOCATE( IntVec1( n ) )
-      DO i = 1, n
-        IntVec1( i ) = entries( 8 + i )%to_number( kind = I4B )
-      END DO
-    ENDIF
     !! check total length here
-    m = entries( 9 + n )%to_number( kind = I4B )
-    IF( m .NE. 0 ) THEN
-      ALLOCATE( IntVec2( m ) )
-      DO i = 1, m
-        IntVec2( i ) = entries( 9 + n + i )%to_number( kind = I4B )
-      END DO
-    ENDIF
-
-    IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-    IF( ALLOCATED( obj%BoundingEntity ) ) DEALLOCATE( obj%BoundingEntity )
-
-    IF( n .NE. 0 ) THEN
-      ALLOCATE( obj%physicalTag( n ) )
-      obj%physicalTag( 1 : n ) = Intvec1( 1 : n )
-    END IF
-
-    IF( m .NE. 0 ) THEN
-      ALLOCATE( obj%BoundingEntity( m ) )
-      obj%BoundingEntity( 1 : m ) = Intvec2( 1 : m )
-    END IF
+  m = entries(9 + n)%to_number(kind=I4B)
+  IF (m .NE. 0) THEN
+    ALLOCATE (IntVec2(m))
+    DO i = 1, m
+      IntVec2(i) = entries(9 + n + i)%to_number(kind=I4B)
+    END DO
   END IF
 
-  IF( ALLOCATED( IntVec1 ) ) DEALLOCATE( IntVec1 )
-  IF( ALLOCATED( IntVec2 ) ) DEALLOCATE( IntVec2 )
-  IF( ALLOCATED( entries ) ) DEALLOCATe( entries )
+  IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+  IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
+
+  IF (n .NE. 0) THEN
+    ALLOCATE (obj%physicalTag(n))
+    obj%physicalTag(1:n) = Intvec1(1:n)
+  END IF
+
+  IF (m .NE. 0) THEN
+    ALLOCATE (obj%BoundingEntity(m))
+    obj%BoundingEntity(1:m) = Intvec2(1:m)
+  END IF
+END IF
+
+IF (ALLOCATED(IntVec1)) DEALLOCATE (IntVec1)
+IF (ALLOCATED(IntVec2)) DEALLOCATE (IntVec2)
+IF (ALLOCATED(entries)) DEALLOCATE (entries)
 END PROCEDURE ReadSurfaceEntity
 
 !----------------------------------------------------------------------------
@@ -309,66 +309,66 @@ END PROCEDURE ReadSurfaceEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ReadVolumeEntity
-  ! Define internal variables
-  INTEGER( I4B ), ALLOCATABLE :: Intvec1( : ), Intvec2( : )
-  INTEGER( I4B ) :: n, i, m
-  TYPE( String ) :: aline
-  TYPE( String ), ALLOCATABLE :: entries( : )
+! Define internal variables
+INTEGER(I4B), ALLOCATABLE :: Intvec1(:), Intvec2(:)
+INTEGER(I4B) :: n, i, m
+TYPE(String) :: aline
+TYPE(String), ALLOCATABLE :: entries(:)
 
-  IF( ReadTag ) THEN
-    CALL obj%GotoTag( mshFile, error )
-  ELSE
-    error = 0
+IF (ReadTag) THEN
+  CALL obj%GotoTag(mshFile, error)
+ELSE
+  error = 0
+END IF
+!
+IF (error .EQ. 0) THEN
+  obj%XiDim = 3
+
+  CALL aline%read_line(unit=mshFile%getUnitno())
+  CALL aline%split(tokens=entries, sep=' ')
+  obj%Uid = entries(1)%to_number(kind=I4B)
+
+  obj%minX = entries(2)%to_number(kind=1.0_DFP)
+  obj%minY = entries(3)%to_number(kind=1.0_DFP)
+  obj%minZ = entries(4)%to_number(kind=1.0_DFP)
+
+  obj%maxX = entries(5)%to_number(kind=1.0_DFP)
+  obj%maxY = entries(6)%to_number(kind=1.0_DFP)
+  obj%maxZ = entries(7)%to_number(kind=1.0_DFP)
+
+  n = entries(8)%to_number(kind=I4B)
+  IF (n .NE. 0) THEN
+    ALLOCATE (IntVec1(n))
+    DO i = 1, n
+      IntVec1(i) = entries(8 + i)%to_number(kind=I4B)
+    END DO
+  END IF
+    !! check total length here
+  m = entries(9 + n)%to_number(kind=I4B)
+  IF (m .NE. 0) THEN
+    ALLOCATE (IntVec2(m))
+    DO i = 1, m
+      IntVec2(i) = entries(9 + n + i)%to_number(kind=I4B)
+    END DO
+  END IF
+
+  IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+  IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
+  !
+  IF (n .NE. 0) THEN
+    ALLOCATE (obj%physicalTag(n))
+    obj%physicalTag(1:n) = Intvec1(1:n)
   END IF
   !
-  IF( error .EQ. 0 ) THEN
-    obj%XiDim = 3
-
-    CALL aline%read_line( unit = mshFile%getUnitno() )
-    CALL aline%split(tokens=entries, sep=' ')
-    obj%Uid = entries( 1 )%to_number( kind = I4B )
-
-    obj%minX = entries( 2 )%to_number( kind = DFP )
-    obj%minY = entries( 3 )%to_number( kind = DFP )
-    obj%minZ = entries( 4 )%to_number( kind = DFP )
-
-    obj%maxX = entries( 5 )%to_number( kind = DFP )
-    obj%maxY = entries( 6 )%to_number( kind = DFP )
-    obj%maxZ = entries( 7 )%to_number( kind = DFP )
-
-    n = entries( 8 )%to_number( kind = I4B )
-    IF( n .NE. 0 ) THEN
-      ALLOCATE( IntVec1( n ) )
-      DO i = 1, n
-        IntVec1( i ) = entries( 8 + i )%to_number( kind = I4B )
-      END DO
-    ENDIF
-    !! check total length here
-    m = entries( 9 + n )%to_number( kind = I4B )
-    IF( m .NE. 0 ) THEN
-      ALLOCATE( IntVec2( m ) )
-      DO i = 1, m
-        IntVec2( i ) = entries( 9 + n + i )%to_number( kind = I4B )
-      END DO
-    ENDIF
-
-    IF( ALLOCATED( obj%physicalTag ) ) DEALLOCATE( obj%physicalTag )
-    IF( ALLOCATED( obj%BoundingEntity ) ) DEALLOCATE( obj%BoundingEntity )
-    !
-    IF( n .NE. 0 ) THEN
-      ALLOCATE( obj%physicalTag( n ) )
-      obj%physicalTag( 1 : n ) = Intvec1( 1 : n )
-    END IF
-    !
-    IF( m .NE. 0 ) THEN
-      ALLOCATE( obj%BoundingEntity( m ) )
-      obj%BoundingEntity( 1 : m ) = Intvec2( 1 : m )
-    END IF
+  IF (m .NE. 0) THEN
+    ALLOCATE (obj%BoundingEntity(m))
+    obj%BoundingEntity(1:m) = Intvec2(1:m)
   END IF
+END IF
 
-  IF( ALLOCATED( IntVec1 ) ) DEALLOCATE( IntVec1 )
-  IF( ALLOCATED( IntVec2 ) ) DEALLOCATE( IntVec2 )
-  IF( ALLOCATED( entries ) ) DEALLOCATe( Entries )
+IF (ALLOCATED(IntVec1)) DEALLOCATE (IntVec1)
+IF (ALLOCATED(IntVec2)) DEALLOCATE (IntVec2)
+IF (ALLOCATED(entries)) DEALLOCATE (Entries)
 
 END PROCEDURE ReadVolumeEntity
 
@@ -377,16 +377,16 @@ END PROCEDURE ReadVolumeEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getIndex
-  ! Define internal variables
-  INTEGER( I4B ) :: j, tSize
-  ans = 0
-  tSize = SIZE( mshEntities )
-  DO j = 1, tSize
-    IF( mshEntities( j )%UiD .EQ. UiD ) THEN
-      ans = j
-      EXIT
-    END IF
-  END DO
+! Define internal variables
+INTEGER(I4B) :: j, tSize
+ans = 0
+tSize = SIZE(mshEntities)
+DO j = 1, tSize
+  IF (mshEntities(j)%UiD .EQ. UiD) THEN
+    ans = j
+    EXIT
+  END IF
+END DO
 END PROCEDURE ent_getIndex
 
 !----------------------------------------------------------------------------
@@ -394,11 +394,11 @@ END PROCEDURE ent_getIndex
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getTotalPhysicalTags
-  IF( ALLOCATED( obj%physicalTag ) ) THEN
-    ans = SIZE( obj%physicalTag )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%physicalTag)) THEN
+  ans = SIZE(obj%physicalTag)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE ent_getTotalPhysicalTags
 
 !----------------------------------------------------------------------------
@@ -406,11 +406,11 @@ END PROCEDURE ent_getTotalPhysicalTags
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getTotalBoundingTags
-  IF( ALLOCATED( obj%BoundingEntity ) ) THEN
-    ans = SIZE( obj%BoundingEntity )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%BoundingEntity)) THEN
+  ans = SIZE(obj%BoundingEntity)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE ent_getTotalBoundingTags
 
 !----------------------------------------------------------------------------
@@ -418,11 +418,11 @@ END PROCEDURE ent_getTotalBoundingTags
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getTotalElements
-  IF( ALLOCATED( obj%ElemNumber ) ) THEN
-    ans = SIZE( obj%ElemNumber )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%ElemNumber)) THEN
+  ans = SIZE(obj%ElemNumber)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE ent_getTotalElements
 
 !----------------------------------------------------------------------------
@@ -430,11 +430,11 @@ END PROCEDURE ent_getTotalElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getTotalIntNodes
-  IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
-    ans = SIZE( obj%IntNodeNumber )
-  ELSE
-    ans = 0
-  END IF
+IF (ALLOCATED(obj%IntNodeNumber)) THEN
+  ans = SIZE(obj%IntNodeNumber)
+ELSE
+  ans = 0
+END IF
 END PROCEDURE ent_getTotalIntNodes
 
 !----------------------------------------------------------------------------
@@ -442,11 +442,11 @@ END PROCEDURE ent_getTotalIntNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getPhysicalTag
-  IF( ALLOCATED( obj%physicalTag ) ) THEN
-    ans = obj%physicalTag
-  ELSE
-    ALLOCATE( ans( 0 ) )
-  END IF
+IF (ALLOCATED(obj%physicalTag)) THEN
+  ans = obj%physicalTag
+ELSE
+  ALLOCATE (ans(0))
+END IF
 END PROCEDURE ent_getPhysicalTag
 
 !----------------------------------------------------------------------------
@@ -454,7 +454,7 @@ END PROCEDURE ent_getPhysicalTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_setIntNodeNumber
-  obj%IntNodeNumber = IntNodeNumber
+obj%IntNodeNumber = IntNodeNumber
 END PROCEDURE ent_setIntNodeNumber
 
 !----------------------------------------------------------------------------
@@ -462,7 +462,7 @@ END PROCEDURE ent_setIntNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_setNodeCoord
-  obj%NodeCoord = NodeCoord
+obj%NodeCoord = NodeCoord
 END PROCEDURE ent_setNodeCoord
 
 !----------------------------------------------------------------------------
@@ -470,7 +470,7 @@ END PROCEDURE ent_setNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_setElemType
-  obj%ElemType = ElemType
+obj%ElemType = ElemType
 END PROCEDURE ent_setElemType
 
 !----------------------------------------------------------------------------
@@ -478,7 +478,7 @@ END PROCEDURE ent_setElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_setElemNumber
-  obj%ElemNumber = ElemNumber
+obj%ElemNumber = ElemNumber
 END PROCEDURE ent_setElemNumber
 
 !----------------------------------------------------------------------------
@@ -486,7 +486,7 @@ END PROCEDURE ent_setElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_setConnectivity
-  obj%Connectivity = Connectivity
+obj%Connectivity = Connectivity
 END PROCEDURE ent_setConnectivity
 
 !----------------------------------------------------------------------------
@@ -494,7 +494,7 @@ END PROCEDURE ent_setConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getUid
-  ans = obj%Uid
+ans = obj%Uid
 END PROCEDURE ent_getUid
 
 !----------------------------------------------------------------------------
@@ -502,7 +502,7 @@ END PROCEDURE ent_getUid
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getXiDim
-  ans = obj%XiDim
+ans = obj%XiDim
 END PROCEDURE ent_getXiDim
 
 !----------------------------------------------------------------------------
@@ -510,7 +510,7 @@ END PROCEDURE ent_getXiDim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getElemType
-  ans = obj%ElemType
+ans = obj%ElemType
 END PROCEDURE ent_getElemType
 
 !----------------------------------------------------------------------------
@@ -518,7 +518,7 @@ END PROCEDURE ent_getElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getMinX
-  ans = obj%MinX
+ans = obj%MinX
 END PROCEDURE ent_getMinX
 
 !----------------------------------------------------------------------------
@@ -526,7 +526,7 @@ END PROCEDURE ent_getMinX
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getMinY
-  ans = obj%MinY
+ans = obj%MinY
 END PROCEDURE ent_getMinY
 
 !----------------------------------------------------------------------------
@@ -534,7 +534,7 @@ END PROCEDURE ent_getMinY
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getMinZ
-  ans = obj%MinZ
+ans = obj%MinZ
 END PROCEDURE ent_getMinZ
 
 !----------------------------------------------------------------------------
@@ -542,7 +542,7 @@ END PROCEDURE ent_getMinZ
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getMaxX
-  ans = obj%MaxX
+ans = obj%MaxX
 END PROCEDURE ent_getMaxX
 
 !----------------------------------------------------------------------------
@@ -550,7 +550,7 @@ END PROCEDURE ent_getMaxX
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getMaxY
-  ans = obj%MaxY
+ans = obj%MaxY
 END PROCEDURE ent_getMaxY
 
 !----------------------------------------------------------------------------
@@ -558,7 +558,7 @@ END PROCEDURE ent_getMaxY
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getMaxZ
-  ans = obj%MaxZ
+ans = obj%MaxZ
 END PROCEDURE ent_getMaxZ
 
 !----------------------------------------------------------------------------
@@ -566,7 +566,7 @@ END PROCEDURE ent_getMaxZ
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getX
-  ans = obj%X
+ans = obj%X
 END PROCEDURE ent_getX
 
 !----------------------------------------------------------------------------
@@ -574,7 +574,7 @@ END PROCEDURE ent_getX
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getY
-  ans = obj%Y
+ans = obj%Y
 END PROCEDURE ent_getY
 
 !----------------------------------------------------------------------------
@@ -582,7 +582,7 @@ END PROCEDURE ent_getY
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getZ
-  ans = obj%Z
+ans = obj%Z
 END PROCEDURE ent_getZ
 
 !----------------------------------------------------------------------------
@@ -590,11 +590,11 @@ END PROCEDURE ent_getZ
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getNodeCoord
-  IF( ALLOCATED( obj%NodeCoord ) ) THEN
-    ans = obj%NodeCoord
-  ELSE
-    ALLOCATE( ans( 0, 0 ) )
-  END IF
+IF (ALLOCATED(obj%NodeCoord)) THEN
+  ans = obj%NodeCoord
+ELSE
+  ALLOCATE (ans(0, 0))
+END IF
 END PROCEDURE ent_getNodeCoord
 
 !----------------------------------------------------------------------------
@@ -602,11 +602,11 @@ END PROCEDURE ent_getNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getIntNodeNumber
-  IF( ALLOCATED( obj%IntNodeNumber ) ) THEN
-    ans = Obj%IntNodeNumber
-  ELSE
-    ALLOCATE( ans(0) )
-  END IF
+IF (ALLOCATED(obj%IntNodeNumber)) THEN
+  ans = Obj%IntNodeNumber
+ELSE
+  ALLOCATE (ans(0))
+END IF
 END PROCEDURE ent_getIntNodeNumber
 
 !----------------------------------------------------------------------------
@@ -614,11 +614,11 @@ END PROCEDURE ent_getIntNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getElemNumber
-  IF( ALLOCATED( obj%ElemNumber ) ) THEN
-    ans = Obj%ElemNumber
-  ELSE
-    ALLOCATE( ans(0) )
-  END IF
+IF (ALLOCATED(obj%ElemNumber)) THEN
+  ans = Obj%ElemNumber
+ELSE
+  ALLOCATE (ans(0))
+END IF
 END PROCEDURE ent_getElemNumber
 
 !----------------------------------------------------------------------------
@@ -626,11 +626,11 @@ END PROCEDURE ent_getElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getBoundingEntity
-  IF( ALLOCATED( obj%boundingEntity ) ) THEN
-    ans = Obj%boundingEntity
-  ELSE
-    ALLOCATE( ans(0) )
-  END IF
+IF (ALLOCATED(obj%boundingEntity)) THEN
+  ans = Obj%boundingEntity
+ELSE
+  ALLOCATE (ans(0))
+END IF
 END PROCEDURE ent_getBoundingEntity
 
 !----------------------------------------------------------------------------
@@ -638,7 +638,7 @@ END PROCEDURE ent_getBoundingEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getConnectivity_a
-  Ans = obj%Connectivity( :, elemNum )
+Ans = obj%Connectivity(:, elemNum)
 END PROCEDURE ent_getConnectivity_a
 
 !----------------------------------------------------------------------------
@@ -646,11 +646,11 @@ END PROCEDURE ent_getConnectivity_a
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_getConnectivity_b
-  IF( ALLOCATED( obj%Connectivity ) ) THEN
-    ans = Obj%Connectivity
-  ELSE
-    ALLOCATE( ans(0,0) )
-  END IF
+IF (ALLOCATED(obj%Connectivity)) THEN
+  ans = Obj%Connectivity
+ELSE
+  ALLOCATE (ans(0, 0))
+END IF
 END PROCEDURE ent_getConnectivity_b
 
 END SUBMODULE Methods

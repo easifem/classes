@@ -23,13 +23,13 @@ USE GlobalData
 USE BaseType
 USE String_Class, ONLY: String
 USE ElementFactory
-USE ExceptionHandler_Class, Only: e
+USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "Mesh_Class"
+CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_NODE = -2
@@ -667,7 +667,7 @@ INTERFACE
     !! mesh object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! Mesh file
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mesh_initiate
 END INTERFACE
 
@@ -683,7 +683,7 @@ INTERFACE
   MODULE FUNCTION Mesh_Constructor1(hdf5, group) RESULT(ans)
     TYPE(Mesh_) :: ans
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END FUNCTION Mesh_Constructor1
 END INTERFACE
 
@@ -707,7 +707,7 @@ INTERFACE
   MODULE FUNCTION Mesh_Constructor_1(hdf5, group) RESULT(ans)
     CLASS(Mesh_), POINTER :: ans
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END FUNCTION Mesh_Constructor_1
 END INTERFACE
 
@@ -786,7 +786,7 @@ INTERFACE
   MODULE SUBROUTINE mesh_Import(obj, hdf5, group)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mesh_Import
 END INTERFACE
 
@@ -820,7 +820,7 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mesh_getNodeCoord
 END INTERFACE
 
@@ -838,7 +838,7 @@ INTERFACE
   MODULE SUBROUTINE mesh_Export(obj, hdf5, group)
     CLASS(Mesh_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mesh_Export
 END INTERFACE
 
@@ -867,7 +867,7 @@ INTERFACE
     CLASS(Mesh_), INTENT(IN) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtkFile
     REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(:, :)
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: filename
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: OpenTag
     !! Default is true
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: CloseTag
@@ -900,7 +900,7 @@ INTERFACE
   MODULE SUBROUTINE mesh_display(obj, msg, UnitNo)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! mesh object
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     !! message on screen
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
     !! unit number of ouput file
@@ -926,7 +926,7 @@ PUBLIC :: Display
 INTERFACE
   MODULE SUBROUTINE nodeData_Display(obj, msg, unitno)
     CLASS(NodeData_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE nodeData_Display
 END INTERFACE
@@ -942,7 +942,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE elemData_Display(obj, msg, unitno)
     CLASS(ElemData_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE elemData_Display
 END INTERFACE
@@ -958,7 +958,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE InternalFacetData_Display(obj, msg, unitno)
     CLASS(InternalFacetData_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE InternalFacetData_Display
 END INTERFACE
@@ -974,7 +974,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE BoundaryFacetData_Display(obj, msg, unitno)
     CLASS(BoundaryFacetData_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE BoundaryFacetData_Display
 END INTERFACE
@@ -990,7 +990,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mesh_DisplayNodeData(obj, msg, unitno)
     CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE mesh_DisplayNodeData
 END INTERFACE
@@ -1006,7 +1006,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mesh_DisplayElementData(obj, msg, unitno)
     CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE mesh_DisplayElementData
 END INTERFACE
@@ -1022,7 +1022,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mesh_DisplayInternalFacetData(obj, msg, unitno)
     CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE mesh_DisplayInternalFacetData
 END INTERFACE
@@ -1038,7 +1038,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mesh_DisplayBoundaryFacetData(obj, msg, unitno)
     CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE mesh_DisplayBoundaryFacetData
 END INTERFACE
@@ -1054,7 +1054,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mesh_DisplayFacetElements(obj, msg, unitno)
     CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE mesh_DisplayFacetElements
 END INTERFACE
@@ -1070,7 +1070,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE mesh_DisplayFacetElemSD(obj, msg, unitno)
     CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE mesh_DisplayFacetElemSD
 END INTERFACE
@@ -2460,11 +2460,11 @@ INTERFACE
       !! linear (simplex) space element
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
       !! space element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature for space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity for base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpolation type for base in space
   END SUBROUTINE mesh_initiateElemSD1
 END INTERFACE
@@ -2500,11 +2500,11 @@ INTERFACE
       !! linear space element
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
       !! space element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature type for space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity type of base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpol type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
       !! integrand order in time
@@ -2512,11 +2512,11 @@ INTERFACE
       !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
       !! time element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
       !! quadrature type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
       !! continuity type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE mesh_initiateElemSD2
@@ -2552,11 +2552,11 @@ INTERFACE
       !! linear space element
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
       !! space element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature type of base in space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity type of base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpolation type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
       !! integrand order in time
@@ -2564,11 +2564,11 @@ INTERFACE
       !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
       !! time element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
       !! quadrature type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
       !! continuity type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpolation type of base in time
   END SUBROUTINE mesh_initiateElemSD3
 END INTERFACE
@@ -2612,11 +2612,11 @@ INTERFACE
       !! linear (simplex) space element for each face
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem(:)
       !! space element for each face
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature for space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity for base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpolation type for base in space
   END SUBROUTINE mesh_initiateFacetElemSD1
 END INTERFACE
@@ -2651,11 +2651,11 @@ INTERFACE
       !! linear space element for each face
     CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem(:)
       !! space element for each face
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature type for space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity type of base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpol type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
       !! integrand order in time
@@ -2663,11 +2663,11 @@ INTERFACE
       !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
       !! time element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
       !! quadrature type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
       !! continuity type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE mesh_initiateFacetElemSD2

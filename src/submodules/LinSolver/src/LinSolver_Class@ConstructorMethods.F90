@@ -26,6 +26,8 @@ CONTAINS
 
 MODULE PROCEDURE getLinSolverCodeFromName
 SELECT CASE (TRIM(name))
+CASE ("SUPERLU") !1
+  ans = LIS_SUPERLU
 CASE ("CG") !1
   ans = LIS_CG
 CASE ("BICG") !2
@@ -91,6 +93,8 @@ END PROCEDURE getLinSolverCodeFromName
 
 MODULE PROCEDURE getLinSolverNameFromCode
 SELECT CASE (name)
+CASE (LIS_SUPERLU)
+  ans = "SUPERLU" !1
 CASE (LIS_CG)
   ans = "CG" !1
 CASE (LIS_BICG)
@@ -157,9 +161,9 @@ END PROCEDURE getLinSolverNameFromCode
 SUBROUTINE setPreconditionOption(IPAR, PRECOND_TYPE)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), INTENT(IN) :: PRECOND_TYPE
-  !!
-  !!
-  !!
+  !
+  !
+  !
   SELECT CASE (PRECOND_TYPE)
   CASE (NO_PRECONDITION)
     IPAR(2) = 0
@@ -170,7 +174,7 @@ SUBROUTINE setPreconditionOption(IPAR, PRECOND_TYPE)
   CASE (LEFT_RIGHT_PRECONDITION)
     IPAR(2) = 3
   END SELECT
-  !!
+  !
 END SUBROUTINE setPreconditionOption
 
 !----------------------------------------------------------------------------
@@ -206,27 +210,27 @@ SUBROUTINE setConvergenceType(IPAR, convergenceIn, convergenceType, &
   !
   IPAR(3) = 1
   SELECT CASE (convergenceType)
-  !!
-  !!
-  !!
+    !
+    !
+    !
   CASE (absoluteConvergence)
     IF (convergenceIn .EQ. convergenceInSol) THEN
       IPAR(3) = -1
     ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
       IPAR(3) = 1
     END IF
-  !!
-  !!
-  !!
+    !
+    !
+    !
   CASE (relativeConvergence)
-    !!
+    !
     IF (convergenceIn .EQ. convergenceInSol) THEN
       IF (relativeToRHS) THEN
         IPAR(3) = -2
       ELSE
         IPAR(3) = -1
       END IF
-    !!
+      !
     ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
       IF (relativeToRHS) THEN
         IPAR(3) = 2
@@ -234,11 +238,11 @@ SUBROUTINE setConvergenceType(IPAR, convergenceIn, convergenceType, &
         IPAR(3) = 1
       END IF
     END IF
-    !!
+    !
   END SELECT
-  !!
-  !!
-  !!
+  !
+  !
+  !
 END SUBROUTINE setConvergenceType
 
 !----------------------------------------------------------------------------
@@ -246,7 +250,7 @@ END SUBROUTINE setConvergenceType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setLinSolverParam
-  !!
+!
 CALL setAbstractLinSolverParam( &
   & param=param, &
   & prefix="LinSolver", &
@@ -260,7 +264,7 @@ CALL setAbstractLinSolverParam( &
   & KrylovSubspaceSize=INPUT(option=KrylovSubspaceSize, default=15), &
   & rtol=INPUT(option=rtol, default=REAL(1.0E-8, DFP)), &
   & atol=INPUT(option=atol, default=REAL(1.0E-8, DFP)))
-  !!
+!
 END PROCEDURE setLinSolverParam
 
 !----------------------------------------------------------------------------
@@ -268,64 +272,64 @@ END PROCEDURE setLinSolverParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ls_checkEssentialParam
-CHARACTER(LEN=*), PARAMETER :: myName = "ls_checkEssentialParam"
-  !!
-  !! name
-  !!
+CHARACTER(*), PARAMETER :: myName = "ls_checkEssentialParam"
+!
+! name
+!
 IF (.NOT. param%isPresent(key="LinSolver/solverName")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/solverName should be present in param')
-  !!
-  !! preconditionOption
-  !!
+!
+! preconditionOption
+!
 IF (.NOT. param%isPresent(key="LinSolver/preconditionOption")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/preconditionOption should be present in param')
-  !!
-  !! convergenceIn
-  !!
+!
+! convergenceIn
+!
 IF (.NOT. param%isPresent(key="LinSolver/convergenceIn")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/convergenceIn should be present in param')
-  !!
-  !! convergenceType
-  !!
+!
+! convergenceType
+!
 IF (.NOT. param%isPresent(key="LinSolver/convergenceType")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/convergenceType should be present in param')
-  !!
-  !! maxIter
-  !!
+!
+! maxIter
+!
 IF (.NOT. param%isPresent(key="LinSolver/maxIter")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/maxIter should be present in param')
-  !!
-  !! relativeToRHS
-  !!
+!
+! relativeToRHS
+!
 IF (.NOT. param%isPresent(key="LinSolver/relativeToRHS")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/relativeToRHS should be present in param')
-  !!
-  !! KrylovSubspaceSize
-  !!
+!
+! KrylovSubspaceSize
+!
 IF (.NOT. param%isPresent(key="LinSolver/KrylovSubspaceSize")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/KrylovSubspaceSize should be present in param')
-  !!
-  !! rtol
-  !!
+!
+! rtol
+!
 IF (.NOT. param%isPresent(key="LinSolver/rtol")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/rtol should be present in param')
-  !!
-  !! atol
-  !!
+!
+! atol
+!
 IF (.NOT. param%isPresent(key="LinSolver/atol")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'LinSolver/atol should be present in param')
-  !!
-  !!
-  !!
+!
+!
+!
 END PROCEDURE ls_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -337,7 +341,7 @@ INTEGER(I4B) :: solverName, preconditionOption, convergenceIn, &
   & convergenceType, maxIter, KrylovSubspaceSize
 REAL(DFP) :: rtol, atol
 LOGICAL(LGT) :: relativeToRHS
-  !!
+!
 CALL obj%checkEssentialParam(param)
 CALL getAbstractLinSolverParam( &
   & param=param, &

@@ -27,7 +27,7 @@ USE Domain_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "DomainConnectivity_Class"
+CHARACTER(*), PARAMETER :: modName = "DomainConnectivity_Class"
 INTEGER(I4B), PUBLIC, PARAMETER :: pType = 1
 INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
 INTEGER(I4B), PUBLIC, PARAMETER :: rType = 3
@@ -769,7 +769,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE dc_DisplayFacetToCellData(obj, msg, unitno)
     CLASS(DomainConnectivity_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE dc_DisplayFacetToCellData
 END INTERFACE

@@ -49,27 +49,27 @@ END PROCEDURE mesh_setBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_setSparsity1
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity1"
-!!
-!! check
-!!
+CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity1"
+!
+! check
+!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!!
-!! Call from MeshUtility
-!!
+!
+! Call from MeshUtility
+!
 CALL SetSparsity1(obj=obj, mat=mat, localNodeNumber=localNodeNumber, &
   & lbound=lbound, ubound=ubound)
-!!
+!
 END PROCEDURE mesh_setSparsity1
 
 !----------------------------------------------------------------------------
@@ -77,26 +77,26 @@ END PROCEDURE mesh_setSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_setSparsity2
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity2"
-!!
-!! check
-!!
+CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity2"
+!
+! check
+!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!!
-!! Call from MeshUtility
-!!
+!
+! Call from MeshUtility
+!
 CALL SetSparsity2(obj=obj, mat=mat)
-!!
+!
 END PROCEDURE mesh_setSparsity2
 
 !----------------------------------------------------------------------------
@@ -104,41 +104,41 @@ END PROCEDURE mesh_setSparsity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_SetSparsity3
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity3"
-!!
-!! check
-!!
+CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity3"
+!
+! check
+!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "colMesh data is not initiated, first initiate")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (SIZE(nodeToNode) .NE. obj%maxNptrs) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .NE. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!!
-!! Call from MeshUtility
-!!
+!
+! Call from MeshUtility
+!
 CALL SetSparsity3(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
   & mat=mat, ivar=ivar, jvar=jvar)
-!!
+!
 END PROCEDURE mesh_SetSparsity3
 
 !----------------------------------------------------------------------------
@@ -146,45 +146,45 @@ END PROCEDURE mesh_SetSparsity3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_setSparsity4
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_setSparsity4"
-!!
-!! Check
-!!
+CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity4"
+!
+! Check
+!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!!
-!! Check
-!!
+!
+! Check
+!
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "colMesh data is not initiated, first initiate")
 END IF
-!!
-!! Check
-!!
+!
+! Check
+!
 IF (SIZE(nodeToNode) .LT. obj%maxNptrs) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .LT. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!!
-!! Call from MeshUtility
-!!
+!
+! Call from MeshUtility
+!
 CALL SetSparsity4(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
   & mat=mat, rowGlobalToLocalNodeNum=rowGlobalToLocalNodeNum, &
   & colGlobalToLocalNodeNum=colGlobalToLocalNodeNum, &
   & rowLBOUND=rowLBOUND, rowUBOUND=rowUBOUND, &
   & colLBOUND=colLBOUND, colUBOUND=colUBOUND, &
   & ivar=ivar, jvar=jvar)
-!!
+!
 END PROCEDURE mesh_setSparsity4
 
 !----------------------------------------------------------------------------

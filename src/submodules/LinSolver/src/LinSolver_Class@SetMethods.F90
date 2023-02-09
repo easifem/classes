@@ -32,37 +32,37 @@ CONTAINS
 !
 ! This routine allocates the workspace required for the linear solver
 
-SUBROUTINE AllocateWorkSpace( W, IPAR, solverName, n )
-  REAL( DFP ), ALLOCATABLE, INTENT( INOUT ) :: W( : )
-  INTEGER( I4B ), INTENT( INOUT ) :: IPAR( : )
-  INTEGER( I4B ), INTENT( IN ) :: solverName
-  INTEGER( I4B ), INTENT( IN ) :: n
+SUBROUTINE AllocateWorkSpace(W, IPAR, solverName, n)
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: W(:)
+  INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
+  INTEGER(I4B), INTENT(IN) :: solverName
+  INTEGER(I4B), INTENT(IN) :: n
 
-  INTEGER( I4B ) :: i, m
+  INTEGER(I4B) :: i, m
 
-  SELECT CASE( solverName )
-    CASE( LIS_CG, LIS_CGNR )
-      i = 5 * n
-    CASE( LIS_BICG )
-      i = 7 * n
-    CASE( LIS_DBICG )
-      i = 11 * n
-    CASE( LIS_BICGSTAB )
-      i = 8 * n
-    CASE( LIS_TFQMR )
-      i = 11 * n
-    CASE( LIS_ORTHOMIN, LIS_GMRES )
-      m = INPUT( default=15, option=IPAR(5) )
-      i = ( n + 3 ) * ( m + 2) + ( m + 1 ) * m / 2
-    CASE( LIS_FGMRES )
-      m = INPUT( default=15, option=IPAR(5) )
-      i = 2 * n * ( m + 1 ) + ( m + 1 ) * m / 2 + 3 * m + 2
-    CASE( LIS_DQGMRES )
-      m = INPUT( default=15, option=IPAR(5) ) + 1
-      i = n + m * ( 2 * n + 4 )
+  SELECT CASE (solverName)
+  CASE (LIS_CG, LIS_CGNR)
+    i = 5 * n
+  CASE (LIS_BICG)
+    i = 7 * n
+  CASE (LIS_DBICG)
+    i = 11 * n
+  CASE (LIS_BICGSTAB)
+    i = 8 * n
+  CASE (LIS_TFQMR)
+    i = 11 * n
+  CASE (LIS_ORTHOMIN, LIS_GMRES)
+    m = INPUT(default=15, option=IPAR(5))
+    i = (n + 3) * (m + 2) + (m + 1) * m / 2
+  CASE (LIS_FGMRES)
+    m = INPUT(default=15, option=IPAR(5))
+    i = 2 * n * (m + 1) + (m + 1) * m / 2 + 3 * m + 2
+  CASE (LIS_DQGMRES)
+    m = INPUT(default=15, option=IPAR(5)) + 1
+    i = n + m * (2 * n + 4)
   END SELECT
-  IPAR( 4 ) = i
-  CALL Reallocate( W, i )
+  IPAR(4) = i
+  CALL Reallocate(W, i)
 END SUBROUTINE AllocateWorkSpace
 
 !----------------------------------------------------------------------------
@@ -70,27 +70,27 @@ END SUBROUTINE AllocateWorkSpace
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ls_Set
-  CHARACTER( LEN = * ), PARAMETER :: myName="ls_Set"
-  INTEGER( I4B ) :: s(2)
-  !!
-  !!
-  obj%Amat => Amat
-  !!
-  SELECT TYPE( Amat ); CLASS IS ( MatrixField_ )
-    s = Amat%SHAPE()
-  END SELECT
-  !!
-  obj%localNumRow = s(1)
-  obj%localNumColumn = s(2)
-  obj%globalNumRow = s(1)
-  obj%globalNumColumn = s(2)
-  !!
-  CALL AllocateWorkSpace( &
-    & W=obj%W, &
-    & n=obj%globalNumRow, &
-    & solverName=obj%solverName, &
-    & IPAR=obj%IPAR)
-  !!
+CHARACTER(*), PARAMETER :: myName = "ls_Set"
+INTEGER(I4B) :: s(2)
+!
+!
+obj%Amat => Amat
+!
+SELECT TYPE (Amat); CLASS IS (MatrixField_)
+  s = Amat%SHAPE()
+END SELECT
+!
+obj%localNumRow = s(1)
+obj%localNumColumn = s(2)
+obj%globalNumRow = s(1)
+obj%globalNumColumn = s(2)
+!
+CALL AllocateWorkSpace( &
+  & W=obj%W, &
+  & n=obj%globalNumRow, &
+  & solverName=obj%solverName, &
+  & IPAR=obj%IPAR)
+!
 END PROCEDURE ls_Set
 
 !----------------------------------------------------------------------------
@@ -98,17 +98,17 @@ END PROCEDURE ls_Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ls_setTolerance
-  !!
-  IF( PRESENT( atol ) ) THEN
-    obj%atol=atol
-    obj%FPAR( 2 ) = atol
-  END IF
-  !!
-  IF( PRESENT( rtol ) ) THEN
-    obj%rtol=rtol
-    obj%FPAR( 1 ) = rtol
-  END IF
-  !!
+!
+IF (PRESENT(atol)) THEN
+  obj%atol = atol
+  obj%FPAR(2) = atol
+END IF
+!
+IF (PRESENT(rtol)) THEN
+  obj%rtol = rtol
+  obj%FPAR(1) = rtol
+END IF
+!
 END PROCEDURE ls_setTolerance
 
 !----------------------------------------------------------------------------

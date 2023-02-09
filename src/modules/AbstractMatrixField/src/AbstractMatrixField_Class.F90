@@ -55,11 +55,11 @@ CONTAINS
   PROCEDURE(amField_Matvec2), DEFERRED, PASS(obj) :: Matvec2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: Matvec => Matvec1, Matvec2
-  PROCEDURE(amField_LUSOLVE1), DEFERRED, PASS(obj) :: LUSOLVE1
+  PROCEDURE(amField_ILUSOLVE1), DEFERRED, PASS(obj) :: ILUSOLVE1
   !! Matrix vector multiplication, here vector is fortran array
-  PROCEDURE(amField_LUSOLVE2), DEFERRED, PASS(obj) :: LUSOLVE2
+  PROCEDURE(amField_ILUSOLVE2), DEFERRED, PASS(obj) :: ILUSOLVE2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
-  GENERIC, PUBLIC :: LUSOLVE => LUSOLVE1, LUSOLVE2
+  GENERIC, PUBLIC :: ILUSOLVE => ILUSOLVE1, ILUSOLVE2
   !! Generic LU Solve
   PROCEDURE, PUBLIC, PASS(obj) :: isPreconditionSet => &
     & amField_isPreconditionSet
@@ -252,7 +252,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   LUSOLVE
+!                                                                 ILUSOLVE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -274,7 +274,7 @@ END INTERFACE
 ! (LU)^T sol = rhs
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_LUSOLVE1(obj, sol, rhs, isTranspose)
+  SUBROUTINE amField_ILUSOLVE1(obj, sol, rhs, isTranspose)
     IMPORT :: AbstractMatrixField_, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: sol(:)
@@ -282,7 +282,7 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: rhs(:)
     !! Input vector in y=Ax
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
-  END SUBROUTINE amField_LUSOLVE1
+  END SUBROUTINE amField_ILUSOLVE1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -304,7 +304,7 @@ END INTERFACE
 ! (LU)^T sol = rhs
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_LUSOLVE2(obj, sol, rhs, isTranspose)
+  SUBROUTINE amField_ILUSOLVE2(obj, sol, rhs, isTranspose)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: sol
@@ -312,7 +312,7 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: rhs
     !! Input vector, rhs
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
-  END SUBROUTINE amField_LUSOLVE2
+  END SUBROUTINE amField_ILUSOLVE2
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -26,7 +26,7 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "mshEntity_Class"
+CHARACTER(*), PARAMETER :: modName = "mshEntity_Class"
 
 !----------------------------------------------------------------------------
 !                                                                 mshEntity_
@@ -79,15 +79,15 @@ CONTAINS
   PRIVATE
   FINAL :: ent_Final
       !! Finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => ent_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => ent_Deallocate
       !! To deallocate data
   PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => ent_GotoTag
       !! To find tag
-  PROCEDURE, PUBLIC, PASS(obj) :: Write => ent_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WRITE => ent_Write
       !! Write data to a file
   PROCEDURE, PUBLIC, PASS(Obj) :: Display => ent_Display
       !! Display the content
-  PROCEDURE, PUBLIC, PASS(Obj) :: Read => ent_Read
+  PROCEDURE, PUBLIC, PASS(Obj) :: READ => ent_Read
       !! Read Point, Curve, Surface, and Volume Entity
     PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalTags => ent_getTotalPhysicalTags
       !! Return total physical tags associated
@@ -176,11 +176,11 @@ INTERFACE
   END SUBROUTINE ent_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE ent_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         GotoTag
@@ -210,7 +210,7 @@ INTERFACE
   MODULE SUBROUTINE ent_Write(obj, mshFile, StartStr, EndStr)
     CLASS(mshEntity_), INTENT(INOUT) :: obj
     CLASS(TxtFile_), INTENT(INOUT) :: mshFile
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: StartStr, EndStr
+    CHARACTER(*), INTENT(IN), OPTIONAL :: StartStr, EndStr
   END SUBROUTINE ent_Write
 END INTERFACE
 
@@ -225,7 +225,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE ent_Display(obj, Msg, UnitNo)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    CHARACTER(*), INTENT(IN) :: Msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
   END SUBROUTINE ent_Display
 END INTERFACE
@@ -510,7 +510,7 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getMinX(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
   END FUNCTION ent_getMinX
 END INTERFACE
 
@@ -521,7 +521,7 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getMinY(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
   END FUNCTION ent_getMinY
 END INTERFACE
 
@@ -532,7 +532,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getMinZ(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getMinZ
 END INTERFACE
 
@@ -543,7 +544,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getMaxX(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getMaxX
 END INTERFACE
 
@@ -554,7 +556,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getMaxY(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getMaxY
 END INTERFACE
 
@@ -565,7 +568,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getMaxZ(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getMaxZ
 END INTERFACE
 
@@ -576,7 +580,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getX(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getX
 END INTERFACE
 
@@ -587,7 +592,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getY(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getY
 END INTERFACE
 
@@ -598,7 +604,8 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION ent_getZ(obj) RESULT(Ans)
     CLASS(mshEntity_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
+    REAL(DFP) :: ans
+    ! INTEGER(I4B) :: ans
   END FUNCTION ent_getZ
 END INTERFACE
 

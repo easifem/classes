@@ -92,6 +92,8 @@ SUBROUTINE SetSparsity2(domains, mat)
   TYPE(DomainConnectivity_) :: domainConn
   INTEGER(I4B), POINTER :: nodeToNode(:)
   CHARACTER(*), PARAMETER :: myName = "SetSparsity2"
+  TYPE(BoundingBox_) :: row_box, col_box
+  LOGICAL(LGT) :: is_intersect
   !
   ! check
   !
@@ -142,25 +144,32 @@ SUBROUTINE SetSparsity2(domains, mat)
 
         IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
 
+        row_box = rowMesh%getBoundingBox()
+
         DO colMeshID = 1, colMeshSize
 
           colMesh => colDomain%getMeshPointer(dim=nsd(jvar), &
             & entityNum=colMeshID)
-          !
-          CALL Display("calling Mesh_::rowMesh%SetSparsity()")
+
           IF (ASSOCIATED(colMesh)) THEN
-            CALL rowMesh%SetSparsity(mat=mat, &
-             & colMesh=colMesh, &
-             & nodeToNode=nodeToNode, &
-             & rowGlobalToLocalNodeNum=rowDomain%local_nptrs, &
-             & rowLBOUND=LBOUND(rowDomain%local_nptrs, 1), &
-             & rowUBOUND=UBOUND(rowDomain%local_nptrs, 1), &
-             & colGlobalToLocalNodeNum=colDomain%local_nptrs, &
-             & colLBOUND=LBOUND(colDomain%local_nptrs, 1), &
-             & colUBOUND=UBOUND(colDomain%local_nptrs, 1), &
-             & ivar=ivar, jvar=jvar)
+            col_box = colMesh%getBoundingBox()
+
+            is_intersect = row_box.isIntersect.col_box
+
+            IF (is_intersect) THEN
+              CALL rowMesh%SetSparsity(mat=mat, &
+               & colMesh=colMesh, &
+               & nodeToNode=nodeToNode, &
+               & rowGlobalToLocalNodeNum=rowDomain%local_nptrs, &
+               & rowLBOUND=LBOUND(rowDomain%local_nptrs, 1), &
+               & rowUBOUND=UBOUND(rowDomain%local_nptrs, 1), &
+               & colGlobalToLocalNodeNum=colDomain%local_nptrs, &
+               & colLBOUND=LBOUND(colDomain%local_nptrs, 1), &
+               & colUBOUND=UBOUND(colDomain%local_nptrs, 1), &
+               & ivar=ivar, jvar=jvar)
+            END IF
           END IF
-          !
+
         END DO
       END DO
     END DO

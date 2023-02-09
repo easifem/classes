@@ -25,8 +25,6 @@ CONTAINS
 
 MODULE PROCEDURE Domain_Display
 CHARACTER(*), PARAMETER :: myName = "Domain_Display"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'WIP: This method is curretly not available')
 IF (.NOT. obj%isInitiated) THEN
   CALL display("Domain_::obj is Not Initiated", unitno=unitno)
   RETURN

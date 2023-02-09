@@ -28,31 +28,38 @@ CONTAINS
 !                                                                    LUSOLVE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_LUSOLVE1
-CHARACTER(*), PARAMETER :: myName = "mField_LUSOLVE1"
+MODULE PROCEDURE mField_ILUSOLVE1
+CHARACTER(*), PARAMETER :: myName = "mField_ILUSOLVE1"
 INTEGER(I4B) :: s(2), info
 !
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'MatrixField_ object is not initiated.')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'MatrixField_ object is not initiated.')
+END IF
+!
 IF (.NOT. obj%isPmatInitiated) THEN
-  CALL LinSolve( &
-    & A=obj%mat, &
-    & B=rhs, &
-    & X=sol, &
-    & isTranspose=.FALSE., &
-    & isFactored=.TRUE., &
-    & PrintStat=yes_no_t%NO, &
-    & info=info)
-  IF (info .NE. 0) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Failure in LinSolve()')
-  END IF
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Pmat is not initiated')
+  ! CALL LinSolve( &
+  !   & A=obj%mat, &
+  !   & B=rhs, &
+  !   & X=sol, &
+  !   & isTranspose=.FALSE., &
+  !   & isFactored=.TRUE., &
+  !   & PrintStat=yes_no_t%NO, &
+  !   & info=info)
+  ! IF (info .NE. 0) THEN
+  !   CALL e%raiseError(modName//'::'//myName//' - '// &
+  !     & 'Failure in LinSolve()')
+  ! END IF
 ELSE
   s = obj%SHAPE()
-  IF (SIZE(sol) .NE. SIZE(rhs) .OR. SIZE(sol) .NE. s(1)) &
-    & CALL e%raiseError(modName//'::'//myName//" - "// &
+
+  IF (SIZE(sol) .NE. SIZE(rhs) .OR. SIZE(sol) .NE. s(1)) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'Size of sol vector should be equal to the size of rhs')
+  END IF
+
   IF (INPUT(default=.FALSE., option=isTranspose)) THEN
     CALL LUTSOLVE( &
       & sol=sol, &
@@ -68,20 +75,21 @@ ELSE
       & jlu=obj%pmat%JA, &
       & ju=obj%pmat%JU)
   END IF
+
 END IF
-END PROCEDURE mField_LUSOLVE1
+END PROCEDURE mField_ILUSOLVE1
 
 !----------------------------------------------------------------------------
 !                                                                   LUSOLVE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_LUSOLVE2
+MODULE PROCEDURE mField_ILUSOLVE2
 REAL(DFP), POINTER :: solval(:)
 REAL(DFP), POINTER :: rhsval(:)
 solval => sol%getPointer()
 rhsval => rhs%getPointer()
-CALL obj%LUSOLVE(sol=solval, rhs=rhsval, isTranspose=isTranspose)
+CALL obj%ILUSOLVE(sol=solval, rhs=rhsval, isTranspose=isTranspose)
 NULLIFY (solval, rhsval)
-END PROCEDURE mField_LUSOLVE2
+END PROCEDURE mField_ILUSOLVE2
 
 END SUBMODULE LUSolveMethods

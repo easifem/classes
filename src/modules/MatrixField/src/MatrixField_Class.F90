@@ -166,9 +166,9 @@ CONTAINS
   !
   ! @LUSolveMethods
   !
-  PROCEDURE, PASS(obj) :: LUSOLVE1 => mField_LUSOLVE1
+  PROCEDURE, PASS(obj) :: ILUSOLVE1 => mField_ILUSOLVE1
   !! Solve (LU) sol = rhs
-  PROCEDURE, PASS(obj) :: LUSOLVE2 => mField_LUSOLVE2
+  PROCEDURE, PASS(obj) :: ILUSOLVE2 => mField_ILUSOLVE2
   !! Solve (LU) sol = rhs
   !
   ! @PreconditionMethods
@@ -760,14 +760,14 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_LUSOLVE1(obj, sol, rhs, isTranspose)
+  MODULE SUBROUTINE mField_ILUSOLVE1(obj, sol, rhs, isTranspose)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: sol(:)
     !! Output vector y=Ax
     REAL(DFP), INTENT(IN) :: rhs(:)
     !! Input vector in y=Ax
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
-  END SUBROUTINE mField_LUSOLVE1
+  END SUBROUTINE mField_ILUSOLVE1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -791,14 +791,14 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mField_LUSOLVE2(obj, sol, rhs, isTranspose)
+  MODULE SUBROUTINE mField_ILUSOLVE2(obj, sol, rhs, isTranspose)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: sol
     !! Output vector y=Ax
     CLASS(AbstractNodeField_), INTENT(IN) :: rhs
     !! Input vector in y=Ax
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
-  END SUBROUTINE mField_LUSOLVE2
+  END SUBROUTINE mField_ILUSOLVE2
 END INTERFACE
 
 !----------------------------------------------------------------------------

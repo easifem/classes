@@ -35,22 +35,20 @@ CONTAINS
 SUBROUTINE SetSparsity1(obj, mat, localNodeNumber, lbound, &
   & ubound)
   CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
+  ! [[Mesh_]] class
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
+  ! [[CSRMatrix_]] object
   INTEGER(I4B), INTENT(IN) :: lbound
   INTEGER(I4B), INTENT(IN) :: ubound
   INTEGER(I4B), INTENT(IN) :: localNodeNumber(lbound:ubound)
-    !! Global to local node number map
-  !!
-  !!
+  ! Global to local node number map
+  !
+  !
   INTEGER(I4B) :: i, j, k, tNodes
   INTEGER(I4B), ALLOCATABLE :: n2n(:)
-  !!
-  !! main
-  !!
+
   tNodes = obj%getTotalNodes()
-  !!
+
   DO i = 1, tNodes
     j = obj%getGlobalNodeNumber(LocalNode=i)
     k = localNodeNumber(j)
@@ -69,23 +67,23 @@ END SUBROUTINE SetSparsity1
 
 SUBROUTINE SetSparsity2(obj, mat)
   CLASS(Mesh_), INTENT(INOUT) :: obj
-  !! Mesh_ class
+  ! Mesh_ class
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  !! CSRMatrix object
-  !!
+  ! CSRMatrix object
+  !
   INTEGER(I4B) :: i, j, tNodes
   INTEGER(I4B), ALLOCATABLE :: n2n(:)
-  !!
+
   tNodes = obj%getTotalNodes()
-  !!
+
   DO i = 1, tNodes
     j = obj%getGlobalNodeNumber(LocalNode=i)
     n2n = obj%getNodeToNodes(GlobalNode=j, IncludeSelf=.TRUE.)
     CALL SetSparsity(obj=Mat, Row=j, Col=n2n)
   END DO
-  !!
+
   IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
-  !!
+
 END SUBROUTINE SetSparsity2
 
 !----------------------------------------------------------------------------
@@ -95,24 +93,20 @@ END SUBROUTINE SetSparsity2
 SUBROUTINE SetSparsity3(obj, colMesh, nodeToNode, mat, &
   & ivar, jvar)
   CLASS(Mesh_), INTENT(INOUT) :: obj
-  !! [[Mesh_]] class
+  ! [[Mesh_]] class
   CLASS(Mesh_), INTENT(INOUT) :: colMesh
-  !! [[Mesh_]] class
+  ! [[Mesh_]] class
   INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
-  !! Node to node connectivity between obj and colMesh
+  ! Node to node connectivity between obj and colMesh
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  !! [[CSRMatrix_]] object
+  ! [[CSRMatrix_]] object
   INTEGER(I4B), INTENT(IN) :: ivar
   INTEGER(I4B), INTENT(IN) :: jvar
-  !!
-  !!
-  !!
+
   INTEGER(I4B) :: ii
   INTEGER(I4B), ALLOCATABLE :: temp(:)
   LOGICAL(LGT), ALLOCATABLE :: maskVec(:)
-  !!
-  !!
-  !!
+
   DO ii = obj%minNptrs, obj%maxNptrs
     IF (.NOT. obj%isNodePresent(globalNode=ii)) CYCLE
     temp = nodeToNode(obj%getNodeToNodes(GlobalNode=ii, IncludeSelf=.TRUE.))
@@ -127,7 +121,7 @@ SUBROUTINE SetSparsity3(obj, colMesh, nodeToNode, mat, &
         & jvar=jvar)
     END IF
   END DO
-  !!
+
   IF (ALLOCATED(temp)) DEALLOCATE (temp)
   IF (ALLOCATED(maskVec)) DEALLOCATE (maskVec)
 END SUBROUTINE SetSparsity3
@@ -141,40 +135,36 @@ SUBROUTINE SetSparsity4(obj, colMesh, nodeToNode, mat, &
   & colGlobalToLocalNodeNum, &
   & colLBOUND, colUBOUND, ivar, jvar)
   CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
+  ! [[Mesh_]] class
   CLASS(Mesh_), INTENT(INOUT) :: colMesh
-    !! [[Mesh_]] class
+  ! [[Mesh_]] class
   INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
-    !! node to node connectivity between obj and colMesh
+  ! node to node connectivity between obj and colMesh
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
+  ! [[CSRMatrix_]] object
   INTEGER(I4B), INTENT(IN) :: rowLBOUND
   INTEGER(I4B), INTENT(IN) :: rowUBOUND
   INTEGER(I4B), INTENT(IN) :: rowGlobalToLocalNodeNum( &
     & rowLBOUND:rowUBOUND)
-    !! Global to local node number map
+  ! Global to local node number map
   INTEGER(I4B), INTENT(IN) :: colLBOUND
   INTEGER(I4B), INTENT(IN) :: colUBOUND
   INTEGER(I4B), INTENT(IN) :: colGlobalToLocalNodeNum( &
     & colLBOUND:colUBOUND)
   INTEGER(I4B), INTENT(IN) :: ivar
   INTEGER(I4B), INTENT(IN) :: jvar
-  !!
-  !!
-  !!
+
   INTEGER(I4B) :: ii
   INTEGER(I4B), ALLOCATABLE :: temp(:)
   LOGICAL(LGT), ALLOCATABLE :: maskVec(:)
-  !!
-  !! main
-  !!
+
   DO ii = obj%minNptrs, obj%maxNptrs
-    !!
+
     IF (.NOT. obj%isNodePresent(globalNode=ii)) CYCLE
-    !!
+
     temp = nodeToNode(obj%getNodeToNodes(GlobalNode=ii, IncludeSelf=.TRUE.))
     maskVec = colMesh%isNodePresent(globalNode=temp)
-    !!
+
     IF (ANY(maskVec)) THEN
       CALL SetSparsity( &
         & obj=Mat, &
@@ -183,8 +173,9 @@ SUBROUTINE SetSparsity4(obj, colMesh, nodeToNode, mat, &
         & ivar=ivar,  &
         & jvar=jvar)
     END IF
-    !!
+
   END DO
+
   IF (ALLOCATED(temp)) DEALLOCATE (temp)
   IF (ALLOCATED(maskVec)) DEALLOCATE (maskVec)
 END SUBROUTINE SetSparsity4
@@ -196,23 +187,19 @@ END SUBROUTINE SetSparsity4
 SUBROUTINE Old_SetSparsity3(obj, colMesh, nodeToNode, mat, &
   & ivar, jvar)
   CLASS(Mesh_), INTENT(INOUT) :: obj
-  !! [[Mesh_]] class
+  ! [[Mesh_]] class
   CLASS(Mesh_), INTENT(INOUT) :: colMesh
-  !! [[Mesh_]] class
+  ! [[Mesh_]] class
   INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
-  !! Node to node connectivity between obj and colMesh
+  ! Node to node connectivity between obj and colMesh
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  !! [[CSRMatrix_]] object
+  ! [[CSRMatrix_]] object
   INTEGER(I4B), INTENT(IN) :: ivar
   INTEGER(I4B), INTENT(IN) :: jvar
-  !!
-  !!
-  !!
+
   INTEGER(I4B) :: ii, jj
   INTEGER(I4B), ALLOCATABLE :: n2n(:)
-  !!
-  !!
-  !!
+
   DO ii = obj%minNptrs, obj%maxNptrs
     IF (.NOT. obj%isNodePresent(globalNode=ii)) CYCLE
     jj = nodeToNode(ii)
@@ -223,7 +210,7 @@ SUBROUTINE Old_SetSparsity3(obj, colMesh, nodeToNode, mat, &
         & jvar=jvar)
     END IF
   END DO
-  !!
+
   IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
 END SUBROUTINE Old_SetSparsity3
 
@@ -236,33 +223,29 @@ SUBROUTINE old_SetSparsity4(obj, colMesh, nodeToNode, mat, &
   & colGlobalToLocalNodeNum, &
   & colLBOUND, colUBOUND, ivar, jvar)
   CLASS(Mesh_), INTENT(INOUT) :: obj
-    !! [[Mesh_]] class
+  ! [[Mesh_]] class
   CLASS(Mesh_), INTENT(INOUT) :: colMesh
-    !! [[Mesh_]] class
+  ! [[Mesh_]] class
   INTEGER(I4B), INTENT(IN) :: nodeToNode(:)
-    !! node to node connectivity between obj and colMesh
+  ! node to node connectivity between obj and colMesh
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
+  ! [[CSRMatrix_]] object
   INTEGER(I4B), INTENT(IN) :: rowLBOUND
   INTEGER(I4B), INTENT(IN) :: rowUBOUND
   INTEGER(I4B), INTENT(IN) :: rowGlobalToLocalNodeNum( &
     & rowLBOUND:rowUBOUND)
-    !! Global to local node number map
+  ! Global to local node number map
   INTEGER(I4B), INTENT(IN) :: colLBOUND
   INTEGER(I4B), INTENT(IN) :: colUBOUND
   INTEGER(I4B), INTENT(IN) :: colGlobalToLocalNodeNum( &
     & colLBOUND:colUBOUND)
   INTEGER(I4B), INTENT(IN) :: ivar
   INTEGER(I4B), INTENT(IN) :: jvar
-  !!
-  !!
-  !!
+
   INTEGER(I4B) :: ii, jj, kk
   INTEGER(I4B), ALLOCATABLE :: n2n(:)
   LOGICAL(LGT) :: chk
-  !!
-  !! main
-  !!
+
   DO ii = obj%minNptrs, obj%maxNptrs
     jj = nodeToNode(ii)
     kk = rowGlobalToLocalNodeNum(ii)

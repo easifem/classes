@@ -133,22 +133,22 @@ MODULE PROCEDURE mField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "mField_Initiate1"
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii
-!
+
 ii = param%get(key="BlockMatrixField/tPhysicalVarNames", &
   & VALUE=tPhysicalVarNames)
-!
+
 ALLOCATE (domains(tPhysicalVarNames))
-!
+
 DO ii = 1, tPhysicalVarNames
   domains(ii)%ptr => dom
 END DO
-!
+
 CALL obj%Initiate(param=param, dom=domains)
-!
+
 DO ii = 1, tPhysicalVarNames
   domains(ii)%ptr => NULL()
 END DO
-!
+
 IF (ALLOCATED(domains)) DEALLOCATE (domains)
 !
 END PROCEDURE mField_Initiate1
@@ -160,7 +160,7 @@ END PROCEDURE mField_Initiate1
 MODULE PROCEDURE mField_Initiate2
 CHARACTER(*), PARAMETER :: myName = "mField_Initiate2"
 CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[:WIP] This routine is under construction!')
+    & '[WIP] This routine is under construction!')
 ! SELECT TYPE (obj2)
 ! CLASS IS (BlockMatrixField_)
 ! END SELECT
@@ -178,13 +178,17 @@ CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
 CHARACTER(:), ALLOCATABLE :: char_var
 CHARACTER(:), ALLOCATABLE :: matProp
 TYPE(DOF_) :: dofobj
-!
-! check
-!
-IF (obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The instance of BlockMatrixField is already initiated')
-!
+
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+& '[START] Initiate()')
+
+IF (obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & 'The instance of BlockMatrixField is already initiated')
+END IF
+
+CALL Display("Calling BlockMatrixField_::obj%checkEssentialParam()")
+
 CALL obj%checkEssentialParam(param)
 !
 ! engine
@@ -256,6 +260,7 @@ END DO
 !
 ! make [[DOF_]]
 !
+CALL Display("Calling Initiating dofobj")
 CALL Initiate(obj=dofobj, tNodes=tNodes, names=physicalVarNames, &
   & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
 !
@@ -267,6 +272,7 @@ ierror = param%get(key="BlockMatrixField/matrixProp", VALUE=matProp)
 !
 ! CSRMatrix/Initiate
 !
+CALL Display("Initiating CSRMatrix_")
 nrow = .tNodes.dofobj
 ncol = nrow
 CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
@@ -277,12 +283,20 @@ obj%isPmatInitiated = .FALSE.
 !
 ! setting the sparsity
 !
+CALL Display("Calling DomainSetSparsity()")
 CALL DomainSetSparsity(mat=obj%mat, domains=obj%domains)
+
+!cleanup
+
 CALL DEALLOCATE (dofobj)
 IF (ALLOCATED(tNodes)) DEALLOCATE (tNodes)
 IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
 IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
+
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+& '[END] Initiate()')
+
 END PROCEDURE mField_Initiate3
 
 !----------------------------------------------------------------------------

@@ -245,7 +245,12 @@ MODULE PROCEDURE Domain_getLocalNodeNumber2
 INTEGER(I4B) :: ii
 !
 DO ii = 1, SIZE(globalNode)
-  ans(ii) = Domain_getLocalNodeNumber1(obj, globalNode(ii))
+  IF (obj%isNodePresent(globalNode(ii))) THEN
+    ans(ii) = obj%local_nptrs(globalNode(ii))
+  ELSE
+    ans(ii) = 0
+  END IF
+  ! ans(ii) = Domain_getLocalNodeNumber1(obj, globalNode(ii))
 END DO
 !
 END PROCEDURE Domain_getLocalNodeNumber2
@@ -256,7 +261,7 @@ END PROCEDURE Domain_getLocalNodeNumber2
 
 MODULE PROCEDURE Domain_getGlobalNodeNumber1
 IF (localNode .LE. obj%tNodes) THEN
-  ans = getIndex(obj%local_nptrs, localNode)
+  ans = obj%global_nptrs(localNode)
 ELSE
   ans = 0
 END IF
@@ -269,13 +274,11 @@ END PROCEDURE Domain_getGlobalNodeNumber1
 MODULE PROCEDURE Domain_getGlobalNodeNumber2
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(localNode)
-  ! ans = getIndex(obj%local_nptrs, localNode)
-  ! IF (localNode(ii) .LE. obj%tNodes) THEN
-  !   ans(ii) = getIndex(obj%local_nptrs, localNode(ii))
-  ! ELSE
-  !   ans(ii) = 0
-  ! END IF
-  ans(ii) = Domain_getGlobalNodeNumber1(obj, localNode(ii))
+  IF (localNode(ii) .LE. obj%tNodes) THEN
+    ans(ii) = obj%global_nptrs(localNode(ii))
+  ELSE
+    ans(ii) = 0
+  END IF
 END DO
 END PROCEDURE Domain_getGlobalNodeNumber2
 

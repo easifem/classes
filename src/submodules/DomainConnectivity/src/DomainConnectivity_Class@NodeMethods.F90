@@ -99,15 +99,19 @@ END PROCEDURE dc_InitiateNodeToNodeData1
 MODULE PROCEDURE dc_InitiateNodeToNodeData2
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateNodeToNodeData2"
 TYPE(BoundingBox_) :: Box
+! TYPE(BoundingBox_) :: searchBox
 INTEGER(I4B), ALLOCATABLE :: nptrs1(:), nptrs2(:), global_nptrs1(:),&
 & global_nptrs2(:)
 INTEGER(I4B) :: ii, jj, nsd
 REAL(DFP) :: X(3)
+! REAL(DFP) :: search_box_lim(6), search_box_len(3)
 REAL(DFP), POINTER :: node1(:, :)
 REAL(DFP), POINTER :: node2(:, :)
 
+REAL(DFP) :: debug_t1, debug_t2
+
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START] dc_InitiateNodeToNodeData()')
+  & '[START] InitiateNodeToNodeData()')
 !
 ! check
 !
@@ -152,34 +156,60 @@ CALL Display("Get Nptrs in Box for node1 node2")
 
 node1 => domain1%GetNodeCoordPointer()
 node2 => domain2%GetNodeCoordPointer()
-!
-! Note nptrs1 and nptrs2 are local node numbers in domain1 and domain2
-!
-nptrs1 = Box.Nptrs.node1
-nptrs2 = Box.Nptrs.node2
-
-CALL Display("Get global Nptrs in Box for node1 node2")
-global_nptrs1 = domain1%GetGlobalNodeNumber(nptrs1)
-global_nptrs2 = domain2%GetGlobalNodeNumber(nptrs2)
 
 CALL Display("DomainConnectivity_::obj%NodeToNode() = domain2%GetGlobalNodeNumber()")
-nsd = SIZE(node1, 1)
-!
-DO ii = 1, SIZE(nptrs1)
-  X(1:nsd) = node1(1:nsd, nptrs1(ii))
-  DO jj = 1, SIZE(nptrs2)
-    IF (ALL(X(1:nsd) .APPROXEQ.node2(1:nsd, nptrs2(jj)))) THEN
-      obj%NodeToNode(global_nptrs1(ii))  &
-        & = global_nptrs2(jj)
-      EXIT
-    END IF
-    ! IF (ALL(X(1:nsd) .APPROXEQ.node2(1:nsd, nptrs2(jj)))) THEN
-    !   obj%NodeToNode(domain1%GetGlobalNodeNumber(nptrs1(ii)))  &
-    !     & = domain2%GetGlobalNodeNumber(nptrs2(jj))
-    !   EXIT
-    ! END IF
+IF (ASSOCIATED(node1, node2)) THEN
+  CALL Display("node1 and node2 are same...")
+  !
+  ! Note nptrs1 and nptrs2 are local node numbers in domain1 and domain2
+  !
+  nptrs1 = Box.Nptrs.node1
+
+  CALL Display("Get global Nptrs in Box for node1")
+  global_nptrs1 = domain1%GetGlobalNodeNumber(nptrs1)
+
+  DO ii = 1, SIZE(nptrs1)
+    obj%NodeToNode(global_nptrs1(ii)) = global_nptrs1(ii)
   END DO
-END DO
+
+ELSE
+  ! CALL CPU_TIME(debug_t1)
+  !
+  ! Note nptrs1 and nptrs2 are local node numbers in domain1 and domain2
+  !
+  nptrs1 = Box.Nptrs.node1
+  nptrs2 = Box.Nptrs.node2
+
+  CALL Display("Get global Nptrs in Box for node1 node2")
+  global_nptrs1 = domain1%GetGlobalNodeNumber(nptrs1)
+  global_nptrs2 = domain2%GetGlobalNodeNumber(nptrs2)
+  nsd = SIZE(node1, 1)
+
+  ! search_box_lim = 0.0_DFP
+  ! search_box_len(1) = 0.01_DFP * ((.Xmax.Box) - (.Xmin.Box))
+  ! search_box_len(2) = 0.01_DFP * ((.Ymax.Box) - (.Ymin.Box))
+  ! search_box_len(3) = 0.01_DFP * ((.Zmax.Box) - (.Zmin.Box))
+
+  DO ii = 1, SIZE(nptrs1)
+    X(1:nsd) = node1(1:nsd, nptrs1(ii))
+    ! search_box_lim(1:nsd) = X(1:nsd) - search_box_len(1:nsd)
+    ! search_box_lim(nsd + 1:nsd + nsd) = X(1:nsd) + search_box_len(1:nsd)
+    ! CALL Initiate(obj=searchBox, nsd=nsd, lim=search_box_lim)
+    !
+    ! nptrs2 = searchBox.Nptrs.node2
+    ! global_nptrs2 = domain2%GetGlobalNodeNumber(nptrs2)
+    DO jj = 1, SIZE(nptrs2)
+      IF (ALL(X(1:nsd) .APPROXEQ.node2(1:nsd, nptrs2(jj)))) THEN
+        obj%NodeToNode(global_nptrs1(ii))  &
+          & = global_nptrs2(jj)
+        EXIT
+      END IF
+    END DO
+  END DO
+  ! CALL CPU_TIME(debug_t2)
+  ! CALL Display(debug_t2 - debug_t1, "debug time = ")
+  ! STOP
+END IF
 !
 IF (ALLOCATED(nptrs1)) DEALLOCATE (nptrs1)
 IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
@@ -188,7 +218,7 @@ IF (ALLOCATED(global_nptrs2)) DEALLOCATE (global_nptrs2)
 NULLIFY (node1, node2)
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END] dc_InitiateNodeToNodeData()')
+  & '[END] InitiateNodeToNodeData()')
 
 END PROCEDURE dc_InitiateNodeToNodeData2
 
