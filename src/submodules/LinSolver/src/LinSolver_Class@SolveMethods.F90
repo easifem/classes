@@ -61,7 +61,6 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, dbcIndx, ierr, myName)
     ! The preconditioners are inside the Amat
     !
     CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.FALSE.)
-    CALL display(__FILE__//"  debug: ILU Solve")
     !
   CASE (4, 6)
     !
@@ -69,7 +68,6 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, dbcIndx, ierr, myName)
     ! The preconditioners are inside the Amat
     !
     CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.TRUE.)
-    CALL display(__FILE__//"  debug: Transpose ILU Solve")
     !
   END SELECT
   !

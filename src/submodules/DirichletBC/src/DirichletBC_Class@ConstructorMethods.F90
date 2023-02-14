@@ -24,29 +24,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_checkEssentialParam
-  !!
-CHARACTER(LEN=*), PARAMETER :: myName = "bc_checkEssentialParam"
-  !!
+!
+CHARACTER(*), PARAMETER :: myName = "bc_checkEssentialParam"
+!
 IF (.NOT. param%isPresent(key="DirichletBC/name")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'DirichletBC/name should be present in param')
 END IF
-  !!
+!
 IF (.NOT. param%isPresent(key="DirichletBC/idof")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'DirichletBC/idof should be present in param')
 END IF
-  !!
+!
 IF (.NOT. param%isPresent(key="DirichletBC/nodalValueType")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'DirichletBC/nodalValueType should be present in param')
 END IF
-  !!
+!
 IF (.NOT. param%isPresent(key="DirichletBC/useFunction")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'DirichletBC/useFunction should be present in param')
 END IF
-  !!
+!
 END PROCEDURE bc_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -55,17 +55,17 @@ END PROCEDURE bc_checkEssentialParam
 
 MODULE PROCEDURE setDirichletBCParam
 INTEGER(I4B) :: ierr
-  !!
-ierr = param%set(key="DirichletBC/name", value=trim(name))
-ierr = param%set(key="DirichletBC/idof", value=idof)
-ierr = param%set(key="DirichletBC/nodalValueType", value=nodalValueType)
-  !!
+!
+ierr = param%set(key="DirichletBC/name", VALUE=TRIM(name))
+ierr = param%set(key="DirichletBC/idof", VALUE=idof)
+ierr = param%set(key="DirichletBC/nodalValueType", VALUE=nodalValueType)
+!
 IF (PRESENT(useFunction)) THEN
-  ierr = param%set(key="DirichletBC/useFunction", value=useFunction)
+  ierr = param%set(key="DirichletBC/useFunction", VALUE=useFunction)
 ELSE
-  ierr = param%set(key="DirichletBC/useFunction", value=.FALSE.)
+  ierr = param%set(key="DirichletBC/useFunction", VALUE=.FALSE.)
 END IF
-  !!
+!
 END PROCEDURE setDirichletBCParam
 
 !----------------------------------------------------------------------------
@@ -73,53 +73,53 @@ END PROCEDURE setDirichletBCParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Initiate
-  !!
-CHARACTER(LEN=*), PARAMETER :: myName = "bc_Initiate"
-CHARACTER(LEN=:), ALLOCATABLE :: char_var
+!
+CHARACTER(*), PARAMETER :: myName = "bc_Initiate"
+CHARACTER(:), ALLOCATABLE :: char_var
 INTEGER(I4B) :: ierr
-  !!
-  !! check
-  !!
+!
+! check
+!
 IF (obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'DirichletBC_ object is already initiated')
-  !!
-  !! check
-  !!
+!
+! check
+!
 CALL obj%checkEssentialParam(param=param)
-  !!
-  !!
-  !!
+!
+!
+!
 obj%isInitiated = .TRUE.
 obj%boundary = boundary
 obj%dom => dom
-  !!
-  !! name
-  !!
-ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes( &
+!
+! name
+!
+ALLOCATE (CHARACTER(param%DataSizeInBytes( &
   & key="DirichletBC/name")) :: char_var)
-ierr = param%get(key="DirichletBC/name", value=char_var)
+ierr = param%get(key="DirichletBC/name", VALUE=char_var)
 obj%name = char_var
 DEALLOCATE (char_var)
-  !!
-  !! idof
-  !!
-ierr = param%get(key="DirichletBC/idof", value=obj%idof)
-  !!
-  !! nodalValueType
-  !!
+!
+! idof
+!
+ierr = param%get(key="DirichletBC/idof", VALUE=obj%idof)
+!
+! nodalValueType
+!
 ierr = param%get(key="DirichletBC/nodalValueType", &
-  & value=obj%nodalValueType)
-  !!
-  !! useFunction
-  !!
+  & VALUE=obj%nodalValueType)
+!
+! useFunction
+!
 ierr = param%get(key="DirichletBC/useFunction", &
-  & value=obj%useFunction)
-  !!
-  !!
-  !!
+  & VALUE=obj%useFunction)
+!
+!
+!
 IF (boundary%isSelectionByMeshID .AND. (.NOT. obj%useFunction)) THEN
-    !!
+  !
   IF (obj%nodalValueType .NE. Constant) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'When meshSelection is by MeshID &
@@ -127,32 +127,17 @@ IF (boundary%isSelectionByMeshID .AND. (.NOT. obj%useFunction)) THEN
         & `nodalValueType` in `DirichletBC_` &
         & object should be Constant.')
   END IF
-    !!
+  !
 END IF
-  !!
+!
 END PROCEDURE bc_Initiate
-
-!----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_Deallocate
-CALL AbstractBCDeallocate(obj)
-obj%idof = 0
-obj%nodalValueType = -1
-obj%useFunction = .FALSE.
-IF (ALLOCATED(obj%NodalValue)) DEALLOCATE (obj%NodalValue)
-obj%TimeFunction => NULL()
-obj%SpaceFunction => NULL()
-obj%SpaceTimeFunction => NULL()
-END PROCEDURE bc_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                            Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE bc_Final
 
 END SUBMODULE ConstructorMethods

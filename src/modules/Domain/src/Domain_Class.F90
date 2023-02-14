@@ -254,6 +254,12 @@ CONTAINS
   !! Get Order
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     & Domain_GetTotalMeshFacetData
+  PROCEDURE, PRIVATE, PASS(obj) :: Domain_GetTotalMaterial1, &
+    & Domain_GetTotalMaterial2
+  GENERIC, PUBLIC :: GetTotalMaterial => &
+    & Domain_getTotalMaterial1, &
+    & Domain_getTotalMaterial2
+  !! Get total number of materials
   !
   ! @setMethods
   !
@@ -1138,6 +1144,41 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData
     INTEGER(I4B) :: ans
   END FUNCTION Domain_getTotalMeshFacetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION Domain_getTotalMaterial1(obj, dim) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_getTotalMaterial1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalMaterial@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalMaterial2(obj, dim, entityNum) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetTotalMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------

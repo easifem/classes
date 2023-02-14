@@ -58,6 +58,7 @@ USE LinSolverFactory
 USE AbstractBC_Class
 USE DirichletBC_Class
 USE NeumannBC_Class
+USE NitscheBC_Class
 
 USE PolynomialFactory
 USE UserFunction_Class

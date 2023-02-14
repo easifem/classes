@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE NeumannBC_Class
+MODULE NitscheBC_Class
 USE GlobalData
 USE BaseType
 USE String_Class
@@ -26,19 +26,20 @@ USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 USE DirichletBC_Class
+USE NeumannBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "NeumannBC_CLASS"
+CHARACTER(*), PARAMETER :: modName = "NitscheBC_CLASS"
 
 !----------------------------------------------------------------------------
-!                                                               NeumannBC_
+!                                                               NitscheBC_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 1 Sept 2021
-! summary: This is an abstract data type for boundary conditions
+! date: 2023-02-14
+! summary: This is Nitsche boundary condition
 
-TYPE, EXTENDS(DirichletBC_) :: NeumannBC_
+TYPE, EXTENDS(NeumannBC_) :: NitscheBC_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
@@ -49,31 +50,31 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
   PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
-END TYPE NeumannBC_
+END TYPE NitscheBC_
 
-PUBLIC :: NeumannBC_
+PUBLIC :: NitscheBC_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-TYPE :: NeumannBCPointer_
-  CLASS(NeumannBC_), POINTER :: ptr => NULL()
-END TYPE NeumannBCPointer_
+TYPE :: NitscheBCPointer_
+  CLASS(NitscheBC_), POINTER :: ptr => NULL()
+END TYPE NitscheBCPointer_
 
-PUBLIC :: NeumannBCPointer_
+PUBLIC :: NitscheBCPointer_
 
 !----------------------------------------------------------------------------
 !                                      checkEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 4 Feb 2022
+! date: 2023-02-14
 ! summary: Check essential parameters
 
 INTERFACE
   MODULE SUBROUTINE bc_checkEssentialParam(obj, param)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
+    CLASS(NitscheBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE bc_checkEssentialParam
 END INTERFACE
@@ -83,7 +84,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE setNeumannBCParam(param, name, idof, nodalValueType, &
+  MODULE SUBROUTINE setNitscheBCParam(param, name, idof, nodalValueType, &
     & useFunction)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
@@ -94,10 +95,10 @@ INTERFACE
     !! SpaceTime
     !! Constant
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
-  END SUBROUTINE setNeumannBCParam
+  END SUBROUTINE setNitscheBCParam
 END INTERFACE
 
-PUBLIC :: setNeumannBCParam
+PUBLIC :: setNitscheBCParam
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -105,7 +106,7 @@ PUBLIC :: setNeumannBCParam
 
 INTERFACE
   MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
+    CLASS(NitscheBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
@@ -118,7 +119,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE bc_Final(obj)
-    TYPE(NeumannBC_), INTENT(INOUT) :: obj
+    TYPE(NitscheBC_), INTENT(INOUT) :: obj
   END SUBROUTINE bc_Final
 END INTERFACE
 
@@ -128,7 +129,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
+    CLASS(NitscheBC_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
@@ -141,7 +142,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE bc_Export(obj, hdf5, group)
-    CLASS(NeumannBC_), INTENT(IN) :: obj
+    CLASS(NitscheBC_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE bc_Export
@@ -153,7 +154,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
-    CLASS(NeumannBC_), INTENT(IN) :: obj
+    CLASS(NitscheBC_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE bc_Display
@@ -167,7 +168,7 @@ INTERFACE
   MODULE SUBROUTINE bc_Set(obj, ConstantNodalValue, SpaceNodalValue, &
     & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
     & SpaceTimeFunction)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
+    CLASS(NitscheBC_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: ConstantNodalValue
     REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceNodalValue(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: TimeNodalValue(:)
@@ -181,4 +182,4 @@ INTERFACE
   END SUBROUTINE bc_Set
 END INTERFACE
 
-END MODULE NeumannBC_Class
+END MODULE NitscheBC_Class

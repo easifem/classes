@@ -192,7 +192,17 @@ END PROCEDURE mesh_setSparsity4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_setTotalMaterial
-CALL reallocate(obj%material, n)
+INTEGER(I4B), ALLOCATABLE :: temp_material(:)
+INTEGER(I4B) :: n0
+
+IF (ALLOCATED(obj%material)) THEN
+  n0 = SIZE(obj%material)
+  CALL reallocate(temp_material, n0 + n)
+  temp_material(1:n0) = obj%material(1:n0)
+  CALL MOVE_ALLOC(from=temp_material, to=obj%material)
+ELSE
+  CALL reallocate(obj%material, n)
+END IF
 END PROCEDURE mesh_setTotalMaterial
 
 !----------------------------------------------------------------------------

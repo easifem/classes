@@ -29,17 +29,17 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_getMeshID
-  SELECT CASE (dim)
-  CASE (0)
-    IF (isAllocated(obj%PointMeshID)) ans = obj%PointMeshID
-  CASE (1)
-    IF (isAllocated(obj%CurveMeshID)) ans = obj%CurveMeshID
-  CASE (2)
-    IF (isAllocated(obj%SurfaceMeshID)) ans = obj%SurfaceMeshID
-  CASE (3)
-    IF (isAllocated(obj%VolumeMeshID)) ans = obj%VolumeMeshID
-  END SELECT
-  IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
+SELECT CASE (dim)
+CASE (0)
+  IF (isAllocated(obj%PointMeshID)) ans = obj%PointMeshID
+CASE (1)
+  IF (isAllocated(obj%CurveMeshID)) ans = obj%CurveMeshID
+CASE (2)
+  IF (isAllocated(obj%SurfaceMeshID)) ans = obj%SurfaceMeshID
+CASE (3)
+  IF (isAllocated(obj%VolumeMeshID)) ans = obj%VolumeMeshID
+END SELECT
+IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
 END PROCEDURE meshSelect_getMeshID
 
 !----------------------------------------------------------------------------
@@ -47,38 +47,16 @@ END PROCEDURE meshSelect_getMeshID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_isMeshIDAllocated
-  !!
-  SELECT CASE (dim)
-  !!
-  !!
-  !!
-  !!
-  CASE (0)
-    ans = isAllocated(obj%PointMeshID)
-  !!
-  !!
-  !!
-  !!
-  CASE (1)
-    ans = isAllocated(obj%CurveMeshID)
-  !!
-  !!
-  !!
-  !!
-  CASE (2)
-    ans = isAllocated(obj%SurfaceMeshID)
-  !!
-  !!
-  !!
-  !!
-  CASE (3)
-    ans = isAllocated(obj%VolumeMeshID)
-  !!
-  !!
-  !!
-  !!
-  END SELECT
-  !!
+SELECT CASE (dim)
+CASE (0)
+  ans = isAllocated(obj%PointMeshID)
+CASE (1)
+  ans = isAllocated(obj%CurveMeshID)
+CASE (2)
+  ans = isAllocated(obj%SurfaceMeshID)
+CASE (3)
+  ans = isAllocated(obj%VolumeMeshID)
+END SELECT
 END PROCEDURE meshSelect_isMeshIDAllocated
 
 !----------------------------------------------------------------------------
@@ -86,18 +64,16 @@ END PROCEDURE meshSelect_isMeshIDAllocated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_isElemNumAllocated
-  !!
-  SELECT CASE (dim)
-  CASE (0)
-    ans = isAllocated(obj%PointElemNum)
-  CASE (1)
-    ans = isAllocated(obj%CurveElemNum)
-  CASE (2)
-    ans = isAllocated(obj%SurfaceElemNum)
-  CASE (3)
-    ans = isAllocated(obj%VolumeElemNum)
-  END SELECT
-  !!
+SELECT CASE (dim)
+CASE (0)
+  ans = isAllocated(obj%PointElemNum)
+CASE (1)
+  ans = isAllocated(obj%CurveElemNum)
+CASE (2)
+  ans = isAllocated(obj%SurfaceElemNum)
+CASE (3)
+  ans = isAllocated(obj%VolumeElemNum)
+END SELECT
 END PROCEDURE meshSelect_isElemNumAllocated
 
 !----------------------------------------------------------------------------
@@ -105,7 +81,29 @@ END PROCEDURE meshSelect_isElemNumAllocated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_isNodeNumAllocated
-  ans = isAllocated(obj%NodeNum)
+ans = isAllocated(obj%NodeNum)
 END PROCEDURE meshSelect_isNodeNumAllocated
+
+!----------------------------------------------------------------------------
+!                                                                 GetQuery
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshSelect_GetQuery
+IF (PRESENT(isInitiated)) THEN
+  isInitiated = obj%isInitiated
+END IF
+IF (PRESENT(isSelectionByBox)) THEN
+  isSelectionByBox = obj%isSelectionByBox
+END IF
+IF (PRESENT(isSelectionByMeshID)) THEN
+  isSelectionByMeshID = obj%isSelectionByMeshID
+END IF
+IF (PRESENT(isSelectionByElemNum)) THEN
+  isSelectionByElemNum = obj%isSelectionByElemNum
+END IF
+IF (PRESENT(isSelectionByNodeNum)) THEN
+  isSelectionByNodeNum = obj%isSelectionByNodeNum
+END IF
+END PROCEDURE meshSelect_GetQuery
 
 END SUBMODULE GetMethods

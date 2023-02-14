@@ -42,7 +42,7 @@ CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
 ! date: 25 June 2021
 ! summary: Vector field
 !
-!{!pages/VectorField.md}
+!{!pages/VectorField_.md}
 
 TYPE, EXTENDS(AbstractNodeField_) :: VectorField_
   INTEGER(I4B) :: spaceCompo = 0_I4B
@@ -108,7 +108,7 @@ CONTAINS
   GENERIC, PUBLIC :: applyDirichletBC => &
     & vField_applyDirichletBC1, &
     & vField_applyDirichletBC2
-  PROCEDURE, PASS(obj) :: getPointerOfComponent => &
+  PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent => &
     & vField_getPointerOfComponent
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => vField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export

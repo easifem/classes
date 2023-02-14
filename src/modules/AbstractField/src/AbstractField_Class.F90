@@ -37,6 +37,7 @@ USE BaseType
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
+USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE Domain_Class
 IMPLICIT NONE
@@ -109,6 +110,9 @@ CONTAINS
   !! Import data from hdf5 file
   PROCEDURE(aField_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
   !! Export data in hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => afield_WriteData_vtk
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => afield_WriteData_hdf5
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
@@ -265,5 +269,29 @@ INTERFACE
 END INTERFACE
 
 PUBLIC :: FIELD_TYPE_NAME
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE aField_WriteData_hdf5(obj, hdf5, group)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE aField_WriteData_hdf5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE aField_WriteData_vtk(obj, vtk, group)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE aField_WriteData_vtk
+END INTERFACE
 
 END MODULE AbstractField_Class

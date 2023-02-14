@@ -180,6 +180,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
 # NeumannBC
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
 
+# NitscheBC
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
+
 # UserFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 

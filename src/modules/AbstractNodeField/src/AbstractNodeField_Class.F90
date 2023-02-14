@@ -20,6 +20,8 @@ USE DOF_Method
 USE AbstractField_Class
 USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_
+USE HDF5File_Class, ONLY: HDF5File_
+USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
 PRIVATE
 

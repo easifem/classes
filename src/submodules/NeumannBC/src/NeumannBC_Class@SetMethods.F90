@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE (NeumannBC_Class) SetMethods
+SUBMODULE(NeumannBC_Class) SetMethods
 USE BaseMethod
 IMPLICIT NONE
 CONTAINS
@@ -25,111 +25,106 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_set
-  CHARACTER( LEN = * ), PARAMETER :: myName="bc_set"
-  !!
-  !! check
-  !!
-  IF( .NOT. obj%isInitiated ) THEN
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'NeumannBC object is not initiated, initiate it first.' )
+CHARACTER(*), PARAMETER :: myName = "bc_set"
+!
+! check
+!
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'NeumannBC object is not initiated, initiate it first.')
+END IF
+!
+IF (.NOT. obj%UseFunction) THEN
+  IF (PRESENT(TimeFunction) .OR. PRESENT(SpaceFunction) &
+    & .OR. PRESENT(SpaceTimeFunction)) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & "Usefunction is set to false while creating an instance &
+      & of NeumannBC_. You can either set values using a function, &
+      & or by provinding nodalValue, but not the both")
   END IF
-  !!
-  IF( .NOT. obj%UseFunction ) THEN
-    IF( PRESENT( TimeFunction ) .OR. PRESENT( SpaceFunction ) &
-      & .OR. PRESENT( SpaceTimeFunction ) ) THEN
-      CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'You can either set values using a function, or by provinding &
-        & nodalValue, but not the both')
-    END IF
-    !!
-    !! constant
-    !!
-    IF( PRESENT( ConstantNodalValue ) ) THEN
-      !> check
-      IF( obj%nodalValueType .NE. Constant ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'nodalValueType is not Constant')
-      CALL Reallocate( obj%NodalValue, 1, 1)
+  !
+  ! constant
+  !
+  IF (PRESENT(ConstantNodalValue)) THEN
+    IF (obj%nodalValueType .NE. Constant) THEN
+      CALL e%raiseError(modName//'::'//myName//" - "// &
+       & 'nodalValueType is not Constant while initiating the object')
+    ELSE
+      CALL Reallocate(obj%NodalValue, 1, 1)
       obj%NodalValue = ConstantNodalValue
       RETURN
     END IF
-    !!
-    !! SpaceNodalValue
-    !!
-    IF( PRESENT( SpaceNodalValue ) ) THEN
-      !!
-      !! check
-      !!
-      IF( obj%nodalValueType .NE. Space ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'nodalValueType is not Space type')
-      CALL Reallocate( obj%NodalValue, SIZE( SpaceNodalValue ), 1 )
-      obj%NodalValue( :, 1 ) = SpaceNodalValue
-      RETURN
-    END IF
-    !!
-    !! TimeNodalValue
-    !!
-    IF( PRESENT( TimeNodalValue ) ) THEN
-      !> check
-      IF( obj%nodalValueType .NE. Time ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'nodalValueType is not Time type')
-      CALL Reallocate( obj%NodalValue, SIZE( TimeNodalValue ), 1 )
-      obj%NodalValue( :, 1 ) = TimeNodalValue
-      RETURN
-    END IF
-    !!
-    !! SpaceTimeNodalValue
-    !!
-    IF( PRESENT( SpaceTimeNodalValue ) ) THEN
-      !> check
-      IF( obj%nodalValueType .NE. SpaceTime ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'nodalValueType is not SpaceTime type')
-      obj%NodalValue = SpaceTimeNodalValue
-      RETURN
-    END IF
-    !!
-    !!
-    !!
-  ELSE
-    !!
-    !! SpaceFunction
-    !!
-    IF( PRESENT( SpaceFunction ) ) THEN
-      IF( obj%nodalValueType .NE. Space ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'nodalValueType is not Space type')
-      obj%SpaceFunction => SpaceFunction
-      RETURN
-    END IF
-    !!
-    !! TimeNodalValue
-    !!
-    IF( PRESENT( TimeFunction ) ) THEN
-      IF( obj%nodalValueType .NE. Time ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'nodalValueType is not Time type')
-      obj%TimeFunction => TimeFunction
-      RETURN
-    END IF
-    !!
-    !! SpaceTimeNodalValue
-    !!
-    IF( PRESENT( SpaceTimeFunction ) ) THEN
-      IF( obj%nodalValueType .NE. SpaceTime ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'nodalValueType is not SpaceTime type')
-      obj%SpaceTimeFunction => SpaceTimeFunction
-      RETURN
-    END IF
-    !!
-    !! check
-    !!
-    CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'When UseFunction is true then user must provide function')
   END IF
+  !
+  ! SpaceNodalValue
+  !
+  IF (PRESENT(SpaceNodalValue)) THEN
+    IF (obj%nodalValueType .NE. Space) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'nodalValueType is not Space type')
+    CALL Reallocate(obj%NodalValue, SIZE(SpaceNodalValue), 1)
+    obj%NodalValue(:, 1) = SpaceNodalValue
+    RETURN
+  END IF
+  !
+  ! TimeNodalValue
+  !
+  IF (PRESENT(TimeNodalValue)) THEN
+    IF (obj%nodalValueType .NE. Time) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'nodalValueType is not Time type')
+    CALL Reallocate(obj%NodalValue, SIZE(TimeNodalValue), 1)
+    obj%NodalValue(:, 1) = TimeNodalValue
+    RETURN
+  END IF
+  !
+  ! SpaceTimeNodalValue
+  !
+  IF (PRESENT(SpaceTimeNodalValue)) THEN
+    IF (obj%nodalValueType .NE. SpaceTime) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'nodalValueType is not SpaceTime type')
+    obj%NodalValue = SpaceTimeNodalValue
+    RETURN
+  END IF
+  !
+ELSE
+  !
+  ! SpaceFunction
+  !
+  IF (PRESENT(SpaceFunction)) THEN
+    IF (obj%nodalValueType .NE. Space) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'nodalValueType is not Space type')
+    obj%SpaceFunction => SpaceFunction
+    RETURN
+  END IF
+  !
+  ! TimeNodalValue
+  !
+  IF (PRESENT(TimeFunction)) THEN
+    IF (obj%nodalValueType .NE. Time) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'nodalValueType is not Time type')
+    obj%TimeFunction => TimeFunction
+    RETURN
+  END IF
+  !
+  ! SpaceTimeNodalValue
+  !
+  IF (PRESENT(SpaceTimeFunction)) THEN
+    IF (obj%nodalValueType .NE. SpaceTime) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'nodalValueType is not SpaceTime type')
+    obj%SpaceTimeFunction => SpaceTimeFunction
+    RETURN
+  END IF
+  !
+  ! check
+  !
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'When UseFunction is true then user must provide function')
+END IF
 END PROCEDURE bc_set
 
 END SUBMODULE SetMethods

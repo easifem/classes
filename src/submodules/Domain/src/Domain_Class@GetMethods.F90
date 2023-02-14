@@ -534,6 +534,33 @@ END IF
 END PROCEDURE Domain_getTotalMeshFacetData
 
 !----------------------------------------------------------------------------
+!                                                          getTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_getTotalMaterial1
+INTEGER(I4B) :: ii, n
+CLASS(mesh_), POINTER :: meshptr
+n = obj%getTotalMesh(dim=dim)
+ALLOCATE (ans(n))
+DO ii = 1, n
+  meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
+  ans(ii) = meshptr%getTotalMaterial()
+END DO
+meshptr => NULL()
+END PROCEDURE Domain_getTotalMaterial1
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetTotalMaterial2
+CLASS(mesh_), POINTER :: meshptr
+meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+ans = meshptr%getTotalMaterial()
+meshptr => NULL()
+END PROCEDURE Domain_GetTotalMaterial2
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 END SUBMODULE GetMethods

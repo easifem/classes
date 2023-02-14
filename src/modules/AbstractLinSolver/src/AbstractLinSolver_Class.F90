@@ -52,79 +52,86 @@ PRIVATE
 
 TYPE, ABSTRACT :: AbstractLinSolver_
   LOGICAL(LGT) :: isInitiated = .FALSE.
-    !! is object initiated?
+  !! is object initiated?
   TYPE(String) :: engine
-    !! Name of the engine
-    !! NATIVE-SERIAL
-    !! NATIVE-OMP
-    !! NATIVE-ACC
-    !! NATIVE-MPI
-    !! PETSC
-    !! LIS-OMP
-    !! LIS-MPI
+  !! Name of the engine
+  !! NATIVE-SERIAL
+  !! NATIVE-OMP
+  !! NATIVE-ACC
+  !! NATIVE-MPI
+  !! PETSC
+  !! LIS-OMP
+  !! LIS-MPI
   INTEGER(I4B) :: solverName = 0
-    !! Solver name
+  !! Solver name
   INTEGER(I4B) :: ierr = 0
-    !! error code returned by the solver
+  !! Error code returned by the solver
   INTEGER(I4B) :: preconditionOption = 0
-    !! Name of preconditioner;
-    !! - NO_PRECONDITION
-    !! - LEFT_PRECONDITION
-    !! - RIGHT_PRECONDITION
-    !! - LEFT_RIGHT_PRECONDITON
+  !! Name of preconditioner;
+  !! NO_PRECONDITION
+  !! LEFT_PRECONDITION
+  !! RIGHT_PRECONDITION
+  !! LEFT_RIGHT_PRECONDITON
   INTEGER(I4B) :: iter = 0
-    !! Current iteration number
+  !! Current iteration number
   INTEGER(I4B) :: maxIter = 0
-    !! Maximum iteration number
+  !! Maximum iteration number
   REAL(DFP) :: atol = 0.0_DFP
+  !! absolute tolerance
   REAL(DFP) :: rtol = 1.0E-8
+  !! relative tolerance
   REAL(DFP) :: tol = 0.0_DFP
-    !! Tolerance for testing convergence
+  !! Tolerance for testing convergence
   REAL(DFP) :: normRes = 0.0_DFP
+  !! norm Residual
   REAL(DFP) :: error0 = 0.0_DFP
   !! initial error res or sol
   REAL(DFP) :: error = 0.0_DFP
   !! final error in res of sol
   INTEGER(I4B) :: convergenceIn = convergenceInRes
-    !! convergence in residual or solution
+  !! convergence in residual or solution
   INTEGER(I4B) :: convergenceType = relativeConvergence
-    !! relative/ absolute convergence
+  !! relative/ absolute convergence
   LOGICAL(LGT) :: relativeToRHS = .FALSE.
-    !! In case of relative convergence, is convergence is relative to
-    !! right hand side
+  !! In case of relative convergence
+  !! is convergence
+  !! is relative to
+  !! right hand side
   INTEGER(I4B) :: KrylovSubspaceSize = 15
-    !! Useful for GMRES type algorithm
+  !! Useful for GMRES type algorithm
   INTEGER(I4B) :: globalNumRow = 0, globalNumColumn = 0
-    !! Size of the global problem;
+  !! Size of the global problem;
   INTEGER(I4B) :: localNumRow = 0, localNumColumn = 0
-    !! Size of the problem on a single process
+  !! Size of the problem on a single process
   INTEGER(I4B), ALLOCATABLE :: dbcIndx(:)
-    !! Indices where Dirichlet boundary conditions is prescribed
+  !! Indices where Dirichlet boundary conditions is prescribed
   REAL(DFP), ALLOCATABLE :: RES(:)
-    !! Residual in each iteration
+  !! Residual in each iteration
   CLASS(AbstractMatrixField_), POINTER :: Amat => NULL()
-    !! Pointer to child of [[AbstractMatrixField_]]
+  !! Pointer to child of [[AbstractMatrixField_]]
 CONTAINS
   PROCEDURE(als_checkEssentialParam), PUBLIC, DEFERRED, PASS(obj) :: &
     & checkEssentialParam
   PROCEDURE(als_initiate), PUBLIC, DEFERRED, PASS(obj) :: Initiate
-    !! Initiate the object
+  !! Initiate the object
   PROCEDURE(als_set), PUBLIC, DEFERRED, PASS(obj) :: Set
-    !! Set the matrix and preconditioning matrix
+  !! Set the matrix and preconditioning matrix
   PROCEDURE(als_solve), PUBLIC, DEFERRED, PASS(obj) :: Solve
-    !! Solve system of linear equation
+  !! Solve system of linear equation
   PROCEDURE(als_display), PUBLIC, DEFERRED, PASS(obj) :: Display
-    !! Display the content
+  !! Display the content
   PROCEDURE(als_Deallocate), PUBLIC, DEFERRED, PASS(obj) :: DEALLOCATE
-    !! Deallocate Data
+  !! Deallocate Data
   PROCEDURE(als_Import), PUBLIC, DEFERRED, PASS(obj) :: IMPORT
-    !! importing linsolver from external file
+  !! Importing linsolver from external file
   PROCEDURE(als_Export), PUBLIC, DEFERRED, PASS(obj) :: Export
-    !! exporting linsolver from external file
+  !! Exporting linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: GetPreconditionOption => &
     & als_getPreconditionOption
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: setTolerance => &
     & als_setTolerance
+  !!
   PROCEDURE, PUBLIC, PASS(obj) :: setDirichletBCIndices => &
     & als_setDirichletBCIndices
   !!

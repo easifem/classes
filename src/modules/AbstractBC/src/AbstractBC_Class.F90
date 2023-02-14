@@ -38,41 +38,49 @@ CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 
 TYPE, ABSTRACT :: AbstractBC_
   LOGICAL(LGT) :: isInitiated = .FALSE.
+  !!
   TYPE(String) :: name
+  !! name of boundary condition
   INTEGER(I4B) :: idof = 0
+  !! degree of freedom number
   INTEGER(I4B) :: nodalValueType = -1
-    !! Constant, Space, Time, SpaceTime
+  !! Constant
+  !! Space
+  !! Time
+  !! SpaceTime
   LOGICAL(LGT) :: useFunction = .FALSE.
-    !! True if the boundary condition is analytical
+  !! True if the boundary condition is analytical
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
-    !! nodal values are kept here,
-    !! nodalValues( :, its ) denotes nodal values at
-    !! time step its
+  !! nodal values are kept here,
+  !! nodalValues( :, its ) denotes nodal values at time step its
   PROCEDURE(iface_SpaceTimeFunction), POINTER, NOPASS :: &
-    & SpaceTimeFunction => NULL()
-    !! SpaceTime Functions
+    & spaceTimeFunction => NULL()
+  !! SpaceTime Functions
   PROCEDURE(iface_SpaceFunction), POINTER, NOPASS :: &
-    & SpaceFunction => NULL()
-    !! Space Function
+    & spaceFunction => NULL()
+  !! Space Function
   PROCEDURE(iface_TimeFunction), POINTER, NOPASS :: &
-    & TimeFunction => NULL()
-    !! Time Function
+    & timeFunction => NULL()
+  !! Time Function
   TYPE(MeshSelection_) :: boundary
-    !! Boundary
+  !! Boundary
   CLASS(Domain_), POINTER :: dom => NULL()
-    !! Domain
+  !! Domain
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
-  PROCEDURE, PUBLIC, PASS(obj) :: getMeshID => bc_getMeshID
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => bc_GetMeshID
   PROCEDURE, PUBLIC, PASS(obj) :: Get => bc_Get
-  PROCEDURE, PUBLIC, PASS(obj) :: getDOFNo => bc_getDOFNo
-  PROCEDURE(bc_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) ::  &
-    & checkEssentialParam
-  PROCEDURE(bc_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
-  PROCEDURE(bc_Import), DEFERRED, PUBLIC, PASS(obj) :: IMPORT
-  PROCEDURE(bc_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
-  PROCEDURE(bc_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => bc_GetDOFNo
+  PROCEDURE, PUBLIC, PASS(obj) ::  &
+    & CheckEssentialParam => bc_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: isUseFunction => bc_isUseFunction
+  !! Returns true if the useFunction is true
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
 END TYPE AbstractBC_
 
 PUBLIC :: AbstractBC_
@@ -86,25 +94,24 @@ TYPE :: AbstractBCPointer_
 END TYPE AbstractBCPointer_
 
 PUBLIC :: AbstractBCPointer_
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE bc_checkEssentialParam(obj, param)
-    IMPORT
+INTERFACE
+  MODULE SUBROUTINE bc_CheckEssentialParam(obj, param)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE bc_checkEssentialParam
+  END SUBROUTINE bc_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE bc_Initiate(obj, param, boundary, dom)
-    IMPORT
+INTERFACE
+  MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(MeshSelection_), INTENT(IN) :: boundary
@@ -116,9 +123,8 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE bc_Import(obj, hdf5, group, dom)
-    IMPORT
+INTERFACE
+  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
@@ -130,9 +136,12 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE bc_Export(obj, hdf5, group)
-    IMPORT
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Export in hdf5 file
+
+INTERFACE
+  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
@@ -143,9 +152,12 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE bc_Display(obj, msg, unitNo)
-    IMPORT
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Display the content
+
+INTERFACE
+  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
@@ -155,6 +167,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                        Deallocate@Methods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Deallocate data
 
 INTERFACE
   MODULE SUBROUTINE bc_Deallocate(obj)
@@ -177,16 +193,20 @@ PUBLIC :: AbstractBCDeallocate
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION bc_getMeshID(obj, dim) RESULT(Ans)
+  MODULE PURE FUNCTION bc_GetMeshID(obj, dim) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION bc_getMeshID
+  END FUNCTION bc_GetMeshID
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Get the node number and nodal value
 
 INTERFACE
   MODULE SUBROUTINE bc_Get(obj, nodeNum, nodalValue, times)
@@ -198,14 +218,55 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getDOFNo@getMethods
+!                                                       GetDOFNo@getMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Get degree of freedom number
+
+INTERFACE
+  MODULE PURE FUNCTION bc_GetDOFNo(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_GetDOFNo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     isUseFunction@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_getDOFNo(obj) RESULT(Ans)
+  MODULE PURE FUNCTION bc_isUseFunction(obj) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION bc_getDOFNo
+    LOGICAL(LGT) :: ans
+  END FUNCTION bc_isUseFunction
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE bc_Set(obj, ConstantNodalValue, SpaceNodalValue, &
+    & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
+    & SpaceTimeFunction)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: ConstantNodalValue
+    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceNodalValue(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: TimeNodalValue(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceTimeNodalValue(:, :)
+    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+      & SpaceTimeFunction
+    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+      & SpaceFunction
+    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+      & TimeFunction
+  END SUBROUTINE bc_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractBC_Class

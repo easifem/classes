@@ -24,18 +24,18 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Deallocate
-  INTEGER( I4B ) :: ii
-  obj%name=""
-  obj%engine=""
-  obj%isInitiated=.FALSE.
-  obj%fieldType=0
-  obj%domain => NULL()
-  IF( ALLOCATED( obj%domains ) ) THEN
-    DO ii = 1, SIZE( obj%domains )
-      obj%domains(ii)%ptr => NULL()
-    END DO
-    DEALLOCATE( obj%domains )
-  END IF
+INTEGER(I4B) :: ii
+obj%name = ""
+obj%engine = ""
+obj%isInitiated = .FALSE.
+obj%fieldType = 0
+obj%domain => NULL()
+IF (ALLOCATED(obj%domains)) THEN
+  DO ii = 1, SIZE(obj%domains)
+    obj%domains(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%domains)
+END IF
 END PROCEDURE aField_Deallocate
 
 !----------------------------------------------------------------------------
@@ -44,16 +44,16 @@ END PROCEDURE aField_Deallocate
 
 MODULE PROCEDURE FIELD_TYPE_NUMBER
   !!
-  SELECT CASE( TRIM(name) )
-  CASE( "NORMAL" )
-    ans = FIELD_TYPE_NORMAL
-  CASE( "CONSTANT" )
-    ans = FIELD_TYPE_CONSTANT
-  CASE( "CONSTANT_SPACE" )
-    ans = FIELD_TYPE_CONSTANT_SPACE
-  CASE( "CONSTANT_TIME" )
-    ans = FIELD_TYPE_CONSTANT_TIME
-  END SELECT
+SELECT CASE (TRIM(name))
+CASE ("NORMAL")
+  ans = FIELD_TYPE_NORMAL
+CASE ("CONSTANT")
+  ans = FIELD_TYPE_CONSTANT
+CASE ("CONSTANT_SPACE")
+  ans = FIELD_TYPE_CONSTANT_SPACE
+CASE ("CONSTANT_TIME")
+  ans = FIELD_TYPE_CONSTANT_TIME
+END SELECT
 END PROCEDURE FIELD_TYPE_NUMBER
 
 !----------------------------------------------------------------------------
@@ -62,16 +62,36 @@ END PROCEDURE FIELD_TYPE_NUMBER
 
 MODULE PROCEDURE FIELD_TYPE_NAME
   !!
-  SELECT CASE( id )
-  CASE( FIELD_TYPE_NORMAL  )
-    ans = "NORMAL"
-  CASE( FIELD_TYPE_CONSTANT  )
-    ans = "CONSTANT"
-  CASE( FIELD_TYPE_CONSTANT_SPACE  )
-    ans = "CONSTANT_SPACE"
-  CASE( FIELD_TYPE_CONSTANT_TIME  )
-    ans = "CONSTANT_TIME"
-  END SELECT
+SELECT CASE (id)
+CASE (FIELD_TYPE_NORMAL)
+  ans = "NORMAL"
+CASE (FIELD_TYPE_CONSTANT)
+  ans = "CONSTANT"
+CASE (FIELD_TYPE_CONSTANT_SPACE)
+  ans = "CONSTANT_SPACE"
+CASE (FIELD_TYPE_CONSTANT_TIME)
+  ans = "CONSTANT_TIME"
+END SELECT
 END PROCEDURE FIELD_TYPE_NAME
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_WriteData_hdf5
+CHARACTER(*), PARAMETER :: myName = "aField_WriteData_hdf5"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This method should be implemented by children of AbstractField_')
+END PROCEDURE aField_WriteData_hdf5
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_WriteData_vtk
+CHARACTER(*), PARAMETER :: myName = "aField_WriteData_vtk"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This method should be implemented by children of AbstractField_')
+END PROCEDURE aField_WriteData_vtk
 
 END SUBMODULE Methods

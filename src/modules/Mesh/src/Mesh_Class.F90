@@ -572,6 +572,8 @@ CONTAINS
   !! Return the NSD
   PROCEDURE, PUBLIC, PASS(obj) :: getMaterial => mesh_getMaterial
   !! returns the material id of a given medium
+  PROCEDURE, PUBLIC, PASS(obj) :: getTotalMaterial => mesh_getTotalMaterial
+  !! returns the total material
   !
   ! @SetMethods
   !
@@ -1840,6 +1842,22 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: medium
     INTEGER(I4B) :: ans
   END FUNCTION mesh_getMaterial
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE PURE FUNCTION mesh_getTotalMaterial(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION mesh_getTotalMaterial
 END INTERFACE
 
 !----------------------------------------------------------------------------

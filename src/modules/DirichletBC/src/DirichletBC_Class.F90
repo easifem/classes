@@ -42,7 +42,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & bc_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
   FINAL :: bc_Final
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
@@ -105,16 +104,6 @@ INTERFACE
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE bc_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Deallocate(obj)
-    CLASS(DirichletBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

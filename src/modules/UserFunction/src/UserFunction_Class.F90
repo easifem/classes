@@ -22,14 +22,14 @@ USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 !!
-CHARACTER(LEN=*), PARAMETER :: modName = "UserFunction_Class"
-CHARACTER(LEN=*), PARAMETER :: NAME_RETURN_TYPE(3) =  &
+CHARACTER(*), PARAMETER :: modName = "UserFunction_Class"
+CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) =  &
   & [ &
   & "Scalar", &
   & "Vector", &
   & "Matrix"  &
   & ]
-CHARACTER(LEN=*), PARAMETER :: NAME_ARG_TYPE(5) =  &
+CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) =  &
   & [ &
   & "Constant         ", &
   & "Space            ",  &
@@ -54,7 +54,7 @@ TYPE :: UserFunction_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & auf_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => auf_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => auf_Deallocate
   FINAL :: auf_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => auf_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: Set1 => auf_Set1
@@ -67,7 +67,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: getArgType => auf_getArgType
   PROCEDURE, PUBLIC, PASS(obj) :: getReturnType => auf_getReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: Display => auf_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => auf_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => auf_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => auf_Export
 END TYPE UserFunction_
 
@@ -83,7 +83,7 @@ PUBLIC :: UserFunction_
 
 INTERFACE
   MODULE PURE FUNCTION UserFunctionGetReturnType(name) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION UserFunctionGetReturnType
 END INTERFACE
@@ -100,7 +100,7 @@ PUBLIC :: UserFunctionGetReturnType
 
 INTERFACE
   MODULE PURE FUNCTION UserFunctionGetArgType(name) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION UserFunctionGetArgType
 END INTERFACE
@@ -302,7 +302,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE auf_Display(obj, msg, unitNo)
     CLASS(UserFunction_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE auf_Display
 END INTERFACE
@@ -315,7 +315,7 @@ INTERFACE
   MODULE SUBROUTINE auf_Import(obj, hdf5, group)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE auf_Import
 END INTERFACE
 
@@ -327,7 +327,7 @@ INTERFACE
   MODULE SUBROUTINE auf_Export(obj, hdf5, group)
     CLASS(UserFunction_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE auf_Export
 END INTERFACE
 

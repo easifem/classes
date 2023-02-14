@@ -625,6 +625,18 @@ END IF
 END PROCEDURE mesh_getMaterial
 
 !----------------------------------------------------------------------------
+!                                                         getTotalMaterial
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getTotalMaterial
+IF (ALLOCATED(obj%material)) THEN
+  ans = SIZE(obj%material)
+ELSE
+  ans = 0
+END IF
+END PROCEDURE mesh_getTotalMaterial
+
+!----------------------------------------------------------------------------
 !                                                      getTotalFacetElements
 !----------------------------------------------------------------------------
 
