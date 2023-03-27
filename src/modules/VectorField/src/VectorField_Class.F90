@@ -33,6 +33,7 @@ USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "VectorField"
 
 !----------------------------------------------------------------------------
 !                                                              VectorField_
@@ -50,9 +51,13 @@ CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & vField_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: initiate1 => vField_initiate1
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => vField_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => vField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => vField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent => &
+    & vField_getPointerOfComponent
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => vField_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => vField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export
   FINAL :: vField_Final
   !! SetMethods
   PROCEDURE, PASS(obj) :: set1 => vField_set1
@@ -108,10 +113,6 @@ CONTAINS
   GENERIC, PUBLIC :: applyDirichletBC => &
     & vField_applyDirichletBC1, &
     & vField_applyDirichletBC2
-  PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent => &
-    & vField_getPointerOfComponent
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => vField_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export
 END TYPE VectorField_
 
 PUBLIC :: VectorField_
@@ -137,9 +138,11 @@ PUBLIC :: VectorFieldPointer_
 ! summary: Sets parameters for creating the vector field
 !
 INTERFACE
-  MODULE SUBROUTINE setVectorFieldParam(param, name, spaceCompo, fieldType)
+  MODULE SUBROUTINE setVectorFieldParam(param, name, engine, &
+    & spaceCompo, fieldType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
   END SUBROUTINE setVectorFieldParam
@@ -169,8 +172,6 @@ INTERFACE
   END SUBROUTINE vField_checkEssentialParam
 END INTERFACE
 
-PUBLIC :: vField_checkEssentialParam
-
 !----------------------------------------------------------------------------
 !                                                      Initiate@Constructor
 !----------------------------------------------------------------------------
@@ -196,6 +197,12 @@ INTERFACE
   END SUBROUTINE vField_Initiate1
 END INTERFACE
 
+INTERFACE VectorFieldInitiate1
+  MODULE PROCEDURE vField_Initiate1
+END INTERFACE VectorFieldInitiate1
+
+PUBLIC :: VectorFieldInitiate1
+
 !----------------------------------------------------------------------------
 !                                                 Deallocate@Constructor
 !----------------------------------------------------------------------------
@@ -210,11 +217,11 @@ INTERFACE
   END SUBROUTINE vField_Deallocate
 END INTERFACE
 
-INTERFACE DEALLOCATE
+INTERFACE VectorFieldDeallocate
   MODULE PROCEDURE vField_Deallocate
-END INTERFACE DEALLOCATE
+END INTERFACE VectorFieldDeallocate
 
-PUBLIC :: DEALLOCATE
+PUBLIC :: VectorFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -286,6 +293,12 @@ INTERFACE
   END SUBROUTINE vField_Display
 END INTERFACE
 
+INTERFACE VectorFieldDisplay
+  MODULE PROCEDURE vField_Display
+END INTERFACE VectorFieldDisplay
+
+PUBLIC :: VectorFieldDisplay
+
 !----------------------------------------------------------------------------
 !                                                                Import@IO
 !----------------------------------------------------------------------------
@@ -319,6 +332,12 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE vField_Export
 END INTERFACE
+
+INTERFACE VectorFieldExport
+  MODULE PROCEDURE vField_Export
+END INTERFACE VectorFieldExport
+
+PUBLIC :: VectorFieldExport
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -475,6 +494,7 @@ END INTERFACE
 ! call obj%set( value=real1, spaceCompo=3 )
 ! call obj%display( "test-5: vector field = " )
 !```
+
 INTERFACE
  MODULE SUBROUTINE vField_set5(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
@@ -518,7 +538,7 @@ END INTERFACE
 INTERFACE
  MODULE SUBROUTINE vField_set6(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    TYPE(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(ScalarField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
