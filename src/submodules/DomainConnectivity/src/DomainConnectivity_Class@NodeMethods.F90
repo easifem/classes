@@ -28,7 +28,8 @@ MODULE PROCEDURE dc_InitiateNodeToNodeData1
 CHARACTER(*), PARAMETER :: myName = "dc_InitiateNodeToNodeData1"
 CLASS(Mesh_), POINTER :: mesh1 => NULL()
 CLASS(Mesh_), POINTER :: mesh2 => NULL()
-TYPE(BoundingBox_) :: Box
+TYPE(BoundingBox_) :: box, box1, box2
+LOGICAL(LGT) :: isvar
 INTEGER(I4B), ALLOCATABLE :: nptrs1(:), nptrs2(:)
 INTEGER(I4B) :: ii, jj, nsd
 REAL(DFP) :: X(3)
@@ -37,26 +38,21 @@ REAL(DFP), POINTER :: node2(:, :)
 !
 ! check domain1 initiated
 !
-#ifdef DEBUG_VER
 IF (.NOT. domain1%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-1 is not initiated, first initiate")
 END IF
-!
-!
-!
-!> check domain2 initiated
+
 IF (.NOT. domain2%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Domain-2 is not initiated, first initiate")
 END IF
-!> check
+
 IF (obj%isNodeToNode) THEN
   CALL e%raiseWarning(modName//"::"//myName//" - "// &
     & "It seems, obj%nodeToNode data is already initiated")
 END IF
-#endif
-!> get mesh pointer
+
 mesh1 => domain1%GetMeshPointer(dim=dim1, entityNum=entityNum1)
 mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
 ! TODO
@@ -64,10 +60,18 @@ mesh2 => domain2%GetMeshPointer(dim=dim2, entityNum=entityNum2)
 ! mesh1%minNptrs to mesh1%maxNptrs, it will save the space
 CALL Reallocate(obj%NodeToNode, mesh1%maxNptrs)
 obj%isNodeToNode = .TRUE.
+
 !> make intersection box
-IF ((mesh1%GetBoundingBox()) .isIntersect. (mesh2%GetBoundingBox())) THEN
-  Box = (mesh1%GetBoundingBox()) .INTERSECTION. (mesh2%GetBoundingBox())
+
+box1 = mesh1%GetBoundingBox()
+box2 = mesh2%GetBoundingBox()
+isvar = box1.isIntersect.box2
+
+IF (isvar) THEN
+  box = box1.INTERSECTION.box2
 ELSE
+  CALL Display(box1, "box1 = ", unitno=stderr)
+  CALL Display(box2, "box2 = ", unitno=stderr)
   CALL e%RaiseError(modName//"::"//myName//" - "// &
   & 'The two mesh does not overlap each other.')
 END IF
