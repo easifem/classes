@@ -30,7 +30,7 @@ CONTAINS
 
 SUBROUTINE HDF5Open
   INTEGER(I4B) :: herr
-  CHARACTER(LEN=*), PARAMETER :: myName = "HDF5Open"
+  CHARACTER(*), PARAMETER :: myName = "HDF5Open"
   IF (.NOT. libh5Open) THEN
     CALL H5open_f(herr)
     IF (herr .NE. 0) THEN
@@ -74,7 +74,7 @@ END SUBROUTINE HDF5Quiet
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_open
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_open'
+CHARACTER(*), PARAMETER :: myName = 'hdf5_open'
 INTEGER :: acc
 INTEGER(HID_T) :: plist_id
 !> main program
@@ -128,7 +128,7 @@ END PROCEDURE hdf5_open
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_close
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_close'
+CHARACTER(*), PARAMETER :: myName = 'hdf5_close'
 LOGICAL(LGT) :: lastStopOnError
 lastStopOnError = e%isStopOnError()
 CALL e%setStopOnError(.FALSE.)
@@ -157,8 +157,8 @@ END PROCEDURE hdf5_close
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_delete
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_delete'
-CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH) :: emesg
+CHARACTER(*), PARAMETER :: myName = 'hdf5_delete'
+CHARACTER(EXCEPTION_MAX_MESG_LENGTH) :: emesg
 TYPE(String) :: fileName
 !> main
 IF (obj%isinit) THEN
@@ -189,11 +189,11 @@ END PROCEDURE hdf5_delete
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_initiate
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_initiate'
-TYPE(String) :: fpath, fname, fext, mode_in
+CHARACTER(*), PARAMETER :: myName = 'hdf5_initiate'
+TYPE(String) :: fpath, fname, fext, mode_in, file_
 INTEGER(I4B) :: unitno
 LOGICAL(LGT) :: ostat, exists
-CHARACTER(LEN=LEN(filename)) :: tempchars
+CHARACTER(LEN(filename)) :: tempchars
 !> main
 IF (obj%isinit) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -201,15 +201,31 @@ IF (obj%isinit) THEN
     & ' is already initialized!')
   RETURN
 END IF
-CALL getPath(chars=filename, path=tempchars)
-fpath = trim(tempchars)
-CALL getFileNameExt(chars=filename, ext=tempchars)
-fext = trim(tempchars)
-CALL getFileName(chars=filename, fname=tempchars)
-fname = trim(tempchars)
+
+file_ = TRIM(filename)
+IF (file_%SCAN(CHAR_SLASH) .EQ. 0_I4B) THEN
+  fpath = "."//CHAR_SLASH
+ELSE
+  fpath = file_%basedir(sep=CHAR_SLASH)//CHAR_SLASH
+END IF
+fext = file_%extension()
+fname = file_%basename(extension=fext%chars(), sep=CHAR_SLASH)
+! CALL getPath(chars=filename, path=tempchars)
+! fpath = TRIM(tempchars)
+! CALL getFileNameExt(chars=filename, ext=tempchars)
+! fext = TRIM(tempchars)
+! CALL getFileName(chars=filename, fname=tempchars)
+! fname = TRIM(tempchars)
 CALL obj%setFilePath(fpath)
 CALL obj%setFileName(fname)
 CALL obj%setFileExt(fext)
+
+ierr = system_mkdir(fpath//'', RWX_U)
+IF (ierr .NE. 0_I4B .AND. ierr .NE. -1_I4B) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'error occured while creating the directory')
+END IF
+
 !>
 IF (PRESENT(zlibOpt)) THEN
   IF (zlibOpt .GE. 0) THEN
@@ -220,6 +236,7 @@ END IF
 !> Store the access mode
 mode_in = mode
 mode_in = mode_in%upper()
+
 SELECTCASE (TRIM(mode_in%chars()))
 CASE ('READ')
   INQUIRE (FILE=filename, EXIST=exists)
@@ -293,7 +310,7 @@ IF (obj%isinit) THEN
   IF (bool) THEN
     CALL obj%delete()
   ELSE
-    CALL obj%close()
+    CALL obj%CLOSE()
   END IF
   ! Close the HDF5 interface. This can only be done once all calls to the
   ! HDF5 library are complete.
@@ -347,8 +364,8 @@ END PROCEDURE hdf5_setNewStat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_ls
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_ls'
-CHARACTER(LEN=1024) :: tmpchar
+CHARACTER(*), PARAMETER :: myName = 'hdf5_ls'
+CHARACTER(1024) :: tmpchar
 TYPE(String) :: path2
 INTEGER(HSIZE_T) :: i
 INTEGER(HID_T) :: grp_id
@@ -403,7 +420,7 @@ END PROCEDURE hdf5_ls
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_mkdir
-CHARACTER(LEN=*), PARAMETER :: myname = 'hdf5_mkdir'
+CHARACTER(*), PARAMETER :: myname = 'hdf5_mkdir'
 TYPE(String) :: path3
 INTEGER(HID_T) :: group_id
 LOGICAL :: dset_exists
@@ -462,7 +479,7 @@ END PROCEDURE hdf5_mkdir
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_mkalldir
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_mkalldir'
+CHARACTER(*), PARAMETER :: myName = 'hdf5_mkalldir'
 INTEGER(I4B) :: i, nslash
 INTEGER(I4B), ALLOCATABLE :: slashloc(:)
 TYPE(String) :: path2, tmppath
@@ -527,7 +544,7 @@ END PROCEDURE hdf5_mkalldir
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_ngrp
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_ngrp'
+CHARACTER(*), PARAMETER :: myName = 'hdf5_ngrp'
 INTEGER(HID_T) :: grp_id
 INTEGER :: store_type, nlinks, max_corder
 
@@ -571,9 +588,9 @@ END PROCEDURE hdf5_ngrp
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_isgroup
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_isgroup'
+CHARACTER(*), PARAMETER :: myName = 'hdf5_isgroup'
 INTEGER(HID_T) :: obj_id
-INTEGER(I4B) :: type
+INTEGER(I4B) :: TYPE
 
 ! Make sure the object is initialized and opened
 ans = .FALSE.
@@ -585,8 +602,8 @@ IF (obj%isinit .AND. obj%isOpen()) THEN
     IF (ierr == -1) THEN
       ans = .FALSE.
     ELSE
-      CALL h5iget_type_f(obj_id, type, ierr)
-      ans = (type .EQ. H5I_GROUP_F)
+      CALL h5iget_type_f(obj_id, TYPE, ierr)
+      ans = (TYPE .EQ. H5I_GROUP_F)
     END IF
     ! Close the object
     CALL h5oclose_f(obj_id, ierr)
@@ -627,7 +644,7 @@ END PROCEDURE hdf5_pathExists
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_createHardLink
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_createHardLink'
+CHARACTER(*), PARAMETER :: myName = 'hdf5_createHardLink'
 INTEGER(HID_T) :: src_obj_id
 
 INTERFACE
@@ -668,7 +685,7 @@ MODULE PROCEDURE hdf5_getChunkSize
 INTEGER(I4B) :: ndims, layout
 INTEGER(HID_T) :: dset_id, dspace_id, dcpl
 INTEGER(HSIZE_T), ALLOCATABLE :: cdimsH5(:)
-CHARACTER(LEN=*), PARAMETER :: myName = "hdf5_getChunkSize"
+CHARACTER(*), PARAMETER :: myName = "hdf5_getChunkSize"
 
 ! Make sure the object is initialized, and opened
 IF (.NOT. obj%isinit) THEN
@@ -708,9 +725,9 @@ END PROCEDURE hdf5_getChunkSize
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_isCompressed
-CHARACTER(LEN=*), PARAMETER :: myName = "hdf5_isCompressed"
+CHARACTER(*), PARAMETER :: myName = "hdf5_isCompressed"
 INTEGER(SIZE_T), PARAMETER :: namelen = 180
-CHARACTER(LEN=namelen) :: filter_name
+CHARACTER(namelen) :: filter_name
 INTEGER(I4B) :: i, nfilters, filter_id, flags, cd_values(1)
 INTEGER(HID_T) :: dset_id, dcpl
 INTEGER(SIZE_T) :: nelmts
@@ -764,7 +781,7 @@ END PROCEDURE hdf5_isCompressed
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE preWrite
-CHARACTER(LEN=*), PARAMETER :: myName = 'preWrite'
+CHARACTER(*), PARAMETER :: myName = 'preWrite'
 INTEGER(HID_T) :: file_id, oldmem
 INTEGER(HSIZE_T) :: cdims(rank)
 INTEGER(HSIZE_T) :: oldsize, newsize
@@ -954,7 +971,7 @@ END PROCEDURE compute_chunk_size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE postWrite
-CHARACTER(LEN=*), PARAMETER :: myName = 'postWrite'
+CHARACTER(*), PARAMETER :: myName = 'postWrite'
 ! Make sure the object is initialized
 IF (.NOT. obj%isinit) THEN
   CALL e%setStopOnError(.FALSE.)
@@ -1007,7 +1024,7 @@ END PROCEDURE postWrite
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE preRead
-CHARACTER(LEN=*), PARAMETER :: myName = 'preRead'
+CHARACTER(*), PARAMETER :: myName = 'preRead'
 INTEGER(I4B) :: ndims
 INTEGER(HSIZE_T) :: maxdims(rank)
 
@@ -1055,8 +1072,8 @@ END PROCEDURE preRead
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getDataShape
-CHARACTER(LEN=*), PARAMETER :: myName = 'preRead'
-CHARACTER(LEN=LEN_TRIM(dsetname)) :: path
+CHARACTER(*), PARAMETER :: myName = 'preRead'
+CHARACTER(LEN_TRIM(dsetname)) :: path
 INTEGER(I4B) :: error, ndims
 INTEGER(HID_T) :: dset_id
 INTEGER(HID_T) :: dspace_id
@@ -1076,7 +1093,7 @@ ELSEIF (.NOT. obj%isRead()) THEN
   error = -2
 ELSE
   IF (.NOT. obj%isOpen()) THEN
-    CALL obj%open()
+    CALL obj%OPEN()
   END IF
   ! Open the dataset
   CALL h5dopen_f(obj%file_id, TRIM(path), dset_id, error)
@@ -1109,8 +1126,8 @@ END PROCEDURE getDataShape
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE getDataType
-CHARACTER(LEN=*), PARAMETER :: myName = 'getDataType'
-CHARACTER(LEN=LEN_TRIM(dsetname)) :: path
+CHARACTER(*), PARAMETER :: myName = 'getDataType'
+CHARACTER(LEN_TRIM(dsetname)) :: path
 INTEGER(I4B) :: error, class_type
 INTEGER(HID_T) :: dset_id, dtype
 INTEGER(HSIZE_T) :: dtype_prec
@@ -1129,7 +1146,7 @@ ELSEIF (.NOT. obj%isRead()) THEN
   error = -2
 ELSE
   IF (.NOT. obj%isOpen()) THEN
-    CALL obj%open()
+    CALL obj%OPEN()
   END IF
 
   ! Open the dataset
@@ -1174,7 +1191,7 @@ END PROCEDURE getDataType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE postRead
-CHARACTER(LEN=*), PARAMETER :: myName = 'postRead'
+CHARACTER(*), PARAMETER :: myName = 'postRead'
 INTEGER(HSIZE_T), ALLOCATABLE :: cdims(:)
 
 ! Make sure the object is initialized
@@ -1192,7 +1209,7 @@ ELSE
     IF (obj%isCompressed(path)) THEN
       CALL obj%getChunkSize(path, cdims)
       IF (MAXVAL(cdims) > 16777216_HSIZE_T) THEN !This is 64/128MB
-        CALL e%raiseWarning( &      !depending on dataset type.
+        CALL e%raiseWarning( & !depending on dataset type.
           modName//'::'//myName//' - Potentially high memory usage'// &
           'when reading decompressed dataset "'//TRIM(path)//'".'// &
           CHAR(10)//CHAR(10)//'Try decompressing file before rerunning:'// &
