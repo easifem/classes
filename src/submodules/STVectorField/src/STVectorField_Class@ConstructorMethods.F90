@@ -20,15 +20,38 @@ USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
+!----------------------------------------------------------------------------
+!                                                     setSTVectorFieldParam
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE setSTVectorFieldParam
 INTEGER(I4B) :: ierr
-ierr = param%set(key="STVectorField/name", value=TRIM(name))
-ierr = param%set(key="STVectorField/spaceCompo", value=spaceCompo)
-ierr = param%set(key="STVectorField/timeCompo", value=timeCompo)
+ierr = param%set(key=myprefix//"/name", VALUE=TRIM(name))
+ierr = param%set(key=myprefix//"/engine", VALUE=TRIM(engine))
+ierr = param%set(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
+ierr = param%set(key=myprefix//"/timeCompo", VALUE=timeCompo)
 IF (PRESENT(fieldType)) THEN
-  ierr = param%set(key="STVectorField/fieldType", value=fieldType)
+  ierr = param%set(key=myprefix//"/fieldType", VALUE=fieldType)
 ELSE
-  ierr = param%set(key="STVectorField/fieldType", value=FIELD_TYPE_NORMAL)
+  ierr = param%set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
+END IF
+
+IF (PRESENT(comm)) THEN
+  ierr = param%set(key=myprefix//"/comm", VALUE=comm)
+ELSE
+  ierr = param%set(key=myprefix//"/comm", VALUE=0_I4B)
+END IF
+
+IF (PRESENT(local_n)) THEN
+  ierr = param%set(key=myprefix//"/local_n", VALUE=local_n)
+ELSE
+  ierr = param%set(key=myprefix//"/local_n", VALUE=0_I4B)
+END IF
+
+IF (PRESENT(global_n)) THEN
+  ierr = param%set(key=myprefix//"/global_n", VALUE=global_n)
+ELSE
+  ierr = param%set(key=myprefix//"/global_n", VALUE=0_I4B)
 END IF
 END PROCEDURE setSTVectorFieldParam
 
@@ -37,18 +60,34 @@ END PROCEDURE setSTVectorFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_checkEssentialParam
-CHARACTER(LEN=*), PARAMETER :: myName = "stvField_checkEssentialParam"
-IF (.NOT. param%isPresent(key="STVectorField/name")) THEN
+CHARACTER(*), PARAMETER :: myName = "stvField_checkEssentialParam"
+IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField/name should be present in param')
+  & myprefix//'/name should be present in param')
 END IF
-IF (.NOT. param%isPresent(key="STVectorField/spaceCompo")) THEN
+IF (.NOT. param%isPresent(key=myprefix//"/engine")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField/spaceCompo should be present in param')
+  & myprefix//'/engine should be present in param')
 END IF
-IF (.NOT. param%isPresent(key="STVectorField/timeCompo")) THEN
+IF (.NOT. param%isPresent(key=myprefix//"/spaceCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField/timeCompo should be present in param')
+  & myprefix//'/spaceCompo should be present in param')
+END IF
+IF (.NOT. param%isPresent(key=myprefix//"/timeCompo")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & myprefix//'/timeCompo should be present in param')
+END IF
+IF (.NOT. param%isPresent(key=myprefix//"/comm")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'comm should be present in param')
+END IF
+IF (.NOT. param%isPresent(key=myprefix//"/global_n")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'global_n should be present in param')
+END IF
+IF (.NOT. param%isPresent(key=myprefix//"/local_n")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'local_n should be present in param')
 END IF
 END PROCEDURE stvField_checkEssentialParam
 
@@ -57,53 +96,89 @@ END PROCEDURE stvField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_Initiate1
-CHARACTER(LEN=*), PARAMETER :: myName = "stvField_Initiate1"
-INTEGER(I4B) :: ierr, storageFMT, tNodes(1), timeCompo(1), &
-  & spaceCompo(1)
-CHARACTER(LEN=:), ALLOCATABLE :: char_var
-CHARACTER(LEN=1) :: names_char(1)
+CHARACTER(*), PARAMETER :: myName = "stvField_Initiate1"
+INTEGER(I4B) :: ierr, storageFMT, tNodes(1), spaceCompo(1), &
+  & timeCompo(1)
+CHARACTER(:), ALLOCATABLE :: char_var
+CHARACTER(1) :: names_char(1)
 
-!> main program
-IF (obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVector field object is already initiated')
+! main program
+IF (obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'STVectorField_::obj is already initiated')
+END IF
+
 CALL obj%checkEssentialParam(param)
-!-----------------------------------------------------------------------!
-ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes(  &
-  & key="STVectorField/name")) :: char_var)
-ierr = param%get(key="STVectorField/name", value=char_var)
+
+! engine
+ALLOCATE (CHARACTER( &
+  & param%DataSizeInBytes(key=myprefix//"/engine")) :: char_var)
+ierr = param%get(key=myprefix//"/engine", VALUE=char_var)
+obj%engine = char_var
+DEALLOCATE (char_var)
+
+! name
+ALLOCATE (CHARACTER( &
+  & param%DataSizeInBytes(key=myprefix//"/name")) :: char_var)
+ierr = param%get(key=myprefix//"/name", VALUE=char_var)
 obj%name = char_var
 names_char(1) (1:1) = char_var(1:1)
-!-----------------------------------------------------------------------!
-ierr = param%get(key="STVectorField/spaceCompo", value=obj%spaceCompo)
-ierr = param%get(key="STVectorField/timeCompo", value=obj%timeCompo)
-!-----------------------------------------------------------------------!
-IF (param%isPresent(key="STVectorField/fieldType")) THEN
-  ierr = param%get(key="STVectorField/fieldType", value=obj%fieldType)
+DEALLOCATE (char_var)
+
+! fieldType
+IF (param%isPresent(key=myprefix//"/fieldType")) THEN
+  ierr = param%get(key=myprefix//"/fieldType", VALUE=obj%fieldType)
 ELSE
   obj%fieldType = FIELD_TYPE_NORMAL
 END IF
-obj%engine = "NATIVE_SERIAL"
-!-----------------------------------------------------------------------!
-spaceCompo = obj%spaceCompo
+
+! comm
+ierr = param%get(key=myprefix//"/comm", VALUE=obj%comm)
+ierr = param%get(key=myprefix//"/global_n", VALUE=obj%global_n)
+ierr = param%get(key=myprefix//"/local_n", VALUE=obj%local_n)
+
+! timeCompo
+ierr = param%get(key=myprefix//"/timeCompo", VALUE=obj%timeCompo)
+
+! spaceCompo
+ierr = param%get(key=myprefix//"/spaceCompo", VALUE=obj%spaceCompo)
+
 timeCompo = obj%timeCompo
+spaceCompo = obj%spaceCompo
 storageFMT = FMT_NODES
-!-----------------------------------------------------------------------!
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'A constant space time vector field is not allowed')
-ELSE
-  tNodes = dom%getTotalNodes()
-  obj%tSize = tNodes(1) * obj%spaceCompo * obj%timeCompo
-END IF
-!-----------------------------------------------------------------------!
-CALL initiate(obj=obj%dof, tNodes=tNodes, names=names_char, &
-& spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
-!-----------------------------------------------------------------------!
-CALL initiate(obj%realVec, obj%dof)
-!-----------------------------------------------------------------------!
-obj%isInitiated = .TRUE.
 obj%domain => dom
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  tNodes = 1
+  obj%tSize = obj%domain%getTotalNodes() * obj%timeCompo * obj%spaceCompo
+  IF (obj%local_n .EQ. 0) THEN
+    obj%local_n = tNodes(1) * obj%timeCompo * obj%spaceCompo
+  END IF
+  IF (obj%global_n .EQ. 0) THEN
+    obj%global_n = tNodes(1) * obj%timeCompo * obj%spaceCompo
+  END IF
+ELSE
+  tNodes = obj%domain%getTotalNodes()
+  obj%tSize = tNodes(1) * obj%timeCompo * obj%spaceCompo
+  IF (obj%local_n .EQ. 0) THEN
+    obj%local_n = obj%tSize
+  END IF
+  IF (obj%global_n .EQ. 0) THEN
+    obj%global_n = obj%tSize
+  END IF
+END IF
+
+CALL Initiate( &
+  & obj=obj%dof, &
+  & tNodes=tNodes, &
+  & names=names_char, &
+  & spaceCompo=spaceCompo, &
+  & timeCompo=timeCompo, &
+  & storageFMT=storageFMT)
+
+CALL Initiate(obj%realVec, obj%dof)
+
+obj%isInitiated = .TRUE.
+
 IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
 END PROCEDURE stvField_Initiate1
 
@@ -122,7 +197,7 @@ END PROCEDURE stvField_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE stvField_Final
 
 !----------------------------------------------------------------------------
