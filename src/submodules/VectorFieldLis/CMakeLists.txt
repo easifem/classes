@@ -18,10 +18,10 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/mshFormat_Class.F90
-  ${src_path}/mshPhysicalNames_Class.F90
-  ${src_path}/mshEntity_Class.F90
-  ${src_path}/mshNodes_Class.F90
-  ${src_path}/mshElements_Class.F90
-  ${src_path}/MSHFile_Class.F90
-  )
+  ${src_path}/VectorFieldLis_Class@ConstructorMethods.F90
+  ${src_path}/VectorFieldLis_Class@IOMethods.F90
+  ${src_path}/VectorFieldLis_Class@SetMethods.F90
+  ${src_path}/VectorFieldLis_Class@GetMethods.F90
+  ${src_path}/VectorFieldLis_Class@DBCMethods.F90
+  ${src_path}/VectorFieldLis_Class@BlasMethods.F90
+)

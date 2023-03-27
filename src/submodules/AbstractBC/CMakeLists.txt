@@ -18,5 +18,8 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/AbstractBC_Class@Methods.F90
+  ${src_path}/AbstractBC_Class@ConstructorMethods.F90
+  ${src_path}/AbstractBC_Class@GetMethods.F90
+  ${src_path}/AbstractBC_Class@IOMethods.F90
+  ${src_path}/AbstractBC_Class@SetMethods.F90
 )

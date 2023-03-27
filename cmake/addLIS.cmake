@@ -14,14 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/mshFormat_Class.F90
-  ${src_path}/mshPhysicalNames_Class.F90
-  ${src_path}/mshEntity_Class.F90
-  ${src_path}/mshNodes_Class.F90
-  ${src_path}/mshElements_Class.F90
-  ${src_path}/MSHFile_Class.F90
-  )
+# LIS
+OPTION( USE_LIS OFF )
+IF( USE_LIS )
+  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_LIS" )
+  IF( UNIX )
+    IF(APPLE)
+      SET( LIS_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/liblis.dylib"  )
+    ELSE()
+      SET( LIS_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/liblis.so"  )
+    ENDIF()
+  ENDIF()
+  TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${LIS_LIBRARIES} )
+  MESSAGE( STATUS "LIS_LIBRARIES : ${LIS_LIBRARIES}" )
+ELSE()
+  MESSAGE( STATUS "NOT USING LIS LIBRARIES" )
+ENDIF()
