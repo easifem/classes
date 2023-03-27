@@ -18,38 +18,46 @@
 MODULE NitscheBC_Class
 USE GlobalData
 USE BaseType
-USE String_Class
 USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class
-USE Domain_Class
-USE HDF5File_Class
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE Domain_Class, ONLY: Domain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
-USE DirichletBC_Class
 USE NeumannBC_Class
+USE DomainConnectivity_Class, ONLY: DomainConnectivity_, &
+& DomainConnectivityPointer_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "NitscheBC_CLASS"
+CHARACTER(*), PARAMETER :: myprefix = "NitscheBC"
 
 !----------------------------------------------------------------------------
 !                                                               NitscheBC_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2023-02-14
-! summary: This is Nitsche boundary condition
+! date: 1 Sept 2021
+! summary: This is an abstract data type for boundary conditions
 
 TYPE, EXTENDS(NeumannBC_) :: NitscheBC_
+  INTEGER(I4B), ALLOCATABLE :: cellElem(:)
+  INTEGER(I4B), ALLOCATABLE :: localFacetID(:)
+  INTEGER(I4B), ALLOCATABLE :: cellEntity(:)
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & bc_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCellData => bc_SetCellData
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinCellEntity => bc_GetMinCellEntity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxCellEntity => bc_GetMaxCellEntity
+  PROCEDURE, PUBLIC, PASS(obj) :: isCellEntityPresent &
+   & => bc_isCellEntityPresent
+  PROCEDURE, PUBLIC, PASS(obj) :: getStartIndex => bc_getStartIndex
+  PROCEDURE, PUBLIC, PASS(obj) :: getEndIndex => bc_getEndIndex
+  PROCEDURE, PUBLIC, PASS(obj) :: getCellElem => bc_getCellElem
+  PROCEDURE, PUBLIC, PASS(obj) :: getLocalFacetID => bc_getLocalFacetID
   FINAL :: bc_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
 END TYPE NitscheBC_
 
 PUBLIC :: NitscheBC_
@@ -69,7 +77,7 @@ PUBLIC :: NitscheBCPointer_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2023-02-14
+! date: 4 Feb 2022
 ! summary: Check essential parameters
 
 INTERFACE
@@ -80,12 +88,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      setDirichletParam@ConstructorMethods
+!                                      setNitscheBCParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
   MODULE SUBROUTINE setNitscheBCParam(param, name, idof, nodalValueType, &
-    & useFunction)
+  & useFunction, isNormal, isTangent, useExternal)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: idof
@@ -95,6 +103,9 @@ INTERFACE
     !! SpaceTime
     !! Constant
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useExternal
   END SUBROUTINE setNitscheBCParam
 END INTERFACE
 
@@ -124,62 +135,96 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Import@IOMethods
+!                                                    SetCellData@SetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
+  MODULE SUBROUTINE bc_SetCellData(obj, meshID, localID, &
+    & tFacetElements, domConList)
     CLASS(NitscheBC_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Import
+    INTEGER(I4B), INTENT(IN) :: meshID(:)
+    INTEGER(I4B), INTENT(IN) :: localID(:)
+    INTEGER(I4B), INTENT(IN) :: tFacetElements(:)
+    TYPE(DomainConnectivityPointer_), INTENT(IN) :: domConList(:)
+  END SUBROUTINE bc_SetCellData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Export@IOMethods
+!                                           GetMinCellEntity@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
+  MODULE PURE FUNCTION bc_GetMinCellEntity(obj) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE bc_Export
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_GetMinCellEntity
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                                          Display@IOMethods
-!----------------------------------------------------------------------------
-
 INTERFACE
-  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
+  MODULE PURE FUNCTION bc_GetMaxCellEntity(obj) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_GetMaxCellEntity
+END INTERFACE
+
+INTERFACE
+  MODULE PURE FUNCTION bc_isCellEntityPresent(obj, entityNum) RESULT(ans)
+    CLASS(NitscheBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    LOGICAL(LGT) :: ans
+  END FUNCTION bc_isCellEntityPresent
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
+!
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Set(obj, ConstantNodalValue, SpaceNodalValue, &
-    & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
-    & SpaceTimeFunction)
-    CLASS(NitscheBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: ConstantNodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: TimeNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceTimeNodalValue(:, :)
-    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceTimeFunction
-    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceFunction
-    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & TimeFunction
-  END SUBROUTINE bc_Set
+  MODULE PURE FUNCTION bc_getStartIndex(obj, entityNum) RESULT(ans)
+    CLASS(NitscheBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_getStartIndex
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION bc_getEndIndex(obj, entityNum) RESULT(ans)
+    CLASS(NitscheBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_getEndIndex
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION bc_getCellElem(obj, entityNum) RESULT(ans)
+    CLASS(NitscheBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_getCellElem
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION bc_getLocalFacetID(obj, entityNum) RESULT(ans)
+    CLASS(NitscheBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION bc_getLocalFacetID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE NitscheBC_Class
