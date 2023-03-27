@@ -483,7 +483,11 @@ CALL Reallocate(ans, obj%getTotalMesh(dim=dim))
 !
 DO ii = 1, SIZE(ans)
   meshptr => obj%getMeshPointer(dim=dim, entityNum=ii)
-  ans(ii) = meshptr%getOrder()
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) THEN
+    ans(ii) = 0
+  ELSE
+    ans(ii) = meshptr%getOrder()
+  END IF
   meshptr => NULL()
 END DO
 !

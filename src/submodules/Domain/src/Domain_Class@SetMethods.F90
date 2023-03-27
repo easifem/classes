@@ -115,6 +115,95 @@ meshptr => NULL()
 END PROCEDURE Domain_setMaterial
 
 !----------------------------------------------------------------------------
+!                                                           SetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_SetNodeCoord1
+CHARACTER(*), PARAMETER :: myName = "Domain_SetNodeCoord1"
+REAL(DFP) :: scale0
+
+IF (.NOT. ALLOCATED(obj%nodeCoord)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'Domain_::obj%nodeCoord not allocated')
+END IF
+IF (SIZE(nodeCoord, 1) .NE. SIZE(obj%nodeCoord, 1) &
+  & .OR. SIZE(nodeCoord, 2) .NE. SIZE(obj%nodeCoord, 2)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'Size of nodeCoord does not match with Domain_::obj%nodeCoord')
+END IF
+
+scale0 = input(option=scale, default=1.0_DFP)
+
+IF (PRESENT(addContribution)) THEN
+  obj%nodeCoord = obj%nodeCoord + scale * nodeCoord
+ELSE
+  obj%nodeCoord = nodeCoord
+END IF
+
+END PROCEDURE Domain_SetNodeCoord1
+
+!----------------------------------------------------------------------------
+!                                                                 SetQuality
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_SetQuality
+CLASS(Mesh_), POINTER :: meshptr
+CHARACTER(*), PARAMETER :: myName = "Domain_SetQuality"
+REAL(DFP), ALLOCATABLE :: max_(:, :), min_(:, :)
+INTEGER(I4B) :: tmesh, imesh
+
+IF (PRESENT(dim) .AND. PRESENT(entityNum)) THEN
+  meshptr => obj%getMeshPointer(dim=dim, entityNum=entityNum)
+  IF (meshptr%getTotalElements() .EQ. 0) THEN
+    CALL e%raiseWarning(modName//'::'//myName//' - '// &
+    & 'mesh if empty')
+  ELSE
+    CALL meshptr%SetQuality(&
+      & measures=measures, &
+      & max_measures=max_measures, &
+      & min_measures=min_measures, &
+      & nodeCoord=obj%nodeCoord, &
+      & local_nptrs=obj%local_nptrs &
+      & )
+  END IF
+  NULLIFY (meshptr)
+  RETURN
+END IF
+
+IF (PRESENT(dim) .AND. .NOT. PRESENT(entityNum)) THEN
+  tmesh = obj%getTotalMesh(dim=dim)
+  CALL Reallocate(max_, SIZE(measures), tmesh)
+  min_ = max_
+
+  DO imesh = 1, tmesh
+    meshptr => obj%getMeshPointer(dim=dim, entityNum=imesh)
+    IF (meshptr%getTotalElements() .EQ. 0) THEN
+      max_(:, imesh) = -1 * MaxDFP
+      min_(:, imesh) = MaxDFP
+    ELSE
+      CALL meshptr%SetQuality(&
+        & measures=measures, &
+        & max_measures=max_(:, imesh), &
+        & min_measures=min_(:, imesh), &
+        & nodeCoord=obj%nodeCoord, &
+        & local_nptrs=obj%local_nptrs &
+        & )
+    END IF
+  END DO
+
+  max_measures = MAXVAL(max_, dim=2)
+  min_measures = MINVAL(min_, dim=2)
+  NULLIFY (meshptr)
+  DEALLOCATE (max_, min_)
+  RETURN
+END IF
+
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found')
+
+END PROCEDURE Domain_SetQuality
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

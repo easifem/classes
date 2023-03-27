@@ -270,6 +270,10 @@ CONTAINS
   !! set the total number of materials
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => Domain_SetMaterial
   !! set the material
+  PROCEDURE, PASS(obj) :: SetNodeCoord1 => Domain_SetNodeCoord1
+  !! setNodeCoord
+  GENERIC, PUBLIC :: SetNodeCoord => SetNodeCoord1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => Domain_SetQuality
   !
   ! @MeshDataMethods
   !
@@ -459,7 +463,7 @@ INTERFACE Domain
   MODULE PROCEDURE Domain_Constructor1
 END INTERFACE Domain
 
-PUBLIC :: Domain
+! PUBLIC :: Domain
 
 !----------------------------------------------------------------------------
 !                                          Domain_Pointer@ConstructorMethods
@@ -1255,6 +1259,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   SetNodeCoord@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-24
+! summary: SetNodeCoord
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetNodeCoord1(obj, nodeCoord, scale, &
+    & addContribution)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
+    !! nodal coordinate in xij Format
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE Domain_SetNodeCoord1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
@@ -1609,23 +1632,25 @@ END INTERFACE
 !
 !# Introduction
 !
-! When we call InitiateFacetData for mesh,  we can only identify
-! boundary facet element. However, some of these boundary facet elements
-! will be domain-boundary facet element and some will be at the interface
-! of two mesh region.
+! This routine sets the domain boundary element for cells and faces.
 !
-! This method correctly identifies the boundary facet element which at
-! the domain boundary or mesh boundary.
+! When we call [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
+! for mesh,
+! we can only identify boundary-facet-elements (i.e., boundary elements
+! of the mesh).
+! Moreover, when we call
+! [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
+! from mesh or domain, all the facet elements are tagged
+! as `DOMAIN_BOUNDARY_ELEMENT`.
 !
-! The boundary facet element which are at the domain boundary are called
-! `DOMAIN_BOUNDARY_ELEMENT`
+! However, some of these boundary facet-elements will be located at the
+! domain’s boundary. These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
 !
-! The boundary facet element which are not at the domain boundary are
-! called `BOUNDARY_ELEMENT` (that is mesh boundary facet element)
+! Some of the facet elements will be at located at the interface of two
+! mesh regions, these facet elements are called `BOUNDARY_ELEMENT`.
 !
-! Following information are necessary before calling this method.
-!
-!- call InitiateFacetData for each mesh
+! This method correctly differentiates between `BOUNDARY_ELEMENT`  and
+! `DOMAIN_BOUNDARY_ELEMENT`.
 
 INTERFACE
   MODULE SUBROUTINE Domain_SetDomainFacetElement(obj)
@@ -1659,6 +1684,23 @@ INTERFACE
   MODULE SUBROUTINE Domain_SetMeshFacetElement(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
   END SUBROUTINE Domain_SetMeshFacetElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuality@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetQuality(obj, measures, max_measures, &
+    & min_measures, dim, entityNum)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: measures(:)
+    REAL(DFP), INTENT(OUT) :: max_measures(:)
+    REAL(DFP), INTENT(OUT) :: min_measures(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+
+  END SUBROUTINE Domain_SetQuality
 END INTERFACE
 
 !----------------------------------------------------------------------------
