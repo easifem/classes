@@ -36,6 +36,7 @@ USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
 
 !----------------------------------------------------------------------------
 !                                                           BlockNodeField_
@@ -52,15 +53,16 @@ CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & bnField_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: initiate1 => bnField_initiate1
-  PROCEDURE, PUBLIC, PASS(obj) :: initiate3 => bnField_initiate3
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bnField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => bnField_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => bnField_Initiate3
   FINAL :: bnField_Final
-  !! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => bnField_Display
+  !
+  ! @IOMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bnField_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => bnField_Export
-  !! @SetMethods
+  !
+  ! @SetMethods
+  !
   PROCEDURE, PASS(obj) :: set1 => bnField_set1
     !! set single entry
   PROCEDURE, PASS(obj) :: set2 => bnField_set2
@@ -89,7 +91,9 @@ CONTAINS
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, &
     & set5, set6, set7, set8, set9, set10, set11, &
     & set12, set13, set14, set15, set16, set17
-  !! @GetMethods
+  !
+  ! @GetMethods
+  !
   PROCEDURE, PASS(obj) :: get1 => bnField_get1
   PROCEDURE, PASS(obj) :: get2 => bnField_get2
   PROCEDURE, PASS(obj) :: get3 => bnField_get3
@@ -114,8 +118,9 @@ CONTAINS
   GENERIC, PUBLIC :: applyDirichletBC => &
     & bnField_applyDirichletBC1, &
     & bnField_applyDirichletBC2
-  !!
-  !! @Operator
+  !
+  ! @Operator
+  !
   PROCEDURE, PASS(obj) :: isEqual => bnField_isEqual
   GENERIC, PUBLIC :: OPERATOR(.EQ.) => isEqual
 END TYPE BlockNodeField_
@@ -148,12 +153,22 @@ PUBLIC :: BlockNodeFieldPointer_
 ! The size of physicalVarNames, spaceCompo, timeCompo should be the same
 
 INTERFACE
-  MODULE SUBROUTINE SetBlockNodeFieldParam(param, name, physicalVarNames, &
-    & spaceCompo, timeCompo, fieldType)
+  MODULE SUBROUTINE SetBlockNodeFieldParam(param, &
+    & name, &
+    & engine, &
+    & physicalVarNames, &
+    & spaceCompo, &
+    & timeCompo, &
+    & fieldType, &
+    & comm, &
+    & local_n, &
+    & global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[BlockNodeField_]] will be stored in param
     CHARACTER(*), INTENT(IN) :: name
     !! Name of the block node field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! Name of the engine
     CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
     !! Names of the physical variables
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
@@ -166,6 +181,9 @@ INTERFACE
     !! FIELD_TYPE_CONSTANT
     !! FIELD_TYPE_CONSTANT_SPACE
     !! FIELD_TYPE_CONSTANT_TIME
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
   END SUBROUTINE SetBlockNodeFieldParam
 END INTERFACE
 
@@ -216,6 +234,12 @@ INTERFACE
   END SUBROUTINE bnField_Initiate1
 END INTERFACE
 
+INTERFACE BlockNodeFieldInitiate1
+  MODULE PROCEDURE bnField_Initiate1
+END INTERFACE BlockNodeFieldInitiate1
+
+PUBLIC :: BlockNodeFieldInitiate1
+
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethod
 !----------------------------------------------------------------------------
@@ -244,25 +268,11 @@ INTERFACE
   END SUBROUTINE bnField_Initiate3
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                           Deallocate@ConstructorMethod
-!----------------------------------------------------------------------------
+INTERFACE BlockNodeFieldInitiate3
+  MODULE PROCEDURE bnField_Initiate3
+END INTERFACE BlockNodeFieldInitiate3
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
-! summary: Deallocates the data stored inside the [[BlockNodeField_]] obj
-
-INTERFACE
-  MODULE SUBROUTINE bnField_Deallocate(obj)
-    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-  END SUBROUTINE bnField_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE bnField_Deallocate
-END INTERFACE DEALLOCATE
-
-PUBLIC :: DEALLOCATE
+PUBLIC :: BlockNodeFieldInitiate3
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethod
@@ -272,22 +282,6 @@ INTERFACE
   MODULE SUBROUTINE bnField_Final(obj)
     TYPE(BlockNodeField_), INTENT(INOUT) :: obj
   END SUBROUTINE bnField_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 June 2021
-! summary: Display the content of [[BlockNodeField_]]
-
-INTERFACE
-  MODULE SUBROUTINE bnField_Display(obj, msg, unitNo)
-    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bnField_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -306,22 +300,6 @@ INTERFACE
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE bnField_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Export@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content
-
-INTERFACE
-  MODULE SUBROUTINE bnField_Export(obj, hdf5, group)
-    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE bnField_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -778,6 +756,9 @@ INTERFACE
     & ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! NodalVariable
+    !! TypeFEVariableScalar
+    !! TypeFEVariableSpace
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
@@ -796,6 +777,11 @@ INTERFACE
   MODULE SUBROUTINE bnField_get6(obj, VALUE, globalNode, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! NodalVariable
+    !! If spaceCompo is greater than 1, then FETypeVector
+    !! IF spaceCompo is equal to 1, then FETypeScalar
+    !! If timeCompo is equal to 1, then FETypeSpace
+    !! If timeCompo is greater than 1, then FETypeSpaceTime
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
   END SUBROUTINE bnField_get6
@@ -834,6 +820,9 @@ INTERFACE
     & spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! NodalVariable
+    !! TypeFEVariableScalar
+    !! TypeFEVariableSpace
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo

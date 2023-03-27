@@ -25,51 +25,38 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_applyDirichletBC1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "bnField_applyDirichletBC1"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: idof, spacecompo, ttimecompo
-  !!
-  !! main
-  !!
-  CALL dbc%get( nodalvalue=nodalvalue, nodenum=nodenum )
-  !!
-  ttimecompo = obj%dof .timecomponents. ivar
-  spacecompo = dbc%getDOFNo()
-  !!
-  IF( size( nodalvalue, 2 ) .EQ. 1 ) THEN
-    !!
-    DO idof = 1, ttimecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & value=nodalvalue(:,1), &
-        & ivar=ivar, &
-        & spacecompo=spacecompo, &
-        & timecompo=idof )
-    END DO
-    !!
-  ELSE
-    !!
-    !! check
-    !!
-    IF( SIZE( nodalvalue, 2 ) .NE. ttimecompo ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'SIZE( nodalvalue, 2 ) .NE. ttimecompo')
-    !!
-    DO idof = 1, ttimecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & value=nodalvalue(:,idof), &
-        & ivar=ivar, &
-        & spacecompo=spacecompo, &
-        & timecompo=idof )
-    END DO
-    !!
-  END IF
-  !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+CHARACTER(*), PARAMETER :: myName = "bnField_applyDirichletBC1"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: idof, spacecompo, ttimecompo
+
+CALL dbc%get(nodalvalue=nodalvalue, nodenum=nodenum)
+ttimecompo = obj%dof.timecomponents.ivar
+spacecompo = dbc%getDOFNo()
+IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
+  DO idof = 1, ttimecompo
+    CALL obj%Set( &
+      & globalNode=nodenum, &
+      & VALUE=nodalvalue(:, 1), &
+      & ivar=ivar, &
+      & spacecompo=spacecompo, &
+      & timecompo=idof)
+  END DO
+ELSE
+  IF (SIZE(nodalvalue, 2) .NE. ttimecompo) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'SIZE( nodalvalue, 2 ) .NE. ttimecompo')
+  DO idof = 1, ttimecompo
+    CALL obj%Set( &
+      & globalNode=nodenum, &
+      & VALUE=nodalvalue(:, idof), &
+      & ivar=ivar, &
+      & spacecompo=spacecompo, &
+      & timecompo=idof)
+  END DO
+END IF
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 END PROCEDURE bnField_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -77,55 +64,40 @@ END PROCEDURE bnField_applyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_applyDirichletBC2
-  CHARACTER( LEN = * ), PARAMETER :: myName = "bnField_applyDirichletBC2"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: ibc, idof, spacecompo, ttimecompo
-  !!
-  !! main
-  !!
-  ttimecompo = obj%dof .timecomponents. ivar
-  !!
-  DO ibc = 1, SIZE( dbc )
-    !!
-    CALL dbc(ibc)%ptr%get( nodalvalue=nodalvalue, nodenum=nodenum )
-    spacecompo = dbc(ibc)%ptr%getDOFNo()
-    !!
-    IF( size( nodalvalue, 2 ) .EQ. 1 ) THEN
-      !!
-      DO idof = 1, ttimecompo
-        CALL obj%Set( &
-          & globalNode=nodenum, &
-          & value=nodalvalue(:,1), &
-          & ivar=ivar, &
-          & spacecompo=spacecompo, &
-          & timecompo=idof )
-      END DO
-      !!
-    ELSE
-      !!
-      !! check
-      !!
-      IF( SIZE( nodalvalue, 2 ) .NE. ttimecompo ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'SIZE( nodalvalue, 2 ) .NE. ttimecompo')
-      !!
-      DO idof = 1, ttimecompo
-        CALL obj%Set( &
-          & globalNode=nodenum, &
-          & value=nodalvalue(:,idof), &
-          & ivar=ivar, &
-          & spacecompo=spacecompo, &
-          & timecompo=idof )
-      END DO
-      !!
-    END IF
+CHARACTER(*), PARAMETER :: myName = "bnField_applyDirichletBC2"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo
 
-  END DO
-  !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+ttimecompo = obj%dof.timecomponents.ivar
+DO ibc = 1, SIZE(dbc)
+  CALL dbc(ibc)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum)
+  spacecompo = dbc(ibc)%ptr%getDOFNo()
+  IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
+    DO idof = 1, ttimecompo
+      CALL obj%Set( &
+        & globalNode=nodenum, &
+        & VALUE=nodalvalue(:, 1), &
+        & ivar=ivar, &
+        & spacecompo=spacecompo, &
+        & timecompo=idof)
+    END DO
+  ELSE
+    IF (SIZE(nodalvalue, 2) .NE. ttimecompo) &
+      & CALL e%raiseError(modName//'::'//myName//" - "// &
+      & 'SIZE( nodalvalue, 2 ) .NE. ttimecompo')
+    DO idof = 1, ttimecompo
+      CALL obj%Set( &
+        & globalNode=nodenum, &
+        & VALUE=nodalvalue(:, idof), &
+        & ivar=ivar, &
+        & spacecompo=spacecompo, &
+        & timecompo=idof)
+    END DO
+  END IF
+END DO
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 END PROCEDURE bnField_applyDirichletBC2
 
 !----------------------------------------------------------------------------
