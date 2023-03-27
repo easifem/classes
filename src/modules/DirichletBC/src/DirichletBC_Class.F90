@@ -17,16 +17,15 @@
 MODULE DirichletBC_Class
 USE GlobalData
 USE BaseType
-USE String_Class
 USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class
-USE Domain_Class
-USE HDF5File_Class
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE Domain_Class, ONLY: Domain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
+CHARACTER(*), PARAMETER :: myprefix = "DirichletBC"
 
 !----------------------------------------------------------------------------
 !                                                               DirichletBC_
@@ -43,10 +42,6 @@ CONTAINS
     & bc_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
   FINAL :: bc_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
 END TYPE DirichletBC_
 
 PUBLIC :: DirichletBC_
@@ -78,7 +73,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE setDirichletBCParam(param, name, idof, nodalValueType, &
-    & useFunction)
+    & useFunction, isNormal, isTangent)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: idof
@@ -88,6 +83,8 @@ INTERFACE
     !! SpaceTime
     !! Constant
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
   END SUBROUTINE setDirichletBCParam
 END INTERFACE
 
@@ -114,65 +111,6 @@ INTERFACE
   MODULE SUBROUTINE bc_Final(obj)
     TYPE(DirichletBC_), INTENT(INOUT) :: obj
   END SUBROUTINE bc_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Import@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
-    CLASS(DirichletBC_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Export@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
-    CLASS(DirichletBC_), INTENT(IN) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE bc_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Display@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
-    CLASS(DirichletBC_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Set(obj, ConstantNodalValue, SpaceNodalValue, &
-    & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
-    & SpaceTimeFunction)
-    CLASS(DirichletBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: ConstantNodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: TimeNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceTimeNodalValue(:, :)
-    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceTimeFunction
-    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceFunction
-    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & TimeFunction
-  END SUBROUTINE bc_Set
 END INTERFACE
 
 END MODULE DirichletBC_Class

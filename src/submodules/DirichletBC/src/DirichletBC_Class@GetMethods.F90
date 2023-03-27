@@ -16,12 +16,7 @@
 !
 
 SUBMODULE(DirichletBC_Class) GetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
 
 END SUBMODULE GetMethods
