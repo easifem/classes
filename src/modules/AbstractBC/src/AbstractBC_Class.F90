@@ -50,6 +50,15 @@ TYPE, ABSTRACT :: AbstractBC_
   !! SpaceTime
   LOGICAL(LGT) :: useFunction = .FALSE.
   !! True if the boundary condition is analytical
+  LOGICAL(LGT) :: isNormal = .FALSE.
+  !! True if the boundary condition is normal to the boundary
+  LOGICAL(LGT) :: isTangent = .FALSE.
+  !! True if the boundary condition is tangent to the boundary
+  LOGICAL(LGT) :: useExternal = .FALSE.
+  !! if true then nodal values are used externally
+  !! depending upon the context.
+  !! Basically we do not use the nodal value stored in the
+  !! instance of AbstractBC_
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
@@ -71,6 +80,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => bc_GetMeshID
   PROCEDURE, PUBLIC, PASS(obj) :: Get => bc_Get
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFromFunction => bc_GetFromFunction
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => bc_GetDOFNo
   PROCEDURE, PUBLIC, PASS(obj) ::  &
     & CheckEssentialParam => bc_CheckEssentialParam
@@ -81,6 +91,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: isUseFunction => bc_isUseFunction
   !! Returns true if the useFunction is true
   PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => bc_GetQuery
 END TYPE AbstractBC_
 
 PUBLIC :: AbstractBC_
@@ -96,7 +107,7 @@ END TYPE AbstractBCPointer_
 PUBLIC :: AbstractBCPointer_
 
 !----------------------------------------------------------------------------
-!
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -107,7 +118,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -120,52 +131,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-02-12
-! summary: Export in hdf5 file
-
-INTERFACE
-  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE bc_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-02-12
-! summary: Display the content
-
-INTERFACE
-  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        Deallocate@Methods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -185,7 +151,118 @@ END INTERFACE AbstractBCDeallocate
 PUBLIC :: AbstractBCDeallocate
 
 !----------------------------------------------------------------------------
-!                                                          GetMeshID@Methods
+!                           AbstractBCcheckEssentialParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE AbstractBCcheckEssentialParam(obj, param, prefix)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractBCcheckEssentialParam
+END INTERFACE
+
+PUBLIC :: AbstractBCcheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                   SetAbstractBCParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE setAbstractBCParam(param, prefix, &
+    & name, idof, nodalValueType, useFunction, isNormal, isTangent, &
+    & useExternal)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
+    !! name of boundary condition
+    !! default is AbstractBC
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    !! degree of freedom number
+    !! default is 0
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodalValueType
+    !! Space
+    !! Time
+    !! SpaceTime
+    !! Constant
+    !! default is -1
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
+    !! use fucntion
+    !! default is false
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
+    !! default is false
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
+    !! default is false
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useExternal
+    !! default is false
+  END SUBROUTINE setAbstractBCParam
+END INTERFACE
+
+PUBLIC :: setAbstractBCParam
+
+!----------------------------------------------------------------------------
+!                                    AbstractBCInitiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE AbstractBCInitiate(obj, param, prefix, boundary, dom)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE AbstractBCInitiate
+END INTERFACE
+
+PUBLIC :: AbstractBCInitiate
+
+!----------------------------------------------------------------------------
+!                                                         Import@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE bc_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Export in hdf5 file
+
+INTERFACE
+  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE bc_Export
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Display the content
+
+INTERFACE
+  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetMeshID@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -193,7 +270,7 @@ PUBLIC :: AbstractBCDeallocate
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetMeshID(obj, dim) RESULT(ans)
+  MODULE FUNCTION bc_GetMeshID(obj, dim) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
@@ -218,7 +295,20 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetDOFNo@getMethods
+!                                               GetFromFunction@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE bc_GetFromFunction(obj, nodeNum, nodalValue, times)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE bc_GetFromFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetDOFNo@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -233,7 +323,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     isUseFunction@Methods
+!                                                   isUseFunction@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -266,7 +356,27 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                        GetQuery@GetMethods
 !----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE SUBROUTINE bc_GetQuery(obj, isInitiated, &
+    & isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
+    & isSelectionByNodeNum, idof, isTangent, isNormal, useFunction, &
+    & nodalValueType, useExternal)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByMeshID
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByElemNum
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByNodeNum
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isTangent
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isNormal
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useFunction
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: idof
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useExternal
+  END SUBROUTINE bc_GetQuery
+END INTERFACE
 
 END MODULE AbstractBC_Class
