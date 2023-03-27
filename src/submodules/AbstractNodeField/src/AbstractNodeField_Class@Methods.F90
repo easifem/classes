@@ -17,8 +17,19 @@
 SUBMODULE(AbstractNodeField_Class) Methods
 USE BaseMethod
 USE ExceptionHandler_Class, ONLY: e
+USE HDF5File_Method
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_Display
+CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
+CALL Display(obj%tSize, "# tSize : ", unitNo=unitNo)
+CALL Display(obj%realVec, obj%dof, "# realVec : ", unitNo=unitNo)
+END PROCEDURE anf_Display
 
 !----------------------------------------------------------------------------
 !                                                                getPointer
@@ -43,48 +54,19 @@ END PROCEDURE anf_size
 MODULE PROCEDURE anf_initiate2
 CHARACTER(*), PARAMETER :: myName = "anf_initiate2"
 INTEGER(I4B) :: ii, tsize
-!
-IF (.NOT. obj2%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Obj2 is not initiated!')
-!
-IF (.NOT. obj%isInitiated) THEN
-  !
-  obj%isInitiated = .TRUE.
-  obj%fieldType = obj2%fieldType
-  obj%domain => obj2%domain
-  obj%name = obj2%name
-  obj%engine = obj2%engine
-  !
-  IF (ALLOCATED(obj2%domains)) THEN
-    tsize = SIZE(obj2%domains)
-    ALLOCATE (obj%domains(tsize))
-    DO ii = 1, tsize
-      obj%domains(ii)%ptr => obj2%domains(ii)%ptr
-    END DO
-  END IF
-  !
-  SELECT TYPE (obj2)
-  CLASS IS (AbstractNodeField_)
-    obj%tSize = obj2%tSize
-    obj%realVec = obj2%realVec
-    obj%dof = obj2%dof
-  CLASS DEFAULT
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'Obj2 is not a child of AbstractNodeField_!')
-  END SELECT
-  !
-ELSE
-  !
-  SELECT TYPE (obj2)
-  CLASS IS (AbstractNodeField_)
-    obj%realVec = obj2%realVec
-  CLASS DEFAULT
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'Obj2 is not a child of AbstractNodeField_!')
-  END SELECT
-  !
-END IF
+
+CALL AbstractFieldInitiate2( &
+  & obj=obj, &
+  & obj2=obj2, &
+  & copyFull=copyFull, &
+  & copyStructure=copyStructure, &
+  & usePointer=usePointer)
+
+SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
+  obj%tSize = obj2%tSize
+  obj%realVec = obj2%realVec
+  obj%dof = obj2%dof
+END SELECT
 
 END PROCEDURE anf_initiate2
 
@@ -114,8 +96,92 @@ END PROCEDURE anf_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_Norm2
-ans = NORM2(obj=obj%realvec)
+CHARACTER(*), PARAMETER :: myName = "anf_Norm2"
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ans = NORM2(obj=obj%realvec)
+ELSE
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This method has been implemented for NATIVE engines')
+  ans = 0.0_DFP
+END IF
 END PROCEDURE anf_Norm2
+
+!----------------------------------------------------------------------------
+!                                                                 Import
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_Import
+CHARACTER(*), PARAMETER :: myName = "anf_Import"
+TYPE(String) :: dsetname
+LOGICAL(LGT) :: abool
+TYPE(ParameterList_) :: param
+
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Import()')
+
+CALL AbstractFieldImport( &
+  & obj=obj, &
+  & hdf5=hdf5, &
+  & group=group, &
+  & dom=dom, &
+  & domains=domains)
+
+dsetname = TRIM(group)//"/tSize"
+abool = hdf5%pathExists(dsetname%chars())
+IF (abool) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tSize)
+END IF
+
+dsetname = TRIM(group)//"/dof"
+abool = hdf5%pathExists(dsetname%chars())
+IF (abool) THEN
+  CALL ImportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
+END IF
+
+dsetname = TRIM(group)//"/realVec"
+abool = hdf5%pathExists(dsetname%chars())
+IF (abool) THEN
+  CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, &
+  & group=dsetname%chars())
+END IF
+
+! info
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[END] Import()")
+
+END PROCEDURE anf_Import
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_Export
+CHARACTER(*), PARAMETER :: myName = "anf_Export"
+TYPE(String) :: strval, dsetname
+
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Export()")
+
+CALL AbstractFieldExport(obj=obj, hdf5=hdf5, group=group)
+
+! tSize
+dsetname = TRIM(group)//"/tSize"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tSize)
+
+! dof
+dsetname = TRIM(group)//"/dof"
+CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
+
+! realVec
+dsetname = TRIM(group)//"/realVec"
+CALL ExportRealVector(obj=obj%realVec, hdf5=hdf5, &
+  & group=dsetname%chars())
+
+! info
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+& "[END] Export()")
+
+END PROCEDURE anf_Export
 
 !----------------------------------------------------------------------------
 !

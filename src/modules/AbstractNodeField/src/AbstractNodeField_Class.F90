@@ -19,7 +19,7 @@ USE RealVector_Method
 USE DOF_Method
 USE AbstractField_Class
 USE FPL, ONLY: ParameterList_
-USE Domain_Class, ONLY: DomainPointer_
+USE Domain_Class, ONLY: DomainPointer_, Domain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
@@ -44,7 +44,10 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! Degree of freedom object, which contains the information about
   !! how the different components are stored inside the realVec
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: getPointer => anf_getPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => anf_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => anf_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => anf_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => anf_GetPointer
   PROCEDURE, PUBLIC, PASS(obj) :: Size => anf_Size
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => anf_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => anf_Initiate3
@@ -65,6 +68,62 @@ END TYPE AbstractNodeFieldPointer_
 PUBLIC :: AbstractNodeFieldPointer_
 
 !----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE anf_Display(obj, msg, unitNo)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE anf_Display
+END INTERFACE
+
+INTERFACE AbstractNodeFieldDisplay
+  MODULE PROCEDURE anf_Display
+END INTERFACE AbstractNodeFieldDisplay
+
+PUBLIC :: AbstractNodeFieldDisplay
+
+!----------------------------------------------------------------------------
+!                                                                 IMPORT
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE anf_Import(obj, hdf5, group, dom, domains)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+  END SUBROUTINE anf_Import
+END INTERFACE
+
+INTERFACE AbstractNodeFieldImport
+  MODULE PROCEDURE anf_Import
+END INTERFACE AbstractNodeFieldImport
+
+PUBLIC :: AbstractNodeFieldImport
+
+!----------------------------------------------------------------------------
+!                                                                 Export
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE anf_Export(obj, hdf5, group)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE anf_Export
+END INTERFACE
+
+INTERFACE AbstractNodeFieldExport
+  MODULE PROCEDURE anf_Export
+END INTERFACE AbstractNodeFieldExport
+
+PUBLIC :: AbstractNodeFieldExport
+
+!----------------------------------------------------------------------------
 !                                                                getPointer
 !----------------------------------------------------------------------------
 
@@ -78,6 +137,12 @@ INTERFACE
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION anf_getPointer
 END INTERFACE
+
+INTERFACE AbstractNodeFieldGetPointer
+  MODULE PROCEDURE anf_getPointer
+END INTERFACE AbstractNodeFieldGetPointer
+
+PUBLIC :: AbstractNodeFieldGetPointer
 
 !----------------------------------------------------------------------------
 !                                                                    Size
@@ -127,6 +192,12 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE anf_Initiate2
 END INTERFACE
+
+INTERFACE AbstractNodeFieldInitiate2
+  MODULE PROCEDURE anf_Initiate2
+END INTERFACE AbstractNodeFieldInitiate2
+
+PUBLIC :: AbstractNodeFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                                            anf_Initiate3
