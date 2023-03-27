@@ -25,65 +25,65 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_initiate
-  !!
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_initiate"
-  !!
-  !!
-  !!
+!
+CHARACTER(*), PARAMETER :: myName = "mesh_initiate"
+!
+!
+!
 obj%readFromFile = .TRUE.
 obj%isInitiated = .TRUE.
-  !!
-  !! Import
-  !!
+!
+! Import
+!
 CALL e%raiseInformation(modName//'::'//myName//" - "// &
   & '[START] Importing mesh')
-  !!
-  !! Import
-  !!
-CALL obj%Import(hdf5, group)
-  !!
-  !! raiseInformation
-  !!
+!
+! Import
+!
+CALL obj%IMPORT(hdf5, group)
+!
+! raiseInformation
+!
 CALL e%raiseInformation(modName//'::'//myName//" - "// &
   & 'Mesh imported')
-  !!
-  !!
-  !!
+!
+!
+!
 ! IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) THEN
 !   RETURN
 ! ELSE
-!     !!
+!     !
 !   CALL e%raiseInformation(modName//'::'//myName//" - "// &
 !     & 'InitiateNodeToElements()')
 !   CALL obj%InitiateNodeToElements()
-!     !!
+!     !
 !   CALL e%raiseInformation(modName//'::'//myName//" - "// &
 !     & 'InitiateNodeToNodes()')
 !   CALL obj%InitiateNodeToNodes()
-!     !!
+!     !
 !   CALL e%raiseInformation(modName//'::'//myName//" - "// &
 !     & 'InitiateElementToElements()')
 !   CALL obj%InitiateElementToElements()
-!     !!
+!     !
 !   CALL e%raiseInformation(modName//'::'//myName//" - "// &
 !     & 'InitiateBoundaryData()')
 !   CALL obj%InitiateBoundaryData()
-!     !!
+!     !
 !   CALL e%raiseInformation(modName//'::'//myName//" - "// &
 !     & 'InitiateFacetElements()')
 !   CALL obj%InitiateFacetElements()
-!     !!
+!     !
 !   CALL e%raiseInformation(modName//'::'//myName//" - "// &
 !     & 'InitiateExtraNodeToNodes()')
 !   CALL obj%InitiateExtraNodeToNodes()
-!     !!
+!     !
 ! END IF
-  !!
-  !!
-  !!
+!
+!
+!
 CALL e%raiseInformation(modName//'::'//myName//" - "// &
   & '[END] Importing mesh [OK!]')
-  !!
+!
 END PROCEDURE mesh_initiate
 
 !----------------------------------------------------------------------------
@@ -108,8 +108,8 @@ END PROCEDURE mesh_Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_Deallocate
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_Deallocate"
-  !!
+CHARACTER(*), PARAMETER :: myName = "mesh_Deallocate"
+!
 obj%readFromFile = .FALSE.
 obj%isInitiated = .FALSE.
 obj%isNodeToElementsInitiated = .FALSE.
@@ -150,16 +150,16 @@ IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
 IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 obj%refelem => NULL()
 obj%ipType = Equidistance
-CALL Deallocate (obj%quadForTime)
-CALL Deallocate (obj%linTimeElemSD)
-CALL Deallocate (obj%timeElemSD)
+CALL DEALLOCATE (obj%quadForTime)
+CALL DEALLOCATE (obj%linTimeElemSD)
+CALL DEALLOCATE (obj%timeElemSD)
 obj%quadTypeForTime = ""
 obj%continuityTypeForTime = ""
 obj%interpolTypeForTime = ""
 obj%orderTime = 0
-CALL Deallocate (obj%quadForSpace)
-CALL Deallocate (obj%linSpaceElemSD)
-CALL Deallocate (obj%spaceElemSD)
+CALL DEALLOCATE (obj%quadForSpace)
+CALL DEALLOCATE (obj%linSpaceElemSD)
+CALL DEALLOCATE (obj%spaceElemSD)
 IF (ALLOCATED(obj%stelemsd)) DEALLOCATE (obj%stelemsd)
 obj%quadTypeForSpace = ""
 obj%continuityTypeForSpace = ""
@@ -184,7 +184,7 @@ END PROCEDURE mesh_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE mesh_final
 
 END SUBMODULE ConstructorMethods

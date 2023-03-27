@@ -58,6 +58,14 @@ IF (.NOT. obj%isInitiated) THEN
     & "Mesh data is not initiated, first initiate")
 END IF
 !
+! if the mesh is empty then return
+!
+IF (obj%getTotalElements() .EQ. 0_I4B) THEN
+  CALL e%raiseWarning(modName//'::'//myName//' - '// &
+  & 'Empty mesh found, returning')
+  RETURN
+END IF
+!
 ! check
 !
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
@@ -223,6 +231,72 @@ localElem = obj%getLocalElemNumber(globalElement=globalElement)
 obj%facetElementType(iface, localElem) = facetElementType
 obj%elementData(localElem)%elementType = facetElementType
 END PROCEDURE mesh_setFacetElementType
+
+!----------------------------------------------------------------------------
+!                                                           setQuality
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_setQuality
+CHARACTER(*), PARAMETER :: myName = "mesh_setQuality"
+INTEGER(I4B) :: a, b, c, tsize, telements, iel, ii, nsd
+INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+
+a = SIZE(measures)
+b = SIZE(max_measures)
+c = SIZE(min_measures)
+
+IF (a .NE. b &
+  & .OR. a .NE. c) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'size of measures, max_measures, min_measures are not same.')
+END IF
+
+tsize = a
+telements = obj%telements
+
+IF (ALLOCATED(obj%quality)) THEN
+  tsize = SIZE(obj%quality, 1)
+  IF (tsize .NE. a) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Mesh_::obj%quality is allocated row size is not same as '// &
+    & CHAR_LF//" the size of measures")
+  END IF
+ELSE
+  CALL reallocate(obj%quality, tsize, telements)
+END IF
+
+a = .NNE.obj%refelem
+
+CALL reallocate(indx, a, nptrs, a)
+
+nsd = obj%getNSD()
+CALL reallocate(xij, nsd, a)
+
+b = 0
+
+DO iel = obj%minElemNum, obj%maxElemNum
+  IF (.NOT. obj%isElementPresent(iel)) CYCLE
+  b = b + 1
+  nptrs = obj%getConnectivity(globalElement=iel)
+  indx = local_nptrs(nptrs)
+  xij = nodeCoord(1:nsd, indx)
+
+  DO ii = 1, tsize
+    obj%quality(ii, b) = ElementQuality(refelem=obj%refelem, &
+    & xij=xij, measure=measures(ii))
+  END DO
+
+END DO
+
+max_measures = MAXVAL(obj%quality, dim=2)
+min_measures = MINVAL(obj%quality, dim=2)
+
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+
+END PROCEDURE mesh_setQuality
 
 !----------------------------------------------------------------------------
 !

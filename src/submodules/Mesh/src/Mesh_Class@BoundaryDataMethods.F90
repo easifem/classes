@@ -28,41 +28,41 @@ MODULE PROCEDURE mesh_InitiateBoundaryData
 ! Define internal variables
 INTEGER(I4B) :: iel, tFace, ii, jj, kk
 INTEGER(I4B), ALLOCATABLE :: global_nptrs(:), ElemToElem(:, :)
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_InitiateBoundaryData"
-!!
-!! check
-!!
+CHARACTER(*), PARAMETER :: myName = "mesh_InitiateBoundaryData"
+!
+! check
+!
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
-!!
-!! check
-!!
+!
+! check
+!
 IF (.NOT. ASSOCIATED(obj%refelem)) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Unable to identify the Reference element of the mesh, &
     & may be it is not set")
 END IF
-!!
-!! check
-!!
+!
+! check
+!
 IF (obj%isBoundaryDataInitiated) THEN
   CALL e%raiseWarning(modName//"::"//myName//" - "// &
     & "Boundary data information is already initiated. If you want to &
-    & Reinitiate it then deallocate nodeData, first!!")
+    & Reinitiate it then deallocate nodeData, first!")
   RETURN
 END IF
-!!
+!
 IF (.NOT. obj%isElementToElementsInitiated) &
   & CALL obj%InitiateElementToElements()
-!!
+!
 obj%isBoundaryDataInitiated = .TRUE.
-!!
+!
 IF (.NOT. ALLOCATED(obj%FacetElements)) &
   & obj%FacetElements = FacetElements(obj%refelem)
-!!
+!
 tFace = SIZE(obj%FacetElements)
-!!
-!! Case of single element in the mesh
-!!
+!
+! Case of single element in the mesh
+!
 IF (obj%tElements .EQ. 1) THEN
   obj%elementData(1)%elementType = BOUNDARY_ELEMENT
   tFace = SIZE(obj%FacetElements)
@@ -86,10 +86,10 @@ ELSE
     iel = obj%getGlobalElemNumber(ii)
     ElemToElem = obj%getElementToElements(globalElement=iel, &
       & onlyElements=.FALSE.)
-      !! Because iel is a boundary element, not all its faces will
-      !! have neighbours. Below, we calculate how many faces
-      !! of iel does not have neighbors. These faces are
-      !! called boundary faces.
+    ! Because iel is a boundary element, not all its faces will
+    ! have neighbours. Below, we calculate how many faces
+    ! of iel does not have neighbors. These faces are
+    ! called boundary faces.
     jj = tFace - SIZE(ElemToElem, 1)
     CALL Reallocate(obj%elementData(ii)%boundaryData, jj)
     global_nptrs = obj%getConnectivity(iel)

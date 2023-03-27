@@ -281,6 +281,9 @@ TYPE :: Mesh_
     !! Domain Facet Data
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
+  REAL(DFP), ALLOCATABLE :: quality(:, :)
+    !! number of rows are meshquality
+    !! number of columns are elements
   INTEGER(I4B), PUBLIC :: ipType = Equidistance
     !! interpolation point type
   !!
@@ -574,6 +577,7 @@ CONTAINS
   !! returns the material id of a given medium
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalMaterial => mesh_getTotalMaterial
   !! returns the total material
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => mesh_GetQuery
   !
   ! @SetMethods
   !
@@ -598,6 +602,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: setFacetElementType => &
     & mesh_setFacetElementType
   !! Set the facet element type of a given cell number
+  PROCEDURE, PUBLIC, PASS(obj) :: setQuality => mesh_setQuality
+    !! set mesh quality
   !
   ! @ShapeDataMethods
   !
@@ -2075,6 +2081,70 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     getQuery@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE SUBROUTINE mesh_GetQuery(obj, &
+    & isInitiated, &
+    & isNodeToElementsInitiated, &
+    & isNodeToNodesInitiated, &
+    & isExtraNodeToNodesInitiated, &
+    & isElementToElementsInitiated, &
+    & isBoundaryDataInitiated, &
+    & isFacetDataInitiated, &
+    & uid, &
+    & xidim, &
+    & elemType, &
+    & nsd, &
+    & maxNptrs, &
+    & minNptrs, &
+    & maxElemNum, &
+    & minElemNum, &
+    & tNodes, &
+    & tIntNodes, &
+    & tElements, &
+    & minX, &
+    & minY, &
+    & minZ, &
+    & maxX, &
+    & maxY, &
+    & maxZ, &
+    & x, &
+    & y, &
+    & z)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated, &
+    & isNodeToElementsInitiated, &
+    & isNodeToNodesInitiated, &
+    & isExtraNodeToNodesInitiated, &
+    & isElementToElementsInitiated, &
+    & isBoundaryDataInitiated, &
+    & isFacetDataInitiated
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: uid, &
+    & xidim, &
+    & elemType, &
+    & nsd, &
+    & maxNptrs, &
+    & minNptrs, &
+    & maxElemNum, &
+    & minElemNum, &
+    & tNodes, &
+    & tIntNodes, &
+    & tElements
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: minX, &
+    & minY, &
+    & minZ, &
+    & maxX, &
+    & maxY, &
+    & maxZ, &
+    & x, &
+    & y, &
+    & z
+  END SUBROUTINE mesh_GetQuery
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                     InitiateNodeToElements@NodeDataMethods
 !----------------------------------------------------------------------------
 
@@ -2447,6 +2517,26 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: iface
     INTEGER(I4B), INTENT(IN) :: facetElementType
   END SUBROUTINE mesh_setFacetElementType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   setQuality@setMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-27
+! summary:  set mesh quality
+
+INTERFACE
+  MODULE SUBROUTINE mesh_setQuality(obj, measures, max_measures, &
+    & min_measures, nodeCoord, local_nptrs)
+    CLASS(Mesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: measures(:)
+    REAL(DFP), INTENT(OUT) :: max_measures(:)
+    REAL(DFP), INTENT(OUT) :: min_measures(:)
+    REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
+    INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
+  END SUBROUTINE mesh_setQuality
 END INTERFACE
 
 !----------------------------------------------------------------------------
