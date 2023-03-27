@@ -25,32 +25,47 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlFile_Initiate
-CHARACTER(LEN=*), PARAMETER :: myName = 'xmlFile_Initiate'
-TYPE(String) :: fpath, fname, fext, mode_in
-CHARACTER(LEN=LEN(filename)) :: tempchars
+CHARACTER(*), PARAMETER :: myName = 'xmlFile_Initiate'
+TYPE(String) :: fpath, fname, fext, mode_in, file_
+CHARACTER(1024) :: tempchars
 LOGICAL(LGT) :: exists
-  !!
-  !! check
-  !!
+!
+! check
+!
 IF (obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & ' - xmlFile '//obj%getFileName()// &
     & ' is already initialized!')
   RETURN
 END IF
-  !!
+!
+
+file_ = TRIM(filename)
+IF (file_%SCAN(CHAR_SLASH) .EQ. 0_I4B) THEN
+  fpath = "."//CHAR_SLASH
+ELSE
+  fpath = file_%basedir(sep=CHAR_SLASH)//CHAR_SLASH
+END IF
+fext = file_%extension()
+fname = file_%basename(extension=fext%chars(), sep=CHAR_SLASH)
+
+#ifdef _OLD_VERSION_
+
 CALL getPath(chars=filename, path=tempchars)
-fpath = trim(tempchars)
+fpath = TRIM(tempchars)
 CALL getFileNameExt(chars=filename, ext=tempchars)
-fext = trim(tempchars)
+fext = TRIM(tempchars)
 CALL getFileName(chars=filename, fname=tempchars)
-fname = trim(tempchars)
+fname = TRIM(tempchars)
+
+#endif
+
 CALL obj%setFilePath(fpath)
 CALL obj%setFileName(fname)
 CALL obj%setFileExt(fext)
-  !!
-  !! MODE
-  !!
+!
+! MODE
+!
 mode_in = mode
 mode_in = mode_in%upper()
 SELECT CASE (TRIM(mode_in%chars()))
@@ -94,7 +109,7 @@ CASE DEFAULT
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & ' - Unrecognized access mode.')
 END SELECT
-obj%fullname = trim(filename)
+obj%fullname = TRIM(filename)
 ALLOCATE (obj%root)
 obj%isInitiated = .TRUE.
 END PROCEDURE xmlFile_Initiate
@@ -107,7 +122,7 @@ MODULE PROCEDURE xmlFile_Deallocate
 LOGICAL(LGT) :: bool
 !>
 IF (ASSOCIATED(obj%root)) THEN
-  CALL obj%root%Deallocate()
+  CALL obj%root%DEALLOCATE()
   DEALLOCATE (obj%root)
 END IF
 !>
@@ -121,7 +136,7 @@ IF (obj%isInitiated) THEN
   IF (bool) THEN
     CALL obj%delete()
   ELSE
-    CALL obj%close()
+    CALL obj%CLOSE()
   END IF
   !>
   obj%isInitiated = .FALSE.
@@ -140,7 +155,7 @@ END PROCEDURE xmlFile_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlFile_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE xmlFile_Final
 
 !----------------------------------------------------------------------------
@@ -148,27 +163,28 @@ END PROCEDURE xmlFile_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlFile_Open
-CHARACTER(LEN=*), PARAMETER :: myName = 'xmlFile_Open'
-CHARACTER(LEN=7) :: statusvar
-CHARACTER(LEN=10) :: accessvar
-CHARACTER(LEN=11) :: formvar
-CHARACTER(LEN=9) :: actionvar
+CHARACTER(*), PARAMETER :: myName = 'xmlFile_Open'
+CHARACTER(7) :: statusvar
+CHARACTER(10) :: accessvar
+CHARACTER(11) :: formvar
+CHARACTER(9) :: actionvar
 INTEGER(I4B) :: ierr
-  !!
-  !! check
-  !!
+TYPE(String) :: fpath
+!
+! check
+!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & ' - The xmlFile is not initiated.')
 END IF
-  !!
-  !! isOpen
-  !!
+!
+! isOpen
+!
 IF (obj%isOpen()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
                     ' - File is already open!')
 END IF
-  !!
+!
 IF (.NOT. obj%newstat) THEN
   statusvar = 'OLD'
 ELSE
@@ -178,9 +194,19 @@ ELSE
     statusvar = 'NEW'
   END IF
 END IF
-  !!
-  !! FORM clause value
-  !!
+!
+IF (TRIM(statusvar) .NE. 'OLD') THEN
+  fpath = obj%getFilePath()
+  ierr = system_mkdir(fpath//'', RWX_U)
+  IF (ierr .NE. 0_I4B .AND. ierr .NE. -1_I4B) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'error occured while creating the directory')
+  END IF
+END IF
+!
+!
+! FORM clause value
+!
 IF (obj%isFormatted()) THEN
   formvar = 'FORMATTED'
 ELSE
@@ -201,7 +227,7 @@ OPEN ( &
   & STATUS=statusvar, ACCESS=accessvar, &
   & FORM=formvar, ACTION=actionvar, ENCODING=obj%encoding, &
   & IOSTAT=ierr)
-  !!
+!
 IF (ierr == 0) THEN
   CALL obj%setOpenStat(.TRUE.)
 ELSE
@@ -216,7 +242,7 @@ END PROCEDURE xmlFile_Open
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlFile_Close
-CHARACTER(LEN=*), PARAMETER :: myName = 'xmlFile_Close'
+CHARACTER(*), PARAMETER :: myName = 'xmlFile_Close'
 INTEGER(I4B) :: ierr
 !>
 IF (obj%isOpen()) THEN
@@ -235,13 +261,13 @@ END PROCEDURE xmlFile_Close
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE xmlFile_Delete
-CHARACTER(LEN=*), PARAMETER :: myName = 'xmlFile_Delete'
+CHARACTER(*), PARAMETER :: myName = 'xmlFile_Delete'
 INTEGER(I4B) :: ierr
 
 IF (obj%isOpen()) THEN
   CLOSE (obj%unitNo, STATUS='DELETE', IOSTAT=ierr)
 ELSE
-  CALL obj%open()
+  CALL obj%OPEN()
   CLOSE (obj%unitNo, STATUS='DELETE', IOSTAT=ierr)
 END IF
 IF (ierr == 0) THEN
