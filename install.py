@@ -57,6 +57,11 @@ else:
             opt = "ON"
         cmake_def += " -D USE_ARPACK=" + opt
 
+        opt = getOption("USE_LIS", ["ON", "OFF"])
+        if opt == " ":
+            opt = "ON"
+        cmake_def += " -D USE_LIS=" + opt
+
         opt = getOption("CMAKE_BUILD_TYPE", ["Release", "Debug"])
         if opt == " ":
             opt = "Release"
@@ -81,6 +86,7 @@ else:
         cmake_def += " -D BUILD_SHARED_LIBS:BOOL=ON"
         cmake_def += " -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}"
         cmake_def += " -D USE_ARPACK:BOOL=ON"
+        cmake_def += " -D USE_LIS:BOOL=ON"
 
     cmake_def += " -D USE_Int32=ON -D USE_Real64=ON"
 
