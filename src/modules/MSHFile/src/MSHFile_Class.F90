@@ -69,8 +69,10 @@ CONTAINS
       !! deallocate the data
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => msh_Import
       !! Read the file and initiate the object
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => msh_Export
+  PROCEDURE, PASS(obj) :: Export_hdf5 => msh_Export_hdf5
+  PROCEDURE, PASS(obj) :: Export_txtfile => msh_Export_txtfile
       !! Export to the external hdf5 file
+  GENERIC, PUBLIC :: Export => Export_hdf5, Export_txtfile
   PROCEDURE, PUBLIC, PASS(obj) :: MSHFileRead => msh_Read
   GENERIC, PUBLIC :: READ => MSHFileRead
       !! initiate the object
@@ -84,6 +86,12 @@ CONTAINS
     & msh_ReadVolumeEntities
   PROCEDURE, PUBLIC, PASS(obj) :: ReadNodes => msh_ReadNodes
   PROCEDURE, PUBLIC, PASS(obj) :: ReadElements => msh_ReadElements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportNodes => msh_ExportNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportElements => msh_ExportElements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntNodeNumber => msh_GetIntNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => msh_SetNodeCoord
 END TYPE MSHFile_
 
 !----------------------------------------------------------------------------
@@ -160,11 +168,48 @@ END INTERFACE
 ! summary: This routine exports the mesh in HDF5 file
 
 INTERFACE
-  MODULE SUBROUTINE msh_Export(obj, hdf5, group)
+  MODULE SUBROUTINE msh_Export_hdf5(obj, hdf5, group)
     CLASS(MSHFile_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE msh_Export
+  END SUBROUTINE msh_Export_hdf5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 June 2021
+! summary: This routine exports the mesh in HDF5 file
+
+INTERFACE
+  MODULE SUBROUTINE msh_Export_txtfile(obj, afile)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE msh_Export_txtfile
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ExportNodes@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE msh_ExportNodes(obj, afile)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE msh_ExportNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ExportElements@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE msh_ExportElements(obj, afile)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE msh_ExportElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -244,6 +289,32 @@ INTERFACE
   MODULE SUBROUTINE msh_ReadElements(obj)
     CLASS(MSHFile_), INTENT(INOUT) :: obj
   END SUBROUTINE msh_ReadElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION msh_GetIntNodeNumber(obj, dim, Tag) RESULT(ans)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: tag
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION msh_GetIntNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE msh_SetNodeCoord(obj, dim, tag, NodeCoord)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: tag
+    REAL(DFP), INTENT(IN) :: NodeCoord(:, :)
+  END SUBROUTINE msh_SetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------

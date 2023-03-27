@@ -27,7 +27,7 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "mshNodes_Class"
+CHARACTER(*), PARAMETER :: modName = "mshNodes_Class"
 
 !----------------------------------------------------------------------------
 !                                                                 mshNodes_
@@ -52,13 +52,13 @@ TYPE :: mshNodes_
 
 CONTAINS
   FINAL :: n_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => n_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => n_Deallocate
       !! Deallocate From the object
   PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => n_GotoTag
       !! Go to the node tag in mesh file
-  PROCEDURE, PUBLIC, PASS(obj) :: Read => n_Read
+  PROCEDURE, PUBLIC, PASS(obj) :: READ => n_Read
       !! read content from file
-  PROCEDURE, PUBLIC, PASS(obj) :: Write => n_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WRITE => n_Write
       !! write data to file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => n_Display
       !! Display the content of msh Nodes
@@ -104,11 +104,11 @@ INTERFACE
   END SUBROUTINE n_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE n_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                                   GotoTag
@@ -152,11 +152,9 @@ END INTERFACE
 ! summary: This subroutine write data to a file
 
 INTERFACE
-  MODULE SUBROUTINE n_Write(obj, mshFile, mshFormat, Str, EndStr)
+  MODULE SUBROUTINE n_Write(obj, afile)
     CLASS(mshNodes_), INTENT(INOUT) :: obj
-    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Str, EndStr
-    TYPE(mshFormat_), INTENT(INOUT) :: mshFormat
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
   END SUBROUTINE n_Write
 END INTERFACE
 
@@ -171,7 +169,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE n_Display(obj, Msg, UnitNo)
     CLASS(mshNodes_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    CHARACTER(*), INTENT(IN) :: Msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
   END SUBROUTINE n_Display
 END INTERFACE

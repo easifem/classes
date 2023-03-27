@@ -97,7 +97,276 @@ END PROCEDURE ent_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Write
+SELECT CASE (dim)
+CASE (0)
+  CALL WritePointEntity(obj, afile)
+CASE (1)
+  CALL WriteCurveEntity(obj, afile)
+CASE (2)
+  CALL WriteSurfaceEntity(obj, afile)
+CASE (3)
+  CALL WriteVolumeEntity(obj, afile)
+END SELECT
 END PROCEDURE ent_Write
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE WritePointEntity(obj, afile)
+  CLASS(mshEntity_), INTENT(INOUT) :: obj
+  CLASS(TxtFile_), INTENT(INOUT) :: afile
+
+  ! Define internal variables
+  INTEGER(I4B) :: unitNo
+  INTEGER(I4B) :: ii
+  INTEGER(I4B) :: numPhysicalTags
+  TYPE(String) :: astr
+
+  astr = tostring(obj%uid)//" " &
+  & //tostring(obj%x)//" " &
+  & //tostring(obj%y)//" " &
+  & //tostring(obj%z)
+
+  IF (ALLOCATED(obj%physicalTag)) THEN
+    numPhysicalTags = SIZE(obj%physicalTag)
+    astr = astr//" "//tostring(numPhysicalTags)//" "
+    DO ii = 1, numPhysicalTags
+      astr = astr//" "// &
+        & tostring(obj%physicalTag(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  unitNo = afile%getUnitNo()
+
+  WRITE (unitNo, "(A)") astr%chars()
+
+END SUBROUTINE WritePointEntity
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE WriteCurveEntity(obj, afile)
+  CLASS(mshEntity_), INTENT(INOUT) :: obj
+  CLASS(TxtFile_), INTENT(INOUT) :: afile
+
+  ! Define internal variables
+  INTEGER(I4B) :: unitNo
+  INTEGER(I4B) :: ii
+  INTEGER(I4B) :: n
+  TYPE(String) :: astr
+
+  astr = tostring(obj%uid)//" " &
+  & //tostring(obj%minx)//" " &
+  & //tostring(obj%miny)//" " &
+  & //tostring(obj%minz)//" " &
+  & //tostring(obj%maxx)//" " &
+  & //tostring(obj%maxy)//" " &
+  & //tostring(obj%maxz)
+
+  IF (ALLOCATED(obj%physicalTag)) THEN
+    n = SIZE(obj%physicalTag)
+    astr = astr//" "//tostring(n)//" "
+    DO ii = 1, n
+      astr = astr//" "// &
+        & tostring(obj%physicalTag(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  IF (ALLOCATED(obj%boundingEntity)) THEN
+    n = SIZE(obj%boundingEntity)
+    astr = astr//" "//tostring(n)
+    DO ii = 1, n
+      astr = astr//" "// &
+        & tostring(obj%boundingEntity(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  unitNo = afile%getUnitNo()
+
+  WRITE (unitNo, "(A)") astr%chars()
+
+END SUBROUTINE WriteCurveEntity
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE WriteSurfaceEntity(obj, afile)
+  CLASS(mshEntity_), INTENT(INOUT) :: obj
+  CLASS(TxtFile_), INTENT(INOUT) :: afile
+
+  ! Define internal variables
+  INTEGER(I4B) :: unitNo
+  INTEGER(I4B) :: ii
+  INTEGER(I4B) :: n
+  TYPE(String) :: astr
+
+  astr = tostring(obj%uid)//" " &
+  & //tostring(obj%minx)//" " &
+  & //tostring(obj%miny)//" " &
+  & //tostring(obj%minz)//" " &
+  & //tostring(obj%maxx)//" " &
+  & //tostring(obj%maxy)//" " &
+  & //tostring(obj%maxz)
+
+  IF (ALLOCATED(obj%physicalTag)) THEN
+    n = SIZE(obj%physicalTag)
+    astr = astr//" "//tostring(n)//" "
+    DO ii = 1, n
+      astr = astr//" "// &
+        & tostring(obj%physicalTag(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  IF (ALLOCATED(obj%boundingEntity)) THEN
+    n = SIZE(obj%boundingEntity)
+    astr = astr//" "//tostring(n)
+    DO ii = 1, n
+      astr = astr//" "// &
+        & tostring(obj%boundingEntity(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  unitNo = afile%getUnitNo()
+
+  WRITE (unitNo, "(A)") astr%chars()
+
+END SUBROUTINE WriteSurfaceEntity
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE WriteVolumeEntity(obj, afile)
+  CLASS(mshEntity_), INTENT(INOUT) :: obj
+  CLASS(TxtFile_), INTENT(INOUT) :: afile
+
+  ! Define internal variables
+  INTEGER(I4B) :: unitNo
+  INTEGER(I4B) :: ii
+  INTEGER(I4B) :: n
+  TYPE(String) :: astr
+
+  astr = tostring(obj%uid)//" " &
+  & //tostring(obj%minx)//" " &
+  & //tostring(obj%miny)//" " &
+  & //tostring(obj%minz)//" " &
+  & //tostring(obj%maxx)//" " &
+  & //tostring(obj%maxy)//" " &
+  & //tostring(obj%maxz)
+
+  IF (ALLOCATED(obj%physicalTag)) THEN
+    n = SIZE(obj%physicalTag)
+    astr = astr//" "//tostring(n)//" "
+    DO ii = 1, n
+      astr = astr//" "// &
+        & tostring(obj%physicalTag(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  IF (ALLOCATED(obj%boundingEntity)) THEN
+    n = SIZE(obj%boundingEntity)
+    astr = astr//" "//tostring(n)
+    DO ii = 1, n
+      astr = astr//" "// &
+        & tostring(obj%boundingEntity(ii))
+    END DO
+  ELSE
+    astr = astr//" 0"
+  END IF
+
+  unitNo = afile%getUnitNo()
+
+  WRITE (unitNo, "(A)") astr%chars()
+
+END SUBROUTINE WriteVolumeEntity
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ent_WriteNodeBlock
+TYPE(String) :: astr
+INTEGER(I4B) :: unitNo
+INTEGER(I4B) :: n
+INTEGER(I4B) :: jj
+
+unitNo = afile%getUnitNo()
+astr = tostring(obj%xidim)//" "// &
+  & tostring(obj%uid)//" "// &
+  & "0 "
+
+IF (ALLOCATED(obj%intNodeNumber)) THEN
+  n = SIZE(obj%intNodeNumber)
+  astr = astr//tostring(n)
+ELSE
+  astr = astr//"0 "
+  n = 0
+END IF
+
+WRITE (unitNo, "(A)") astr%chars()
+
+astr = ""
+
+DO jj = 1, n
+  WRITE (unitNo, "(A)") tostring(obj%intNodeNumber(jj))
+END DO
+
+DO jj = 1, n
+  WRITE (unitNo, "(A)") &
+    & str(obj%NodeCoord(1, jj))//" "// &
+    & str(obj%NodeCoord(2, jj))//" "// &
+    & str(obj%NodeCoord(3, jj))
+END DO
+
+END PROCEDURE ent_WriteNodeBlock
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ent_WriteElementBlock
+TYPE(String) :: astr
+INTEGER(I4B) :: unitNo
+INTEGER(I4B) :: n
+INTEGER(I4B) :: jj
+INTEGER(I4B) :: ii
+
+IF (ALLOCATED(obj%ElemNumber)) THEN
+  n = SIZE(obj%elemNumber)
+  IF (n .GT. 0) THEN
+    unitNo = afile%getUnitNo()
+    astr = tostring(obj%xidim)//" "// &
+      & tostring(obj%uid)//" "// &
+      & tostring(obj%elemType)//" "//tostring(n)
+
+    WRITE (unitNo, "(A)") astr%chars()
+
+    DO jj = 1, n
+      astr = tostring(obj%elemNumber(jj))
+      DO ii = 1, SIZE(obj%Connectivity, 1)
+        astr = astr//" "//tostring(obj%Connectivity(ii, jj))
+      END DO
+      WRITE (unitNo, "(A)") astr%chars()
+    END DO
+  END IF
+END IF
+
+END PROCEDURE ent_WriteElementBlock
 
 !----------------------------------------------------------------------------
 !                                                                 Display
@@ -201,6 +470,7 @@ IF (error .EQ. 0) THEN
     obj%physicalTag(1:n) = Intvec(1:n)
   END IF
 END IF
+
 END PROCEDURE ReadPointEntity
 
 !----------------------------------------------------------------------------

@@ -27,8 +27,8 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "mshPhysicalNames_Class"
-INTEGER(I4B), PARAMETER :: maxStrLen = 256
+CHARACTER(*), PARAMETER :: modName = "mshPhysicalNames_Class"
+INTEGER(I4B), PARAMETER :: maxStrLen = 1024
 
 !----------------------------------------------------------------------------
 !                                                          mshPhysicalNames_
@@ -58,13 +58,13 @@ CONTAINS
   PRIVATE
   FINAL :: pn_final
   !! Finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => pn_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => pn_Deallocate
   !! To deallocate data
   PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => pn_GotoTag
   !! Search tag for physical group in mesh file
-  PROCEDURE, PUBLIC, PASS(obj) :: Read => pn_Read
+  PROCEDURE, PUBLIC, PASS(obj) :: READ => pn_Read
   !! Read contents from mesh file
-  PROCEDURE, PUBLIC, PASS(obj) :: Write => pn_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WRITE => pn_Write
   !! Write contents to a mesh file
   PROCEDURE, PUBLIC, PASS(Obj) :: Display => pn_Display
   !! Displays the content
@@ -151,11 +151,11 @@ INTERFACE
   END SUBROUTINE pn_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE pn_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                                    GotoTag
@@ -198,10 +198,9 @@ END INTERFACE
 ! summary: This subroutine writes physical groupds info in mesh file
 
 INTERFACE
-  MODULE SUBROUTINE pn_Write(obj, mshFile, StartStr, EndStr)
+  MODULE SUBROUTINE pn_Write(obj, afile)
     CLASS(mshPhysicalNames_), INTENT(INOUT) :: obj
-    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: StartStr, EndStr
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
   END SUBROUTINE pn_Write
 END INTERFACE
 
@@ -216,7 +215,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE pn_Display(obj, Msg, UnitNo)
     CLASS(mshPhysicalNames_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    CHARACTER(*), INTENT(IN) :: Msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
   END SUBROUTINE pn_Display
 END INTERFACE
@@ -255,7 +254,7 @@ PUBLIC :: Display
 INTERFACE
   MODULE PURE FUNCTION pn_getTotalPhysicalEntities(obj, dim) RESULT(ans)
     CLASS(mshPhysicalNames_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: DIM(:)
     INTEGER(I4B) :: ans
   END FUNCTION pn_getTotalPhysicalEntities
 END INTERFACE

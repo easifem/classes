@@ -37,7 +37,7 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "mshFormat_Class"
+CHARACTER(*), PARAMETER :: modName = "mshFormat_Class"
 INTEGER(I4B) :: ierr
 !$OMP THREADPRIVATE(ierr)
 
@@ -56,7 +56,7 @@ TYPE :: mshFormat_
   INTEGER(I4B) :: minorVersion = 1_I4B
   INTEGER(I4B) :: fileType = 0, dataSize = 0
   LOGICAL(LGT) :: isASCII = .FALSE.
-  CHARACTER(LEN=10) :: MeshFormat = ""
+  CHARACTER(10) :: MeshFormat = "4.1 0 8"
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(Obj) :: Display => fmt_Display
@@ -73,13 +73,13 @@ CONTAINS
       !! Returns the Datasize
   PROCEDURE, PUBLIC, PASS(Obj) :: getMeshFormat => fmt_getMeshFormat
       !! Return the Mesh format
-  PROCEDURE, PUBLIC, PASS(obj) :: Read => fmt_Read
+  PROCEDURE, PUBLIC, PASS(obj) :: READ => fmt_Read
       !! Read format from a file
-  PROCEDURE, PUBLIC, PASS(obj) :: Write => fmt_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WRITE => fmt_Write
       !! Write content to a file
   PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => fmt_GotoTag
       !! Goto a tag
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => fmt_Finalize
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => fmt_Finalize
       !! Finalize
 END TYPE mshFormat_
 
@@ -107,7 +107,7 @@ PUBLIC :: mshFormatPointer_
 INTERFACE
   MODULE SUBROUTINE fmt_Display(obj, Msg, UnitNo)
     CLASS(mshFormat_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    CHARACTER(*), INTENT(IN) :: Msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
   END SUBROUTINE fmt_Display
 END INTERFACE
@@ -204,7 +204,7 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION fmt_getMeshFormat(obj) RESULT(Ans)
     CLASS(mshFormat_), INTENT(IN) :: obj
-    CHARACTER(LEN=10) :: Ans
+    CHARACTER(10) :: Ans
   END FUNCTION fmt_getMeshFormat
 END INTERFACE
 
@@ -225,7 +225,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      WriteToFile@mshFormat
+!                                                           Write@mshFormat
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -233,10 +233,9 @@ END INTERFACE
 ! summary: This subroutine writes mesh format to a .msh file
 
 INTERFACE
-  MODULE SUBROUTINE fmt_Write(obj, mshFile, Str, EndStr)
+  MODULE SUBROUTINE fmt_Write(obj, afile)
     CLASS(mshFormat_), INTENT(INOUT) :: obj
-    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Str, EndStr
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
   END SUBROUTINE fmt_Write
 END INTERFACE
 
@@ -270,11 +269,11 @@ INTERFACE
   END SUBROUTINE fmt_Finalize
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE fmt_Finalize
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !

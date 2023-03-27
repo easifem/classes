@@ -27,7 +27,7 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "MSHELEMENT_CLASS"
+CHARACTER(*), PARAMETER :: modName = "MSHELEMENT_CLASS"
 
 !----------------------------------------------------------------------------
 !                                                              mshElements_
@@ -48,13 +48,13 @@ CONTAINS
   PRIVATE
   FINAL :: el_Final
       !! Finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => el_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => el_Deallocate
       !! deallocate data
   PROCEDURE, PUBLIC, PASS(obj) :: GotoTag => el_GotoTag
       !! go to the tag
-  PROCEDURE, PUBLIC, PASS(obj) :: Read => el_Read
+  PROCEDURE, PUBLIC, PASS(obj) :: READ => el_Read
       !! Read data form file
-  PROCEDURE, PUBLIC, PASS(obj) :: Write => el_Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WRITE => el_Write
       !! Write data to file
   PROCEDURE, PUBLIC, PASS(obj) :: getNumElements => el_getNumElements
       !! total elements
@@ -104,11 +104,11 @@ INTERFACE
   END SUBROUTINE el_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE el_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                                   GotoTag
@@ -152,11 +152,9 @@ END INTERFACE
 ! summary: This subroutine writes the data to a file
 
 INTERFACE
-  MODULE SUBROUTINE el_Write(obj, mshFile, mshFormat, Str, EndStr)
+  MODULE SUBROUTINE el_Write(obj, afile)
     CLASS(mshElements_), INTENT(INOUT) :: obj
-    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Str, EndStr
-    TYPE(mshFormat_), INTENT(INOUT) :: mshFormat
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
   END SUBROUTINE el_Write
 END INTERFACE
 
@@ -171,7 +169,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE el_display(obj, Msg, UnitNo)
     CLASS(mshElements_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: Msg
+    CHARACTER(*), INTENT(IN) :: Msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
   END SUBROUTINE el_display
 END INTERFACE

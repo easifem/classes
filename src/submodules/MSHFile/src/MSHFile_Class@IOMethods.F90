@@ -34,8 +34,8 @@ END PROCEDURE msh_Import
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE msh_Export
-CHARACTER(*), PARAMETER :: myName = "msh_Export"
+MODULE PROCEDURE msh_Export_hdf5
+CHARACTER(*), PARAMETER :: myName = "msh_Export_hdf5"
 INTEGER(I4B) :: ii, tsize, tNodes, count
 REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
 INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
@@ -126,7 +126,7 @@ CALL hdf5%WRITE(dsetname=dsetname%chars()//"/nodeCoord", &
 CALL hdf5%WRITE(dsetname=dsetname%chars()//"/local_nptrs", &
   &vals=local_nptrs)
 IF (ALLOCATED(nodeCoord)) DEALLOCATE (nodeCoord)
-END PROCEDURE msh_Export
+END PROCEDURE msh_Export_hdf5
 
 !----------------------------------------------------------------------------
 !                                                          ExportMeshFormat
@@ -854,5 +854,206 @@ END SUBROUTINE setNumNodesInPhysicalNames
 !   CALL BlankLines( UnitNo = I, NOL = 1 )
 !   CALL Display( obj%Elements, "Elements", I )
 ! END PROCEDURE msh_display
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_Export_txtfile
+! Define internal variables
+CHARACTER(*), PARAMETER :: myName = "msh_Export_txtfile"
+INTEGER(I4B) :: unitNo, tp, tc, ts, tv, error0
+INTEGER(I4B) :: ii
+
+IF (.NOT. afile%isOpen()) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'TxtFile_:: afile is not open.')
+END IF
+
+IF (.NOT. afile%isWrite()) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'TxtFile_:: afile does not have write permission.')
+END IF
+
+unitNo = afile%getunitNo()
+
+! reading mesh format
+CALL Display('Writing meshFormat', stdout)
+CALL obj%FORMAT%WRITE(afile=afile)
+
+! reading physical group information
+
+CALL Display('Writing physicalNames', stdout)
+CALL obj%PhysicalNames%WRITE(afile=afile)
+
+! Entities
+
+CALL Display('Writing Entities', stdout)
+
+WRITE (unitNo, "(A)") "$Entities"
+tp = 0; tc = 0; ts = 0; tv = 0
+IF (ALLOCATED(obj%PointEntities)) THEN
+  tp = SIZE(obj%PointEntities)
+END IF
+
+IF (ALLOCATED(obj%CurveEntities)) THEN
+  tc = SIZE(obj%CurveEntities)
+END IF
+
+IF (ALLOCATED(obj%SurfaceEntities)) THEN
+  ts = SIZE(obj%SurfaceEntities)
+END IF
+
+IF (ALLOCATED(obj%VolumeEntities)) THEN
+  tv = SIZE(obj%VolumeEntities)
+END IF
+
+WRITE (unitNo, "(A)") tostring(tp)//" " &
+& //tostring(tc)//" " &
+& //tostring(ts)//" " &
+& //tostring(tv)
+
+DO ii = 1, tp
+  CALL obj%PointEntities(ii)%WRITE( &
+    & afile=afile, &
+    & dim=0)
+END DO
+
+DO ii = 1, tc
+  CALL obj%CurveEntities(ii)%WRITE( &
+    & afile=afile, &
+    & dim=1)
+END DO
+
+DO ii = 1, ts
+  CALL obj%SurfaceEntities(ii)%WRITE( &
+    & afile=afile, &
+    & dim=2)
+END DO
+
+DO ii = 1, tv
+  CALL obj%VolumeEntities(ii)%WRITE( &
+    & afile=afile, &
+    & dim=3)
+END DO
+
+WRITE (unitNo, "(A)") "$EndEntities"
+
+! Nodes
+
+CALL obj%ExportNodes(afile=afile)
+
+! Elements
+
+CALL obj%ExportElements(afile=afile)
+
+! nodes in physical regions
+! CALL setNumNodesInPhysicalNames(obj)
+! IF (PRESENT(error)) error = error0
+END PROCEDURE msh_Export_txtfile
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ExportNodes
+TYPE(String) :: astr
+INTEGER(I4B) :: unitNo
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: tp, tc, ts, tv
+
+unitNo = afile%getUnitNo()
+
+WRITE (unitNo, "(A)") "$Nodes"
+CALL obj%nodes%WRITE(afile=afile)
+
+tp = 0; tc = 0; ts = 0; tv = 0
+IF (ALLOCATED(obj%PointEntities)) THEN
+  tp = SIZE(obj%PointEntities)
+END IF
+
+IF (ALLOCATED(obj%CurveEntities)) THEN
+  tc = SIZE(obj%CurveEntities)
+END IF
+
+IF (ALLOCATED(obj%SurfaceEntities)) THEN
+  ts = SIZE(obj%SurfaceEntities)
+END IF
+
+IF (ALLOCATED(obj%VolumeEntities)) THEN
+  tv = SIZE(obj%VolumeEntities)
+END IF
+
+DO ii = 1, tp
+  CALL obj%PointEntities(ii)%WriteNodeBlock(afile=afile, dim=0)
+END DO
+
+DO ii = 1, tc
+  CALL obj%CurveEntities(ii)%WriteNodeBlock(afile=afile, dim=1)
+END DO
+
+DO ii = 1, ts
+  CALL obj%SurfaceEntities(ii)%WriteNodeBlock(afile=afile, dim=2)
+END DO
+
+DO ii = 1, tv
+  CALL obj%VolumeEntities(ii)%WriteNodeBlock(afile=afile, dim=3)
+END DO
+
+WRITE (unitNo, "(A)") "$EndNodes"
+
+END PROCEDURE msh_ExportNodes
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_ExportElements
+TYPE(String) :: astr
+INTEGER(I4B) :: unitNo
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: tp, tc, ts, tv
+
+unitNo = afile%getUnitNo()
+
+WRITE (unitNo, "(A)") "$Elements"
+CALL obj%elements%WRITE(afile=afile)
+
+tp = 0; tc = 0; ts = 0; tv = 0
+IF (ALLOCATED(obj%PointEntities)) THEN
+  tp = SIZE(obj%PointEntities)
+END IF
+
+IF (ALLOCATED(obj%CurveEntities)) THEN
+  tc = SIZE(obj%CurveEntities)
+END IF
+
+IF (ALLOCATED(obj%SurfaceEntities)) THEN
+  ts = SIZE(obj%SurfaceEntities)
+END IF
+
+IF (ALLOCATED(obj%VolumeEntities)) THEN
+  tv = SIZE(obj%VolumeEntities)
+END IF
+
+DO ii = 1, tp
+  CALL obj%PointEntities(ii)%WriteElementBlock(afile=afile, dim=0)
+END DO
+
+DO ii = 1, tc
+  CALL obj%CurveEntities(ii)%WriteElementBlock(afile=afile, dim=1)
+END DO
+
+DO ii = 1, ts
+  CALL obj%SurfaceEntities(ii)%WriteElementBlock(afile=afile, dim=2)
+END DO
+
+DO ii = 1, tv
+  CALL obj%VolumeEntities(ii)%WriteElementBlock(afile=afile, dim=3)
+END DO
+
+WRITE (unitNo, "(A)") "$EndElements"
+
+END PROCEDURE msh_ExportElements
 
 END SUBMODULE IOMethods

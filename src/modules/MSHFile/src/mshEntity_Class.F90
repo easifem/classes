@@ -85,14 +85,18 @@ CONTAINS
       !! To find tag
   PROCEDURE, PUBLIC, PASS(obj) :: WRITE => ent_Write
       !! Write data to a file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteNodeBlock => ent_WriteNodeBlock
+      !! Write data to a file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteElementBlock => ent_WriteElementBlock
+      !! Write data to a file
   PROCEDURE, PUBLIC, PASS(Obj) :: Display => ent_Display
       !! Display the content
   PROCEDURE, PUBLIC, PASS(Obj) :: READ => ent_Read
       !! Read Point, Curve, Surface, and Volume Entity
-    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalTags => ent_getTotalPhysicalTags
-      !! Return total physical tags associated
-    PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundingTags => ent_getTotalBoundingTags
-      !! Returns the total bounding tags
+  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalPhysicalTags => ent_getTotalPhysicalTags
+    !! Return total physical tags associated
+  PROCEDURE, PUBLIC, PASS( obj ) :: getTotalBoundingTags => ent_getTotalBoundingTags
+    !! Returns the total bounding tags
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalElements => ent_getTotalElements
       !! Returns the total elements
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalIntNodes => ent_getTotalIntNodes
@@ -207,11 +211,43 @@ END INTERFACE
 ! summary: This subroutine write the data to a file
 
 INTERFACE
-  MODULE SUBROUTINE ent_Write(obj, mshFile, StartStr, EndStr)
+  MODULE SUBROUTINE ent_Write(obj, afile, dim)
     CLASS(mshEntity_), INTENT(INOUT) :: obj
-    CLASS(TxtFile_), INTENT(INOUT) :: mshFile
-    CHARACTER(*), INTENT(IN), OPTIONAL :: StartStr, EndStr
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+    INTEGER(I4B), INTENT(IN) :: dim
   END SUBROUTINE ent_Write
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Write
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date:         10 June 2021
+! summary: This subroutine write the data to a file
+
+INTERFACE
+  MODULE SUBROUTINE ent_WriteNodeBlock(obj, afile, dim)
+    CLASS(mshEntity_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+    INTEGER(I4B), INTENT(IN) :: dim
+  END SUBROUTINE ent_WriteNodeBlock
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Write
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date:         10 June 2021
+! summary: This subroutine write the data to a file
+
+INTERFACE
+  MODULE SUBROUTINE ent_WriteElementBlock(obj, afile, dim)
+    CLASS(mshEntity_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+    INTEGER(I4B), INTENT(IN) :: dim
+  END SUBROUTINE ent_WriteElementBlock
 END INTERFACE
 
 !----------------------------------------------------------------------------
