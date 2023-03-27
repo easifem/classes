@@ -26,7 +26,7 @@ IMPLICIT NONE
 PRIVATE
 !!
 PUBLIC :: encodeVTKDataArray
-CHARACTER(LEN=*), PARAMETER :: modName = "VTKFile_Class"
+CHARACTER(*), PARAMETER :: modName = "VTKFile_Class"
 INTEGER(I4B), PARAMETER :: MAX_LEN_DATA_STRUCTURENAME = 256
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_ImageData = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_RectilinearGrid = 2
@@ -38,7 +38,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_RectilinearGrid = 7
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_StructuredGrid = 8
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_PolyData = 9
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_UnstructuredGrid = 10
-CHARACTER(LEN=*), PARAMETER, DIMENSION(10) :: DataStructureName = &
+CHARACTER(*), PARAMETER, DIMENSION(10) :: DataStructureName = &
   & [ &
   & "ImageData        ", &
   & "RectilinearGrid  ", &
@@ -56,7 +56,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_APPENDED = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
-CHARACTER(LEN=*), PARAMETER, DIMENSION(3) :: DataFormatName = &
+CHARACTER(*), PARAMETER, DIMENSION(3) :: DataFormatName = &
   & [ &
   & "ascii   ", &
   & "binary  ", &
@@ -86,7 +86,7 @@ TYPE, EXTENDS(XMLFile_) :: VTKFile_
     !! 8 : PARALLEL_VTK_StructuredGrid
     !! 9 : PARALLEL_VTK_PolyData
     !! 10: PARALLEL_VTK_UnstructuredGrid
-  CHARACTER(LEN=MAX_LEN_DATA_STRUCTURENAME) :: dataStructureName
+  CHARACTER(MAX_LEN_DATA_STRUCTURENAME) :: dataStructureName
     !! ImageData,
     !! RectilinearGrid,
     !! StructuredGrid,
@@ -107,7 +107,7 @@ TYPE, EXTENDS(XMLFile_) :: VTKFile_
     !! Whole extent
   INTEGER(I4B) :: origin(3) = 0
     !! x0, y0, z0, Origin needed for ImageData
-  INTEGER(I4B) :: spacing(3) = 1
+  INTEGER(I4B) :: SPACING(3) = 1
     !! dx, dy, dz needed for ImageData
   INTEGER(I4B) :: indent = 0
     !! Indent
@@ -125,9 +125,9 @@ CONTAINS
   !! @ConstructorMethods
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKFile
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => VTKFile_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => VTKFile_Deallocate
   FINAL :: VTKFile_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Close => VTKFile_Close
+  PROCEDURE, PUBLIC, PASS(obj) :: CLOSE => VTKFile_Close
   PROCEDURE, PASS(obj) :: UpdateOffset => VTKFile_UpdateOffset
   PROCEDURE, PASS(obj) :: OpenScratchFile => VTKFile_OpenScratchFile
   PROCEDURE, PASS(obj) :: CloseScratchFile => VTKFile_CloseScratchFile
