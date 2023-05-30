@@ -24,7 +24,6 @@ USE BaseType
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
-USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
@@ -52,6 +51,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & vField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => vField_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => vField_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => vField_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent => &
     & vField_getPointerOfComponent
@@ -86,11 +86,12 @@ CONTAINS
     !! set values to a vector by using triplet
   PROCEDURE, PASS(obj) :: set13 => vField_set13
   PROCEDURE, PASS(obj) :: set14 => vField_set14
+  PROCEDURE, PASS(obj) :: set15 => vField_set15
     !! set selected values using FEVariable
   GENERIC, PUBLIC :: set => &
     & set1, set2, set3, set4, set5, set6, &
     & set7, set8, set9, set10, set11, set12, &
-    & set13, set14
+    & set13, set14, set15
 
   PROCEDURE, PASS(obj) :: get1 => vField_get1
     !! returns the single entry
@@ -105,8 +106,9 @@ CONTAINS
   PROCEDURE, PASS(obj) :: get8 => vField_get8
   PROCEDURE, PASS(obj) :: get9 => vField_get9
   PROCEDURE, PASS(obj) :: get10 => vField_get10
+  PROCEDURE, PASS(obj) :: get11 => vField_get11
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
-    & get5, get6, get7, get8, get9, get10
+    & get5, get6, get7, get8, get9, get10, get11
     !! get the entries of Vector field
   PROCEDURE, PASS(obj) :: vField_applyDirichletBC1
   PROCEDURE, PASS(obj) :: vField_applyDirichletBC2
@@ -202,6 +204,32 @@ INTERFACE VectorFieldInitiate1
 END INTERFACE VectorFieldInitiate1
 
 PUBLIC :: VectorFieldInitiate1
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate2
+
+INTERFACE
+  MODULE SUBROUTINE vField_Initiate2(obj, obj2, copyFull, copyStructure, &
+    & usePointer)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be a child of AbstractNodeField_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE vField_Initiate2
+END INTERFACE
+
+INTERFACE VectorFieldInitiate2
+  MODULE PROCEDURE vField_Initiate2
+END INTERFACE VectorFieldInitiate2
+
+PUBLIC :: VectorFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                                 Deallocate@Constructor
@@ -538,7 +566,7 @@ END INTERFACE
 INTERFACE
  MODULE SUBROUTINE vField_set6(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -761,6 +789,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE vField_set15(obj, ivar, idof, VALUE, ivar_value, &
+    & idof_value, scale, addContribution)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE vField_set15
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -916,7 +966,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE vField_get9(obj, VALUE, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
   END SUBROUTINE vField_get9
 END INTERFACE
@@ -934,6 +984,25 @@ INTERFACE
     CLASS(VectorField_), INTENT(IN) :: obj
     CLASS(VectorField_), INTENT(INOUT) :: VALUE
   END SUBROUTINE vField_get10
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Get value
+
+INTERFACE
+MODULE SUBROUTINE vField_get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
+    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+  END SUBROUTINE vField_get11
 END INTERFACE
 
 !----------------------------------------------------------------------------

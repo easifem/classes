@@ -26,35 +26,35 @@ USE EasyPlplot, ONLY: binData
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: binData
-CHARACTER(LEN=*), PARAMETER :: modName = "PLPlot_Class"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_PLUS = "+"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_CROSS = "x"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_ASTERIC = "*"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_DOT = "."
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_SQUARE = "s"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_STAR = "star"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_H_CIRCLE = "h_circle"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_H_SQUARE = "h_square"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_H_TRIAG_U = "h_triag_u"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_H_DIAMOND = "h_diamond"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_TRIAG_U = "triag_u"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_TRIAG_L = "triag_l"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_TRIAG_D = "triag_d"
-CHARACTER(LEN=*), PARAMETER, PUBLIC :: PS_TRIAG_R = "triag_r"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_PLUS = "#(140)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_CROSS = "#(141)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_ASTERIC = "#(142)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_DOT = "#(143)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_SQUARE = "#(144)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_STAR = "#(145)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_H_CIRCLE = "#(840)" !135
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_H_SQUARE = "#(841)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_H_TRIAG_U = "#(842)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_H_DIAMOND = "#(843)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_TRIAG_U = "#(852)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_TRIAG_L = "#(853)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_TRIAG_D = "#(854)"
-CHARACTER(LEN=*), PARAMETER :: CODE_PS_TRIAG_R = "#(855)"
+CHARACTER(*), PARAMETER :: modName = "PLPlot_Class"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_PLUS = "+"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_CROSS = "x"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_ASTERIC = "*"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_DOT = "."
+CHARACTER(*), PARAMETER, PUBLIC :: PS_SQUARE = "s"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_STAR = "star"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_H_CIRCLE = "h_circle"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_H_SQUARE = "h_square"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_H_TRIAG_U = "h_triag_u"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_H_DIAMOND = "h_diamond"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_TRIAG_U = "triag_u"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_TRIAG_L = "triag_l"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_TRIAG_D = "triag_d"
+CHARACTER(*), PARAMETER, PUBLIC :: PS_TRIAG_R = "triag_r"
+CHARACTER(*), PARAMETER :: CODE_PS_PLUS = "#(140)"
+CHARACTER(*), PARAMETER :: CODE_PS_CROSS = "#(141)"
+CHARACTER(*), PARAMETER :: CODE_PS_ASTERIC = "#(142)"
+CHARACTER(*), PARAMETER :: CODE_PS_DOT = "#(143)"
+CHARACTER(*), PARAMETER :: CODE_PS_SQUARE = "#(144)"
+CHARACTER(*), PARAMETER :: CODE_PS_STAR = "#(145)"
+CHARACTER(*), PARAMETER :: CODE_PS_H_CIRCLE = "#(840)" !135
+CHARACTER(*), PARAMETER :: CODE_PS_H_SQUARE = "#(841)"
+CHARACTER(*), PARAMETER :: CODE_PS_H_TRIAG_U = "#(842)"
+CHARACTER(*), PARAMETER :: CODE_PS_H_DIAMOND = "#(843)"
+CHARACTER(*), PARAMETER :: CODE_PS_TRIAG_U = "#(852)"
+CHARACTER(*), PARAMETER :: CODE_PS_TRIAG_L = "#(853)"
+CHARACTER(*), PARAMETER :: CODE_PS_TRIAG_D = "#(854)"
+CHARACTER(*), PARAMETER :: CODE_PS_TRIAG_R = "#(855)"
 
 !----------------------------------------------------------------------------
 !                                                                 PLPlot_
@@ -96,7 +96,7 @@ CONTAINS
   !! @ConstructorMethods
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => Plot_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Plot_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Plot_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => Plot_Display
   !!
   !! @PlotMethods
@@ -225,7 +225,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE Plot_Display(obj, msg, unitno)
     CLASS(PLPlot_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE Plot_Display
 END INTERFACE
@@ -236,7 +236,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION GetDeviceName(filename) RESULT(ans)
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
     TYPE(String) :: ans
   END FUNCTION GetDeviceName
 END INTERFACE
@@ -293,48 +293,48 @@ INTERFACE
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
     REAL(DFP), OPTIONAL, INTENT(IN) :: xmin, xmax
     REAL(DFP), OPTIONAL, INTENT(IN) :: ymin, ymax
     REAL(DFP), OPTIONAL, INTENT(IN) :: fontScaling
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isWhiteOnBlack
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTransparent
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: colormap
-  !! "CoolWarm", "Gray", "BlueYellow", "BlueRed", "Radar"
-  !! "HighFreq", "LowFreq"
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: colormap
+    !! "CoolWarm", "Gray", "BlueYellow", "BlueRed", "Radar"
+    !! "HighFreq", "LowFreq"
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: figSize(:)
-  !! figure size in pixels
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineColor
-  !! "w", "k", "r", "g" etc.
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineType
-  !! "-", ":", "--"
+    !! figure size in pixels
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineColor
+    !! "w", "k", "r", "g" etc.
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineType
+    !! "-", ":", "--"
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
-  !! line width
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointColor
-  !! "w", "k", "r", "g" etc.
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointType
-  !! "+", "x", "*", "."
+    !! line width
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointColor
+    !! "w", "k", "r", "g" etc.
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointType
+    !! "+", "x", "*", "."
     REAL(DFP), OPTIONAL, INTENT(IN) :: pointSize
-  !! point size
+    !! point size
     REAL(DFP), OPTIONAL, INTENT(IN) :: dx
-  !! spacing between x ticks
+    !! spacing between x ticks
     REAL(DFP), OPTIONAL, INTENT(IN) :: dy
-  !! spacing between y ticks
+    !! spacing between y ticks
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isLogX
-  !! is x axis log
+    !! is x axis log
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isLogY
-  !! is y axis log
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: tickColor
-  !! color of x and y tick
+    !! is y axis log
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: tickColor
+    !! color of x and y tick
     REAL(DFP), OPTIONAL, INTENT(IN) :: tickWidth
-  !! tick width
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: xlabel
-  !! x axis label
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: ylabel
-  !! y axis label
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: title
-  !! plot title
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: labelColor
+    !! tick width
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: xlabel
+    !! x axis label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: ylabel
+    !! y axis label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: title
+    !! plot title
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: labelColor
   END SUBROUTINE line_plot_x1y1
 END INTERFACE
 
@@ -370,18 +370,18 @@ INTERFACE
     CLASS(PLPlot_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:, :)
-    CHARACTER(LEN=*), INTENT(IN) :: filename
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: xlabel
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: ylabel
+    CHARACTER(*), INTENT(IN) :: filename
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: xlabel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: ylabel
     TYPE(String), OPTIONAL, INTENT(IN) :: legendTexts(:)
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: title
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: title
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
     REAL(DFP), OPTIONAL, INTENT(IN) :: xmin, xmax
     REAL(DFP), OPTIONAL, INTENT(IN) :: ymin, ymax
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPoint
     !! If true we print points also
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: pointSize
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointType
   END SUBROUTINE line_plot_x1y2
 END INTERFACE
 
@@ -395,11 +395,11 @@ INTERFACE
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineColor
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineType
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointColor
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointType
     REAL(DFP), OPTIONAL, INTENT(IN) :: pointSize
   END SUBROUTINE plot_Plot2D
 END INTERFACE
@@ -416,8 +416,8 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: y(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: xerr(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: yerr(:)
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineColor
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineType
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
   END SUBROUTINE plot_ErrorBar
 END INTERFACE
@@ -433,11 +433,11 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
     REAL(DFP), INTENT(IN) :: z(:)
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineColor
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineType
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointColor
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointType
     REAL(DFP), OPTIONAL, INTENT(IN) :: pointSize
   END SUBROUTINE plot_Plot3D
 END INTERFACE
@@ -458,9 +458,9 @@ INTERFACE
   !! data for smooth coloring
     REAL(DFP), OPTIONAL, INTENT(IN) :: s(:)
   !! data for marker scaling
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointColor
   !! point color
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pointType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pointType
   !! point type
     REAL(DFP), OPTIONAL, INTENT(IN) :: pointSize
   !! point size
@@ -522,9 +522,9 @@ INTERFACE
   !! data used for levels computation
     INTEGER(I4B), INTENT(IN) :: N
   !! number of levels to compute
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: leftLabel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: leftLabel
   !! Label for left side of the colorbar
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: rightLabel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: rightLabel
   !! Label for right side of color bar
   END SUBROUTINE plot_Colorbar
 END INTERFACE
@@ -540,9 +540,9 @@ INTERFACE
   !! data used for levels computation
     INTEGER(I4B), INTENT(IN) :: N
   !! number of levels to compute
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: leftLabel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: leftLabel
   !! Label for left side of the colorbar
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: rightLabel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: rightLabel
   !! Label for right side of color bar
   END SUBROUTINE plot_Colorbar2
 END INTERFACE
@@ -608,7 +608,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE plot_Hist(obj, d, N, db, relWidth, fillColor, fillPattern, &
-              & lineColor, lineWidth)
+                              & lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
   !!
     REAL(DFP), INTENT(IN) :: d(:)
@@ -717,7 +717,7 @@ INTERFACE
   !! data for contouring
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: N
   !! number of levels to use in surface colors
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineType
   !! Style for xy lines
   !! "-" = on
   !! "" = off
@@ -737,7 +737,7 @@ INTERFACE
   !! y coord
     REAL(DFP), INTENT(IN) :: z(:, :)
   !! data for contouring
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: lineColor
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: lineColor
   !! Color of contour lines
   END SUBROUTINE plot_Wireframe
 END INTERFACE
@@ -808,8 +808,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_SetXLabel(obj, label, color)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: label
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
   END SUBROUTINE plot_SetXLabel
 END INTERFACE
 
@@ -820,8 +820,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_SetYLabel(obj, label, color)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: label
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
   END SUBROUTINE plot_SetYLabel
 END INTERFACE
 
@@ -866,8 +866,8 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_SetTitle(obj, label, color)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: label
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
   END SUBROUTINE plot_SetTitle
 END INTERFACE
 
@@ -878,10 +878,10 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_SetLabels(obj, xlabel, ylabel, title, color)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: xlabel
-    CHARACTER(LEN=*), INTENT(IN) :: ylabel
-    CHARACTER(LEN=*), INTENT(IN) :: title
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), INTENT(IN) :: xlabel
+    CHARACTER(*), INTENT(IN) :: ylabel
+    CHARACTER(*), INTENT(IN) :: title
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
   END SUBROUTINE plot_SetLabels
 END INTERFACE
 
@@ -902,7 +902,7 @@ INTERFACE
   !! Draw primary axis
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSecondary
   !! Draw secondary axis
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
   !! Color code for ticks, box, and labels
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
   !! Line width for ticks and box
@@ -926,7 +926,7 @@ INTERFACE
   !! Draw primary axis
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSecondary
   !! Draw secondary axis
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
   !! Color code for ticks, box, and labels
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
   !! Line width for ticks and box

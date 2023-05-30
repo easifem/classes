@@ -362,6 +362,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mesh_Deallocate
     !! Deallocate memory occupied by the mesh instance
   !!
+  PROCEDURE, PUBLIC, PASS(obj) :: isEmpty => mesh_isEmpty
+  !!
   !! @IOMethods
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mesh_Import
@@ -578,6 +580,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: getTotalMaterial => mesh_getTotalMaterial
   !! returns the total material
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => mesh_GetQuery
+  !! Get query
+  PROCEDURE, PUBLIC, PASS(obj) :: getMinElemNumber => &
+    & mesh_getMinElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: getMaxElemNumber => &
+    & mesh_getMaxElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: getMinNodeNumber => &
+    & mesh_getMinNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: getMaxNodeNumber => &
+    & mesh_getMaxNodeNumber
   !
   ! @SetMethods
   !
@@ -754,6 +765,17 @@ INTERFACE DEALLOCATE
 END INTERFACE DEALLOCATE
 
 PUBLIC :: DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                                         isEmpty@Constructor
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION mesh_isEmpty(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION mesh_isEmpty
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
@@ -2142,6 +2164,50 @@ INTERFACE
     & y, &
     & z
   END SUBROUTINE mesh_GetQuery
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getMinElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION mesh_getMinElemNumber(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION mesh_getMinElemNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getMaxElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION mesh_getMaxElemNumber(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION mesh_getMaxElemNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getMinNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION mesh_getMinNodeNumber(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION mesh_getMinNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                getMaxNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION mesh_getMaxNodeNumber(obj) RESULT(ans)
+    CLASS(Mesh_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION mesh_getMaxNodeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------

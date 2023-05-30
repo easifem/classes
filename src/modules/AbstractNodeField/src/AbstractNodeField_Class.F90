@@ -53,6 +53,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => anf_Initiate3
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => anf_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => anf_Norm2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => anf_SetSingle
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => anf_GetSingle
 END TYPE AbstractNodeField_
 
 PUBLIC :: AbstractNodeField_
@@ -249,6 +251,53 @@ INTERFACE
     REAL(DFP) :: ans
   END FUNCTION anf_Norm2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetSingle@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE
+  MODULE SUBROUTINE anf_setSingle(obj, indx, VALUE, scale, &
+    & addContribution)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(IN) :: VALUE
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE anf_setSingle
+END INTERFACE
+
+INTERFACE AbstractNodeFieldSetSingle
+  MODULE PROCEDURE anf_setSingle
+END INTERFACE AbstractNodeFieldSetSingle
+
+PUBLIC :: AbstractNodeFieldSetSingle
+
+!----------------------------------------------------------------------------
+!                                                          GetSingle@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE
+  MODULE SUBROUTINE anf_getSingle(obj, indx, VALUE)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(OUT) :: VALUE
+  END SUBROUTINE anf_getSingle
+END INTERFACE
+
+INTERFACE AbstractNodeFieldGetSingle
+  MODULE PROCEDURE anf_getSingle
+END INTERFACE AbstractNodeFieldGetSingle
+
+PUBLIC :: AbstractNodeFieldGetSingle
 
 !----------------------------------------------------------------------------
 !

@@ -71,8 +71,10 @@ CONTAINS
     !! Set selected values using FEVariable
   PROCEDURE, PASS(obj) :: set10 => sField_set10
     !! Set selected values using FEVariable
+  PROCEDURE, PASS(obj) :: set11 => sField_set11
+    !! Set selected values using FEVariable
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, &
-    & set5, set6, set7, set8, set9, set10
+    & set5, set6, set7, set8, set9, set10, set11
   GENERIC, PUBLIC :: ASSIGNMENT(=) => set8
     !! set values to a vector
   PROCEDURE, PASS(obj) :: get1 => sField_get1
@@ -85,8 +87,9 @@ CONTAINS
     !! get values from triplet
   PROCEDURE, PASS(obj) :: get5 => sField_get5
   PROCEDURE, PASS(obj) :: get6 => sField_get6
+  PROCEDURE, PASS(obj) :: get7 => sField_get7
     !! get selected values in FEVariable
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6
+  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, get6, get7
   !! get the entries of scalar field
   PROCEDURE, PASS(obj) :: sField_applyDirichletBC1
   PROCEDURE, PASS(obj) :: sField_applyDirichletBC2
@@ -445,6 +448,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE sField_set11(obj, ivar, idof, VALUE, ivar_value, &
+    & idof_value, scale, addContribution)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE sField_set11
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -539,6 +560,21 @@ INTERFACE
     CLASS(ScalarField_), INTENT(IN) :: obj
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
   END SUBROUTINE sField_get6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+ MODULE SUBROUTINE sField_get7(obj, ivar, idof, VALUE, ivar_value, idof_value)
+    CLASS(ScalarField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+  END SUBROUTINE sField_get7
 END INTERFACE
 
 !----------------------------------------------------------------------------

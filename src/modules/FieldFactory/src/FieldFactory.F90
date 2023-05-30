@@ -24,7 +24,7 @@ USE Field
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "FieldFactory"
+CHARACTER(*), PARAMETER :: modName = "FieldFactory"
 
 !----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory
@@ -36,7 +36,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "FieldFactory"
 
 INTERFACE
   MODULE FUNCTION MatrixFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(AbstractMatrixField_), POINTER :: ans
   END FUNCTION MatrixFieldFactory
 END INTERFACE
@@ -53,7 +53,7 @@ PUBLIC :: MatrixFieldFactory
 
 INTERFACE
   MODULE FUNCTION BlockMatrixFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(AbstractMatrixField_), POINTER :: ans
   END FUNCTION BlockMatrixFieldFactory
 END INTERFACE
@@ -70,8 +70,8 @@ PUBLIC :: BlockMatrixFieldFactory
 
 INTERFACE
   MODULE FUNCTION NodeFieldFactory(engine, datatype) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
-    CHARACTER(LEN=*), INTENT(IN) :: datatype
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: datatype
     CLASS(AbstractNodeField_), POINTER :: ans
   END FUNCTION NodeFieldFactory
 END INTERFACE
@@ -88,7 +88,7 @@ PUBLIC :: NodeFieldFactory
 
 INTERFACE
   MODULE FUNCTION BlockNodeFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(BlockNodeField_), POINTER :: ans
   END FUNCTION BlockNodeFieldFactory
 END INTERFACE
@@ -105,7 +105,7 @@ PUBLIC :: BlockNodeFieldFactory
 
 INTERFACE
   MODULE FUNCTION ScalarFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(ScalarField_), POINTER :: ans
   END FUNCTION ScalarFieldFactory
 END INTERFACE
@@ -122,7 +122,7 @@ PUBLIC :: ScalarFieldFactory
 
 INTERFACE
   MODULE FUNCTION VectorFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(VectorField_), POINTER :: ans
   END FUNCTION VectorFieldFactory
 END INTERFACE
@@ -139,7 +139,7 @@ PUBLIC :: VectorFieldFactory
 
 INTERFACE
   MODULE FUNCTION STScalarFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(STScalarField_), POINTER :: ans
   END FUNCTION STScalarFieldFactory
 END INTERFACE
@@ -156,7 +156,7 @@ PUBLIC :: STScalarFieldFactory
 
 INTERFACE
   MODULE FUNCTION STVectorFieldFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(STVectorField_), POINTER :: ans
   END FUNCTION STVectorFieldFactory
 END INTERFACE

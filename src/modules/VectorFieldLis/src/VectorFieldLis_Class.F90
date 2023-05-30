@@ -24,7 +24,6 @@ USE BaseType
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
-USE ScalarField_Class, ONLY: ScalarField_
 USE VectorField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
@@ -67,7 +66,7 @@ CONTAINS
   !
   ! @SetMethods
   !
-  PROCEDURE, PASS(obj) :: setSingle => vField_setSingle
+  PROCEDURE, PUBLIC, PASS(obj) :: setSingle => vField_setSingle
   PROCEDURE, PASS(obj) :: setAll => vField_setAll
   PROCEDURE, PASS(obj) :: setMultiple => vField_setMultiple
   PROCEDURE, PASS(obj) :: set1 => vField_set1
@@ -100,6 +99,7 @@ CONTAINS
   !
   ! @GetMethods
   !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => vField_getSingle
   PROCEDURE, PASS(obj) :: get1 => vField_get1
     !! returns the single entry
   PROCEDURE, PASS(obj) :: get2 => vField_get2
@@ -566,7 +566,7 @@ END INTERFACE
 INTERFACE
  MODULE SUBROUTINE vField_set6(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -943,7 +943,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE vField_get9(obj, VALUE, spaceCompo)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
   END SUBROUTINE vField_get9
 END INTERFACE
@@ -992,6 +992,22 @@ INTERFACE
     CLASS(VectorFieldLis_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION vField_getPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE vField_getSingle(obj, indx, VALUE)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(OUT) :: VALUE
+  END SUBROUTINE vField_getSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------

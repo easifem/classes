@@ -16,8 +16,26 @@
 !
 
 SUBMODULE(AbstractMatrixField_Class) Methods
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE amField_Display
+CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
+IF (obj%isPmatInitiated) THEN
+  CALL Display("# isPmatInitiated : TRUE ", unitNo)
+ELSE
+  CALL Display("# isPmatInitiated : FALSE", unitNo)
+END IF
+END PROCEDURE amField_Display
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
 
 MODULE PROCEDURE amField_Deallocate
 CALL AbstractFieldDeallocate(obj)

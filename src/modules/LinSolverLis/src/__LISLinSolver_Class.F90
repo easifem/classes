@@ -16,214 +16,69 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 15 July 2021
-! summary: This module defines a native linear solver, It uses sparsekitt library
+! date: 2023-03-15
+! summary: This module defines LIS library based linear solver
 
-MODULE LinSolver_Class
+MODULE LisLinSolver_Class
 USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
-USE ExceptionHandler_Class, ONLY: ExceptionHandler_
+USE ExceptionHandler_Class, ONLY: e
 USE AbstractLinSolver_Class
+USE LinSolver_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(LEN=*), PARAMETER :: modName = "Linsolver_Class"
-TYPE(ExceptionHandler_) :: e
-INTEGER(I4B), PARAMETER :: eUnitNo = 1011
-CHARACTER(LEN=*), PARAMETER :: eLogFile = "LINSOLVER_CLASS_EXCEPTION.txt"
+CHARACTER(*), PARAMETER :: modName = "LisLinsolver_Class"
 
 !----------------------------------------------------------------------------
 !                                                               LinSolver_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: Native linear solver
-!
-!# Introduction
-!
-! [[LinSolver_]] data type is a container around Yusef Saad's SparseKit
-! lib. It is used to solve the linear system with sparse matrices
-!
-! - Reference : https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
-! - This class interface sparsekit and `EASIFEM`
-!
-!### Usage
-!
-!```fortran
-!        CALL obj % Initiate( obj, SolverName, MaxIter, SolverName &
-!    & <, diagScale, ipar, fpar> )
-! CALL obj % setPrecondition( obj, precondtype <,ipar, fpar> )
-! CALL obj % setSparsity( From )
-! CALL obj % setDirichletBCNodes( Nptrs, dofs )
-! CALL obj % setMatrix( From )
-! CALL obj % solve( sol, rhs )
-! CALL obj % Display( msg <,unitno > )
-! CALL obj % writeResidueHistory( path, prefix, fmt, iter )
-! CALL obj % Deallocate( )
-!```
-!
-!### Solver name
-!
-!
-!### Precondition Name
-!
-!
-!### Todo
-!
-!@todo
-! - Implement `ilutp` ans `iludp` preconditioners
-!@endtodo
+! date: 2023-03-15
+! summary: Lis library based linear solver
 
-TYPE, EXTENDS(AbstractLinSolver_) :: LinSolver_
-  INTEGER(I4B), ALLOCATABLE :: dbcNptrs(:)
-    !! IDs of nodal variables where Dirichlet boundary condition is imposed
-  INTEGER(I4B), ALLOCATABLE :: dbcIndx(:)
-  INTEGER(I4B), ALLOCATABLE :: dbcJA(:)
-  INTEGER(I4B), ALLOCATABLE :: dbcIA(:)
-  INTEGER(I4B), POINTER :: IA(:) => NULL()
-    !! CSR format
-  INTEGER(I4B), POINTER :: JA(:) => NULL()
-    !! CSR format
-  INTEGER(I4B), ALLOCATABLE :: JLU(:)
-    !! Internal variable
-  INTEGER(I4B), ALLOCATABLE :: JU(:)
-    !! Internal variable
-  INTEGER(I4B), ALLOCATABLE :: IPERM(:)
-    !! Internal variable for integer parameters
-  INTEGER(I4B), ALLOCATABLE :: JW(:)
-    !! Internal variable for integer parameters
-  REAL(DFP), POINTER :: A(:) => NULL()
-    !! Entries of sparse matrix A in CSR format
-  REAL(DFP), ALLOCATABLE :: ALU(:)
-    !! Internal variable
-  REAL(DFP), ALLOCATABLE :: WK(:)
-    !! Internal variable
-  REAL(DFP), ALLOCATABLE :: W(:)
-    !! Internal variable
-  REAL(DFP), ALLOCATABLE :: RES(:)
-    !! Residual
-  REAL(DFP) :: fpar(14) = 0.0_DFP
-    !! Real parameters
-  REAL(DFP) :: droptol = 0.0
-    !! drop tolerance for incomplete LU decomposition
-  REAL(DFP) :: permtol = 0.0
-    !! tolerance for permutation
-  REAL(DFP) :: alpha = 0.0
-    !! alpha
-  INTEGER(I4B) :: ipar(14) = 0
-    !! integer parameter
-  INTEGER(I4B) :: lfil = 0
-  INTEGER(I4B) :: mbloc = 0
+TYPE, EXTENDS(LinSolver_) :: LisLinSolver_
+  LIS_VECTOR :: lis_rhs = 0
+  LIS_VECTOR :: lis_sol = 0
+  LIS_VECTOR :: lis_res = 0
+  LIS_MATRIX :: lis_Amat = 0
+  LIS_PRECON :: lis_precon = 0
+  LIS_SOLVER :: lis_solver = 0
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => skit_initiate
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
+    & ls_checkEssentialParam
+    !! Check essential parameters
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS(obj) :: setPrecondition => skit_setprecond
-    !! Set preconditioner properties
-  PROCEDURE, PUBLIC, PASS(To) :: setSparsity => skit_set_sparsity
-    !! Set sparsity pattern related information of tangent matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: set_dbcNodes_1 => skit_setDBC_1
-    !! Set Information about the Dirichlet boundary nodes
-  PROCEDURE, PUBLIC, PASS(obj) :: set_dbcNodes_2 => skit_setDBC_2
-    !! Set Information about the Dirichlet boundary nodes
-  PROCEDURE, PUBLIC, PASS(To) :: setMatrix => skit_setmatrix
-    !! Set/link tangent matrix to the linear solver engine
-  PROCEDURE, PUBLIC, PASS(obj) :: Solve => skit_solve
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => ls_Set
+    !! Set the matrix and preconditioning matrix
+  PROCEDURE, PUBLIC, PASS(obj) :: Solve => ls_solve
     !! Solve the system of linear equation
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => skit_display
-    !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: writeResidueHistory => skit_write_res_his
-    !! Output the residue history
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => skit_Deallocate
-    !! Deallocate
-END TYPE LinSolver_
+  PROCEDURE, PUBLIC, NOPASS :: &
+     & getLinSolverCodeFromName => ls_getLinSolverCodeFromName
+  PROCEDURE, PUBLIC, NOPASS :: &
+     & getLinSolverNameFromCode => ls_getLinSolverNameFromCode
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => ls_Deallocate
+    !! Deallocate Data
+END TYPE LisLinSolver_
 
-PUBLIC :: LinSolver_
+PUBLIC :: LisLinSolver_
 
 !----------------------------------------------------------------------------
 !                                                             TypeLinSolver
 !----------------------------------------------------------------------------
 
-TYPE(LinSolver_), PUBLIC, PARAMETER :: &
-  & TypeLinSolver = LinSolver_( &
-  & dbcNptrs=NULL(), &
-  & dbcIndx=NULL(), &
-  & dbcJA=NULL(), &
-  & dbcIA=NULL(), &
-  & JLU=null(), &
-  & JU=null(), &
-  & IPERM=null(), &
-  & JW=NULL(), &
-  & ALU=null(), &
-  & WK=null(), &
-  & W=null(), &
-  & RES=null())
+TYPE(LisLinSolver_), PUBLIC, PARAMETER :: &
+  & TypeLisLinSolver = LisLinSolver_()
 
-TYPE :: LinSolverPointer_
-  CLASS(LinSolver_), POINTER :: Ptr => NULL()
-END TYPE LinSolverPointer_
+TYPE :: LisLinSolverPointer_
+  CLASS(LisLinSolver_), POINTER :: Ptr => NULL()
+END TYPE LisLinSolverPointer_
 
-PUBLIC :: SparsekitPointer_
-
-!----------------------------------------------------------------------------
-!                                                                      LIS_
-!----------------------------------------------------------------------------
-
-TYPE, EXTENDS(LinSolver_) :: LIS_
-  TYPE(LIS_MATRIX) :: lis_mat = 0
-  TYPE(LIS_VECTOR) :: lis_rhs = 0
-  TYPE(LIS_VECTOR) :: lis_sol = 0
-  TYPE(LIS_VECTOR) :: lis_res = 0
-  TYPE(LIS_PRECON) :: lis_precon = 0
-  TYPE(LIS_SOLVER) :: lis_solver = 0
-  REAL(DFP), ALLOCATABLE :: A(:)
-  INTEGER(I4B), ALLOCATABLE :: IA(:)
-  INTEGER(I4B), ALLOCATABLE :: JA(:)
-  INTEGER(I4B), ALLOCATABLE :: dbcNptrs(:)
-  INTEGER(I4B), ALLOCATABLE :: dbcIndx(:)
-  INTEGER(I4B), ALLOCATABLE :: dbcJA(:)
-  INTEGER(I4B), ALLOCATABLE :: dbcIA(:)
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => lis_initiate
-    !! Initiate object
-  PROCEDURE, PUBLIC, PASS(obj) :: setPrecondition => lis_setprecond
-    !! Set preconditioner properties
-  PROCEDURE, PUBLIC, PASS(To) :: setSparsity => lis_set_sparsity
-    !! Set sparsity pattern related information of tangent matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: set_dbcNodes_1 => lis_setDBC_1
-    !! set Information about the Dirichlet boundary nodes
-  PROCEDURE, PUBLIC, PASS(obj) :: set_dbcNodes_2 => lis_setDBC_2
-    !! set Information about the Dirichlet boundary nodes
-  PROCEDURE, PUBLIC, PASS(To) :: setMatrix => lis_setmatrix
-    !! set/link tangent matrix to the linear solver engine
-  PROCEDURE, PUBLIC, PASS(obj) :: Solve => lis_solve_1
-    !! Solve the system of linear equation
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => lis_display
-    !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: writeResidueHistory => lis_write_res_his
-    !! Output the residue history
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => lis_Deallocate
-    !! Deallocate Data
-END TYPE LIS_
-
-PUBLIC :: LIS_
-
-TYPE(LIS_), PARAMETER, PUBLIC :: &
-  & TypeLIS = LIS_( &
-  & A=NULL(), &
-  & IA=NULL(), &
-  & JA=NULL(), &
-  & dbcNptrs=NULL(), &
-  & dbcIndx=NULL(), &
-  & dbcJA=NULL(), &
-  & dbcIA=NULL())
-
-TYPE :: LisPointer_
-  CLASS(Lis_), POINTER :: Ptr => NULL()
-END TYPE LisPointer_
-
-PUBLIC :: LisPointer_
+PUBLIC :: LisLinSolverPointer_
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
@@ -538,11 +393,11 @@ INTERFACE
   END SUBROUTINE skit_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE skit_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                        Initiate@Sparsekitt
@@ -677,8 +532,8 @@ INTERFACE
   END SUBROUTINE lis_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE lis_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-END MODULE SparsekitLinSolver_Class
+END MODULE LisLinSolver_Class

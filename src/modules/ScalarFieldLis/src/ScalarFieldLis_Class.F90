@@ -63,7 +63,7 @@ CONTAINS
   !
   ! @SetMethods
   !
-  PROCEDURE, PASS(obj) :: SetSingle => sField_SetSingle
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => sField_SetSingle
   PROCEDURE, PASS(obj) :: SetAll => sField_SetAll
   PROCEDURE, PASS(obj) :: SetMultiple => sField_SetMultiple
   PROCEDURE, PASS(obj) :: set1 => sField_set1
@@ -86,6 +86,10 @@ CONTAINS
     !! Set selected values using FEVariable
   PROCEDURE, PASS(obj) :: set10 => sField_set10
     !! Set selected values using FEVariable
+  !
+  ! @GetMethods
+  !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => sField_getSingle
   PROCEDURE, PASS(obj) :: get1 => sField_get1
     !! get single entry
   PROCEDURE, PASS(obj) :: get2 => sField_get2
@@ -515,6 +519,22 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
   END SUBROUTINE sField_set10
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE sField_getSingle(obj, indx, VALUE)
+    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(OUT) :: VALUE
+  END SUBROUTINE sField_getSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------

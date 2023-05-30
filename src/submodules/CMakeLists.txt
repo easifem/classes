@@ -120,14 +120,23 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
 # BlockNodeField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 
+# BlockNodeFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockNodeFieldLis/CMakeLists.txt)
+
 # AbstractMatrixField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 
 # MatrixField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 
+# MatrixFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MatrixFieldLis/CMakeLists.txt)
+
 # BlockMatrixField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
+
+# BlockMatrixFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 
 # FieldFactory
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
@@ -150,8 +159,8 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 # LinSolver
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
 
-# LisLinSolver
-INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LisLinSolver/CMakeLists.txt)
+# LinSolverLis 
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
 
 # LinSolverFactory
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)

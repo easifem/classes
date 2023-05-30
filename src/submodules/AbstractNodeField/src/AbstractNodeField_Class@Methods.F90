@@ -184,6 +184,44 @@ CALL e%raiseInformation(modName//"::"//myName//" - "// &
 END PROCEDURE anf_Export
 
 !----------------------------------------------------------------------------
+!                                                                 SetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_SetSingle
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  IF (PRESENT(addContribution)) THEN
+    CALL add(obj%realVec, nodenum=1, VALUE=VALUE, scale=scale)
+  ELSE
+    CALL set(obj%realVec, nodenum=1, VALUE=VALUE)
+  END IF
+ELSE
+  IF (PRESENT(addContribution)) THEN
+    CALL add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=scale)
+  ELSE
+    CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
+  END IF
+END IF
+END PROCEDURE anf_SetSingle
+
+!----------------------------------------------------------------------------
+!                                                                 GetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_getSingle
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  VALUE = get( &
+    & obj=obj%realVec, &
+    & nodenum=1, &
+    & dataType=1.0_DFP)
+ELSE
+  VALUE = get( &
+    & obj=obj%realVec, &
+    & nodenum=indx, &
+    & dataType=1.0_DFP)
+END IF
+END PROCEDURE anf_getSingle
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

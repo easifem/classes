@@ -27,10 +27,7 @@
 ! [[MatrixField_]] uses `NATIVE_SERIAL` engine for handling the
 ! global tangent matrices.
 !@endnote
-!
-!@todo
-! Add getting-started manual
-!@endtodo
+
 MODULE MatrixField_Class
 USE GlobalData
 USE BaseType
@@ -46,6 +43,7 @@ USE Domain_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
+CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 
@@ -133,7 +131,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => mField_Initiate3
   !! Initiate for block matrices
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mField_Deallocate
-      !! Deallocate the field
+  !! Deallocate the field
+  FINAL :: mField_Final
+  !! Deallocate the field
   !
   ! @IOMethods
   !
@@ -269,14 +269,27 @@ TYPE(MatrixField_), PARAMETER, PUBLIC :: TypeMatrixField = &
 ! summary: This routine Sets the parameter for creating MatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE SetMatrixFieldParam(param, name, matrixProp, spaceCompo, &
-    & timeCompo, fieldType)
+  MODULE SUBROUTINE SetMatrixFieldParam( &
+    & param, &
+    & name, &
+    & matrixProp, &
+    & engine,  &
+    & spaceCompo, &
+    & timeCompo, &
+    & fieldType, &
+    & comm, &
+    & local_n, &
+    & global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[MatrixField_]] will be stored in this
     CHARACTER(*), INTENT(IN) :: name
     !! Name of the matrix field
     CHARACTER(*), INTENT(IN) :: matrixProp
     !! Matrix property, "SYM" or "UNSYM"
+    CHARACTER(*), INTENT(IN) :: engine
+    !! "NATIVE_SERIE"
+    !! "LIS_OMP"
+    !! "LIS_MPI"
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
     !! Number of space-components, see [[DOF_]]
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
@@ -287,6 +300,9 @@ INTERFACE
     !! FIELD_TYPE_CONSTANT
     !! FIELD_TYPE_CONSTANT_SPACE
     !! FIELD_TYPE_CONSTANT_TIME
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
   END SUBROUTINE SetMatrixFieldParam
 END INTERFACE
 
@@ -301,12 +317,20 @@ PUBLIC :: SetMatrixFieldParam
 ! summary: This routine Sets the parameter for precondition of MatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE SetMatrixFieldPrecondParam(param, name, &
-    & lfil, mbloc, droptol, permtol, alpha)
+  MODULE SUBROUTINE SetMatrixFieldPrecondParam( &
+    & param, &
+    & name, &
+    & engine, &
+    & lfil, mbloc, droptol, permtol, alpha, &
+    & comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create precondition of [[MatrixField_]]
     INTEGER(I4B), INTENT(IN) :: name
     !! Name of precondition
+    CHARACTER(*), INTENT(IN) :: engine
+    !! "NATIVE_SERIE"
+    !! "LIS_OMP"
+    !! "LIS_MPI"
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: lfil
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: mbloc
     REAL(DFP), OPTIONAL, INTENT(IN) :: droptol
@@ -314,6 +338,9 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: permtol
     !! permutation tolerance
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
   END SUBROUTINE SetMatrixFieldPrecondParam
 END INTERFACE
 
@@ -342,8 +369,16 @@ PUBLIC :: SetMatrixFieldPrecondParam
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE SetRectangleMatrixFieldParam(param, name, matrixProp, &
-    & physicalVarNames, spaceCompo, timeCompo, fieldType)
+  MODULE SUBROUTINE SetRectangleMatrixFieldParam( &
+    & param, &
+    & name, &
+    & matrixProp, &
+    & physicalVarNames, &
+    & spaceCompo, &
+    & timeCompo, &
+    & engine, &
+    & fieldType, &
+    & comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Options to create [[BlockMatrixField_]] will be stored in this
     CHARACTER(*), INTENT(IN) :: name
@@ -356,12 +391,19 @@ INTERFACE
     !! Number of space-components in each physicalVarNames, see [[DOF_]]
     INTEGER(I4B), INTENT(IN) :: timeCompo(2)
     !! Number of time-components in each physicalVarNames, see [[DOF_]]
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: engine
+    !! "NATIVE_SERIE"
+    !! "LIS_OMP"
+    !! "LIS_MPI"
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
     !! fieldType can be following
     !! FIELD_TYPE_NORMAL <-- DEFAULT
     !! FIELD_TYPE_CONSTANT
     !! FIELD_TYPE_CONSTANT_SPACE
     !! FIELD_TYPE_CONSTANT_TIME
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
   END SUBROUTINE SetRectangleMatrixFieldParam
 END INTERFACE
 
@@ -386,6 +428,16 @@ INTERFACE DEALLOCATE
 END INTERFACE DEALLOCATE
 
 PUBLIC :: DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                                   Final@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE mField_Final(obj)
+    TYPE(MatrixField_), INTENT(INOUT) :: obj
+  END SUBROUTINE mField_Final
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                    CheckEssentialParam@ConstructorMethods
@@ -471,6 +523,12 @@ INTERFACE
   END SUBROUTINE mField_Initiate1
 END INTERFACE
 
+INTERFACE MatrixFieldInitiate1
+  MODULE PROCEDURE mField_Initiate1
+END INTERFACE MatrixFieldInitiate1
+
+PUBLIC :: MatrixFieldInitiate1
+
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -511,11 +569,18 @@ INTERFACE
     & usePointer)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be an instance of MatrixField_
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE mField_Initiate2
 END INTERFACE
+
+INTERFACE MatrixFieldInitiate2
+  MODULE PROCEDURE mField_Initiate2
+END INTERFACE MatrixFieldInitiate2
+
+PUBLIC :: MatrixFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                               Initiate@sConstructorMethods
@@ -533,6 +598,12 @@ INTERFACE
   END SUBROUTINE mField_Initiate3
 END INTERFACE
 
+INTERFACE MatrixFieldInitiate3
+  MODULE PROCEDURE mField_Initiate3
+END INTERFACE MatrixFieldInitiate3
+
+PUBLIC :: MatrixFieldInitiate3
+
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -546,6 +617,12 @@ INTERFACE
     CLASS(MatrixField_), INTENT(INOUT) :: obj
   END SUBROUTINE mField_Deallocate
 END INTERFACE
+
+INTERFACE MatrixFieldDeallocate
+  MODULE PROCEDURE mField_Deallocate
+END INTERFACE MatrixFieldDeallocate
+
+PUBLIC :: MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
@@ -562,6 +639,12 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE mField_Display
 END INTERFACE
+
+INTERFACE MatrixFieldDisplay
+  MODULE PROCEDURE mField_Display
+END INTERFACE MatrixFieldDisplay
+
+PUBLIC :: MatrixFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -580,6 +663,12 @@ INTERFACE
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE mField_Import
 END INTERFACE
+
+INTERFACE MatrixFieldImport
+  MODULE PROCEDURE mField_Import
+END INTERFACE MatrixFieldImport
+
+PUBLIC :: MatrixFieldImport
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -614,6 +703,12 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mField_Export
 END INTERFACE
+
+INTERFACE MatrixFieldExport
+  MODULE PROCEDURE mField_Export
+END INTERFACE MatrixFieldExport
+
+PUBLIC :: MatrixFieldExport
 
 !----------------------------------------------------------------------------
 !                                                       ExportPmat@IOMethods
@@ -719,8 +814,9 @@ END INTERFACE
 !# Introduction
 !
 ! This routine returns the matrix vector multiplication. Here, input vector
-! is a native fortran vector. The output vector is also a native fortran
-! vector. It should be noted that the output vector should be allocated
+! is an instance of AbstractNodeField.
+! The output vector is also an instance of AbstractNodeField.
+! It should be noted that the output vector should be allocated
 ! outside and it should have same length as the input vector.
 
 INTERFACE
@@ -758,6 +854,10 @@ END INTERFACE
 ! This form of matrix is obtained by incomplete LU decomposition type
 ! precodnitioners
 !@endnote
+!
+!@note
+! This routine is avaiable for NATIVE_SERIAL
+!@endnote
 
 INTERFACE
   MODULE SUBROUTINE mField_ILUSOLVE1(obj, sol, rhs, isTranspose)
@@ -788,6 +888,10 @@ END INTERFACE
 ! LU matrix is stored inside the object in Modified Sparse Row format
 ! This form of matrix is obtained by incomplete LU decomposition type
 ! precodnitioners
+!@endnote
+!
+!@note
+! This routine is avaiable for NATIVE_SERIAL
 !@endnote
 
 INTERFACE
@@ -823,6 +927,8 @@ END INTERFACE
 ! ILUD : preconditionName, droptol, alpha
 ! ILUDP : preconditionName, droptol, permtol, alpha, mbloc
 ! ILUK : preconditionName, lfil
+!
+! This routine is avaiable for NATIVE_SERIAL only.
 
 INTERFACE
   MODULE SUBROUTINE mField_SetPrecondition(obj, param, dbcPtrs)
@@ -867,6 +973,115 @@ INTERFACE
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
   END SUBROUTINE mField_ReversePermutation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               getDiagonal@DiagonalMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: Returns the diagnoal
+
+INTERFACE
+  MODULE SUBROUTINE mField_GetDiagonal(obj, diag)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: diag(:)
+  END SUBROUTINE mField_GetDiagonal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         getDiagonal@DiagonalScalingMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: REturns the diagnoal
+
+INTERFACE
+  MODULE SUBROUTINE mField_DiagonalScaling(obj, side, diag, OPERATOR)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: side
+    REAL(DFP), OPTIONAL, INTENT(IN) :: diag(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: OPERATOR
+  END SUBROUTINE mField_DiagonalScaling
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SymSchurLargestEigenVal@SpectralMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-01-30
+! summary: SymSchurLargestEigenVal
+
+INTERFACE
+  MODULE FUNCTION mField_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
+      & maxIter, tol) RESULT(ans)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    !! CSRMatrix, symmetric
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: B
+    !! B matrix, possibly rectangle
+    INTEGER(I4B), INTENT(IN) :: nev
+    !! number of eigenvalues requested
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
+    !! `which = "LM"` ⇨ absolute largest eigenvalue
+    !! `which = "LA"` ⇨ algebraic largest eigenvalue
+    !! default is "LA"
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
+    !! Number of Lanczos vectors generated
+    !! It must be greater than 1 and smaller than `size(mat,1)`
+    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! Maximum number of iteration default = `N*10`
+    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
+    !! tolerance, default = 0.0
+    REAL(DFP) :: ans(nev)
+    !! first k, largest eigenvalue
+  END FUNCTION mField_SymSchurLargestEigenVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SymSchurLargestEigenVal@SpectralMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-01-30
+! summary: SymSchurLargestEigenVal
+
+INTERFACE
+  MODULE FUNCTION mField_SymLargestEigenVal(obj, nev, which, NCV, &
+      & maxIter, tol) RESULT(ans)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    !! CSRMatrix, symmetric
+    INTEGER(I4B), INTENT(IN) :: nev
+    !! number of eigenvalues requested
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
+    !! `which = "LM"` ⇨ absolute largest eigenvalue
+    !! `which = "LA"` ⇨ algebraic largest eigenvalue
+    !! default is "LA"
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
+    !! Number of Lanczos vectors generated
+    !! It must be greater than 1 and smaller than `size(mat,1)`
+    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! Maximum number of iteration default = `N*10`
+    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
+    !! tolerance, default = 0.0
+    REAL(DFP) :: ans(nev)
+    !! first k, largest eigenvalue
+  END FUNCTION mField_SymLargestEigenVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE mField_ApplyDBC(obj, dbcPtrs)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcPtrs(:)
+  END SUBROUTINE mField_ApplyDBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -948,7 +1163,7 @@ END INTERFACE
 ! `obj(glocalNode)=obj(globalNode)+scale*value`
 !
 !@note
-!         This method cannot be called for Rectangle matrix field
+! This method cannot be called for Rectangle matrix field
 !@endnote
 
 INTERFACE
@@ -1022,6 +1237,8 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
+    !! Storage format should be FMT_NODES
+    !! This is because MatrixField stores data in FMT_NODES
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_Set4
@@ -2182,115 +2399,6 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE mField_GetColumn7
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               getDiagonal@DiagonalMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 July 2021
-! summary: REturns the diagnoal
-
-INTERFACE
-  MODULE SUBROUTINE mField_GetDiagonal(obj, diag)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: diag(:)
-  END SUBROUTINE mField_GetDiagonal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         getDiagonal@DiagonalScalingMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 July 2021
-! summary: REturns the diagnoal
-
-INTERFACE
-  MODULE SUBROUTINE mField_DiagonalScaling(obj, side, diag, OPERATOR)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: side
-    REAL(DFP), OPTIONAL, INTENT(IN) :: diag(:)
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: OPERATOR
-  END SUBROUTINE mField_DiagonalScaling
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SymSchurLargestEigenVal@SpectralMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-01-30
-! summary: SymSchurLargestEigenVal
-
-INTERFACE
-  MODULE FUNCTION mField_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
-      & maxIter, tol) RESULT(ans)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    !! CSRMatrix, symmetric
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: B
-    !! B matrix, possibly rectangle
-    INTEGER(I4B), INTENT(IN) :: nev
-    !! number of eigenvalues requested
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
-    !! `which = "LM"` ⇨ absolute largest eigenvalue
-    !! `which = "LA"` ⇨ algebraic largest eigenvalue
-    !! default is "LA"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
-    !! Number of Lanczos vectors generated
-    !! It must be greater than 1 and smaller than `size(mat,1)`
-    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
-    !! Maximum number of iteration default = `N*10`
-    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
-    !! tolerance, default = 0.0
-    REAL(DFP) :: ans(nev)
-    !! first k, largest eigenvalue
-  END FUNCTION mField_SymSchurLargestEigenVal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SymSchurLargestEigenVal@SpectralMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-01-30
-! summary: SymSchurLargestEigenVal
-
-INTERFACE
-  MODULE FUNCTION mField_SymLargestEigenVal(obj, nev, which, NCV, &
-      & maxIter, tol) RESULT(ans)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    !! CSRMatrix, symmetric
-    INTEGER(I4B), INTENT(IN) :: nev
-    !! number of eigenvalues requested
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
-    !! `which = "LM"` ⇨ absolute largest eigenvalue
-    !! `which = "LA"` ⇨ algebraic largest eigenvalue
-    !! default is "LA"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
-    !! Number of Lanczos vectors generated
-    !! It must be greater than 1 and smaller than `size(mat,1)`
-    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
-    !! Maximum number of iteration default = `N*10`
-    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
-    !! tolerance, default = 0.0
-    REAL(DFP) :: ans(nev)
-    !! first k, largest eigenvalue
-  END FUNCTION mField_SymLargestEigenVal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE mField_ApplyDBC(obj, dbcPtrs)
-    CLASS(MatrixField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE mField_ApplyDBC
 END INTERFACE
 
 END MODULE MatrixField_Class
