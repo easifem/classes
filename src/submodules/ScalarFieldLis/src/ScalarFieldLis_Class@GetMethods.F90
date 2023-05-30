@@ -21,6 +21,22 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             GetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_GetSingle
+#include "lisf.h"
+INTEGER(I4B) :: ierr
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
+  CALL CHKERR(ierr)
+ELSE
+  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+  CALL CHKERR(ierr)
+END IF
+END PROCEDURE sField_GetSingle
+
+!----------------------------------------------------------------------------
 !                                                               GetPointer
 !----------------------------------------------------------------------------
 
@@ -35,7 +51,6 @@ END PROCEDURE sField_getPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_get1
-#include "lisf.h"
 CHARACTER(*), PARAMETER :: myName = "sField_get1"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: tSize

@@ -139,7 +139,7 @@ INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
+CALL CHKERR(ierr)
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Either ScalarField object is not initiated'// &
