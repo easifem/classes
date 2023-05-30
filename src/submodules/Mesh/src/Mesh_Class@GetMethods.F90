@@ -839,4 +839,36 @@ END PROCEDURE mesh_GetQuery
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE mesh_getMinElemNumber
+ans = obj%minElemNum
+END PROCEDURE mesh_getMinElemNumber
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getMaxElemNumber
+ans = obj%maxElemNum
+END PROCEDURE mesh_getMaxElemNumber
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getMinNodeNumber
+ans = obj%minNptrs
+END PROCEDURE mesh_getMinNodeNumber
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_getMaxNodeNumber
+ans = obj%maxNptrs
+END PROCEDURE mesh_getMaxNodeNumber
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE GetMethods

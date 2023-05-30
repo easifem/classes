@@ -180,6 +180,21 @@ obj%orderFacet = 0
 END PROCEDURE mesh_Deallocate
 
 !----------------------------------------------------------------------------
+!                                                                    isEmpty
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mesh_isEmpty
+ans = .FALSE.
+IF (obj%tElements .LE. 0_I4B) THEN
+  ans = .TRUE.
+END IF
+
+IF (obj%tNodes .LE. 0_I4B) THEN
+  ans = .TRUE.
+END IF
+END PROCEDURE mesh_isEmpty
+
+!----------------------------------------------------------------------------
 !                                                                    Final
 !----------------------------------------------------------------------------
 
