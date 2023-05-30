@@ -18,6 +18,7 @@
 SUBMODULE(VectorFieldLis_Class) SetMethods
 USE BaseMethod
 USE ScalarFieldLis_Class
+USE ScalarField_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -437,6 +438,10 @@ TYPE is (ScalarFieldLis_)
     END DO
 
   END IF
+
+CLASS DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for the type of value')
 
 END SELECT
 

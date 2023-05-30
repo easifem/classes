@@ -16,15 +16,31 @@
 
 SUBMODULE(VectorFieldLis_Class) GetMethods
 USE BaseMethod
+USE ScalarField_Class, ONLY: ScalarField_
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 GetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_GetSingle
+#include "lisf.h"
+INTEGER(I4B) :: ierr
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
+  CALL CHKERR(ierr)
+ELSE
+  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+  CALL CHKERR(ierr)
+END IF
+END PROCEDURE vField_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get1
-#include "lisf.h"
 CHARACTER(*), PARAMETER :: myName = "vField_get1"
 LOGICAL(LGT) :: bool1, bool2
 INTEGER(I4B) :: ierr
@@ -374,11 +390,17 @@ INTEGER(I4B) :: tsize
 
 tsize = obj%domain%getTotalNodes()
 
-DO ii = 1, tsize
-  jj = obj%domain%getGlobalNodeNumber(ii)
-  CALL obj%get(VALUE=aval, globalNode=jj, spaceCompo=spaceCompo)
-  CALL VALUE%set(VALUE=aval, globalNode=jj)
-END DO
+SELECT TYPE (VALUE)
+CLASS is (ScalarField_)
+  DO ii = 1, tsize
+    jj = obj%domain%getGlobalNodeNumber(ii)
+    CALL obj%get(VALUE=aval, globalNode=jj, spaceCompo=spaceCompo)
+    CALL VALUE%set(VALUE=aval, globalNode=jj)
+  END DO
+CLASS default
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for type of value')
+END SELECT
 
 END PROCEDURE vField_get9
 
