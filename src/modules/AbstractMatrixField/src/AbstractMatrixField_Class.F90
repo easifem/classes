@@ -43,24 +43,33 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMatrixField_Class"
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractMatrixField_
   LOGICAL(LGT) :: isPmatInitiated = .FALSE.
-    !! True if precondition matrix is initiated
+  !! True if precondition matrix is initiated
 CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => amField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => amField_Deallocate
-  PROCEDURE, PUBLIC, PASS(obj) :: SPY => amField_SPY
   PROCEDURE(amField_Size), DEFERRED, PUBLIC, PASS(obj) :: Size
   PROCEDURE(amField_Shape), DEFERRED, PUBLIC, PASS(obj) :: Shape
+  !
+  ! @MatVecMethods
+  !
   PROCEDURE(amField_Matvec1), DEFERRED, PASS(obj) :: Matvec1
   !! Matrix vector multiplication, here vector is fortran array
   PROCEDURE(amField_Matvec2), DEFERRED, PASS(obj) :: Matvec2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: Matvec => Matvec1, Matvec2
+  !
+  ! @ILUSolveMethods
+  !
   PROCEDURE(amField_ILUSOLVE1), DEFERRED, PASS(obj) :: ILUSOLVE1
   !! Matrix vector multiplication, here vector is fortran array
   PROCEDURE(amField_ILUSOLVE2), DEFERRED, PASS(obj) :: ILUSOLVE2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: ILUSOLVE => ILUSOLVE1, ILUSOLVE2
   !! Generic LU Solve
+  !
+  !
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: isPreconditionSet => &
     & amField_isPreconditionSet
   !! True if prcondition is set
@@ -72,7 +81,26 @@ CONTAINS
   !! Get the precondition matrix
   PROCEDURE(amField_reversePermutation), DEFERRED, PUBLIC, PASS(obj) :: &
     & reversePermutation
-  !!
+  !
+  PROCEDURE(amField_DiagonalScaling), DEFERRED, PUBLIC, PASS(obj) :: &
+    & DiagonalScaling
+  ! DiagonalScaling
+  PROCEDURE(amField_GetDiagonal), DEFERRED, PUBLIC, PASS(obj) :: &
+    & GetDiagonal
+  ! Get Diagonal
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    & SymSchurLargestEigenVal => amField_SymSchurLargestEigenVal
+  ! SymSchurLargestEigenVal
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    & SymLargestEigenVal => amField_SymLargestEigenVal
+  ! SymLargestEigenVal
+  PROCEDURE(amField_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC
+  ! ApplyDBC
+  PROCEDURE, PUBLIC, PASS(obj) :: SPY => amField_SPY
+  ! SPY
+  !
+  ! @SetMethods
+  !
   PROCEDURE(amField_set1), DEFERRED, PASS(obj) :: set1
   PROCEDURE(amField_set2), DEFERRED, PASS(obj) :: set2
   PROCEDURE(amField_set3), DEFERRED, PASS(obj) :: set3
@@ -85,37 +113,9 @@ CONTAINS
   PROCEDURE(amField_set10), DEFERRED, PASS(obj) :: set10
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, &
     & set6, set7, set8, set9, set10
-  !!
-  PROCEDURE(amField_getColumn1), DEFERRED, PASS(obj) :: getColumn1
-  PROCEDURE(amField_getColumn2), DEFERRED, PASS(obj) :: getColumn2
-  PROCEDURE(amField_getColumn3), DEFERRED, PASS(obj) :: getColumn3
-  PROCEDURE(amField_getColumn4), DEFERRED, PASS(obj) :: getColumn4
-  PROCEDURE(amField_getColumn5), DEFERRED, PASS(obj) :: getColumn5
-  PROCEDURE(amField_getColumn6), DEFERRED, PASS(obj) :: getColumn6
-  PROCEDURE(amField_getColumn7), DEFERRED, PASS(obj) :: getColumn7
-  GENERIC, PUBLIC :: getColumn => getColumn1, getColumn2, &
-    & getColumn3, getColumn4, getColumn5, getColumn6, getColumn7
-  !!
-  PROCEDURE(amField_getRow1), DEFERRED, PASS(obj) :: getRow1
-  PROCEDURE(amField_getRow2), DEFERRED, PASS(obj) :: getRow2
-  PROCEDURE(amField_getRow3), DEFERRED, PASS(obj) :: getRow3
-  PROCEDURE(amField_getRow4), DEFERRED, PASS(obj) :: getRow4
-  PROCEDURE(amField_getRow5), DEFERRED, PASS(obj) :: getRow5
-  PROCEDURE(amField_getRow6), DEFERRED, PASS(obj) :: getRow6
-  PROCEDURE(amField_getRow7), DEFERRED, PASS(obj) :: getRow7
-  GENERIC, PUBLIC :: getRow => getRow1, getRow2, &
-    & getRow3, getRow4, getRow5, getRow6, getRow7
-  !!
-  PROCEDURE(amField_setColumn1), DEFERRED, PASS(obj) :: setColumn1
-  PROCEDURE(amField_setColumn2), DEFERRED, PASS(obj) :: setColumn2
-  PROCEDURE(amField_setColumn3), DEFERRED, PASS(obj) :: setColumn3
-  PROCEDURE(amField_setColumn4), DEFERRED, PASS(obj) :: setColumn4
-  PROCEDURE(amField_setColumn5), DEFERRED, PASS(obj) :: setColumn5
-  PROCEDURE(amField_setColumn6), DEFERRED, PASS(obj) :: setColumn6
-  PROCEDURE(amField_setColumn7), DEFERRED, PASS(obj) :: setColumn7
-  GENERIC, PUBLIC :: setColumn => setColumn1, setColumn2, &
-    & setColumn3, setColumn4, setColumn5, setColumn6, setColumn7
-  !!
+  !
+  ! @SetRow
+  !
   PROCEDURE(amField_setRow1), DEFERRED, PASS(obj) :: setRow1
   PROCEDURE(amField_setRow2), DEFERRED, PASS(obj) :: setRow2
   PROCEDURE(amField_setRow3), DEFERRED, PASS(obj) :: setRow3
@@ -125,21 +125,63 @@ CONTAINS
   PROCEDURE(amField_setRow7), DEFERRED, PASS(obj) :: setRow7
   GENERIC, PUBLIC :: setRow => setRow1, setRow2, setRow3, &
     & setRow4, setRow5, setRow6, setRow7
-  !!
-  PROCEDURE(amField_DiagonalScaling), DEFERRED, PUBLIC, PASS(obj) :: &
-    & DiagonalScaling
-  PROCEDURE(amField_GetDiagonal), DEFERRED, PUBLIC, PASS(obj) :: &
-    & GetDiagonal
-  !!
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    & SymSchurLargestEigenVal => amField_SymSchurLargestEigenVal
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    & SymLargestEigenVal => amField_SymLargestEigenVal
-
-  PROCEDURE(amField_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC
+  !
+  ! @GetColumn
+  !
+  PROCEDURE(amField_getColumn1), DEFERRED, PASS(obj) :: getColumn1
+  PROCEDURE(amField_getColumn2), DEFERRED, PASS(obj) :: getColumn2
+  PROCEDURE(amField_getColumn3), DEFERRED, PASS(obj) :: getColumn3
+  PROCEDURE(amField_getColumn4), DEFERRED, PASS(obj) :: getColumn4
+  PROCEDURE(amField_getColumn5), DEFERRED, PASS(obj) :: getColumn5
+  PROCEDURE(amField_getColumn6), DEFERRED, PASS(obj) :: getColumn6
+  PROCEDURE(amField_getColumn7), DEFERRED, PASS(obj) :: getColumn7
+  GENERIC, PUBLIC :: getColumn => getColumn1, getColumn2, &
+    & getColumn3, getColumn4, getColumn5, getColumn6, getColumn7
+  !
+  ! @GetRow
+  !
+  PROCEDURE(amField_getRow1), DEFERRED, PASS(obj) :: getRow1
+  PROCEDURE(amField_getRow2), DEFERRED, PASS(obj) :: getRow2
+  PROCEDURE(amField_getRow3), DEFERRED, PASS(obj) :: getRow3
+  PROCEDURE(amField_getRow4), DEFERRED, PASS(obj) :: getRow4
+  PROCEDURE(amField_getRow5), DEFERRED, PASS(obj) :: getRow5
+  PROCEDURE(amField_getRow6), DEFERRED, PASS(obj) :: getRow6
+  PROCEDURE(amField_getRow7), DEFERRED, PASS(obj) :: getRow7
+  GENERIC, PUBLIC :: getRow => getRow1, getRow2, &
+    & getRow3, getRow4, getRow5, getRow6, getRow7
+  !
+  ! @SetColumn
+  !
+  PROCEDURE(amField_setColumn1), DEFERRED, PASS(obj) :: setColumn1
+  PROCEDURE(amField_setColumn2), DEFERRED, PASS(obj) :: setColumn2
+  PROCEDURE(amField_setColumn3), DEFERRED, PASS(obj) :: setColumn3
+  PROCEDURE(amField_setColumn4), DEFERRED, PASS(obj) :: setColumn4
+  PROCEDURE(amField_setColumn5), DEFERRED, PASS(obj) :: setColumn5
+  PROCEDURE(amField_setColumn6), DEFERRED, PASS(obj) :: setColumn6
+  PROCEDURE(amField_setColumn7), DEFERRED, PASS(obj) :: setColumn7
+  GENERIC, PUBLIC :: setColumn => setColumn1, setColumn2, &
+    & setColumn3, setColumn4, setColumn5, setColumn6, setColumn7
 END TYPE AbstractMatrixField_
 
 PUBLIC :: AbstractMatrixField_
+
+!----------------------------------------------------------------------------
+!                                                                Display
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE amField_Display(obj, msg, unitNo)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE amField_Display
+END INTERFACE
+
+INTERFACE AbstractMatrixFieldDisplay
+  MODULE PROCEDURE amField_Display
+END INTERFACE AbstractMatrixFieldDisplay
+
+PUBLIC :: AbstractMatrixFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
@@ -369,6 +411,145 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
   END SUBROUTINE amField_reversePermutation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 isPreconditionSet@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION amField_isPreconditionSet(obj) RESULT(Ans)
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION amField_isPreconditionSet
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getDiagonal
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: REturns the diagnoal
+
+ABSTRACT INTERFACE
+  SUBROUTINE amField_GetDiagonal(obj, diag)
+    IMPORT :: AbstractMatrixField_, DFP
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: diag(:)
+  END SUBROUTINE amField_GetDiagonal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              getDiagonal
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 July 2021
+! summary: Perform diagonal scaling to the matrix
+
+ABSTRACT INTERFACE
+  SUBROUTINE amField_DiagonalScaling(obj, side, diag, OPERATOR)
+    IMPORT :: AbstractMatrixField_, DFP
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: side
+    REAL(DFP), OPTIONAL, INTENT(IN) :: diag(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: OPERATOR
+  END SUBROUTINE amField_DiagonalScaling
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              SPY@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 16 July 2021
+! summary: This routine creates spy figure
+
+INTERFACE
+  MODULE SUBROUTINE amField_SPY(obj, filename, ext)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: ext
+  END SUBROUTINE amField_SPY
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SymSchurLargestEigenVal@SpectralMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-01-30
+! summary: SymSchurLargestEigenVal
+
+INTERFACE
+  MODULE FUNCTION amField_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
+      & maxIter, tol) RESULT(ans)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! CSRMatrix, symmetric
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: B
+    !! B matrix, possibly rectangle
+    INTEGER(I4B), INTENT(IN) :: nev
+    !! number of eigenvalues requested
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
+    !! `which = "LM"` ⇨ absolute largest eigenvalue
+    !! `which = "LA"` ⇨ algebraic largest eigenvalue
+    !! default is "LA"
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
+    !! Number of Lanczos vectors generated
+    !! It must be greater than 1 and smaller than `size(mat,1)`
+    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! Maximum number of iteration default = `N*10`
+    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
+    !! tolerance, default = 0.0
+    REAL(DFP) :: ans(nev)
+    !! first k, largest eigenvalue
+  END FUNCTION amField_SymSchurLargestEigenVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  SymSchurLargestEigenVal@SpectralMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-01-30
+! summary: SymSchurLargestEigenVal
+
+INTERFACE
+  MODULE FUNCTION amField_SymLargestEigenVal(obj, nev, which, NCV, &
+      & maxIter, tol) RESULT(ans)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! CSRMatrix, symmetric
+    INTEGER(I4B), INTENT(IN) :: nev
+    !! number of eigenvalues requested
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
+    !! `which = "LM"` ⇨ absolute largest eigenvalue
+    !! `which = "LA"` ⇨ algebraic largest eigenvalue
+    !! default is "LA"
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
+    !! Number of Lanczos vectors generated
+    !! It must be greater than 1 and smaller than `size(mat,1)`
+    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! Maximum number of iteration default = `N*10`
+    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
+    !! tolerance, default = 0.0
+    REAL(DFP) :: ans(nev)
+    !! first k, largest eigenvalue
+  END FUNCTION amField_SymLargestEigenVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE amField_ApplyDBC(obj, dbcPtrs)
+    IMPORT :: AbstractMatrixField_, I4B
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcPtrs(:)
+  END SUBROUTINE amField_ApplyDBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1545,145 +1726,6 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE amField_getColumn7
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 isPreconditionSet@Methods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION amField_isPreconditionSet(obj) RESULT(Ans)
-    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION amField_isPreconditionSet
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              getDiagonal
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 July 2021
-! summary: REturns the diagnoal
-
-ABSTRACT INTERFACE
-  SUBROUTINE amField_GetDiagonal(obj, diag)
-    IMPORT :: AbstractMatrixField_, DFP
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: diag(:)
-  END SUBROUTINE amField_GetDiagonal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              getDiagonal
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 July 2021
-! summary: REturns the diagnoal
-
-ABSTRACT INTERFACE
-  SUBROUTINE amField_DiagonalScaling(obj, side, diag, OPERATOR)
-    IMPORT :: AbstractMatrixField_, DFP
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: side
-    REAL(DFP), OPTIONAL, INTENT(IN) :: diag(:)
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: OPERATOR
-  END SUBROUTINE amField_DiagonalScaling
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              SPY@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content of matrixfield_ to hdf5 file
-
-INTERFACE
-  MODULE SUBROUTINE amField_SPY(obj, filename, ext)
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: filename
-    CHARACTER(*), INTENT(IN) :: ext
-  END SUBROUTINE amField_SPY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SymSchurLargestEigenVal@SpectralMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-01-30
-! summary: SymSchurLargestEigenVal
-
-INTERFACE
-  MODULE FUNCTION amField_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
-      & maxIter, tol) RESULT(ans)
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    !! CSRMatrix, symmetric
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: B
-    !! B matrix, possibly rectangle
-    INTEGER(I4B), INTENT(IN) :: nev
-    !! number of eigenvalues requested
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
-    !! `which = "LM"` ⇨ absolute largest eigenvalue
-    !! `which = "LA"` ⇨ algebraic largest eigenvalue
-    !! default is "LA"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
-    !! Number of Lanczos vectors generated
-    !! It must be greater than 1 and smaller than `size(mat,1)`
-    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
-    !! Maximum number of iteration default = `N*10`
-    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
-    !! tolerance, default = 0.0
-    REAL(DFP) :: ans(nev)
-    !! first k, largest eigenvalue
-  END FUNCTION amField_SymSchurLargestEigenVal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SymSchurLargestEigenVal@SpectralMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-01-30
-! summary: SymSchurLargestEigenVal
-
-INTERFACE
-  MODULE FUNCTION amField_SymLargestEigenVal(obj, nev, which, NCV, &
-      & maxIter, tol) RESULT(ans)
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    !! CSRMatrix, symmetric
-    INTEGER(I4B), INTENT(IN) :: nev
-    !! number of eigenvalues requested
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: which
-    !! `which = "LM"` ⇨ absolute largest eigenvalue
-    !! `which = "LA"` ⇨ algebraic largest eigenvalue
-    !! default is "LA"
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: NCV
-    !! Number of Lanczos vectors generated
-    !! It must be greater than 1 and smaller than `size(mat,1)`
-    !! Default is `NCV = MIN(n, MAX(2*nev+1, 20))`
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
-    !! Maximum number of iteration default = `N*10`
-    REAL(DFP), OPTIONAL, INTENT(IN) :: tol
-    !! tolerance, default = 0.0
-    REAL(DFP) :: ans(nev)
-    !! first k, largest eigenvalue
-  END FUNCTION amField_SymLargestEigenVal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  SUBROUTINE amField_ApplyDBC(obj, dbcPtrs)
-    IMPORT :: AbstractMatrixField_, I4B
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE amField_ApplyDBC
 END INTERFACE
 
 END MODULE AbstractMatrixField_Class
