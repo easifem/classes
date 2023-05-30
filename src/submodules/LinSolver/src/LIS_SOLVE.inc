@@ -15,11 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define _x1 obj%IPAR(8)
-#define _x2 obj%IPAR(8) + n - 1
-#define _y1 obj%IPAR(9)
-#define _y2 obj%IPAR(9) + n - 1
-
 SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   CLASS(LinSolver_), TARGET, INTENT(INOUT) :: obj
   REAL(DFP), INTENT(INOUT) :: sol(:)
@@ -27,108 +22,72 @@ SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   !
   ! Internal variables
   !
-  CHARACTER(LEN=*), PARAMETER :: myName = _MY_NAME
+  CHARACTER(*), PARAMETER :: myName = _MY_NAME
   INTEGER(I4B) :: n, ii
   REAL(DFP), ALLOCATABLE :: diag(:)
+  CLASS(AbstractMatrixField_), POINTER :: Amat
 
-  !
-  ! Applying dirichlet boundary condition
-  !
-  CALL display(__FILE__//"  debug: I am disabling rhs(obj%dbcIndx) = 0.0_DFP")
-  ! IF (SIZE(obj%dbcIndx) .GT. 0) rhs(obj%dbcIndx) = 0.0_DFP
-  !
-  ! Applying diagonal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    !
-    CALL e%raiseInformation(modName//'::'//myName//" - "// &
-      & 'No precondition = Diagonal precondition !')
-    !
-    CALL obj%Amat%GetDiagonal(diag=diag)
-    CALL obj%Amat%DiagonalScaling(side='BOTH', diag=diag)
-    !
-    DO ii = 1, SIZE(diag)
-      rhs(ii) = rhs(ii) / SQRT(ABS(diag(ii)))
-      sol(ii) = sol(ii) * SQRT(ABS(diag(ii)))
-    END DO
-    !
-  END IF
+  CALL Blanklines(nol=5)
+  CALL Display("File :: "//__FILE__)
+  CALL Display(modName//myName)
+  CALL Display("I am not applying diagonal scaling, it should be apply by the user")
+  CALL Display("I am not applying diagonal scaling, it should be apply by the user")
+  CALL Display("I am not applying diagonal scaling, it should be apply by the user")
+  CALL Blanklines(nol=5)
 
-  !
-  ! main
-  !
   obj%IPAR(1) = 0
   obj%FPAR(11) = 0.0_DFP
-  n = obj%globalNumRow; 
+  CALL obj%GetParam(globalNumRow=n, Amat=Amat)
   obj%IPAR(7) = 1
-  !
-  !
-  !
+
+  IF (.NOT. ASSOCIATED(Amat)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Amat is not ASSOCIATED')
+  END IF
+
   DO
-    !
+
     CALL _LIS_NAME(n, rhs, sol, obj%IPAR, obj%FPAR, obj%W)
-    !
-    ! obj%RES(obj%IPAR(7)) = obj%FPAR(6)
-    CALL Display(obj%FPAR(5), __FILE__//' debug, ||r|| : ')
-    !
-    !
+
     IF (obj%IPAR(1) .GT. 0) THEN
-      !
-      CALL PERFORM_TASK(obj%Amat, y=obj%W(_y1:_y2), x=obj%W(_x1:_x2), &
-        & dbcIndx=obj%dbcIndx, ierr=obj%IPAR(1), myName=myName)
-      !
-      !
-      !
+
+      CALL PERFORM_TASK( &
+        & Amat, &
+        & y=obj%W(obj%IPAR(9):obj%IPAR(9) + n - 1), &
+        & x=obj%W(obj%IPAR(8):obj%IPAR(8) + n - 1), &
+        & ierr=obj%IPAR(1), &
+        & myName=myName)
+
     ELSE IF (obj%IPAR(1) .LT. 0) THEN
-      !
-      CALL CHECKERROR(IPAR=obj%IPAR, FPAR=obj%FPAR, myName=myName)
+
+      CALL CHECKERROR( &
+        & IPAR=obj%IPAR, &
+        & FPAR=obj%FPAR, &
+        & myName=myName)
       EXIT
-      !
-      !
-      !
+
     ELSE IF (obj%IPAR(1) .EQ. 0) THEN
-      !
-      obj%ierr = obj%IPAR(1)
-      obj%iter = obj%IPAR(7)
-      CALL DisplayConvergence(myName, obj%iter, obj%FPAR)
+
+      CALL obj%SetParam(ierr=obj%ipar(1), &
+        & iter=obj%ipar(7))
+      CALL DisplayConvergence( &
+        & myName, &
+        & obj%ipar(7), &
+        & obj%FPAR)
       EXIT
-      !
-      !
-      !
+
     END IF
-    !
   END DO
   !
   ! Initial residual/error norm
   !
-  obj%error0 = obj%fpar(3)
-  !
-  ! Target residual/error norm
-  !
-  obj%tol = obj%fpar(4)
-  !
-  ! Current residual/error norm
-  !
-  obj%error = obj%fpar(6)
-  !
-  ! Current residual norm
-  !
-  obj%normRes = obj%fpar(5)
-  !
-  ! Applying diagnoal precondition
-  !
-  IF (obj%preconditionOption .EQ. NO_PRECONDITION) THEN
-    DO ii = 1, SIZE(diag)
-      sol(ii) = sol(ii) / SQRT(ABS(diag(ii)))
-    END DO
-    DEALLOCATE (diag)
-  END IF
+  CALL obj%SetParam(&
+    & error0=obj%fpar(3), &
+    & tol=obj%fpar(4), &
+    & error=obj%fpar(6), &
+    & normRes=obj%fpar(5) &
+    & )
 END SUBROUTINE _SUBROUTINE_NAME
-
-#undef _x1
-#undef _x2
-#undef _y1
-#undef _y2
 
 #ifdef _SUBROUTINE_NAME
 #undef _SUBROUTINE_NAME

@@ -23,12 +23,11 @@ CONTAINS
 !                                                           PerformMatVec
 !----------------------------------------------------------------------------
 
-SUBROUTINE PERFORM_TASK(Amat, y, x, dbcIndx, ierr, myName)
+SUBROUTINE PERFORM_TASK(Amat, y, x, ierr, myName)
   ! intent of dummy variables
   CLASS(AbstractMatrixField_), INTENT(INOUT) :: Amat
   REAL(DFP), INTENT(INOUT) :: y(:)
   REAL(DFP), INTENT(IN) :: x(:)
-  INTEGER(I4B), INTENT(IN) :: dbcIndx(:)
   INTEGER(I4B), INTENT(IN) :: ierr
   CHARACTER(*), INTENT(IN) :: myName
   !
@@ -36,41 +35,18 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, dbcIndx, ierr, myName)
   !
   SELECT CASE (ierr)
   CASE (1)
-    !
-    ! MatVec, y=Ax
-    !
-    CALL display(__FILE__//"  debug: I am disabling y(dbcIndx)=0.0")
-    CALL Amat%Matvec(y=y, x=x)
-    ! IF (SIZE(dbcIndx) .GT. 0) THEN
-    !   y(dbcIndx) = 0.0_DFP
-    ! END IF
-    !
+    CALL Amat%Matvec(y=y, x=x, isTranspose=.FALSE.)
   CASE (2)
-    !
-    ! Transposed MatVec
-    !
-    CALL display(__FILE__//"  debug: I am disabling y(dbcIndx)=0.0")
     CALL Amat%Matvec(y=y, x=x, isTranspose=.TRUE.)
-    ! IF (SIZE(dbcIndx) .GT. 0) THEN
-    !   y(dbcIndx) = 0.0_DFP
-    ! END IF
-    !
   CASE (3, 5)
-    !
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
-    !
     CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.FALSE.)
-    !
   CASE (4, 6)
-    !
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
-    !
     CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.TRUE.)
-    !
   END SELECT
-  !
 END SUBROUTINE PERFORM_TASK
 
 !----------------------------------------------------------------------------
@@ -81,29 +57,18 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
   INTEGER(I4B), INTENT(IN) :: IPAR(:)
   REAL(DFP), INTENT(IN) :: FPAR(:)
   CHARACTER(*), INTENT(IN) :: myName
-  !
   ! internal variable
-  !
   INTEGER(I4B) :: ierr, unitNo
-  !
-  !
-  !
+
   ierr = IPAR(1)
-  !
   SELECT CASE (ierr)
-    !
-    !
-    !
   CASE (-1)
-    !
     IF (e%isLogActive()) THEN
       unitNo = e%getLogFileUnit()
     ELSE
       unitNo = stdout
     END IF
-    !
     CALL EqualLine(unitNo=unitNo)
-    !
     CALL Display(IPAR(7), "# Number of Matrix-Vector Multiplication = ",&
       & unitNo=unitNo)
     CALL Display(FPAR(3), "# Initial residual/error norm = ",&
@@ -116,55 +81,31 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
       & unitNo=unitNo)
     CALL Display(FPAR(7), "# Convergence rate = ",&
       & unitNo=unitNo)
-    !
     CALL EqualLine(unitNo=unitNo)
-    !
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "Termination because iteration number exceeds the limit")
-    !
-    !
-    !
   CASE (-2)
-    !
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "Return due to insufficient work space")
-    !
-    !
-    !
   CASE (-3)
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "Return due to anticipated break-down / divide by zero")
-    !
-    !
-    !
   CASE (-4)
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "The values of `fpar(1)` and `fpar(2)` are both <= 0, &
       & the valid ranges are `0 <= fpar(1) < 1`, `0 <= fpar(2)`, &
       & and they can not be zero at the same time")
-    !
-    !
-    !
   CASE (-9)
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "While trying to detect a break-down, &
       & an abnormal number is detected")
-    !
-    !
-    !
   CASE (-10)
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "Return due to some non-numerical reasons, &
       & e.g. invalid floating-point numbers etc")
-    !
-    !
-    !
   CASE DEFAULT
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & "Unknown error encountered. Cannot read the error message")
-    !
-    !
-    !
   END SELECT
 END SUBROUTINE CHECKERROR
 
@@ -176,18 +117,19 @@ SUBROUTINE DisplayConvergence(myName, iter, FPAR)
   CHARACTER(*), INTENT(IN) :: myName
   INTEGER(I4B), INTENT(IN) :: iter
   REAL(DFP), INTENT(IN) :: FPAR(:)
-  !
-  ! main
-  !
+  ! internal variable
   INTEGER(I4B) :: unitno
+
   IF (e%isLogActive()) THEN
     unitno = e%getLogFileUnit()
   ELSE
     unitno = stdout
   END IF
+
   CALL e%raiseInformation(modName//'::'//myName//" - "// &
     & 'Convergence is achieved 🎖')
-  CALL EqualLine(unitNo=unitNo)
+  CALL Blanklines(nol=2, unitno=unitno)
+  ! CALL EqualLine(unitNo=unitNo)
   CALL Display(iter, "# Number of Matrix-Vector Multiplication = ",&
     & unitno=unitno)
   CALL Display(fpar(3), "# Initial residual/error norm = ",&
@@ -212,28 +154,34 @@ MODULE PROCEDURE ls_Solve
 CHARACTER(*), PARAMETER :: myName = "ls_Solve"
 REAL(DFP), POINTER :: rhsvar(:), solvar(:)
 INTEGER(I4B) :: ii, info
-!
-! main
-!
-! check
-!
-IF (.NOT. obj%isInitiated) THEN
+INTEGER(I4B) :: solverName
+LOGICAL(LGT) :: isInitiated0
+CLASS(AbstractMatrixField_), POINTER :: Amat
+
+CALL obj%GetParam(isInitiated=isInitiated0, solverName=solverName, Amat=Amat)
+
+IF (.NOT. isInitiated0) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Linear solver is not initiated, initiate first!')
 END IF
-!
-SELECT CASE (obj%solverName)
+
+IF (.NOT. ASSOCIATED(Amat)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Amat is not ASSOCIATED')
+END IF
+
+SELECT CASE (solverName)
 CASE (LIS_GMRES)
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
   CALL LS_SOLVE_GMRES(obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  NULLIFY (rhsvar, solvar)
 
 CASE (LIS_CG)
   rhsvar => rhs%getPointer()
   solvar => sol%getPointer()
   CALL LS_SOLVE_CG(obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  NULLIFY (rhsvar, solvar)
 
 CASE (LIS_CGNR)
   rhsvar => rhs%getPointer()
@@ -284,7 +232,7 @@ CASE (LIS_DQGMRES)
   rhsvar => NULL(); solvar => NULL()
 
 CASE (LIS_SUPERLU)
-  SELECT TYPE (Amat => obj%Amat)
+  SELECT TYPE (Amat)
   CLASS IS (MatrixField_)
     rhsvar => rhs%getPointer()
     solvar => sol%getPointer()
@@ -293,7 +241,7 @@ CASE (LIS_SUPERLU)
       & B=rhsvar, &
       & X=solvar, &
       & isTranspose=.FALSE., &
-      & isFactored=.TRUE., &
+      & isFactored=.FALSE., &
       & PrintStat=yes_no_t%YES, &
       & info=info)
     IF (info .NE. 0) THEN
@@ -311,7 +259,7 @@ CASE DEFAULT
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'Unknown linear solver encountered')
 END SELECT
-!
+
 END PROCEDURE ls_Solve
 
 !----------------------------------------------------------------------------
