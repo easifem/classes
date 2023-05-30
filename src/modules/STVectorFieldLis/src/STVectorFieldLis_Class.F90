@@ -61,7 +61,7 @@ CONTAINS
   !
   ! @SetMethods
   !
-  PROCEDURE, PASS(obj) :: setSingle => stvField_setSingle
+  PROCEDURE, PUBLIC, PASS(obj) :: setSingle => stvField_setSingle
   PROCEDURE, PASS(obj) :: setAll => stvField_setAll
   PROCEDURE, PASS(obj) :: setMultiple => stvField_setMultiple
   PROCEDURE, PASS(obj) :: set1 => stvField_set1
@@ -94,6 +94,7 @@ CONTAINS
   !
   ! @GetMethods
   !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => stvField_getSingle
   PROCEDURE, PASS(obj) :: get1 => stvField_get1
   PROCEDURE, PASS(obj) :: get2 => stvField_get2
   PROCEDURE, PASS(obj) :: get3 => stvField_get3
@@ -1020,6 +1021,22 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION stvField_getPointerOfComponent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE stvField_getSingle(obj, indx, VALUE)
+    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(OUT) :: VALUE
+  END SUBROUTINE stvField_getSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -24,7 +24,6 @@ USE BaseType
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
-USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
@@ -52,6 +51,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & stsField_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => stsField_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => stsField_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: Display => stsField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => stsField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => stsField_Export
@@ -85,6 +85,7 @@ CONTAINS
     !! set values using FEVariable
   PROCEDURE, PASS(obj) :: set14 => stsField_set14
     !! set values using FEVariable
+  PROCEDURE, PASS(obj) :: set15 => stsField_set15
   GENERIC, PUBLIC :: set => set1, set2, set3, set4, set5, set6, &
     & set7, set8, set9, set10, set11, set12, set13, set14
   PROCEDURE, PASS(obj) :: get1 => stsField_get1
@@ -96,6 +97,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: get7 => stsField_get7
   PROCEDURE, PASS(obj) :: get8 => stsField_get8
   PROCEDURE, PASS(obj) :: get9 => stsField_get9
+  PROCEDURE, PASS(obj) :: get10 => stsField_get10
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
     & get5, get6, get7, get8, get9
   PROCEDURE, PASS(obj) :: stsField_applyDirichletBC1
@@ -200,6 +202,32 @@ INTERFACE STScalarFieldInitiate1
 END INTERFACE STScalarFieldInitiate1
 
 PUBLIC :: STScalarFieldInitiate1
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate2
+
+INTERFACE
+  MODULE SUBROUTINE stsField_Initiate2(obj, obj2, copyFull, copyStructure, &
+    & usePointer)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be a child of AbstractNodeField_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE stsField_Initiate2
+END INTERFACE
+
+INTERFACE STScalarFieldInitiate2
+  MODULE PROCEDURE stsField_Initiate2
+END INTERFACE STScalarFieldInitiate2
+
+PUBLIC :: STScalarFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                                     Deallocate@Constructor
@@ -545,7 +573,7 @@ INTERFACE
   MODULE SUBROUTINE stsField_set6(obj, VALUE, timeCompo, scale, &
     & addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -774,6 +802,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                             Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Set the STScalarField
+
+INTERFACE
+  MODULE SUBROUTINE stsField_set15(obj, ivar, idof, VALUE, ivar_value, &
+    & idof_value, scale, addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stsField_set15
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -932,9 +982,28 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE stsField_get9(obj, VALUE, timeCompo)
     CLASS(STScalarField_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: timeCompo
   END SUBROUTINE stsField_get9
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Get values
+
+INTERFACE
+MODULE SUBROUTINE stsField_get10(obj, ivar, idof, VALUE, ivar_value, idof_value)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+  END SUBROUTINE stsField_get10
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -51,6 +51,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & stvField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => stvField_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => stvField_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => stvField_Deallocate
   FINAL :: stvField_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Display => stvField_Display
@@ -83,10 +84,11 @@ CONTAINS
   PROCEDURE, PASS(obj) :: set13 => stvField_set13
   PROCEDURE, PASS(obj) :: set14 => stvField_set14
     !! set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: set15 => stvField_set15
   GENERIC, PUBLIC :: set => &
     & set1, set2, set3, set4, set5, set6, &
     & set7, set8, set9, set10, set11, &
-    & set12, set13, set14
+    & set12, set13, set14, set15
   PROCEDURE, PASS(obj) :: get1 => stvField_get1
   PROCEDURE, PASS(obj) :: get2 => stvField_get2
   PROCEDURE, PASS(obj) :: get3 => stvField_get3
@@ -97,8 +99,9 @@ CONTAINS
   PROCEDURE, PASS(obj) :: get8 => stvField_get8
   PROCEDURE, PASS(obj) :: get9 => stvField_get9
   PROCEDURE, PASS(obj) :: get10 => stvField_get10
+  PROCEDURE, PASS(obj) :: get11 => stvField_get11
   GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, &
-    & get6, get7, get8, get9, get10
+    & get6, get7, get8, get9, get10, get11
   PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent =>  &
     & stvField_getPointerOfComponent
     !! get the entries of STVector field
@@ -196,6 +199,32 @@ INTERFACE STVectorFieldInitiate1
 END INTERFACE STVectorFieldInitiate1
 
 PUBLIC :: STVectorFieldInitiate1
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate2
+
+INTERFACE
+  MODULE SUBROUTINE stvField_Initiate2(obj, obj2, copyFull, copyStructure, &
+    & usePointer)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be a child of AbstractNodeField_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE stvField_Initiate2
+END INTERFACE
+
+INTERFACE STVectorFieldInitiate2
+  MODULE PROCEDURE stvField_Initiate2
+END INTERFACE STVectorFieldInitiate2
+
+PUBLIC :: STVectorFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -700,6 +729,28 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Setvalues
+
+INTERFACE
+  MODULE SUBROUTINE stvField_set15(obj, ivar, idof, VALUE, ivar_value, &
+    & idof_value, scale, addContribution)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stvField_set15
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -910,39 +961,24 @@ INTERFACE
   END SUBROUTINE stvField_get10
 END INTERFACE
 
-!
-! !----------------------------------------------------------------------------
-! !                                                             Get@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 25 June 2021
-! ! summary: This routine return value in FEVariable
-!
-! INTERFACE
-!   MODULE SUBROUTINE stvField_get11(obj, VALUE, timeCompo)
-!     CLASS(STVectorField_), INTENT(IN) :: obj
-!     CLASS(VectorField_), INTENT(INOUT) :: VALUE
-!     INTEGER(I4B), INTENT(IN) :: timeCompo
-!   END SUBROUTINE stvField_get11
-! END INTERFACE
-!
-! !----------------------------------------------------------------------------
-! !                                                             Get@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> authors: Vikas Sharma, Ph. D.
-! ! date: 25 June 2021
-! ! summary: This routine return value in FEVariable
-!
-! INTERFACE
-!   MODULE SUBROUTINE stvField_get12(obj, VALUE, spaceCompo, timeCompo)
-!     CLASS(STVectorField_), INTENT(IN) :: obj
-!     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
-!     INTEGER(I4B), INTENT(IN) :: spaceCompo
-!     INTEGER(I4B), INTENT(IN) :: timeCompo
-!   END SUBROUTINE stvField_get12
-! END INTERFACE
+!----------------------------------------------------------------------------
+!                                                           get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 06 Jan 2022
+! summary: REturns the value
+
+INTERFACE
+MODULE SUBROUTINE stvField_get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
+    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: ivar_value
+    INTEGER(I4B), INTENT(IN) :: idof_value
+  END SUBROUTINE stvField_get11
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               applyDirichletBC@DBCMethods

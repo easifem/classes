@@ -24,7 +24,6 @@ USE BaseType
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
-USE ScalarField_Class, ONLY: ScalarField_
 USE STScalarField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
@@ -63,7 +62,7 @@ CONTAINS
   !
   ! @SetMethods
   !
-  PROCEDURE, PASS(obj) :: SetSingle => stsField_SetSingle
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => stsField_SetSingle
   PROCEDURE, PASS(obj) :: SetAll => stsField_SetAll
   PROCEDURE, PASS(obj) :: SetMultiple => stsField_SetMultiple
   PROCEDURE, PASS(obj) :: set1 => stsField_set1
@@ -94,6 +93,10 @@ CONTAINS
     !! set values using FEVariable
   PROCEDURE, PASS(obj) :: set14 => stsField_set14
     !! set values using FEVariable
+  !
+  ! @GetMethods
+  !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => stsField_GetSingle
   PROCEDURE, PASS(obj) :: get1 => stsField_get1
   PROCEDURE, PASS(obj) :: get2 => stsField_get2
   PROCEDURE, PASS(obj) :: get3 => stsField_get3
@@ -567,7 +570,7 @@ INTERFACE
   MODULE SUBROUTINE stsField_set6(obj, VALUE, timeCompo, scale, &
     & addContribution)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -954,7 +957,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE stsField_get9(obj, VALUE, timeCompo)
     CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: timeCompo
   END SUBROUTINE stsField_get9
 END INTERFACE
@@ -984,6 +987,22 @@ INTERFACE
     CLASS(STScalarFieldLis_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION stsField_getPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetSingle@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Get single entry
+
+INTERFACE
+  MODULE SUBROUTINE stsField_getSingle(obj, indx, VALUE)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx
+    REAL(DFP), INTENT(OUT) :: VALUE
+  END SUBROUTINE stsField_getSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------
