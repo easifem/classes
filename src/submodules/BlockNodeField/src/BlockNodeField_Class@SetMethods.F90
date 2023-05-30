@@ -16,6 +16,7 @@
 
 SUBMODULE(BlockNodeField_Class) SetMethods
 USE BaseMethod
+USE Field
 IMPLICIT NONE
 CONTAINS
 
@@ -386,6 +387,9 @@ MODULE PROCEDURE bnField_set10
 CHARACTER(*), PARAMETER :: myName = "bnField_set10"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 
+CALL e%raiseError(modName//'::'//myName//' - '// &
+& 'This routine does not perform well, there is a bug, see test-11')
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'BlockNodeField_::obj is not initiated')
@@ -703,10 +707,22 @@ END PROCEDURE bnField_set16
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_set17
+CHARACTER(*), PARAMETER :: myName = "bnField_set17"
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+END IF
+
+IF (.NOT. obj2%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj2 is not initiated')
+END IF
+
 IF (PRESENT(addContribution)) THEN
   CALL AXPY(X=obj2%realvec, Y=obj%realvec, A=scale)
 ELSE
-  obj%realVec = obj2%realVec
+  CALL COPY(Y=obj%realVec, X=obj2%realVec)
 END IF
 END PROCEDURE bnField_set17
 
@@ -717,6 +733,54 @@ END PROCEDURE bnField_set17
 MODULE PROCEDURE bnField_assign
 CALL set(obj%realVec, VALUE=VALUE)
 END PROCEDURE bnField_assign
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bnField_set18
+CHARACTER(*), PARAMETER :: myName = "bnField_set18"
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize_value
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: indx1
+INTEGER(I4B) :: indx2
+REAL(DFP) :: avar
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+
+tsize = obj%dof.tNodes. [ivar, idof]
+tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+IF (tsize .NE. tsize_value) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+END IF
+
+DO ii = 1, tsize
+  indx1 = GetNodeLoc(&
+    & obj=VALUE%dof, &
+    & nodenum=ii, &
+    & ivar=ivar_value, &
+    & idof=idof_value)
+  CALL VALUE%GetSingle(VALUE=avar, indx=indx1)
+  indx2 = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=ii, &
+    & ivar=ivar, &
+    & idof=idof)
+  CALL obj%SetSingle(VALUE=avar, indx=indx2, scale=scale, &
+    & addContribution=addContribution)
+END DO
+
+END PROCEDURE bnField_set18
 
 !----------------------------------------------------------------------------
 !
