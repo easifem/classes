@@ -17,6 +17,7 @@
 
 SUBMODULE(STScalarFieldLis_Class) SetMethods
 USE BaseMethod
+USE ScalarField_Class
 USE ScalarFieldLis_Class
 IMPLICIT NONE
 CONTAINS
@@ -438,6 +439,9 @@ TYPE is (ScalarFieldLis_)
 
   END IF
 
+CLASS DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for the type of Value')
 END SELECT
 
 END PROCEDURE stsField_set6

@@ -18,15 +18,31 @@
 SUBMODULE(STScalarFieldLis_Class) GetMethods
 USE BaseMethod
 USE ScalarFieldLis_Class
+USE ScalarField_Class
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 GetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_GetSingle
+#include "lisf.h"
+INTEGER(I4B) :: ierr
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
+  CALL CHKERR(ierr)
+ELSE
+  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+  CALL CHKERR(ierr)
+END IF
+END PROCEDURE stsField_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_get1
-#include "lisf.h"
 CHARACTER(*), PARAMETER :: myName = "stsField_get1"
 LOGICAL(LGT) :: bool1, bool2
 INTEGER(I4B) :: ierr
@@ -369,13 +385,18 @@ INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
 INTEGER(I4B) :: tsize
 
-tsize = obj%domain%getTotalNodes()
-
-DO ii = 1, tsize
-  jj = obj%domain%getGlobalNodeNumber(ii)
-  CALL obj%get(VALUE=aval, globalNode=jj, timeCompo=timeCompo)
-  CALL VALUE%set(VALUE=aval, globalNode=jj)
-END DO
+SELECT TYPE (VALUE)
+CLASS IS (ScalarField_)
+  tsize = obj%domain%getTotalNodes()
+  DO ii = 1, tsize
+    jj = obj%domain%getGlobalNodeNumber(ii)
+    CALL obj%get(VALUE=aval, globalNode=jj, timeCompo=timeCompo)
+    CALL VALUE%set(VALUE=aval, globalNode=jj)
+  END DO
+CLASS DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for the type of value')
+END SELECT
 
 END PROCEDURE stsField_get9
 
