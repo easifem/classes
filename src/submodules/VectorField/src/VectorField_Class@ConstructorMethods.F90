@@ -141,6 +141,23 @@ IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
 END PROCEDURE vField_Initiate1
 
 !----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_Initiate2
+CALL AbstractNodeFieldInitiate2(&
+  & obj=obj, &
+  & obj2=obj2, &
+  & copyFull=copyFull, &
+  & copyStructure=copyStructure, &
+  & usePointer=usePointer)
+SELECT TYPE (obj2)
+CLASS IS (VectorField_)
+  obj%spaceCompo = obj2%spaceCompo
+END SELECT
+END PROCEDURE vField_Initiate2
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 

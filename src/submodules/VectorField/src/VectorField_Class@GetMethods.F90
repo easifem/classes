@@ -16,6 +16,7 @@
 
 SUBMODULE(VectorField_Class) GetMethods
 USE BaseMethod
+USE ScalarField_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -178,28 +179,37 @@ DEALLOCATE (v)
 END PROCEDURE vField_get8
 
 !----------------------------------------------------------------------------
-!                                                                 Get
+!                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get9
 CHARACTER(*), PARAMETER :: myName = "vField_get9"
 INTEGER(I4B) :: n
 n = obj%spaceCompo
-IF (spacecompo .GT. n) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not callable as'// &
-  & ' (obj%dof .tspacecomponents. 1)='//tostring(n)// &
-  & ' is lesser than '// &
-  & ' spacecompo='//tostring(spacecompo))
-CALL GetValue( &
-  & obj=obj%realvec, &
-  & dofobj=obj%dof, &
-  & VALUE=VALUE%realvec, &
-  & idof=spacecompo)
+
+IF (spacecompo .GT. n) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'This routine is not callable as'// &
+    & ' (obj%dof .tspacecomponents. 1)='//tostring(n)// &
+    & ' is lesser than '// &
+    & ' spacecompo='//tostring(spacecompo))
+END IF
+
+SELECT TYPE (VALUE)
+TYPE IS (ScalarField_)
+  CALL GetValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & VALUE=VALUE%realvec, &
+    & idof=spacecompo)
+CLASS DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for the type of value')
+END SELECT
 END PROCEDURE vField_get9
 
 !----------------------------------------------------------------------------
-!                                                                 Get
+!                                                                       Get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_get10
@@ -207,6 +217,53 @@ CALL GetValue( &
   & obj=obj%realvec, &
   & VALUE=VALUE%realvec)
 END PROCEDURE vField_get10
+
+!----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_get11
+CHARACTER(*), PARAMETER :: myName = "vField_get11"
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize_value
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: indx1
+INTEGER(I4B) :: indx2
+REAL(DFP) :: avar
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'VectorField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+
+tsize = obj%dof.tNodes. [ivar, idof]
+tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+IF (tsize .NE. tsize_value) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+END IF
+
+DO ii = 1, tsize
+  indx1 = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=ii, &
+    & ivar=ivar, &
+    & idof=idof)
+  CALL obj%GetSingle(VALUE=avar, indx=indx1)
+  indx2 = GetNodeLoc(&
+    & obj=VALUE%dof, &
+    & nodenum=ii, &
+    & ivar=ivar_value, &
+    & idof=idof_value)
+  CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
+END DO
+
+END PROCEDURE vField_get11
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent

@@ -17,6 +17,7 @@
 
 SUBMODULE(VectorField_Class) SetMethods
 USE BaseMethod
+USE ScalarField_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -277,23 +278,29 @@ IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This subroutine is not callable for constant vector field')
 
-IF (VALUE%domain%getTotalNodes() .NE. obj%domain%getTotalNodes()) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to the total number of nodes')
+SELECT TYPE (VALUE)
+TYPE IS (ScalarField_)
+  IF (VALUE%domain%getTotalNodes() .NE. obj%domain%getTotalNodes()) &
+    & CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'Size of value should be equal to the total number of nodes')
 
-IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  vecPointer => getPointer(VALUE%realVec, VALUE%dof, 1)
-  CALL obj%set(VALUE=vecPointer(1), spaceCompo=spaceCompo, &
-    & scale=scale, addContribution=addContribution)
-ELSE
-  vecPointer => getPointer(obj%realVec, obj%dof, spaceCompo)
-  IF (PRESENT(addContribution)) THEN
-    vecPointer = vecPointer + get(VALUE%realVec, 1.0_DFP)
+  IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+    vecPointer => getPointer(VALUE%realVec, VALUE%dof, 1)
+    CALL obj%set(VALUE=vecPointer(1), spaceCompo=spaceCompo, &
+      & scale=scale, addContribution=addContribution)
   ELSE
-    vecPointer = get(VALUE%realVec, 1.0_DFP)
+    vecPointer => getPointer(obj%realVec, obj%dof, spaceCompo)
+    IF (PRESENT(addContribution)) THEN
+      vecPointer = vecPointer + get(VALUE%realVec, 1.0_DFP)
+    ELSE
+      vecPointer = get(VALUE%realVec, 1.0_DFP)
+    END IF
+    vecPointer => NULL()
   END IF
-  vecPointer => NULL()
-END IF
+CLASS DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for the type of value.')
+END SELECT
 
 END PROCEDURE vField_set6
 
@@ -528,5 +535,49 @@ END PROCEDURE vField_set14
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_set15
+CHARACTER(*), PARAMETER :: myName = "vField_set15"
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize_value
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: indx1
+INTEGER(I4B) :: indx2
+REAL(DFP) :: avar
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'VectorField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+
+tsize = obj%dof.tNodes. [ivar, idof]
+tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+IF (tsize .NE. tsize_value) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+END IF
+
+DO ii = 1, tsize
+  indx1 = GetNodeLoc(&
+    & obj=VALUE%dof, &
+    & nodenum=ii, &
+    & ivar=ivar_value, &
+    & idof=idof_value)
+  CALL VALUE%GetSingle(VALUE=avar, indx=indx1)
+  indx2 = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=ii, &
+    & ivar=ivar, &
+    & idof=idof)
+  CALL obj%SetSingle(VALUE=avar, indx=indx2, scale=scale, &
+    & addContribution=addContribution)
+END DO
+
+END PROCEDURE vField_set15
 
 END SUBMODULE SetMethods
