@@ -461,7 +461,7 @@ END SELECT
 END PROCEDURE stvField_set13
 
 !----------------------------------------------------------------------------
-!
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_set14
@@ -477,6 +477,54 @@ ELSE
   CALL Set(obj=obj%realvec, VALUE=VALUE)
 END IF
 END PROCEDURE stvField_set14
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_set15
+CHARACTER(*), PARAMETER :: myName = "stvField_set15"
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize_value
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: indx1
+INTEGER(I4B) :: indx2
+REAL(DFP) :: avar
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'STVectorField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+
+tsize = obj%dof.tNodes. [ivar, idof]
+tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+IF (tsize .NE. tsize_value) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+END IF
+
+DO ii = 1, tsize
+  indx1 = GetNodeLoc(&
+    & obj=VALUE%dof, &
+    & nodenum=ii, &
+    & ivar=ivar_value, &
+    & idof=idof_value)
+  CALL VALUE%GetSingle(VALUE=avar, indx=indx1)
+  indx2 = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=ii, &
+    & ivar=ivar, &
+    & idof=idof)
+  CALL obj%SetSingle(VALUE=avar, indx=indx2, scale=scale, &
+    & addContribution=addContribution)
+END DO
+
+END PROCEDURE stvField_set15
 
 !----------------------------------------------------------------------------
 !

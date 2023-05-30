@@ -22,11 +22,26 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 GetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_GetSingle
+#include "lisf.h"
+INTEGER(I4B) :: ierr
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL lis_vector_get_value(obj%lis_ptr, 1, VALUE, ierr)
+  CALL CHKERR(ierr)
+ELSE
+  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+  CALL CHKERR(ierr)
+END IF
+END PROCEDURE stvField_GetSingle
+
+!----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_get1
-#include "lisf.h"
 CHARACTER(*), PARAMETER :: myName = "stvField_get1"
 INTEGER(I4B) :: case_id
 INTEGER(I4B) :: localNode

@@ -183,6 +183,24 @@ IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
 END PROCEDURE stvField_Initiate1
 
 !----------------------------------------------------------------------------
+!                                                             Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_Initiate2
+CALL AbstractNodeFieldInitiate2(&
+  & obj=obj, &
+  & obj2=obj2, &
+  & copyFull=copyFull, &
+  & copyStructure=copyStructure, &
+  & usePointer=usePointer)
+SELECT TYPE (obj2)
+CLASS IS (STVectorField_)
+  obj%spaceCompo = obj2%spaceCompo
+  obj%timeCompo = obj2%timeCompo
+END SELECT
+END PROCEDURE stvField_Initiate2
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
