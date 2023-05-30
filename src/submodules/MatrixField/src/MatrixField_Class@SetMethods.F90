@@ -30,42 +30,36 @@ CONTAINS
 
 MODULE PROCEDURE mField_set1
 CHARACTER(*), PARAMETER :: myName = "mField_set1"
-#ifdef DEBUG_VER
-!
-! check
-!
-IF (SIZE(VALUE, 1) .NE. SIZE(VALUE, 2)  &
-  & .OR. SIZE(VALUE, 1) .NE. (.tdof.obj%mat%csr%dof) * SIZE(globalNode)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'value is not square matrix, or its shape is inconsistent &
-  & with the degree of freedom stored in MatrixField')
-!
-! check
-!
-#endif
-!
+INTEGER(I4B) :: val1, val2, val3
+
 ! check: this routine should not be called for rectangle matrix
-!
 IF (obj%isRectangle) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'This routine should not be called for rectangle matrix')
 END IF
-!
+! check:
+val1 = SIZE(VALUE, 1)
+val2 = SIZE(VALUE, 2)
+val3 = (.tdof.obj%mat%csr%idof) * SIZE(globalNode)
+IF (&
+    &      val1 .NE. val2  &
+    & .OR. val1 .NE. val3) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & "value is not square matrix, or its shape is inconsistent "// &
+   & "with the degree of freedom stored in MatrixField")
+END IF
+
 IF (PRESENT(addContribution)) THEN
-  !
   CALL add(obj=obj%mat,  &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode),  &
     & VALUE=VALUE, &
     & storageFMT=storageFMT, &
     & scale=INPUT(default=1.0_DFP, option=scale))
-  !
 ELSE
-  !
   CALL set(obj=obj%mat,  &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & VALUE=VALUE, &
     & storageFMT=storageFMT)
-  !
 END IF
 END PROCEDURE mField_set1
 
@@ -75,17 +69,11 @@ END PROCEDURE mField_set1
 
 MODULE PROCEDURE mField_set2
 CHARACTER(*), PARAMETER :: myName = "mField_set2"
-!
-! Main
-!
+
 IF (PRESENT(addContribution)) THEN
-  !
   ! Add
-  !
   IF (PRESENT(globalNode)) THEN
-    !
     ! check: this routine should not be called for rectangle matrix
-    !
     IF (obj%isRectangle) THEN
       CALL e%raiseError(modName//'::'//myName//' - '// &
         & 'This routine should not be called for rectangle matrix')
@@ -95,23 +83,15 @@ IF (PRESENT(addContribution)) THEN
         & scale=INPUT(default=1.0_DFP, option=scale), &
         & VALUE=VALUE)
     END IF
-    !
   ELSE
-    !
     CALL add(obj=obj%mat,  &
       & VALUE=VALUE, &
       & scale=INPUT(default=1.0_DFP, option=scale))
-    !
   END IF
-  !
   ! Set
-  !
 ELSE
-  !
   IF (PRESENT(globalNode)) THEN
-    !
     ! check: this routine should not be called for rectangle matrix
-    !
     IF (obj%isRectangle) THEN
       CALL e%raiseError(modName//'::'//myName//' - '// &
         & 'This routine should not be called for rectangle matrix')
@@ -120,13 +100,9 @@ ELSE
         & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
         & VALUE=VALUE)
     END IF
-    !
   ELSE
-    !
     CALL set(obj=obj%mat, VALUE=VALUE)
-    !
   END IF
-  !
 END IF
 END PROCEDURE mField_set2
 
@@ -136,7 +112,6 @@ END PROCEDURE mField_set2
 
 MODULE PROCEDURE mField_set3
 IF (PRESENT(addContribution)) THEN
-  !
   IF (obj%isRectangle) THEN
     CALL add(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
@@ -154,9 +129,7 @@ IF (PRESENT(addContribution)) THEN
       & VALUE=VALUE, &
       & scale=INPUT(default=1.0_DFP, option=scale))
   END IF
-  !
 ELSE
-  !
   IF (obj%isRectangle) THEN
     CALL Set(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
@@ -172,7 +145,6 @@ ELSE
       & jdof=jdof, &
       & VALUE=VALUE)
   END IF
-  !
 END IF
 END PROCEDURE mField_set3
 

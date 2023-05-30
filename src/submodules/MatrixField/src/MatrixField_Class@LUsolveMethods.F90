@@ -30,32 +30,30 @@ CONTAINS
 
 MODULE PROCEDURE mField_ILUSOLVE1
 CHARACTER(*), PARAMETER :: myName = "mField_ILUSOLVE1"
-INTEGER(I4B) :: s(2), info
-!
+INTEGER(I4B) :: s(2), info, sol1, rhs1
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'MatrixField_ object is not initiated.')
 END IF
-!
+
+IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is only avaiable for NATIVE_SERIAL')
+END IF
+
 IF (.NOT. obj%isPmatInitiated) THEN
+
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Pmat is not initiated')
-  ! CALL LinSolve( &
-  !   & A=obj%mat, &
-  !   & B=rhs, &
-  !   & X=sol, &
-  !   & isTranspose=.FALSE., &
-  !   & isFactored=.TRUE., &
-  !   & PrintStat=yes_no_t%NO, &
-  !   & info=info)
-  ! IF (info .NE. 0) THEN
-  !   CALL e%raiseError(modName//'::'//myName//' - '// &
-  !     & 'Failure in LinSolve()')
-  ! END IF
-ELSE
-  s = obj%SHAPE()
 
-  IF (SIZE(sol) .NE. SIZE(rhs) .OR. SIZE(sol) .NE. s(1)) THEN
+ELSE
+
+  s = obj%SHAPE()
+  sol1 = SIZE(sol)
+  rhs1 = SIZE(rhs)
+
+  IF (sol1 .NE. rhs1 .OR. sol1 .NE. s(1)) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
     & 'Size of sol vector should be equal to the size of rhs')
   END IF

@@ -31,7 +31,7 @@ CONTAINS
 MODULE PROCEDURE mField_setRow1
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow1"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -47,7 +47,7 @@ IF (PRESENT(scalarVal)) THEN
     & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -63,7 +63,7 @@ IF (PRESENT(vecVal)) THEN
     & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -81,7 +81,7 @@ IF (PRESENT(nodeFieldVal)) THEN
     & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow1
 
@@ -92,7 +92,7 @@ END PROCEDURE mField_setRow1
 MODULE PROCEDURE mField_setRow2
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow2"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -110,7 +110,7 @@ IF (PRESENT(scalarVal)) THEN
     & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -128,7 +128,7 @@ IF (PRESENT(vecVal)) THEN
     & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -148,7 +148,7 @@ IF (PRESENT(nodeFieldVal)) THEN
     & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow2
 
@@ -159,7 +159,7 @@ END PROCEDURE mField_setRow2
 MODULE PROCEDURE mField_setRow3
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow3"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -179,7 +179,7 @@ IF (PRESENT(scalarVal)) THEN
      & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -199,7 +199,7 @@ IF (PRESENT(vecVal)) THEN
       & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -221,7 +221,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow3
 
@@ -232,7 +232,7 @@ END PROCEDURE mField_setRow3
 MODULE PROCEDURE mField_setRow4
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow4"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -252,7 +252,7 @@ IF (PRESENT(scalarVal)) THEN
       & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -272,7 +272,7 @@ IF (PRESENT(vecVal)) THEN
       & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -294,7 +294,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow4
 
@@ -305,7 +305,7 @@ END PROCEDURE mField_setRow4
 MODULE PROCEDURE mField_setRow5
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow5"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -325,7 +325,7 @@ IF (PRESENT(scalarVal)) THEN
       & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -345,7 +345,7 @@ IF (PRESENT(vecVal)) THEN
       & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -367,7 +367,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow5
 
@@ -378,7 +378,7 @@ END PROCEDURE mField_setRow5
 MODULE PROCEDURE mField_setRow6
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow6"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -398,7 +398,7 @@ IF (PRESENT(scalarVal)) THEN
       & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -418,7 +418,7 @@ IF (PRESENT(vecVal)) THEN
       & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -440,7 +440,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow6
 
@@ -451,7 +451,7 @@ END PROCEDURE mField_setRow6
 MODULE PROCEDURE mField_setRow7
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_setRow7"
-!
+
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -471,7 +471,7 @@ IF (PRESENT(scalarVal)) THEN
       & VALUE=scalarVal)
   END IF
 END IF
-!
+
 IF (PRESENT(vecVal)) THEN
   IF (obj%isRectangle) THEN
     CALL setRow( &
@@ -491,7 +491,7 @@ IF (PRESENT(vecVal)) THEN
       & VALUE=vecVal)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -513,7 +513,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & VALUE=realvec)
   END IF
 END IF
-!
+
 realvec => NULL()
 END PROCEDURE mField_setRow7
 

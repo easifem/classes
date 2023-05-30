@@ -31,7 +31,7 @@ CONTAINS
 MODULE PROCEDURE mField_getRow1
 REAL(DFP), POINTER :: realvec(:)
 CHARACTER(*), PARAMETER :: myName = "mField_getRow1"
-!
+
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
     CALL getRow( &
@@ -51,7 +51,7 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -95,7 +95,7 @@ END PROCEDURE mField_getRow2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_getRow3
-!
+
 CALL obj%getRow( &
   & globalNode=globalNode, &
   & idof=GetIDOF( &
@@ -107,7 +107,7 @@ CALL obj%getRow( &
   & nodefieldVal=nodefieldVal, &
   & scale=scale, &
   & addContribution=addContribution)
-!
+
 END PROCEDURE mField_getRow3
 
 !----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ END PROCEDURE mField_getRow3
 MODULE PROCEDURE mField_getRow4
 CHARACTER(*), PARAMETER :: myName = "mField_getRow4"
 REAL(DFP), POINTER :: realvec(:)
-!
+
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
     CALL getRow( &
@@ -141,7 +141,7 @@ IF (PRESENT(VALUE)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -167,9 +167,9 @@ IF (PRESENT(nodeFieldVal)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 NULLIFY (realvec)
-!
+
 END PROCEDURE mField_getRow4
 
 !----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ END PROCEDURE mField_getRow4
 MODULE PROCEDURE mField_getRow5
 CHARACTER(*), PARAMETER :: myName = "mField_getRow2"
 REAL(DFP), POINTER :: realvec(:)
-!
+
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
     CALL getRow( &
@@ -203,7 +203,7 @@ IF (PRESENT(VALUE)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -229,9 +229,9 @@ IF (PRESENT(nodeFieldVal)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 NULLIFY (realvec)
-!
+
 END PROCEDURE mField_getRow5
 
 !----------------------------------------------------------------------------
@@ -241,7 +241,7 @@ END PROCEDURE mField_getRow5
 MODULE PROCEDURE mField_getRow6
 CHARACTER(*), PARAMETER :: myName = "mField_getRow2"
 REAL(DFP), POINTER :: realvec(:)
-!
+
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
     CALL getRow( &
@@ -265,7 +265,7 @@ IF (PRESENT(VALUE)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -291,9 +291,9 @@ IF (PRESENT(nodeFieldVal)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 NULLIFY (realvec)
-!
+
 END PROCEDURE mField_getRow6
 
 !----------------------------------------------------------------------------
@@ -303,7 +303,7 @@ END PROCEDURE mField_getRow6
 MODULE PROCEDURE mField_getRow7
 CHARACTER(*), PARAMETER :: myName = "mField_getRow2"
 REAL(DFP), POINTER :: realvec(:)
-!
+
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
     CALL getRow( &
@@ -327,7 +327,7 @@ IF (PRESENT(VALUE)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
     realvec => nodeFieldVal%getPointer()
@@ -353,9 +353,9 @@ IF (PRESENT(nodeFieldVal)) THEN
       & addContribution=addContribution)
   END IF
 END IF
-!
+
 NULLIFY (realvec)
-!
+
 END PROCEDURE mField_getRow7
 
 !----------------------------------------------------------------------------

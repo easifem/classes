@@ -31,21 +31,23 @@ CONTAINS
 MODULE PROCEDURE mField_setPrecondition
 CHARACTER(*), PARAMETER :: myName = "mField_setPrecondition"
 INTEGER(I4B) :: ierr
-!
+
 ! check
-!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'MatrixField_ is not initiated')
 END IF
-!
-!
-!
+
+IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is avaiable for NATIVE_SERIAL')
+END IF
+
 IF (PRESENT(param)) THEN
-  !
+
   obj%Pmat%nrow = SIZE(obj%mat, 1)
   obj%Pmat%ncol = SIZE(obj%mat, 2)
-  !
+
   IF (param%isPresent(key="Precond/name")) THEN
     ierr = param%get(key="Precond/name", &
       & VALUE=obj%Pmat%PmatName)
@@ -53,68 +55,65 @@ IF (PRESENT(param)) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/name should be present in param')
   END IF
-  !
+
   SELECT CASE (obj%Pmat%PmatName)
-    !
+
     ! ILUT
     ! droptol, lfil
-    !
   CASE (PRECOND_ILUT)
-    !
+
     IF (param%isPresent(key="Precond/droptol")) THEN
       ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Precond/droptol should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/lfil")) THEN
       ierr = param%get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/lfil should be present in param')
     END IF
-    !
+
     RETURN
-    !
+
     ! ILUTP
     ! droptol, lfil, permtol, mbloc
-    !
   CASE (PRECOND_ILUTP)
-    !
+
     IF (param%isPresent(key="Precond/droptol")) THEN
       ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Precond/droptol should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/lfil")) THEN
       ierr = param%get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/lfil should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/permtol")) THEN
       ierr = param%get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/permtol should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/mbloc")) THEN
       ierr = param%get(key="Precond/mbloc", VALUE=obj%Pmat%mbloc)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/mbloc should be present in param')
     END IF
-    !
+
     RETURN
-    !
+
     ! ILUD
     ! droptol, alpha
-    !
   CASE (PRECOND_ILUD)
     IF (param%isPresent(key="Precond/droptol")) THEN
       ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
@@ -122,19 +121,18 @@ IF (PRESENT(param)) THEN
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/droptol should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/alpha")) THEN
       ierr = param%get(key="Precond/alpha", VALUE=obj%Pmat%alpha)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/alpha should be present in param')
     END IF
-    !
+
     RETURN
-    !
+
     ! ILUDP
     ! droptol, alpha, permtol, mbloc
-    !
   CASE (PRECOND_ILUDP)
     IF (param%isPresent(key="Precond/droptol")) THEN
       ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
@@ -142,49 +140,46 @@ IF (PRESENT(param)) THEN
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/droptol should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/alpha")) THEN
       ierr = param%get(key="Precond/alpha", VALUE=obj%Pmat%alpha)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/alpha should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/permtol")) THEN
       ierr = param%get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/permtol should be present in param')
     END IF
-    !
+
     IF (param%isPresent(key="Precond/mbloc")) THEN
       ierr = param%get(key="Precond/mbloc", VALUE=obj%Pmat%mbloc)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/mbloc should be present in param')
     END IF
-    !
+
     RETURN
-    !
+
     ! ILUK
     ! lfil
-    !
   CASE (PRECOND_ILUK)
-    !
+
     IF (param%isPresent(key="Precond/lfil")) THEN
       ierr = param%get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/lfil should be present in param')
     END IF
-    !
     RETURN
-    !
   END SELECT
 END IF
-!
+
 SELECT CASE (obj%Pmat%PmatName)
-  !
+
 CASE (PRECOND_ILUT)
   ! CALL mField_getILUT( obj )
   obj%isPmatInitiated = .TRUE.
@@ -195,7 +190,7 @@ CASE (PRECOND_ILUT)
     & ALU=obj%Pmat%A, &
     & JLU=obj%Pmat%JA, &
     & JU=obj%Pmat%JU)
-  !
+
 CASE (PRECOND_ILUTP)
   ! CALL mField_getILUTP( obj )
   obj%isPmatInitiated = .TRUE.
@@ -209,7 +204,7 @@ CASE (PRECOND_ILUTP)
     & ALU=obj%Pmat%A, &
     & JLU=obj%Pmat%JA, &
     & JU=obj%Pmat%JU)
-  !
+
 CASE (PRECOND_ILUD)
   ! CALL mField_getILUD( obj )
   obj%isPmatInitiated = .TRUE.
@@ -220,7 +215,7 @@ CASE (PRECOND_ILUD)
     & ALU=obj%Pmat%A, &
     & JLU=obj%Pmat%JA, &
     & JU=obj%Pmat%JU)
-  !
+
 CASE (PRECOND_ILUDP)
   ! CALL mField_getILUDP( obj )
   obj%isPmatInitiated = .TRUE.
@@ -234,7 +229,7 @@ CASE (PRECOND_ILUDP)
     & ALU=obj%Pmat%A, &
     & JLU=obj%Pmat%JA, &
     & JU=obj%Pmat%JU)
-  !
+
 CASE (PRECOND_ILUK)
   ! CALL mField_getILUK( obj )
   obj%isPmatInitiated = .TRUE.
@@ -245,11 +240,9 @@ CASE (PRECOND_ILUK)
     & ALU=obj%Pmat%A, &
     & JLU=obj%Pmat%JA, &
     & JU=obj%Pmat%JU)
-  !
+
 END SELECT
-!
-!
-!
+
 END PROCEDURE mField_setPrecondition
 
 !----------------------------------------------------------------------------
