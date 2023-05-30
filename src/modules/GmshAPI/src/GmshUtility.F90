@@ -18,7 +18,7 @@
 MODULE GmshUtility
 USE GlobalData
 USE CInterface
-USE, INTRINSIC :: ISO_C_Binding
+USE, INTRINSIC :: ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
 
@@ -40,13 +40,13 @@ PUBLIC :: gmsh_cstrlen
 PUBLIC :: gmshFree
 PUBLIC :: gmsh_size_str
 
-type cstr_
-  character(len=:), allocatable :: s
-end type cstr_
+TYPE cstr_
+  CHARACTER(:), ALLOCATABLE :: s
+END TYPE cstr_
 
-type, private :: c_array_
-  type(c_ptr) :: s
-end type c_array_
+TYPE, PRIVATE :: c_array_
+  TYPE(C_PTR) :: s
+END TYPE c_array_
 
 CONTAINS
 
@@ -54,27 +54,27 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-pure integer(c_size_t) function gmsh_size_str(v) result(n)
-  character(len=*), optional, intent(in) :: v(:)
+PURE INTEGER(C_SIZE_T) FUNCTION gmsh_size_str(v) RESULT(n)
+  CHARACTER(*), OPTIONAL, INTENT(in) :: v(:)
   n = 0
-  if (present(v)) n = size(v, kind=c_size_t)
-end function gmsh_size_str
+  IF (PRESENT(v)) n = SIZE(v, kind=C_SIZE_T)
+END FUNCTION gmsh_size_str
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-pure function gmsh_InputStr(default, option) &
-  & result(ans)
-  character(len=*), intent(in) :: default(:)
-  character(len=*), optional, intent(in) :: option(:)
-  character(len=:), allocatable :: ans(:)
-  if (present(option)) then
+PURE FUNCTION gmsh_InputStr(default, option) &
+  & RESULT(ans)
+  CHARACTER(*), INTENT(in) :: default(:)
+  CHARACTER(*), OPTIONAL, INTENT(in) :: option(:)
+  CHARACTER(:), ALLOCATABLE :: ans(:)
+  IF (PRESENT(option)) THEN
     ans = option
-  else
+  ELSE
     ans = default
-  end if
-end function gmsh_InputStr
+  END IF
+END FUNCTION gmsh_InputStr
 
 !----------------------------------------------------------------------------
 !
@@ -82,20 +82,20 @@ end function gmsh_InputStr
 
 ! ref: ivectorstring_
 
-subroutine gmsh_GetCharArray_cPtr(o, cstrs, cptrs)
-  character(len=*), intent(in) :: o(:)
-  character(len=maxStrLen, kind=c_char), target, allocatable, &
-  & intent(out) :: cstrs(:)
-  type(c_ptr), allocatable, intent(out) :: cptrs(:)
+SUBROUTINE gmsh_GetCharArray_cPtr(o, cstrs, cptrs)
+  CHARACTER(*), INTENT(in) :: o(:)
+  CHARACTER(len=maxStrLen, kind=C_CHAR), TARGET, ALLOCATABLE, &
+  & INTENT(out) :: cstrs(:)
+  TYPE(C_PTR), ALLOCATABLE, INTENT(out) :: cptrs(:)
     !!
-  integer :: i
-  allocate (cstrs(size(o)))    ! Return to keep references from cptrs
-  allocate (cptrs(size(o)))
-  do i = 1, SIZE(o)
+  INTEGER :: i
+  ALLOCATE (cstrs(SIZE(o))) ! Return to keep references from cptrs
+  ALLOCATE (cptrs(SIZE(o)))
+  DO i = 1, SIZE(o)
     cstrs(i) = gmsh_CString(o(i))
     cptrs(i) = C_LOC(cstrs(i))
-  end do
-end subroutine gmsh_GetCharArray_cPtr
+  END DO
+END SUBROUTINE gmsh_GetCharArray_cPtr
 
 !----------------------------------------------------------------------------
 !
@@ -103,132 +103,131 @@ end subroutine gmsh_GetCharArray_cPtr
 
 ! ref: istring_
 
-function gmsh_CString(o) result(v)
-  character(len=*), intent(in) :: o
-  character(len=:, kind=c_char), allocatable :: v
-  v = trim(o)//c_null_char
-end function gmsh_CString
+FUNCTION gmsh_CString(o) RESULT(v)
+  CHARACTER(*), INTENT(in) :: o
+  CHARACTER(:, kind=C_CHAR), ALLOCATABLE :: v
+  v = TRIM(o)//C_NULL_CHAR
+END FUNCTION gmsh_CString
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-pure function gmsh_strArraySize(v) result(n)
-  character(len=*), optional, intent(in) :: v(:)
-  integer(c_int) :: n
-  n = 1   ! can't have 0-length commands
-  if (present(v)) n = size(v, kind=c_int)
-end function gmsh_strArraySize
+PURE FUNCTION gmsh_strArraySize(v) RESULT(n)
+  CHARACTER(*), OPTIONAL, INTENT(in) :: v(:)
+  INTEGER(C_INT) :: n
+  n = 1 ! can't have 0-length commands
+  IF (PRESENT(v)) n = SIZE(v, kind=C_INT)
+END FUNCTION gmsh_strArraySize
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-elemental function gmsh_cdouble(value) result(ans)
-  class(*), intent(in) :: value
-  real(C_DOUBLE) :: ans
+ELEMENTAL FUNCTION gmsh_cdouble(VALUE) RESULT(ans)
+  CLASS(*), INTENT(in) :: VALUE
+  REAL(C_DOUBLE) :: ans
   !!
-  select type (value)
-  type is (integer(int8))
-    ans = real(value, kind=c_double)
-  type is (integer(int16))
-    ans = real(value, kind=c_double)
-  type is (integer(int32))
-    ans = real(value, kind=c_double)
-  type is (integer(int64))
-    ans = real(value, kind=c_double)
-  type is (real(real32))
-    ans = real(value, kind=c_double)
-  type is (real(real64))
-    ans = real(value, kind=c_double)
-  end select
-
+  SELECT TYPE (VALUE)
+  TYPE is (INTEGER(INT8))
+    ans = REAL(VALUE, kind=C_DOUBLE)
+  TYPE is (INTEGER(INT16))
+    ans = REAL(VALUE, kind=C_DOUBLE)
+  TYPE is (INTEGER(INT32))
+    ans = REAL(VALUE, kind=C_DOUBLE)
+  TYPE is (INTEGER(INT64))
+    ans = REAL(VALUE, kind=C_DOUBLE)
+  TYPE is (REAL(REAL32))
+    ans = REAL(VALUE, kind=C_DOUBLE)
+  TYPE is (REAL(REAL64))
+    ans = REAL(VALUE, kind=C_DOUBLE)
+  END SELECT
   !!
-end function gmsh_cdouble
+END FUNCTION gmsh_cdouble
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-elemental function gmsh_opt_cdouble(default, option) result(ans)
-  class(*), intent(in) :: default
-  class(*), optional, intent(in) :: option
-  real(C_DOUBLE) :: ans
+ELEMENTAL FUNCTION gmsh_opt_cdouble(default, option) RESULT(ans)
+  CLASS(*), INTENT(in) :: default
+  CLASS(*), OPTIONAL, INTENT(in) :: option
+  REAL(C_DOUBLE) :: ans
   !!
-  if (present(option)) then
+  IF (PRESENT(option)) THEN
     ans = gmsh_cdouble(option)
-  else
+  ELSE
     ans = gmsh_cdouble(default)
-  end if
+  END IF
   !!
-end function gmsh_opt_cdouble
+END FUNCTION gmsh_opt_cdouble
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-elemental function gmsh_cint(value) result(ans)
-  class(*), intent(in) :: value
+ELEMENTAL FUNCTION gmsh_cint(VALUE) RESULT(ans)
+  CLASS(*), INTENT(in) :: VALUE
   INTEGER(C_INT) :: ans
   !!
-  select type (value)
-  type is (integer(int8))
-    ans = int(value, kind=c_int)
-  type is (integer(int16))
-    ans = int(value, kind=c_int)
-  type is (integer(int32))
-    ans = int(value, kind=c_int)
-  type is (integer(int64))
-    ans = int(value, kind=c_int)
-  type is (real(real32))
-    ans = int(value, kind=c_int)
-  type is (real(real64))
-    ans = int(value, kind=c_int)
-  end select
+  SELECT TYPE (VALUE)
+  TYPE is (INTEGER(INT8))
+    ans = INT(VALUE, kind=C_INT)
+  TYPE is (INTEGER(INT16))
+    ans = INT(VALUE, kind=C_INT)
+  TYPE is (INTEGER(INT32))
+    ans = INT(VALUE, kind=C_INT)
+  TYPE is (INTEGER(INT64))
+    ans = INT(VALUE, kind=C_INT)
+  TYPE is (REAL(REAL32))
+    ans = INT(VALUE, kind=C_INT)
+  TYPE is (REAL(REAL64))
+    ans = INT(VALUE, kind=C_INT)
+  END SELECT
   !!
-end function gmsh_cint
+END FUNCTION gmsh_cint
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-elemental function gmsh_opt_cint(default, option) result(ans)
-  class(*), intent(in) :: default
-  class(*), optional, intent(in) :: option
-  integer(C_INT) :: ans
+ELEMENTAL FUNCTION gmsh_opt_cint(default, option) RESULT(ans)
+  CLASS(*), INTENT(in) :: default
+  CLASS(*), OPTIONAL, INTENT(in) :: option
+  INTEGER(C_INT) :: ans
   !!
-  if (present(option)) then
+  IF (PRESENT(option)) THEN
     ans = gmsh_cint(option)
-  else
+  ELSE
     ans = gmsh_cint(default)
-  end if
+  END IF
   !!
-end function gmsh_opt_cint
+END FUNCTION gmsh_opt_cint
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-elemental function gmsh_csize(value) result(ans)
-  class(*), intent(in) :: value
+ELEMENTAL FUNCTION gmsh_csize(VALUE) RESULT(ans)
+  CLASS(*), INTENT(in) :: VALUE
   INTEGER(C_SIZE_T) :: ans
   !!
-  select type (value)
-  type is (integer(int8))
-    ans = int(value, kind=c_size_t)
-  type is (integer(int16))
-    ans = int(value, kind=c_size_t)
-  type is (integer(int32))
-    ans = int(value, kind=c_size_t)
-  type is (integer(int64))
-    ans = int(value, kind=c_size_t)
-  type is (real(real32))
-    ans = int(value, kind=c_size_t)
-  type is (real(real64))
-    ans = int(value, kind=c_size_t)
-  end select
+  SELECT TYPE (VALUE)
+  TYPE is (INTEGER(INT8))
+    ans = INT(VALUE, kind=C_SIZE_T)
+  TYPE is (INTEGER(INT16))
+    ans = INT(VALUE, kind=C_SIZE_T)
+  TYPE is (INTEGER(INT32))
+    ans = INT(VALUE, kind=C_SIZE_T)
+  TYPE is (INTEGER(INT64))
+    ans = INT(VALUE, kind=C_SIZE_T)
+  TYPE is (REAL(REAL32))
+    ans = INT(VALUE, kind=C_SIZE_T)
+  TYPE is (REAL(REAL64))
+    ans = INT(VALUE, kind=C_SIZE_T)
+  END SELECT
   !!
-end function gmsh_csize
+END FUNCTION gmsh_csize
 
 !----------------------------------------------------------------------------
 !
@@ -236,37 +235,37 @@ end function gmsh_csize
 
 ! ref: ovectorstring
 
-function gmsh_cStrings2CharArray(cptr, n) result(v)
-  type(c_ptr), intent(inout) :: cptr
-  integer(c_size_t), intent(in) :: n
-  character(len=maxStrLen), allocatable :: v(:)
+FUNCTION gmsh_cStrings2CharArray(cptr, n) RESULT(v)
+  TYPE(C_PTR), INTENT(inout) :: cptr
+  INTEGER(C_SIZE_T), INTENT(in) :: n
+  CHARACTER(len=maxStrLen), ALLOCATABLE :: v(:)
   !!
-  integer(c_size_t) :: i, c, lenstr
-  type(c_ptr), pointer :: c_array(:)
+  INTEGER(C_SIZE_T) :: i, c, lenstr
+  TYPE(C_PTR), POINTER :: c_array(:)
   ! type(c_array_), pointer :: c_array(:)
-  character(kind=c_char, len=1), pointer :: fptr(:)
+  CHARACTER(kind=C_CHAR, len=1), POINTER :: fptr(:)
   !!
-  call c_f_pointer(cptr, c_array, [n])
+  CALL C_F_POINTER(cptr, c_array, [n])
   !!
-  allocate (v(n))
+  ALLOCATE (v(n))
   !!
-  do i = 1_c_size_t, n
+  DO i = 1_C_SIZE_T, n
     !!
-    call c_f_pointer( &
+    CALL C_F_POINTER( &
       & c_array(i), fptr, &
-      & [int(maxStrLen)])
+      & [INT(maxStrLen)])
     !!
     lenstr = gmsh_cstrlen(fptr)
     v(i) = ""
     !!
-    do c = 1_c_size_t, lenstr
+    DO c = 1_C_SIZE_T, lenstr
       v(i) (c:c) = fptr(c)
-    end do
+    END DO
     !!
-  end do
+  END DO
   !!
-  call gmshFree(cptr)
-end function gmsh_cStrings2CharArray
+  CALL gmshFree(cptr)
+END FUNCTION gmsh_cStrings2CharArray
 
 !----------------------------------------------------------------------------
 !
@@ -274,28 +273,28 @@ end function gmsh_cStrings2CharArray
 
 ! ref: ovectorint_
 
-function gmsh_intvec_c2f(cptr, n) result(v)
-  type(c_ptr), intent(inout) :: cptr
-  integer(c_size_t), intent(in) :: n
-  integer(c_int), allocatable :: v(:)
+FUNCTION gmsh_intvec_c2f(cptr, n) RESULT(v)
+  TYPE(C_PTR), INTENT(inout) :: cptr
+  INTEGER(C_SIZE_T), INTENT(in) :: n
+  INTEGER(C_INT), ALLOCATABLE :: v(:)
   !!
-  integer(c_int), pointer :: v_(:)
-  call c_f_pointer(cptr, v_, [n])
-  allocate (v, source=v_)
-  call gmshFree(cptr)
-end function gmsh_intvec_c2f
+  INTEGER(C_INT), POINTER :: v_(:)
+  CALL C_F_POINTER(cptr, v_, [n])
+  ALLOCATE (v, source=v_)
+  CALL gmshFree(cptr)
+END FUNCTION gmsh_intvec_c2f
 
 ! ref: ovectordouble_
 
-function gmsh_realvec_c2f(cptr, n) result(v)
-  type(c_ptr), intent(inout) :: cptr
-  integer(c_size_t), intent(in) :: n
-  real(c_double), allocatable :: v(:)
-  real(c_double), pointer :: v_(:)
-  call c_f_pointer(cptr, v_, [n])
-  allocate (v, source=v_)
-  call gmshFree(cptr)
-end function gmsh_realvec_c2f
+FUNCTION gmsh_realvec_c2f(cptr, n) RESULT(v)
+  TYPE(C_PTR), INTENT(inout) :: cptr
+  INTEGER(C_SIZE_T), INTENT(in) :: n
+  REAL(C_DOUBLE), ALLOCATABLE :: v(:)
+  REAL(C_DOUBLE), POINTER :: v_(:)
+  CALL C_F_POINTER(cptr, v_, [n])
+  ALLOCATE (v, source=v_)
+  CALL gmshFree(cptr)
+END FUNCTION gmsh_realvec_c2f
 
 !----------------------------------------------------------------------------
 !
@@ -303,20 +302,20 @@ end function gmsh_realvec_c2f
 
 ! Ref: ovectorpair
 
-function gmsh_dimtag_c2f(cptr, n) result(v)
-  type(c_ptr), intent(inout) :: cptr
-  integer(c_size_t), intent(in) :: n
-  integer(c_int), allocatable :: v(:, :)
+FUNCTION gmsh_dimtag_c2f(cptr, n) RESULT(v)
+  TYPE(C_PTR), INTENT(inout) :: cptr
+  INTEGER(C_SIZE_T), INTENT(in) :: n
+  INTEGER(C_INT), ALLOCATABLE :: v(:, :)
   !!
-  integer(c_int), pointer :: v_(:, :)
+  INTEGER(C_INT), POINTER :: v_(:, :)
   !!
-  call c_f_pointer(cptr, v_, [2_c_size_t, n / 2_c_size_t])
+  CALL C_F_POINTER(cptr, v_, [2_C_SIZE_T, n / 2_C_SIZE_T])
   !!
-  allocate (v, source=v_)
+  ALLOCATE (v, source=v_)
   !!
-  call gmshFree(cptr)
+  CALL gmshFree(cptr)
   !!
-end function gmsh_dimtag_c2f
+END FUNCTION gmsh_dimtag_c2f
 
 !----------------------------------------------------------------------------
 !
@@ -327,33 +326,33 @@ end function gmsh_dimtag_c2f
 !----------------------------------------------------------------------------
 
 !> Calculates the length of a C string.
-function gmsh_cstrlen(carray) result(res)
-  character(kind=c_char, len=1), intent(in) :: carray(:)
-  integer :: res
-  integer :: i
-  do i = 1, size(carray)
-    if (carray(i) == c_null_char) then
+FUNCTION gmsh_cstrlen(carray) RESULT(res)
+  CHARACTER(kind=C_CHAR, len=1), INTENT(in) :: carray(:)
+  INTEGER :: res
+  INTEGER :: i
+  DO i = 1, SIZE(carray)
+    IF (carray(i) == C_NULL_CHAR) THEN
       res = i - 1
-      return
-    end if
-  end do
+      RETURN
+    END IF
+  END DO
   res = i
-end function gmsh_cstrlen
+END FUNCTION gmsh_cstrlen
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Callback to C to free any reserved memory
-subroutine gmshFree(p)
-  interface
-    subroutine C_API(ptr) bind(C, name="gmshFree")
-      use, intrinsic :: iso_c_binding
-      type(c_ptr), value :: ptr
-    end subroutine C_API
-  end interface
-  type(c_ptr) :: p
-  call C_API(p)
-end subroutine gmshFree
+SUBROUTINE gmshFree(p)
+  INTERFACE
+    SUBROUTINE C_API(ptr) BIND(C, name="gmshFree")
+      USE, INTRINSIC :: ISO_C_BINDING
+      TYPE(C_PTR), VALUE :: ptr
+    END SUBROUTINE C_API
+  END INTERFACE
+  TYPE(C_PTR) :: p
+  CALL C_API(p)
+END SUBROUTINE gmshFree
 
 END MODULE GmshUtility

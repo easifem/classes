@@ -24,24 +24,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateElemSD1
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  !!
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    CALL meshptr%initiateElemSD(&
-      & orderSpace=orderSpace(ii),  &
-      & linSpaceElem=meshptr%refElem, &
-      & spaceElem=meshptr%refElem, &
-      & quadTypeForSpace=quadTypeForSpace, &
-      & continuityTypeForSpace=continuityTypeForSpace, &
-      & interpolTypeForSpace=interpolTypeForSpace )
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+!
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  CALL meshptr%initiateElemSD(&
+    & orderSpace=orderSpace(ii),  &
+    & linSpaceElem=meshptr%refElem, &
+    & spaceElem=meshptr%refElem, &
+    & quadTypeForSpace=quadTypeForSpace, &
+    & continuityTypeForSpace=continuityTypeForSpace, &
+    & interpolTypeForSpace=interpolTypeForSpace)
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateElemSD1
 
 !----------------------------------------------------------------------------
@@ -49,31 +50,32 @@ END PROCEDURE Domain_InitiateElemSD1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateElemSD2
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  !!
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    CALL meshptr%initiateElemSD(&
-      & orderSpace=orderSpace(ii),  &
-      & linSpaceElem=meshptr%refElem, &
-      & spaceElem=meshptr%refElem, &
-      & quadTypeForSpace=quadTypeForSpace, &
-      & continuityTypeForSpace=continuityTypeForSpace, &
-      & interpolTypeForSpace=interpolTypeForSpace, &
-      & orderTime=orderTime, &
-      & linTimeElem=linTimeElem, &
-      & timeElem=timeElem, &
-      & quadTypeForTime=quadTypeForTime, &
-      & continuityTypeForTime=continuityTypeForTime, &
-      & interpolTypeForTime=interpolTypeForTime, &
-      & tvec=tvec)
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+!
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  CALL meshptr%initiateElemSD(&
+    & orderSpace=orderSpace(ii),  &
+    & linSpaceElem=meshptr%refElem, &
+    & spaceElem=meshptr%refElem, &
+    & quadTypeForSpace=quadTypeForSpace, &
+    & continuityTypeForSpace=continuityTypeForSpace, &
+    & interpolTypeForSpace=interpolTypeForSpace, &
+    & orderTime=orderTime, &
+    & linTimeElem=linTimeElem, &
+    & timeElem=timeElem, &
+    & quadTypeForTime=quadTypeForTime, &
+    & continuityTypeForTime=continuityTypeForTime, &
+    & interpolTypeForTime=interpolTypeForTime, &
+    & tvec=tvec)
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateElemSD2
 
 !----------------------------------------------------------------------------
@@ -81,30 +83,31 @@ END PROCEDURE Domain_InitiateElemSD2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateElemSD3
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  !!
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    CALL meshptr%initiateElemSD(&
-      & orderSpace=orderSpace(ii),  &
-      & linSpaceElem=meshptr%refElem, &
-      & spaceElem=meshptr%refElem, &
-      & quadTypeForSpace=quadTypeForSpace, &
-      & continuityTypeForSpace=continuityTypeForSpace, &
-      & interpolTypeForSpace=interpolTypeForSpace, &
-      & orderTime=orderTime, &
-      & linTimeElem=linTimeElem, &
-      & timeElem=timeElem, &
-      & quadTypeForTime=quadTypeForTime, &
-      & continuityTypeForTime=continuityTypeForTime, &
-      & interpolTypeForTime=interpolTypeForTime)
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+!
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  CALL meshptr%initiateElemSD(&
+    & orderSpace=orderSpace(ii),  &
+    & linSpaceElem=meshptr%refElem, &
+    & spaceElem=meshptr%refElem, &
+    & quadTypeForSpace=quadTypeForSpace, &
+    & continuityTypeForSpace=continuityTypeForSpace, &
+    & interpolTypeForSpace=interpolTypeForSpace, &
+    & orderTime=orderTime, &
+    & linTimeElem=linTimeElem, &
+    & timeElem=timeElem, &
+    & quadTypeForTime=quadTypeForTime, &
+    & continuityTypeForTime=continuityTypeForTime, &
+    & interpolTypeForTime=interpolTypeForTime)
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateElemSD3
 
 !----------------------------------------------------------------------------
@@ -112,16 +115,17 @@ END PROCEDURE Domain_InitiateElemSD3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateElemSD4
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    CALL meshptr%initiateElemSD( tvec=tvec)
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  CALL meshptr%initiateElemSD(tvec=tvec)
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateElemSD4
 
 !----------------------------------------------------------------------------
@@ -129,25 +133,26 @@ END PROCEDURE Domain_InitiateElemSD4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateFacetElemSD1
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    !!
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    !!
-    CALL meshptr%initiateFacetElemSD(&
-      & orderSpace=orderSpace(ii),  &
-      & linSpaceElem=meshptr%facetElements, &
-      & spaceElem=meshptr%facetElements, &
-      & quadTypeForSpace=quadTypeForSpace, &
-      & continuityTypeForSpace=continuityTypeForSpace, &
-      & interpolTypeForSpace=interpolTypeForSpace )
-    !!
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  !
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  !
+  CALL meshptr%initiateFacetElemSD(&
+    & orderSpace=orderSpace(ii),  &
+    & linSpaceElem=meshptr%facetElements, &
+    & spaceElem=meshptr%facetElements, &
+    & quadTypeForSpace=quadTypeForSpace, &
+    & continuityTypeForSpace=continuityTypeForSpace, &
+    & interpolTypeForSpace=interpolTypeForSpace)
+  !
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateFacetElemSD1
 
 !----------------------------------------------------------------------------
@@ -155,31 +160,32 @@ END PROCEDURE Domain_InitiateFacetElemSD1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateFacetElemSD2
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  !!
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    CALL meshptr%initiateFacetElemSD(&
-      & orderSpace=orderSpace(ii),  &
-      & linSpaceElem=meshptr%facetElements, &
-      & spaceElem=meshptr%facetElements, &
-      & quadTypeForSpace=quadTypeForSpace, &
-      & continuityTypeForSpace=continuityTypeForSpace, &
-      & interpolTypeForSpace=interpolTypeForSpace, &
-      & orderTime=orderTime, &
-      & linTimeElem=linTimeElem, &
-      & timeElem=timeElem, &
-      & quadTypeForTime=quadTypeForTime, &
-      & continuityTypeForTime=continuityTypeForTime, &
-      & interpolTypeForTime=interpolTypeForTime, &
-      & tvec=tvec)
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+!
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  CALL meshptr%initiateFacetElemSD(&
+    & orderSpace=orderSpace(ii),  &
+    & linSpaceElem=meshptr%facetElements, &
+    & spaceElem=meshptr%facetElements, &
+    & quadTypeForSpace=quadTypeForSpace, &
+    & continuityTypeForSpace=continuityTypeForSpace, &
+    & interpolTypeForSpace=interpolTypeForSpace, &
+    & orderTime=orderTime, &
+    & linTimeElem=linTimeElem, &
+    & timeElem=timeElem, &
+    & quadTypeForTime=quadTypeForTime, &
+    & continuityTypeForTime=continuityTypeForTime, &
+    & interpolTypeForTime=interpolTypeForTime, &
+    & tvec=tvec)
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateFacetElemSD2
 
 !----------------------------------------------------------------------------
@@ -187,16 +193,17 @@ END PROCEDURE Domain_InitiateFacetElemSD2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_InitiateFacetElemSD3
-  INTEGER(I4B) :: ii
-  CLASS(Mesh_), POINTER :: meshptr
-  !!
-  DO ii = 1, obj%getTotalMesh(dim=dim)
-    meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
-    CALL meshptr%initiateFacetElemSD( tvec=tvec)
-  END DO
-  !!
-  NULLIFY(meshptr)
-  !!
+INTEGER(I4B) :: ii
+CLASS(Mesh_), POINTER :: meshptr
+!
+DO ii = 1, obj%getTotalMesh(dim=dim)
+  meshptr => obj%getMeshPointer(dim=dim, entitynum=ii)
+  IF (meshptr%getTotalElements() .EQ. 0_I4B) CYCLE
+  CALL meshptr%initiateFacetElemSD(tvec=tvec)
+END DO
+!
+NULLIFY (meshptr)
+!
 END PROCEDURE Domain_InitiateFacetElemSD3
 
 !----------------------------------------------------------------------------

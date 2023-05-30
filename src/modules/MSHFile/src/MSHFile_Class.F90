@@ -17,7 +17,7 @@
 
 MODULE MSHFile_Class
 USE BaseType
-USE String_Class, ONLY:String
+USE String_Class, ONLY: String
 USE GlobalData
 USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
@@ -29,61 +29,69 @@ USE mshElements_Class
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "MSHFile_CLASS"
+CHARACTER(*), PARAMETER :: modName = "MSHFile_CLASS"
 
 !----------------------------------------------------------------------------
 !                                                                 MSHFile_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
-! summary: 	This class handles the mesh generation by gmsh
+! date:         11 June 2021
+! summary:         This class handles the mesh generation by gmsh
 
-TYPE, EXTENDS( TxtFile_ ) :: MSHFile_
+TYPE, EXTENDS(TxtFile_) :: MSHFile_
   PRIVATE
-  TYPE( String ), POINTER :: buffer => NULL()
+  TYPE(String), POINTER :: buffer => NULL()
     !! buffer to recoord coommands
-  INTEGER( I4B ) :: nsd = 0
+  INTEGER(I4B) :: nsd = 0
     !! Spatial dimension
-  TYPE( mshFormat_ ) :: format
+  TYPE(mshFormat_) :: FORMAT
     !! mesh format
-  TYPE( mshPhysicalNames_ ) :: physicalNames
+  TYPE(mshPhysicalNames_) :: physicalNames
     !! mesh physical groups
-  TYPE( mshNodes_ ) :: nodes
+  TYPE(mshNodes_) :: nodes
     !! nodes
-  TYPE( mshElements_ ) :: elements
+  TYPE(mshElements_) :: elements
     !! elements
-  TYPE( mshEntity_ ), ALLOCATABLE :: pointEntities( : )
+  TYPE(mshEntity_), ALLOCATABLE :: pointEntities(:)
     !! point entities
-  TYPE( mshEntity_ ), ALLOCATABLE :: curveEntities( : )
+  TYPE(mshEntity_), ALLOCATABLE :: curveEntities(:)
     !! curve entities
-  TYPE( mshEntity_ ), ALLOCATABLE :: surfaceEntities( : )
+  TYPE(mshEntity_), ALLOCATABLE :: surfaceEntities(:)
     !! surface entities
-  TYPE( mshEntity_ ), ALLOCATABLE :: volumeEntities( : )
+  TYPE(mshEntity_), ALLOCATABLE :: volumeEntities(:)
     !! volume entities
-  CONTAINS
-    PRIVATE
-    FINAL :: msh_Final
+CONTAINS
+  PRIVATE
+  FINAL :: msh_Final
       !! Finalizer
-    PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => msh_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => msh_Deallocate
       !! deallocate the data
-    PROCEDURE, PUBLIC, PASS( obj ) :: Import => msh_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => msh_Import
       !! Read the file and initiate the object
-    PROCEDURE, PUBLIC, PASS( obj ) :: Export => msh_Export
+  PROCEDURE, PASS(obj) :: Export_hdf5 => msh_Export_hdf5
+  PROCEDURE, PASS(obj) :: Export_txtfile => msh_Export_txtfile
       !! Export to the external hdf5 file
-    PROCEDURE, PUBLIC, PASS( obj ) :: MSHFileRead => msh_Read
-    GENERIC, PUBLIC :: Read => MSHFileRead
+  GENERIC, PUBLIC :: Export => Export_hdf5, Export_txtfile
+  PROCEDURE, PUBLIC, PASS(obj) :: MSHFileRead => msh_Read
+  GENERIC, PUBLIC :: READ => MSHFileRead
       !! initiate the object
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadPointEntities => &
-      & msh_ReadPointEntities
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadCurveEntities => &
-      & msh_ReadCurveEntities
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadSurfaceEntities => &
-      & msh_ReadSurfaceEntities
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadVolumeEntities => &
-      & msh_ReadVolumeEntities
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadNodes => msh_ReadNodes
-    PROCEDURE, PUBLIC, PASS( obj ) :: ReadElements => msh_ReadElements
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadPointEntities => &
+    & msh_ReadPointEntities
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadCurveEntities => &
+    & msh_ReadCurveEntities
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadSurfaceEntities => &
+    & msh_ReadSurfaceEntities
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadVolumeEntities => &
+    & msh_ReadVolumeEntities
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadNodes => msh_ReadNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadElements => msh_ReadElements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportNodes => msh_ExportNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportElements => msh_ExportElements
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntNodeNumber => msh_GetIntNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => msh_SetNodeCoord
 END TYPE MSHFile_
 
 !----------------------------------------------------------------------------
@@ -99,7 +107,7 @@ PUBLIC :: MSHFile_
 !----------------------------------------------------------------------------
 
 TYPE :: MSHPointer_
-  CLASS( MSHFile_ ), POINTER :: Ptr => NULL()
+  CLASS(MSHFile_), POINTER :: Ptr => NULL()
 END TYPE MSHPointer_
 
 PUBLIC :: MSHPointer_
@@ -109,9 +117,9 @@ PUBLIC :: MSHPointer_
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_Final( obj )
-  TYPE( MSHFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE msh_Final
+  MODULE SUBROUTINE msh_Final(obj)
+    TYPE(MSHFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE msh_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -119,21 +127,21 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary:  This will deallocate data
 
 INTERFACE
-MODULE SUBROUTINE msh_Deallocate( obj, Delete )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: Delete
-END SUBROUTINE msh_Deallocate
+  MODULE SUBROUTINE msh_Deallocate(obj, Delete)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Delete
+  END SUBROUTINE msh_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE msh_Deallocate
-END INTERFACE Deallocate
+END INTERFACE DEALLOCATE
 
-PUBLIC :: Deallocate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -144,11 +152,11 @@ PUBLIC :: Deallocate
 ! summary: This subroutine generates the MSHFile_ object
 
 INTERFACE
-MODULE SUBROUTINE msh_Import( obj, hdf5, group )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE msh_Import
+  MODULE SUBROUTINE msh_Import(obj, hdf5, group)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(MSHFile_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE msh_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -160,11 +168,48 @@ END INTERFACE
 ! summary: This routine exports the mesh in HDF5 file
 
 INTERFACE
-MODULE SUBROUTINE msh_Export( obj, hdf5, group )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  TYPE( HDF5File_ ), INTENT( INOUT ) :: hdf5
-  CHARACTER( LEN = * ), INTENT( IN ) :: group
-END SUBROUTINE msh_Export
+  MODULE SUBROUTINE msh_Export_hdf5(obj, hdf5, group)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE msh_Export_hdf5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 11 June 2021
+! summary: This routine exports the mesh in HDF5 file
+
+INTERFACE
+  MODULE SUBROUTINE msh_Export_txtfile(obj, afile)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE msh_Export_txtfile
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ExportNodes@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE msh_ExportNodes(obj, afile)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE msh_ExportNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ExportElements@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE msh_ExportElements(obj, afile)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    CLASS(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE msh_ExportElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -172,14 +217,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	11 June 2021
+! date:         11 June 2021
 ! summary: This subroutine reads the `MSHFile_` file and generate the msh_ data
 
 INTERFACE
-MODULE SUBROUTINE msh_Read(obj, error )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), OPTIONAL, INTENT( INOUT ) :: error
-END SUBROUTINE msh_Read
+  MODULE SUBROUTINE msh_Read(obj, error)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: error
+  END SUBROUTINE msh_Read
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -187,10 +232,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ReadPointEntities( obj, te )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: te
-END SUBROUTINE msh_ReadPointEntities
+  MODULE SUBROUTINE msh_ReadPointEntities(obj, te)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: te
+  END SUBROUTINE msh_ReadPointEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -198,10 +243,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ReadCurveEntities( obj, te )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: te
-END SUBROUTINE msh_ReadCurveEntities
+  MODULE SUBROUTINE msh_ReadCurveEntities(obj, te)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: te
+  END SUBROUTINE msh_ReadCurveEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -209,10 +254,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ReadSurfaceEntities( obj, te )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: te
-END SUBROUTINE msh_ReadSurfaceEntities
+  MODULE SUBROUTINE msh_ReadSurfaceEntities(obj, te)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: te
+  END SUBROUTINE msh_ReadSurfaceEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -220,10 +265,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ReadVolumeEntities( obj, te )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: te
-END SUBROUTINE msh_ReadVolumeEntities
+  MODULE SUBROUTINE msh_ReadVolumeEntities(obj, te)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: te
+  END SUBROUTINE msh_ReadVolumeEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -231,9 +276,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ReadNodes( obj )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE msh_ReadNodes
+  MODULE SUBROUTINE msh_ReadNodes(obj)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE msh_ReadNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -241,9 +286,35 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE msh_ReadElements( obj )
-  CLASS( MSHFile_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE msh_ReadElements
+  MODULE SUBROUTINE msh_ReadElements(obj)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+  END SUBROUTINE msh_ReadElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION msh_GetIntNodeNumber(obj, dim, Tag) RESULT(ans)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: tag
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION msh_GetIntNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE msh_SetNodeCoord(obj, dim, tag, NodeCoord)
+    CLASS(MSHFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: tag
+    REAL(DFP), INTENT(IN) :: NodeCoord(:, :)
+  END SUBROUTINE msh_SetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -553,7 +624,6 @@ END INTERFACE
 !   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: Offset
 ! END SUBROUTINE msh_getelements_3
 ! END INTERFACE
-
 
 ! !----------------------------------------------------------------------------
 ! !                                                getElements@ElementsMethods

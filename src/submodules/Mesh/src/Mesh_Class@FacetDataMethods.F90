@@ -25,91 +25,93 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateFacetElements
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_InitiateFacetElements"
+CHARACTER(*), PARAMETER :: myName = "mesh_InitiateFacetElements"
 INTEGER(I4B) :: iel, ii, jj, iintface, idomainFace, kk, telements, &
   & tIntFace, tDomainFace
 INTEGER(I4B), ALLOCATABLE :: e2e(:, :), indx(:), cellNptrs(:)
-!!
-!! check
-!!
+!
+! check
+!
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
-!!
-!! check
-!!
+!
+! check
+!
 IF (obj%isFacetDataInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
+  CALL e%raiseInformation(modName//"::"//myName//" - "// &
     & "InternalFacetData and boundary facet data is already initiated. &
-    & If you want to Reinitiate it then deallocate nodeData, first!!")
+    & If you want to Reinitiate it then deallocate nodeData, first!")
   RETURN
 END IF
-!!
-!! InitiateElementToElements
-!!
-IF (.NOT. obj%isElementToElementsInitiated) &
-  & CALL obj%InitiateElementToElements()
-!!
-!! InitiateBoundaryData
-!!
-IF (.NOT. obj%isBoundaryDataInitiated) &
-  & CALL obj%InitiateBoundaryData()
-!!
-!! main
-!!
+!
+! InitiateElementToElements
+!
+IF (.NOT. obj%isElementToElementsInitiated) THEN
+  CALL obj%InitiateElementToElements()
+END IF
+!
+! InitiateBoundaryData
+!
+IF (.NOT. obj%isBoundaryDataInitiated) THEN
+  CALL obj%InitiateBoundaryData()
+END IF
+!
+! main
+!
 tDomainFace = 0
 tIntFace = 0
 obj%isFacetDataInitiated = .TRUE.
-!!
+
 DO iel = 1, obj%getTotalElements()
-  !!
+
   jj = obj%getGlobalElemNumber(iel)
-  !!
+
   IF (obj%isBoundaryElement(globalElement=jj)) THEN
     tDomainFace = tDomainFace + &
       & SIZE(obj%getBoundaryElementData(globalElement=jj))
   END IF
-  !!
+
   e2e = obj%getElementToElements(globalElement=jj, onlyElements=.TRUE.)
-  !!
+  !
   DO ii = 1, SIZE(e2e, 1)
     IF (jj .LE. e2e(ii, 1)) THEN
       tIntFace = tIntFace + 1
     END IF
   END DO
 END DO
-!!
-!! internalFacetData
-!!
+!
+! internalFacetData
+!
 IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
 ALLOCATE (obj%internalFacetData(tIntFace))
-!!
-!! domainFaceData
-!!
+!
+! boundaryFacetData
+!
 IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 ALLOCATE (obj%boundaryFacetData(tDomainFace))
-!!
-!! facetElementType
-!!
+!
+! facetElementType
+!
 telements = obj%getTotalElements()
 CALL Reallocate(obj%facetElementType, SIZE(obj%facetElements), telements)
-!!
+
 iintface = 0; idomainFace = 0
-!!
-!! start the loop for each cell element of the mesh
-!!
+!
+! start the loop for each cell element of the mesh
+!
 DO iel = 1, telements
-  !!
+  !
   jj = obj%getGlobalElemNumber(iel)
   cellNptrs = obj%getConnectivity(globalElement=jj)
   e2e = obj%getElementToElements(globalElement=jj, onlyElements=.FALSE.)
-  !!
-  !! boundaryFacetData
-  !!
+  !
+  ! boundaryFacetData
+  !
   IF (obj%isBoundaryElement(globalElement=jj)) THEN
-    !!
+    !
     indx = obj%getBoundaryElementData(globalElement=jj)
-    !!
+    !
     DO ii = 1, SIZE(indx)
-      !!
+      !
       kk = indx(ii)
       idomainFace = idomainFace + 1
       obj%boundaryFacetData(idomainFace)%masterCellNumber = jj
@@ -117,13 +119,13 @@ DO iel = 1, telements
       obj%boundaryFacetData(idomainFace)%elementType = &
         & DOMAIN_BOUNDARY_ELEMENT
       obj%facetElementType(kk, iel) = DOMAIN_BOUNDARY_ELEMENT
-      !!
+      !
     END DO
-      !!
+    !
   END IF
-    !!
-    !! internalFacetData
-    !!
+  !
+  ! internalFacetData
+  !
   DO ii = 1, SIZE(e2e, 1)
     kk = e2e(ii, 2)
     obj%facetElementType(kk, iel) = INTERNAL_ELEMENT
@@ -135,13 +137,13 @@ DO iel = 1, telements
       obj%internalFacetData(iintface)%slavelocalFacetID = e2e(ii, 3)
     END IF
   END DO
-    !!
+  !
 END DO
-  !!
+!
 IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
 IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
-  !!
+!
 END PROCEDURE mesh_InitiateFacetElements
 
 !----------------------------------------------------------------------------

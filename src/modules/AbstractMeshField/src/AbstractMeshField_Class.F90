@@ -26,7 +26,7 @@ USE HDF5File_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "AbstractMeshField_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -88,13 +88,13 @@ CONTAINS
   !! Generic initiate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => aField_Display
   !! Display the field
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => aField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => aField_Import
   !! Import data from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => aField_Export
   !! Export data in hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportInVTK => aField_ExportInVTK
   !! Export data in vtkFile
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => aField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
   !! Deallocate the field
   PROCEDURE, PUBLIC, PASS(obj) :: getPointer => aField_getPointer
   !! Return pointer to val
@@ -134,10 +134,10 @@ INTERFACE
   MODULE SUBROUTINE setAbstractMeshFieldParam(param, prefix, name, &
     & fieldType, engine, defineOn, varType, rank, s)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: prefix
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
     INTEGER(I4B), INTENT(IN) :: varType
     INTEGER(I4B), INTENT(IN) :: rank
@@ -173,7 +173,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, prefix, param)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: prefix
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE AbstractFieldCheckEssentialParam
 END INTERFACE
@@ -227,7 +227,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE AbstractMeshFieldInitiate(obj, prefix, param, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: prefix
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE AbstractMeshFieldInitiate
@@ -311,7 +311,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE aField_Display
 END INTERFACE
@@ -328,7 +328,7 @@ INTERFACE
   MODULE SUBROUTINE aField_Import(obj, hdf5, group, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     CLASS(Mesh_), TARGET, OPTIONAL, INTENT(IN) :: mesh
   END SUBROUTINE aField_Import
 END INTERFACE
@@ -345,7 +345,7 @@ INTERFACE
   MODULE SUBROUTINE aField_Export(obj, hdf5, group)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE aField_Export
 END INTERFACE
 
@@ -361,7 +361,7 @@ INTERFACE
   MODULE SUBROUTINE aField_ExportInVTK(obj, vtk, group)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE aField_ExportInVTK
 END INTERFACE
 

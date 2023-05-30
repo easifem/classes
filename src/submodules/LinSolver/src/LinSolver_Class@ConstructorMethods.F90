@@ -21,145 +21,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                 getLinSolverCodeFromName
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE getLinSolverCodeFromName
-SELECT CASE (TRIM(name))
-CASE ("CG") !1
-  ans = LIS_CG
-CASE ("BICG") !2
-  ans = LIS_BICG
-CASE ("CGS") !3
-  ans = LIS_CGS
-CASE ("BICGSTAB") !4
-  ans = LIS_BICGSTAB
-CASE ("BICGSTABL") !5
-  ans = LIS_BICGSTABL
-CASE ("GPBICG") !6
-  ans = LIS_GPBICG
-CASE ("TFQMR") !7
-  ans = LIS_TFQMR
-CASE ("OMN", "FOM", "ORTHOMIN") !8
-  ans = LIS_OMN
-CASE ("GMRES", "GMR") !9
-  ans = LIS_GMRES
-CASE ("JACOBI") !10
-  ans = LIS_JACOBI
-CASE ("GS") !11
-  ans = LIS_GS
-CASE ("SOR") !12
-  ans = LIS_SOR
-CASE ("BICGSAFE") !13
-  ans = LIS_BICGSAFE
-CASE ("CR") !14
-  ans = LIS_CR
-CASE ("BICR") !15
-  ans = LIS_BICR
-CASE ("CRS") !16
-  ans = LIS_CRS
-CASE ("BICRSTAB") !17
-  ans = LIS_BICRSTAB
-CASE ("GPBICR") !18
-  ans = LIS_GPBICR
-CASE ("BICRSAFE") !19
-  ans = LIS_BICRSAFE
-CASE ("FGMRES") !20
-  ans = LIS_FGMRES
-CASE ("IDRS") !21
-  ans = LIS_IDRS
-CASE ("IDR1") !22
-  ans = LIS_IDR1
-CASE ("MINRES") !23
-  ans = LIS_MINRES
-CASE ("COCG") !24
-  ans = LIS_COCG
-CASE ("COCR") !25
-  ans = LIS_COCR
-CASE ("CGNR", "CGN") !26
-  ans = LIS_CGNR
-CASE ("DBICG") !27
-  ans = LIS_DBICG
-CASE ("DQGMRES") !28
-  ans = LIS_DQGMRES
-END SELECT
-END PROCEDURE getLinSolverCodeFromName
-
-!----------------------------------------------------------------------------
-!                                                 getLinSolverNameFromCode
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE getLinSolverNameFromCode
-SELECT CASE (name)
-CASE (LIS_CG)
-  ans = "CG" !1
-CASE (LIS_BICG)
-  ans = "BICG" !2
-CASE (LIS_CGS)
-  ans = "CGS" !3
-CASE (LIS_BICGSTAB)
-  ans = "BICGSTAB" !4
-CASE (LIS_BICGSTABL)
-  ans = "BICGSTABL" !5
-CASE (LIS_GPBICG)
-  ans = "GPBICG" !6
-CASE (LIS_TFQMR)
-  ans = "TFQMR" !7
-CASE (LIS_OMN)
-  ans = "ORTHOMIN" !8
-CASE (LIS_GMRES)
-  ans = "GMRES" !9
-CASE (LIS_JACOBI)
-  ans = "JACOBI" !10
-CASE (LIS_GS)
-  ans = "GS" !11
-CASE (LIS_SOR)
-  ans = "SOR" !12
-CASE (LIS_BICGSAFE)
-  ans = "BICGSAFE" !13
-CASE (LIS_CR)
-  ans = "CR" !14
-CASE (LIS_BICR)
-  ans = "BICR" !15
-CASE (LIS_CRS)
-  ans = "CRS" !16
-CASE (LIS_BICRSTAB)
-  ans = "BICRSTAB" !17
-CASE (LIS_GPBICR)
-  ans = "GPBICR" !18
-CASE (LIS_BICRSAFE)
-  ans = "BICRSAFE" !19
-CASE (LIS_FGMRES)
-  ans = "FGMRES" !20
-CASE (LIS_IDRS)
-  ans = "IDRS" !21
-CASE (LIS_IDR1)
-  ans = "IDR1" !22
-CASE (LIS_MINRES)
-  ans = "MINRES" !23
-CASE (LIS_COCG)
-  ans = "COCG" !24
-CASE (LIS_COCR)
-  ans = "COCR" !25
-CASE (LIS_CGNR)
-  ans = "CGNR" !26
-CASE (LIS_DBICG)
-  ans = "DBICG" !27
-CASE (LIS_DQGMRES)
-  ans = "DQGMRES" !28
-END SELECT
-END PROCEDURE getLinSolverNameFromCode
-
-!----------------------------------------------------------------------------
 !                                                     setPreconditionOption
 !----------------------------------------------------------------------------
 
 SUBROUTINE setPreconditionOption(IPAR, PRECOND_TYPE)
   INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
   INTEGER(I4B), INTENT(IN) :: PRECOND_TYPE
-  !!
-  !!
-  !!
   SELECT CASE (PRECOND_TYPE)
   CASE (NO_PRECONDITION)
     IPAR(2) = 0
@@ -170,7 +37,6 @@ SUBROUTINE setPreconditionOption(IPAR, PRECOND_TYPE)
   CASE (LEFT_RIGHT_PRECONDITION)
     IPAR(2) = 3
   END SELECT
-  !!
 END SUBROUTINE setPreconditionOption
 
 !----------------------------------------------------------------------------
@@ -206,27 +72,19 @@ SUBROUTINE setConvergenceType(IPAR, convergenceIn, convergenceType, &
   !
   IPAR(3) = 1
   SELECT CASE (convergenceType)
-  !!
-  !!
-  !!
   CASE (absoluteConvergence)
     IF (convergenceIn .EQ. convergenceInSol) THEN
       IPAR(3) = -1
     ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
       IPAR(3) = 1
     END IF
-  !!
-  !!
-  !!
   CASE (relativeConvergence)
-    !!
     IF (convergenceIn .EQ. convergenceInSol) THEN
       IF (relativeToRHS) THEN
         IPAR(3) = -2
       ELSE
         IPAR(3) = -1
       END IF
-    !!
     ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
       IF (relativeToRHS) THEN
         IPAR(3) = 2
@@ -234,98 +92,77 @@ SUBROUTINE setConvergenceType(IPAR, convergenceIn, convergenceType, &
         IPAR(3) = 1
       END IF
     END IF
-    !!
   END SELECT
-  !!
-  !!
-  !!
 END SUBROUTINE setConvergenceType
 
 !----------------------------------------------------------------------------
-!                                                         setLinSolverParam
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setLinSolverParam
-  !!
-CALL setAbstractLinSolverParam( &
-  & param=param, &
-  & prefix="LinSolver", &
-  & engine="NATIVE_SERIAL", &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & maxIter=maxIter, &
-  & relativeToRHS=INPUT(option=relativeToRHS, default=.FALSE.), &
-  & KrylovSubspaceSize=INPUT(option=KrylovSubspaceSize, default=15), &
-  & rtol=INPUT(option=rtol, default=REAL(1.0E-8, DFP)), &
-  & atol=INPUT(option=atol, default=REAL(1.0E-8, DFP)))
-  !!
-END PROCEDURE setLinSolverParam
+SUBROUTINE setTolerance(FPAR, atol, rtol)
+  REAL(DFP), INTENT(INOUT) :: fpar(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+  REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
+
+  IF (PRESENT(atol)) THEN
+    FPAR(2) = atol
+  END IF
+  IF (PRESENT(rtol)) THEN
+    FPAR(1) = rtol
+  END IF
+END SUBROUTINE setTolerance
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ls_checkEssentialParam
-CHARACTER(LEN=*), PARAMETER :: myName = "ls_checkEssentialParam"
-  !!
-  !! name
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/solverName")) &
+CHARACTER(*), PARAMETER :: myName = "ls_checkEssentialParam"
+
+! name
+IF (.NOT. param%isPresent(key=myprefix//"/solverName")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/solverName should be present in param')
-  !!
-  !! preconditionOption
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/preconditionOption")) &
+  & myprefix//'/solverName should be present in param')
+
+! preconditionOption
+IF (.NOT. param%isPresent(key=myprefix//"/preconditionOption")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/preconditionOption should be present in param')
-  !!
-  !! convergenceIn
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/convergenceIn")) &
+  & myprefix//'/preconditionOption should be present in param')
+
+! convergenceIn
+IF (.NOT. param%isPresent(key=myprefix//"/convergenceIn")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/convergenceIn should be present in param')
-  !!
-  !! convergenceType
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/convergenceType")) &
+  & myprefix//'/convergenceIn should be present in param')
+
+! convergenceType
+IF (.NOT. param%isPresent(key=myprefix//"/convergenceType")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/convergenceType should be present in param')
-  !!
-  !! maxIter
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/maxIter")) &
+  & myprefix//'/convergenceType should be present in param')
+
+! maxIter
+IF (.NOT. param%isPresent(key=myprefix//"/maxIter")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/maxIter should be present in param')
-  !!
-  !! relativeToRHS
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/relativeToRHS")) &
+  & myprefix//'/maxIter should be present in param')
+
+! relativeToRHS
+IF (.NOT. param%isPresent(key=myprefix//"/relativeToRHS")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/relativeToRHS should be present in param')
-  !!
-  !! KrylovSubspaceSize
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/KrylovSubspaceSize")) &
+  & myprefix//'/relativeToRHS should be present in param')
+
+! KrylovSubspaceSize
+IF (.NOT. param%isPresent(key=myprefix//"/KrylovSubspaceSize")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/KrylovSubspaceSize should be present in param')
-  !!
-  !! rtol
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/rtol")) &
+  & myprefix//'/KrylovSubspaceSize should be present in param')
+
+! rtol
+IF (.NOT. param%isPresent(key=myprefix//"/rtol")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/rtol should be present in param')
-  !!
-  !! atol
-  !!
-IF (.NOT. param%isPresent(key="LinSolver/atol")) &
+  & myprefix//'/rtol should be present in param')
+
+! atol
+IF (.NOT. param%isPresent(key=myprefix//"/atol")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'LinSolver/atol should be present in param')
-  !!
-  !!
-  !!
+  & myprefix//'/atol should be present in param')
 END PROCEDURE ls_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -337,11 +174,11 @@ INTEGER(I4B) :: solverName, preconditionOption, convergenceIn, &
   & convergenceType, maxIter, KrylovSubspaceSize
 REAL(DFP) :: rtol, atol
 LOGICAL(LGT) :: relativeToRHS
-  !!
+
 CALL obj%checkEssentialParam(param)
 CALL getAbstractLinSolverParam( &
   & param=param, &
-  & prefix="LinSolver", &
+  & prefix=myprefix, &
   & solverName=solverName, &
   & preconditionOption=preconditionOption, &
   & convergenceIn=convergenceIn, &
@@ -351,19 +188,23 @@ CALL getAbstractLinSolverParam( &
   & KrylovSubspaceSize=KrylovSubspaceSize, &
   & rtol=rtol, &
   & atol=atol)
-obj%isInitiated = .TRUE.
-obj%engine = "NATIVE_SERIAL"
-obj%ierr = 0
-obj%iter = 0
-obj%solverName = solverName
-obj%preconditionOption = preconditionOption
-obj%convergenceIn = convergenceIn
-obj%convergenceType = convergenceType
-obj%maxIter = maxIter
-obj%relativeToRHS = relativeToRHS
-obj%KrylovSubspaceSize = KrylovSubspaceSize
-obj%atol = atol
-obj%rtol = rtol
+
+CALL obj%SetParam(&
+  & isInitiated=.TRUE., &
+  & engine="NATIVE_SERIAL", &
+  & ierr=0_I4B, &
+  & iter=0_I4B, &
+  & solverName=solverName, &
+  & preconditionOption=preconditionOption, &
+  & convergenceIn=convergenceIn, &
+  & convergenceType=convergenceType, &
+  & maxIter=maxIter, &
+  & relativeToRHS=relativeToRHS, &
+  & KrylovSubspaceSize=KrylovSubspaceSize, &
+  & atol=atol, &
+  & rtol=rtol &
+  & )
+
 obj%IPAR = 0
 CALL setPreconditionOption(obj%IPAR, preconditionOption)
 CALL setConvergenceType(obj%IPAR, convergenceIn, convergenceType, &
@@ -371,9 +212,9 @@ CALL setConvergenceType(obj%IPAR, convergenceIn, convergenceType, &
 obj%IPAR(5) = KrylovSubspaceSize
 CALL setMaxIter(obj%IPAR, maxIter)
 obj%FPAR = 0.0_DFP
-CALL obj%setTolerance(rtol=rtol, atol=atol)
-CALL Reallocate(obj%RES, maxIter)
-CALL Reallocate(obj%dbcIndx, 0)
+CALL setTolerance(fpar=obj%fpar, rtol=rtol, atol=atol)
+! CALL Reallocate(obj%RES, maxIter)
+! CALL Reallocate(obj%dbcIndx, 0)
 END PROCEDURE ls_Initiate
 
 !----------------------------------------------------------------------------
@@ -381,29 +222,22 @@ END PROCEDURE ls_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ls_Deallocate
-obj%engine = ''
-obj%IPAR = 0
-obj%FPAR = 0.0_DFP
-obj%isInitiated = .FALSE.
-obj%ierr = 0
-obj%iter = 0
-obj%solverName = 0
-obj%preconditionOption = 0
-obj%convergenceIn = 0
-obj%convergenceType = 0
-obj%maxIter = 0
-obj%relativeToRHS = .FALSE.
-obj%KrylovSubspaceSize = 15
-obj%atol = 1.0E-8
-obj%rtol = 1.0E-8
-obj%globalNumColumn = 0
-obj%globalNumRow = 0
-obj%localNumColumn = 0
-obj%localNumRow = 0
-IF (ALLOCATED(obj%RES)) DEALLOCATE (obj%RES)
+CALL AbstractLinSolverDeallocate(obj)
+obj%ipar = 0
+obj%fpar = 0.0_DFP
 IF (ALLOCATED(obj%W)) DEALLOCATE (obj%W)
-IF (ALLOCATED(obj%dbcIndx)) DEALLOCATE (obj%dbcIndx)
-NULLIFY (obj%Amat)
 END PROCEDURE ls_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                 Final
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_final
+CALL obj%DEALLOCATE()
+END PROCEDURE ls_final
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

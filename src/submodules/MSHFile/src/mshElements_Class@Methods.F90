@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Final
-  CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE el_Final
 
 !----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ END PROCEDURE el_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Deallocate
-SELECT TYPE( obj )
+SELECT TYPE (obj)
 TYPE IS (mshElements_)
   obj = TypemshElements
 END SELECT
@@ -44,34 +44,34 @@ END PROCEDURE el_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_GotoTag
-  ! Define internal variables
-  INTEGER( I4B ) :: IOSTAT, Reopen, unitNo
-  CHARACTER( LEN = 100 ) :: Dummy
-  CHARACTER( LEN = * ), PARAMETER :: myName = "el_GotoTag"
+! Define internal variables
+INTEGER(I4B) :: IOSTAT, Reopen, unitNo
+CHARACTER(100) :: Dummy
+CHARACTER(*), PARAMETER :: myName = "el_GotoTag"
 
-  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'mshFile is either not opened or does not have read access!')
-    error = -1
-  ELSE
-    Reopen = 0; error = 0; CALL mshFile%Rewind()
-    DO
-      unitNo = mshFile%getUnitNo()
-      READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
-        CALL mshFile%setEOFStat( .TRUE. )
-        Reopen = Reopen + 1
-      END IF
-      IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'Could not find $Elements !')
-        error = -2
-        EXIT
-      ELSE IF( TRIM( Dummy ) .EQ. '$Elements' ) THEN
-        EXIT
-      END IF
-    END DO
-  END IF
+IF (.NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead()) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'mshFile is either not opened or does not have read access!')
+  error = -1
+ELSE
+  Reopen = 0; error = 0; CALL mshFile%REWIND()
+  DO
+    unitNo = mshFile%getUnitNo()
+    READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
+    IF (IS_IOSTAT_END(IOSTAT)) THEN
+      CALL mshFile%setEOFStat(.TRUE.)
+      Reopen = Reopen + 1
+    END IF
+    IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Could not find $Elements !')
+      error = -2
+      EXIT
+    ELSE IF (TRIM(Dummy) .EQ. '$Elements') THEN
+      EXIT
+    END IF
+  END DO
+END IF
 END PROCEDURE el_GotoTag
 
 !----------------------------------------------------------------------------
@@ -79,21 +79,21 @@ END PROCEDURE el_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Read
-  CALL obj%GotoTag( mshFile, error )
-  IF( error .EQ. 0 ) THEN
-    IF( mshFormat%getMajorVersion() .GT. 2 ) THEN
-      READ( mshFile%getUnitNo(), * ) obj%numEntityBlocks, obj%numElements, &
-        & obj%minElementTag, obj%maxElementTag
-      IF( ( obj%maxElementTag - obj%minElementTag ) &
-        & .EQ. ( obj%numElements - 1 ) ) THEN
-        obj%isSparse = .FALSE.
-      ELSE
-        obj%isSparse = .TRUE.
-      END IF
+CALL obj%GotoTag(mshFile, error)
+IF (error .EQ. 0) THEN
+  IF (mshFormat%getMajorVersion() .GT. 2) THEN
+    READ (mshFile%getUnitNo(), *) obj%numEntityBlocks, obj%numElements, &
+      & obj%minElementTag, obj%maxElementTag
+    IF ((obj%maxElementTag - obj%minElementTag) &
+      & .EQ. (obj%numElements - 1)) THEN
+      obj%isSparse = .FALSE.
     ELSE
-      READ( mshFile%getUnitNo(), * ) obj%numElements
+      obj%isSparse = .TRUE.
     END IF
+  ELSE
+    READ (mshFile%getUnitNo(), *) obj%numElements
   END IF
+END IF
 END PROCEDURE el_Read
 
 !----------------------------------------------------------------------------
@@ -101,6 +101,18 @@ END PROCEDURE el_Read
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Write
+
+TYPE(String) :: astr
+INTEGER(I4B) :: unitNo
+
+unitNo = afile%getUnitNo()
+
+astr = tostring(obj%numEntityBlocks)//" "// &
+  & tostring(obj%numElements)//" "// &
+  & tostring(obj%minElementTag)//" "// &
+  & tostring(obj%maxElementTag)
+
+WRITE (unitNo, "(A)") astr%chars()
 END PROCEDURE el_Write
 
 !----------------------------------------------------------------------------
@@ -108,30 +120,30 @@ END PROCEDURE el_Write
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Display
-  ! Define internal variables
-  INTEGER( I4B ) :: I
-  IF( PRESENT( UnitNo ) ) THEN
-    I = UnitNo
-  ELSE
-    I = stdout
-  END IF
-  !
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( I, "(A)" ) TRIM( Msg )
-  END IF
-  !
-  CALL BlankLines( UnitNo = I, NOL = 1 )
-  WRITE( I, "(A)" ) "| Property | Value |"
-  WRITE( I, "(A)" ) "| :----    | ---:  |"
-  WRITE( I, "(A, I4, A)" ) "| Total Elements    | ", obj%NumElements, " | "
-  WRITE( I, "(A, I4, A)" ) "| Total Entities | ", obj%NumEntityBlocks, &
-    & " | "
-  WRITE( I, "(A, I4, A)" ) "| Min Element Tag   | ", obj%minElementTag, &
-    & " | "
-  WRITE( I, "(A, I4, A)" ) "| Max Element Tag   | ", obj%maxElementTag, &
-    & " | "
-  WRITE( I, "(A, G5.2, A)" ) "| isSparse       | ", obj%isSparse, &
-    & " | "
+! Define internal variables
+INTEGER(I4B) :: I
+IF (PRESENT(UnitNo)) THEN
+  I = UnitNo
+ELSE
+  I = stdout
+END IF
+!
+IF (LEN_TRIM(Msg) .NE. 0) THEN
+  WRITE (I, "(A)") TRIM(Msg)
+END IF
+!
+CALL BlankLines(UnitNo=I, NOL=1)
+WRITE (I, "(A)") "| Property | Value |"
+WRITE (I, "(A)") "| :----    | ---:  |"
+WRITE (I, "(A, I4, A)") "| Total Elements    | ", obj%NumElements, " | "
+WRITE (I, "(A, I4, A)") "| Total Entities | ", obj%NumEntityBlocks, &
+  & " | "
+WRITE (I, "(A, I4, A)") "| Min Element Tag   | ", obj%minElementTag, &
+  & " | "
+WRITE (I, "(A, I4, A)") "| Max Element Tag   | ", obj%maxElementTag, &
+  & " | "
+WRITE (I, "(A, G5.2, A)") "| isSparse       | ", obj%isSparse, &
+  & " | "
 END PROCEDURE el_Display
 
 !----------------------------------------------------------------------------
@@ -139,7 +151,7 @@ END PROCEDURE el_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_getNumElements
-  ans = obj%numElements
+ans = obj%numElements
 END PROCEDURE el_getNumElements
 
 !----------------------------------------------------------------------------
@@ -147,7 +159,7 @@ END PROCEDURE el_getNumElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_getNumEntityBlocks
-  ans = obj%NumEntityBlocks
+ans = obj%NumEntityBlocks
 END PROCEDURE el_getNumEntityBlocks
 
 !----------------------------------------------------------------------------
@@ -155,7 +167,7 @@ END PROCEDURE el_getNumEntityBlocks
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_getMinElementTag
-  ans = obj%minElementTag
+ans = obj%minElementTag
 END PROCEDURE el_getMinElementTag
 
 !----------------------------------------------------------------------------
@@ -163,7 +175,7 @@ END PROCEDURE el_getMinElementTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_getMaxElementTag
-  ans = obj%maxElementTag
+ans = obj%maxElementTag
 END PROCEDURE el_getMaxElementTag
 
 !----------------------------------------------------------------------------

@@ -43,7 +43,7 @@ USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 !List of Public Members
-CHARACTER(LEN=*), PARAMETER :: modName = 'AbstractFile_Class'
+CHARACTER(*), PARAMETER :: modName = 'AbstractFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
 !! TYPE(ExceptionHandler_), PRIVATE :: e
   !! The exception handler for the object
@@ -84,7 +84,7 @@ CONTAINS
     !!
     !! ConstructorMethods
     !!
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => AbstractFileDeallocate
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => AbstractFileDeallocate
     !!
     !! @SetMethods
     !!
@@ -112,8 +112,8 @@ CONTAINS
     !!
     !! Deferred Methods
     !!
-  PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS(obj) :: open
-  PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS(obj) :: close
+  PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS(obj) :: OPEN
+  PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS(obj) :: CLOSE
   PROCEDURE(aFile_delete), PUBLIC, DEFERRED, PASS(obj) :: delete
 END TYPE AbstractFile_
 
@@ -419,4 +419,3 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 ENDMODULE AbstractFile_Class
-

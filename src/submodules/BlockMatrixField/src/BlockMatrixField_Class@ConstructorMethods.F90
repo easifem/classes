@@ -29,85 +29,136 @@ CONTAINS
 
 MODULE PROCEDURE setBlockMatrixFieldParam
 INTEGER(I4B) :: ierr0, ii
-CHARACTER(LEN=*), PARAMETER :: myName = "setBlockMatrixFieldParam"
-  !! main
-  !!
-  !! check
-  !!
-#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "setBlockMatrixFieldParam"
+
 IF (ANY([SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
   & .NE. SIZE(physicalVarNames))) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Size of physicalVarNames, spaceCompo, and timeCompo should be same')
 END IF
-#endif
-  !!
-ierr0 = param%set(key="BlockMatrixField/name", value=TRIM(name))
-ierr0 = param%set(key="BlockMatrixField/matrixProp", &
-  & value=TRIM(matrixProp))
+
+ierr0 = param%set(key=myPrefix//"/name", VALUE=TRIM(name))
+ierr0 = param%set(key=myPrefix//"/engine", VALUE=TRIM(engine))
+
+ierr0 = param%set(key=myPrefix//"/matrixProp", &
+  & VALUE=TRIM(matrixProp))
+
 ii = SIZE(physicalVarNames)
-ierr0 = param%set(key="BlockMatrixField/tPhysicalVarNames", value=ii)
+
+ierr0 = param%set(key=myPrefix//"/tPhysicalVarNames", VALUE=ii)
+
 DO ii = 1, SIZE(physicalVarNames)
-  ierr0 = param%set(key="BlockMatrixField/physicalVarName"//TOSTRING(ii), &
-    & value=physicalVarNames(ii))
+  ierr0 = param%set(key=myPrefix//"/physicalVarName"//TOSTRING(ii), &
+    & VALUE=physicalVarNames(ii))
 END DO
-ierr0 = param%set(key="BlockMatrixField/spaceCompo",  &
-  &  value=spaceCompo)
-ierr0 = param%set(key="BlockMatrixField/timeCompo",  &
-  & value=timeCompo)
-ierr0 = param%set(key="BlockMatrixField/fieldType", value=INPUT( &
+
+ierr0 = param%set(key=myPrefix//"/spaceCompo",  &
+  &  VALUE=spaceCompo)
+
+ierr0 = param%set(key=myPrefix//"/timeCompo",  &
+  & VALUE=timeCompo)
+
+ierr0 = param%set(key=myPrefix//"/fieldType", VALUE=INPUT( &
   & option=fieldType, default=FIELD_TYPE_NORMAL))
+
+ierr0 = param%set(key=myPrefix//"/comm", VALUE=INPUT( &
+& option=comm, default=0_I4B))
+
+ierr0 = param%set(key=myPrefix//"/global_n", VALUE=INPUT( &
+& option=global_n, default=0_I4B))
+
+ierr0 = param%set(key=myPrefix//"/local_n", VALUE=INPUT( &
+& option=local_n, default=0_I4B))
+
 END PROCEDURE setBlockMatrixFieldParam
+
+!----------------------------------------------------------------------------
+!                                           setBlockMatrixFieldPrecondParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE setBlockMatrixFieldPrecondParam
+CALL setMatrixFieldPrecondParam( &
+  & param=param, &
+  & name=name, &
+  & engine=engine, &
+  & lfil=lfil, &
+  & mbloc=mbloc, &
+  & droptol=droptol, &
+  & permtol=permtol, &
+  & alpha=alpha, &
+  & comm=comm, local_n=local_n, global_n=global_n)
+END PROCEDURE setBlockMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bmField_checkEssentialParam
-CHARACTER(LEN=*), PARAMETER :: myName = "bmField_checkEssentialParam"
+CHARACTER(*), PARAMETER :: myName = "bmField_checkEssentialParam"
 INTEGER(I4B) :: ii, n
-!!
-IF (.NOT. param%isPresent(key="BlockMatrixField/name")) THEN
+
+IF (.NOT. param%isPresent(key=myPrefix//"/name")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockMatrixField/name should be present in param')
+  & myPrefix//'/name should be present in param')
 END IF
-!!
-IF (.NOT. param%isPresent(key="BlockMatrixField/matrixProp")) THEN
+
+IF (.NOT. param%isPresent(key=myPrefix//"/engine")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockMatrixField/matrixProp should be present in param')
+  & myPrefix//'/engine should be present in param')
 END IF
-!!
-IF (.NOT. param%isPresent(key="BlockMatrixField/tPhysicalVarNames")) THEN
+
+IF (.NOT. param%isPresent(key=myPrefix//"/matrixProp")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockMatrixField/tPhysicalVarNames should be present in param')
+  & myPrefix//'/matrixProp should be present in param')
+END IF
+
+IF (.NOT. param%isPresent(key=myPrefix//"/tPhysicalVarNames")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & myPrefix//'/tPhysicalVarNames should be present in param')
 ELSE
-  ii = param%get(key='BlockMatrixField/tPhysicalVarNames', value=n)
+  ii = param%get(key=myPrefix//'/tPhysicalVarNames', VALUE=n)
 END IF
-!!
-IF (.NOT. param%isPresent(key="BlockMatrixField/spaceCompo")) THEN
+
+IF (.NOT. param%isPresent(key=myPrefix//"/spaceCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockMatrixField/spaceCompo should be present in param')
+  & myPrefix//'/spaceCompo should be present in param')
 END IF
-!!
-IF (.NOT. param%isPresent(key="BlockMatrixField/timeCompo")) THEN
+
+IF (.NOT. param%isPresent(key=myPrefix//"/timeCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockMatrixField/timeCompo should be present in param')
+  & myPrefix//'/timeCompo should be present in param')
 END IF
-!!
-IF (.NOT. param%isPresent(key="BlockMatrixField/fieldType")) THEN
+
+IF (.NOT. param%isPresent(key=myPrefix//"/fieldType")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockMatrixField/fieldType should be present in param')
+  & myPrefix//'/fieldType should be present in param')
 END IF
-!!
+
 DO ii = 1, n
-  IF (.NOT. param%isPresent(key="BlockMatrixField/physicalVarName" &
+  IF (.NOT. param%isPresent(key=myPrefix//"/physicalVarName" &
     & //TOSTRING(ii))) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'BlockMatrixField/physicalVarName' &
+    & myPrefix//'/physicalVarName' &
     & //TOSTRING(ii) &
     & //' should be present in param')
   END IF
 END DO
+
+IF (.NOT. param%isPresent(key=myPrefix//"/comm")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & myPrefix//'/comm should be present in param')
+END IF
+
+IF (.NOT. param%isPresent(key=myPrefix//"/global_n")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & myPrefix//'/global_n should be present in param')
+END IF
+
+IF (.NOT. param%isPresent(key=myPrefix//"/local_n")) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & myPrefix//'/local_n should be present in param')
+END IF
+
 END PROCEDURE bmField_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -115,85 +166,73 @@ END PROCEDURE bmField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Initiate1
-CHARACTER(LEN=*), PARAMETER :: myName = "mField_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "mField_Initiate1"
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii
-!!
+
 ii = param%get(key="BlockMatrixField/tPhysicalVarNames", &
-  & value=tPhysicalVarNames)
-!!
+  & VALUE=tPhysicalVarNames)
+
 ALLOCATE (domains(tPhysicalVarNames))
-!!
+
 DO ii = 1, tPhysicalVarNames
   domains(ii)%ptr => dom
 END DO
-!!
+
 CALL obj%Initiate(param=param, dom=domains)
-!!
+
 DO ii = 1, tPhysicalVarNames
   domains(ii)%ptr => NULL()
 END DO
-!!
+
 IF (ALLOCATED(domains)) DEALLOCATE (domains)
-!!
+
 END PROCEDURE mField_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_Initiate2
-CHARACTER(LEN=*), PARAMETER :: myName = "mField_Initiate2"
-CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[:WIP] This routine is under construction!')
-! SELECT TYPE (obj2)
-! CLASS IS (BlockMatrixField_)
-! END SELECT
-END PROCEDURE mField_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Initiate3
-CHARACTER(LEN=*), PARAMETER :: myName = "mField_Initiate3"
-INTEGER(I4B) :: ierror, nrow, ncol, storageFMT, tVar, ii
+CHARACTER(*), PARAMETER :: myName = "mField_Initiate3"
+INTEGER(I4B) :: ierror, nrow, ncol, storageFMT, tVar, ii, nnz
 INTEGER(I4B), ALLOCATABLE :: tNodes(:), timeCompo(:), spaceCompo(:)
-CHARACTER(LEN=1), ALLOCATABLE :: physicalVarNames(:)
-CHARACTER(LEN=:), ALLOCATABLE :: char_var
-CHARACTER(LEN=:), ALLOCATABLE :: matProp
+CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
+CHARACTER(:), ALLOCATABLE :: char_var
+CHARACTER(:), ALLOCATABLE :: matProp
 TYPE(DOF_) :: dofobj
-!!
-!! check
-!!
-IF (obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The instance of BlockMatrixField is already initiated')
-!!
+
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+& '[START] Initiate()')
+
+IF (obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & 'The instance of BlockMatrixField is already initiated')
+END IF
+
 CALL obj%checkEssentialParam(param)
-!!
-!! engine
-!!
-obj%engine = "NATIVE_SERIAL"
-!!
-!! name
-!!
-ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes(  &
-  & key="BlockMatrixField/name")) :: char_var)
-ierror = param%get(key="BlockMatrixField/name", value=char_var)
+
+! engine
+ALLOCATE (CHARACTER(param%DataSizeInBytes(  &
+  & key=myPrefix//"/engine")) :: char_var)
+ierror = param%get(key=myPrefix//"/engine", VALUE=char_var)
+obj%engine = char_var
+DEALLOCATE (char_var)
+
+! name
+ALLOCATE (CHARACTER(param%DataSizeInBytes(  &
+  & key=myprefix//"/name")) :: char_var)
+ierror = param%get(key=myprefix//"/name", VALUE=char_var)
 obj%name = char_var; DEALLOCATE (char_var)
-!!
-!! fieldType
-!!
-ierror = param%get(key="BlockMatrixField/fieldType",  &
-  & value=obj%fieldType)
-!!
-!! tPhysicalVarNames
-!!
-ierror = param%get(key='BlockMatrixField/tPhysicalVarNames', value=tVar)
-!!
-!! domain
-!!
+
+! fieldType
+ierror = param%get(key=myprefix//"/fieldType",  &
+  & VALUE=obj%fieldType)
+
+! tPhysicalVarNames
+ierror = param%get(key=myprefix//'/tPhysicalVarNames', VALUE=tVar)
+
+! domain
 IF (SIZE(dom) .NE. tVar) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Size of dom not equal to the total number of physical variables')
@@ -203,55 +242,53 @@ DO ii = 1, tVar
       & 'dom( '//TOSTRING(ii)//')%ptr is NOT ASSOCIATED!')
   END IF
 END DO
-!!
-!! allocate
-!!
+
+! allocate
 ALLOCATE (tNodes(tVar), timeCompo(tVar), spaceCompo(tVar), &
   & physicalVarNames(tVar))
-!!
-!! physicalVarName
-!!
+
+! physicalVarName
 DO ii = 1, tVar
-  ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes( &
-    & key="BlockMatrixField/physicalVarName"//TOSTRING(ii))) :: char_var)
-  ierror = param%get(key="BlockMatrixField/physicalVarName" &
-    & //TOSTRING(ii), value=char_var)
+  ALLOCATE (CHARACTER(param%DataSizeInBytes( &
+    & key=myprefix//"/physicalVarName"//TOSTRING(ii))) :: char_var)
+  ierror = param%get(key=myprefix//"/physicalVarName" &
+    & //TOSTRING(ii), VALUE=char_var)
   physicalVarNames(ii) (1:1) = char_var(1:1); DEALLOCATE (char_var)
 END DO
-!!
-!! spaceCompo
-!!
-ierror = param%get(key="BlockMatrixField/spaceCompo", value=spaceCompo)
-!!
-!! timeCompo
-!!
-ierror = param%get(key="BlockMatrixField/timeCompo", value=timeCompo)
-!!
-!! storage format
-!!
+
+! spaceCompo
+ierror = param%get(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
+
+! timeCompo
+ierror = param%get(key=myprefix//"/timeCompo", VALUE=timeCompo)
+
+! storage format
 storageFMT = FMT_DOF
-!!
-!! domains
-!!
+
+! domains
 ALLOCATE (obj%domains(tvar))
 DO ii = 1, tVar
   obj%domains(ii)%ptr => dom(ii)%ptr
   tNodes(ii) = obj%domains(ii)%ptr%getTotalNodes()
 END DO
-!!
-!! make [[DOF_]]
-!!
-CALL Initiate(obj=dofobj, tNodes=tNodes, names=physicalVarNames, &
-  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
-!!
-!! matrixProp
-!!
-ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes(  &
-  & key="BlockMatrixField/matrixProp")) :: matProp)
-ierror = param%get(key="BlockMatrixField/matrixProp", value=matProp)
-!!
-!! CSRMatrix/Initiate
-!!
+
+! make [[DOF_]]
+CALL Display("Calling Initiating dofobj")
+CALL Initiate( &
+  & obj=dofobj, &
+  & tNodes=tNodes,&
+  & names=physicalVarNames, &
+  & spaceCompo=spaceCompo, &
+  & timeCompo=timeCompo, &
+  & storageFMT=storageFMT)
+
+! matrixProp
+ALLOCATE (CHARACTER(param%DataSizeInBytes(  &
+  & key=myprefix//"/matrixProp")) :: matProp)
+ierror = param%get(key=myprefix//"/matrixProp", VALUE=matProp)
+
+! CSRMatrix/Initiate
+CALL Display("Initiating CSRMatrix_")
 nrow = .tNodes.dofobj
 ncol = nrow
 CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
@@ -259,31 +296,42 @@ CALL Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, &
 DEALLOCATE (matProp)
 obj%isInitiated = .TRUE.
 obj%isPmatInitiated = .FALSE.
-!!
-!! setting the sparsity
-!!
+
+! setting the sparsity
+CALL Display("Calling DomainSetSparsity()")
 CALL DomainSetSparsity(mat=obj%mat, domains=obj%domains)
-CALL Deallocate (dofobj)
+
+! comm
+ierror = param%get(key=myprefix//"/comm", VALUE=obj%comm)
+ierror = param%get(key=myprefix//"/global_n", VALUE=obj%global_n)
+ierror = param%get(key=myprefix//"/local_n", VALUE=obj%local_n)
+
+IF (obj%local_n .EQ. 0) THEN
+  obj%local_n = nrow
+END IF
+IF (obj%global_n .EQ. 0) THEN
+  obj%global_n = nrow
+END IF
+
+!cleanup
+
+CALL DEALLOCATE (dofobj)
 IF (ALLOCATED(tNodes)) DEALLOCATE (tNodes)
 IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
 IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
+
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+& '[END] Initiate()')
+
 END PROCEDURE mField_Initiate3
-
-!----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_Deallocate
-CALL AbstractMatrixFieldDeallocate(obj)
-END PROCEDURE mField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE mField_Final
 
 END SUBMODULE ConstructorMethods

@@ -29,7 +29,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Size
-  ans = SIZE( obj%mat, dim )
+ans = SIZE(obj%mat, dim)
 END PROCEDURE mField_Size
 
 !----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ END PROCEDURE mField_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Shape
-  ans = SHAPE( obj%mat )
+ans = SHAPE(obj%mat)
 END PROCEDURE mField_Shape
 
 !----------------------------------------------------------------------------

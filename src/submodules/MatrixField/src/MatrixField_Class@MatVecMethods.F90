@@ -28,25 +28,33 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Matvec1
-  !!
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="mField_Matvec1"
-  INTEGER( I4B ) :: s( 2 )
-  s = obj%shape()
-  IF( SIZE( y ) .NE. s( 1 ) .OR. SIZE( x ) .NE. s(2) ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'There is some mismatch in dimension of matrix and vectors' // &
+CHARACTER(*), PARAMETER :: myName = "mField_Matvec1"
+INTEGER(I4B) :: s(2), y1, x1
+
+s = obj%SHAPE()
+y1 = SIZE(y)
+x1 = SIZE(x)
+
+IF (y1 .NE. s(1) .OR. x1 .NE. s(2)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & 'There is some mismatch in dimension of matrix and vectors'// &
     & 'The shape of MatrixField_ instance is ' &
-    & // trim( str( s(1), .true. ) ) // ", " &
-    & // trim( str( s(2), .true. ) ) // ", " &
-    & // 'However, the size of x is ' &
-    & // trim( str( SIZE( x ), .true. ) ) // ", " &
-    & // 'and, the size of y is ' &
-    & // trim( str( SIZE( y ), .true. ) ) // ", " )
-#endif
-  !!
-  CALL Matvec( obj=obj%mat, y=y, x=x, transp=transp )
-  !!
+    & //tostring(s(1))//", " &
+    & //tostring(s(2))//", " &
+    & //'However, the size of x is ' &
+    & //tostring(x1)//", " &
+    & //'and, the size of y is ' &
+    & //tostring(y1))
+END IF
+
+CALL Matvec( &
+  & obj=obj%mat, &
+  & y=y, &
+  & x=x, &
+  & isTranspose=isTranspose, &
+  & addContribution=addContribution, &
+  & scale=scale)
+
 END PROCEDURE mField_Matvec1
 
 !----------------------------------------------------------------------------
@@ -54,16 +62,23 @@ END PROCEDURE mField_Matvec1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_Matvec2
-  REAL( DFP ), POINTER :: xvec( : )
-  REAL( DFP ), POINTER :: yvec( : )
-  !!
-  xvec => x%getPointer()
-  yvec => y%getPointer()
-  !!
-  CALL Matvec( obj=obj%mat, y=yvec, x=xvec, transp=transp )
-  !!
-  NULLIFY( xvec, yvec )
-  !!
+CHARACTER(*), PARAMETER :: myName = "mField_Matvec2"
+REAL(DFP), POINTER :: xvec(:)
+REAL(DFP), POINTER :: yvec(:)
+
+xvec => x%getPointer()
+yvec => y%getPointer()
+
+CALL Matvec( &
+  & obj=obj%mat, &
+  & y=yvec, &
+  & x=xvec, &
+  & isTranspose=isTranspose, &
+  & addContribution=addContribution, &
+  & scale=scale)
+
+NULLIFY (xvec, yvec)
+
 END PROCEDURE mField_Matvec2
 
 END SUBMODULE MatVecMethods

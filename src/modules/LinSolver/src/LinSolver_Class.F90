@@ -31,7 +31,9 @@ USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(LEN=*), PARAMETER :: modName = "Linsolver_Class"
+CHARACTER(*), PARAMETER :: modName = "Linsolver_Class"
+CHARACTER(*), PARAMETER :: myprefix = "Linsolver"
+CHARACTER(*), PARAMETER :: myengine = "NATIVE_SERIAL"
 INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 
@@ -45,9 +47,9 @@ INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 !
 !# Introduction
 !
-! This data type defines a native linear solver, It uses LinSolvert library.
+! This data type defines a native linear solver, It uses LinSolver library.
 ! [[LinSolver_]] data type is a container around Yusef Saad's LinSolver
-! lib. It is used to solve the linear system with sparse matrices
+! lib. It is used for solvign the linear system with sparse matrices
 !
 ! - Reference : https://www-users.cs.umn.edu/~saad/software/SPARSKIT/
 ! - This class interface LinSolver and `EASIFEM`
@@ -55,27 +57,34 @@ INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14
 TYPE, EXTENDS(AbstractLinSolver_) :: LinSolver_
   PRIVATE
   INTEGER(I4B) :: ipar(IPAR_LENGTH) = 0
+  !! Integer parameters
   REAL(DFP) :: fpar(FPAR_LENGTH) = 0.0_DFP
+  !! Real parameters
   REAL(DFP), ALLOCATABLE :: W(:)
+  !! Workspace
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & ls_checkEssentialParam
+    !! Check essential parameters
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ls_Initiate
     !! Initiate object
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => ls_Deallocate
-    !! Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => ls_Deallocate
+  !! Deallocate Data
+  FINAL :: ls_final
+  !! Final
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => ls_Import
+  !! Importing linsolver from external file
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => ls_Display
+  !! Display
   PROCEDURE, PUBLIC, PASS(obj) :: Set => ls_Set
-    !! Set the matrix and preconditioning matrix
+  !! Set the matrix and preconditioning matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Solve => ls_solve
-    !! Solve the system of linear equation
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => ls_display
-    !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => ls_Import
-    !! Importing linsolver from external file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => ls_Export
-    !! Exporting linsolver from external file
-  PROCEDURE, PUBLIC, PASS(obj) :: setTolerance => ls_setTolerance
+  !! Solve the system of linear equation
+  PROCEDURE, PUBLIC, NOPASS :: &
+     & getLinSolverCodeFromName => ls_getLinSolverCodeFromName
+  PROCEDURE, PUBLIC, NOPASS :: &
+     & getLinSolverNameFromCode => ls_getLinSolverNameFromCode
 END TYPE LinSolver_
 
 PUBLIC :: LinSolver_
@@ -84,8 +93,7 @@ PUBLIC :: LinSolver_
 !                                                              TypeLinSolver
 !----------------------------------------------------------------------------
 
-TYPE(LinSolver_), PUBLIC, PARAMETER :: TypeLinSolver = &
-    & LinSolver_(RES=NULL(), W=NULL())
+TYPE(LinSolver_), PUBLIC, PARAMETER :: TypeLinSolver = LinSolver_()
 
 !----------------------------------------------------------------------------
 !                                                         LinSolverPointer_
@@ -98,33 +106,37 @@ END TYPE LinSolverPointer_
 PUBLIC :: LinSolverPointer_
 
 !----------------------------------------------------------------------------
-!                                      getLinSolverCodeFromName@Constructor
+!                                      getLinSolverCodeFromName@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-15
+! summary: Get linear solver integer code from name
+
 INTERFACE
-  MODULE PURE FUNCTION getLinSolverCodeFromName(name) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: name
+  MODULE PURE FUNCTION ls_getLinSolverCodeFromName(name) RESULT(Ans)
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION getLinSolverCodeFromName
+  END FUNCTION ls_getLinSolverCodeFromName
 END INTERFACE
 
-PUBLIC :: getLinSolverCodeFromName
+!----------------------------------------------------------------------------
+!                                      getLinSolverNameFromCode@GetMethods
+!----------------------------------------------------------------------------
 
-!----------------------------------------------------------------------------
-!                                      getLinSolverNameFromCode@Constructor
-!----------------------------------------------------------------------------
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-15
+! summary: Get the linear solver name from integer code
 
 INTERFACE
-  MODULE PURE FUNCTION getLinSolverNameFromCode(name) RESULT(Ans)
+  MODULE PURE FUNCTION ls_getLinSolverNameFromCode(name) RESULT(Ans)
     INTEGER(I4B), INTENT(IN) :: name
-    CHARACTER(LEN=15) :: ans
-  END FUNCTION getLinSolverNameFromCode
+    CHARACTER(15) :: ans
+  END FUNCTION ls_getLinSolverNameFromCode
 END INTERFACE
 
-PUBLIC :: getLinSolverNameFromCode
-
 !----------------------------------------------------------------------------
-!                                            setLinSolverParam@Constructor
+!                                              setLinSolverParam@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -132,26 +144,133 @@ PUBLIC :: getLinSolverNameFromCode
 ! summary: Set linear solver parameters
 
 INTERFACE
-  MODULE SUBROUTINE setLinSolverParam(param, solverName, preconditionOption, &
-    & convergenceIn, convergenceType, maxIter, relativeToRHS, &
-    & KrylovSubspaceSize, rtol, atol)
+  MODULE SUBROUTINE setLinSolverParam( &
+    & param, &
+    & solverName, &
+    & preconditionOption, &
+    & convergenceIn, &
+    & convergenceType, &
+    & maxIter, &
+    & relativeToRHS, &
+    & KrylovSubspaceSize, &
+    & rtol, &
+    & atol, &
+    & scale, &
+    & initx_zeros, &
+    & bicgstab_ell, &
+    & sor_omega, &
+    & p_name, &
+    & p_ilu_lfil, &
+    & p_ilu_mbloc, &
+    & p_ilu_droptol, &
+    & p_ilu_permtol, &
+    & p_ilu_alpha, &
+    & p_ilu_fill, &
+    & p_ssor_omega, &
+    & p_hybrid_i, &
+    & p_hybrid_maxiter, &
+    & p_hybrid_tol, &
+    & p_hybrid_omega, &
+    & p_hybrid_ell, &
+    & p_hybrid_restart, &
+    & p_is_alpha, &
+    & p_is_m, &
+    & p_sainv_drop, &
+    & p_saamg_unsym, &
+    & p_saamg_theta, &
+    & p_iluc_drop, &
+    & p_iluc_rate, &
+    & p_adds, &
+    & p_adds_iter &
+    & )
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    INTEGER(I4B), INTENT(IN) :: solverName
-    INTEGER(I4B), INTENT(IN) :: preconditionOption
-    INTEGER(I4B), INTENT(IN) :: convergenceIn
-    INTEGER(I4B), INTENT(IN) :: convergenceType
-    INTEGER(I4B), INTENT(IN) :: maxIter
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: solverName
+    !! Solver name
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: preconditionOption
+    !! precondition option
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceIn
+    !! convergenceInRes
+    !! convergenceInSol
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: convergenceType
+    !! relativeConvergence
+    !! absoluteConvergence
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: maxIter
+    !! maximum iteration
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: relativeToRHS
+    !! relative to RHS
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: KrylovSubspaceSize
+    !! KrylovSubspaceSize
     REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
+    !! relative tolerance
     REAL(DFP), OPTIONAL, INTENT(IN) :: atol
+    !! absolute tolerance
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scale
+    !! LIS, Solver digonal scaling
+    !! scale_none: No scaling
+    !! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
+    !! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: initx_zeros
+    !! if True, then we set sol=0.0 as initial guess.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: bicgstab_ell
+    !! Needed for solver BiCGSTABL
+    REAL(DFP), OPTIONAL, INTENT(IN) :: sor_omega
+    !! The relaxation coefficient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_name
+    !! Name of preconditioner
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_lfil
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_mbloc
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_droptol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_permtol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_alpha
+    !! Sparsekit, ilu, alpha
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_fill
+    !! ILU, fill-in
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ssor_omega
+    !! The relaxation coefficient omega in (0.0, 2.0)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_i
+    !! Hybrid, the linear solver, for example, SSOR, GMRES,
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_maxiter
+    !! Hybrid, maximum number of iterations
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_tol
+    !! Hybrid, convergence tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_omega
+    !! Hybrid, The relaxation coefficient omega of the SOR
+    !! omega should be in (0.0, 2.0)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_ell
+    !!Hybrid, The degree l of the BiCGSTAB(l)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_restart
+    !! Hybrid, The restart value of GMRES and Orthomin
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_is_alpha
+    !! I+S, The parameter alpha of $I + \alpha {S}^{m}$
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_is_m
+    !! I+S, The parameter m of $I + \alpha {S}^{m}$
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_sainv_drop
+    !! SA-AMG, The drop criteria
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_saamg_unsym
+    !! SA-AMG, Select the unsymmetric version
+    !! The matrix structure must be symmetric
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_saamg_theta
+    !! SA-AMG, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_drop
+    !! Crout ILU, default is 0.05, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_rate
+    !! Crout ILU, The ratio of the maximum fill-in
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_adds
+    !! ilut Additive Schwarz, default is true
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_adds_iter
+    !! default value is 1
+    !! ILUT Additive Schwarz number of iteration
   END SUBROUTINE setLinSolverParam
 END INTERFACE
 
 PUBLIC :: setLinSolverParam
 
 !----------------------------------------------------------------------------
-!                                              getLinSolverParam@Constructor
+!                                              getLinSolverParam@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -159,24 +278,120 @@ PUBLIC :: setLinSolverParam
 ! summary: Returns the linear solver parameters
 
 INTERFACE
-  MODULE SUBROUTINE getLinSolverParam(param, solverName, &
-    & preconditionOption, convergenceIn, convergenceType, &
-    & maxIter, relativeToRHS, KrylovSubspaceSize, rtol, atol)
+  MODULE SUBROUTINE getLinSolverParam( &
+    & param, &
+    & solverName, &
+    & preconditionOption, &
+    & convergenceIn, &
+    & convergenceType, &
+    & maxIter, &
+    & relativeToRHS, &
+    & KrylovSubspaceSize, &
+    & rtol, &
+    & atol,  &
+    & scale, &
+    & initx_zeros, &
+    & bicgstab_ell, &
+    & sor_omega, &
+    & p_name, &
+    & p_ilu_lfil, &
+    & p_ilu_mbloc, &
+    & p_ilu_droptol, &
+    & p_ilu_permtol, &
+    & p_ilu_alpha, &
+    & p_ilu_fill, &
+    & p_ssor_omega, &
+    & p_hybrid_i, &
+    & p_hybrid_maxiter, &
+    & p_hybrid_tol, &
+    & p_hybrid_omega, &
+    & p_hybrid_ell, &
+    & p_hybrid_restart, &
+    & p_is_alpha, &
+    & p_is_m, &
+    & p_sainv_drop, &
+    & p_saamg_unsym, &
+    & p_saamg_theta, &
+    & p_iluc_drop, &
+    & p_iluc_rate, &
+    & p_adds, &
+    & p_adds_iter &
+    & )
     TYPE(ParameterList_), INTENT(IN) :: param
-    INTEGER(I4B), INTENT(OUT) :: solverName
-    INTEGER(I4B), INTENT(OUT) :: preconditionOption
-    INTEGER(I4B), INTENT(OUT) :: convergenceIn
-    INTEGER(I4B), INTENT(OUT) :: convergenceType
-    INTEGER(I4B), INTENT(OUT) :: maxIter
-    LOGICAL(LGT), INTENT(OUT) :: relativeToRHS
-    INTEGER(I4B), INTENT(OUT) :: KrylovSubspaceSize
-    REAL(DFP), INTENT(OUT) :: rtol
-    REAL(DFP), INTENT(OUT) :: atol
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: solverName
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: preconditionOption
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: convergenceIn
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: convergenceType
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: maxIter
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: relativeToRHS
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: KrylovSubspaceSize
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: rtol
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: atol
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: scale
+    !! LIS, Solver digonal scaling
+    !! scale_none: No scaling
+    !! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
+    !! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: initx_zeros
+    !! if True, then we set sol=0.0 as initial guess.
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: bicgstab_ell
+    !! Needed for solver BiCGSTABL
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: sor_omega
+    !! The relaxation coefficient
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_name
+    !! Name of preconditioner
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_ilu_lfil
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_ilu_mbloc
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_ilu_droptol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_ilu_permtol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_ilu_alpha
+    !! Sparsekit, ilu, alpha
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_ilu_fill
+    !! ILU, fill-in
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_ssor_omega
+    !! The relaxation coefficient omega in (0.0, 2.0)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_hybrid_i
+    !! Hybrid, the linear solver, for example, SSOR, GMRES,
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_hybrid_maxiter
+    !! Hybrid, maximum number of iterations
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_hybrid_tol
+    !! Hybrid, convergence tolerance
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_hybrid_omega
+    !! Hybrid, The relaxation coefficient omega of the SOR
+    !! omega should be in (0.0, 2.0)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_hybrid_ell
+    !!Hybrid, The degree l of the BiCGSTAB(l)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_hybrid_restart
+    !! Hybrid, The restart value of GMRES and Orthomin
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_is_alpha
+    !! I+S, The parameter alpha of $I + \alpha {S}^{m}$
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_is_m
+    !! I+S, The parameter m of $I + \alpha {S}^{m}$
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_sainv_drop
+    !! SA-AMG, The drop criteria
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: p_saamg_unsym
+    !! SA-AMG, Select the unsymmetric version
+    !! The matrix structure must be symmetric
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_saamg_theta
+    !! SA-AMG, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_iluc_drop
+    !! Crout ILU, default is 0.05, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(OUT) :: p_iluc_rate
+    !! Crout ILU, The ratio of the maximum fill-in
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: p_adds
+    !! ilut Additive Schwarz, default is true
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: p_adds_iter
+    !! default value is 1
+    !! ILUT Additive Schwarz number of iteration
   END SUBROUTINE getLinSolverParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           checkEssentialParam@Constructor
+!                                     checkEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -190,10 +405,14 @@ INTERFACE
   END SUBROUTINE ls_checkEssentialParam
 END INTERFACE
 
-PUBLIC :: ls_checkEssentialParam
+INTERFACE LinSolverCheckEssentialParam
+  MODULE PROCEDURE ls_checkEssentialParam
+END INTERFACE LinSolverCheckEssentialParam
+
+PUBLIC :: LinSolverCheckEssentialParam
 
 !-----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
+!                                                 Initiate@ConstructorMethods
 !-----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -218,15 +437,11 @@ INTERFACE
   END SUBROUTINE ls_Initiate
 END INTERFACE
 
-!----------------------------------------------------------------------------
-!                                                 Deallocate@Constructor
-!----------------------------------------------------------------------------
+INTERFACE LinSolverInitiate
+  MODULE PROCEDURE ls_Initiate
+END INTERFACE LinSolverInitiate
 
-INTERFACE
-  MODULE SUBROUTINE ls_Deallocate(obj)
-    CLASS(LinSolver_), INTENT(INOUT) :: obj
-  END SUBROUTINE ls_Deallocate
-END INTERFACE
+PUBLIC :: LinSolverInitiate
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -237,18 +452,6 @@ INTERFACE
     CLASS(LinSolver_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), TARGET, INTENT(INOUT) :: Amat
   END SUBROUTINE ls_Set
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetTolerance@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE SUBROUTINE ls_setTolerance(obj, atol, rtol)
-    CLASS(LinSolver_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: atol
-    REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
-  END SUBROUTINE ls_setTolerance
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -275,26 +478,22 @@ END INTERFACE
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Aug 2021
-! summary: This routine displays the content of linear solver
-
 INTERFACE
   MODULE SUBROUTINE ls_Display(obj, msg, unitno)
     CLASS(LinSolver_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: Unitno
   END SUBROUTINE ls_Display
 END INTERFACE
 
-INTERFACE Display
+INTERFACE LinSolverDisplay
   MODULE PROCEDURE ls_Display
-END INTERFACE Display
+END INTERFACE LinSolverDisplay
 
-PUBLIC :: Display
+PUBLIC :: LinSolverDisplay
 
 !----------------------------------------------------------------------------
-!                                                          Import@IOMethods
+!                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -305,24 +504,34 @@ INTERFACE
   MODULE SUBROUTINE ls_Import(obj, hdf5, group)
     CLASS(LinSolver_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE ls_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@IOMethods
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Aug 2021
-! summary: This routine exports the linear solver to external file
+INTERFACE
+  MODULE SUBROUTINE ls_Deallocate(obj)
+    CLASS(LinSolver_), INTENT(INOUT) :: obj
+  END SUBROUTINE ls_Deallocate
+END INTERFACE
+
+INTERFACE LinSolverDeallocate
+  MODULE PROCEDURE ls_Deallocate
+END INTERFACE LinSolverDeallocate
+
+PUBLIC :: LinSolverDeallocate
+
+!----------------------------------------------------------------------------
+!                                                 Final@ConstructorMethods
+!----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE ls_Export(obj, hdf5, group)
-    CLASS(LinSolver_), INTENT(IN) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
-  END SUBROUTINE ls_Export
+  MODULE SUBROUTINE ls_final(obj)
+    TYPE(LinSolver_), INTENT(INOUT) :: obj
+  END SUBROUTINE ls_final
 END INTERFACE
 
 END MODULE LinSolver_Class

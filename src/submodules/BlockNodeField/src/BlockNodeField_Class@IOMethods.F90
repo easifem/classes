@@ -20,77 +20,80 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bnField_Display
-  INTEGER( I4B ) :: ii
-  !!
-  IF( LEN_TRIM( msg) .NE. 0 ) THEN
-    CALL Display( "# "//TRIM( msg ), unitNo=unitNo )
-  END IF
-  !!
-  IF( obj%isInitiated ) THEN
-    CALL Display( "# isInitiated : TRUE", unitNo=unitNo )
-  ELSE
-    CALL Display( "# isInitiated : FALSE, Nothing to Display!", &
-      & unitNo=unitNo )
-    RETURN
-  END IF
-  !!
-  CALL Display( "# engine : NATIVE_SERIAL", unitNo=unitNo )
-  CALL Display( obj%name, "# name : ", unitNo=unitNo )
-  CALL Display( obj%tSize, "# tSize : ", unitNo=unitNo )
-  !!
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    CALL Display( "# fieldType : CONSTANT", unitNo=unitNo)
-  ELSE
-    CALL Display( "# fieldType : NORMAL", unitNo=unitNo)
-  END IF
-  !!
-  IF( ASSOCIATED( obj%domain )  ) THEN
-    CALL Display( "# domain : ASSOCIATED", unitNo=unitNo )
-  ELSE
-    CALL Display( "# domain : NOT ASSOCIATED", unitNo=unitNo )
-  END IF
-  !!
-  IF( ALLOCATED( obj%domains ) ) THEN
-    CALL Display( "# domains : ALLOCATED [" &
-      & // TOSTRING(SIZE(obj%domains)) &
-      & // "]", unitNo=unitNo )
-    DO ii = 1, SIZE( obj%domains )
-      IF( ASSOCIATED(obj%domains(ii)%ptr) ) THEN
-        CALL Display( "# domains(" // TOSTRING(ii) &
-          & // ")%ptr : ASSOCIATED", unitNo=unitNo )
-      ELSE
-        CALL Display( "# domains(" // TOSTRING(ii)  &
-          & // ")%ptr : NOT ASSOCIATED", unitNo=unitNo )
-      END IF
-    END DO
-  ELSE
-    CALL Display( "# domains : NOT ALLOCATED", unitNo=unitNo )
-  END IF
-  CALL Display( obj%realVec, obj%dof, msg="# realVec : ", unitNo=unitNo )
-END PROCEDURE bnField_Display
-
-!----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_Import
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Import"
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is under condtruction!')
+CHARACTER(*), PARAMETER :: myName = "bnField_Import"
+CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'This routine is under construction!')
+! TYPE(String) :: dsetname
+! LOGICAL(LGT) :: bools(3)
+! TYPE(ParameterList_) :: param
+!
+! ! info
+! CALL e%raiseInformation(modName//"::"//myName//" - "// &
+!   & "[START] Import()")
+!
+! CALL AbstractNodeFieldImport( &
+!   & obj=obj, &
+!   & hdf5=hdf5, &
+!   & group=group, &
+!   & dom=dom, &
+!   & domains=domains)
+!
+! ! spaceCompo
+! dsetname = TRIM(group)//"/spaceCompo"
+! IF (hdf5%pathExists(dsetname%chars())) THEN
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
+! ELSE
+!   CALL e%raiseError(modName//'::'//myName//" - "// &
+!   & 'The dataset spaceCompo should be present')
+! END IF
+!
+! ! timeCompo
+! dsetname = TRIM(group)//"/timeCompo"
+! IF (hdf5%pathExists(dsetname%chars())) THEN
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
+! ELSE
+!   CALL e%raiseError(modName//'::'//myName//" - "// &
+!   & 'The dataset timeCompo should be present')
+! END IF
+!
+! dsetname = TRIM(group)//"/tSize"
+! bools(1) = hdf5%pathExists(dsetname%chars())
+! dsetname = TRIM(group)//"/dof"
+! bools(2) = hdf5%pathExists(dsetname%chars())
+! dsetname = TRIM(group)//"/realVec"
+! bools(3) = hdf5%pathExists(dsetname%chars())
+!
+! IF (.NOT. ALL(bools)) THEN
+!   CALL param%initiate()
+!
+!   CALL SetBlockFieldParam( &
+!     & param=param, &
+!     & name=obj%name%chars(), &
+!     & engine=obj%engine%chars(), &
+!     & fieldType=obj%fieldType, &
+!     & timeCompo=obj%timeCompo, &
+!     & spaceCompo=obj%spaceCompo, &
+!     & engine=obj%engine%chars() &
+!     & )
+!
+!   obj%isInitiated = .FALSE.
+!
+!   IF (PRESENT(dom)) THEN
+!     CALL obj%initiate(param=param, dom=dom)
+!   ELSE
+!     CALL obj%initiate(param=param, dom=domains)
+!   END IF
+!
+!   CALL param%DEALLOCATE()
+! END IF
+!
+! CALL e%raiseInformation(modName//"::"//myName//" - "// &
+!   & "[END] Import()")
+!
 END PROCEDURE bnField_Import
-
-!----------------------------------------------------------------------------
-!                                                                    Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bnField_Export
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_Export"
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is under condtruction!')
-END PROCEDURE bnField_Export
 
 END SUBMODULE IOMethods

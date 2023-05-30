@@ -26,7 +26,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_Final
-  CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE n_Final
 
 !----------------------------------------------------------------------------
@@ -45,36 +45,36 @@ END PROCEDURE n_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_GotoTag
-  ! Define internal variables
-  INTEGER( I4B ) :: IOSTAT, Reopen, unitNo
-  CHARACTER( LEN = 100 ) :: Dummy
-  CHARACTER( LEN = * ), PARAMETER :: myName = "n_GotoTag"
-  !
-  ! Find $meshFormat
+! Define internal variables
+INTEGER(I4B) :: IOSTAT, Reopen, unitNo
+CHARACTER(100) :: Dummy
+CHARACTER(*), PARAMETER :: myName = "n_GotoTag"
+!
+! Find $meshFormat
 
-  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'mshFile is either not opened or does not have read access!')
-    error = -1
-  ELSE
-    Reopen = 0; error = 0; CALL mshFile%Rewind()
-    DO
-      unitNo = mshFile%getUnitNo()
-      READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
-        CALL mshFile%setEOFStat( .TRUE. )
-        Reopen = Reopen + 1
-      END IF
-      IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'Could not find $Nodes !')
-        error = -2
-        EXIT
-      ELSE IF( TRIM( Dummy ) .EQ. '$Nodes' ) THEN
-        EXIT
-      END IF
-    END DO
-  END IF
+IF (.NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead()) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'mshFile is either not opened or does not have read access!')
+  error = -1
+ELSE
+  Reopen = 0; error = 0; CALL mshFile%REWIND()
+  DO
+    unitNo = mshFile%getUnitNo()
+    READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
+    IF (IS_IOSTAT_END(IOSTAT)) THEN
+      CALL mshFile%setEOFStat(.TRUE.)
+      Reopen = Reopen + 1
+    END IF
+    IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Could not find $Nodes !')
+      error = -2
+      EXIT
+    ELSE IF (TRIM(Dummy) .EQ. '$Nodes') THEN
+      EXIT
+    END IF
+  END DO
+END IF
 END PROCEDURE n_GotoTag
 
 !----------------------------------------------------------------------------
@@ -82,21 +82,21 @@ END PROCEDURE n_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_Read
-  CALL obj%GotoTag( mshFile, error )
-  IF( error .EQ. 0 ) THEN
-    IF( mshFormat%getMajorVersion() .GT. 2 ) THEN
-      READ( mshFile%getUnitNo(), * ) obj%numEntityBlocks, obj%numNodes, &
-        & obj%minNodeTag, obj%maxNodeTag
-      IF( ( obj%maxNodeTag - obj%minNodeTag ) &
-        & .EQ. ( obj%numNodes - 1 ) ) THEN
-        obj%isSparse = .FALSE.
-      ELSE
-        obj%isSparse = .TRUE.
-      END IF
+CALL obj%GotoTag(mshFile, error)
+IF (error .EQ. 0) THEN
+  IF (mshFormat%getMajorVersion() .GT. 2) THEN
+    READ (mshFile%getUnitNo(), *) obj%numEntityBlocks, obj%numNodes, &
+      & obj%minNodeTag, obj%maxNodeTag
+    IF ((obj%maxNodeTag - obj%minNodeTag) &
+      & .EQ. (obj%numNodes - 1)) THEN
+      obj%isSparse = .FALSE.
     ELSE
-      READ( mshFile%getUnitNo(), * ) obj%numNodes
+      obj%isSparse = .TRUE.
     END IF
+  ELSE
+    READ (mshFile%getUnitNo(), *) obj%numNodes
   END IF
+END IF
 END PROCEDURE n_Read
 
 !----------------------------------------------------------------------------
@@ -104,6 +104,17 @@ END PROCEDURE n_Read
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_write
+TYPE(String) :: astr
+INTEGER(I4B) :: unitNo
+
+unitNo = afile%getUnitNo()
+
+astr = tostring(obj%numEntityBlocks)//" "// &
+  & tostring(obj%numNodes)//" "// &
+  & tostring(obj%minNodeTag)//" "// &
+  & tostring(obj%maxNodeTag)
+
+WRITE (unitNo, "(A)") astr%chars()
 
 END PROCEDURE n_write
 
@@ -112,31 +123,31 @@ END PROCEDURE n_write
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_Display
-  ! Define internal variables
-  INTEGER( I4B ) :: I
-  !
-  IF( PRESENT( UnitNo ) ) THEN
-    I = UnitNo
-  ELSE
-    I = stdout
-  END IF
-  !
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( I, "(A)" ) TRIM( Msg )
-  END IF
-  !
-  CALL BlankLines( UnitNo = I, NOL = 1 )
-  WRITE( I, "(A)" ) "| Property | Value |"
-  WRITE( I, "(A)" ) "| :----    | ---:  |"
-  WRITE( I, "(A, I4, A)" ) "| Total Nodes    | ", obj%NumNodes, " | "
-  WRITE( I, "(A, I4, A)" ) "| Total Entities | ", obj%NumEntityBlocks, &
-    & " | "
-  WRITE( I, "(A, I4, A)" ) "| Min Node Tag   | ", obj%minNodeTag, &
-    & " | "
-  WRITE( I, "(A, I4, A)" ) "| Max Node Tag   | ", obj%maxNodeTag, &
-    & " | "
-  WRITE( I, "(A, G5.2, A)" ) "| isSparse       | ", obj%isSparse, &
-    & " | "
+! Define internal variables
+INTEGER(I4B) :: I
+!
+IF (PRESENT(UnitNo)) THEN
+  I = UnitNo
+ELSE
+  I = stdout
+END IF
+!
+IF (LEN_TRIM(Msg) .NE. 0) THEN
+  WRITE (I, "(A)") TRIM(Msg)
+END IF
+!
+CALL BlankLines(UnitNo=I, NOL=1)
+WRITE (I, "(A)") "| Property | Value |"
+WRITE (I, "(A)") "| :----    | ---:  |"
+WRITE (I, "(A, I4, A)") "| Total Nodes    | ", obj%NumNodes, " | "
+WRITE (I, "(A, I4, A)") "| Total Entities | ", obj%NumEntityBlocks, &
+  & " | "
+WRITE (I, "(A, I4, A)") "| Min Node Tag   | ", obj%minNodeTag, &
+  & " | "
+WRITE (I, "(A, I4, A)") "| Max Node Tag   | ", obj%maxNodeTag, &
+  & " | "
+WRITE (I, "(A, G5.2, A)") "| isSparse       | ", obj%isSparse, &
+  & " | "
 END PROCEDURE n_Display
 
 !----------------------------------------------------------------------------
@@ -144,7 +155,7 @@ END PROCEDURE n_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_getNumEntityBlocks
-  ans = obj%NumEntityBlocks
+ans = obj%NumEntityBlocks
 END PROCEDURE n_getNumEntityBlocks
 
 !----------------------------------------------------------------------------
@@ -152,7 +163,7 @@ END PROCEDURE n_getNumEntityBlocks
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_getNumNodes
-  ans = obj%NumNodes
+ans = obj%NumNodes
 END PROCEDURE n_getNumNodes
 
 !----------------------------------------------------------------------------
@@ -160,7 +171,7 @@ END PROCEDURE n_getNumNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_getMaxNodeTag
-  ans = obj%maxNodeTag
+ans = obj%maxNodeTag
 END PROCEDURE n_getMaxNodeTag
 
 !----------------------------------------------------------------------------
@@ -168,7 +179,7 @@ END PROCEDURE n_getMaxNodeTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_getMinNodeTag
-  ans = obj%MinNodeTag
+ans = obj%MinNodeTag
 END PROCEDURE n_getMinNodeTag
 
 !----------------------------------------------------------------------------

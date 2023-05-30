@@ -27,7 +27,7 @@ USE Domain_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "DomainConnectivity_Class"
+CHARACTER(*), PARAMETER :: modName = "DomainConnectivity_Class"
 INTEGER(I4B), PUBLIC, PARAMETER :: pType = 1
 INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
 INTEGER(I4B), PUBLIC, PARAMETER :: rType = 3
@@ -118,6 +118,9 @@ CONTAINS
   !! Deallocate data stored in the object
   FINAL :: dc_Final
   !! finalizer
+  !
+  ! @NodeMethods
+  !
   PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData1
   !! Initiate [[DomainConnectivity_:nodeToNode]]
   PROCEDURE, PASS(obj) :: dc_initiateNodeToNodeData2
@@ -129,9 +132,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: getNodeToNodePointer => &
     & dc_getNodeToNodePointer
   !! Return pointer to the [[DomainConnectivity_:nodeToNode]]
-  !!
-  !! @CellMethods
-  !!
+  !
+  ! @CellMethods
+  !
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData1
   !! Initiates [[DomainConnectivity_:cellToCell]] data
   PROCEDURE, PUBLIC, PASS(obj) :: dc_initiateCellToCellData2
@@ -148,6 +151,9 @@ CONTAINS
   !! Returns the dim and entity num of mesh which contains
   !! the element (in domain2) which is connected to element
   !! in domain 1.
+  !
+  ! @FacetMethods
+  !
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData1
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData2
   PROCEDURE, PRIVATE, PASS(obj) :: dc_initiateFacetToCellData3
@@ -165,26 +171,81 @@ CONTAINS
   !! Return the masterCell number of a given facet
   PROCEDURE, PRIVATE, PASS(obj) :: dc_masterCellNumber2
   !! Return the masterCell numbers of given facet elements
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterCellNumber3
+  !! Return the masterCell numbers of given facet elements
   GENERIC, PUBLIC :: masterCellNumber =>  &
     & dc_masterCellNumber1, &
-    & dc_masterCellNumber2
+    & dc_masterCellNumber2, &
+    & dc_masterCellNumber3
   PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveCellNumber1
   !! Return the slaveCell number of a given facet
   PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveCellNumber2
   !! Return the slaveCell numbers of given facet elements
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveCellNumber3
+  !! Return the slaveCell numbers of given facet elements
   GENERIC, PUBLIC :: slaveCellNumber =>  &
     & dc_slaveCellNumber1, &
-    & dc_slaveCellNumber2
+    & dc_slaveCellNumber2, &
+    & dc_slaveCellNumber3
   !! Return the cell numbers of given facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: dc_facetLocalID1
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterFacetLocalID1
   !! Return the facet local id in cell element
-  PROCEDURE, PUBLIC, PASS(obj) :: dc_facetLocalID2
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterFacetLocalID2
   !! Return the facet local id in cell element
-  GENERIC, PUBLIC :: facetLocalID =>  &
-    & dc_facetLocalID1, &
-    & dc_facetLocalID2
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterFacetLocalID3
   !! Return the facet local id in cell element
-  !!
+  GENERIC, PUBLIC :: masterFacetLocalID =>  &
+    & dc_masterFacetLocalID1, &
+    & dc_masterFacetLocalID2, &
+    & dc_masterFacetLocalID3
+  !! Return the facet local id in cell element
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveFacetLocalID1
+  !! Return the facet local id in cell element
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveFacetLocalID2
+  !! Return the facet local id in cell element
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveFacetLocalID3
+  !! Return the facet local id in cell element
+  GENERIC, PUBLIC :: slaveFacetLocalID =>  &
+    & dc_slaveFacetLocalID1, &
+    & dc_slaveFacetLocalID2, &
+    & dc_slaveFacetLocalID3
+  !! Return the facet local id in cell element
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterDimTag1
+  !! (dim, entityNum) of master cell
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterDimTag2
+  !! (dim, entityNum) of master cell
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_masterDimTag3
+  !! (dim, entityNum) of master cell
+  GENERIC, PUBLIC :: masterDimTag => &
+    & dc_masterDimTag1, &
+    & dc_masterDimTag2, &
+    & dc_masterDimTag3
+  !! (dim, entityNum) of master cell
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveDimTag1
+  !! (dim, entityNum) of slave cell
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveDimTag2
+  !! (dim, entityNum) of slave cell
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_slaveDimTag3
+  !! (dim, entityNum) of slave cell
+  GENERIC, PUBLIC :: slaveDimTag => &
+    & dc_slaveDimTag1, &
+    & dc_slaveDimTag2, &
+    & dc_slaveDimTag3
+  !! (dim, entityNum) of slave cell
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_GlobalFacetID1
+  !! global facet id of local facet id is returned
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_GlobalFacetID2
+  !! global facet id of local facet id is returned
+  PROCEDURE, PRIVATE, PASS(obj) :: dc_GlobalFacetID3
+  !! global facet id of local facet id is returned
+  GENERIC, PUBLIC :: GlobalFacetID => &
+    & dc_GlobalFacetID1, &
+    & dc_GlobalFacetID2, &
+    & dc_GlobalFacetID3
+  !! global facet id of local facet id is returned
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacet => &
+    & dc_GetTotalFacet
+  !! returns size of facetToCell
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetToCellData => &
     & dc_DisplayFacetToCellData
 END TYPE DomainConnectivity_
@@ -231,6 +292,21 @@ INTERFACE
   END SUBROUTINE dc_Final
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                          DisplayFacetToCellData@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 6 March 2022
+! summary: Display FaceToCellData
+
+INTERFACE
+  MODULE SUBROUTINE dc_DisplayFacetToCellData(obj, msg, unitno)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE dc_DisplayFacetToCellData
+END INTERFACE
 !----------------------------------------------------------------------------
 !                                  InitiateNodeToNodeData@NodeToNodeMethods
 !----------------------------------------------------------------------------
@@ -662,6 +738,23 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
+! summary: Returns master cell number of given facet number
+
+INTERFACE
+  MODULE PURE FUNCTION dc_MasterCellNumber3(obj) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! List of cell element numbers
+  END FUNCTION dc_MasterCellNumber3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    CellNumber@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
 ! summary: Returns slave cell number of given facet number
 !
 !# Introduction
@@ -705,73 +798,325 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  FacetLocalID@FacetMethods
+!                                                    CellNumber@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: Returns the local facet id of cell element
+! summary: Returns slave cell number of given facet number
+
+INTERFACE
+  MODULE PURE FUNCTION dc_SlaveCellNumber3(obj) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! List of cell element numbers
+  END FUNCTION dc_SlaveCellNumber3
+END INTERFACE
+!----------------------------------------------------------------------------
+!                                          masterFacetLocalID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the local facet id in master cell element
 !
 !# Introduction
 !
-! Returns the local facet id of cell element which is in contact with
+! Returns the local facet id in master cell element which is in contact with
 ! facet element
 
 INTERFACE
-  MODULE PURE FUNCTION dc_FacetLocalID1(obj, FacetNum) RESULT(ans)
+  MODULE PURE FUNCTION dc_masterFacetLocalID1(obj, localElement) RESULT(ans)
     CLASS(DomainConnectivity_), INTENT(IN) :: obj
     !! Mesh connectivity object
-    INTEGER(I4B), INTENT(IN) :: FacetNum
+    INTEGER(I4B), INTENT(IN) :: localElement
     !! Facet element number
     INTEGER(I4B) :: ans
     !! Local facet ID
-  END FUNCTION dc_FacetLocalID1
+  END FUNCTION dc_masterFacetLocalID1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 FacetLocalID@FacetMethods
+!                                           masterFacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: Returns the local facet id of cell element
+! summary: Returns the local facet id in master cell element
 !
 !# Introduction
 !
-! Returns the local facet id of cell element which is in contact with
+! Returns the local facet id in master cell element which is in contact with
 ! facet element
 !
 !## Usage
 !
 !```fortran
-!        id = obj % FacetLocalID( FacetNum )
+! id = obj % FacetLocalID( FacetNum )
 !```
 
 INTERFACE
-  MODULE PURE FUNCTION dc_FacetLocalID2(obj, FacetNum) RESULT(ans)
+  MODULE PURE FUNCTION dc_masterFacetLocalID2(obj, localElement) RESULT(ans)
     CLASS(DomainConnectivity_), INTENT(IN) :: obj
     !! Mesh connectivity data
-    INTEGER(I4B), INTENT(IN) :: FacetNum(:)
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
     !! List of facet element numbers
-    INTEGER(I4B) :: ans(SIZE(FacetNum))
+    INTEGER(I4B) :: ans(SIZE(localElement))
     !! List of local facet IDs
-  END FUNCTION dc_FacetLocalID2
+  END FUNCTION dc_masterFacetLocalID2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          DisplayFacetToCellData@IOMethods
+!                                           masterFacetLocalID@FacetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 6 March 2022
-! summary: Display FaceToCellData
+! date: 12 Oct 2021
+! summary: Returns the local facet id in master cell element
 
 INTERFACE
-  MODULE SUBROUTINE dc_DisplayFacetToCellData(obj, msg, unitno)
+  MODULE PURE FUNCTION dc_masterFacetLocalID3(obj) RESULT(ans)
     CLASS(DomainConnectivity_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE dc_DisplayFacetToCellData
+    !! Mesh connectivity data
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! List of local facet IDs
+  END FUNCTION dc_masterFacetLocalID3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          slaveFacetLocalID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the local facet id in slave cell element
+!
+!# Introduction
+!
+! Returns the local facet id in slave cell element which is in contact with
+! facet element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_slaveFacetLocalID1(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity object
+    INTEGER(I4B), INTENT(IN) :: localElement
+    !! Facet element number
+    INTEGER(I4B) :: ans
+    !! Local facet ID
+  END FUNCTION dc_slaveFacetLocalID1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           slaveFacetLocalID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the local facet id in slave cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_slaveFacetLocalID2(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
+    !! List of facet element numbers
+    INTEGER(I4B) :: ans(SIZE(localElement))
+    !! List of local facet IDs
+  END FUNCTION dc_slaveFacetLocalID2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           slaveFacetLocalID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the local facet id in slave cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_slaveFacetLocalID3(obj) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    !! List of local facet IDs
+  END FUNCTION dc_slaveFacetLocalID3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  masterDimTag@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the (dimtag, entityNum) in master cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_masterDimTag1(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity object
+    INTEGER(I4B), INTENT(IN) :: localElement
+    !! Facet element number
+    INTEGER(I4B) :: ans(2)
+    !! dim, entityNum
+  END FUNCTION dc_masterDimTag1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           masterDimTag@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the (dimtag, entityNum) in master cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_masterDimTag2(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
+    !! List of facet element numbers
+    INTEGER(I4B) :: ans(2, SIZE(localElement))
+    !! dim, entityNum
+  END FUNCTION dc_masterDimTag2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           masterDimTag@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the (dimtag, entityNum) in master cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_masterDimTag3(obj, isTranspose) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    LOGICAL(LGT), INTENT(IN) :: isTranspose
+    INTEGER(I4B), ALLOCATABLE :: ans(:, :)
+    !! dim, entityNum
+  END FUNCTION dc_masterDimTag3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  slaveDimTag@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the (dimtag, entityNum) in slave cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_slaveDimTag1(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity object
+    INTEGER(I4B), INTENT(IN) :: localElement
+    !! Facet element number
+    INTEGER(I4B) :: ans(2)
+    !! dim, entityNum
+  END FUNCTION dc_slaveDimTag1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           slaveDimTag@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the (dimtag, entityNum) in slave cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_slaveDimTag2(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
+    !! List of facet element numbers
+    INTEGER(I4B) :: ans(2, SIZE(localElement))
+    !! dim, entityNum
+  END FUNCTION dc_slaveDimTag2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           slaveDimTag@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the (dimtag, entityNum) in slave cell element
+
+INTERFACE
+  MODULE PURE FUNCTION dc_slaveDimTag3(obj, isTranspose) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    LOGICAL(LGT), INTENT(IN) :: isTranspose
+    INTEGER(I4B), ALLOCATABLE :: ans(:, :)
+    !! dim, entityNum
+  END FUNCTION dc_slaveDimTag3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GlobalFacetID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the local global facet id
+
+INTERFACE
+  MODULE PURE FUNCTION dc_GlobalFacetID1(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity object
+    INTEGER(I4B), INTENT(IN) :: localElement
+    !! Facet element number
+    INTEGER(I4B) :: ans
+  END FUNCTION dc_GlobalFacetID1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GlobalFacetID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the global facet id
+
+INTERFACE
+  MODULE PURE FUNCTION dc_GlobalFacetID2(obj, localElement) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), INTENT(IN) :: localElement(:)
+    !! List of facet element numbers
+    INTEGER(I4B) :: ans(SIZE(localElement))
+  END FUNCTION dc_GlobalFacetID2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GlobalFacetID@FacetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 12 Oct 2021
+! summary: Returns the global facet id
+
+INTERFACE
+  MODULE PURE FUNCTION dc_GlobalFacetID3(obj) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    !! Mesh connectivity data
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION dc_GlobalFacetID3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION dc_GetTotalFacet(obj) RESULT(ans)
+    CLASS(DomainConnectivity_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION dc_GetTotalFacet
 END INTERFACE
 
 !----------------------------------------------------------------------------

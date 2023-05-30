@@ -25,12 +25,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_DiagonalScaling
-  IF( PRESENT( diag ) ) THEN
-    CALL DiagonalScaling( obj=obj%mat, side=side, diag=diag, &
-      & operator=operator )
-  ELSE
-    CALL DiagonalScaling( obj=obj%mat, side=side, operator=operator )
-  END IF
+IF (PRESENT(diag)) THEN
+  CALL DiagonalScaling(obj=obj%mat, side=side, diag=diag, &
+    & OPERATOR=OPERATOR)
+ELSE
+  CALL DiagonalScaling(obj=obj%mat, side=side, OPERATOR=OPERATOR)
+END IF
 END PROCEDURE mField_DiagonalScaling
 
 END SUBMODULE DiagonalScalingMethods

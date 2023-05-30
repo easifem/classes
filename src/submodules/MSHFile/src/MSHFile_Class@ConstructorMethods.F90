@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_Final
-  CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE msh_Final
 
 !----------------------------------------------------------------------------
@@ -33,18 +33,18 @@ END PROCEDURE msh_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_Deallocate
-  CALL obj%Format%Deallocate()
-  CALL obj%PhysicalNames%Deallocate()
-  CALL obj%Nodes%Deallocate()
-  CALL obj%Elements%Deallocate()
-  IF( ALLOCATED( obj%PointEntities ) ) DEALLOCATE( obj%PointEntities )
-  IF( ALLOCATED( obj%CurveEntities ) ) DEALLOCATE( obj%CurveEntities )
-  IF( ALLOCATED( obj%SurfaceEntities ) ) DEALLOCATE( obj%SurfaceEntities )
-  IF( ALLOCATED( obj%VolumeEntities ) ) DEALLOCATE( obj%VolumeEntities )
-  obj%nsd = 0
-  IF( ASSOCIATED( obj % buffer ) ) DEALLOCATE( obj%buffer )
-  NULLIFY( obj%buffer )
-  CALL TxtFileDeallocate( obj, Delete )
+CALL obj%FORMAT%DEALLOCATE()
+CALL obj%PhysicalNames%DEALLOCATE()
+CALL obj%Nodes%DEALLOCATE()
+CALL obj%Elements%DEALLOCATE()
+IF (ALLOCATED(obj%PointEntities)) DEALLOCATE (obj%PointEntities)
+IF (ALLOCATED(obj%CurveEntities)) DEALLOCATE (obj%CurveEntities)
+IF (ALLOCATED(obj%SurfaceEntities)) DEALLOCATE (obj%SurfaceEntities)
+IF (ALLOCATED(obj%VolumeEntities)) DEALLOCATE (obj%VolumeEntities)
+obj%nsd = 0
+IF (ASSOCIATED(obj%buffer)) DEALLOCATE (obj%buffer)
+NULLIFY (obj%buffer)
+CALL TxtFileDeallocate(obj, Delete)
 END PROCEDURE msh_Deallocate
 
 ! !----------------------------------------------------------------------------
@@ -55,5 +55,148 @@ END PROCEDURE msh_Deallocate
 !   CALL ans%Initiate( Path, FileName, Extension, NSD )
 ! END PROCEDURE msh_constuctor1
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_GetIntNodeNumber
+CHARACTER(*), PARAMETER :: myName = "msh_GetIntNodeNumber"
+INTEGER(I4B) :: n
+
+SELECT CASE (dim)
+CASE (0)
+
+  IF (.NOT. ALLOCATED(obj%PointEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'PointEntities not allocated')
+  END IF
+
+  n = SIZE(obj%PointEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  ans = obj%PointEntities(tag)%GetIntNodeNumber()
+
+CASE (1)
+
+  IF (.NOT. ALLOCATED(obj%CurveEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'CurveEntities not allocated')
+  END IF
+
+  n = SIZE(obj%CurveEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  ans = obj%CurveEntities(tag)%GetIntNodeNumber()
+
+CASE (2)
+
+  IF (.NOT. ALLOCATED(obj%SurfaceEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'SurfaceEntities not allocated')
+  END IF
+
+  n = SIZE(obj%SurfaceEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  ans = obj%SurfaceEntities(tag)%GetIntNodeNumber()
+
+CASE (3)
+
+  IF (.NOT. ALLOCATED(obj%VolumeEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'VolumeEntities not allocated')
+  END IF
+
+  n = SIZE(obj%VolumeEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  ans = obj%VolumeEntities(tag)%GetIntNodeNumber()
+
+END SELECT
+END PROCEDURE msh_GetIntNodeNumber
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE msh_SetNodeCoord
+CHARACTER(*), PARAMETER :: myName = "msh_GetIntNodeNumber"
+INTEGER(I4B) :: n
+
+SELECT CASE (dim)
+CASE (0)
+
+  IF (.NOT. ALLOCATED(obj%PointEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'PointEntities not allocated')
+  END IF
+
+  n = SIZE(obj%PointEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  CALL obj%PointEntities(tag)%SetNodeCoord(NodeCoord)
+
+CASE (1)
+
+  IF (.NOT. ALLOCATED(obj%CurveEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'CurveEntities not allocated')
+  END IF
+
+  n = SIZE(obj%CurveEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  CALL obj%CurveEntities(tag)%SetNodeCoord(NodeCoord)
+
+CASE (2)
+
+  IF (.NOT. ALLOCATED(obj%SurfaceEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'SurfaceEntities not allocated')
+  END IF
+
+  n = SIZE(obj%SurfaceEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  CALL obj%SurfaceEntities(tag)%SetNodeCoord(NodeCoord)
+
+CASE (3)
+
+  IF (.NOT. ALLOCATED(obj%VolumeEntities)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'VolumeEntities not allocated')
+  END IF
+
+  n = SIZE(obj%VolumeEntities)
+  IF (tag .GT. n) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'tag is out of bound')
+  END IF
+
+  CALL obj%VolumeEntities(tag)%SetNodeCoord(NodeCoord)
+
+END SELECT
+END PROCEDURE msh_SetNodeCoord
 
 END SUBMODULE Methods

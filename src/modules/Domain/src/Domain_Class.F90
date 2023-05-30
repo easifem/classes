@@ -33,7 +33,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "Domain_Class"
+CHARACTER(*), PARAMETER :: modName = "Domain_Class"
 
 !----------------------------------------------------------------------------
 !                                                             MeshFacetData_
@@ -139,6 +139,8 @@ TYPE :: Domain_
     !! Number of rows are 3, and number of columns is total nodes
   INTEGER(I4B), ALLOCATABLE, PUBLIC :: local_nptrs(:)
     !! local_nptrs are required to access the nodeCoord
+  INTEGER(I4B), ALLOCATABLE, PUBLIC :: global_nptrs(:)
+    !! global nptrs
   TYPE(MeshPointerVector_), ALLOCATABLE :: meshList(:)
     !! meshList( 0 ) list of meshes of point entities
     !! meshList( 1 ) list of meshes of line entities
@@ -252,6 +254,12 @@ CONTAINS
   !! Get Order
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     & Domain_GetTotalMeshFacetData
+  PROCEDURE, PRIVATE, PASS(obj) :: Domain_GetTotalMaterial1, &
+    & Domain_GetTotalMaterial2
+  GENERIC, PUBLIC :: GetTotalMaterial => &
+    & Domain_getTotalMaterial1, &
+    & Domain_getTotalMaterial2
+  !! Get total number of materials
   !
   ! @setMethods
   !
@@ -262,6 +270,10 @@ CONTAINS
   !! set the total number of materials
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => Domain_SetMaterial
   !! set the material
+  PROCEDURE, PASS(obj) :: SetNodeCoord1 => Domain_SetNodeCoord1
+  !! setNodeCoord
+  GENERIC, PUBLIC :: SetNodeCoord => SetNodeCoord1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => Domain_SetQuality
   !
   ! @MeshDataMethods
   !
@@ -346,7 +358,7 @@ INTERFACE
     !! DomainData object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! HDF5 file
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     !! Group name (directory name)
   END SUBROUTINE Domain_Initiate
 END INTERFACE
@@ -442,7 +454,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION Domain_Constructor1(hdf5, group) RESULT(Ans)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_) :: ans
   END FUNCTION Domain_Constructor1
 END INTERFACE
@@ -451,7 +463,7 @@ INTERFACE Domain
   MODULE PROCEDURE Domain_Constructor1
 END INTERFACE Domain
 
-PUBLIC :: Domain
+! PUBLIC :: Domain
 
 !----------------------------------------------------------------------------
 !                                          Domain_Pointer@ConstructorMethods
@@ -464,7 +476,7 @@ PUBLIC :: Domain
 INTERFACE
   MODULE FUNCTION Domain_Constructor_1(hdf5, group) RESULT(Ans)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     CLASS(Domain_), POINTER :: ans
   END FUNCTION Domain_Constructor_1
 END INTERFACE
@@ -487,7 +499,7 @@ INTERFACE
   MODULE SUBROUTINE Domain_Import(obj, hdf5, group)
     CLASS(Domain_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE Domain_Import
 END INTERFACE
 
@@ -502,7 +514,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE Domain_Display(obj, msg, unitno)
     CLASS(Domain_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE Domain_Display
 END INTERFACE
@@ -518,7 +530,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE Domain_DisplayMeshFacetData(obj, msg, unitno)
     CLASS(Domain_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE Domain_DisplayMeshFacetData
 END INTERFACE
@@ -534,7 +546,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE MeshFacetData_Display(obj, msg, unitno)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE MeshFacetData_Display
 END INTERFACE
@@ -1139,6 +1151,41 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               GetTotalMaterial@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Returns the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION Domain_getTotalMaterial1(obj, dim) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION Domain_getTotalMaterial1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalMaterial@setMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2021-12-09
+! update: 2021-12-09
+! summary: Set the materials id of a given medium
+
+INTERFACE
+  MODULE FUNCTION Domain_GetTotalMaterial2(obj, dim, entityNum) RESULT(ans)
+    CLASS(Domain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: entityNum
+    INTEGER(I4B) :: ans
+  END FUNCTION Domain_GetTotalMaterial2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                     SetSparsity@setMethods
 !----------------------------------------------------------------------------
 
@@ -1212,6 +1259,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   SetNodeCoord@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-24
+! summary: SetNodeCoord
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetNodeCoord1(obj, nodeCoord, scale, &
+    & addContribution)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
+    !! nodal coordinate in xij Format
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE Domain_SetNodeCoord1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
@@ -1233,9 +1299,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
   END SUBROUTINE Domain_InitiateElemSD1
 END INTERFACE
 
@@ -1269,15 +1335,15 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
     INTEGER(I4B), INTENT(IN) :: orderTime
     TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE Domain_InitiateElemSD2
 END INTERFACE
@@ -1311,15 +1377,15 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
     INTEGER(I4B), INTENT(IN) :: orderTime
     TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
   END SUBROUTINE Domain_InitiateElemSD3
 END INTERFACE
 
@@ -1362,9 +1428,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
     !! order for each mesh
     !! the size of orderspace is same as obj%getTotalMesh(dim=dim)
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
   END SUBROUTINE Domain_InitiateFacetElemSD1
 END INTERFACE
 
@@ -1395,11 +1461,11 @@ INTERFACE
     !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: orderSpace(:)
       !! integrand order in space
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForSpace
+    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
       !! quadrature type for space
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForSpace
+    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
       !! continuity type of base in space
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForSpace
+    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpol type of base in space
     INTEGER(I4B), INTENT(IN) :: orderTime
       !! integrand order in time
@@ -1407,11 +1473,11 @@ INTERFACE
       !! linear time element
     TYPE(ReferenceLine_), INTENT(IN) :: timeElem
       !! time element
-    CHARACTER(LEN=*), INTENT(IN) :: quadTypeForTime
+    CHARACTER(*), INTENT(IN) :: quadTypeForTime
       !! quadrature type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: continuityTypeForTime
+    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
       !! continuity type of base in time
-    CHARACTER(LEN=*), INTENT(IN) :: interpolTypeForTime
+    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
   END SUBROUTINE Domain_InitiateFacetElemSD2
@@ -1566,23 +1632,25 @@ END INTERFACE
 !
 !# Introduction
 !
-! When we call InitiateFacetData for mesh,  we can only identify
-! boundary facet element. However, some of these boundary facet elements
-! will be domain-boundary facet element and some will be at the interface
-! of two mesh region.
+! This routine sets the domain boundary element for cells and faces.
 !
-! This method correctly identifies the boundary facet element which at
-! the domain boundary or mesh boundary.
+! When we call [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
+! for mesh,
+! we can only identify boundary-facet-elements (i.e., boundary elements
+! of the mesh).
+! Moreover, when we call
+! [InitiateFacetElement](../Mesh/InitiateFacetElement.md)
+! from mesh or domain, all the facet elements are tagged
+! as `DOMAIN_BOUNDARY_ELEMENT`.
 !
-! The boundary facet element which are at the domain boundary are called
-! `DOMAIN_BOUNDARY_ELEMENT`
+! However, some of these boundary facet-elements will be located at the
+! domain’s boundary. These facet elements are called `DOMAIN_BOUNDARY_ELEMENT`.
 !
-! The boundary facet element which are not at the domain boundary are
-! called `BOUNDARY_ELEMENT` (that is mesh boundary facet element)
+! Some of the facet elements will be at located at the interface of two
+! mesh regions, these facet elements are called `BOUNDARY_ELEMENT`.
 !
-! Following information are necessary before calling this method.
-!
-!- call InitiateFacetData for each mesh
+! This method correctly differentiates between `BOUNDARY_ELEMENT`  and
+! `DOMAIN_BOUNDARY_ELEMENT`.
 
 INTERFACE
   MODULE SUBROUTINE Domain_SetDomainFacetElement(obj)
@@ -1616,6 +1684,23 @@ INTERFACE
   MODULE SUBROUTINE Domain_SetMeshFacetElement(obj)
     CLASS(Domain_), INTENT(INOUT) :: obj
   END SUBROUTINE Domain_SetMeshFacetElement
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuality@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE Domain_SetQuality(obj, measures, max_measures, &
+    & min_measures, dim, entityNum)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: measures(:)
+    REAL(DFP), INTENT(OUT) :: max_measures(:)
+    REAL(DFP), INTENT(OUT) :: min_measures(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+
+  END SUBROUTINE Domain_SetQuality
 END INTERFACE
 
 !----------------------------------------------------------------------------

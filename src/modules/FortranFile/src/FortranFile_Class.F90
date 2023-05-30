@@ -35,9 +35,9 @@ USE ExceptionHandler_Class, ONLY: e, EXCEPTION_ERROR
 USE AbstractFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = 'FortranFile_Class'
-CHARACTER(LEN=*), PARAMETER :: hash = "#"
-CHARACTER(LEN=*), PARAMETER :: comma = ","
+CHARACTER(*), PARAMETER :: modName = 'FortranFile_Class'
+CHARACTER(*), PARAMETER :: hash = "#"
+CHARACTER(*), PARAMETER :: comma = ","
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
 
 !----------------------------------------------------------------------------
@@ -82,10 +82,10 @@ TYPE, EXTENDS(AbstractFile_) :: FortranFile_
   LOGICAL(LGT) :: padstat = .FALSE.
     !! Whether or not the file is being padded
   LOGICAL(LGT) :: getNewUnit = .FALSE.
-  CHARACTER(LEN=6) :: posopt = 'ASIS  '
-  CHARACTER(LEN=1), PUBLIC :: comment = hash
-  CHARACTER(LEN=1), PUBLIC :: separator = " "
-  CHARACTER(LEN=2), PUBLIC :: delimiter = "\n"
+  CHARACTER(6) :: posopt = 'ASIS  '
+  CHARACTER(1), PUBLIC :: comment = hash
+  CHARACTER(1), PUBLIC :: separator = " "
+  CHARACTER(2), PUBLIC :: delimiter = "\n"
   !
 CONTAINS
   PRIVATE
@@ -93,13 +93,13 @@ CONTAINS
   !! @ConstructorMethods
   !!
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => ff_initiate
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => ff_Deallocate
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => ff_Deallocate
   FINAL :: ff_final
-  PROCEDURE, PUBLIC, PASS(Obj) :: open => ff_open
-  PROCEDURE, PUBLIC, PASS(Obj) :: close => ff_close
+  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => ff_open
+  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => ff_close
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => ff_delete
-  PROCEDURE, PUBLIC, PASS(Obj) :: backspace => ff_backspace
-  PROCEDURE, PUBLIC, PASS(Obj) :: rewind => ff_rewind
+  PROCEDURE, PUBLIC, PASS(Obj) :: BACKSPACE => ff_backspace
+  PROCEDURE, PUBLIC, PASS(Obj) :: REWIND => ff_rewind
   !!
   !! @SetMethods
   !!
@@ -141,32 +141,32 @@ INTERFACE
   MODULE SUBROUTINE ff_initiate(obj, filename, unit, status, access, form, &
     & position, action, pad, recl, comment, separator, delimiter)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unit
     !! unit number, should not be equal to `stdout, stdin, stderr`
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: status
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: status
     !! OLD, NEW, SCRATCH, REPLACE, UNKNOWN
     !! If UNKNOWN then we use REPLACE
     !! Default is REPLACE
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: access
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: access
     !! DIRECT, SEQUENTIAL, STREAM
     !! Default is SEQUENTIAL
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: form
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: form
     !! FORMATTED, UNFORMATTED
     !! Default is FORMATTED
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: position
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: position
     !! REWIND, APPEND, ASIS
     !! Default is ASIS
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: action
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: action
     !! READ, WRITE, READWRITE
     !! Default is READWRITE
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: pad
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: pad
     !! YES, NO
     !! Default is YES
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: recl
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: comment
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: separator
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: delimiter
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: comment
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: separator
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: delimiter
   END SUBROUTINE ff_initiate
 END INTERFACE
 
@@ -304,7 +304,7 @@ PUBLIC :: FortranFileRewind
 INTERFACE
   MODULE SUBROUTINE ff_setStatus(obj, status)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: status
+    CHARACTER(*), INTENT(IN) :: status
     LOGICAL(LGT) :: ans
   END SUBROUTINE ff_setStatus
 END INTERFACE

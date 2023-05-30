@@ -180,6 +180,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/DirichletBC/CMakeLists.txt)
 # NeumannBC
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
 
+# NitscheBC
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
+
 # UserFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
@@ -225,23 +228,44 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractMatrixField/CMakeLists.txt)
 # ScalarField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ScalarField/CMakeLists.txt)
 
+# ScalarFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ScalarFieldLis/CMakeLists.txt)
+
 # STScalarField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STScalarField/CMakeLists.txt)
+
+# STScalarFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STScalarFieldLis/CMakeLists.txt)
 
 # VectorField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VectorField/CMakeLists.txt)
 
+# VectorFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/VectorFieldLis/CMakeLists.txt)
+
 # STVectorField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STVectorField/CMakeLists.txt)
+
+# STVectorFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/STVectorFieldLis/CMakeLists.txt)
 
 # BlockNodeField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockNodeField/CMakeLists.txt)
 
+# BlockNodeFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockNodeFieldLis/CMakeLists.txt)
+
 # MatrixField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MatrixField/CMakeLists.txt)
 
+# MatrixFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MatrixFieldLis/CMakeLists.txt)
+
 # BlockMatrixField
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
+
+# BlockMatrixFieldLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 
 # AbstractLinSolver
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
@@ -254,6 +278,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
 
 # LinSolver
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
+
+# LinSolverLis
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
 
 # LinSolverFactory
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)

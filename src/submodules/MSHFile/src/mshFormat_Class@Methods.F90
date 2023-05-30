@@ -25,12 +25,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_display
-  INTEGER( I4B ) :: I
-  I = Input( Option=unitNo, Default=stdout )
-  IF( LEN_TRIM( Msg ) .NE. 0 ) THEN
-    WRITE( I, "(A)" ) TRIM( Msg )
-  END IF
-  WRITE( I, "(A)" ) TRIM( obj%meshFormat )
+INTEGER(I4B) :: I
+I = Input(Option=unitNo, Default=stdout)
+IF (LEN_TRIM(Msg) .NE. 0) THEN
+  WRITE (I, "(A)") TRIM(Msg)
+END IF
+WRITE (I, "(A)") TRIM(obj%meshFormat)
 END PROCEDURE fmt_display
 
 !----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ END PROCEDURE fmt_display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_getVersion
-  Ans = obj%version
+Ans = obj%version
 END PROCEDURE fmt_getVersion
 
 !----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ END PROCEDURE fmt_getVersion
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_getMajorVersion
-  Ans = obj%majorVersion
+Ans = obj%majorVersion
 END PROCEDURE fmt_getMajorVersion
 
 !----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ END PROCEDURE fmt_getMajorVersion
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_getMinorVersion
-  Ans = obj%minorVersion
+Ans = obj%minorVersion
 END PROCEDURE fmt_getMinorVersion
 
 !----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ END PROCEDURE fmt_getMinorVersion
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_getFileType
-  Ans=obj%fileType
+Ans = obj%fileType
 END PROCEDURE fmt_getFileType
 
 !----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ END PROCEDURE fmt_getFileType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_getDataSize
-  Ans = obj%dataSize
+Ans = obj%dataSize
 END PROCEDURE fmt_getDataSize
 
 !----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ END PROCEDURE fmt_getDataSize
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_getMeshFormat
-  Ans = obj%meshFormat
+Ans = obj%meshFormat
 END PROCEDURE fmt_getMeshFormat
 
 !----------------------------------------------------------------------------
@@ -86,28 +86,36 @@ END PROCEDURE fmt_getMeshFormat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_Read
-  INTEGER( I4B ) :: unitNo
-  CHARACTER( LEN = * ), PARAMETER :: myName = "fmt_Read"
+INTEGER(I4B) :: unitNo
+CHARACTER(*), PARAMETER :: myName = "fmt_Read"
 
-  CALL obj%GotoTag( mshFile, error )
-  IF( error .EQ. 0 ) THEN
-    unitNo = mshFile%getUnitNo()
-    READ( unitNo, * ) obj%version, obj%fileType, obj%dataSize
-    obj%majorVersion = INT(obj%version)
-    obj%minorVersion = INT( 10*(obj%version - obj%majorVersion) )
-    obj%meshFormat = TRIM(str( obj%majorVersion, .TRUE. )) // "."  &
-      & // TRIM(str(obj%minorVersion, .TRUE.)) // " " // &
-      & TRIM( INT2STR( obj%fileType ) ) // " " &
-      & // TRIM( INT2STR( obj%dataSize ) )
-    IF( obj%fileType .EQ. 1 ) THEN
-      obj%isASCII = .FALSE.
-    ELSE
-      obj%isASCII = .TRUE.
-    END IF
+CALL obj%GotoTag(mshFile, error)
+IF (error .EQ. 0) THEN
+  unitNo = mshFile%getUnitNo()
+  READ (unitNo, *) obj%version, obj%fileType, obj%dataSize
+  obj%majorVersion = INT(obj%version)
+  obj%minorVersion = INT(10 * (obj%version - obj%majorVersion))
+
+  obj%meshFormat = tostring(obj%version) &
+    & //" "// &
+    & TRIM(INT2STR(obj%fileType))//" " &
+    & //TRIM(INT2STR(obj%dataSize))
+
+  ! obj%meshFormat = TRIM(str(obj%majorVersion, .TRUE.))//"."  &
+  !   & //TRIM(str(obj%minorVersion, .TRUE.))//" "// &
+  !   & TRIM(INT2STR(obj%fileType))//" " &
+  !   & //TRIM(INT2STR(obj%dataSize))
+
+  IF (obj%fileType .EQ. 1) THEN
+    obj%isASCII = .FALSE.
   ELSE
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not read mesh format from mshFile !')
+    obj%isASCII = .TRUE.
   END IF
+
+ELSE
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Could not read mesh format from mshFile !')
+END IF
 END PROCEDURE fmt_Read
 
 !----------------------------------------------------------------------------
@@ -115,25 +123,35 @@ END PROCEDURE fmt_Read
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_Write
-  ! Define internal variables
-  TYPE( TxtFile_ ) :: outFile
-  TYPE( String ) :: path, filename, ext
-  INTEGER( I4B ) :: unitNo
+! Define internal variables
+INTEGER(I4B) :: unitNo
+INTEGER(I4B) :: iostat
+CHARACTER(1024) :: iomsg
+CHARACTER(*), PARAMETER :: myName = "fmt_Write"
 
-  CALL mshFile%getFileParts(path, filename, ext)
-  CALL outFile%initiate(filename = path // filename // "_Format" // ext, &
-    & action = "WRITE" )
-  CALL outFile%open()
-  unitNo = outFile%getUnitNo()
-  IF( PRESENT( Str ) ) THEN
-    WRITE( unitNo, "( A )") TRIM( Str )
-  END IF
-  WRITE( unitNo, "( A )") TRIM( obj%meshFormat )
-  IF( PRESENT( EndStr ) ) THEN
-    WRITE( unitNo, "( A )") TRIM( EndStr )
-  END IF
-  CALL outFile%close()
-  CALL outFile%Deallocate()
+unitNo = afile%getUnitNo()
+
+WRITE (unitNo, "( A )", iomsg=iomsg, iostat=iostat) "$MeshFormat"
+
+IF (iostat .NE. 0) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'Error occured in writing format msg = '//TRIM(iomsg))
+END IF
+
+WRITE (unitNo, "( A )", iomsg=iomsg, iostat=iostat) TRIM(obj%meshFormat)
+
+IF (iostat .NE. 0) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'Error occured in writing format msg = '//TRIM(iomsg))
+END IF
+
+WRITE (unitNo, "( A )", iomsg=iomsg, iostat=iostat) "$EndMeshFormat"
+
+IF (iostat .NE. 0) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'Error occured in writing format msg = '//TRIM(iomsg))
+END IF
+
 END PROCEDURE fmt_Write
 
 !----------------------------------------------------------------------------
@@ -141,36 +159,36 @@ END PROCEDURE fmt_Write
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_GotoTag
-  ! Define internal variables
-  INTEGER( I4B ) :: IOSTAT, Reopen, unitNo
-  CHARACTER( LEN = 100 ) :: Dummy
-  CHARACTER( LEN = * ), PARAMETER :: myName = "fmt_GotoTag"
-  !
-  ! Find $meshFormat
+! Define internal variables
+INTEGER(I4B) :: IOSTAT, Reopen, unitNo
+CHARACTER(100) :: Dummy
+CHARACTER(*), PARAMETER :: myName = "fmt_GotoTag"
+!
+! Find $meshFormat
 
-  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() ) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'mshFile is either not opened or does not have read access!')
-    error = -1
-  ELSE
-    Reopen = 0; error = 0; CALL mshFile%Rewind()
-    DO
-      unitNo = mshFile%getUnitNo()
-      READ( unitNo, "(A)", IOSTAT = IOSTAT ) Dummy
-      IF( IS_IOSTAT_END( IOSTAT ) ) THEN
-        CALL mshFile%setEOFStat( .TRUE. )
-        Reopen = Reopen + 1
-      END IF
-      IF( IOSTAT .GT. 0 .OR. Reopen .GT. 1 ) THEN
-        CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'Could not find $MeshFormat!')
-        error = -2
-        EXIT
-      ELSE IF( TRIM( Dummy ) .EQ. '$MeshFormat' ) THEN
-        EXIT
-      END IF
-    END DO
-  END IF
+IF (.NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead()) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'mshFile is either not opened or does not have read access!')
+  error = -1
+ELSE
+  Reopen = 0; error = 0; CALL mshFile%REWIND()
+  DO
+    unitNo = mshFile%getUnitNo()
+    READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
+    IF (IS_IOSTAT_END(IOSTAT)) THEN
+      CALL mshFile%setEOFStat(.TRUE.)
+      Reopen = Reopen + 1
+    END IF
+    IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
+      CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'Could not find $MeshFormat!')
+      error = -2
+      EXIT
+    ELSE IF (TRIM(Dummy) .EQ. '$MeshFormat') THEN
+      EXIT
+    END IF
+  END DO
+END IF
 END PROCEDURE fmt_GotoTag
 
 !----------------------------------------------------------------------------
@@ -178,7 +196,7 @@ END PROCEDURE fmt_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fmt_Finalize
-SELECT TYPE( obj )
+SELECT TYPE (obj)
 TYPE IS (mshFormat_)
   obj = TypemshFormat
 END SELECT

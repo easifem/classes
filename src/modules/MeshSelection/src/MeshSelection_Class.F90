@@ -27,16 +27,15 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE Domain_Class, ONLY: Domain_
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "MeshSelection_Class"
+CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
 !----------------------------------------------------------------------------
+
 !> authors: Vikas Sharma, Ph. D.
 ! date: Nov 7 2021
 ! summary: Datatype for selecting mesh (group of elements) in domain
-!
-!{!pages/MeshSelection_.md!}
 
 TYPE :: MeshSelection_
   PRIVATE
@@ -79,7 +78,7 @@ CONTAINS
     !! This routine copies object
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
     !! Assignment operator
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => &
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     & meshSelect_Deallocate
     !! Deallocate Data
   FINAL :: meshSelect_Final
@@ -127,6 +126,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: isNodeNumAllocated => &
     & meshSelect_isNodeNumAllocated
     !! returns true if the node numbers are allocated
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => meshSelect_GetQuery
+    !! Query the mesh selection
 END TYPE MeshSelection_
 
 PUBLIC :: MeshSelection_
@@ -257,7 +258,7 @@ INTERFACE
   MODULE SUBROUTINE meshSelect_Import(obj, hdf5, group, dom)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE meshSelect_Import
 END INTERFACE
@@ -274,7 +275,7 @@ INTERFACE
   MODULE SUBROUTINE meshSelect_Export(obj, hdf5, group)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE meshSelect_Export
 END INTERFACE
 
@@ -289,7 +290,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE meshSelect_Display(obj, msg, unitNo)
     CLASS(MeshSelection_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE meshSelect_Display
 END INTERFACE
@@ -308,6 +309,70 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION meshSelect_getMeshID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              isMeshIDAllocated@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns true if meshID of given dim is allocated
+
+INTERFACE
+  MODULE PURE FUNCTION meshSelect_isMeshIDAllocated(obj, dim) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    LOGICAL(LGT) :: ans
+  END FUNCTION meshSelect_isMeshIDAllocated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            isElemNumAllocated@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns MeshID
+
+INTERFACE
+  MODULE PURE FUNCTION meshSelect_isElemNumAllocated(obj, dim) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    LOGICAL(LGT) :: ans
+  END FUNCTION meshSelect_isElemNumAllocated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             isNodeNumAllocated@getMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Aug 2021
+! summary: This routine returns true if node numbers are allocated
+
+INTERFACE
+  MODULE PURE FUNCTION meshSelect_isNodeNumAllocated(obj) RESULT(Ans)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION meshSelect_isNodeNumAllocated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetQuery@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE SUBROUTINE meshSelect_GetQuery(obj, isInitiated, &
+    & isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
+    & isSelectionByNodeNum)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByMeshID
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByElemNum
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByNodeNum
+  END SUBROUTINE meshSelect_GetQuery
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -400,7 +465,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
-! summary: This routine returns MeshID
+! summary: This routine returns the node numbers
 
 INTERFACE
   MODULE FUNCTION meshSelect_getNodeNum1(obj) RESULT(Ans)
@@ -415,7 +480,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
-! summary: This routine returns MeshID
+! summary: This routine returns node numbers
 !
 ! - [x] isSelectionByMeshID
 ! - [x] isSelectionByElemNum
@@ -437,7 +502,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Aug 2021
-! summary: This routine returns MeshID
+! summary: This routine returns node numbers
 
 INTERFACE
   MODULE FUNCTION meshSelect_getNodeNum3(obj, domain) RESULT(Ans)
@@ -445,53 +510,6 @@ INTERFACE
     CLASS(Domain_), INTENT(IN) :: domain
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION meshSelect_getNodeNum3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              isMeshIDAllocated@getMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 Aug 2021
-! summary: This routine returns MeshID
-
-INTERFACE
-  MODULE PURE FUNCTION meshSelect_isMeshIDAllocated(obj, dim) RESULT(Ans)
-    CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    LOGICAL(LGT) :: ans
-  END FUNCTION meshSelect_isMeshIDAllocated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            isElemNumAllocated@getMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 Aug 2021
-! summary: This routine returns MeshID
-
-INTERFACE
-  MODULE PURE FUNCTION meshSelect_isElemNumAllocated(obj, dim) RESULT(Ans)
-    CLASS(MeshSelection_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dim
-    LOGICAL(LGT) :: ans
-  END FUNCTION meshSelect_isElemNumAllocated
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             isNodeNumAllocated@getMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 31 Aug 2021
-! summary: This routine returns MeshID
-
-INTERFACE
-  MODULE PURE FUNCTION meshSelect_isNodeNumAllocated(obj) RESULT(Ans)
-    CLASS(MeshSelection_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION meshSelect_isNodeNumAllocated
 END INTERFACE
 
 END MODULE MeshSelection_Class

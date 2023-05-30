@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_isOpen
-  ans = obj%openStat
+ans = obj%openStat
 END PROCEDURE aFile_isOpen
 
 !----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ END PROCEDURE aFile_isOpen
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_isEOF
-  ans = obj%eofStat
+ans = obj%eofStat
 END PROCEDURE aFile_isEOF
 
 !----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ END PROCEDURE aFile_isEOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_isWrite
-  ans = obj%writeStat
+ans = obj%writeStat
 END PROCEDURE aFile_isWrite
 
 !----------------------------------------------------------------------------
@@ -49,7 +49,7 @@ END PROCEDURE aFile_isWrite
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_isRead
-  ans = obj%readStat
+ans = obj%readStat
 END PROCEDURE aFile_isRead
 
 END SUBMODULE EnquireMethods

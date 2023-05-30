@@ -37,6 +37,7 @@ USE BaseType
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
+USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE Domain_Class
 IMPLICIT NONE
@@ -53,7 +54,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
 !       & "CONSTANT_TIME " &
 !   & ]
 
-CHARACTER(LEN=*), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -62,22 +63,12 @@ CHARACTER(LEN=*), PARAMETER :: modName = "AbstractField_Class"
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
 ! summary: Abstract field is designed to handle fields in FEM
-!
-!{!pages/AbstractField_.md!}
 
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isInitiated = .FALSE.
     !! It is true if the object is initiated
   INTEGER(I4B) :: fieldType = FIELD_TYPE_NORMAL
     !! fieldType can be normal, constant, can vary in space and/ or both.
-  TYPE(Domain_), POINTER :: domain => NULL()
-    !! Domain contains the information of the finite element meshes.
-  TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
-    !! Domain for each physical variables
-    !! The size of `domains` should be equal to the total number of
-    !! physical variables.
-    !! It is used in the case of BlockNodeField
-    !! and BlockMatrixField
   TYPE(String) :: name
     !! name of the field
   TYPE(String) :: engine
@@ -86,30 +77,60 @@ TYPE, ABSTRACT :: AbstractField_
     !! NATIVE_OMP,
     !! NATIVE_MPI,
     !! PETSC,
-    !! LIS_SERIAL,
     !! LIS_OMP,
     !! LIS_MPI
+  INTEGER(I4B) :: comm = 0_I4B
+  !! communication group (MPI)
+  INTEGER(I4B) :: myRank = 0_I4B
+  !! rank of current processor (MPI)
+  INTEGER(I4B) :: numProcs = 1_I4B
+  !! Total number of processors (MPI)
+  INTEGER(I4B) :: global_n = 0_I4B
+  !! total number of nodes on all processors (MPI)
+  INTEGER(I4B) :: local_n = 0_I4B
+  !! local number of nodes on a given processor (MPI)
+  INTEGER(I4B) :: is = 0_I4B
+  !! starting index (MPI)
+  INTEGER(I4B) :: ie = 0_I4B
+  !! end index + 1 (MPI)
+  INTEGER(INT64) :: lis_ptr = 0_INT64
+  !! lis_ptr is pointer returned by the LIS library
+  !! It is used when engine is LIS_OMP or LIS_MPI
+  TYPE(Domain_), POINTER :: domain => NULL()
+    !! Domain contains the information of the finite element meshes.
+  TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
+    !! Domain for each physical variables
+    !! The size of `domains` should be equal to the total number of
+    !! physical variables.
+    !! It is used in the case of BlockNodeField
+    !! and BlockMatrixField
 CONTAINS
   PRIVATE
   PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
     & checkEssentialParam
-      !! check essential parameters
+  !! check essential parameters
   PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS(obj) :: Initiate1
-      !! Initiate the field by reading param and given domain
-  PROCEDURE(aField_Initiate2), DEFERRED, PUBLIC, PASS(obj) :: Initiate2
-      !! Initiate by copying other fields, and different options
+  !! Initiate the field by reading param and given domain
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => aField_Initiate2
+  !! Initiate by copying other fields, and different options
   PROCEDURE(aField_Initiate3), DEFERRED, PUBLIC, PASS(obj) :: Initiate3
-      !! Initiate  block fields (different physical variables) defined
-      !! over different order of meshes.
+  !! Initiate  block fields (different physical variables) defined
+  !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => aField_Deallocate
-      !! Deallocate the field
-  PROCEDURE(aField_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
-      !! Display the field
-  PROCEDURE(aField_Import), DEFERRED, PUBLIC, PASS(obj) :: Import
-      !! Import data from hdf5 file
-  PROCEDURE(aField_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
-      !! Export data in hdf5 file
+  GENERIC, PUBLIC :: Copy => Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
+  !! Deallocate the field
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => aField_Display
+  !! Display the field
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => aField_Import
+  !! Import data from hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => aField_Export
+  !! Export data in hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => afield_WriteData_vtk
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => afield_WriteData_hdf5
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
+  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
+  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
@@ -155,10 +176,9 @@ END INTERFACE
 ! date: 29 Sept 2021
 ! summary: Initiate by copying other fields, and different options
 
-ABSTRACT INTERFACE
-  SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
+INTERFACE
+  MODULE SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
-    IMPORT :: AbstractField_, LGT
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
@@ -166,6 +186,12 @@ ABSTRACT INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE aField_Initiate2
 END INTERFACE
+
+INTERFACE AbstractFieldInitiate2
+  MODULE PROCEDURE aField_Initiate2
+END INTERFACE AbstractFieldInitiate2
+
+PUBLIC :: AbstractFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                                            InitiateByCopy
@@ -188,42 +214,57 @@ END INTERFACE
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE aField_Display(obj, msg, unitNo)
-    IMPORT :: AbstractField_, I4B
+INTERFACE
+  MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE aField_Display
 END INTERFACE
+
+INTERFACE AbstractFieldDisplay
+  MODULE PROCEDURE aField_Display
+END INTERFACE AbstractFieldDisplay
+
+PUBLIC :: AbstractFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                                 IMPORT
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
-    IMPORT :: AbstractField_, I4B, HDF5File_, Domain_, DomainPointer_
+INTERFACE
+  MODULE SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE aField_Import
 END INTERFACE
 
+INTERFACE AbstractFieldImport
+  MODULE PROCEDURE aField_Import
+END INTERFACE AbstractFieldImport
+
+PUBLIC :: AbstractFieldImport
+
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE aField_Export(obj, hdf5, group)
-    IMPORT :: AbstractField_, HDF5File_
+INTERFACE
+  MODULE SUBROUTINE aField_Export(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
+    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE aField_Export
 END INTERFACE
+
+INTERFACE AbstractFieldExport
+  MODULE PROCEDURE aField_Export
+END INTERFACE AbstractFieldExport
+
+PUBLIC :: AbstractFieldExport
 
 !----------------------------------------------------------------------------
 !                                                                 Export
@@ -247,7 +288,7 @@ PUBLIC :: AbstractFieldDeallocate
 
 INTERFACE
   MODULE PURE FUNCTION FIELD_TYPE_NUMBER(name) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION FIELD_TYPE_NUMBER
 END INTERFACE
@@ -261,10 +302,126 @@ PUBLIC :: FIELD_TYPE_NUMBER
 INTERFACE
   MODULE PURE FUNCTION FIELD_TYPE_NAME(id) RESULT(Ans)
     INTEGER(I4B), INTENT(IN) :: id
-    CHARACTER(LEN=20) :: ans
+    CHARACTER(20) :: ans
   END FUNCTION FIELD_TYPE_NAME
 END INTERFACE
 
 PUBLIC :: FIELD_TYPE_NAME
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE aField_WriteData_hdf5(obj, hdf5, group)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE aField_WriteData_hdf5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE aField_WriteData_vtk(obj, vtk, group)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE aField_WriteData_vtk
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE SetParam(obj, &
+    & isInitiated, &
+    & fieldType, &
+    & name, &
+    & engine, &
+    & comm, &
+    & myRank, &
+    & numProcs, &
+    & global_n, &
+    & local_n, &
+    & is, &
+    & ie,  &
+    & lis_ptr, &
+    & domain, &
+    & domains, &
+    & tSize, &
+    & realVec, &
+    & dof, &
+    & isPMatInitiated)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: myRank
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numProcs
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: is
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ie
+    INTEGER(INT64), OPTIONAL, INTENT(IN) :: lis_ptr
+    TYPE(Domain_), OPTIONAL, TARGET, INTENT(IN) :: domain
+    TYPE(DomainPointer_), OPTIONAL, INTENT(IN) :: domains(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    TYPE(RealVector_), OPTIONAL, INTENT(IN) :: realVec
+    TYPE(DOF_), OPTIONAL, INTENT(IN) :: dof
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPMatInitiated
+  END SUBROUTINE SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE GetParam(obj, &
+    & isInitiated, &
+    & fieldType, &
+    & name, &
+    & engine, &
+    & comm, &
+    & myRank, &
+    & numProcs, &
+    & global_n, &
+    & local_n, &
+    & is, &
+    & ie,  &
+    & lis_ptr, &
+    & domain, &
+    & domains, &
+    & tSize, &
+    & realVec, &
+    & dof, &
+    & isPMatInitiated)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: name
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: engine
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: myRank
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: numProcs
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: global_n
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: local_n
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: is
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ie
+    INTEGER(INT64), OPTIONAL, INTENT(OUT) :: lis_ptr
+    TYPE(Domain_), OPTIONAL, POINTER, INTENT(OUT) :: domain
+    TYPE(DomainPointer_), OPTIONAL, INTENT(OUT) :: domains(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tSize
+    TYPE(RealVector_), OPTIONAL, INTENT(OUT) :: realVec
+    TYPE(DOF_), OPTIONAL, INTENT(OUT) :: dof
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isPMatInitiated
+  END SUBROUTINE GetParam
+END INTERFACE
 
 END MODULE AbstractField_Class

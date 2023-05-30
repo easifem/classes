@@ -30,7 +30,7 @@ PUBLIC :: SetSparsity1
 PUBLIC :: SetSparsity2
 PUBLIC :: SetSparsity3
 
-CHARACTER(LEN=*), PARAMETER :: modName = "DomainUtility"
+CHARACTER(*), PARAMETER :: modName = "DomainUtility"
 
 INTERFACE Initiate
   MODULE PROCEDURE InitiateDomainPointer1
@@ -45,19 +45,19 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE SetSparsity1(obj, mat)
-  !!
+  !
   CLASS(Domain_), INTENT(IN) :: obj
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  !!
+  !
   INTEGER(I4B) :: imesh, dim, tmesh, lb, ub
   CLASS(Mesh_), POINTER :: meshobj
-  !!
-  !! main
-  !!
+  !
+  ! main
+  !
   meshobj => NULL()
   lb = LBOUND(obj%local_nptrs, 1)
   ub = UBOUND(obj%local_nptrs, 1)
-  !!
+  !
   DO dim = 1, 3
     tmesh = obj%getTotalMesh(dim=dim)
     DO imesh = 1, tmesh
@@ -67,11 +67,11 @@ SUBROUTINE SetSparsity1(obj, mat)
       & localNodeNumber=obj%local_nptrs, lbound=lb, ubound=ub)
     END DO
   END DO
-  !!
+  !
   CALL setSparsity(mat)
-  !!
+  !
   NULLIFY (meshobj)
-  !!
+  !
 END SUBROUTINE SetSparsity1
 
 !----------------------------------------------------------------------------
@@ -91,72 +91,100 @@ SUBROUTINE SetSparsity2(domains, mat)
   CLASS(Domain_), POINTER :: rowDomain, colDomain
   TYPE(DomainConnectivity_) :: domainConn
   INTEGER(I4B), POINTER :: nodeToNode(:)
-  !!
-  !! check
-  !!
+  CHARACTER(*), PARAMETER :: myName = "SetSparsity2"
+  TYPE(BoundingBox_) :: row_box, col_box
+  LOGICAL(LGT) :: is_intersect
+  !
+  ! check
+  !
+
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & '[START] SetSparsity2()')
+
   DO ivar = 1, SIZE(domains)
     nsd(ivar) = domains(ivar)%ptr%getNSD()
   END DO
-  !!
-  !! nullify first for safety
-  !!
-  rowMesh => NULL();
-  colMesh => NULL();
-  rowDomain => NULL();
+  !
+  ! nullify first for safety
+  !
+  rowMesh => NULL(); 
+  colMesh => NULL(); 
+  rowDomain => NULL(); 
   colDomain => NULL()
-  !!
+  !
   DO ivar = 1, SIZE(domains)
-    !!
+
+    CALL Display("row domain = "//tostring(ivar))
+
     rowDomain => domains(ivar)%ptr
     rowMeshSize = rowDomain%getTotalMesh(dim=nsd(ivar))
-    !!
+
     DO jvar = 1, SIZE(domains)
-      !!
+
+      CALL Display("col domain = "//tostring(jvar))
+
       colDomain => domains(jvar)%ptr
-      !!
+
+      CALL Display("calling DomainConnectivity_::domainConn%Deallocate()")
+
       CALL domainConn%DEALLOCATE()
-      !!
+
+      CALL Display("calling DomainConnectivity_::domainConn%InitiateNodeToNodeData()")
+
       CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
         & domain2=colDomain)
-      !!
+
       nodeToNode => domainConn%getNodeToNodePointer()
       colMeshSize = colDomain%getTotalMesh(dim=nsd(jvar))
-      !!
+
       DO rowMeshID = 1, rowMeshSize
-        !!
+
         rowMesh => rowDomain%getMeshPointer(dim=nsd(ivar), &
           & entityNum=rowMeshID)
-        !!
+
         IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
-        !!
+
+        row_box = rowMesh%getBoundingBox()
+
         DO colMeshID = 1, colMeshSize
-          !!
+
           colMesh => colDomain%getMeshPointer(dim=nsd(jvar), &
             & entityNum=colMeshID)
-          !!
-          IF (ASSOCIATED(colMesh)) &
-            & CALL rowMesh%SetSparsity(mat=mat, &
-            & colMesh=colMesh, &
-            & nodeToNode=nodeToNode, &
-            & rowGlobalToLocalNodeNum=rowDomain%local_nptrs, &
-            & rowLBOUND=LBOUND(rowDomain%local_nptrs, 1), &
-            & rowUBOUND=UBOUND(rowDomain%local_nptrs, 1), &
-            & colGlobalToLocalNodeNum=colDomain%local_nptrs, &
-            & colLBOUND=LBOUND(colDomain%local_nptrs, 1), &
-            & colUBOUND=UBOUND(colDomain%local_nptrs, 1), &
-            & ivar=ivar, jvar=jvar)
-          !!
+
+          IF (ASSOCIATED(colMesh)) THEN
+            col_box = colMesh%getBoundingBox()
+
+            is_intersect = row_box.isIntersect.col_box
+
+            IF (is_intersect) THEN
+              CALL rowMesh%SetSparsity(mat=mat, &
+               & colMesh=colMesh, &
+               & nodeToNode=nodeToNode, &
+               & rowGlobalToLocalNodeNum=rowDomain%local_nptrs, &
+               & rowLBOUND=LBOUND(rowDomain%local_nptrs, 1), &
+               & rowUBOUND=UBOUND(rowDomain%local_nptrs, 1), &
+               & colGlobalToLocalNodeNum=colDomain%local_nptrs, &
+               & colLBOUND=LBOUND(colDomain%local_nptrs, 1), &
+               & colUBOUND=UBOUND(colDomain%local_nptrs, 1), &
+               & ivar=ivar, jvar=jvar)
+            END IF
+          END IF
+
         END DO
       END DO
     END DO
   END DO
-  !!
+  !
+  CALL Display("Calling SetSparsity()")
   CALL setSparsity(mat)
-  !!
+  !
   NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
-  !!
+  !
+  CALL Display("Calling DomainConnectivity_::domainConn%Deallocate()")
   CALL domainConn%DEALLOCATE()
-  !!
+  !
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & '[END] SetSparsity2()')
 END SUBROUTINE SetSparsity2
 
 !----------------------------------------------------------------------------
@@ -170,7 +198,7 @@ END SUBROUTINE SetSparsity2
 SUBROUTINE SetSparsity3(domains, mat)
   CLASS(DomainPointer_), INTENT(IN) :: domains(2)
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  !!
+  !
   INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
   INTEGER(I4B) :: rowMeshID, colMeshID, rowMeshSize, colMeshSize,  &
     & nsd(tvar), ii
@@ -178,40 +206,40 @@ SUBROUTINE SetSparsity3(domains, mat)
   CLASS(Domain_), POINTER :: rowDomain, colDomain
   TYPE(DomainConnectivity_) :: domainConn
   INTEGER(I4B), POINTER :: nodeToNode(:)
-  !!
-  !! check
-  !!
+  !
+  ! check
+  !
   DO ii = 1, tvar
     nsd(ii) = domains(ii)%ptr%getNSD()
   END DO
-  !!
-  !! nullify first for safety
-  !!
-  rowMesh => NULL();
-  colMesh => NULL();
+  !
+  ! nullify first for safety
+  !
+  rowMesh => NULL(); 
+  colMesh => NULL(); 
   rowDomain => domains(1)%ptr
   colDomain => domains(2)%ptr
-  !!
+  !
   rowMeshSize = rowDomain%getTotalMesh(dim=nsd(ivar))
   colMeshSize = colDomain%getTotalMesh(dim=nsd(jvar))
-  !!
+  !
   CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
     & domain2=colDomain)
-  !!
+  !
   nodeToNode => domainConn%getNodeToNodePointer()
-  !!
+  !
   DO rowMeshID = 1, rowMeshSize
-    !!
+    !
     rowMesh => rowDomain%getMeshPointer(dim=nsd(ivar), &
       & entityNum=rowMeshID)
-    !!
+    !
     IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
-    !!
+    !
     DO colMeshID = 1, colMeshSize
-      !!
+      !
       colMesh => colDomain%getMeshPointer(dim=nsd(jvar), &
         & entityNum=colMeshID)
-      !!
+      !
       IF (ASSOCIATED(colMesh)) &
         & CALL rowMesh%SetSparsity(mat=mat, &
         & colMesh=colMesh, &
@@ -223,16 +251,16 @@ SUBROUTINE SetSparsity3(domains, mat)
         & colLBOUND=LBOUND(colDomain%local_nptrs, 1), &
         & colUBOUND=UBOUND(colDomain%local_nptrs, 1), &
         & ivar=ivar, jvar=jvar)
-      !!
+      !
     END DO
   END DO
-  !!
+  !
   CALL setSparsity(mat)
-  !!
+  !
   NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
-  !!
+  !
   CALL domainConn%DEALLOCATE()
-  !!
+  !
 END SUBROUTINE SetSparsity3
 
 !----------------------------------------------------------------------------
@@ -252,15 +280,15 @@ END SUBROUTINE SetSparsity3
 
 SUBROUTINE InitiateDomainPointer1(domains, filename, group)
   CLASS(DomainPointer_), INTENT(INOUT) :: domains(:)
-  !! domain pointers to be created
+  ! domain pointers to be created
   TYPE(String), INTENT(IN) :: filename(:)
-  !! filenames for domain
+  ! filenames for domain
   TYPE(String), OPTIONAL, INTENT(IN) :: group(:)
-  !! Path (address) in filename
+  ! Path (address) in filename
   !
   ! Internal variables
   !
-  CHARACTER(LEN=*), PARAMETER :: myName = "InitiateDomainPointer1"
+  CHARACTER(*), PARAMETER :: myName = "InitiateDomainPointer1"
   TYPE(HDF5File_) :: domainFile
   INTEGER(I4B) :: ii, n
   !
@@ -295,14 +323,14 @@ SUBROUTINE InitiateDomainPointer1(domains, filename, group)
   !
   DO ii = 1, SIZE(filename)
     CALL domainFile%Initiate(filename=filename(ii)%chars(), MODE="READ")
-    CALL domainFile%Open()
+    CALL domainFile%OPEN()
     IF (PRESENT(group)) THEN
       domains(ii)%ptr => Domain_Pointer(hdf5=domainFile, &
         & group=group(ii)%chars())
     ELSE
       domains(ii)%ptr => Domain_Pointer(hdf5=domainFile, group="")
     END IF
-    CALL domainFile%Deallocate()
+    CALL domainFile%DEALLOCATE()
   END DO
   !
 END SUBROUTINE InitiateDomainPointer1

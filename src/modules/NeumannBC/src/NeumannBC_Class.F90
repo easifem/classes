@@ -18,17 +18,16 @@
 MODULE NeumannBC_Class
 USE GlobalData
 USE BaseType
-USE String_Class
 USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class
-USE Domain_Class
-USE HDF5File_Class
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE Domain_Class, ONLY: Domain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "NeumannBC_CLASS"
+CHARACTER(*), PARAMETER :: modName = "NeumannBC_CLASS"
+CHARACTER(*), PARAMETER :: myprefix = "NeumannBC"
 
 !----------------------------------------------------------------------------
 !                                                               NeumannBC_
@@ -44,12 +43,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & bc_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => bc_Deallocate
   FINAL :: bc_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => bc_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
 END TYPE NeumannBC_
 
 PUBLIC :: NeumannBC_
@@ -85,9 +79,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE setNeumannBCParam(param, name, idof, nodalValueType, &
-    & useFunction)
+    & useFunction, isNormal, isTangent)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: nodalValueType
     !! Space
@@ -95,6 +89,8 @@ INTERFACE
     !! SpaceTime
     !! Constant
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
   END SUBROUTINE setNeumannBCParam
 END INTERFACE
 
@@ -114,16 +110,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Deallocate(obj)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Deallocate
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -131,65 +117,6 @@ INTERFACE
   MODULE SUBROUTINE bc_Final(obj)
     TYPE(NeumannBC_), INTENT(INOUT) :: obj
   END SUBROUTINE bc_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Import@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Export@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Export(obj, hdf5, group)
-    CLASS(NeumannBC_), INTENT(IN) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(LEN=*), INTENT(IN) :: group
-  END SUBROUTINE bc_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Display@IOMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Display(obj, msg, unitNo)
-    CLASS(NeumannBC_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Set(obj, ConstantNodalValue, SpaceNodalValue, &
-    & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
-    & SpaceTimeFunction)
-    CLASS(NeumannBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: ConstantNodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: TimeNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceTimeNodalValue(:, :)
-    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceTimeFunction
-    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceFunction
-    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & TimeFunction
-  END SUBROUTINE bc_Set
 END INTERFACE
 
 END MODULE NeumannBC_Class

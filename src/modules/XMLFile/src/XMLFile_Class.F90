@@ -26,7 +26,7 @@ PRIVATE
 !!
 !!
 !!
-CHARACTER(LEN=*), PARAMETER :: modName = "XMLFile_Class"
+CHARACTER(*), PARAMETER :: modName = "XMLFile_Class"
 PUBLIC :: xmlTag_
 
 !----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ TYPE, EXTENDS(AbstractFile_) :: XMLFile_
     !! The unit number assigned to the file
   REAL(DFP) :: version = 1.0_DFP
     !! The XML version
-  CHARACTER(LEN=32) :: encoding = 'UTF-8'
+  CHARACTER(32) :: encoding = 'UTF-8'
     !! The XML file encoding
   TYPE(String) :: style_sheet
   LOGICAL(LGT) :: standalone = .FALSE.
@@ -60,12 +60,12 @@ TYPE, EXTENDS(AbstractFile_) :: XMLFile_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => xmlFile_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => xmlFile_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => xmlFile_Deallocate
   FINAL :: xmlFile_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Open => xmlFile_Open
-  PROCEDURE, PUBLIC, PASS(obj) :: Close => xmlFile_Close
+  PROCEDURE, PUBLIC, PASS(obj) :: OPEN => xmlFile_Open
+  PROCEDURE, PUBLIC, PASS(obj) :: CLOSE => xmlFile_Close
   PROCEDURE, PUBLIC, PASS(obj) :: Delete => xmlFile_Delete
-  PROCEDURE, PUBLIC, PASS(obj) :: Import => xmlFile_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => xmlFile_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => xmlFile_Export
   PROCEDURE, PUBLIC, PASS(Obj) :: setNewStat => xmlFile_setNewStat
   PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
@@ -115,8 +115,8 @@ PUBLIC :: XMLFilePointer_
 INTERFACE
   MODULE SUBROUTINE xmlFile_Initiate(obj, filename, mode)
     CLASS(xmlFile_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: filename
-    CHARACTER(LEN=*), INTENT(IN) :: mode
+    CHARACTER(*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: mode
     !! mode can be READ, WRITE, NEW, OVERWRITE
   END SUBROUTINE xmlFile_Initiate
 END INTERFACE
@@ -212,7 +212,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE xmlFile_Export(obj, filename)
     CLASS(xmlFile_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE xmlFile_Export
 END INTERFACE
 
@@ -227,7 +227,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE xmlFile_Display(obj, msg, unitNo)
     CLASS(XMLFile_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE xmlFile_Display
 END INTERFACE
@@ -243,7 +243,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE xmlFile_Import(obj, filename)
     CLASS(xmlFile_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE xmlFile_Import
 END INTERFACE
 
@@ -273,7 +273,7 @@ INTERFACE
   MODULE SUBROUTINE xmlFile_BuildCache(obj, nchars, fileCache)
     CLASS(XMLFile_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(OUT) :: nchars
-    CHARACTER(LEN=1), ALLOCATABLE, INTENT(INOUT) :: fileCache(:)
+    CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: fileCache(:)
   END SUBROUTINE xmlFile_BuildCache
 END INTERFACE
 

@@ -16,12 +16,6 @@
 !
 
 SUBMODULE(NeumannBC_Class) GetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 END SUBMODULE GetMethods

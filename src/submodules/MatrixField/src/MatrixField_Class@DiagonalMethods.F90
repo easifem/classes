@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_GetDiagonal
-  CALL GetDiagonal( obj=obj%mat, diag=diag )
+CALL GetDiagonal(obj=obj%mat, diag=diag)
 END PROCEDURE mField_GetDiagonal
 
 END SUBMODULE DiagonalMethods

@@ -16,6 +16,7 @@
 
 SUBMODULE(BlockNodeField_Class) GetMethods
 USE BaseMethod
+USE Field
 IMPLICIT NONE
 CONTAINS
 
@@ -24,14 +25,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get1
-  !!
-  value = Get( &
-    & obj=obj%realVec, &
-    & dofobj=obj%dof, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber( globalNode ), &
-    & ivar=ivar, &
-    & idof=idof )
-  !!
+CHARACTER(*), PARAMETER :: myName = "bnField_get1"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+VALUE = Get( &
+  & obj=obj%realVec, &
+  & dofobj=obj%dof, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & idof=idof)
 END PROCEDURE bnField_get1
 
 !----------------------------------------------------------------------------
@@ -39,7 +42,11 @@ END PROCEDURE bnField_get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get2
-  value = Get( obj=obj%realVec )
+CHARACTER(*), PARAMETER :: myName = "bnField_get2"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+VALUE = Get(obj=obj%realVec)
 END PROCEDURE bnField_get2
 
 !----------------------------------------------------------------------------
@@ -47,14 +54,17 @@ END PROCEDURE bnField_get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get3
-  !!
-  value = Get( &
-    & obj=obj%realVec, &
-    & dofobj=obj%dof, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber( globalNode ), &
-    & ivar=ivar, &
-    & idof=idof )
-  !!
+CHARACTER(*), PARAMETER :: myName = "bnField_get3"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+
+VALUE = Get( &
+  & obj=obj%realVec, &
+  & dofobj=obj%dof, &
+  & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+  & ivar=ivar, &
+  & idof=idof)
 END PROCEDURE bnField_get3
 
 !----------------------------------------------------------------------------
@@ -62,38 +72,17 @@ END PROCEDURE bnField_get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get4
-  !!
-  INTEGER( I4B ) :: globalNode( INT( 1+ (iend-istart)/stride ) ), ii, jj
-  !!
-#ifdef DEBUG_VER
-  !!
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_get4"
-  !!
-  !! check
-  !!
-  IF( .NOT. obj%isInitiated ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'Field object is not initiated' )
-  !!
-  !! check
-  !!
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'this routine is not callable for constant field type')
-#endif
-  !!
-  jj = 0
-  DO ii = istart, iend, stride
-    jj = jj + 1
-    globalNode( jj ) = ii
-  END DO
-  !!
-  CALL obj%get( &
-    & globalNode=globalNode, &
-    & value=value, &
-    & ivar=ivar, &
-    & idof=idof )
-  !!
+INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
+jj = 0
+DO ii = istart, iend, stride
+  jj = jj + 1
+  globalNode(jj) = ii
+END DO
+CALL obj%get( &
+  & globalNode=globalNode, &
+  & VALUE=VALUE, &
+  & ivar=ivar, &
+  & idof=idof)
 END PROCEDURE bnField_get4
 
 !----------------------------------------------------------------------------
@@ -101,16 +90,13 @@ END PROCEDURE bnField_get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get5
-  !!
-  value = NodalVariable( &
-    & Get( obj=obj%realVec, &
-    & dofobj=obj%dof, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber( globalNode ), &
-    & ivar=ivar, &
-    & idof=idof ), &
-    & TypeFEVariableScalar, &
-    & TypeFEVariableSpace )
-  !!
+REAL(DFP), ALLOCATABLE :: value0(:)
+CALL obj%get(VALUE=value0, globalNode=globalNode, ivar=ivar, idof=idof)
+VALUE = NodalVariable( &
+  & value0, &
+  & TypeFEVariableScalar, &
+  & TypeFEVariableSpace)
+DEALLOCATE (value0)
 END PROCEDURE bnField_get5
 
 !----------------------------------------------------------------------------
@@ -118,74 +104,77 @@ END PROCEDURE bnField_get5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get6
-  INTEGER( I4B ) :: localNode( size(globalNode) )
-  INTEGER( I4B ) :: timeCompo, spaceCompo
-  REAL( DFP ), ALLOCATABLE :: m3a( :, :, : ), m3b( :, :, : )
-  !!
-  timeCompo = obj%dof .TimeComponents. ivar
-  spaceCompo = obj%dof .SpaceComponents. ivar
-  localNode = obj%domains(ivar)%ptr%getLocalNodeNumber( globalNode )
-  !!
-  !!
-  !!
-  !!
-  IF( spaceCompo .GT. 1 ) THEN
-    !!
-    IF( timeCompo .GT. 1 ) THEN
-      !!
-      !! vector space-time
-      !!
-      m3b = RESHAPE( Get( obj=obj%realVec, dofobj=obj%dof, &
-        & nodenum=localNode, ivar=ivar ), &
-        & [size(localNode),spaceCompo,timeCompo])
-      !!
-      !! Here m3b is in (J, i, a) format, but we need (i,J,a) format
-      !!
-      CALL SWAP( a=m3a, b=m3b, i1=2, i2=1, i3=3 )
-      !!
-      value = NodalVariable( m3a, TypeFEVariableVector, &
-        & TypeFEVariableSpaceTime )
-      !!
-    ELSE
-      !!
-      !! vector space
-      !!
-      value = NodalVariable( &
-        & TRANSPOSE( RESHAPE( Get( obj=obj%realVec, dofobj=obj%dof, &
-        & nodenum=localNode, ivar=ivar ), &
-        & [size(localNode),spaceCompo]) ), &
-        & TypeFEVariableVector, TypeFEVariableSpace )
-      !!
-    END IF
-  !!
-  !!
-  !!
-  !!
+CHARACTER(*), PARAMETER :: myName = "bnField_get6"
+INTEGER(I4B) :: timeCompo
+INTEGER(I4B) :: spaceCompo
+INTEGER(I4B) :: ierr
+INTEGER(I4B) :: case_id
+REAL(DFP), ALLOCATABLE :: m3a(:, :, :)
+REAL(DFP), ALLOCATABLE :: m3b(:, :, :)
+REAL(DFP), ALLOCATABLE :: value0(:)
+INTEGER(I4B) :: tdof
+INTEGER(I4B) :: ii
+
+tdof = obj%dof.tdof.ivar
+case_id = SIZE(globalNode)
+CALL Reallocate(m3a, case_id, tdof, 1)
+
+DO ii = 1, tdof
+  CALL obj%get(VALUE=value0, globalNode=globalNode, &
+    & ivar=ivar, idof=ii)
+  m3a(:, ii, 1) = value0
+END DO
+value0 = RESHAPE(m3a, [case_id * tdof])
+DEALLOCATE (m3a)
+
+case_id = 0_I4B
+timeCompo = obj%dof.TimeComponents.ivar
+spaceCompo = obj%dof.SpaceComponents.ivar
+
+IF ((spaceCompo .GT. 1)) THEN
+  IF (timeCompo .GT. 1) THEN
+    case_id = 1
   ELSE
-    !!
-    IF( timeCompo .GT. 1 ) THEN
-      !!
-      !! scalar space-time
-      !!
-      value = NodalVariable(  &
-        & RESHAPE( Get( obj=obj%realVec, dofobj=obj%dof, &
-        & nodenum=localNode, ivar=ivar ), &
-        & [size(localNode), timeCompo]),  &
-        & TypeFEVariableScalar, &
-        & TypeFEVariableSpaceTime )
-      !!
-    ELSE
-      !!
-      !! scalar space
-      !!
-      value = NodalVariable( &
-        & Get( obj=obj%realVec, dofobj=obj%dof, &
-        & nodenum=localNode, ivar=ivar ), &
-        & TypeFEVariableScalar, TypeFEVariableSpace )
-      !!
-    END IF
+    case_id = 2
   END IF
-  !!
+ELSE
+  IF (timeCompo .GT. 1) THEN
+    case_id = 3
+  ELSE
+    case_id = 4
+  END IF
+END IF
+
+SELECT CASE (case_id)
+CASE (1)
+  ! vector space-time
+  m3b = RESHAPE(value0, [SIZE(globalNode), spaceCompo, timeCompo])
+  ! Here m3b is in (J, i, a) format, but we need (i,J,a) format
+  CALL SWAP(a=m3a, b=m3b, i1=2, i2=1, i3=3)
+  VALUE = NodalVariable(m3a, TypeFEVariableVector, TypeFEVariableSpaceTime)
+CASE (2)
+  ! vector space
+  VALUE = NodalVariable( &
+    & TRANSPOSE(RESHAPE(value0, [SIZE(globalNode), spaceCompo])), &
+    & TypeFEVariableVector, TypeFEVariableSpace)
+CASE (3)
+  ! scalar space-time
+  VALUE = NodalVariable(  &
+    & RESHAPE(value0, [SIZE(globalNode), timeCompo]),  &
+    & TypeFEVariableScalar, &
+    & TypeFEVariableSpaceTime)
+CASE (4)
+  ! scalar space
+  VALUE = NodalVariable(value0, TypeFEVariableScalar, TypeFEVariableSpace)
+CASE DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for given arguments')
+END SELECT
+
+IF (ALLOCATED(value0)) DEALLOCATE (value0)
+IF (ALLOCATED(m3a)) DEALLOCATE (m3a)
+IF (ALLOCATED(m3b)) DEALLOCATE (m3b)
+
 END PROCEDURE bnField_get6
 
 !----------------------------------------------------------------------------
@@ -193,16 +182,20 @@ END PROCEDURE bnField_get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get7
-  INTEGER( I4B ) :: localNode( size(globalNode) ), idof
-  !!
-  localNode = obj%domains(ivar)%ptr%getLocalNodeNumber( globalNode )
-  !!
-  idof = GetIDOF( spaceCompo=spaceCompo, timeCompo=timeCompo, &
-    & tSpaceCompo=obj%dof .SpaceComponents. ivar )
-  !!
-  value = Get( obj=obj%realVec, dofobj=obj%dof, &
-    & nodenum=localNode, ivar=ivar, idof=idof )
-  !!
+INTEGER(I4B) :: localNode(SIZE(globalNode)), idof
+CHARACTER(*), PARAMETER :: myName = "bnField_get7"
+IF (.NOT. obj%isInitiated) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+localNode = obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode)
+IF (ANY(localNode .EQ. 0_I4B)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Some of globalNodes are out of bound')
+END IF
+idof = GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
+  & tSpaceCompo=obj%dof.SpaceComponents.ivar)
+VALUE = Get(obj=obj%realVec, dofobj=obj%dof, &
+  & nodenum=localNode, ivar=ivar, idof=idof)
 END PROCEDURE bnField_get7
 
 !----------------------------------------------------------------------------
@@ -210,19 +203,14 @@ END PROCEDURE bnField_get7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get8
-  INTEGER( I4B ) :: localNode( size(globalNode) ), idof
-  !!
-  localNode = obj%domains(ivar)%ptr%getLocalNodeNumber( globalNode )
-  !!
-  idof = GetIDOF( spaceCompo=spaceCompo, timeCompo=timeCompo, &
-    & tSpaceCompo=obj%dof .SpaceComponents. ivar )
-  !!
-  value = NodalVariable( &
-    & Get( obj=obj%realVec, dofobj=obj%dof, &
-    & nodenum=localNode, ivar=ivar, idof=idof ), &
-    & TypeFEVariableScalar, &
-    & TypeFEVariableSpace )
-  !!
+REAL(DFP), ALLOCATABLE :: value0(:)
+CALL obj%get(VALUE=value0, globalNode=globalNode, ivar=ivar, &
+  & spaceCompo=spaceCompo, timeCompo=timeCompo)
+VALUE = NodalVariable( &
+  & value0, &
+  & TypeFEVariableScalar, &
+  & TypeFEVariableSpace)
+DEALLOCATE (value0)
 END PROCEDURE bnField_get8
 
 !----------------------------------------------------------------------------
@@ -230,357 +218,47 @@ END PROCEDURE bnField_get8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_get9
-  !!
-  !! check:
-  !! value is initiated
-  !! obj is initiated
-  !! tsize of value is equal to the tnodes of obj (ivar, idof)
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & value=value%realvec, &
+CHARACTER(*), PARAMETER :: myName = "bnField_get9"
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize_value
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: indx1
+INTEGER(I4B) :: indx2
+REAL(DFP) :: avar
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'BlockNodeField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+
+tsize = obj%dof.tNodes. [ivar, idof]
+tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+IF (tsize .NE. tsize_value) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+END IF
+
+DO ii = 1, tsize
+  indx1 = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=ii, &
     & ivar=ivar, &
     & idof=idof)
-  !!
+  CALL obj%GetSingle(VALUE=avar, indx=indx1)
+  indx2 = GetNodeLoc(&
+    & obj=VALUE%dof, &
+    & nodenum=ii, &
+    & ivar=ivar_value, &
+    & idof=idof_value)
+  CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
+END DO
+
 END PROCEDURE bnField_get9
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bnField_get10
-  !!
-  !! check:
-  !! value is initiated
-  !! obj is initiated
-  !! tsize of value is equal to the tnodes of obj (ivar, idof)
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & value=value%realvec, &
-    & ivar=ivar, &
-    & spaceCompo=spaceCompo, &
-    & timeCompo=timeCompo )
-  !!
-END PROCEDURE bnField_get10
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bnField_get11
-  !!
-  !! check
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & ivarobj=ivar, &
-    & spaceCompoObj=spaceCompo, &
-    & timeCompoObj=timeCompo, &
-    & value=value%realvec, &
-    & dofvalue=value%dof, &
-    & ivarvalue=1, &
-    & spaceCompoValue=1, &
-    & timeCompoValue=arange(1, size(timeCompo) ) )
-  !!
-END PROCEDURE bnField_get11
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bnField_get12
-  !!
-  !! check
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & ivarobj=ivar, &
-    & spaceCompoObj=spaceCompo, &
-    & timeCompoObj=timeCompo, &
-    & value=value%realvec, &
-    & dofvalue=value%dof, &
-    & ivarvalue=1, &
-    & spaceCompoValue=arange(1, size(spaceCompo) ), &
-    & timeCompoValue=1 )
-  !!
-END PROCEDURE bnField_get12
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-!! ScalarField_
-
-MODULE PROCEDURE bnField_get13
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_get13"
-  INTEGER( I4B ) :: n
-  !!
-  !! check
-  !!
-  n = (obj%dof .spacecomponents. ivar)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .tspacecomponents. ivar)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (obj%dof .timecomponents. ivar)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .timecomponents. ivar)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (.tNames. value%dof)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (.tNames. value%dof)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (value%dof .spacecomponents. 1)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .spacecomponents. 1)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (value%dof .timecomponents. 1)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .timecomponents. 1)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-#endif
-  !!
-  !! main
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & ivarobj=ivar, &
-    & idofobj=1, &
-    & value=value%realvec, &
-    & dofvalue=value%dof, &
-    & ivarvalue=1, &
-    & idofvalue=1 )
-  !!
-END PROCEDURE bnField_get13
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-!! STScalarField_
-
-MODULE PROCEDURE bnField_get14
-  !!
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_get14"
-  INTEGER( I4B ) :: m, n
-  !!
-  !! check
-  !!
-  n = (obj%dof .spacecomponents. ivar)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .spacecomponents. ivar)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (.tNames. value%dof)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (.tNames. value%dof)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (value%dof .spacecomponents. 1)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .spacecomponents. 1)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  m = (obj%dof .timecomponents. ivar)
-  n = (value%dof .timecomponents. 1)
-  !!
-  IF( m .NE. n ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .timecomponents. ivar)='//tostring(m)// &
-    & ' is not equal to ' // &
-    & ' (value%dof .timecomponents. 1)='//tostring(n) )
-  !!
-#endif
-  !!
-  !! main
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idofobj=getIDOF(obj=obj%dof, ivar=ivar), &
-    & value=value%realvec, &
-    & dofvalue=value%dof, &
-    & idofvalue=getIDOF( obj=value%dof, ivar=1) )
-  !!
-END PROCEDURE bnField_get14
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-!! VectorField_
-
-MODULE PROCEDURE bnField_get15
-  !!
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_get15"
-  INTEGER( I4B ) :: m, n
-  !!
-  !! check
-  !!
-  n = (obj%dof .timecomponents. ivar)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .timecomponents. ivar)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (.tNames. value%dof)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (.tNames. value%dof)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  n = (value%dof .timecomponents. 1)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (value%dof .timecomponents. 1)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  m = (obj%dof .spacecomponents. ivar)
-  n = (value%dof .spacecomponents. 1)
-  !!
-  IF( m .NE. n ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .tspacecomponents. ivar)='//tostring(m)// &
-    & ' is not equal to ' // &
-    & ' (value%dof .spacecomponents. 1)='//tostring(n) )
-  !!
-#endif
-  !!
-  !! main
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idofobj=getIDOF(obj=obj%dof, ivar=ivar), &
-    & value=value%realvec, &
-    & dofvalue=value%dof, &
-    & idofvalue=getIDOF(obj=value%dof, ivar=1) )
-  !!
-END PROCEDURE bnField_get15
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bnField_get16
-!!
-#ifdef DEBUG_VER
-  CHARACTER( LEN = * ), PARAMETER :: myName="bnField_get15"
-  INTEGER( I4B ) :: m, n
-  !!
-  !! check
-  !!
-  n = (.tNames. value%dof)
-  !!
-  IF( n .GT. 1 ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (.tNames. value%dof)='//tostring(n)// &
-    & ' is greater than 1')
-  !!
-  !! check
-  !!
-  m = (obj%dof .spacecomponents. ivar)
-  n = (value%dof .spacecomponents. 1)
-  !!
-  IF( m .NE. n ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .spacecomponents. ivar)='//tostring(m)// &
-    & ' is not equal to ' // &
-    & ' (value%dof .spacecomponents. 1)='//tostring(n) )
-  !!
-  !!
-  !! check
-  !!
-  m = (obj%dof .timecomponents. ivar)
-  n = (value%dof .timecomponents. 1)
-  !!
-  IF( m .NE. n ) &
-    & CALL e%raiseError(modName//'::'//myName// " - "// &
-    & 'This routine is not callable as &
-    & (obj%dof .timecomponents. ivar)='//tostring(m)// &
-    & ' is not equal to ' // &
-    & ' (value%dof .timecomponents. 1)='//tostring(n) )
-  !!
-#endif
-  !!
-  !! main
-  !!
-  CALL GetValue( &
-    & obj=obj%realvec, &
-    & dofobj=obj%dof, &
-    & idofobj=getIDOF(obj=obj%dof, ivar=ivar), &
-    & value=value%realvec, &
-    & dofvalue=value%dof, &
-    & idofvalue=getIDOF(obj=value%dof, ivar=1) )
-  !!
-END PROCEDURE bnField_get16
 
 !----------------------------------------------------------------------------
 !

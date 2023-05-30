@@ -30,31 +30,37 @@ CONTAINS
 
 MODULE PROCEDURE mField_getColumn1
 REAL(DFP), POINTER :: realvec(:)
-!!
-IF (PRESENT(value)) THEN
+CHARACTER(*), PARAMETER :: myName = "mField_getColumn1"
+!
+IF (obj%isRectangle) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is not implemented for Rectangle matrix')
+END IF
+!
+IF (PRESENT(VALUE)) THEN
   CALL getColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & idof=idof, &
-    & value=value, &
+    & VALUE=VALUE, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 IF (PRESENT(nodeFieldVal)) THEN
-  !!
+  !
   realvec => nodeFieldVal%getPointer()
-  !!
+  !
   CALL getColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & idof=idof, &
-    & value=realvec, &
+    & VALUE=realvec, &
     & scale=scale, &
     & addContribution=addContribution)
-    !!
+  !
 END IF
-!!
+!
 NULLIFY (realvec)
 END PROCEDURE mField_getColumn1
 
@@ -66,7 +72,7 @@ MODULE PROCEDURE mField_getColumn2
 CALL obj%getColumn( &
   & globalNode=globalNode, &
   & idof=(obj%mat%csr%jdof.DOFStartIndex.ivar) + idof - 1, &
-  & value=value, &
+  & VALUE=VALUE, &
   & nodefieldVal=nodefieldVal, &
   & scale=scale, &
   & addContribution=addContribution)
@@ -82,7 +88,7 @@ CALL obj%getColumn( &
   & idof=GetIDOF(obj=obj%mat%csr%jdof, &
           & ivar=ivar, spacecompo=spacecompo, &
           & timecompo=timecompo), &
-  & value=value, &
+  & VALUE=VALUE, &
   & nodefieldVal=nodefieldVal, &
   & scale=scale, &
   & addContribution=addContribution)
@@ -94,19 +100,26 @@ END PROCEDURE mField_getColumn3
 
 MODULE PROCEDURE mField_getColumn4
 REAL(DFP), POINTER :: realvec(:)
-!!
-IF (PRESENT(value)) THEN
+CHARACTER(*), PARAMETER :: myName = "mField_getColumn4"
+!
+!
+IF (obj%isRectangle) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is not implemented for Rectangle matrix')
+END IF
+!
+IF (PRESENT(VALUE)) THEN
   CALL getColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=value, &
+    & VALUE=VALUE, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
   CALL getColumn( &
@@ -115,11 +128,11 @@ IF (PRESENT(nodeFieldVal)) THEN
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=realvec, &
+    & VALUE=realvec, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 NULLIFY (realvec)
 END PROCEDURE mField_getColumn4
 
@@ -129,19 +142,26 @@ END PROCEDURE mField_getColumn4
 
 MODULE PROCEDURE mField_getColumn5
 REAL(DFP), POINTER :: realvec(:)
-!!
-IF (PRESENT(value)) THEN
+CHARACTER(*), PARAMETER :: myName = "mField_getColumn5"
+!
+!
+IF (obj%isRectangle) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is not implemented for Rectangle matrix')
+END IF
+!
+IF (PRESENT(VALUE)) THEN
   CALL getColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=value, &
+    & VALUE=VALUE, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
   CALL getColumn( &
@@ -150,11 +170,11 @@ IF (PRESENT(nodeFieldVal)) THEN
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=realvec, &
+    & VALUE=realvec, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 NULLIFY (realvec)
 END PROCEDURE mField_getColumn5
 
@@ -164,19 +184,26 @@ END PROCEDURE mField_getColumn5
 
 MODULE PROCEDURE mField_getColumn6
 REAL(DFP), POINTER :: realvec(:)
-!!
-IF (PRESENT(value)) THEN
+CHARACTER(*), PARAMETER :: myName = "mField_getColumn6"
+!
+!
+IF (obj%isRectangle) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is not implemented for Rectangle matrix')
+END IF
+!
+IF (PRESENT(VALUE)) THEN
   CALL getColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=value, &
+    & VALUE=VALUE, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
   CALL getColumn( &
@@ -185,11 +212,11 @@ IF (PRESENT(nodeFieldVal)) THEN
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=realvec, &
+    & VALUE=realvec, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 NULLIFY (realvec)
 END PROCEDURE mField_getColumn6
 
@@ -199,19 +226,26 @@ END PROCEDURE mField_getColumn6
 
 MODULE PROCEDURE mField_getColumn7
 REAL(DFP), POINTER :: realvec(:)
-!!
-IF (PRESENT(value)) THEN
+CHARACTER(*), PARAMETER :: myName = "mField_getColumn7"
+!
+!
+IF (obj%isRectangle) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'This routine is not implemented for Rectangle matrix')
+END IF
+!
+IF (PRESENT(VALUE)) THEN
   CALL getColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=value, &
+    & VALUE=VALUE, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
   CALL getColumn( &
@@ -220,11 +254,11 @@ IF (PRESENT(nodeFieldVal)) THEN
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
-    & value=realvec, &
+    & VALUE=realvec, &
     & scale=scale, &
     & addContribution=addContribution)
 END IF
-!!
+!
 NULLIFY (realvec)
 END PROCEDURE mField_getColumn7
 

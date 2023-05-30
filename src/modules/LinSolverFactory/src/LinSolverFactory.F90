@@ -25,7 +25,7 @@ USE LinSolver_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "LinSolverFactory"
+CHARACTER(*), PARAMETER :: modName = "LinSolverFactory"
 
 !----------------------------------------------------------------------------
 !                                                         LinSolverFactory
@@ -37,7 +37,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "LinSolverFactory"
 
 INTERFACE
   MODULE FUNCTION LinearSolverFactory(engine) RESULT(Ans)
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     CLASS(AbstractLinSolver_), POINTER :: ans
   END FUNCTION LinearSolverFactory
 END INTERFACE

@@ -25,29 +25,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_checkEssentialParam
-  !!
-CHARACTER(LEN=*), PARAMETER :: myName = "bc_checkEssentialParam"
-  !!
-IF (.NOT. param%isPresent(key="NeumannBC/name")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NeumannBC/name should be present in param')
-END IF
-  !!
-IF (.NOT. param%isPresent(key="NeumannBC/idof")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NeumannBC/idof should be present in param')
-END IF
-  !!
-IF (.NOT. param%isPresent(key="NeumannBC/nodalValueType")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NeumannBC/nodalValueType should be present in param')
-END IF
-  !!
-IF (.NOT. param%isPresent(key="NeumannBC/useFunction")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NeumannBC/useFunction should be present in param')
-END IF
-  !!
+CALL AbstractBCcheckEssentialParam(&
+& obj=obj, &
+& param=param, &
+& prefix=myprefix)
 END PROCEDURE bc_checkEssentialParam
 
 !----------------------------------------------------------------------------
@@ -55,18 +36,16 @@ END PROCEDURE bc_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setNeumannBCParam
-INTEGER(I4B) :: ierr
-  !!
-ierr = param%set(key="NeumannBC/name", value=trim(name))
-ierr = param%set(key="NeumannBC/idof", value=idof)
-ierr = param%set(key="NeumannBC/nodalValueType", value=nodalValueType)
-  !!
-IF (PRESENT(useFunction)) THEN
-  ierr = param%set(key="NeumannBC/useFunction", value=useFunction)
-ELSE
-  ierr = param%set(key="NeumannBC/useFunction", value=.FALSE.)
-END IF
-  !!
+CALL setAbstractBCParam(&
+& param=param, &
+& prefix=myprefix, &
+& name=name, &
+& idof=idof, &
+& nodalValueType=nodalValueType, &
+& useFunction=input(option=useFunction, default=.FALSE.), &
+& isNormal=input(option=isNormal, default=.FALSE.), &
+& isTangent=input(option=isTangent, default=.FALSE.) &
+& )
 END PROCEDURE setNeumannBCParam
 
 !----------------------------------------------------------------------------
@@ -74,86 +53,19 @@ END PROCEDURE setNeumannBCParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Initiate
-  !!
-CHARACTER(LEN=*), PARAMETER :: myName = "bc_Initiate"
-CHARACTER(LEN=:), ALLOCATABLE :: char_var
-INTEGER(I4B) :: ierr
-  !!
-  !! check
-  !!
-IF (obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'NeumannBC_ object is already initiated')
-  !!
-  !! check
-  !!
-CALL obj%checkEssentialParam(param=param)
-  !!
-  !!
-  !!
-obj%isInitiated = .TRUE.
-obj%boundary = boundary
-obj%dom => dom
-  !!
-  !! name
-  !!
-ALLOCATE (CHARACTER(LEN=param%DataSizeInBytes( &
-  & key="NeumannBC/name")) :: char_var)
-ierr = param%get(key="NeumannBC/name", value=char_var)
-obj%name = char_var
-DEALLOCATE (char_var)
-  !!
-  !! idof
-  !!
-ierr = param%get(key="NeumannBC/idof", value=obj%idof)
-  !!
-  !! nodalValueType
-  !!
-ierr = param%get(key="NeumannBC/nodalValueType", &
-  & value=obj%nodalValueType)
-  !!
-  !! useFunction
-  !!
-ierr = param%get(key="NeumannBC/useFunction", &
-  & value=obj%useFunction)
-  !!
-  !!
-  !!
-IF (boundary%isSelectionByMeshID .AND. (.NOT. obj%useFunction)) THEN
-    !!
-  IF (obj%nodalValueType .NE. Constant) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-        & 'When meshSelection is by MeshID &
-        & and `useFunction` is false, then &
-        & `nodalValueType` in `NeumannBC_` &
-        & object should be Constant.')
-  END IF
-    !!
-END IF
-  !!
+CALL AbstractBCInitiate(obj=obj, &
+& param=param, &
+& prefix=myprefix, &
+& boundary=boundary, &
+& dom=dom)
 END PROCEDURE bc_Initiate
-
-!----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_Deallocate
-CALL AbstractBCDeallocate(obj)
-obj%idof = 0
-obj%nodalValueType = -1
-obj%useFunction = .FALSE.
-IF (ALLOCATED(obj%NodalValue)) DEALLOCATE (obj%NodalValue)
-obj%TimeFunction => NULL()
-obj%SpaceFunction => NULL()
-obj%SpaceTimeFunction => NULL()
-END PROCEDURE bc_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                            Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE bc_Final
 
 END SUBMODULE ConstructorMethods
