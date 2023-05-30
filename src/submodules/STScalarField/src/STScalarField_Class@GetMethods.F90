@@ -17,6 +17,7 @@
 
 SUBMODULE(STScalarField_Class) GetMethods
 USE BaseMethod
+USE ScalarField_Class, ONLY: ScalarField_
 IMPLICIT NONE
 CONTAINS
 
@@ -195,11 +196,17 @@ IF (timecompo .GT. n) &
   & (obj%dof .timecomponents. 1)='//tostring(n)// &
   & ' is lesser than '// &
   & ' timecompo='//tostring(timecompo))
-CALL GetValue( &
-  & obj=obj%realvec, &
-  & dofobj=obj%dof, &
-  & VALUE=VALUE%realvec, &
-  & idof=timecompo)
+SELECT TYPE (VALUE)
+TYPE IS (ScalarField_)
+  CALL GetValue( &
+    & obj=obj%realvec, &
+    & dofobj=obj%dof, &
+    & VALUE=VALUE%realvec, &
+    & idof=timecompo)
+CLASS DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+  & 'No case found for type of value')
+END SELECT
 END PROCEDURE stsField_get9
 
 !----------------------------------------------------------------------------
@@ -213,5 +220,52 @@ IF (timeCompo .GT. obj%timeCompo) &
   & 'given timeCompo should be less than or equal to obj%timeCompo')
 ans => getPointer(obj=obj%realvec, dofobj=obj%dof, idof=timeCompo)
 END PROCEDURE stsField_getPointerOfComponent
+
+!----------------------------------------------------------------------------
+!                                                                     Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_get10
+CHARACTER(*), PARAMETER :: myName = "stsField_get10"
+INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize_value
+INTEGER(I4B) :: ii
+INTEGER(I4B) :: indx1
+INTEGER(I4B) :: indx2
+REAL(DFP) :: avar
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'STScalarField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+
+tsize = obj%dof.tNodes. [ivar, idof]
+tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+IF (tsize .NE. tsize_value) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+END IF
+
+DO ii = 1, tsize
+  indx1 = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=ii, &
+    & ivar=ivar, &
+    & idof=idof)
+  CALL obj%GetSingle(VALUE=avar, indx=indx1)
+  indx2 = GetNodeLoc(&
+    & obj=VALUE%dof, &
+    & nodenum=ii, &
+    & ivar=ivar_value, &
+    & idof=idof_value)
+  CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
+END DO
+
+END PROCEDURE stsField_get10
 
 END SUBMODULE GetMethods
