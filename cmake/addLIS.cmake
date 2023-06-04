@@ -14,19 +14,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-# LIS
-OPTION( USE_LIS OFF )
-IF( USE_LIS )
-  LIST( APPEND TARGET_COMPILE_DEF "-DUSE_LIS" )
-  IF( UNIX )
-    IF(APPLE)
-      SET( LIS_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/liblis.dylib"  )
-    ELSE()
-      SET( LIS_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/liblis.so"  )
+
+#....................................................................
+#
+#....................................................................
+
+IF( ${PROJECT_NAME} MATCHES "easifemBase" )
+  OPTION( USE_LIS OFF )
+  IF( USE_LIS )
+    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_LIS" )
+    IF( UNIX )
+      IF(APPLE)
+        SET( LIS_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/liblis.dylib"  )
+      ELSE()
+        SET( LIS_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/liblis.so"  )
+      ENDIF()
     ENDIF()
+    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${LIS_LIBRARIES} )
+    MESSAGE( STATUS "LIS_LIBRARIES : ${LIS_LIBRARIES}" )
+  ELSE()
+    MESSAGE( STATUS "NOT USING LIS LIBRARIES" )
   ENDIF()
-  TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${LIS_LIBRARIES} )
-  MESSAGE( STATUS "LIS_LIBRARIES : ${LIS_LIBRARIES}" )
-ELSE()
-  MESSAGE( STATUS "NOT USING LIS LIBRARIES" )
 ENDIF()
