@@ -90,13 +90,6 @@ else:
 
     cmake_def += " -D USE_Int32=ON -D USE_Real64=ON"
 
-    print("CMAKE DEF : ", cmake_def)
-    # build_dir = os.environ["HOME"] + "/temp/easifem-classes/build"
-    # os.makedirs(build_dir, exist_ok=True)
-    # os.system(f"cmake -S ./ -B {build_dir} {cmake_def}")
-    # os.system(f"cmake --build {build_dir} --target install")
-    # print("Installation DONE!!")
-
     _build0 = os.path.join(os.environ["HOME"], "temp")
     build_dir = os.path.join(
         os.environ.get("EASIFEM_BUILD_DIR", _build0), "classes", "build"
@@ -104,5 +97,5 @@ else:
     # build_dir = os.environ["HOME"] + "/temp/easifem-base/build"
     os.makedirs(build_dir, exist_ok=True)
     os.system(f"cmake -S ./ -B {build_dir} {cmake_def}")
-    os.system(f"cmake --build {build_dir} --target install")
+    os.system(f"cmake --build {build_dir} --target package")
     print("Installation DONE!!")

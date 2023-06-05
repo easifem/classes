@@ -1,6 +1,7 @@
 # ignore following extesions
 # added by vikas
 # 2-Dec-2018
+
 *.a
 *.mod
 *.smod
@@ -16,9 +17,8 @@
 *.h5
 *.gp
 *.msh
-*Pmat.txt
+
 vscode-settings
-# docs/
 media/
 include/
 lib/
@@ -30,19 +30,17 @@ build/
 src/build/
 src/modules/build/
 src/submodules/build/
-# pkgs/
-# old-classes/
-# examples/
-# docs/
-# easifem.wiki/
-# pages/
 docs/
 tests/
+*.ipynb
+*.dat
+_packages/
+
+
 
 MESH_CLASS_EXCEPTION.txt
 MSH_CLASS_EXCEPTION.txt
 DOMAIN_CLASS_EXCEPTION.txt
 log.txt
-*.ipynb
 Amat.txt
-*.dat
+*Pmat.txt
