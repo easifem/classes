@@ -16,6 +16,10 @@
 !
 
 MODULE easifemClasses
+#ifdef USE_GMSH_SDK
+USE Gmsh_Class
+#endif
+
 USE CommandLine_Method
 USE ExceptionHandler_Class
 USE FPL_Method
@@ -35,10 +39,6 @@ USE DomainUtility
 USE DomainConnectivity_Class
 USE MeshSelection_Class
 ! USE QuadratureVariables_Class
-
-#ifdef USE_GMSH_SDK
-USE Gmsh_Class
-#endif
 
 USE mshFormat_Class
 USE mshPhysicalNames_Class
