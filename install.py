@@ -19,14 +19,12 @@ else:
     cmake_def = ""
     cmake_def += '-G "Ninja"'
     cmake_def += " -D USE_GMSH_SDK:BOOL=OFF"
-    cmake_def += " -D USE_OpenMP:BOOL=ON"
-    cmake_def += " -D USE_LAPACK95:BOOL=ON"
-    cmake_def += " -D USE_BLAS95:BOOL=ON"
+    # cmake_def += " -D USE_OpenMP:BOOL=ON"
+    # cmake_def += " -D USE_LAPACK95:BOOL=ON"
+    # cmake_def += " -D USE_BLAS95:BOOL=ON"
     cmake_def += " -D CMAKE_BUILD_TYPE:STRING=Release"
     cmake_def += " -D BUILD_SHARED_LIBS:BOOL=ON"
     cmake_def += " -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}"
-    cmake_def += " -D USE_ARPACK:BOOL=ON"
-    cmake_def += " -D USE_LIS:BOOL=ON"
     cmake_def += " -D USE_Int32=ON"
     cmake_def += " -D USE_Real64=ON"
     print("CMAKE DEF : ", cmake_def)
