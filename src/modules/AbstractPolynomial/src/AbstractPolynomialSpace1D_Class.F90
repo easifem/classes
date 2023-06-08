@@ -43,7 +43,7 @@ TYPE, ABSTRACT :: AbstractPolynomialSpace1D_
   !! order of space
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => func_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => func_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => func_Display
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => func_SetParam
 END TYPE AbstractPolynomialSpace1D_
@@ -87,7 +87,7 @@ PUBLIC :: AbstractPolynomialSpace1DDeallocate
 INTERFACE
   MODULE SUBROUTINE func_Display(obj, msg, unitno)
     CLASS(AbstractPolynomialSpace1D_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE func_Display
 END INTERFACE

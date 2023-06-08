@@ -20,7 +20,7 @@ USE GlobalData
 USE AbstractFunction_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "AbstractBasis_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractBasis_Class"
 
 !----------------------------------------------------------------------------
 !                                                          AbstractBasis1D_
@@ -33,7 +33,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "AbstractBasis_Class"
 TYPE, ABSTRACT, EXTENDS(AbstractFunction1D_) :: AbstractBasis1D_
   INTEGER(I4B) :: uid = 0
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate1
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate1
 END TYPE AbstractBasis1D_
 
 TYPE :: AbstractBasis1DPointer_
@@ -54,7 +54,7 @@ PUBLIC :: AbstractBasis1DPointer_
 TYPE, ABSTRACT, EXTENDS(AbstractFunction2D_) :: AbstractBasis2D_
   INTEGER(I4B) :: uid = 0
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate2
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate2
 END TYPE AbstractBasis2D_
 
 TYPE :: AbstractBasis2DPointer_
@@ -75,7 +75,7 @@ PUBLIC :: AbstractBasis2DPointer_
 TYPE, ABSTRACT, EXTENDS(AbstractFunction3D_) :: AbstractBasis3D_
   INTEGER(I4B) :: uid = 0
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate3
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate3
 END TYPE AbstractBasis3D_
 
 TYPE :: AbstractBasis3DPointer_
@@ -96,7 +96,7 @@ PUBLIC :: AbstractBasis3DPointer_
 TYPE, ABSTRACT, EXTENDS(AbstractFunctionND_) :: AbstractBasisND_
   INTEGER(I4B) :: uid = 0
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_DeallocateN
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_DeallocateN
 END TYPE AbstractBasisND_
 
 TYPE :: AbstractBasisNDPointer_

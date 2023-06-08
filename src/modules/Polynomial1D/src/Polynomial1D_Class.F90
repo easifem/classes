@@ -41,7 +41,7 @@ CONTAINS
   !!
   !! @ConstructorMethods
   !!
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => func_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => func_Deallocate
   FINAL :: func_Final
   !!
   !! @GetMethods
@@ -224,7 +224,7 @@ INTERFACE
       !! coefficient of monomial
     INTEGER(I4B), INTENT(IN) :: degree(:)
       !! degree of monomial
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
       !! variable name
     TYPE(Polynomial1D_) :: ans
       !! instance of polynomial
@@ -252,7 +252,7 @@ INTERFACE
       !! coefficient of polynomials
     INTEGER(I4B), INTENT(IN) :: degree(:)
       !! degreee of monomials
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
       !! variable names
     CLASS(Polynomial1D_), POINTER :: ans
       !! resultant polynomial
@@ -300,7 +300,7 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_evalscalar(obj, x) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION func_evalscalar(obj, x) RESULT(ans)
     CLASS(Polynomial1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x
     REAL(DFP) :: ans
@@ -316,7 +316,7 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE PURE FUNCTION func_evalvector(obj, x) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION func_evalvector(obj, x) RESULT(ans)
     CLASS(Polynomial1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP) :: ans(SIZE(x))
@@ -332,7 +332,7 @@ END INTERFACE
 ! summary: Evaluate the first derivative of function f(x)
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_EvalGradient(obj, x) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION func_EvalGradient(obj, x) RESULT(ans)
     CLASS(Polynomial1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x
     REAL(DFP) :: ans
@@ -348,7 +348,7 @@ END INTERFACE
 ! summary: Returns the Gradient of polynomials as polynomial
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_Grad(obj) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION func_Grad(obj) RESULT(ans)
     CLASS(Polynomial1D_), INTENT(IN) :: obj
     TYPE(Polynomial1D_) :: ans
   END FUNCTION func_Grad
@@ -440,7 +440,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE func_Display(obj, msg, unitno)
     CLASS(Polynomial1D_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE func_Display
 END INTERFACE
