@@ -35,7 +35,7 @@ PRIVATE
 
 TYPE, ABSTRACT :: AbstractFunction_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate
 END TYPE AbstractFunction_
 
 PUBLIC :: AbstractFunction_
@@ -66,7 +66,7 @@ CONTAINS
   GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
   PROCEDURE(func_EvalGradient1), DEFERRED, PUBLIC, PASS(Obj) :: &
     & EvalGradient
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate1
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate1
   PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarName1
 END TYPE AbstractFunction1D_
 
@@ -81,6 +81,92 @@ TYPE, ABSTRACT :: AbstractFunctionPointer1D_
 END TYPE AbstractFunctionPointer1D_
 
 PUBLIC :: AbstractFunctionPointer1D_
+
+!----------------------------------------------------------------------------
+!                                                                      Eval
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate for single variable function
+
+ABSTRACT INTERFACE
+  RECURSIVE PURE FUNCTION func_evalscalar1(obj, x) RESULT(ans)
+    IMPORT AbstractFunction1D_, DFP
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
+  END FUNCTION func_evalscalar1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                      Eval
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate for single variable function
+
+ABSTRACT INTERFACE
+  RECURSIVE PURE FUNCTION func_evalvector1(obj, x) RESULT(ans)
+    IMPORT AbstractFunction1D_, DFP
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP) :: ans(SIZE(x))
+  END FUNCTION func_evalvector1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              EvalGradient
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate gradient for 1d argument function
+
+ABSTRACT INTERFACE
+  RECURSIVE PURE FUNCTION func_EvalGradient1(obj, x) RESULT(ans)
+    IMPORT AbstractFunction1D_, DFP
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x
+    REAL(DFP) :: ans
+  END FUNCTION func_EvalGradient1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        Deallocate@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 14 May 2022
+! summary: Evaluate the function
+
+INTERFACE
+  MODULE SUBROUTINE func_Deallocate1(obj)
+    CLASS(AbstractFunction1D_), INTENT(INOUT) :: obj
+  END SUBROUTINE func_Deallocate1
+END INTERFACE
+
+INTERFACE AbstractFunction1DDeallocate
+  MODULE PROCEDURE func_Deallocate1
+END INTERFACE AbstractFunction1DDeallocate
+
+PUBLIC :: AbstractFunction1DDeallocate
+
+!----------------------------------------------------------------------------
+!                                                         GetVarName@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-08
+! summary: returns the name of the variables
+
+INTERFACE
+  MODULE PURE FUNCTION func_GetVarname1(obj) RESULT(ans)
+    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION func_GetVarname1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                       AbstractFunction2D_
@@ -98,7 +184,7 @@ CONTAINS
   GENERIC, PUBLIC :: Eval => EvalScalar !!, EvalVector
   PROCEDURE(func_EvalGradient2), DEFERRED, PUBLIC, PASS(Obj) :: &
     & EvalGradient
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate2
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate2
   PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarName2
 END TYPE AbstractFunction2D_
 
@@ -130,7 +216,7 @@ CONTAINS
   GENERIC, PUBLIC :: Eval => EvalScalar
   PROCEDURE(func_EvalGradient3), DEFERRED, PUBLIC, PASS(Obj) :: &
     & EvalGradient
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_Deallocate3
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_Deallocate3
   PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarName3
 END TYPE AbstractFunction3D_
 
@@ -161,7 +247,7 @@ CONTAINS
   PROCEDURE(func_EvalN), DEFERRED, PUBLIC, PASS(Obj) :: Eval
   PROCEDURE(func_EvalGradientN), DEFERRED, PUBLIC, PASS(Obj) :: &
     & EvalGradient
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => func_DeallocateN
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => func_DeallocateN
   PROCEDURE, PUBLIC, PASS(obj) :: GetVarName => func_GetVarNameN
 END TYPE AbstractFunctionND_
 
@@ -176,40 +262,6 @@ TYPE, ABSTRACT :: AbstractFunctionPointerND_
 END TYPE AbstractFunctionPointerND_
 
 PUBLIC :: AbstractFunctionPointerND_
-
-!----------------------------------------------------------------------------
-!                                                                      Eval
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Evaluate for single variable function
-
-ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_evalscalar1(obj, x) RESULT(ans)
-    IMPORT AbstractFunction1D_, DFP
-    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(IN) :: x
-    REAL(DFP) :: ans
-  END FUNCTION func_evalscalar1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                      Eval
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Evaluate for single variable function
-
-ABSTRACT INTERFACE
-  PURE FUNCTION func_evalvector1(obj, x) RESULT(ans)
-    IMPORT AbstractFunction1D_, DFP
-    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(IN) :: x(:)
-    REAL(DFP) :: ans(SIZE(x))
-  END FUNCTION func_evalvector1
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                      Eval
@@ -263,23 +315,6 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP) :: ans
   END FUNCTION func_evalN
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              EvalGradient
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Evaluate gradient for 1d argument function
-
-ABSTRACT INTERFACE
-  ELEMENTAL FUNCTION func_EvalGradient1(obj, x) RESULT(ans)
-    IMPORT AbstractFunction1D_, DFP
-    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(IN) :: x
-    REAL(DFP) :: ans
-  END FUNCTION func_EvalGradient1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -369,26 +404,6 @@ PUBLIC :: AbstractFunctionDeallocate
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE SUBROUTINE func_Deallocate1(obj)
-    CLASS(AbstractFunction1D_), INTENT(INOUT) :: obj
-  END SUBROUTINE func_Deallocate1
-END INTERFACE
-
-INTERFACE AbstractFunction1DDeallocate
-  MODULE PROCEDURE func_Deallocate1
-END INTERFACE AbstractFunction1DDeallocate
-
-PUBLIC :: AbstractFunction1DDeallocate
-
-!----------------------------------------------------------------------------
-!                                                        Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 14 May 2022
-! summary: Evaluate the function
-
-INTERFACE
   MODULE SUBROUTINE func_Deallocate2(obj)
     CLASS(AbstractFunction2D_), INTENT(INOUT) :: obj
   END SUBROUTINE func_Deallocate2
@@ -439,17 +454,6 @@ INTERFACE AbstractFunctionNDDeallocate
 END INTERFACE AbstractFunctionNDDeallocate
 
 PUBLIC :: AbstractFunctionNDDeallocate
-
-!----------------------------------------------------------------------------
-!                                                                 GetVarName
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION func_GetVarname1(obj) RESULT(ans)
-    CLASS(AbstractFunction1D_), INTENT(IN) :: obj
-    TYPE(String) :: ans
-  END FUNCTION func_GetVarname1
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 GetVarName

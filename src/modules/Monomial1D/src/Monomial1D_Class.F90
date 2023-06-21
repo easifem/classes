@@ -41,7 +41,7 @@ CONTAINS
     !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => func_Initiate
     !! Initiate the monomial
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => func_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => func_Deallocate
   FINAL :: func_Final
     !!
     !! @GetMethods
@@ -184,7 +184,7 @@ END INTERFACE
 ! summary: Evaluate the function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_evalscalar(obj, x) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION func_evalscalar(obj, x) RESULT(ans)
     CLASS(Monomial1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x
     REAL(DFP) :: ans
@@ -216,7 +216,7 @@ END INTERFACE
 ! summary: Evaluate the function f(x)
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION func_EvalGradient(obj, x) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION func_EvalGradient(obj, x) RESULT(ans)
     CLASS(Monomial1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x
     REAL(DFP) :: ans
@@ -347,7 +347,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE SUBROUTINE func_AssignObjVecObjVec(obj, obj2)
+  MODULE RECURSIVE PURE SUBROUTINE func_AssignObjVecObjVec(obj, obj2)
     CLASS(Monomial1D_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     CLASS(Monomial1D_), INTENT(IN) :: obj2(:)
   END SUBROUTINE func_AssignObjVecObjVec

@@ -56,7 +56,7 @@ CONTAINS
     & Orthopol_Initiate1
   PROCEDURE, PRIVATE, PASS(obj) :: Initiate2 => &
     & Orthopol_Initiate2
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Orthopol_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Orthopol_Deallocate
   !! Deallocate the data
   PROCEDURE, PRIVATE, PASS(obj) :: Deallocate1 => Orthopol_Deallocate1
   !! Deallocate the data
@@ -234,7 +234,7 @@ INTERFACE
     !! order of polynomial
     REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+    REAL(DFP), INTENT(IN) :: SCALE(0:, 1:)
     !! additional scaling coefficient
   END SUBROUTINE Orthopol_Initiate
 END INTERFACE
@@ -256,7 +256,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: n
     !! order of polynomial
     REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
-    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+    REAL(DFP), INTENT(IN) :: SCALE(0:, 1:)
   END SUBROUTINE Orthopol_Initiate1
 END INTERFACE
 
@@ -345,7 +345,7 @@ END INTERFACE
 ! summary: Evaluate for single variable function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_EvalScalar(obj, x) RESULT(ans)
+  MODULE RECURSIVE PURE FUNCTION Orthopol_EvalScalar(obj, x) RESULT(ans)
     CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x
     REAL(DFP) :: ans
@@ -425,7 +425,7 @@ END INTERFACE
 ! summary: Evaluate gradient for 1d argument function
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION Orthopol_EvalGradientScalar(obj, x) &
+  MODULE RECURSIVE PURE FUNCTION Orthopol_EvalGradientScalar(obj, x) &
     & RESULT(ans)
     CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x
@@ -449,7 +449,7 @@ INTERFACE
     !! scalar value of argument
     REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+    REAL(DFP), INTENT(IN) :: SCALE(0:, 1:)
     !! scale coefficient
     REAL(DFP) :: ans(obj%n + 1)
     !! n+1 values of basis (n=0,1,2,..n)
@@ -483,7 +483,7 @@ INTERFACE
     !! several values of x
     REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+    REAL(DFP), INTENT(IN) :: SCALE(0:, 1:)
     !! scale coefficient
     REAL(DFP) :: ans(SIZE(x), obj%n + 1)
     !! ans(i, :), denotes the n+1 values of basis (n=0,1,...,n) at x(i).
@@ -508,7 +508,7 @@ INTERFACE
     !! scalar value of argument
     REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+    REAL(DFP), INTENT(IN) :: SCALE(0:, 1:)
     !! scale coefficient
     INTEGER(I4B), INTENT(IN) :: n
     !! order of polynomial
@@ -533,7 +533,7 @@ INTERFACE
     !! several values of x
     REAL(DFP), INTENT(IN) :: coeff(0:, 1:)
     !! recurrence coefficient
-    REAL(DFP), INTENT(IN) :: scale(0:, 1:)
+    REAL(DFP), INTENT(IN) :: SCALE(0:, 1:)
     !! scale coefficient
     INTEGER(I4B), INTENT(IN) :: n
     REAL(DFP) :: ans(SIZE(x), n + 1)
@@ -616,7 +616,7 @@ ABSTRACT INTERFACE
     CLASS(AbstractOrthopol1D_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: n
     REAL(DFP), INTENT(OUT) :: coeff(0:, 1:)
-    REAL(DFP), INTENT(OUT) :: scale(0:, 1:)
+    REAL(DFP), INTENT(OUT) :: SCALE(0:, 1:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isMonic
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOrthonormal
   END SUBROUTINE Orthopol_GetCoeffScale

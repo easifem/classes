@@ -25,7 +25,7 @@ USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "STScalarMeshField_Class"
+CHARACTER(*), PARAMETER :: modName = "STScalarMeshField_Class"
 
 !----------------------------------------------------------------------------
 !                                                     STScalarMeshField_Class
@@ -66,23 +66,23 @@ PUBLIC :: STScalarMeshFieldPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setSTScalarMeshFieldParam(param, name, &
+  MODULE SUBROUTINE SetSTScalarMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
-  !! Nodal, Quadrature
+    !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: nns
-  !! Number of node in space
+    !! Number of node in space
     INTEGER(I4B), INTENT(IN) :: nnt
-  !! Number of node in time
-  END SUBROUTINE setSTScalarMeshFieldParam
+    !! Number of node in time
+  END SUBROUTINE SetSTScalarMeshFieldParam
 END INTERFACE
 
-PUBLIC :: setSTScalarMeshFieldParam
+PUBLIC :: SetSTScalarMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods

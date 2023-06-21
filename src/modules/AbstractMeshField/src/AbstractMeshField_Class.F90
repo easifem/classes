@@ -66,7 +66,7 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Time
   !! SpaceTime
   !! Constant
-  INTEGER(I4B) :: s(MAX_RANK_FEVARIABLE) = 0
+  INTEGER(I4B) :: s(MAX_RANK_FEVARIABLE) = 1
   !! shape of the data
   REAL(DFP), ALLOCATABLE :: val(:, :)
   !! values, val( :, iel ) corresponds to element number iel

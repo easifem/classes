@@ -4,29 +4,9 @@
 #
 
 import os
-import sys
+
+# import sys
 import platform
-
-
-def installRequest(LIB):
-    while True:
-        choice = input(f"Do you want to Install {LIB} 'yes' or 'no' [Y/n]: ").lower()
-        if choice in ["Y", "y", "ye", "yes"]:
-            return True
-        else:
-            return False
-
-
-def getOption(key, opt):
-    while True:
-        separator = ", "
-        return (
-            input(
-                f"select option for {key}, possible options are : {separator.join(opt)} : "
-            )
-            + " "
-        )
-
 
 print("Detecting OS type...")
 _os = platform.system()
@@ -37,62 +17,15 @@ if _os == "Windows":
     # print("Installation DONE!!")
 else:
     cmake_def = ""
-    user_query = False
-    if user_query:
-        opt = getOption(
-            "CMAKE_GENERATOR", ["Unix Makefiles", "Ninja", "Ninja Multi-Config"]
-        )
-        if opt == " ":
-            opt = '"Ninja"'
-            # opt = '"Ninja"'
-        cmake_def += " -G " + opt
-
-        opt = getOption("USE_GMSH_SDK", ["ON", "OFF"])
-        if opt == " ":
-            opt = "ON"
-        cmake_def += " -DUSE_GMSH_SDK=" + opt
-
-        opt = getOption("USE_ARPACK", ["ON", "OFF"])
-        if opt == " ":
-            opt = "ON"
-        cmake_def += " -D USE_ARPACK=" + opt
-
-        opt = getOption("USE_LIS", ["ON", "OFF"])
-        if opt == " ":
-            opt = "ON"
-        cmake_def += " -D USE_LIS=" + opt
-
-        opt = getOption("CMAKE_BUILD_TYPE", ["Release", "Debug"])
-        if opt == " ":
-            opt = "Release"
-        cmake_def += " -DCMAKE_BUILD_TYPE=" + opt
-
-        opt = getOption("BUILD_SHARED_LIBS", ["ON", "OFF"])
-        if opt == " ":
-            opt = "ON"
-        cmake_def += " -DBUILD_SHARED_LIBS=" + opt
-
-        opt = getOption("CMAKE_INSTALL_PREFIX", ["${PREFIX}"])
-        if opt == " ":
-            opt = "${EASIFEM_CLASSES}"
-        cmake_def += " -DCMAKE_INSTALL_PREFIX=" + opt
-    else:
-        cmake_def += '-G "Ninja"'
-        cmake_def += " -D USE_GMSH_SDK:BOOL=OFF"
-        cmake_def += " -D USE_OpenMP:BOOL=ON"
-        cmake_def += " -D USE_LAPACK95:BOOL=ON"
-        cmake_def += " -D USE_BLAS95:BOOL=ON"
-        cmake_def += " -D CMAKE_BUILD_TYPE:STRING=Release"
-        cmake_def += " -D BUILD_SHARED_LIBS:BOOL=ON"
-        cmake_def += " -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}"
-        cmake_def += " -D USE_ARPACK:BOOL=ON"
-        cmake_def += " -D USE_LIS:BOOL=ON"
-
-    cmake_def += " -D USE_Int32=ON -D USE_Real64=ON"
-
+    cmake_def += '-G "Ninja"'
+    cmake_def += " -D USE_GMSH_SDK:BOOL=OFF"
+    cmake_def += " -D CMAKE_BUILD_TYPE:STRING=Release"
+    cmake_def += " -D BUILD_SHARED_LIBS:BOOL=ON"
+    cmake_def += " -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}"
+    print("CMAKE DEF : ", cmake_def)
     _build0 = os.path.join(os.environ["HOME"], "temp")
     build_dir = os.path.join(
-        os.environ.get("EASIFEM_BUILD_DIR", _build0), "classes", "build"
+        os.environ.get("EASIFEM_BUILD_DIR", _build0), "easifem", "classes", "build"
     )
     # build_dir = os.environ["HOME"] + "/temp/easifem-base/build"
     os.makedirs(build_dir, exist_ok=True)

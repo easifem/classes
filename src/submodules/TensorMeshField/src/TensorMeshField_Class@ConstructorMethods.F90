@@ -24,18 +24,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setTensorMeshFieldParam
-  !!
-CALL setAbstractMeshFieldParam( &
-  & param=param, &
-  & prefix="TensorMeshField", &
-  & name=name, &
-  & fieldType=fieldType, &
-  & varType=varType, &
-  & engine=engine, &
-  & defineOn=defineOn, &
-  & rank=Matrix, &
-  & s=[dim1, dim2, nns])
-  !!
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL setAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix=myPrefix, &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=constant, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Matrix, &
+    & s=[dim1, dim2])
+ELSE
+  CALL setAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix=myPrefix, &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Matrix, &
+    & s=[dim1, dim2, nns])
+END IF
 END PROCEDURE setTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
@@ -45,7 +56,7 @@ END PROCEDURE setTensorMeshFieldParam
 MODULE PROCEDURE aField_checkEssentialParam
 CALL AbstractFieldCheckEssentialParam( &
   & obj=obj, &
-  & prefix="TensorMeshField", &
+  & prefix=myPrefix, &
   & param=param)
 END PROCEDURE aField_checkEssentialParam
 
@@ -56,7 +67,7 @@ END PROCEDURE aField_checkEssentialParam
 MODULE PROCEDURE aField_Initiate1
 CALL AbstractMeshFieldInitiate( &
   & obj=obj, &
-  & prefix="TensorMeshField", &
+  & prefix=myPrefix, &
   & param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 

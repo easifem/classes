@@ -33,19 +33,13 @@
 
 @PACKAGE_INIT@
 
-LIST(
-  APPEND
-  ExternalLibs
-  easifemBase
-)
-
-
-FOREACH(LIB ${ExternalLibs})
-  FIND_PACKAGE(${LIB} REQUIRED)
-ENDFOREACH()
+FIND_PACKAGE(easifemBase REQUIRED)
 
 set_and_check(
-  "@project_name@_include_dir" "@package_install_includedir@")
+  "@PROJECT_NAME@_INCLUDE_DIR" "@PACKAGE_INSTALL_INCLUDEDIR@")
+
+# set_and_check(
+#   "@project_name@_include_dir" "@package_install_includedir@")
 
 include(
   "${CMAKE_CURRENT_LIST_DIR}/@TARGETS_EXPORT_NAME@.cmake")

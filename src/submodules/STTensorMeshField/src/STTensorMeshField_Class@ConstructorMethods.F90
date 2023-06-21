@@ -24,18 +24,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE setSTTensorMeshFieldParam
-  !!
-CALL setAbstractMeshFieldParam( &
-  & param=param, &
-  & prefix="STTensorMeshField", &
-  & name=name, &
-  & fieldType=fieldType, &
-  & varType=varType, &
-  & engine=engine, &
-  & defineOn=defineOn, &
-  & rank=Matrix, &
-  & s=[dim1, dim2, nns, nnt])
-  !!
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  CALL SetAbstractMeshFieldParam( &
+      & param=param, &
+      & prefix="STTensorMeshField", &
+      & name=name, &
+      & fieldType=fieldType, &
+      & varType=constant, &
+      & engine=engine, &
+      & defineOn=defineOn, &
+      & rank=Matrix, &
+      & s=[dim1, dim2])
+ELSE
+  CALL SetAbstractMeshFieldParam( &
+    & param=param, &
+    & prefix="STTensorMeshField", &
+    & name=name, &
+    & fieldType=fieldType, &
+    & varType=varType, &
+    & engine=engine, &
+    & defineOn=defineOn, &
+    & rank=Matrix, &
+    & s=[dim1, dim2, nns, nnt])
+END IF
 END PROCEDURE setSTTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
