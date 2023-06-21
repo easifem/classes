@@ -25,15 +25,14 @@ CONTAINS
 
 MODULE PROCEDURE setAbstractMeshFieldParam
 INTEGER(I4B) :: ierr
-!!
-ierr = param%set(key=TRIM(prefix)//"/name", value=name)
-ierr = param%set(key=TRIM(prefix)//"/fieldType", value=fieldType)
-ierr = param%set(key=TRIM(prefix)//"/engine", value=engine)
-ierr = param%set(key=TRIM(prefix)//"/defineOn", value=defineOn)
-ierr = param%set(key=TRIM(prefix)//"/varType", value=varType)
-ierr = param%set(key=TRIM(prefix)//"/rank", value=rank)
-ierr = param%set(key=TRIM(prefix)//"/s", value=s)
-!!
+ierr = param%set(key=TRIM(prefix)//"/name", VALUE=name)
+ierr = param%set(key=TRIM(prefix)//"/fieldType", VALUE=fieldType)
+ierr = param%set(key=TRIM(prefix)//"/engine", VALUE=engine)
+ierr = param%set(key=TRIM(prefix)//"/defineOn", VALUE=defineOn)
+ierr = param%set(key=TRIM(prefix)//"/varType", VALUE=varType)
+ierr = param%set(key=TRIM(prefix)//"/rank", VALUE=rank)
+ierr = param%set(key=TRIM(prefix)//"/s", VALUE=s)
+ierr = param%set(key=TRIM(prefix)//"/totalShape", VALUE=SIZE(s))
 END PROCEDURE setAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
@@ -41,7 +40,7 @@ END PROCEDURE setAbstractMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_checkEssentialParam
-CHARACTER(LEN=*), PARAMETER :: myName = &
+CHARACTER(*), PARAMETER :: myName = &
   & "aField_checkEssentialParam"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method should be implemented by the children subclass')
@@ -52,52 +51,58 @@ END PROCEDURE aField_checkEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldCheckEssentialParam
-  !!
-CHARACTER(LEN=*), PARAMETER :: myName = &
+!
+CHARACTER(*), PARAMETER :: myName = &
   & "AbstractFieldCheckEssentialParam"
-  !!
-  !! fieldType
-  !!
+!
+! fieldType
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/fieldType")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'fieldType should be present in param')
-  !!
-  !! name
-  !!
+!
+! name
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/name")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'names should be present in param')
-  !!
-  !! engine
-  !!
+!
+! engine
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/engine")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'engine should be present in param')
-  !!
-  !! s
-  !!
+!
+! s
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/s")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 's should be present in param')
-  !!
-  !! defineOn
-  !!
+!
+! totalShape
+!
+IF (.NOT. param%isPresent(key=TRIM(prefix)//"/totalShape")) &
+  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'totalShape should be present in param')
+!
+! defineOn
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/defineOn")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'defineOn should be present in param')
-  !!
-  !! varType
-  !!
+!
+! varType
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/varType")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'varType should be present in param')
-  !!
-  !! rank
-  !!
+!
+! rank
+!
 IF (.NOT. param%isPresent(key=TRIM(prefix)//"/rank")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'rank should be present in param')
-  !!
+!
 END PROCEDURE AbstractFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -123,7 +128,7 @@ END PROCEDURE aField_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-CHARACTER(LEN=*), PARAMETER :: myName = "aField_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "aField_Initiate1"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method should be implemented by the children subclass')
 END PROCEDURE aField_Initiate1
@@ -134,146 +139,152 @@ END PROCEDURE aField_Initiate1
 
 MODULE PROCEDURE AbstractMeshFieldInitiate
 TYPE(String) :: dsetname
-INTEGER(I4B) :: ierr, nrow
-CHARACTER(LEN=:), ALLOCATABLE :: char_var
-CHARACTER(LEN=*), PARAMETER :: myName = "AbstractMeshFieldInitiate"
-  !!
-  !! check
-  !!
+INTEGER(I4B) :: ierr, nrow, totalShape
+CHARACTER(:), ALLOCATABLE :: char_var
+CHARACTER(*), PARAMETER :: myName = "AbstractMeshFieldInitiate"
+!
+! check
+!
 IF (obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'MeshField object is already initiated, deallocate first')
 END IF
-  !!
-  !! check
-  !!
+!
+! check
+!
 CALL obj%checkEssentialParam(param)
-  !!
+!
 obj%isInitiated = .TRUE.
-  !!
-  !! fieldType
-  !!
+!
+! fieldType
+!
 dsetname = TRIM(prefix)//"/fieldType"
 IF (param%isPresent(key=dsetname%chars())) THEN
-  ierr = param%get(key=dsetname%chars(), value=obj%fieldType)
+  ierr = param%get(key=dsetname%chars(), VALUE=obj%fieldType)
 ELSE
   obj%fieldType = FIELD_TYPE_NORMAL
 END IF
-  !!
-  !! name
-  !!
+!
+! name
+!
 dsetname = TRIM(prefix)//"/name"
 ALLOCATE (CHARACTER(LEN= &
   & param%DataSizeInBytes(key=dsetname%chars())) :: char_var)
-ierr = param%get(key=dsetname%chars(), value=char_var)
+ierr = param%get(key=dsetname%chars(), VALUE=char_var)
 obj%name = char_var; DEALLOCATE (char_var)
-  !!
-  !! engine
-  !!
+!
+! engine
+!
 dsetname = TRIM(prefix)//"/engine"
 ALLOCATE (CHARACTER(LEN= &
   & param%DataSizeInBytes(key=dsetname%chars())) :: char_var)
-ierr = param%get(key=dsetname%chars(), value=char_var)
+ierr = param%get(key=dsetname%chars(), VALUE=char_var)
 obj%engine = char_var; DEALLOCATE (char_var)
-  !!
-  !! defineOn
-  !!
+!
+! defineOn
+!
 dsetname = TRIM(prefix)//"/defineOn"
-ierr = param%get(key=dsetname%chars(), value=obj%defineOn)
-  !!
-  !! varType
-  !!
+ierr = param%get(key=dsetname%chars(), VALUE=obj%defineOn)
+!
+! varType
+!
 dsetname = TRIM(prefix)//"/varType"
-ierr = param%get(key=dsetname%chars(), value=obj%varType)
-  !!
-  !! rank
-  !!
+ierr = param%get(key=dsetname%chars(), VALUE=obj%varType)
+!
+! rank
+!
 dsetname = TRIM(prefix)//"/rank"
-ierr = param%get(key=dsetname%chars(), value=obj%rank)
-  !!
-  !! nrow
-  !!
+ierr = param%get(key=dsetname%chars(), VALUE=obj%rank)
+!
+! nrow
+!
 SELECT CASE (obj%rank)
-  !!
-  !! Scalar
-  !!
+  !
+  ! Scalar
+  !
 CASE (Scalar)
   SELECT CASE (obj%varType)
   CASE (Constant)
-      !! one dimension, single entry
+    ! one dimension, single entry
     nrow = 1
   CASE (Space)
-      !! one dimension, multiple entries in space
+    ! one dimension, multiple entries in space
     nrow = 1
   CASE (Time)
-      !! one dimension, multiple entries in time
+    ! one dimension, multiple entries in time
     nrow = 1
   CASE (SpaceTime)
-      !! two dimensions, multiple entries in space-time
+    ! two dimensions, multiple entries in space-time
     nrow = 2
   END SELECT
-  !!
-  !! Vector
-  !!
+  !
+  ! Vector
+  !
 CASE (Vector)
   SELECT CASE (obj%varType)
   CASE (Constant)
-      !! one dimension, only vector components
+    ! one dimension, only vector components
     nrow = 1
   CASE (Space)
-      !! two dimension, vector components and space values
+    ! two dimension, vector components and space values
     nrow = 2
   CASE (Time)
-      !! two dimension, vector components and time values
+    ! two dimension, vector components and time values
     nrow = 2
   CASE (SpaceTime)
-      !! two dimension, vector components, space and time values
+    ! two dimension, vector components, space and time values
     nrow = 3
   END SELECT
-  !!
-  !! Matrix
-  !!
+  !
+  ! Matrix
+  !
 CASE (Matrix)
   SELECT CASE (obj%varType)
   CASE (Constant)
-      !! two dimensions, matrix components
+    ! two dimensions, matrix components
     nrow = 2
   CASE (Space)
-      !! three dimensions, matrix components and space values
+    ! three dimensions, matrix components and space values
     nrow = 3
   CASE (Time)
-      !! three dimensions, matrix components and time values
+    ! three dimensions, matrix components and time values
     nrow = 3
   CASE (SpaceTime)
-      !! four dimensions, matrix components, space and time values
+    ! four dimensions, matrix components, space and time values
     nrow = 4
   END SELECT
-  !!
-  !!
-  !!
+  !
+  !
+  !
 END SELECT
-  !!
-  !! s
-  !!
+!
+! s
+!
+dsetname = TRIM(prefix)//"/totalShape"
+ierr = param%get(key=dsetname%chars(), VALUE=totalShape)
+IF (totalShape .GT. SIZE(obj%s)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'The size of s in param is more than the size of s in obj')
+END IF
 dsetname = TRIM(prefix)//"/s"
-ierr = param%get(key=dsetname%chars(), value=obj%s(1:nrow))
-  !!
-  !! tSize
-  !!
+ierr = param%get(key=dsetname%chars(), VALUE=obj%s(1:totalShape))
+!
+! tSize
+!
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   obj%tSize = 1
 ELSE
   obj%tSize = mesh%getTotalElements()
 END IF
-  !!
-  !! val
-  !!
+!
+! val
+!
 CALL Reallocate(obj%val, PRODUCT(obj%s(1:nrow)), obj%tSize)
-  !!
-  !! mesh
-  !!
+!
+! mesh
+!
 obj%mesh => mesh
-  !!
+!
 END PROCEDURE AbstractMeshFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -313,11 +324,10 @@ END PROCEDURE aField_getPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Size
-  !!
 IF (PRESENT(dim)) THEN
   ans = obj%s(dim)
 ELSE
-    !!
+  !
   SELECT CASE (obj%rank)
   CASE (Scalar)
     ans = 1
@@ -326,9 +336,8 @@ ELSE
   CASE (Matrix)
     ans = obj%s(1) * obj%s(2)
   END SELECT
-    !!
+  !
 END IF
-  !!
 END PROCEDURE aField_Size
 
 !----------------------------------------------------------------------------
@@ -337,9 +346,9 @@ END PROCEDURE aField_Size
 
 MODULE PROCEDURE aField_Shape
 SELECT CASE (obj%rank)
-  !!
-  !! Scalar
-  !!
+  !
+  ! Scalar
+  !
 CASE (Scalar)
   SELECT CASE (obj%vartype)
   CASE (Constant)
@@ -349,9 +358,9 @@ CASE (Scalar)
   CASE (SpaceTime)
     ans = obj%s(1:2)
   END SELECT
-  !!
-  !! Vector
-  !!
+  !
+  ! Vector
+  !
 CASE (Vector)
   SELECT CASE (obj%vartype)
   CASE (Constant)
@@ -361,9 +370,9 @@ CASE (Vector)
   CASE (SpaceTime)
     ans = obj%s(1:3)
   END SELECT
-  !!
-  !! Matrix
-  !!
+  !
+  ! Matrix
+  !
 CASE (Matrix)
   SELECT CASE (obj%vartype)
   CASE (Constant)
@@ -374,9 +383,6 @@ CASE (Matrix)
     ans = obj%s(1:4)
   END SELECT
 END SELECT
-  !!
-  !!
-  !!
 END PROCEDURE aField_Shape
 
 !----------------------------------------------------------------------------

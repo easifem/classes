@@ -25,7 +25,7 @@ USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "STTensorMeshField_Class"
+CHARACTER(*), PARAMETER :: modName = "STTensorMeshField_Class"
 
 !----------------------------------------------------------------------------
 !                                                     STTensorMeshField_Class
@@ -66,24 +66,24 @@ PUBLIC :: STTensorMeshFieldPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setSTTensorMeshFieldParam(param, name, &
+  MODULE SUBROUTINE SetSTTensorMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
-  !! Nodal, Quadrature
+    !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: dim1
     INTEGER(I4B), INTENT(IN) :: dim2
     INTEGER(I4B), INTENT(IN) :: nns
     INTEGER(I4B), INTENT(IN) :: nnt
-  !! Number of node in space
-  END SUBROUTINE setSTTensorMeshFieldParam
+    !! Number of node in space
+  END SUBROUTINE SetSTTensorMeshFieldParam
 END INTERFACE
 
-PUBLIC :: setSTTensorMeshFieldParam
+PUBLIC :: SetSTTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods

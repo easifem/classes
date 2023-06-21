@@ -27,6 +27,7 @@ USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE Field
 USE AbstractLinSolver_Class
+USE AbstractLinSolverParam
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE

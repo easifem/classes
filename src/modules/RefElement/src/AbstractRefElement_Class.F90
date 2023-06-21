@@ -25,7 +25,7 @@ USE String_Class, ONLY: String
 USE Topology_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "AbstractRefElement_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractRefElement_Class"
 
 !----------------------------------------------------------------------------
 !                                                       AbstractRefElement_
@@ -85,7 +85,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => refelem_Copy
   !! Initiate an instance by copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => refelem_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => refelem_Deallocate
   !! Deallocate the data
   PROCEDURE, PUBLIC, PASS(obj) :: Display => refelem_Display
   !! Display the contents
@@ -254,7 +254,7 @@ INTERFACE
   END SUBROUTINE refelem_Deallocate
 END INTERFACE
 
-INTERFACE Deallocate
+INTERFACE DEALLOCATE
   MODULE PROCEDURE refelem_Deallocate
 END INTERFACE
 
@@ -269,7 +269,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE refelem_Display(obj, msg, unitno, notFull)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
     !! if present and true then only a summary is printed
@@ -412,7 +412,7 @@ INTERFACE
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    CHARACTER(LEN=*), INTENT(IN) :: layout
+    CHARACTER(*), INTENT(IN) :: layout
     REAL(DFP), ALLOCATABLE :: ans(:, :)
   END FUNCTION refelem_GetInterpolationPoint
 END INTERFACE
@@ -431,7 +431,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityCounts(4)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: xidimension
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: name
-    CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: nameStr
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: nameStr
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: pointTopology(:)
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: edgeTopology(:)

@@ -24,8 +24,9 @@ USE AbstractLinSolver_Class
 USE LinSolver_Class
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
-PRIVATE
-CHARACTER(*), PARAMETER :: modName = "LinSolverFactory"
+CHARACTER(*), PRIVATE, PARAMETER :: modName = "LinSolverFactory"
+
+PRIVATE :: e
 
 !----------------------------------------------------------------------------
 !                                                         LinSolverFactory

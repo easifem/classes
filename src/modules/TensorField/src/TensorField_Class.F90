@@ -28,8 +28,8 @@ USE FPL, ONLY: ParameterList_
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "TensorField_Class"
-TYPE( ExceptionHandler_ ) :: e
+CHARACTER(LEN=*), PARAMETER :: modName = "TensorField_Class"
+TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
 !                                                              TensorField_
@@ -41,20 +41,20 @@ TYPE( ExceptionHandler_ ) :: e
 !
 !{!pages/TensorField.md}
 
-TYPE, EXTENDS( AbstractNodeField_ ) :: TensorField_
-  INTEGER( I4B ) :: m = 0_I4B
-  INTEGER( I4B ) :: n = 0_I4B
+TYPE, EXTENDS(AbstractNodeField_) :: TensorField_
+  INTEGER(I4B) :: m = 0_I4B
+  INTEGER(I4B) :: n = 0_I4B
 END TYPE TensorField_
 
 PUBLIC :: TensorField_
-TYPE( TensorField_ ), PARAMETER, PUBLIC :: Type = TensorField_()
+TYPE(TensorField_), PARAMETER, PUBLIC :: TYPE = TensorField_()
 
 !----------------------------------------------------------------------------
 !                                                       TensorFieldPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: TensorFieldPointer_
-  CLASS( TensorField_ ), POINTER :: ptr => NULL()
+  CLASS(TensorField_), POINTER :: ptr => NULL()
 END TYPE TensorFieldPointer_
 
 PUBLIC :: TensorFieldPointer_

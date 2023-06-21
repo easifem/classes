@@ -26,7 +26,7 @@ USE BaseMethod
 USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "FPL_Method"
+CHARACTER(*), PARAMETER :: modName = "FPL_Method"
 !! TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------
@@ -59,37 +59,37 @@ CONTAINS
 !                                                                 fpl_Set1
 !----------------------------------------------------------------------------
 
-SUBROUTINE fpl_Set1(obj, key, value)
+SUBROUTINE fpl_Set1(obj, key, VALUE)
   ! Define dummy variables
   TYPE(ParameterList_), INTENT(INOUT) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: key
-  TYPE(DOF_), INTENT(IN) :: value
+  CHARACTER(*), INTENT(IN) :: key
+  TYPE(DOF_), INTENT(IN) :: VALUE
   ! Internal variable
   INTEGER(I4B) :: ierr
-  ierr = obj%Set(key=TRIM(key)//"/map", value=value%map)
-  ierr = obj%Set(key=TRIM(key)//"/valmap", value=value%valmap)
-  ierr = obj%Set(key=TRIM(key)//"/storageFMT", value=value%storageFMT)
+  ierr = obj%Set(key=TRIM(key)//"/map", VALUE=VALUE%map)
+  ierr = obj%Set(key=TRIM(key)//"/valmap", VALUE=VALUE%valmap)
+  ierr = obj%Set(key=TRIM(key)//"/storageFMT", VALUE=VALUE%storageFMT)
 END SUBROUTINE fpl_Set1
 
 !----------------------------------------------------------------------------
 !                                                                 fpl_get
 !----------------------------------------------------------------------------
 
-SUBROUTINE fpl_getValue1(obj, key, value)
+SUBROUTINE fpl_getValue1(obj, key, VALUE)
   ! Define dummy variables
   TYPE(ParameterList_), INTENT(IN) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: key
-  TYPE(DOF_), INTENT(INOUT) :: value
+  CHARACTER(*), INTENT(IN) :: key
+  TYPE(DOF_), INTENT(INOUT) :: VALUE
   ! Internal variable
   INTEGER(I4B) :: ierr
   INTEGER(I4B), ALLOCATABLE :: s(:)
   ierr = obj%getShape(key=TRIM(key)//"/map", shape=s)
-  CALL Reallocate(value%map, s(1), s(2))
+  CALL Reallocate(VALUE%map, s(1), s(2))
   ierr = obj%getShape(key=TRIM(key)//"/valmap", shape=s)
-  CALL Reallocate(value%valmap, s(1))
-  ierr = obj%get(key=TRIM(key)//"/map", value=value%map)
-  ierr = obj%get(key=TRIM(key)//"/valmap", value=value%valmap)
-  ierr = obj%get(key=TRIM(key)//"/storageFMT", value=value%storageFMT)
+  CALL Reallocate(VALUE%valmap, s(1))
+  ierr = obj%get(key=TRIM(key)//"/map", VALUE=VALUE%map)
+  ierr = obj%get(key=TRIM(key)//"/valmap", VALUE=VALUE%valmap)
+  ierr = obj%get(key=TRIM(key)//"/storageFMT", VALUE=VALUE%storageFMT)
   DEALLOCATE (s)
 END SUBROUTINE fpl_getValue1
 

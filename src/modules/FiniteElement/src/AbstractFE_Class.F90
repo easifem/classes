@@ -20,25 +20,13 @@ USE GlobalData
 USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
-!!
-CHARACTER(LEN=*), PARAMETER :: modName = "AbstractFE_Class"
-!!
-!! @DOFType
-!!
+!
+CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
 INTEGER(I4B), PARAMETER, PUBLIC :: FE_DOF_POINT_EVAL = 1_I4B
-!!
-!! @TransformType
-!!
 INTEGER(I4B), PARAMETER, PUBLIC :: FE_TRANSFORM_IDENTITY = 1_I4B
-!!
-!! @FEType
-!!
 INTEGER(I4B), PARAMETER, PUBLIC :: H1_LAGRANGE = LagrangePolynomial
 INTEGER(I4B), PARAMETER, PUBLIC :: H1_SERENDIPITY = SerendipityPolynomial
 INTEGER(I4B), PARAMETER, PUBLIC :: H1_HEIRARCHICAL = HeirarchicalPolynomial
-!!
-!! @ipType
-!!
 INTEGER(I4B), PARAMETER, PUBLIC :: IP_EQUIDISTANCE = EquidistanceLIP
 INTEGER(I4B), PARAMETER, PUBLIC :: IP_GAUSS_LOBATTO = GaussLobattoLIP
 INTEGER(I4B), PARAMETER, PUBLIC :: IP_GAUSS_LEGENDRE = GaussLegendreLIP
@@ -77,7 +65,7 @@ CONTAINS
   !!
   PROCEDURE(fe_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => fe_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => fe_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => fe_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => fe_SetParam
 END TYPE AbstractFE_
 !!
@@ -138,7 +126,7 @@ PUBLIC :: AbstractFEDeallocate
 INTERFACE
   MODULE SUBROUTINE fe_Display(obj, msg, unitno)
     CLASS(AbstractFE_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE fe_Display
 END INTERFACE
