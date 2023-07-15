@@ -82,7 +82,7 @@ INTERFACE
     !! ith lagrange polynomial
     REAL(DFP), INTENT(IN) :: x(:)
     !! points, order = size(x) - 1
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
     !! variable varname
   END SUBROUTINE Initiate1
 END INTERFACE
@@ -103,7 +103,7 @@ INTERFACE
     !! ith lagrange polynomial
     REAL(DFP), INTENT(IN) :: v(:, :)
     !! Vandermonde matrix
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
     !! variable varname
   END SUBROUTINE Initiate2
 END INTERFACE
@@ -125,7 +125,7 @@ INTERFACE
     !! LU decomposition of Vandermonde matrix
     INTEGER(I4B), INTENT(IN) :: ipiv(:)
     !! inverse pivoting mapping, compes from LU decomposition
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
     !! variable varname
   END SUBROUTINE Initiate3
 END INTERFACE
@@ -144,7 +144,7 @@ INTERFACE
     !! ith lagrange polynomial
     REAL(DFP), INTENT(IN) :: x(:)
     !! points, order = size(x) - 1
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
     !! variable varname
   END SUBROUTINE Initiate4
 END INTERFACE
@@ -170,7 +170,7 @@ INTERFACE
   !! points, order = size(x) - 1
     INTEGER(I4B), INTENT(IN) :: order
   !! order
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
   !! variable varname
     TYPE(Lagrange1D_) :: ans
   END FUNCTION func_Lagrange1D1
@@ -205,7 +205,7 @@ INTERFACE
   !! Vandermonde matrix
     INTEGER(I4B), INTENT(IN) :: order
   !! order
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
   !! variable varname
     TYPE(Lagrange1D_) :: ans
   END FUNCTION func_Lagrange1D2
@@ -242,7 +242,7 @@ INTERFACE
   !! order
     INTEGER(I4B), INTENT(IN) :: ipiv(:)
   !! inverse pivoting mapping, compes from LU decomposition
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
   !! variable varname
     TYPE(Lagrange1D_) :: ans
   END FUNCTION func_Lagrange1D3
@@ -266,7 +266,7 @@ INTERFACE
     !! points, order = size(x) - 1
     INTEGER(I4B), INTENT(IN) :: order
     !! order
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
     !! variable varname
     TYPE(Lagrange1D_) :: ans(SIZE(x))
   END FUNCTION func_Lagrange1D4
@@ -297,7 +297,7 @@ INTERFACE
   !! points, order = size(x) - 1
     INTEGER(I4B), INTENT(IN) :: order
   !! order
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
   !! variable varname
     CLASS(Lagrange1D_), POINTER :: ans
   END FUNCTION func_Lagrange1D_P1
@@ -333,7 +333,7 @@ INTERFACE
   !! Vandermonde matrix
     INTEGER(I4B), INTENT(IN) :: order
   !! order
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
   !! variable varname
     CLASS(Lagrange1D_), POINTER :: ans
   END FUNCTION func_Lagrange1D_P2
@@ -370,7 +370,7 @@ INTERFACE
   !! order
     INTEGER(I4B), INTENT(IN) :: ipiv(:)
   !! inverse pivoting mapping, compes from LU decomposition
-    CHARACTER(LEN=*), INTENT(IN) :: varname
+    CHARACTER(*), INTENT(IN) :: varname
   !! variable varname
     CLASS(Lagrange1D_), POINTER :: ans
   END FUNCTION func_Lagrange1D_P3

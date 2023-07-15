@@ -18,7 +18,7 @@
 MODULE PLPlot_Class
 USE GlobalData
 USE BaseType
-USE BaseMethod
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 USE AbstractPlot_Class
@@ -608,7 +608,7 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE plot_Hist(obj, d, N, db, relWidth, fillColor, fillPattern, &
-                              & lineColor, lineWidth)
+                                            & lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
   !!
     REAL(DFP), INTENT(IN) :: d(:)

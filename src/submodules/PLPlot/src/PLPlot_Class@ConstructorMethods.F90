@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Initiate
-  obj%plotEngine=PLOT_ENGINE_PLPLOT
+obj%plotEngine = PLOT_ENGINE_PLPLOT
 END PROCEDURE plot_Initiate
 
 !----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ END PROCEDURE plot_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Deallocate
-  obj%plotEngine=PLOT_ENGINE_PLPLOT
+obj%plotEngine = PLOT_ENGINE_PLPLOT
 END PROCEDURE plot_Deallocate
 
 !----------------------------------------------------------------------------
@@ -41,7 +41,7 @@ END PROCEDURE plot_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Display
-  CALL Display( "# PLOT ENGINE : PLPLOT", msg, unitno)
+CALL Display("# PLOT ENGINE : PLPLOT", msg, unitno)
 END PROCEDURE plot_Display
 
 !----------------------------------------------------------------------------
@@ -49,20 +49,16 @@ END PROCEDURE plot_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetDeviceName
-  TYPE( String ) :: extn
-  !!
-  extn = getExtension( filename )
-  !!
-  SELECT CASE( TRIM(LowerCase(extn%chars( ))) )
-  CASE( "pdf" ); ans = "pdf"
-  CASE( "png" ); ans = "pngqt"
-  CASE( "ps" ); ans = "ps"
-  CASE( "eps" ); ans = "epscairo"
-  CASE( "svg" ); ans = "svg"
-  CASE( "jpeg", "jpg" ); ans = "jpgqt"
-  END SELECT
-  !!
+TYPE(String) :: extn
+extn = getExtension(filename)
+SELECT CASE (TRIM(LowerCase(extn%chars())))
+CASE ("pdf"); ans = "pdf"
+CASE ("png"); ans = "pngqt"
+CASE ("ps"); ans = "ps"
+CASE ("eps"); ans = "epscairo"
+CASE ("svg"); ans = "svg"
+CASE ("jpeg", "jpg"); ans = "jpgqt"
+END SELECT
 END PROCEDURE GetDeviceName
-
 
 END SUBMODULE ConstructorMethods

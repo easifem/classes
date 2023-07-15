@@ -25,59 +25,56 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_scatter3D_1
-!!
-CHARACTER(LEN=*), PARAMETER :: myName = "plot_scatter3D_1"
+!
+CHARACTER(*), PARAMETER :: myName = "plot_scatter3D_1"
 INTEGER(I4B) :: nPoints
 TYPE(VTKFile_) :: aVTKfile
 REAL(DFP), ALLOCATABLE :: temp(:)
-!!
-!! check
-!!
+
+! check
 IF ((SIZE(x) .NE. SIZE(y)) .OR. &
   & (SIZE(y) .NE. SIZE(z)) .OR. &
   & (SIZE(z) .NE. SIZE(x))) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Size of x, y, and z should be the same.')
 END IF
-!!
+
 nPoints = SIZE(x)
-!!
+
 CALL aVTKfile%InitiateVTKFile( &
   & filename=filename, &
   & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
+  & DataFormat=VTK_ASCII, &
   & DataStructureType=VTK_PolyData)
-!!
+
 CALL aVTKfile%WritePiece(nPoints=nPoints, &
   & nVerts=0_I4B, &
   & nLines=0_I4B, &
   & nStrips=0_I4B, &
   & nPolys=0_I4B)
-!!
-temp = zeros(nPoints, 1.0_DFP)
-CALL aVTKfile%WritePoints(x=x, y=y, z=temp)
-!!
+
+CALL aVTKfile%WritePoints(x=x, y=y, z=z)
+
 CALL aVTKfile%WriteDataArray(&
   & location=String("node"), &
   & action=String("open"))
-!!
+
+temp = zeros(nPoints, 1.0_DFP)
 CALL aVTKfile%WriteDataArray(&
   & name=String(TRIM(label)), &
   & x=temp, &
   & y=temp, &
   & z=z)
-!!
+
 CALL aVTKfile%WriteDataArray(&
   & location=String("node"), &
   & action=String("close"))
-!!
-!!
+
 CALL aVTKfile%WritePiece()
-!!
-CALL aVTKfile%Deallocate()
-!!
+
+CALL aVTKfile%DEALLOCATE()
+
 IF (ALLOCATED(temp)) DEALLOCATE (temp)
-!!
 END PROCEDURE plot_scatter3D_1
 
 !----------------------------------------------------------------------------
@@ -85,66 +82,65 @@ END PROCEDURE plot_scatter3D_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_scatter3D_2
-!!
-CHARACTER(LEN=*), PARAMETER :: myName = "plot_scatter3D_2"
+!
+CHARACTER(*), PARAMETER :: myName = "plot_scatter3D_2"
 INTEGER(I4B) :: nPoints, ii, ndata
 TYPE(VTKFile_) :: aVTKfile
 TYPE(String) :: labelstr
 REAL(DFP), ALLOCATABLE :: temp(:)
-!!
-!! check
-!!
+!
+! check
+!
 IF ((SIZE(x) .NE. SIZE(y)) .OR. &
   & (SIZE(y) .NE. SIZE(z, 1)) .OR. &
   & (SIZE(z, 1) .NE. SIZE(x))) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Size of x, y, and z should be the same.')
 END IF
-!!
+!
 nPoints = SIZE(x)
 ndata = SIZE(z, 2)
-!!
+!
 CALL aVTKfile%InitiateVTKFile( &
   & filename=filename, &
   & mode="NEW", &
   & DataFormat=VTK_BINARY, &
   & DataStructureType=VTK_PolyData)
-!!
+!
 CALL aVTKfile%WritePiece(nPoints=nPoints, &
   & nVerts=0_I4B, &
   & nLines=0_I4B, &
   & nStrips=0_I4B, &
   & nPolys=0_I4B)
-  !!
-temp = zeros(nPoints, 1.0_DFP)
-CALL aVTKfile%WritePoints(x=x, y=y, z=temp)
-  !!
+!
+CALL aVTKfile%WritePoints(x=x, y=y, z=z(:, 1))
+!
 CALL aVTKfile%WriteDataArray(&
   & location=String("node"), &
   & action=String("open"))
-!!
+!
 DO ii = 1, ndata
-  !!
+  !
   labelstr = TRIM(label)//tostring(ii)
-  !!
+  !
   CALL aVTKfile%WriteDataArray(&
     & name=labelstr, &
     & x=temp, &
     & y=temp, &
     & z=z(:, ii))
-  !!
+  !
 END DO
-  !!
+!
 CALL aVTKfile%WriteDataArray(&
   & location=String("node"), &
   & action=String("close"))
-  !!
+!
 CALL aVTKfile%WritePiece()
-!!
-CALL aVTKfile%Deallocate()
-!!
+!
+CALL aVTKfile%DEALLOCATE()
+!
 IF (ALLOCATED(temp)) DEALLOCATE (temp)
-!!
+!
 END PROCEDURE plot_scatter3D_2
 
 !----------------------------------------------------------------------------

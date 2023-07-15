@@ -29,7 +29,7 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 IF (${CMAKE_Fortran_COMPILER_ID} STREQUAL "GNU" OR Fortran_COMPILER_NAME MATCHES "gfortran*")
-  LIST(APPEND FORTRAN_FLAGS "-ffree-form" "-ffree-line-length-none" "-std=f2008" "-fimplicit-none" )
+  LIST(APPEND FORTRAN_FLAGS "-ffree-form" "-ffree-line-length-none" "-std=f2018" "-fimplicit-none" )
   LIST(APPEND FORTRAN_FLAGS_RELEASE "-O3" )
   LIST(APPEND FORTRAN_FLAGS_DEBUG "-fbounds-check" "-g" "-fbacktrace" "-Wextra" "-Wall" "-fprofile-arcs" "-ftest-coverage" "-Wimplicit-interface" )
 
