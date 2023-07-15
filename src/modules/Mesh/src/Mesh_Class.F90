@@ -685,8 +685,9 @@ INTERFACE
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! mesh object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    !! Mesh file
+    !! Mesh file in hdf5 file format
     CHARACTER(*), INTENT(IN) :: group
+    !! location in HDF5 file
   END SUBROUTINE mesh_initiate
 END INTERFACE
 

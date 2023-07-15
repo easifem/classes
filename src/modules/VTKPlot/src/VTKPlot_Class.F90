@@ -18,14 +18,13 @@
 MODULE VTKPlot_Class
 USE GlobalData
 USE BaseType
-USE BaseMethod
 USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 USE AbstractPlot_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "VTKPlot_Class"
+CHARACTER(*), PARAMETER :: modName = "VTKPlot_Class"
 
 !----------------------------------------------------------------------------
 !                                                                     VTKPlot_
@@ -38,7 +37,7 @@ CONTAINS
   !! @ConstructorMethods
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => Plot_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => Plot_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Plot_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => Plot_Display
   !!
   !! @StructuredGridMethods
@@ -125,7 +124,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE Plot_Display(obj, msg, unitno)
     CLASS(VTKPlot_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE Plot_Display
 END INTERFACE
@@ -143,7 +142,7 @@ INTERFACE
     CLASS(VTKPlot_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE vts_plot_x1y1
 END INTERFACE
 
@@ -161,7 +160,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
     REAL(DFP), INTENT(IN) :: z(:)
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE vts_plot_x1y1z1
 END INTERFACE
 
@@ -180,7 +179,7 @@ INTERFACE
     !! x coordinate of mesh grid
     REAL(DFP), INTENT(IN) :: y(:, :)
     !! y coordinate of mesh grid
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE vts_plot_x2y2
 END INTERFACE
 
@@ -201,13 +200,17 @@ INTERFACE
     !! y coord of mesh grid
     REAL(DFP), INTENT(IN) :: z(:, :, :)
     !! z coord of mesh grid
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE vts_plot_x3y3z3
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                 Scatter3D@ScatterMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-07-10
+! summary:  Scatter3D plot using VTK
 
 INTERFACE
   MODULE SUBROUTINE plot_scatter3D_1(obj, x, y, z, label, filename)
@@ -218,8 +221,11 @@ INTERFACE
     !! y coords
     REAL(DFP), INTENT(IN) :: z(:)
     !! z coords
-    CHARACTER(LEN=*), INTENT(IN) :: label
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: label
+    !! label
+    CHARACTER(*), INTENT(IN) :: filename
+    !! vtkfile name, this file will be opened and closed by this
+    !! routine, the extension should be .vtp
   END SUBROUTINE plot_scatter3D_1
 END INTERFACE
 
@@ -237,8 +243,11 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: z(:, :)
     !! each column of z is considered as data
     !! for jth column data label will be label+j
-    CHARACTER(LEN=*), INTENT(IN) :: label
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: label
+    !! data label
+    CHARACTER(*), INTENT(IN) :: filename
+    !! vtkfile name, this file will be opened and closed by this
+    !! routine, the extension should be .vtp
   END SUBROUTINE plot_scatter3D_2
 END INTERFACE
 
@@ -253,9 +262,11 @@ INTERFACE
     !! x coordinates
     REAL(DFP), INTENT(IN) :: y(:)
     !! y coordinates
-    CHARACTER(LEN=*), INTENT(IN) :: label
+    CHARACTER(*), INTENT(IN) :: label
     !! dummy label
-    CHARACTER(LEN=*), INTENT(IN) :: filename
+    CHARACTER(*), INTENT(IN) :: filename
+    !! vtkfile name, this file will be opened and closed by this
+    !! routine, the extension should be .vtp
   END SUBROUTINE plot_scatter3D_3
 END INTERFACE
 
@@ -266,11 +277,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE vts_plot_x1y1f(obj, x, y, f, filename)
+  USE BaseMethod, ONLY: MeshGrid
   CLASS(VTKPlot_), INTENT(IN) :: obj
   REAL(DFP), INTENT(IN) :: x(:)
   REAL(DFP), INTENT(IN) :: y(:)
   PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(LEN=*), INTENT(IN) :: filename
+  CHARACTER(*), INTENT(IN) :: filename
   !!
   REAL(DFP), ALLOCATABLE :: xx(:, :, :), yy(:, :, :), zz(:, :, :)
   !!
@@ -289,7 +301,7 @@ SUBROUTINE vts_plot_x2y2f(obj, x, y, f, filename)
   REAL(DFP), INTENT(IN) :: x(:, :)
   REAL(DFP), INTENT(IN) :: y(:, :)
   PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(LEN=*), INTENT(IN) :: filename
+  CHARACTER(*), INTENT(IN) :: filename
   !!
   !!
   REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), 1) :: xx, yy, zz
@@ -307,15 +319,16 @@ END SUBROUTINE vts_plot_x2y2f
 !----------------------------------------------------------------------------
 
 SUBROUTINE vts_plot_x3y3z3f(obj, x, y, z, f, filename)
+  USE String_Class, ONLY: String
   CLASS(VTKPlot_), INTENT(IN) :: obj
   REAL(DFP), INTENT(IN) :: x(:, :, :)
   REAL(DFP), INTENT(IN) :: y(:, :, :)
   REAL(DFP), INTENT(IN) :: z(:, :, :)
   PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(LEN=*), INTENT(IN) :: filename
+  CHARACTER(*), INTENT(IN) :: filename
   !!
   !!
-  CHARACTER(LEN=*), PARAMETER :: myName = "vts_plot_x3y3z3f"
+  CHARACTER(*), PARAMETER :: myName = "vts_plot_x3y3z3f"
   REAL(DFP) :: arg(3)
   REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), SIZE(x, 3)) :: func
   INTEGER(I4B) :: nx1, nx2, ny1, ny2, nz1, nz2, ii, jj, kk
@@ -375,7 +388,7 @@ SUBROUTINE vts_plot_x3y3z3f(obj, x, y, z, f, filename)
     & action=String("close"))
   !!
   CALL aVTKfile%WritePiece()
-  CALL aVTKfile%Deallocate()
+  CALL aVTKfile%DEALLOCATE()
   !!
 END SUBROUTINE vts_plot_x3y3z3f
 
@@ -384,11 +397,12 @@ END SUBROUTINE vts_plot_x3y3z3f
 !----------------------------------------------------------------------------
 
 SUBROUTINE vts_surface_x1y1f(obj, x, y, f, filename)
+  USE BaseMethod, ONLY: MeshGrid
   CLASS(VTKPlot_), INTENT(IN) :: obj
   REAL(DFP), INTENT(IN) :: x(:)
   REAL(DFP), INTENT(IN) :: y(:)
   PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(LEN=*), INTENT(IN) :: filename
+  CHARACTER(*), INTENT(IN) :: filename
   !!
   REAL(DFP), ALLOCATABLE :: xx(:, :, :), yy(:, :, :), zz(:, :, :)
   REAL(DFP) :: arg(3)
@@ -421,7 +435,7 @@ SUBROUTINE vts_surface_x2y2f(obj, x, y, f, filename)
   REAL(DFP), INTENT(IN) :: x(:, :)
   REAL(DFP), INTENT(IN) :: y(:, :)
   PROCEDURE(iface_SpaceFunction), POINTER :: f
-  CHARACTER(LEN=*), INTENT(IN) :: filename
+  CHARACTER(*), INTENT(IN) :: filename
   !!
   !!
   REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), 1) :: xx, yy, zz
