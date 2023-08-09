@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # This program is a part of EASIFEM library.
 # See. www.easifem.com
 # Copyright (c) 2020-2021, All right reserved, Vikas Sharma, Ph.D.
@@ -25,7 +27,8 @@ else:
     print("CMAKE DEF : ", cmake_def)
     _build0 = os.path.join(os.environ["HOME"], "temp")
     build_dir = os.path.join(
-        os.environ.get("EASIFEM_BUILD_DIR", _build0), "easifem", "classes", "build"
+        os.environ.get("EASIFEM_BUILD_DIR",
+                       _build0), "easifem", "classes", "build"
     )
     # build_dir = os.environ["HOME"] + "/temp/easifem-base/build"
     os.makedirs(build_dir, exist_ok=True)
