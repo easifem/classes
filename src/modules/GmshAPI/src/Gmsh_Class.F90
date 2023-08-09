@@ -99,11 +99,11 @@ CONTAINS
       !! Closes the Gmsh engine
   FINAL :: Gmsh_finalize_
       !! Final for Gmsh_
-  PROCEDURE, PUBLIC, NOPASS :: open => Gmsh_open
+  PROCEDURE, PUBLIC, NOPASS :: OPEN => Gmsh_open
       !! open file to load
   PROCEDURE, PUBLIC, NOPASS :: merge => Gmsh_merge
       !! merge model
-  PROCEDURE, PUBLIC, NOPASS :: write => Gmsh_write
+  PROCEDURE, PUBLIC, NOPASS :: WRITE => Gmsh_write
       !! Write content in a file
   PROCEDURE, PUBLIC, NOPASS :: clear => Gmsh_clear
       !! Clear the content
@@ -158,14 +158,14 @@ FUNCTION Gmsh_initialize(obj, argv, readConfigFiles, run) &
   !! Internal variables
   !!
   CHARACTER(LEN=*), PARAMETER :: myName = "Gmsh_initialize()"
-  CHARACTER(LEN=maxStrLen, KIND=c_char), ALLOCATABLE :: argv_strs(:)
+  CHARACTER(LEN=maxStrLen, KIND=C_CHAR), ALLOCATABLE :: argv_strs(:)
   TYPE(C_PTR), ALLOCATABLE :: argv_cptr(:)
   !!
   ans = 0
   !!
   IF (.NOT. obj%isInitiated) THEN
     !!
-    call gmsh_GetCharArray_cPtr( &
+    CALL gmsh_GetCharArray_cPtr( &
       & gmsh_InputStr(default=[''], &
           & option=argv), &
       & argv_strs, &
@@ -200,7 +200,7 @@ FUNCTION Gmsh_initialize(obj, argv, readConfigFiles, run) &
         & hint: You can try, first Nullifying it")
       ans = -1
     END IF
-    ALLOCATE (obj%Option); Call obj%Option%Initiate()
+    ALLOCATE (obj%Option); CALL obj%Option%Initiate()
     !!
     !! FLTK
     !!
@@ -305,8 +305,8 @@ FUNCTION Gmsh_finalize(obj) RESULT(ans)
     END IF
     DEALLOCATE (obj%Model)
   END IF
-  obj%Option => null()
-  obj%Model => null()
+  obj%Option => NULL()
+  obj%Model => NULL()
   obj%isInitiated = .FALSE.
   ans = 0
   CALL gmshFinalize(ierr=ierr)
