@@ -17,7 +17,7 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary:         Reference element for point is implemented
+! summary:  Reference element for triangle
 
 MODULE RefTriangle_Class
 USE GlobalData
@@ -25,7 +25,7 @@ USE Topology_Class
 USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefTriangle_Class"
+CHARACTER(*), PARAMETER :: modName = "RefTriangle_Class"
 
 !----------------------------------------------------------------------------
 !                                                   RefTriangle_
@@ -33,9 +33,9 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefTriangle_Class"
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary:         RefTriangle class is defined
+! summary: RefTriangle class is defined
 !
-!{!pages/RefTriangle_.md!}
+!{!pages/docs-api/RefTriangle/RefTriangle_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefTriangle_
 CONTAINS

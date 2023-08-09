@@ -17,7 +17,7 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary:         AbstractRefElement Class is implemented
+! summary: AbstractRefElement Class is implemented
 
 MODULE AbstractRefElement_Class
 USE GlobalData
@@ -36,7 +36,7 @@ CHARACTER(*), PARAMETER :: modName = "AbstractRefElement_Class"
 ! update: 18 Aug 2022
 ! summary: AbstractRefElement class is defined
 !
-!{!pages/AbstractRefElement_.md!}
+!{!pages/docs-api/AbstractRefElement/AbstractRefElement_.md!}
 
 TYPE, ABSTRACT :: AbstractRefElement_
   PRIVATE
@@ -64,11 +64,10 @@ TYPE, ABSTRACT :: AbstractRefElement_
   !! Topology information of facet
   TYPE(Topology_), PUBLIC, ALLOCATABLE :: cellTopology(:)
   !! Topology information of cells
-  !!
 CONTAINS
-  !!
-  !! @DeferredMethods
-  !!
+  !
+  ! @DeferredMethods
+  !
   PROCEDURE(refelem_GetName), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetName
   !! returns the name
@@ -81,9 +80,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => refelem_Initiate
   !! Initiate an instance
   PROCEDURE, PUBLIC, PASS(obj) :: GetTopology => refelem_GetTopology
-  !! Get the vector of topology of facet elements
+  !! Get the vector of topology of reference element
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => refelem_Copy
-  !! Initiate an instance by copy
+  !! Initiate an instance by copying a reference element
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => refelem_Deallocate
   !! Deallocate the data
@@ -92,9 +91,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => refelem_GetNNE
   !! Returns the number of nodes in the element
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => refelem_GetNSD
-  !! Returns the xidimension
+  !! Returns the spatial dimension of reference element
   PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => refelem_GetXidimension
-  !! Returns the xidimension
+  !! Returns the xidimension of reference element
   PROCEDURE, PUBLIC, PASS(obj) :: GetElementTopology => &
     & refelem_GetElementTopology
   !! Returns the element topology
@@ -111,6 +110,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoint => &
     & refelem_GetInterpolationPoint
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => refelem_SetParam
+    !! Set the parameter at once
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => refelem_GetParam
     !! Set the parameter at once
 END TYPE AbstractRefElement_
 
@@ -421,11 +422,23 @@ END INTERFACE
 !                                                          SetParam@Methods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-08
+! summary: Set parameters of reference element
+
 INTERFACE
   MODULE PURE SUBROUTINE refelem_SetParam(&
-    & obj, xij, entityCounts, &
-    & xidimension, name, nameStr, nsd, &
-    & pointTopology, edgeTopology, faceTopology, cellTopology)
+    & obj, &
+    & xij, &
+    & entityCounts, &
+    & xidimension, &
+    & name, &
+    & nameStr, &
+    & nsd, &
+    & pointTopology, &
+    & edgeTopology, &
+    & faceTopology, &
+    & cellTopology)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityCounts(4)
@@ -438,6 +451,51 @@ INTERFACE
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: faceTopology(:)
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: cellTopology(:)
   END SUBROUTINE refelem_SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetParam@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-08
+! summary: Get parameters of reference element
+
+INTERFACE
+  MODULE PURE SUBROUTINE refelem_GetParam(&
+    & obj, &
+    & xij, &
+    & entityCounts, &
+    & xidimension, &
+    & name, &
+    & nameStr, &
+    & nsd, &
+    & pointTopology, &
+    & edgeTopology, &
+    & faceTopology, &
+    & cellTopology)
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    REAL(DFP), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: xij(:, :)
+    !! Nodal coordiantes of reference element
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: entityCounts(4)
+    !! Entity counts 0D to 3D
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: xidimension
+    !! xi dimension of element
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: name
+    !! name of element
+    TYPE(String), OPTIONAL, INTENT(OUT) :: nameStr
+    !! string name of element
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
+    !! spatial dimension of element
+    TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: pointTopology(:)
+    !! vector of point topology
+    TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: edgeTopology(:)
+    !! vector of edge topology
+    TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: faceTopology(:)
+    !! vector of facet topology
+    TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: cellTopology(:)
+    !! vector of cell topology
+  END SUBROUTINE refelem_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------

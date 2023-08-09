@@ -37,14 +37,17 @@ PRIVATE
 TYPE :: Topology_
   PRIVATE
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+  !! node numbers
   INTEGER(I4B) :: name = 0
+  !! name of topology
   INTEGER(I4B) :: xiDimension = 0
+  !! xidimension
   !!
 CONTAINS
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => topo_Initiate
   !! Initiate the topology object
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the topology object
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
@@ -112,7 +115,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(Topology_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE

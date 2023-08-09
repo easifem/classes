@@ -35,14 +35,11 @@ END PROCEDURE refelem_GetName
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: tFacet = 2_I4B
 INTEGER(I4B) :: ii
-!!
 ALLOCATE (ans(tFacet))
-!!
 DO ii = 1, tFacet
   ALLOCATE (RefPoint_ :: ans(ii)%ptr)
   CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
 END DO
-!!
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
@@ -51,10 +48,8 @@ END PROCEDURE refelem_GetFacetElements
 
 MODULE PROCEDURE refelem_GenerateTopology
 INTEGER(I4B), PARAMETER :: np = 2_I4B, ne = 1_I4B
-!!
 ALLOCATE (obj%pointTopology(np))
 ALLOCATE (obj%edgeTopology(ne))
-!!
 CALL obj%pointTopology(1)%Initiate(&
   & nptrs=[1_I4B], &
   & name=Point, &
@@ -63,10 +58,8 @@ CALL obj%pointTopology(2)%Initiate( &
   & nptrs=[2_I4B], &
   & name=Point, &
   & xidimension=0_I4B)
-!!
 CALL obj%edgeTopology(1)%Initiate(nptrs=[1_I4B, 2_I4B], &
   & name=Line2, xidimension=1_I4B)
-!!
 END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------

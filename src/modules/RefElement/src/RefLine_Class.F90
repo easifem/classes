@@ -25,7 +25,9 @@ USE Topology_Class
 USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefLine_Class"
+CHARACTER(*), PARAMETER :: modName = "RefLine_Class"
+PUBLIC :: RefLine_
+PUBLIC :: RefLinePointer_
 
 !----------------------------------------------------------------------------
 !                                                                  RefLine_
@@ -35,7 +37,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefLine_Class"
 ! date: 9 Aug 2022
 ! summary:         RefLine class is defined
 !
-!{!pages/RefLine_.md!}
+!{!pages/docs-api/RefLine/RefLine_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefLine_
 CONTAINS
@@ -49,17 +51,17 @@ CONTAINS
   !! returns the facet topology
 END TYPE RefLine_
 
-PUBLIC :: RefLine_
-
 !----------------------------------------------------------------------------
 !                                                           RefLinePointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-08
+! summary:  Rererence Line Pointer
+
 TYPE :: RefLinePointer_
   CLASS(RefLine_), POINTER :: ptr => NULL()
 END TYPE RefLinePointer_
-
-PUBLIC :: RefLinePointer_
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods
@@ -83,10 +85,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 16 June 2021
 ! summary: This routine returns the facet elements
-!
-!# Introduction
-!
-! Returns the facet elements.
 
 INTERFACE
   MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
