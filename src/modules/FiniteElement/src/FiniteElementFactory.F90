@@ -17,5 +17,5 @@
 
 MODULE FiniteElementFactory
 USE AbstractFE_Class
-USE LagrangeFE_Class
+USE FiniteElement_Class
 END MODULE FiniteElementFactory

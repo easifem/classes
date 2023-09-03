@@ -19,5 +19,8 @@ SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
   ${src_path}/AbstractFE_Class@Methods.F90
-  ${src_path}/LagrangeFE_Class@Methods.F90
+  ${src_path}/AbstractFE_Class@H1Methods.F90
+  ${src_path}/AbstractFE_Class@HDivMethods.F90
+  ${src_path}/AbstractFE_Class@HCurlMethods.F90
+  ${src_path}/FiniteElement_Class@Methods.F90
 )
