@@ -24,16 +24,52 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Initiate
+CHARACTER(*), PARAMETER :: myName = "refelem_Initiate"
 INTEGER(I4B) :: name
+CALL obj%DEALLOCATE()
 
-name = obj%GetName()
-CALL obj%SetParam( &
-  & xij=EquidistancePoint(order=1_I4B, elemType=name), &
-  & entityCounts=TotalEntities(elemType=name), &
-  & nsd=nsd, &
-  & xidimension=Xidimension(elemType=name), &
-  & name=name, &
-  & nameStr=ElementName(name))
+IF (PRESENT(xij)) THEN
+  IF (SIZE(xij, 1) .NE. nsd) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & '[WRONG ARG] size(xij, 1) .NE. NSD')
+  END IF
+  name = obj%GetName()
+  CALL obj%SetParam( &
+    & xij=xij, &
+    & entityCounts=TotalEntities(elemType=name), &
+    & nsd=nsd, &
+    & xidimension=Xidimension(elemType=name), &
+    & name=name, &
+    & nameStr=ElementName(name),  &
+    & baseContinuity=baseContinuity,  &
+    & baseInterpol=baseInterpol)
+
+ELSE
+
+  IF (.NOT. PRESENT(baseContinuity)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & '[MISSING ARG] baseContinuity should be present.')
+  END IF
+
+  IF (.NOT. PRESENT(baseInterpol)) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & '[MISSING ARG]  baseInterpol should be present.')
+  END IF
+
+  name = obj%GetName()
+  CALL obj%SetParam( &
+    & xij=obj%RefCoord( &
+      & baseInterpol=baseInterpol,  &
+      & baseContinuity=baseContinuity), &
+    & entityCounts=TotalEntities(elemType=name), &
+    & nsd=nsd, &
+    & xidimension=Xidimension(elemType=name), &
+    & name=name, &
+    & nameStr=ElementName(name),  &
+    & baseContinuity=baseContinuity,  &
+    & baseInterpol=baseInterpol)
+END IF
+
 CALL obj%GenerateTopology()
 END PROCEDURE refelem_Initiate
 
@@ -66,6 +102,7 @@ IF (PRESENT(xidim)) THEN
       ans(ii) = obj%cellTopology(ii)
     END DO
   END SELECT
+
 ELSE
   n = SUM(obj%entityCounts)
   ALLOCATE (ans(n))
@@ -142,6 +179,17 @@ IF (ALLOCATED(obj2%cellTopology)) THEN
     obj%cellTopology(ii) = obj2%cellTopology(ii)
   END DO
 END IF
+
+!! baseInterpol
+IF (ALLOCATED(obj2%baseInterpol)) THEN
+  obj%baseInterpol = obj2%baseInterpol
+END IF
+
+!! baseContinuity
+IF (ALLOCATED(obj2%baseContinuity)) THEN
+  obj%baseContinuity = obj2%baseContinuity
+END IF
+
 END PROCEDURE refelem_Copy
 
 !----------------------------------------------------------------------------
@@ -192,6 +240,9 @@ IF (ALLOCATED(obj%cellTopology)) THEN
   END DO
   DEALLOCATE (obj%cellTopology)
 END IF
+
+IF (ALLOCATED(obj%baseContinuity)) DEALLOCATE (obj%baseContinuity)
+IF (ALLOCATED(obj%baseInterpol)) DEALLOCATE (obj%baseInterpol)
 END PROCEDURE refelem_Deallocate
 
 !----------------------------------------------------------------------------
@@ -249,7 +300,204 @@ DO j = 1, obj%entityCounts(4)
     & "cellTopology( "//tostring(j)//" ) : ", &
     & unitno=unitno)
 END DO
+!! baseContinuity
+IF (ALLOCATED(obj%baseContinuity)) THEN
+  CALL Display( &
+  & "baseContinuity: "//BaseContinuity_toString(obj%baseContinuity), &
+  & unitno=unitno)
+ELSE
+  CALL Display("baseContinuity: NOT ALLOCATED")
+END IF
+!! baseInterpol
+IF (ALLOCATED(obj%baseInterpol)) THEN
+  CALL Display( &
+  & "baseInterpol: "//BaseInterpolation_toString(obj%baseInterpol), &
+  & unitno=unitno)
+ELSE
+  CALL Display("baseInterpol: NOT ALLOCATED")
+END IF
 END PROCEDURE refelem_Display
+
+!----------------------------------------------------------------------------
+!                                                               MdEncode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_MdEncode
+!! Define internal variable
+INTEGER(I4B) :: j, tsize
+LOGICAL(LGT) :: notFull0
+TYPE(String) :: astr(20)
+CHARACTER(1), PARAMETER, DIMENSION(3) :: xyz = ["x", "y", "z"]
+TYPE(String) :: rowTitle(20), colTitle(1)
+
+colTitle(1) = ""
+
+rowTitle(1) = "Element type"; astr(1) = ElementName(obj%name)
+rowTitle(2) = "Xidimension"; astr(2) = tostring(obj%xiDimension)
+rowTitle(3) = "NSD"; astr(3) = tostring(obj%nsd)
+rowTitle(4) = "tPoints"; astr(4) = tostring(obj%entityCounts(1))
+rowTitle(5) = "tLines"; astr(5) = tostring(obj%entityCounts(2))
+rowTitle(6) = "tSurfaces"; astr(6) = tostring(obj%entityCounts(3))
+rowTitle(7) = "tVolumes"; astr(7) = tostring(obj%entityCounts(4))
+
+rowTitle(8) = "BaseContinuity"
+!! baseContinuity
+IF (ALLOCATED(obj%baseContinuity)) THEN
+  astr(8) = BaseContinuity_toString(obj%baseContinuity)
+ELSE
+  astr(8) = "NOT ALLOCATED"
+END IF
+
+rowTitle(9) = "BaseInterpolation"
+!! baseContinuity
+IF (ALLOCATED(obj%baseInterpol)) THEN
+  astr(9) = BaseInterpolation_toString(obj%baseInterpol)
+ELSE
+  astr(9) = "NOT ALLOCATED"
+END IF
+
+tsize = SIZE(obj%xij, 1)
+DO j = 1, tsize
+  rowTitle(9 + j) = xyz(j)
+END DO
+
+ans = MdEncode(val=astr(1:9), rh=rowTitle(1:9), ch=colTitle)// &
+    &  char_lf//"Nodal Coordinates:"//char_lf//char_lf// &
+    &  MdEncode(obj%xij, rh=rowTitle(10:9 + tsize), ch=colTitle)
+
+!! pointTopology
+DO j = 1, obj%entityCounts(1)
+  ans = ans//"PointTopology( "//tostring(j)//" ) : "// &
+  & char_lf//char_lf//obj%pointTopology(j)%MdEncode()
+END DO
+
+!! edgeTopology
+DO j = 1, obj%entityCounts(2)
+  ans = ans//"EdgeTopology( "//tostring(j)//" ) : "// &
+  & char_lf//char_lf//obj%edgeTopology(j)%MdEncode()
+END DO
+
+!! faceTopology
+DO j = 1, obj%entityCounts(3)
+  ans = ans//"FaceTopology( "//tostring(j)//" ) : "// &
+  & char_lf//char_lf//obj%faceTopology(j)%MdEncode()
+END DO
+
+!! cellTopology
+DO j = 1, obj%entityCounts(4)
+  ans = ans//"CellTopology( "//tostring(j)//" ) : "// &
+  & char_lf//char_lf//obj%cellTopology(j)%MdEncode()//char_lf
+END DO
+
+END PROCEDURE refelem_MdEncode
+
+!----------------------------------------------------------------------------
+!                                                        ReactEncode@Methods
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_ReactEncode
+!! Define internal variable
+INTEGER(I4B) :: j, tsize
+LOGICAL(LGT) :: notFull0
+TYPE(String) :: rowTitle(20), colTitle(1)
+TYPE(String) :: astr(20)
+CHARACTER(1), PARAMETER, DIMENSION(3) :: xyz = ["x", "y", "z"]
+
+colTitle(1) = ""
+rowTitle(1) = "Element type"; astr(1) = ElementName(obj%name)
+rowTitle(2) = "Xidimension"; astr(2) = tostring(obj%xiDimension)
+rowTitle(3) = "NSD"; astr(3) = tostring(obj%nsd)
+rowTitle(4) = "tPoints"; astr(4) = tostring(obj%entityCounts(1))
+rowTitle(5) = "tLines"; astr(5) = tostring(obj%entityCounts(2))
+rowTitle(6) = "tSurfaces"; astr(6) = tostring(obj%entityCounts(3))
+rowTitle(7) = "tVolumes"; astr(7) = tostring(obj%entityCounts(4))
+
+rowTitle(8) = "BaseContinuity"
+!! baseContinuity
+IF (ALLOCATED(obj%baseContinuity)) THEN
+  astr(8) = BaseContinuity_toString(obj%baseContinuity)
+ELSE
+  astr(8) = "NOT ALLOCATED"
+END IF
+
+rowTitle(9) = "BaseInterpolation"
+!! baseContinuity
+IF (ALLOCATED(obj%baseInterpol)) THEN
+  astr(9) = BaseInterpolation_toString(obj%baseInterpol)
+ELSE
+  astr(9) = "NOT ALLOCATED"
+END IF
+
+tsize = SIZE(obj%xij, 1)
+DO j = 1, tsize
+  rowTitle(9 + j) = xyz(j)
+END DO
+
+ans = MdEncode(val=astr(1:9), rh=rowTitle(1:9), ch=colTitle)// &
+    & char_lf//"Nodal Coordinates:"//char_lf//char_lf// &
+    & MdEncode(obj%xij, rh=rowTitle(10:9 + tsize), ch=colTitle)
+
+IF (obj%entityCounts(1) .GT. 0_I4B) THEN
+  ans = ans//React_StartTabs()//char_lf
+
+  !! pointTopology
+  DO j = 1, obj%entityCounts(1)
+    ans = ans//React_StartTabItem( &
+    & VALUE=tostring(j), &
+    & label="PointTopology( "//tostring(j)//" ) : ")//char_lf//  &
+    & obj%pointTopology(j)%MdEncode()//char_lf  &
+    & //React_EndTabItem()//char_lf
+  END DO
+
+  ans = ans//React_EndTabs()//char_lf
+END IF
+
+IF (obj%entityCounts(2) .GT. 0_I4B) THEN
+  ans = ans//React_StartTabs()//char_lf
+
+  !! pointTopology
+  DO j = 1, obj%entityCounts(2)
+    ans = ans//React_StartTabItem( &
+    & VALUE=tostring(j), &
+    & label="EdgeTopology( "//tostring(j)//" ) : ")//char_lf//  &
+    & obj%EdgeTopology(j)%MdEncode()//char_lf  &
+    & //React_EndTabItem()//char_lf
+  END DO
+
+  ans = ans//React_EndTabs()//char_lf
+END IF
+
+IF (obj%entityCounts(3) .GT. 0_I4B) THEN
+  ans = ans//React_StartTabs()//char_lf
+
+  !! pointTopology
+  DO j = 1, obj%entityCounts(3)
+    ans = ans//React_StartTabItem( &
+    & VALUE=tostring(j), &
+    & label="FaceTopology( "//tostring(j)//" ) : ")//char_lf//  &
+    & obj%FaceTopology(j)%MdEncode()//char_lf &
+    & //React_EndTabItem()//char_lf
+  END DO
+
+  ans = ans//React_EndTabs()//char_lf
+END IF
+
+IF (obj%entityCounts(4) .GT. 0_I4B) THEN
+  ans = ans//React_StartTabs()//char_lf
+
+  !! pointTopology
+  DO j = 1, obj%entityCounts(4)
+    ans = ans//React_StartTabItem( &
+    & VALUE=tostring(j), &
+    & label="CellTopology( "//tostring(j)//" ) : ")//char_lf//  &
+    & obj%CellTopology(j)%MdEncode()//char_lf  &
+    & //React_EndTabItem()//char_lf
+  END DO
+
+  ans = ans//React_EndTabs()//char_lf
+END IF
+
+END PROCEDURE refelem_ReactEncode
 
 !----------------------------------------------------------------------------
 !                                                                     GetNNE
@@ -309,9 +557,9 @@ END PROCEDURE refelem_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetMatrix
-!!
 INTEGER(I4B) :: xicell, i, max_nns, nns, tFacet
 TYPE(Topology_), ALLOCATABLE :: faceTopology(:)
+
 !! main
 xicell = obj%xidimension
 faceTopology = obj%GetTopology(xidim=xicell)
@@ -352,11 +600,16 @@ END PROCEDURE refelem_GetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetInterpolationPoint
-ans = InterpolationPoint( &
-  & order=order, &
-  & ipType=ipType, &
-  & elemType=obj%name, &
-  & layout=layout)
+IF (isPoint(obj%name)) THEN
+  CALL Reallocate(ans, 3_I4B, 1_I4B)
+ELSE
+  ans = InterpolationPoint( &
+    & order=order, &
+    & ipType=ipType, &
+    & elemType=obj%name, &
+    & layout=layout, &
+    & xij=obj%xij)
+END IF
 END PROCEDURE refelem_GetInterpolationPoint
 
 !----------------------------------------------------------------------------
@@ -409,6 +662,14 @@ IF (PRESENT(cellTopology)) THEN
   END DO
 END IF
 
+IF (PRESENT(baseContinuity)) THEN
+  CALL BaseContinuity_fromString(obj=obj%baseContinuity, name=baseContinuity)
+END IF
+
+IF (PRESENT(baseInterpol)) THEN
+  CALL BaseInterpolation_fromString(obj=obj%baseInterpol, name=baseInterpol)
+END IF
+
 END PROCEDURE refelem_SetParam
 
 !----------------------------------------------------------------------------
@@ -417,6 +678,7 @@ END PROCEDURE refelem_SetParam
 
 MODULE PROCEDURE refelem_GetParam
 INTEGER(I4B) :: ii, n
+CHARACTER(*), PARAMETER :: myName = "refelem_GetParam"
 
 IF (PRESENT(entityCounts)) entityCounts = obj%entityCounts
 IF (PRESENT(xidimension)) xidimension = obj%xidimension
@@ -471,6 +733,24 @@ IF (PRESENT(cellTopology)) THEN
     DO ii = 1, n
       cellTopology(ii) = obj%cellTopology(ii)
     END DO
+  END IF
+END IF
+
+IF (PRESENT(baseInterpol)) THEN
+  IF (ALLOCATED(obj%baseInterpol)) THEN
+    baseInterpol = BaseInterpolation_toString(obj%baseInterpol)
+  ELSE
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'AbstractRefElement_::obj%baseInterpol is not allocated.')
+  END IF
+END IF
+
+IF (PRESENT(baseContinuity)) THEN
+  IF (ALLOCATED(obj%baseContinuity)) THEN
+    baseContinuity = baseContinuity_toString(obj%baseContinuity)
+  ELSE
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'AbstractRefElement_::obj%baseContinuity is not allocated.')
   END IF
 END IF
 

@@ -54,6 +54,53 @@ CALL Display(obj%nptrs, "nptrs : ", unitno=unitno, orient="ROW")
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
+!                                                                MdEncode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_MdEncode
+TYPE(String), ALLOCATABLE :: astr(:, :)
+INTEGER(I4B) :: n, ii, jj
+TYPE(String) :: rh(3), ch(1)
+
+rh(1) = "Element type"
+rh(2) = "Xidimension"
+rh(3) = "Nptrs"
+ch(1) = ""
+
+IF (ALLOCATED(obj%nptrs)) THEN
+  n = SIZE(obj%nptrs)
+  CALL reallocate(astr, 3, n)
+  astr(1, 1) = ElementName(obj%name)
+  DO ii = 2, n
+    astr(1, ii) = ""
+  END DO
+
+  astr(2, 1) = tostring(obj%xidimension)
+  DO ii = 2, n
+    astr(2, ii) = ""
+  END DO
+
+  DO ii = 1, n
+    astr(3, ii) = tostring(obj%nptrs(ii))
+  END DO
+
+ELSE
+
+  n = 1
+  CALL reallocate(astr, 3, n)
+  astr(1, 1) = ElementName(obj%name)
+  astr(2, 1) = tostring(obj%xidimension)
+  astr(3, 1) = "NOT ALLOCATED"
+
+END IF
+
+ans = MdEncode(val=astr, rh=rh, ch=ch)
+
+IF (ALLOCATED(astr)) DEALLOCATE (astr)
+
+END PROCEDURE obj_MdEncode
+
+!----------------------------------------------------------------------------
 !                                                                   Getnptrs
 !----------------------------------------------------------------------------
 

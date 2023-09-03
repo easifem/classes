@@ -23,6 +23,7 @@ MODULE RefLine_Class
 USE GlobalData
 USE Topology_Class
 USE AbstractRefElement_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "RefLine_Class"
@@ -49,6 +50,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
     & refelem_GenerateTopology
   !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefLine_
 
 !----------------------------------------------------------------------------
@@ -62,6 +65,23 @@ END TYPE RefLine_
 TYPE :: RefLinePointer_
   CLASS(RefLine_), POINTER :: ptr => NULL()
 END TYPE RefLinePointer_
+
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+ MODULE FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+    CLASS(RefLine_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods
@@ -85,6 +105,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 16 June 2021
 ! summary: This routine returns the facet elements
+!
+!# Introduction
+!
+! The facet elements in the case of line are points.
 
 INTERFACE
   MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)

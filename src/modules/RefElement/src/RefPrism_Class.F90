@@ -23,9 +23,12 @@ MODULE RefPrism_Class
 USE GlobalData
 USE Topology_Class
 USE AbstractRefElement_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefPrism_Class"
+CHARACTER(*), PARAMETER :: modName = "RefPrism_Class"
+PUBLIC :: RefPrism_
+PUBLIC :: RefPrismPointer_
 
 !----------------------------------------------------------------------------
 !                                                   RefPrism_
@@ -35,7 +38,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefPrism_Class"
 ! date: 9 Aug 2022
 ! summary:         RefPrism class is defined
 !
-!{!pages/RefPrism_.md!}
+!{!pages/docs-api/RefPrism/RefPrism_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefPrism_
 CONTAINS
@@ -47,9 +50,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
     & refelem_GenerateTopology
   !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefPrism_
-
-PUBLIC :: RefPrism_
 
 !----------------------------------------------------------------------------
 !                                            RefPrismPointer_
@@ -59,7 +62,22 @@ TYPE :: RefPrismPointer_
   CLASS(RefPrism_), POINTER :: ptr => NULL()
 END TYPE RefPrismPointer_
 
-PUBLIC :: RefPrismPointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+ MODULE FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+    CLASS(RefPrism_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods

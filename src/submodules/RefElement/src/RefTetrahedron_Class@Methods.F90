@@ -21,6 +21,60 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                RefCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_RefCoord
+TYPE(String) :: baseContinuity0, baseInterpol0
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+
+baseContinuity0 = UpperCase(baseContinuity)
+baseInterpol0 = UpperCase(baseInterpol)
+
+SELECT CASE (baseContinuity0%chars())
+CASE ("H1")
+  SELECT CASE (baseInterpol0%chars())
+  CASE (  &
+    & "LAGRANGEPOLYNOMIAL", &
+    & "LAGRANGE", &
+    & "LAGRANGEINTERPOLATION", &
+    & "SERENDIPITYPOLYNOMIAL", &
+    & "SERENDIPITY", &
+    & "SERENDIPITYINTERPOLATION")
+
+    ans = RefCoord_Tetrahedron("UNIT")
+
+  CASE ("HERMITPOLYNOMIAL", "HERMIT", "HERMITINTERPOLATION")
+
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'NOT IMPLEMETED! WIP! baseInterpol='//baseInterpol0)
+
+  CASE ( &
+    & "HIERARCHYPOLYNOMIAL", &
+    & "HEIRARCHYPOLYNOMIAL", &
+    & "HIERARCHY", &
+    & "HEIRARCHY", &
+    & "HIERARCHYINTERPOLATION", &
+    & "HEIRARCHYINTERPOLATION", &
+    & "ORTHOGONALPOLYNOMIAL", &
+    & "ORTHOGONAL", &
+    & "ORTHOGONALINTERPOLATION")
+
+    ans = RefCoord_Tetrahedron("BIUNIT")
+
+  CASE DEFAULT
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'NO CASE FOUND! for baseContinuity='//baseContinuity0)
+  END SELECT
+
+CASE DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Currently, only baseContinuity=H1 allowed!')
+END SELECT
+
+END PROCEDURE refelem_RefCoord
+
+!----------------------------------------------------------------------------
 !                                                                 GetName
 !----------------------------------------------------------------------------
 
@@ -33,16 +87,33 @@ END PROCEDURE refelem_GetName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetElements
-INTEGER(I4B), PARAMETER :: n = 4_I4B
+INTEGER(I4B), PARAMETER :: tface = 4_I4B
 INTEGER(I4B) :: ii
-!!
-ALLOCATE (ans(n))
-!!
-DO ii = 1, n
+TYPE(string) :: baseContinuity0, baseInterpol0
+INTEGER(I4B) :: faceCon(3, tface)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+
+CALL obj%getParam( &
+  & baseInterpol=baseInterpol0, &
+  & baseContinuity=baseContinuity0, &
+  & xij=xij)
+
+faceCon = FacetConnectivity_Tetrahedron( &
+  & baseInterpol0%chars(), &
+  & baseContinuity0%chars())
+
+ALLOCATE (ans(tface))
+DO ii = 1, tface
   ALLOCATE (RefTriangle_ :: ans(ii)%ptr)
-  CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
+  CALL ans(ii)%ptr%Initiate( &
+    & nsd=obj%getNSD(),  &
+    & baseContinuity=baseContinuity0%chars(),  &
+    & baseInterpol=baseInterpol0%chars(), &
+    & xij=xij(:, faceCon(:, ii)) &
+    & )
 END DO
-!!
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
@@ -58,58 +129,53 @@ INTEGER(I4B), PARAMETER :: nptrs(4) = [1, 2, 3, 4]
 INTEGER(I4B) :: edges(2, ne)
 INTEGER(I4B) :: faces(3, nf)
 INTEGER(I4B) :: ii
-!!
+TYPE(string) :: baseContinuity0, baseInterpol0
+
 ALLOCATE (obj%pointTopology(np))
 ALLOCATE (obj%edgeTopology(ne))
 ALLOCATE (obj%faceTopology(nf))
 ALLOCATE (obj%cellTopology(nc))
-!!
+
+CALL obj%getParam( &
+  & baseInterpol=baseInterpol0, &
+  & baseContinuity=baseContinuity0)
+
 !! point
-!!
 DO ii = 1, np
   CALL obj%pointTopology(ii)%Initiate( &
     & nptrs=[ii], &
     & name=Point, &
     & xidimension=0_I4B)
 END DO
-!!
-!! edges
-!!
-edges(:, 1) = [3, 4]
-edges(:, 2) = [2, 4]
-edges(:, 3) = [2, 3]
-edges(:, 4) = [1, 4]
-edges(:, 5) = [1, 3]
-edges(:, 6) = [1, 2]
-!!
+
+edges = EdgeConnectivity_Tetrahedron( &
+  & baseInterpol=baseInterpol0%chars(), &
+  & baseContinuity=baseContinuity0%chars())
+
 DO ii = 1, ne
   CALL obj%edgeTopology(ii)%Initiate( &
     & nptrs=edges(:, ii), &
     & name=Line2, &
     & xidimension=1_I4B)
 END DO
-!!
+
 !! faces
-!!
-faces(:, 1) = [2, 3, 4]
-faces(:, 2) = [1, 4, 3]
-faces(:, 3) = [1, 2, 4]
-faces(:, 4) = [1, 3, 2]
-!!
+faces = FacetConnectivity_Tetrahedron( &
+  & baseContinuity=baseContinuity0%chars(), &
+  & baseInterpol=baseInterpol0%chars())
+
 DO ii = 1, nf
   CALL obj%faceTopology(ii)%Initiate( &
     & nptrs=faces(:, ii), &
     & name=Triangle3, &
     & xidimension=2_I4B)
 END DO
-!!
+
 !! cell
-!!
 CALL obj%cellTopology(1)%Initiate( &
   & nptrs=nptrs, &
   & name=Tetrahedron4, &
   & xidimension=3_I4B)
-!!
 END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------

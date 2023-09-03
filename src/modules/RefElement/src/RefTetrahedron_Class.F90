@@ -17,15 +17,18 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary:         Reference element for point is implemented
+! summary: Reference element for tetrahedron is implemented
 
 MODULE RefTetrahedron_Class
 USE GlobalData
 USE Topology_Class
 USE AbstractRefElement_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefTetrahedron_Class"
+CHARACTER(*), PARAMETER :: modName = "RefTetrahedron_Class"
+PUBLIC :: RefTetrahedron_
+PUBLIC :: RefTetrahedronPointer_
 
 !----------------------------------------------------------------------------
 !                                                   RefTetrahedron_
@@ -35,7 +38,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefTetrahedron_Class"
 ! date: 9 Aug 2022
 ! summary:         RefTetrahedron class is defined
 !
-!{!pages/RefTetrahedron_.md!}
+!{!pages/docs-api/RefTetrahedron/RefTetrahedron_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefTetrahedron_
 CONTAINS
@@ -47,9 +50,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
     & refelem_GenerateTopology
   !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefTetrahedron_
-
-PUBLIC :: RefTetrahedron_
 
 !----------------------------------------------------------------------------
 !                                            RefTetrahedronPointer_
@@ -59,7 +62,22 @@ TYPE :: RefTetrahedronPointer_
   CLASS(RefTetrahedron_), POINTER :: ptr => NULL()
 END TYPE RefTetrahedronPointer_
 
-PUBLIC :: RefTetrahedronPointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+ MODULE FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+    CLASS(RefTetrahedron_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods

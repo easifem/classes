@@ -21,6 +21,60 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                RefCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_RefCoord
+TYPE(String) :: baseContinuity0, baseInterpol0
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+
+baseContinuity0 = UpperCase(baseContinuity)
+baseInterpol0 = UpperCase(baseInterpol)
+
+SELECT CASE (baseContinuity0%chars())
+CASE ("H1")
+  SELECT CASE (baseInterpol0%chars())
+  CASE (  &
+    & "LAGRANGEPOLYNOMIAL", &
+    & "LAGRANGE", &
+    & "LAGRANGEINTERPOLATION", &
+    & "SERENDIPITYPOLYNOMIAL", &
+    & "SERENDIPITY", &
+    & "SERENDIPITYINTERPOLATION")
+
+    ans = RefCoord_Pyramid("UNIT")
+
+  CASE ("HERMITPOLYNOMIAL", "HERMIT", "HERMITINTERPOLATION")
+
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'NOT IMPLEMETED! WIP! baseInterpol='//baseInterpol0)
+
+  CASE ( &
+    & "HIERARCHICALPOLYNOMIAL", &
+    & "HIERARCHY", &
+    & "HEIRARCHICALPOLYNOMIAL", &
+    & "HEIRARCHY", &
+    & "HIERARCHYINTERPOLATION", &
+    & "HEIRARCHYINTERPOLATION", &
+    & "ORTHOGONALPOLYNOMIAL", &
+    & "ORTHOGONAL", &
+    & "ORTHOGONALINTERPOLATION")
+
+    ans = RefCoord_Pyramid("BIUNIT")
+
+  CASE DEFAULT
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'NO CASE FOUND! for baseContinuity='//baseContinuity0)
+  END SELECT
+
+CASE DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Currently, only baseContinuity=H1 allowed!')
+END SELECT
+
+END PROCEDURE refelem_RefCoord
+
+!----------------------------------------------------------------------------
 !                                                                 GetName
 !----------------------------------------------------------------------------
 

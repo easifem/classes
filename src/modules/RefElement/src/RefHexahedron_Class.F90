@@ -17,7 +17,7 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary:         Reference element for point is implemented
+! summary: Reference element for hexahedron  is implemented
 
 MODULE RefHexahedron_Class
 USE GlobalData
@@ -25,7 +25,9 @@ USE Topology_Class
 USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefHexahedron_Class"
+CHARACTER(*), PARAMETER :: modName = "RefHexahedron_Class"
+PUBLIC :: RefHexahedron_
+PUBLIC :: RefHexahedronPointer_
 
 !----------------------------------------------------------------------------
 !                                                   RefHexahedron_
@@ -35,7 +37,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefHexahedron_Class"
 ! date: 9 Aug 2022
 ! summary:         RefHexahedron class is defined
 !
-!{!pages/RefHexahedron_.md!}
+!{!pages/docs-api/RefHexahedron/RefHexahedron_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefHexahedron_
 CONTAINS
@@ -47,9 +49,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
     & refelem_GenerateTopology
   !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefHexahedron_
-
-PUBLIC :: RefHexahedron_
 
 !----------------------------------------------------------------------------
 !                                            RefHexahedronPointer_
@@ -59,7 +61,22 @@ TYPE :: RefHexahedronPointer_
   CLASS(RefHexahedron_), POINTER :: ptr => NULL()
 END TYPE RefHexahedronPointer_
 
-PUBLIC :: RefHexahedronPointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+ MODULE FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+    CLASS(RefHexahedron_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods
@@ -83,10 +100,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 16 June 2021
 ! summary: This routine returns the facet elements
-!
-!# Introduction
-!
-! Returns the facet elements.
 
 INTERFACE
   MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
@@ -102,7 +115,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 16 June 2022
 ! summary: Generate topology of reference element
-!
 
 INTERFACE
   MODULE SUBROUTINE refelem_GenerateTopology(obj)

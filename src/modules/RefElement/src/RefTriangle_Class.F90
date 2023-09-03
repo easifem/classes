@@ -26,6 +26,8 @@ USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "RefTriangle_Class"
+PUBLIC :: RefTriangle_
+PUBLIC :: RefTrianglePointer_
 
 !----------------------------------------------------------------------------
 !                                                   RefTriangle_
@@ -47,9 +49,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
     & refelem_GenerateTopology
   !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefTriangle_
-
-PUBLIC :: RefTriangle_
 
 !----------------------------------------------------------------------------
 !                                            RefTrianglePointer_
@@ -59,7 +61,22 @@ TYPE :: RefTrianglePointer_
   CLASS(RefTriangle_), POINTER :: ptr => NULL()
 END TYPE RefTrianglePointer_
 
-PUBLIC :: RefTrianglePointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+ MODULE FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+    CLASS(RefTriangle_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods

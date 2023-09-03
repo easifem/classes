@@ -21,11 +21,17 @@
 
 MODULE AbstractRefElement_Class
 USE GlobalData
+USE BaseType, ONLY: BaseInterpolation_, BaseContinuity_
 USE String_Class, ONLY: String
+USE ExceptionHandler_Class, ONLY: e
 USE Topology_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractRefElement_Class"
+
+PUBLIC :: AbstractRefElement_
+PUBLIC :: AbstractRefElementPointer_
+PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !                                                       AbstractRefElement_
@@ -64,10 +70,26 @@ TYPE, ABSTRACT :: AbstractRefElement_
   !! Topology information of facet
   TYPE(Topology_), PUBLIC, ALLOCATABLE :: cellTopology(:)
   !! Topology information of cells
+  CLASS(BaseContinuity_), ALLOCATABLE :: baseContinuity
+  !! continuity or conformity of basis defined on reference
+  !! element, following values are allowed
+  !! H1, HCurl, HDiv, DG
+  CLASS(BaseInterpolation_), ALLOCATABLE :: baseInterpol
+  !! Type of basis functions used for interpolation on reference
+  !! element, Following values are allowed
+  !! LagrangeInterpolation
+  !! HermitInterpolation
+  !! SerendipityInterpolation
+  !! HierarchyInterpolation
+  !! OrthogonalInterpolation
 CONTAINS
   !
   ! @DeferredMethods
   !
+  PROCEDURE(refelem_RefCoord), DEFERRED, PUBLIC, PASS(obj) :: &
+    & RefCoord
+  !! Reference coordiante of elements
+  !! It depends upon the basis type and basis continuity
   PROCEDURE(refelem_GetName), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetName
   !! returns the name
@@ -88,6 +110,10 @@ CONTAINS
   !! Deallocate the data
   PROCEDURE, PUBLIC, PASS(obj) :: Display => refelem_Display
   !! Display the contents
+  PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => refelem_MdEncode
+  !! Display the contents
+  PROCEDURE, PUBLIC, PASS(obj) :: ReactEncode => refelem_ReactEncode
+  !! Display the contents in react components
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => refelem_GetNNE
   !! Returns the number of nodes in the element
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => refelem_GetNSD
@@ -115,8 +141,6 @@ CONTAINS
     !! Set the parameter at once
 END TYPE AbstractRefElement_
 
-PUBLIC :: AbstractRefElement_
-
 !----------------------------------------------------------------------------
 !                                                AbstractRefElementPointer_
 !----------------------------------------------------------------------------
@@ -125,7 +149,23 @@ TYPE :: AbstractRefElementPointer_
   CLASS(AbstractRefElement_), POINTER :: ptr => NULL()
 END TYPE AbstractRefElementPointer_
 
-PUBLIC :: AbstractRefElementPointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+ABSTRACT INTERFACE
+  FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+    IMPORT AbstractRefElement_, I4B, DFP
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            GetName@Methods
@@ -194,9 +234,41 @@ END INTERFACE
 ! summary: Initiate the instance of Reference element
 
 INTERFACE
-  MODULE SUBROUTINE refelem_Initiate(obj, nsd)
+  MODULE SUBROUTINE refelem_Initiate( &
+    & obj,  &
+    & nsd, &
+    & baseContinuity,  &
+    & baseInterpol,  &
+    & xij)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: nsd
+      !! Spatial dimension of element
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
+      !! Continuity or Conformity of basis function.
+      !! This parameter is used to determine the nodal coordinates of
+      !! reference element, when xij is not present.
+      !! If xij is present then this parameter is ignored
+      !! H1 * Default
+      !! HDiv
+      !! HCurl
+      !! DG
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpol
+      !! Basis function family used for interpolation.
+      !! This parameter is used to determine the nodal coordinates of
+      !! reference element, when xij is not present.
+      !! If xij is present then this parameter is ignored
+      !! LagrangeInterpolation, LagrangePolynomial
+      !! SerendipityInterpolation, SerendipityPolynomial
+      !! HierarchyInterpolation, HierarchyPolynomial
+      !! OrthogonalInterpolation, OrthogonalPolynomial
+      !! HermitInterpolation, HermitPolynomial
+    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
+      !! Nodal coordiantes of reference element
+      !! The number of rows in xij are nsd.
+      !! The rows  cooresponds to the x , y, and z components
+      !! The columns denotes the nodal point
+      !! If xij is present then baseContinuity and
+      !! baseInterpol are ignored.
   END SUBROUTINE refelem_Initiate
 END INTERFACE
 
@@ -235,7 +307,7 @@ END INTERFACE
 ! type opertions
 
 INTERFACE
-  MODULE PURE SUBROUTINE refelem_Copy(obj, obj2)
+  MODULE SUBROUTINE refelem_Copy(obj, obj2)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     CLASS(AbstractRefElement_), INTENT(IN) :: obj2
   END SUBROUTINE refelem_Copy
@@ -281,7 +353,35 @@ INTERFACE Display
   MODULE PROCEDURE refelem_Display
 END INTERFACE Display
 
-PUBLIC :: Display
+!----------------------------------------------------------------------------
+!                                                          MdEncode@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display the contents in mardown format
+
+INTERFACE
+  MODULE FUNCTION refelem_MdEncode(obj) RESULT(ans)
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION refelem_MdEncode
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        ReactEncode@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display the reference elements in react components
+
+INTERFACE
+  MODULE FUNCTION refelem_ReactEncode(obj) RESULT(ans)
+    CLASS(AbstractRefElement_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION refelem_ReactEncode
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                NNE@Methods
@@ -409,7 +509,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION refelem_GetInterpolationPoint(obj, order, ipType, layout) &
-    & RESULT(ans)
+     & RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
@@ -427,7 +527,7 @@ END INTERFACE
 ! summary: Set parameters of reference element
 
 INTERFACE
-  MODULE PURE SUBROUTINE refelem_SetParam(&
+  MODULE SUBROUTINE refelem_SetParam(&
     & obj, &
     & xij, &
     & entityCounts, &
@@ -438,7 +538,9 @@ INTERFACE
     & pointTopology, &
     & edgeTopology, &
     & faceTopology, &
-    & cellTopology)
+    & cellTopology,  &
+    & baseContinuity,  &
+    & baseInterpol)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityCounts(4)
@@ -450,6 +552,19 @@ INTERFACE
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: edgeTopology(:)
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: faceTopology(:)
     TYPE(Topology_), OPTIONAL, INTENT(IN) :: cellTopology(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
+      !! Continuity or Conformity of basis function.
+      !! H1 * Default
+      !! HDiv
+      !! HCurl
+      !! DG
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpol
+      !! Basis function family used for interpolation
+      !! LagrangeInterpolation, LagrangePolynomial
+      !! SerendipityInterpolation, SerendipityPolynomial
+      !! HierarchyInterpolation, HierarchyPolynomial
+      !! OrthogonalInterpolation, OrthogonalPolynomial
+      !! HermitInterpolation, HermitPolynomial
   END SUBROUTINE refelem_SetParam
 END INTERFACE
 
@@ -462,7 +577,7 @@ END INTERFACE
 ! summary: Get parameters of reference element
 
 INTERFACE
-  MODULE PURE SUBROUTINE refelem_GetParam(&
+  MODULE SUBROUTINE refelem_GetParam(&
     & obj, &
     & xij, &
     & entityCounts, &
@@ -473,28 +588,43 @@ INTERFACE
     & pointTopology, &
     & edgeTopology, &
     & faceTopology, &
-    & cellTopology)
+    & cellTopology,  &
+    & baseContinuity,  &
+    & baseInterpol)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: xij(:, :)
-    !! Nodal coordiantes of reference element
+      !! Nodal coordiantes of reference element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: entityCounts(4)
-    !! Entity counts 0D to 3D
+      !! Entity counts 0D to 3D
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: xidimension
-    !! xi dimension of element
+      !! xi dimension of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: name
-    !! name of element
+      !! name of element
     TYPE(String), OPTIONAL, INTENT(OUT) :: nameStr
-    !! string name of element
+      !! string name of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
-    !! spatial dimension of element
+      !! spatial dimension of element
     TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: pointTopology(:)
-    !! vector of point topology
+      !! vector of point topology
     TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: edgeTopology(:)
-    !! vector of edge topology
+      !! vector of edge topology
     TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: faceTopology(:)
-    !! vector of facet topology
+      !! vector of facet topology
     TYPE(Topology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: cellTopology(:)
-    !! vector of cell topology
+      !! vector of cell topology
+    TYPE(String), OPTIONAL, INTENT(OUT) :: baseContinuity
+      !! Continuity or Conformity of basis function.
+      !! H1 * Default
+      !! HDiv
+      !! HCurl
+      !! DG
+    TYPE(String), OPTIONAL, INTENT(OUT) :: baseInterpol
+      !! Basis function family used for interpolation
+      !! LagrangeInterpolation, LagrangePolynomial
+      !! SerendipityInterpolation, SerendipityPolynomial
+      !! HierarchyInterpolation, HierarchyPolynomial
+      !! OrthogonalInterpolation, OrthogonalPolynomial
+      !! HermitInterpolation, HermitPolynomial
   END SUBROUTINE refelem_GetParam
 END INTERFACE
 

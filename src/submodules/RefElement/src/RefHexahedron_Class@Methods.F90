@@ -21,6 +21,18 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                 RefCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_RefCoord
+TYPE(String) :: baseContinuity0, baseInterpol0
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+baseContinuity0 = UpperCase(baseContinuity)
+baseInterpol0 = UpperCase(baseInterpol)
+ans = RefCoord_Hexahedron("BIUNIT")
+END PROCEDURE refelem_RefCoord
+
+!----------------------------------------------------------------------------
 !                                                                    GetName
 !----------------------------------------------------------------------------
 
@@ -33,16 +45,33 @@ END PROCEDURE refelem_GetName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetElements
-INTEGER(I4B), PARAMETER :: n = 6_I4B
+INTEGER(I4B), PARAMETER :: tface = 6_I4B
 INTEGER(I4B) :: ii
-!!
-ALLOCATE (ans(n))
-!!
-DO ii = 1, n
+TYPE(string) :: baseContinuity0, baseInterpol0
+INTEGER(I4B) :: faceCon(4, tface)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+
+CALL obj%getParam( &
+  & baseInterpol=baseInterpol0, &
+  & baseContinuity=baseContinuity0, &
+  & xij=xij)
+
+faceCon = FacetConnectivity_Hexahedron( &
+  & baseInterpol0%chars(), &
+  & baseContinuity0%chars())
+
+ALLOCATE (ans(tface))
+
+DO ii = 1, tface
   ALLOCATE (RefQuadrangle_ :: ans(ii)%ptr)
-  CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
+  CALL ans(ii)%ptr%Initiate( &
+    & nsd=obj%getNSD(),  &
+    & baseContinuity=baseContinuity0%chars(),  &
+    & baseInterpol=baseInterpol0%chars(), &
+    & xij=xij(:, faceCon(:, ii)) &
+    & )
 END DO
-!!
+
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
@@ -58,66 +87,53 @@ INTEGER(I4B), PARAMETER :: nptrs(8) = [1, 2, 3, 4, 5, 6, 7, 8]
 INTEGER(I4B) :: edges(2, ne)
 INTEGER(I4B) :: faces(4, nf)
 INTEGER(I4B) :: ii
-!!
+TYPE(string) :: baseContinuity0, baseInterpol0
+
 ALLOCATE (obj%pointTopology(np))
 ALLOCATE (obj%edgeTopology(ne))
 ALLOCATE (obj%faceTopology(nf))
 ALLOCATE (obj%cellTopology(nc))
-!!
+
+CALL obj%getParam( &
+  & baseInterpol=baseInterpol0, &
+  & baseContinuity=baseContinuity0)
+
 !! point
-!!
 DO ii = 1, np
   CALL obj%pointTopology(ii)%Initiate( &
     & nptrs=[ii], &
     & name=Point, &
     & xidimension=0_I4B)
 END DO
-!!
-!! edges
-!!
-edges(:, 1) = [1, 2]
-edges(:, 2) = [1, 4]
-edges(:, 3) = [1, 5]
-edges(:, 4) = [2, 3]
-edges(:, 5) = [2, 6]
-edges(:, 6) = [3, 4]
-edges(:, 7) = [3, 7]
-edges(:, 8) = [4, 8]
-edges(:, 9) = [5, 6]
-edges(:, 10) = [5, 8]
-edges(:, 11) = [6, 7]
-edges(:, 12) = [8, 7]
-!!
+
+edges = EdgeConnectivity_Hexahedron( &
+  & baseInterpol=baseInterpol0%chars(), &
+  & baseContinuity=baseContinuity0%chars())
+
 DO ii = 1, ne
   CALL obj%edgeTopology(ii)%Initiate( &
     & nptrs=edges(:, ii), &
     & name=Line2, &
     & xidimension=1_I4B)
 END DO
-!!
-!! faces
-!!
-faces(:, 1) = [1, 2, 6, 5]
-faces(:, 2) = [5, 6, 7, 8]
-faces(:, 3) = [1, 5, 8, 4]
-faces(:, 4) = [2, 3, 7, 6]
-faces(:, 5) = [1, 4, 3, 2]
-faces(:, 6) = [3, 4, 8, 7]
-!!
+
+faces = FacetConnectivity_Hexahedron( &
+  & baseContinuity=baseContinuity0%chars(), &
+  & baseInterpol=baseInterpol0%chars())
+
 DO ii = 1, nf
   CALL obj%faceTopology(ii)%Initiate( &
     & nptrs=faces(:, ii), &
     & name=Quadrangle4, &
     & xidimension=2_I4B)
 END DO
-!!
+
 !! cell
-!!
 CALL obj%cellTopology(1)%Initiate( &
   & nptrs=nptrs, &
   & name=Hexahedron8, &
   & xidimension=3_I4B)
-!!
+
 END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------

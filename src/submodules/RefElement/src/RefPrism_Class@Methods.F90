@@ -21,6 +21,60 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                RefCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_RefCoord
+TYPE(String) :: baseContinuity0, baseInterpol0
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+
+baseContinuity0 = UpperCase(baseContinuity)
+baseInterpol0 = UpperCase(baseInterpol)
+
+SELECT CASE (baseContinuity0%chars())
+CASE ("H1")
+  SELECT CASE (baseInterpol0%chars())
+  CASE (  &
+    & "LAGRANGEPOLYNOMIAL", &
+    & "LAGRANGE", &
+    & "LAGRANGEINTERPOLATION", &
+    & "SERENDIPITYPOLYNOMIAL", &
+    & "SERENDIPITY", &
+    & "SERENDIPITYINTERPOLATION")
+
+    ans = RefCoord_Prism("UNIT")
+
+  CASE ("HERMITPOLYNOMIAL", "HERMIT", "HERMITINTERPOLATION")
+
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'NOT IMPLEMETED! WIP! baseInterpol='//baseInterpol0)
+
+  CASE ( &
+    & "HIERARCHICALPOLYNOMIAL", &
+    & "HIERARCHY", &
+    & "HEIRARCHICALPOLYNOMIAL", &
+    & "HEIRARCHY", &
+    & "HIERARCHYINTERPOLATION", &
+    & "HEIRARCHYINTERPOLATION", &
+    & "ORTHOGONALPOLYNOMIAL", &
+    & "ORTHOGONAL", &
+    & "ORTHOGONALINTERPOLATION")
+
+    ans = RefCoord_Prism("BIUNIT")
+
+  CASE DEFAULT
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'NO CASE FOUND! for baseContinuity='//baseContinuity0)
+  END SELECT
+
+CASE DEFAULT
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & 'Currently, only baseContinuity=H1 allowed!')
+END SELECT
+
+END PROCEDURE refelem_RefCoord
+
+!----------------------------------------------------------------------------
 !                                                                    GetName
 !----------------------------------------------------------------------------
 
@@ -35,19 +89,18 @@ END PROCEDURE refelem_GetName
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: n = 5_I4B
 INTEGER(I4B) :: ii
-!!
+
 ALLOCATE (ans(n))
-!!
+
 ALLOCATE (RefTriangle_ :: ans(1)%ptr)
 CALL ans(1)%ptr%Initiate(nsd=obj%getNSD())
 ALLOCATE (RefTriangle_ :: ans(5)%ptr)
 CALL ans(5)%ptr%Initiate(nsd=obj%getNSD())
-!!
+
 DO ii = 2, 4
   ALLOCATE (RefQuadrangle_ :: ans(ii)%ptr)
   CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
 END DO
-!!
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
