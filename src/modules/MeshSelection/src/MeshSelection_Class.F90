@@ -156,6 +156,8 @@ PUBLIC :: MeshSelectionPointer_
 !> authors: Vikas Sharma, Ph. D.
 ! date: 28 Aug 2021
 ! summary: Initiate an instance of [[MeshSelection_]]
+!
+! TODO Initiate by passing ParameterList object to initiate.
 
 INTERFACE
   MODULE SUBROUTINE meshSelect_Initiate(obj, isSelectionByMeshID, &
