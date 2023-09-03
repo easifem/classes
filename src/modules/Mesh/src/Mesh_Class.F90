@@ -176,7 +176,7 @@ END TYPE BoundaryFacetData_
 ! date: 13 June 2021
 ! summary: This datatype contains the meta data of a mesh
 !
-!{!pages/Mesh_.md!}
+!{!pages/docs-api/Mesh/Mesh_.md!}
 
 TYPE :: Mesh_
   PRIVATE
