@@ -17,6 +17,7 @@
 
 SUBMODULE(MSHFile_Class) IOMethods
 USE BaseMethod
+USE mshEntity_Class, ONLY: GetIndex
 IMPLICIT NONE
 CONTAINS
 
@@ -36,7 +37,7 @@ END PROCEDURE msh_Import
 
 MODULE PROCEDURE msh_Export_hdf5
 CHARACTER(*), PARAMETER :: myName = "msh_Export_hdf5"
-INTEGER(I4B) :: ii, tsize, tNodes, count
+INTEGER(I4B) :: ii, tsize, tNodes, count_
 REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
 INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
 TYPE(String) :: dsetname
@@ -56,7 +57,7 @@ END IF
 tNodes = obj%nodes%getNumNodes()
 ALLOCATE (nodeCoord(3, tNodes))
 ALLOCATE (local_nptrs(obj%Nodes%getMaxNodeTag()))
-count = 0
+count_ = 0
 local_nptrs = 0
 
 CALL hdf5%WRITE(dsetname=dsetname%chars()//"/NSD", vals=obj%nsd)
@@ -77,7 +78,7 @@ DO ii = 1, tsize
     & dsetname=dsetname%chars()//"/pointEntities_"// &
     & TRIM(str(ii, .TRUE.)), nsd=obj%nsd)
   CALL getNodeCoord(obj=obj%pointEntities(ii), nodeCoord=nodeCoord, &
-    & local_nptrs=local_nptrs, count=count)
+    & local_nptrs=local_nptrs, count_=count_)
 END DO
 IF (ALLOCATED(obj%curveEntities)) THEN
   tsize = SIZE(obj%curveEntities)
@@ -91,7 +92,7 @@ DO ii = 1, tsize
     & dsetname=dsetname%chars()//"/curveEntities_"// &
     & TRIM(str(ii, .TRUE.)), nsd=obj%nsd)
   CALL getNodeCoord(obj=obj%curveEntities(ii), nodeCoord=nodeCoord, &
-    & local_nptrs=local_nptrs, count=count)
+    & local_nptrs=local_nptrs, count_=count_)
 END DO
 IF (ALLOCATED(obj%surfaceEntities)) THEN
   tsize = SIZE(obj%surfaceEntities)
@@ -105,7 +106,7 @@ DO ii = 1, tsize
     & dsetname=dsetname%chars()//"/surfaceEntities_"// &
     & TRIM(str(ii, .TRUE.)), nsd=obj%nsd)
   CALL getNodeCoord(obj=obj%surfaceEntities(ii), nodeCoord=nodeCoord, &
-    & local_nptrs=local_nptrs, count=count)
+    & local_nptrs=local_nptrs, count_=count_)
 END DO
 IF (ALLOCATED(obj%volumeEntities)) THEN
   tsize = SIZE(obj%volumeEntities)
@@ -119,7 +120,7 @@ DO ii = 1, tsize
     & dsetname=dsetname%chars()//"/volumeEntities_"// &
     & TRIM(str(ii, .TRUE.)), nsd=obj%nsd)
   CALL getNodeCoord(obj=obj%volumeEntities(ii), nodeCoord=nodeCoord, &
-    & local_nptrs=local_nptrs, count=count)
+    & local_nptrs=local_nptrs, count_=count_)
 END DO
 CALL hdf5%WRITE(dsetname=dsetname%chars()//"/nodeCoord", &
   &vals=nodeCoord)
@@ -272,11 +273,11 @@ END SUBROUTINE ExportMeshEntity
 !                                                           ExportNodeCoord
 !----------------------------------------------------------------------------
 
-SUBROUTINE getNodeCoord(obj, nodeCoord, local_nptrs, count)
+SUBROUTINE getNodeCoord(obj, nodeCoord, local_nptrs, count_)
   TYPE(mshEntity_), INTENT(IN) :: obj
   REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
   INTEGER(I4B), INTENT(INOUT) :: local_nptrs(:)
-  INTEGER(I4B), INTENT(INOUT) :: count
+  INTEGER(I4B), INTENT(INOUT) :: count_
   ! internal data
   REAL(DFP), ALLOCATABLE :: myNodeCoord(:, :)
   INTEGER(I4B), ALLOCATABLE :: myNptrs(:)
@@ -284,9 +285,9 @@ SUBROUTINE getNodeCoord(obj, nodeCoord, local_nptrs, count)
   myNodeCoord = obj%getNodeCoord()
   myNptrs = obj%getIntNodeNumber()
   DO ii = 1, SIZE(myNptrs)
-    count = count + 1
-    local_nptrs(myNptrs(ii)) = count
-    nodeCoord(:, count) = myNodeCoord(:, ii)
+    count_ = count_ + 1
+    local_nptrs(myNptrs(ii)) = count_
+    nodeCoord(:, count_) = myNodeCoord(:, ii)
   END DO
   IF (ALLOCATED(myNodeCoord)) DEALLOCATE (myNodeCoord)
   IF (ALLOCATED(myNptrs)) DEALLOCATE (myNptrs)
@@ -377,7 +378,7 @@ MODULE PROCEDURE msh_ReadPointEntities
 INTEGER(I4B) :: unitNo
 CHARACTER(*), PARAMETER :: myName = "ReadPointEntities"
 INTEGER(I4B) :: i, j, k, tpt, error, dim
-INTEGER(I4B), ALLOCATABLE :: PhysicalTag(:)
+INTEGER(I4B), ALLOCATABLE :: PhysicalTag0(:)
 !> main program
 dim = 0; unitNo = obj%getUnitNo()
 CALL e%raiseInformation(modName//'::'//myName//' - ' &
@@ -393,10 +394,10 @@ DO i = 1, te
   tpt = obj%PointEntities(i)%getTotalPhysicalTags()
   IF (tpt .NE. 0) THEN
     ! get physical tag int vector
-    PhysicalTag = obj%PointEntities(i)%getPhysicalTag()
+    PhysicalTag0 = obj%PointEntities(i)%getPhysicalTag()
     DO j = 1, tpt
       ! get index of physical tag
-      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag(j))
+      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag0(j))
       ! append this index to entities
       CALL obj%PhysicalNames%AppendEntities(indx=k, EntityTag=[i])
     END DO
@@ -414,7 +415,7 @@ MODULE PROCEDURE msh_ReadCurveEntities
 INTEGER(I4B) :: unitNo
 CHARACTER(*), PARAMETER :: myName = "ReadCurveEntities"
 INTEGER(I4B) :: i, j, k, tpt, error, dim
-INTEGER(I4B), ALLOCATABLE :: PhysicalTag(:)
+INTEGER(I4B), ALLOCATABLE :: PhysicalTag0(:)
 !> main program
 dim = 1; unitNo = obj%getUnitNo()
 CALL e%raiseInformation(modName//'::'//myName//' - ' &
@@ -430,10 +431,10 @@ DO i = 1, te
   tpt = obj%CurveEntities(i)%getTotalPhysicalTags()
   IF (tpt .NE. 0) THEN
     ! get physical tag int vector
-    PhysicalTag = obj%CurveEntities(i)%getPhysicalTag()
+    PhysicalTag0 = obj%CurveEntities(i)%getPhysicalTag()
     DO j = 1, tpt
       ! get index of physical tag
-      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag(j))
+      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag0(j))
       ! append this index to entities
       CALL obj%PhysicalNames%AppendEntities(indx=k, EntityTag=[i])
     END DO
@@ -451,7 +452,7 @@ MODULE PROCEDURE msh_ReadSurfaceEntities
 INTEGER(I4B) :: unitNo
 CHARACTER(*), PARAMETER :: myName = "ReadSurfaceEntities"
 INTEGER(I4B) :: i, j, k, tpt, error, dim
-INTEGER(I4B), ALLOCATABLE :: PhysicalTag(:)
+INTEGER(I4B), ALLOCATABLE :: PhysicalTag0(:)
 !> main program
 dim = 2; unitNo = obj%getUnitNo()
 CALL e%raiseInformation(modName//'::'//myName//' - ' &
@@ -467,10 +468,10 @@ DO i = 1, te
   tpt = obj%SurfaceEntities(i)%getTotalPhysicalTags()
   IF (tpt .NE. 0) THEN
     ! get physical tag int vector
-    PhysicalTag = obj%SurfaceEntities(i)%getPhysicalTag()
+    PhysicalTag0 = obj%SurfaceEntities(i)%getPhysicalTag()
     DO j = 1, tpt
       ! get index of physical tag
-      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag(j))
+      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag0(j))
       ! append this index to entities
       CALL obj%PhysicalNames%AppendEntities(indx=k, EntityTag=[i])
     END DO
@@ -488,7 +489,7 @@ MODULE PROCEDURE msh_ReadVolumeEntities
 INTEGER(I4B) :: unitNo
 CHARACTER(*), PARAMETER :: myName = "ReadVolumeEntities"
 INTEGER(I4B) :: i, j, k, tpt, error, dim
-INTEGER(I4B), ALLOCATABLE :: PhysicalTag(:)
+INTEGER(I4B), ALLOCATABLE :: PhysicalTag0(:)
 !> main program
 dim = 3; unitNo = obj%getUnitNo()
 CALL e%raiseInformation(modName//'::'//myName//' - ' &
@@ -504,10 +505,10 @@ DO i = 1, te
   tpt = obj%VolumeEntities(i)%getTotalPhysicalTags()
   IF (tpt .NE. 0) THEN
     ! get physical tag int vector
-    PhysicalTag = obj%VolumeEntities(i)%getPhysicalTag()
+    PhysicalTag0 = obj%VolumeEntities(i)%getPhysicalTag()
     DO j = 1, tpt
       ! get index of physical tag
-      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag(j))
+      k = obj%PhysicalNames%getIndex(dim=dim, tag=PhysicalTag0(j))
       ! append this index to entities
       CALL obj%PhysicalNames%AppendEntities(indx=k, EntityTag=[i])
     END DO

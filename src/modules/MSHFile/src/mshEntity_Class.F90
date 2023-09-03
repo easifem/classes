@@ -27,6 +27,11 @@ USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "mshEntity_Class"
+PUBLIC :: mshEntity_
+PUBLIC :: mshEntityPointer_
+PUBLIC :: DEALLOCATE
+PUBLIC :: Display
+PUBLIC :: GetIndex
 
 !----------------------------------------------------------------------------
 !                                                                 mshEntity_
@@ -134,8 +139,6 @@ END TYPE mshEntity_
 !
 !----------------------------------------------------------------------------
 
-PUBLIC :: mshEntity_
-
 TYPE(mshEntity_), PUBLIC, PARAMETER :: &
   & TypeMshEntity = &
   & mshEntity_( &
@@ -154,7 +157,6 @@ TYPE :: mshEntityPointer_
   CLASS(mshEntity_), POINTER :: Ptr => NULL()
 END TYPE mshEntityPointer_
 
-PUBLIC :: mshEntityPointer_
 
 !----------------------------------------------------------------------------
 !                                                                      Final
@@ -174,17 +176,11 @@ END INTERFACE
 ! date:         10 June 2021
 ! summary: This subroutine deallocate the data from [[mshentity_]]
 
-INTERFACE
+INTERFACE DEALLOCATE
   MODULE SUBROUTINE ent_Deallocate(obj)
     CLASS(mshEntity_), INTENT(INOUT) :: obj
   END SUBROUTINE ent_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE ent_Deallocate
 END INTERFACE DEALLOCATE
-
-PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         GotoTag
@@ -258,19 +254,13 @@ END INTERFACE
 ! date:         10 June 2021
 ! summary:         This subroutine writes the content of [[mshEntity_]]
 
-INTERFACE
+INTERFACE Display
   MODULE SUBROUTINE ent_Display(obj, Msg, UnitNo)
     CLASS(mshEntity_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: Msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
   END SUBROUTINE ent_Display
-END INTERFACE
-
-INTERFACE Display
-  MODULE PROCEDURE ent_Display
 END INTERFACE Display
-
-PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !                                                                 Read
@@ -366,19 +356,13 @@ END INTERFACE
 ! date:         10 June 2021
 ! summary:          This function finds the index of a tag/uid in list of entities
 
-INTERFACE
+INTERFACE GetIndex
   MODULE PURE FUNCTION ent_getIndex(mshEntities, Uid) RESULT(ans)
     TYPE(mshEntity_), INTENT(IN) :: mshEntities(:)
     INTEGER(I4B), INTENT(IN) :: Uid
     INTEGER(I4B) :: ans
   END FUNCTION ent_getIndex
-END INTERFACE
-
-INTERFACE getIndex
-  MODULE PROCEDURE ent_getIndex
-END INTERFACE getIndex
-
-PUBLIC :: getIndex
+END INTERFACE GetIndex
 
 !----------------------------------------------------------------------------
 !                                                getTotalPhysicalTags
