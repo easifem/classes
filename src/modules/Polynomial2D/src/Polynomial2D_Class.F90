@@ -45,7 +45,7 @@ CONTAINS
     !! @ConstructorMethods
     !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => func_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => func_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => func_Deallocate
   FINAL :: func_Final
     !!
     !! @GetMethods
@@ -231,9 +231,9 @@ INTERFACE
   !! coefficients
     INTEGER(I4B), INTENT(IN) :: degree(:, :)
   !! degrees of x and y
-    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    CHARACTER(*), INTENT(IN) :: varname1
   !! variable x
-    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    CHARACTER(*), INTENT(IN) :: varname2
   !! variable y
   END SUBROUTINE func_Initiate
 END INTERFACE
@@ -257,9 +257,9 @@ INTERFACE
   !! coefficients
     INTEGER(I4B), INTENT(IN) :: degree(:, :)
   !! degrees of x and y
-    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    CHARACTER(*), INTENT(IN) :: varname1
   !! variable x
-    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    CHARACTER(*), INTENT(IN) :: varname2
   !! variable y
     TYPE(Polynomial2D_) :: ans
   END FUNCTION func_Polynomial2D1
@@ -286,9 +286,9 @@ INTERFACE
   !! coefficients
     INTEGER(I4B), INTENT(IN) :: degree(:, :)
   !! degree of x and y
-    CHARACTER(LEN=*), INTENT(IN) :: varname1
+    CHARACTER(*), INTENT(IN) :: varname1
   !! x
-    CHARACTER(LEN=*), INTENT(IN) :: varname2
+    CHARACTER(*), INTENT(IN) :: varname2
   !! y
     CLASS(Polynomial2D_), POINTER :: ans
   END FUNCTION func_Polynomial2D_Pointer1
@@ -485,7 +485,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE func_Display(obj, msg, unitno)
     CLASS(Polynomial2D_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE func_Display
 END INTERFACE
