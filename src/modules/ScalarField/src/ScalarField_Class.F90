@@ -42,7 +42,7 @@ CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
 ! date: 25 June 2021
 ! summary: Native vector type
 !
-!{!pages/ScalarField_.md}
+!{!pages/docs-api/ScalarField/ScalarField_.md}
 
 TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS
@@ -101,7 +101,8 @@ CONTAINS
 END TYPE ScalarField_
 
 PUBLIC :: ScalarField_
-TYPE(ScalarField_), PARAMETER, PUBLIC :: TypeScalarField = ScalarField_(domains=NULL())
+TYPE(ScalarField_), PARAMETER, PUBLIC ::  &
+& TypeScalarField = ScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       ScalarFieldPointer_

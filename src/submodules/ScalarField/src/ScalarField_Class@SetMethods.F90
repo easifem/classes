@@ -34,7 +34,8 @@ IF (.NOT. obj%isInitiated) &
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=[1], VALUE=[VALUE], scale=scale)
+    CALL add(obj%realVec, nodenum=[1], VALUE=[VALUE], &
+    & scale=Input(option=scale, default=1.0_DFP))
   ELSE
     CALL set(obj%realVec, nodenum=[1], VALUE=[VALUE])
   END IF
@@ -46,7 +47,7 @@ ELSE
 
     IF (PRESENT(addContribution)) THEN
       CALL add(obj%realVec, nodenum=[localNode], VALUE=[VALUE], &
-        & scale=scale)
+        & scale=Input(option=scale, default=1.0_DFP))
     ELSE
       CALL set(obj%realVec, nodenum=[localNode], VALUE=[VALUE])
     END IF
@@ -71,7 +72,8 @@ IF (.NOT. obj%isInitiated) THEN
 ELSE
 
   IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, VALUE=VALUE, scale=scale)
+    CALL add(obj%realVec, VALUE=VALUE, &
+    & scale=Input(option=scale, default=1.0_DFP))
   ELSE
     CALL set(obj%realVec, VALUE=VALUE)
   END IF
@@ -102,7 +104,8 @@ ELSE
   END IF
 
   IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, VALUE=VALUE, scale=scale)
+    CALL add(obj%realVec, VALUE=VALUE, &
+    & scale=Input(option=scale, default=1.0_DFP))
   ELSE
     CALL set(obj%realVec, VALUE=VALUE)
   END IF
@@ -133,7 +136,8 @@ ELSE
     & 'Some of the globalNode are out of bound')
   END IF
   IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=localNode, VALUE=VALUE, scale=scale)
+    CALL add(obj%realVec, nodenum=localNode, VALUE=VALUE, &
+    & scale=Input(option=scale, default=1.0_DFP))
   ELSE
     CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
   END IF
@@ -163,7 +167,11 @@ ELSE
     & 'Some of the globalNode are out of bound')
   END IF
   IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=localNode, VALUE=VALUE, scale=scale)
+    CALL add( &
+    & obj=obj%realVec, &
+    & nodenum=localNode, &
+    & VALUE=VALUE, &
+    & scale=Input(option=scale, default=1.0_DFP))
   ELSE
     CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
   END IF
