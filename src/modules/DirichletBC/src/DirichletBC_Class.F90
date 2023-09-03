@@ -72,7 +72,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE setDirichletBCParam(param, name, idof, nodalValueType, &
+  MODULE SUBROUTINE SetDirichletBCParam(param, name, idof, nodalValueType, &
     & useFunction, isNormal, isTangent)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
@@ -85,10 +85,10 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
-  END SUBROUTINE setDirichletBCParam
+  END SUBROUTINE SetDirichletBCParam
 END INTERFACE
 
-PUBLIC :: setDirichletBCParam
+PUBLIC :: SetDirichletBCParam
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
