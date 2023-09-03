@@ -28,6 +28,8 @@ USE ExceptionHandler_Class, ONLY: e
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "FPL_Method"
 !! TYPE(ExceptionHandler_) :: e
+PUBLIC :: Set
+PUBLIC :: getValue
 
 !----------------------------------------------------------------------------
 !
@@ -37,17 +39,14 @@ INTERFACE Set
   MODULE PROCEDURE fpl_Set1
 END INTERFACE Set
 
-PUBLIC :: Set
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 INTERFACE getValue
   MODULE PROCEDURE fpl_getValue1
+  MODULE PROCEDURE fpl_getValue2
 END INTERFACE getValue
-
-PUBLIC :: getValue
 
 !----------------------------------------------------------------------------
 !
@@ -92,5 +91,35 @@ SUBROUTINE fpl_getValue1(obj, key, VALUE)
   ierr = obj%get(key=TRIM(key)//"/storageFMT", VALUE=VALUE%storageFMT)
   DEALLOCATE (s)
 END SUBROUTINE fpl_getValue1
+
+!----------------------------------------------------------------------------
+!                                                                  getValue
+!----------------------------------------------------------------------------
+
+SUBROUTINE fpl_getValue2(obj, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: key
+  TYPE(String), INTENT(INOUT) :: VALUE
+  ! Internal variable
+  CHARACTER(:), ALLOCATABLE :: char_var
+  INTEGER(I4B) :: ierr
+  CHARACTER(*), PARAMETER :: myName = "fpl_getValue2()"
+
+  IF (obj%isPresent(key=key)) THEN
+    ALLOCATE (CHARACTER( &
+      & obj%DataSizeInBytes(key=key)) :: char_var)
+    ierr = obj%get(key=key, VALUE=char_var)
+    IF (ALLOCATED(char_var)) THEN
+      VALUE = char_var
+      DEALLOCATE (char_var)
+    ELSE
+      VALUE = ""
+    END IF
+  ELSE
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & key//' not found in obj')
+  END IF
+END SUBROUTINE fpl_getValue2
 
 END MODULE FPL_Method
