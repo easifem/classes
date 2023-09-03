@@ -647,7 +647,7 @@ END INTERFACE MatrixFieldDisplay
 PUBLIC :: MatrixFieldDisplay
 
 !----------------------------------------------------------------------------
-!                                                           Import@IOMethods
+!                                                          Import@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -689,7 +689,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Export@IOMethods
+!                                                           Export@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -787,7 +787,6 @@ END INTERFACE
 ! is a native fortran vector. The output vector is also a native fortran
 ! vector. It should be noted that the output vector should be allocated
 ! outside and it should have same length as the input vector.
-!
 
 INTERFACE
   MODULE SUBROUTINE mField_Matvec1(obj, x, y, isTranspose, &
