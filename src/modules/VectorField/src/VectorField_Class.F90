@@ -20,7 +20,7 @@
 
 MODULE VectorField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
@@ -33,6 +33,16 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "VectorField"
+PUBLIC :: VectorField_
+PUBLIC :: VectorFieldPointer_
+PUBLIC :: SetVectorFieldParam
+PUBLIC :: VectorFieldInitiate1
+PUBLIC :: VectorFieldInitiate2
+PUBLIC :: VectorFieldDeallocate
+PUBLIC :: VectorField
+PUBLIC :: VectorField_Pointer
+PUBLIC :: VectorFieldDisplay
+PUBLIC :: VectorFieldExport
 
 !----------------------------------------------------------------------------
 !                                                              VectorField_
@@ -42,7 +52,7 @@ CHARACTER(*), PARAMETER :: myprefix = "VectorField"
 ! date: 25 June 2021
 ! summary: Vector field
 !
-!{!pages/VectorField_.md}
+!{!pages/docs-api/VectorField/VectorField_.md}
 
 TYPE, EXTENDS(AbstractNodeField_) :: VectorField_
   INTEGER(I4B) :: spaceCompo = 0_I4B
@@ -60,38 +70,38 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export
   FINAL :: vField_Final
   !! SetMethods
-  PROCEDURE, PASS(obj) :: set1 => vField_set1
-    !! set single entry
-  PROCEDURE, PASS(obj) :: set2 => vField_set2
-    !! set all values to a Vector values
-  PROCEDURE, PASS(obj) :: set3 => vField_set3
-    !! set all values to a given vector
-  PROCEDURE, PASS(obj) :: set4 => vField_set4
-    !! set selected values to given Vector
-  PROCEDURE, PASS(obj) :: set5 => vField_set5
-    !! set selected values to given vector
-  PROCEDURE, PASS(obj) :: set6 => vField_set6
-    !! set values to a Vector by using triplet
-  PROCEDURE, PASS(obj) :: set7 => vField_set7
-    !! set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: set8 => vField_set8
-    !! set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: set9 => vField_set9
-    !! set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: set10 => vField_set10
-    !! set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: set11 => vField_set11
-    !! set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: set12 => vField_set12
-    !! set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: set13 => vField_set13
-  PROCEDURE, PASS(obj) :: set14 => vField_set14
-  PROCEDURE, PASS(obj) :: set15 => vField_set15
-    !! set selected values using FEVariable
-  GENERIC, PUBLIC :: set => &
-    & set1, set2, set3, set4, set5, set6, &
-    & set7, set8, set9, set10, set11, set12, &
-    & set13, set14, set15
+  PROCEDURE, PASS(obj) :: Set1 => vField_set1
+    !! Set single entry
+  PROCEDURE, PASS(obj) :: Set2 => vField_set2
+    !! Set all values to a Vector values
+  PROCEDURE, PASS(obj) :: Set3 => vField_set3
+    !! Set all values to a given vector
+  PROCEDURE, PASS(obj) :: Set4 => vField_set4
+    !! Set selected values to given Vector
+  PROCEDURE, PASS(obj) :: Set5 => vField_set5
+    !! Set selected values to given vector
+  PROCEDURE, PASS(obj) :: Set6 => vField_set6
+    !! Set values to a Vector by using triplet
+  PROCEDURE, PASS(obj) :: Set7 => vField_set7
+    !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set8 => vField_set8
+    !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set9 => vField_set9
+    !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set10 => vField_set10
+    !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set11 => vField_set11
+    !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set12 => vField_set12
+    !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set13 => vField_set13
+  PROCEDURE, PASS(obj) :: Set14 => vField_set14
+  PROCEDURE, PASS(obj) :: Set15 => vField_set15
+    !! Set selected values using FEVariable
+  GENERIC, PUBLIC :: Set => &
+    & Set1, set2, set3, set4, set5, set6, &
+    & Set7, set8, set9, set10, set11, set12, &
+    & Set13, set14, set15
 
   PROCEDURE, PASS(obj) :: get1 => vField_get1
     !! returns the single entry
@@ -117,7 +127,6 @@ CONTAINS
     & vField_applyDirichletBC2
 END TYPE VectorField_
 
-PUBLIC :: VectorField_
 TYPE(VectorField_), PARAMETER, PUBLIC :: TypeVectorField =  &
   & VectorField_(domains=NULL())
 
@@ -129,10 +138,8 @@ TYPE :: VectorFieldPointer_
   CLASS(VectorField_), POINTER :: ptr => NULL()
 END TYPE VectorFieldPointer_
 
-PUBLIC :: VectorFieldPointer_
-
 !----------------------------------------------------------------------------
-!                                            setVectorFieldParam@Constructor
+!                                            SetVectorFieldParam@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -140,17 +147,15 @@ PUBLIC :: VectorFieldPointer_
 ! summary: Sets parameters for creating the vector field
 !
 INTERFACE
-  MODULE SUBROUTINE setVectorFieldParam(param, name, engine, &
+  MODULE SUBROUTINE SetVectorFieldParam(param, name, engine, &
     & spaceCompo, fieldType)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-  END SUBROUTINE setVectorFieldParam
+  END SUBROUTINE SetVectorFieldParam
 END INTERFACE
-
-PUBLIC :: setVectorFieldParam
 
 !----------------------------------------------------------------------------
 !                                           checkEssentialParam@Constructor
@@ -191,19 +196,13 @@ END INTERFACE
 ! - `spaceCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE
+INTERFACE VectorFieldInitiate1
   MODULE SUBROUTINE vField_Initiate1(obj, param, dom)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE vField_Initiate1
-END INTERFACE
-
-INTERFACE VectorFieldInitiate1
-  MODULE PROCEDURE vField_Initiate1
 END INTERFACE VectorFieldInitiate1
-
-PUBLIC :: VectorFieldInitiate1
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -213,7 +212,7 @@ PUBLIC :: VectorFieldInitiate1
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE
+INTERFACE VectorFieldInitiate2
   MODULE SUBROUTINE vField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
@@ -223,13 +222,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE vField_Initiate2
-END INTERFACE
-
-INTERFACE VectorFieldInitiate2
-  MODULE PROCEDURE vField_Initiate2
 END INTERFACE VectorFieldInitiate2
-
-PUBLIC :: VectorFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                                 Deallocate@Constructor
@@ -239,17 +232,11 @@ PUBLIC :: VectorFieldInitiate2
 ! date: 25 June 2021
 ! summary: This routine deallocates the data stored inside the VectorField_ obj
 
-INTERFACE
+INTERFACE VectorFieldDeallocate
   MODULE SUBROUTINE vField_Deallocate(obj)
     CLASS(VectorField_), INTENT(INOUT) :: obj
   END SUBROUTINE vField_Deallocate
-END INTERFACE
-
-INTERFACE VectorFieldDeallocate
-  MODULE PROCEDURE vField_Deallocate
 END INTERFACE VectorFieldDeallocate
-
-PUBLIC :: VectorFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -269,19 +256,13 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[VectorField_]]
 
-INTERFACE
+INTERFACE VectorField
   MODULE FUNCTION vField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(VectorField_) :: ans
   END FUNCTION vField_Constructor1
-END INTERFACE
-
-INTERFACE VectorField
-  MODULE PROCEDURE vField_Constructor1
 END INTERFACE VectorField
-
-PUBLIC :: VectorField
 
 !----------------------------------------------------------------------------
 !                                           VectorField_Pointer@Constructor
@@ -291,19 +272,13 @@ PUBLIC :: VectorField
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[VectorField_]]
 
-INTERFACE
+INTERFACE VectorField_Pointer
   MODULE FUNCTION vField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(VectorField_), POINTER :: ans
   END FUNCTION vField_Constructor_1
-END INTERFACE
-
-INTERFACE VectorField_Pointer
-  MODULE PROCEDURE vField_Constructor_1
 END INTERFACE VectorField_Pointer
-
-PUBLIC :: VectorField_Pointer
 
 !----------------------------------------------------------------------------
 !                                                                 Display@IO
@@ -313,19 +288,13 @@ PUBLIC :: VectorField_Pointer
 ! date: 26 June 2021
 ! summary: Display the content of [[VectorField_]]
 
-INTERFACE
+INTERFACE VectorFieldDisplay
   MODULE SUBROUTINE vField_Display(obj, msg, unitNo)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE vField_Display
-END INTERFACE
-
-INTERFACE VectorFieldDisplay
-  MODULE PROCEDURE vField_Display
 END INTERFACE VectorFieldDisplay
-
-PUBLIC :: VectorFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                                Import@IO
@@ -353,19 +322,13 @@ END INTERFACE
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE
+INTERFACE VectorFieldExport
   MODULE SUBROUTINE vField_Export(obj, hdf5, group)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE vField_Export
-END INTERFACE
-
-INTERFACE VectorFieldExport
-  MODULE PROCEDURE vField_Export
 END INTERFACE VectorFieldExport
-
-PUBLIC :: VectorFieldExport
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -373,10 +336,10 @@ PUBLIC :: VectorFieldExport
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the single entry of the Vector field
+! summary: This routine Sets the single entry of the Vector field
 !
 !# Introduction
-! This routine sets the single entry of the vector field. Here, val should
+! This routine Sets the single entry of the vector field. Here, val should
 ! be a vector representing the components of a vector. The size of `value`
 ! should be same as `obj%spaceCompo`. In simple words it does following.
 !
@@ -386,19 +349,19 @@ PUBLIC :: VectorFieldExport
 !### Usage
 !
 !```fortran
-! call obj%set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
+! call obj%Set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
 ! call obj%display( "test-1: vector field = ")
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_set1(obj, globalNode, VALUE, &
+  MODULE SUBROUTINE vField_Set1(obj, globalNode, VALUE, &
     & scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set1
+  END SUBROUTINE vField_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -407,11 +370,11 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets all the entries of a Vector field
+! summary: This routine Sets all the entries of a Vector field
 !
 !# Introduction
 ! This routine work as follows. The size of value should be same as
-!  obj%spaceCompo, then this value is set for all the nodal values
+!  obj%spaceCompo, then this value is Set for all the nodal values
 !
 ! vector( :, i ) = value( : ), for i = 1, tNodes
 !
@@ -419,17 +382,17 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-! call obj%set( value= 10.0_DFP*[1,1,1] )
+! call obj%Set( value= 10.0_DFP*[1,1,1] )
 ! call obj%display( "test-2: vector field = ")
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_set2(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE vField_Set2(obj, VALUE, scale, addContribution)
     CLASS(VectorField_), TARGET, INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set2
+  END SUBROUTINE vField_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -438,10 +401,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets all the entries of a Vector field
+! summary: This routine Sets all the entries of a Vector field
 !
 !# Introduction
-! This routine sets all values of `spaceCompo` component of the vector field
+! This routine Sets all values of `spaceCompo` component of the vector field
 ! to given scalar value `value`
 !
 ! vector( spaceCompo, i ) = value, for i = 1, tNodes
@@ -450,20 +413,20 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-! call obj%set( value= -10.0_DFP, spaceCompo=1 )
-! call obj%set( value= -20.0_DFP, spaceCompo=2 )
-! call obj%set( value= -30.0_DFP, spaceCompo=3 )
+! call obj%Set( value= -10.0_DFP, spaceCompo=1 )
+! call obj%Set( value= -20.0_DFP, spaceCompo=2 )
+! call obj%Set( value= -30.0_DFP, spaceCompo=3 )
 ! call obj%display( "test-3: vector field = ")
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_set3(obj, VALUE, spaceCompo, scale, addContribution)
+ MODULE SUBROUTINE vField_Set3(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set3
+  END SUBROUTINE vField_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -472,10 +435,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all the entries by using given Vector field
+! summary: This routine Set all the entries by using given Vector field
 !
 !# Introduction
-! This routine set all entries of vector field to given vector
+! This routine Set all entries of vector field to given vector
 ! Here shape of should be value(1:spaceCompo, tNodes).
 !
 ! vector( :, : ) = value( :, : )
@@ -486,17 +449,17 @@ END INTERFACE
 !```fortran
 ! call reallocate( real2, 3, dom%getTotalNodes() )
 ! real2 = 1.0_DFP
-! call obj%set( value=real2 )
+! call obj%Set( value=real2 )
 ! call obj%display( "test-4: vector field = " )
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_set4(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE vField_Set4(obj, VALUE, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set4
+  END SUBROUTINE vField_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -505,10 +468,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all the entries by using given Vector field
+! summary: This routine Set all the entries by using given Vector field
 !
 !# Introduction
-! This routine set all entries of the component `spaceCompo` vector
+! This routine Set all entries of the component `spaceCompo` vector
 ! field  to given fortran vector `value`
 !
 ! vector( spaceCompo, : ) = value( : )
@@ -519,18 +482,18 @@ END INTERFACE
 !```fortran
 ! call reallocate( real1, dom%getTotalNodes() )
 ! real1 = 3.0_DFP
-! call obj%set( value=real1, spaceCompo=3 )
+! call obj%Set( value=real1, spaceCompo=3 )
 ! call obj%display( "test-5: vector field = " )
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_set5(obj, VALUE, spaceCompo, scale, addContribution)
+ MODULE SUBROUTINE vField_Set5(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set5
+  END SUBROUTINE vField_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -539,10 +502,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all the entries by using given Vector field
+! summary: This routine Set all the entries by using given Vector field
 !
 !# Introduction
-! This routine set all entries of the component `spaceCompo` vector
+! This routine Set all entries of the component `spaceCompo` vector
 ! field  to given scalar field `value`
 !
 ! vector( spaceCompo, : ) = value
@@ -552,25 +515,25 @@ END INTERFACE
 !
 !```fortran
 ! call scalarObj%initiate( param, dom )
-! call scalarObj%set( value = 2.0_DFP )
-! call obj%set( value=scalarObj, spaceCompo=2 )
+! call scalarObj%Set( value = 2.0_DFP )
+! call obj%Set( value=scalarObj, spaceCompo=2 )
 ! call obj%display( "test-6: vector field = ")
-! ierr = param%set( key="fieldType", value=FIELD_TYPE_CONSTANT)
+! ierr = param%Set( key="fieldType", value=FIELD_TYPE_CONSTANT)
 ! call scalarObj%Deallocate()
 ! call scalarObj%initiate( param, dom )
-! call scalarObj%set( value=10.0_DFP )
-! call obj%set( value=scalarObj, spaceCompo=1 )
+! call scalarObj%Set( value=10.0_DFP )
+! call obj%Set( value=scalarObj, spaceCompo=1 )
 ! call obj%display( "test-7: vector field = ")
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_set6(obj, VALUE, spaceCompo, scale, addContribution)
+ MODULE SUBROUTINE vField_Set6(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set6
+  END SUBROUTINE vField_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -579,10 +542,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This soubroutine sets the selected enties to a vector entry value( : )
+! This soubroutine Sets the selected enties to a vector entry value( : )
 ! Effectively it does the following:
 !
 ! vector( :, globalNode ) = value( : ), for entries in global nodes
@@ -594,18 +557,18 @@ END INTERFACE
 ! call reallocate( real2, 3, 4)
 ! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
 ! real2( :, 4 ) = -4.0
-! call obj%set( value=real2, globalNode=[1,3,5,7] )
+! call obj%Set( value=real2, globalNode=[1,3,5,7] )
 ! call obj%display( "test-8: vector field = ")
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_set7(obj, VALUE, globalNode, scale, addContribution)
+ MODULE SUBROUTINE vField_Set7(obj, VALUE, globalNode, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set7
+  END SUBROUTINE vField_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -614,10 +577,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This routine sets all selected entries.
+! This routine Sets all selected entries.
 ! vector( :, globalNode ) = value( :, : )
 !
 !
@@ -627,12 +590,12 @@ END INTERFACE
 ! call reallocate( real2, 3, 4)
 ! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
 ! real2( :, 4 ) = -4.0
-! call obj%set( value=real2, globalNode=[1,3,5,7] )
+! call obj%Set( value=real2, globalNode=[1,3,5,7] )
 ! call obj%display( "test-8: vector field = ")
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_set8(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE vField_Set8(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -640,7 +603,7 @@ INTERFACE
   !! value is in value(i,J) format.
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set8
+  END SUBROUTINE vField_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -649,10 +612,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This routine sets the selected components of selected nodes to given value
+! This routine Sets the selected components of selected nodes to given value
 !
 ! vector( spaceCompo, globalNode ) = value( : )
 !
@@ -662,12 +625,12 @@ END INTERFACE
 !```fortran
 ! call reallocate( real1, 4)
 ! real1 = [1,10,100,1000]
-! call obj%set( value=real1, globalNode=[1,3,5,7], spaceCompo=1 )
+! call obj%Set( value=real1, globalNode=[1,3,5,7], spaceCompo=1 )
 ! call obj%display( "test-9: vector field = " )
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_set9(obj, VALUE, globalNode, spaceCompo, scale, &
+  MODULE SUBROUTINE vField_Set9(obj, VALUE, globalNode, spaceCompo, scale, &
     & addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
@@ -675,7 +638,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set9
+  END SUBROUTINE vField_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -684,7 +647,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
 ! selected components, selected nodes
@@ -692,7 +655,7 @@ END INTERFACE
 ! vector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE vField_set10(obj, VALUE, globalNode, spaceCompo, scale, &
+  MODULE SUBROUTINE vField_Set10(obj, VALUE, globalNode, spaceCompo, scale, &
     & addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
@@ -700,7 +663,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set10
+  END SUBROUTINE vField_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -709,14 +672,14 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
 ! Set entries using the selected nodes using triplet.
 !
 
 INTERFACE
-  MODULE SUBROUTINE vField_set11(obj, VALUE, istart, iend, stride, scale, &
+  MODULE SUBROUTINE vField_Set11(obj, VALUE, istart, iend, stride, scale, &
     & addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
@@ -725,7 +688,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set11
+  END SUBROUTINE vField_Set11
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -734,13 +697,13 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the vector values using triplet
+! summary: Set the vector values using triplet
 !
 !# Introduction
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE vField_set12(obj, VALUE, istart, iend, stride, scale, &
+  MODULE SUBROUTINE vField_Set12(obj, VALUE, istart, iend, stride, scale, &
     & addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
@@ -749,7 +712,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: stride
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set12
+  END SUBROUTINE vField_Set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -758,17 +721,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the values using FEVariable
+! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_set13(obj, VALUE, globalNode, scale, &
+  MODULE SUBROUTINE vField_Set13(obj, VALUE, globalNode, scale, &
     & addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set13
+  END SUBROUTINE vField_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -777,15 +740,15 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the values using FEVariable
+! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_set14(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE vField_Set14(obj, VALUE, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set14
+  END SUBROUTINE vField_Set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -797,7 +760,7 @@ END INTERFACE
 ! summary: Set values
 
 INTERFACE
-  MODULE SUBROUTINE vField_set15(obj, ivar, idof, VALUE, ivar_value, &
+  MODULE SUBROUTINE vField_Set15(obj, ivar, idof, VALUE, ivar_value, &
     & idof_value, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -807,7 +770,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof_value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_set15
+  END SUBROUTINE vField_Set15
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -908,7 +871,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 
 INTERFACE
   MODULE SUBROUTINE vField_get6(obj, VALUE, istart, iend, stride)
@@ -926,7 +889,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 
 INTERFACE
   MODULE SUBROUTINE vField_get7(obj, VALUE, istart, iend, stride, spaceCompo)
