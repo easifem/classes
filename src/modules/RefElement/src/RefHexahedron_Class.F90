@@ -46,9 +46,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElements => &
     & refelem_GetFacetElements
   !! Returns the facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
-    & refelem_GenerateTopology
-  !! returns the facet topology
   PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
   !! returns coordiantes of linear reference elements
 END TYPE RefHexahedron_
@@ -70,9 +67,10 @@ END TYPE RefHexahedronPointer_
 ! summary: Return the reference coordiante of linear element
 
 INTERFACE
- MODULE FUNCTION refelem_RefCoord(obj, baseInterpol, baseContinuity) RESULT(ans)
+  MODULE FUNCTION refelem_RefCoord(obj, baseInterpolation, baseContinuity) &
+     & RESULT(ans)
     CLASS(RefHexahedron_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: baseInterpol
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
     CHARACTER(*), INTENT(IN) :: baseContinuity
     REAL(DFP), ALLOCATABLE :: ans(:, :)
   END FUNCTION refelem_RefCoord
@@ -106,20 +104,6 @@ INTERFACE
     CLASS(RefHexahedron_), INTENT(IN) :: obj
     TYPE(AbstractRefElementPointer_), ALLOCATABLE :: ans(:)
   END SUBROUTINE refelem_GetFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GenerateTopology@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2022
-! summary: Generate topology of reference element
-
-INTERFACE
-  MODULE SUBROUTINE refelem_GenerateTopology(obj)
-    CLASS(RefHexahedron_), INTENT(INOUT) :: obj
-  END SUBROUTINE refelem_GenerateTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------

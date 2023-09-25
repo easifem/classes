@@ -43,11 +43,11 @@ END PROCEDURE refelem_GetName
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: tFacet = 2_I4B
 INTEGER(I4B) :: ii
-TYPE(string) :: baseContinuity0, baseInterpol0
+TYPE(string) :: baseContinuity0, baseInterpolation0
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 ALLOCATE (ans(tFacet))
 CALL obj%getParam( &
-& baseInterpol=baseInterpol0, &
+& baseInterpolation=baseInterpolation0, &
 & baseContinuity=baseContinuity0, &
 & xij=xij)
 DO ii = 1, tFacet
@@ -55,37 +55,10 @@ DO ii = 1, tFacet
   CALL ans(ii)%ptr%Initiate( &
   & nsd=obj%getNSD(),  &
   & baseContinuity=baseContinuity0%chars(),  &
-  & baseInterpol=baseInterpol0%chars(), &
+  & baseInterpolation=baseInterpolation0%chars(), &
   & xij=xij(:, ii:ii))
 END DO
 END PROCEDURE refelem_GetFacetElements
-
-!----------------------------------------------------------------------------
-!                                                           GenerateTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GenerateTopology
-INTEGER(I4B), PARAMETER :: np = 2_I4B, ne = 1_I4B
-
-ALLOCATE (obj%pointTopology(np))
-ALLOCATE (obj%edgeTopology(ne))
-
-CALL obj%pointTopology(1)%Initiate(&
-  & nptrs=[1_I4B], &
-  & name=Point, &
-  & xidimension=0_I4B)
-
-CALL obj%pointTopology(2)%Initiate( &
-  & nptrs=[2_I4B], &
-  & name=Point, &
-  & xidimension=0_I4B)
-
-CALL obj%edgeTopology(1)%Initiate( &
-  & nptrs=[1_I4B, 2_I4B], &
-  & name=Line2,  &
-  & xidimension=1_I4B)
-
-END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------
 !

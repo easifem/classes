@@ -45,18 +45,6 @@ ALLOCATE (ans(0))
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
-!                                                          GenerateTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GenerateTopology
-ALLOCATE (obj%pointTopology(1))
-CALL obj%pointTopology(1)%Initiate( &
-  & nptrs=[1_I4B], &
-  & name=Point1, &
-  & xidimension=0_I4B)
-END PROCEDURE refelem_GenerateTopology
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

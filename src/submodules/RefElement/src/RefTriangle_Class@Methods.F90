@@ -26,15 +26,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_RefCoord
-TYPE(String) :: baseContinuity0, baseInterpol0
+TYPE(String) :: baseContinuity0, baseInterpolation0
 CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
 
 baseContinuity0 = UpperCase(baseContinuity)
-baseInterpol0 = UpperCase(baseInterpol)
+baseInterpolation0 = UpperCase(baseInterpolation)
 
 SELECT CASE (baseContinuity0%chars())
 CASE ("H1")
-  SELECT CASE (baseInterpol0%chars())
+  SELECT CASE (baseInterpolation0%chars())
   CASE (  &
     & "LAGRANGEPOLYNOMIAL", &
     & "LAGRANGE", &
@@ -48,7 +48,7 @@ CASE ("H1")
   CASE ("HERMITPOLYNOMIAL", "HERMIT", "HERMITINTERPOLATION")
 
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'NOT IMPLEMETED! WIP! baseInterpol='//baseInterpol0)
+      & 'NOT IMPLEMETED! WIP! baseInterpolation='//baseInterpolation0)
 
   CASE ( &
     & "HIERARCHYPOLYNOMIAL", &
@@ -90,17 +90,17 @@ END PROCEDURE refelem_GetName
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: tfacet = 3_I4B
 INTEGER(I4B) :: ii
-TYPE(string) :: baseContinuity0, baseInterpol0
+TYPE(string) :: baseContinuity0, baseInterpolation0
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B) :: faceCon(2, 3)
 
 CALL obj%getParam( &
-  & baseInterpol=baseInterpol0, &
+  & baseInterpolation=baseInterpolation0, &
   & baseContinuity=baseContinuity0, &
   & xij=xij)
 
 faceCon = FacetConnectivity_Triangle( &
-  & baseInterpol0%chars(), &
+  & baseInterpolation0%chars(), &
   & baseContinuity0%chars())
 
 ALLOCATE (ans(tfacet))
@@ -110,61 +110,13 @@ DO ii = 1, tfacet
   CALL ans(ii)%ptr%Initiate( &
     & nsd=obj%getNSD(),  &
     & baseContinuity=baseContinuity0%chars(),  &
-    & baseInterpol=baseInterpol0%chars(), &
+    & baseInterpolation=baseInterpolation0%chars(), &
     & xij=xij(:, faceCon(:, ii)) &
     & )
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 END PROCEDURE refelem_GetFacetElements
-
-!----------------------------------------------------------------------------
-!                                                           GenerateTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GenerateTopology
-INTEGER(I4B), PARAMETER :: np = 3_I4B
-INTEGER(I4B), PARAMETER :: ne = 3_I4B
-INTEGER(I4B), PARAMETER :: nf = 1_I4B
-INTEGER(I4B) :: edges(2, ne)
-INTEGER(I4B) :: ii
-TYPE(string) :: baseContinuity0, baseInterpol0
-
-CALL obj%getParam( &
-  & baseInterpol=baseInterpol0, &
-  & baseContinuity=baseContinuity0)
-
-edges = FacetConnectivity_Triangle( &
-  & baseInterpol0%chars(), &
-  & baseContinuity0%chars())
-
-ALLOCATE (obj%pointTopology(np))
-ALLOCATE (obj%edgeTopology(ne))
-ALLOCATE (obj%faceTopology(nf))
-
-!! point
-DO ii = 1, np
-  CALL obj%pointTopology(ii)%Initiate( &
-    & nptrs=[ii], &
-    & name=Point, &
-    & xidimension=0_I4B)
-END DO
-
-!! edge
-DO ii = 1, ne
-  CALL obj%edgeTopology(ii)%Initiate( &
-    & nptrs=edges(:, ii), &
-    & name=Line2, &
-    & xidimension=1_I4B)
-END DO
-
-!! face
-CALL obj%faceTopology(1)%Initiate( &
-  & nptrs=[1_I4B, 2_I4B, 3_I4B], &
-  & name=Triangle3, &
-  & xidimension=2_I4B)
-
-END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------
 !
