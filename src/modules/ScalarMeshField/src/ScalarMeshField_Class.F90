@@ -17,7 +17,7 @@
 
 MODULE ScalarMeshField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
@@ -26,6 +26,10 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
+PUBLIC :: ScalarMeshField_
+PUBLIC :: ScalarMeshFieldPointer_
+PUBLIC :: SetScalarMeshFieldParam
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                     ScalarMeshField_Class
@@ -38,14 +42,12 @@ CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
 TYPE, EXTENDS(AbstractMeshField_) :: ScalarMeshField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & aField_CheckEssentialParam
+    !! Check essential parameters
   PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
     !! Initiate the field by reading param and a given mesh
 END TYPE ScalarMeshField_
-
-PUBLIC :: ScalarMeshField_
 
 !----------------------------------------------------------------------------
 !
@@ -55,18 +57,44 @@ TYPE :: ScalarMeshFieldPointer_
   CLASS(ScalarMeshField_), POINTER :: ptr => NULL()
 END TYPE ScalarMeshFieldPointer_
 
-PUBLIC :: ScalarMeshFieldPointer_
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+    TYPE(ScalarMeshField_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
-!                              setAbstractMeshFieldParam@ConstructorMethods
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+    TYPE(ScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                              SetAbstractMeshFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setScalarMeshFieldParam(param, name, &
+  MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
@@ -77,24 +105,22 @@ INTERFACE
   !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: nns
   !! Number of node in space
-  END SUBROUTINE setScalarMeshFieldParam
+  END SUBROUTINE SetScalarMeshFieldParam
 END INTERFACE
 
-PUBLIC :: setScalarMeshFieldParam
-
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE aField_CheckEssentialParam(obj, param)
     CLASS(ScalarMeshField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
+  END SUBROUTINE aField_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
