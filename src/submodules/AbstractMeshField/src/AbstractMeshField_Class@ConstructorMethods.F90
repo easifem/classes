@@ -23,17 +23,17 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setAbstractMeshFieldParam
+MODULE PROCEDURE SetAbstractMeshFieldParam
 INTEGER(I4B) :: ierr
-ierr = param%set(key=TRIM(prefix)//"/name", VALUE=name)
-ierr = param%set(key=TRIM(prefix)//"/fieldType", VALUE=fieldType)
-ierr = param%set(key=TRIM(prefix)//"/engine", VALUE=engine)
-ierr = param%set(key=TRIM(prefix)//"/defineOn", VALUE=defineOn)
-ierr = param%set(key=TRIM(prefix)//"/varType", VALUE=varType)
-ierr = param%set(key=TRIM(prefix)//"/rank", VALUE=rank)
-ierr = param%set(key=TRIM(prefix)//"/s", VALUE=s)
-ierr = param%set(key=TRIM(prefix)//"/totalShape", VALUE=SIZE(s))
-END PROCEDURE setAbstractMeshFieldParam
+ierr = param%Set(key=TRIM(prefix)//"/name", VALUE=name)
+ierr = param%Set(key=TRIM(prefix)//"/fieldType", VALUE=fieldType)
+ierr = param%Set(key=TRIM(prefix)//"/engine", VALUE=engine)
+ierr = param%Set(key=TRIM(prefix)//"/defineOn", VALUE=defineOn)
+ierr = param%Set(key=TRIM(prefix)//"/varType", VALUE=varType)
+ierr = param%Set(key=TRIM(prefix)//"/rank", VALUE=rank)
+ierr = param%Set(key=TRIM(prefix)//"/s", VALUE=s)
+ierr = param%Set(key=TRIM(prefix)//"/totalShape", VALUE=SIZE(s))
+END PROCEDURE SetAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                       checkEssentialParam
@@ -138,7 +138,7 @@ END PROCEDURE aField_Initiate1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractMeshFieldInitiate
-TYPE(String) :: dsetname
+TYPE(String) :: dSetname
 INTEGER(I4B) :: ierr, nrow, totalShape
 CHARACTER(:), ALLOCATABLE :: char_var
 CHARACTER(*), PARAMETER :: myName = "AbstractMeshFieldInitiate"
@@ -158,7 +158,7 @@ obj%isInitiated = .TRUE.
 !
 ! fieldType
 !
-dsetname = TRIM(prefix)//"/fieldType"
+dSetname = TRIM(prefix)//"/fieldType"
 IF (param%isPresent(key=dsetname%chars())) THEN
   ierr = param%get(key=dsetname%chars(), VALUE=obj%fieldType)
 ELSE
@@ -386,7 +386,24 @@ END SELECT
 END PROCEDURE aField_Shape
 
 !----------------------------------------------------------------------------
-!
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE aField_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                                 
 !----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods
