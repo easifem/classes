@@ -33,6 +33,14 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
+PUBLIC :: ScalarField_
+PUBLIC :: ScalarFieldPointer_
+PUBLIC :: SetScalarFieldParam
+PUBLIC :: sField_CheckEssentialParam
+PUBLIC :: ScalarFieldInitiate1
+PUBLIC :: ScalarField
+PUBLIC :: ScalarField_Pointer
+PUBLIC :: ScalarFieldImport
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -47,8 +55,8 @@ CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
 TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & sField_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & sField_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => sField_Initiate1
   FINAL :: sField_Final
   PROCEDURE, PASS(obj) :: set1 => sField_set1
@@ -100,9 +108,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => sField_Import
 END TYPE ScalarField_
 
-PUBLIC :: ScalarField_
 TYPE(ScalarField_), PARAMETER, PUBLIC ::  &
-& TypeScalarField = ScalarField_(domains=NULL())
+  & TypeScalarField = ScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       ScalarFieldPointer_
@@ -111,8 +118,6 @@ TYPE(ScalarField_), PARAMETER, PUBLIC ::  &
 TYPE :: ScalarFieldPointer_
   CLASS(ScalarField_), POINTER :: ptr => NULL()
 END TYPE ScalarFieldPointer_
-
-PUBLIC :: ScalarFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                           setScalarFieldParam@Constructor
@@ -140,24 +145,20 @@ INTERFACE
   END SUBROUTINE SetScalarFieldParam
 END INTERFACE
 
-PUBLIC :: SetScalarFieldParam
-
 !----------------------------------------------------------------------------
-!                                           checkEssentialParam@Constructor
+!                                           CheckEssentialParam@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE sField_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE sField_CheckEssentialParam(obj, param)
     CLASS(ScalarField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE sField_checkEssentialParam
+  END SUBROUTINE sField_CheckEssentialParam
 END INTERFACE
-
-PUBLIC :: sField_checkEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                      Initiate@Constructor
@@ -185,8 +186,6 @@ END INTERFACE
 INTERFACE ScalarFieldInitiate1
   MODULE PROCEDURE sField_Initiate1
 END INTERFACE ScalarFieldInitiate1
-
-PUBLIC :: ScalarFieldInitiate1
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -218,8 +217,6 @@ INTERFACE ScalarField
   MODULE PROCEDURE sField_Constructor1
 END INTERFACE ScalarField
 
-PUBLIC :: ScalarField
-
 !----------------------------------------------------------------------------
 !                                                 ScalarField_Pointer@Constructor
 !----------------------------------------------------------------------------
@@ -239,8 +236,6 @@ END INTERFACE
 INTERFACE ScalarField_Pointer
   MODULE PROCEDURE sField_Constructor_1
 END INTERFACE ScalarField_Pointer
-
-PUBLIC :: ScalarField_Pointer
 
 !----------------------------------------------------------------------------
 !                                                                Import@IO
@@ -263,8 +258,6 @@ END INTERFACE
 INTERFACE ScalarFieldImport
   MODULE PROCEDURE sField_Import
 END INTERFACE ScalarFieldImport
-
-PUBLIC :: ScalarFieldImport
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
