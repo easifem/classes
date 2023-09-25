@@ -28,6 +28,9 @@ USE Domain_Class, ONLY: Domain_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
+PUBLIC :: DEALLOCATE
+PUBLIC :: MeshSelection_
+PUBLIC :: MeshSelectionPointer_
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
@@ -67,13 +70,15 @@ TYPE :: MeshSelection_
     !! Element number in mesh of volume
   TYPE(IntVector_) :: nodeNum
     !! Global Node numbers
-  !! TODO add BoundingBox to MeshSelection_
-  !! type(BoundingBoxPointer_), allocatable :: bbox(:)
-  !! Accordingly, modify the initiate method.
+    !! TODO: add BoundingBox to MeshSelection_
+    !! type(BoundingBoxPointer_), allocatable :: bbox(:)
+    !! Accordingly, modify the initiate method.
 CONTAINS
   PRIVATE
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => meshSelect_Initiate
-    !! Initiates an instance of [[MeshSelection_]]
+    !! Initiates an instance of MeshSelection_
   PROCEDURE, PASS(obj) :: Copy => meshSelect_Copy
     !! This routine copies object
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
@@ -82,8 +87,11 @@ CONTAINS
     & meshSelect_Deallocate
     !! Deallocate Data
   FINAL :: meshSelect_Final
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Add => meshSelect_Add
-    !! Add a new region to mesh selection
+    !! Add a new region to the MeshSelection_
   PROCEDURE, PUBLIC, PASS(obj) :: Set => meshSelect_Set
     !! This routine should be called when we are done
     !! setting the regions in the instance
@@ -93,29 +101,29 @@ CONTAINS
     !! Export to the HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Display => meshSelect_Display
     !! Displays the content
-  PROCEDURE, PUBLIC, PASS(obj) :: getMeshID => meshSelect_getMeshID
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => meshSelect_getMeshID
     !! Returns the mesh id if available
-  PROCEDURE, PASS(obj) :: meshSelect_getElemNum1
+  PROCEDURE, PASS(obj) :: meshSelect_GetElemNum1
     !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: meshSelect_getElemNum2
+  PROCEDURE, PASS(obj) :: meshSelect_GetElemNum2
     !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: meshSelect_getElemNum3
+  PROCEDURE, PASS(obj) :: meshSelect_GetElemNum3
     !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: meshSelect_getElemNum4
+  PROCEDURE, PASS(obj) :: meshSelect_GetElemNum4
     !! Returns the element numbers if available
-  GENERIC, PUBLIC :: getElemNum => &
-    & meshSelect_getElemNum1, &
-    & meshSelect_getElemNum2, &
-    & meshSelect_getElemNum3, &
-    & meshSelect_getElemNum4
+  GENERIC, PUBLIC :: GetElemNum => &
+    & meshSelect_GetElemNum1, &
+    & meshSelect_GetElemNum2, &
+    & meshSelect_GetElemNum3, &
+    & meshSelect_GetElemNum4
     !! Returns the element numbers if available
-  PROCEDURE, PASS(obj) :: meshSelect_getNodeNum1
-  PROCEDURE, PASS(obj) :: meshSelect_getNodeNum2
-  PROCEDURE, PASS(obj) :: meshSelect_getNodeNum3
-  GENERIC, PUBLIC :: getNodeNum => &
-    & meshSelect_getNodeNum1, &
-    & meshSelect_getNodeNum2, &
-    & meshSelect_getNodeNum3
+  PROCEDURE, PASS(obj) :: meshSelect_GetNodeNum1
+  PROCEDURE, PASS(obj) :: meshSelect_GetNodeNum2
+  PROCEDURE, PASS(obj) :: meshSelect_GetNodeNum3
+  GENERIC, PUBLIC :: GetNodeNum => &
+    & meshSelect_GetNodeNum1, &
+    & meshSelect_GetNodeNum2, &
+    & meshSelect_GetNodeNum3
     !! Returns the node number if available
   PROCEDURE, PUBLIC, PASS(obj) :: isMeshIDAllocated => &
     & meshSelect_isMeshIDAllocated
@@ -128,16 +136,15 @@ CONTAINS
     !! returns true if the node numbers are allocated
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => meshSelect_GetQuery
     !! Query the mesh selection
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => meshSelect_GetQuery
+    !! Query the mesh selection
 END TYPE MeshSelection_
-
-PUBLIC :: MeshSelection_
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
 !----------------------------------------------------------------------------
 
-TYPE(MeshSelection_), PUBLIC, PARAMETER :: TypeMeshSelection = &
-  & MeshSelection_()
+TYPE(MeshSelection_), PUBLIC, PARAMETER ::TypeMeshSelection=MeshSelection_()
 
 !----------------------------------------------------------------------------
 !                                                     MeshSelectionPointer_
@@ -147,7 +154,33 @@ TYPE :: MeshSelectionPointer_
   CLASS(MeshSelection_), POINTER :: ptr => NULL()
 END TYPE MeshSelectionPointer_
 
-PUBLIC :: MeshSelectionPointer_
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE Deallocate_Vector(obj)
+    TYPE(MeshSelection_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
+    TYPE(MeshSelectionPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -160,8 +193,12 @@ PUBLIC :: MeshSelectionPointer_
 ! TODO Initiate by passing ParameterList object to initiate.
 
 INTERFACE
-  MODULE SUBROUTINE meshSelect_Initiate(obj, isSelectionByMeshID, &
-    & isSelectionByElemNum, isSelectionByBox, isSelectionByNodeNum)
+  MODULE SUBROUTINE meshSelect_Initiate( &
+    & obj, &
+    & isSelectionByMeshID, &
+    & isSelectionByElemNum, &
+    & isSelectionByBox, &
+    & isSelectionByNodeNum)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByMeshID
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByElemNum
@@ -298,7 +335,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getMeshID@getMethods
+!                                                      GetMeshID@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -306,15 +343,15 @@ END INTERFACE
 ! summary: This routine returns MeshID
 
 INTERFACE
-  MODULE PURE FUNCTION meshSelect_getMeshID(obj, dim) RESULT(Ans)
+  MODULE PURE FUNCTION meshSelect_GetMeshID(obj, dim) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getMeshID
+  END FUNCTION meshSelect_GetMeshID
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              isMeshIDAllocated@getMethods
+!                                              isMeshIDAllocated@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -330,7 +367,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            isElemNumAllocated@getMethods
+!                                            isElemNumAllocated@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -346,7 +383,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             isNodeNumAllocated@getMethods
+!                                             isNodeNumAllocated@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -365,8 +402,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE SUBROUTINE meshSelect_GetQuery(obj, isInitiated, &
-    & isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
+  MODULE PURE SUBROUTINE meshSelect_GetQuery( &
+    & obj, &
+    & isInitiated, &
+    & isSelectionByBox, &
+    & isSelectionByMeshID, &
+    & isSelectionByElemNum, &
     & isSelectionByNodeNum)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
@@ -378,7 +419,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getElemNum@getMethods
+!                                                      GetElemNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -386,15 +427,15 @@ END INTERFACE
 ! summary: Returns element number if isSelectionByElemNum is true
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getElemNum1(obj, dim) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetElemNum1(obj, dim) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getElemNum1
+  END FUNCTION meshSelect_GetElemNum1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getElemNum@getMethods
+!                                                      GetElemNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -412,16 +453,16 @@ END INTERFACE
 ! - [  ] isSelectionByBox
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getElemNum2(obj, dim, domain) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetElemNum2(obj, dim, domain) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     CLASS(Domain_), INTENT(IN) :: domain
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getElemNum2
+  END FUNCTION meshSelect_GetElemNum2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getElemNum@getMethods
+!                                                      GetElemNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -429,14 +470,14 @@ END INTERFACE
 ! summary: Returns element number if isSelectionByElemNum is true
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getElemNum3(obj) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetElemNum3(obj) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getElemNum3
+  END FUNCTION meshSelect_GetElemNum3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getElemNum@getMethods
+!                                                      GetElemNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -454,15 +495,15 @@ END INTERFACE
 ! - [  ] isSelectionByBox
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getElemNum4(obj, domain) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetElemNum4(obj, domain) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     CLASS(Domain_), INTENT(IN) :: domain
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getElemNum4
+  END FUNCTION meshSelect_GetElemNum4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getNodeNum@getMethods
+!                                                      GetNodeNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -470,14 +511,14 @@ END INTERFACE
 ! summary: This routine returns the node numbers
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getNodeNum1(obj) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetNodeNum1(obj) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getNodeNum1
+  END FUNCTION meshSelect_GetNodeNum1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getNodeNum@getMethods
+!                                                      GetNodeNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -490,16 +531,16 @@ END INTERFACE
 ! - [  ] isSelectionByBox
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getNodeNum2(obj, dim, domain) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetNodeNum2(obj, dim, domain) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
     CLASS(Domain_), INTENT(IN) :: domain
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getNodeNum2
+  END FUNCTION meshSelect_GetNodeNum2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getNodeNum@getMethods
+!                                                      GetNodeNum@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -507,11 +548,11 @@ END INTERFACE
 ! summary: This routine returns node numbers
 
 INTERFACE
-  MODULE FUNCTION meshSelect_getNodeNum3(obj, domain) RESULT(Ans)
+  MODULE FUNCTION meshSelect_GetNodeNum3(obj, domain) RESULT(Ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     CLASS(Domain_), INTENT(IN) :: domain
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION meshSelect_getNodeNum3
+  END FUNCTION meshSelect_GetNodeNum3
 END INTERFACE
 
 END MODULE MeshSelection_Class
