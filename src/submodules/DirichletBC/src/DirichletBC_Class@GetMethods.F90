@@ -16,7 +16,30 @@
 !
 
 SUBMODULE(DirichletBC_Class) GetMethods
+USE BaseMethod, ONLY: TOSTRING
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                    GetDirichletBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetDirichletBCPointer
+CHARACTER(*), PARAMETER :: myName = "bc_GetDirichletBCPointer"
+
+IF (dbcNo .GT. SIZE(dbc)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & '[OUT OF BOUND ERROR] :: dbcNo is out of bound for dbc')
+END IF
+
+IF (.NOT. ASSOCIATED(dbc(dbcNo)%ptr)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & '[ALLOCATION ERROR] :: dbc( '//TOSTRING(dbcNo) &
+    & //')%ptr is not ASSOCIATED')
+END IF
+
+ans => dbc(dbcNo)%ptr
+
+END PROCEDURE bc_GetDirichletBCPointer
 
 END SUBMODULE GetMethods

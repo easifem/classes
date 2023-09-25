@@ -26,6 +26,11 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
 CHARACTER(*), PARAMETER :: myprefix = "DirichletBC"
+PUBLIC :: DEALLOCATE
+PUBLIC :: DirichletBC_
+PUBLIC :: DirichletBCPointer_
+PUBLIC :: AddDirichletBC
+PUBLIC :: GetDirichletBCPointer
 
 !----------------------------------------------------------------------------
 !                                                               DirichletBC_
@@ -44,8 +49,6 @@ CONTAINS
   FINAL :: bc_Final
 END TYPE DirichletBC_
 
-PUBLIC :: DirichletBC_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -54,7 +57,33 @@ TYPE :: DirichletBCPointer_
   CLASS(DirichletBC_), POINTER :: ptr => NULL()
 END TYPE DirichletBCPointer_
 
-PUBLIC :: DirichletBCPointer_
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE bc_Deallocate_Vector(obj)
+    TYPE(DirichletBC_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE bc_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
+    TYPE(DirichletBCPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE bc_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                    checkEssentialParam@ConstructorMethods
@@ -112,5 +141,50 @@ INTERFACE
     TYPE(DirichletBC_), INTENT(INOUT) :: obj
   END SUBROUTINE bc_Final
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 addDirichletBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Add dirichlet boundary conditions to the vector of pointer
+
+INTERFACE AddDirichletBC
+  MODULE SUBROUTINE bc_AddDirichletBC(dbc, dbcNo, param, boundary, dom)
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Dirichlet boundary to form
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary number
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    CLASS(Domain_), INTENT(IN) :: dom
+  END SUBROUTINE bc_AddDirichletBC
+END INTERFACE AddDirichletBC
+
+!----------------------------------------------------------------------------
+!                                                 GetDirichletBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Get dirichlet boundary conditions to the vector of pointer
+
+INTERFACE GetDirichletBCPointer
+  MODULE FUNCTION bc_GetDirichletBCPointer(dbc, dbcNo) RESULT(ans)
+    CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    CLASS(DirichletBC_), POINTER :: ans
+  END FUNCTION bc_GetDirichletBCPointer
+END INTERFACE GetDirichletBCPointer
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE DirichletBC_Class
