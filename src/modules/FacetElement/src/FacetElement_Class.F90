@@ -15,10 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	[[FacetElement_]] is defined
+! date:         24 March 2021
+! summary:         [[FacetElement_]] is defined
 
 MODULE FacetElement_Class
 USE GlobalData
@@ -28,41 +27,41 @@ USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER( LEN=* ), PARAMETER :: modName="FACETELEMENT_CLASS"
+CHARACTER(*), PARAMETER :: modName = "FACETELEMENT_CLASS"
 
 !----------------------------------------------------------------------------
 !                                                              FacetElement_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Facet Element is defined
+! date:         24 March 2021
+! summary:         Facet Element is defined
 !
 !{!pages/FacetElement.md}
 
-TYPE, EXTENDS( Element_ ) :: FacetElement_
+TYPE, EXTENDS(Element_) :: FacetElement_
   PRIVATE
-  INTEGER( I4B ) :: LocalID = 0_I4B
-  CLASS( Element_ ), POINTER :: Cell => NULL( )
-  CLASS( Element_ ), POINTER :: OuterCell => NULL( )
+  INTEGER(I4B) :: LocalID = 0_I4B
+  CLASS(Element_), POINTER :: Cell => NULL()
+  CLASS(Element_), POINTER :: OuterCell => NULL()
 
-  CONTAINS
+CONTAINS
   ! Constructor
-  PROCEDURE, PUBLIC, PASS( obj ) :: getCellNptrs => faceElem_getCellNptrs
-  PROCEDURE, PUBLIC, PASS( obj ) :: setCellNptrs => faceElem_setCellNptrs
-  PROCEDURE, PUBLIC, PASS( obj ) :: getCellPointer => faceElem_getCellPointer
-  PROCEDURE, PUBLIC, PASS( obj ) :: setCellPointer => faceElem_setCellPointer
-  PROCEDURE, PUBLIC, PASS( obj ) :: FreeCellPointer => &
+  PROCEDURE, PUBLIC, PASS(obj) :: getCellNptrs => faceElem_getCellNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: setCellNptrs => faceElem_setCellNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: getCellPointer => faceElem_getCellPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: setCellPointer => faceElem_setCellPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: FreeCellPointer => &
     & faceElem_freeCellPointer
-  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalID => &
+  PROCEDURE, PUBLIC, PASS(obj) :: getFacetLocalID => &
     & faceElem_getFacetLocalID
-  PROCEDURE, PUBLIC, PASS( obj ) :: setFacetLocalID => &
+  PROCEDURE, PUBLIC, PASS(obj) :: setFacetLocalID => &
     & faceElem_setFacetLocalID
-  PROCEDURE, PUBLIC, PASS( obj ) :: getFacetLocalNptrs => &
+  PROCEDURE, PUBLIC, PASS(obj) :: getFacetLocalNptrs => &
     & faceElem_getFacetLocalNptrs
-  PROCEDURE, PUBLIC, PASS( obj ) :: Display => faceElem_display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => faceElem_display
   FINAL :: faceElem_Deallocate
-  PROCEDURE, PUBLIC, PASS( obj ) :: Deallocate => elem_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => elem_Deallocate
 END TYPE FacetElement_
 
 !----------------------------------------------------------------------------
@@ -70,15 +69,15 @@ END TYPE FacetElement_
 !----------------------------------------------------------------------------
 
 PUBLIC :: FacetElement_
-TYPE( FacetElement_ ), PARAMETER, PUBLIC :: &
-  & TypeFacetElement = FacetElement_( LocalID = 0_I4B )
+TYPE(FacetElement_), PARAMETER, PUBLIC :: &
+  & TypeFacetElement = FacetElement_(LocalID=0_I4B)
 
 !----------------------------------------------------------------------------
 !                                                        FacetElementPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: FacetElementPointer_
-  CLASS( FacetElementPointer_ ), POINTER :: Ptr => NULL( )
+  CLASS(FacetElementPointer_), POINTER :: Ptr => NULL()
 END TYPE FacetElementPointer_
 
 PUBLIC :: FacetElementPointer_
@@ -88,11 +87,11 @@ PUBLIC :: FacetElementPointer_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns an instance of [[FacetElement_]]
+! date:         24 March 2021
+! summary:         Returns an instance of [[FacetElement_]]
 !
 !# Introduction
-! 	Returns an instance of [[FacetElement_]] from [[ParameterList_]]
+!         Returns an instance of [[FacetElement_]] from [[ParameterList_]]
 !
 !
 !### Usage
@@ -130,11 +129,11 @@ PUBLIC :: FacetElementPointer_
 !```
 
 INTERFACE
-MODULE FUNCTION Constructor1( param, refelem ) RESULT( ans )
-  CLASS( ReferenceElement_ ), TARGET, INTENT( INOUT ) :: refelem
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  TYPE( FacetElement_ ) :: ans
-END FUNCTION Constructor1
+  MODULE FUNCTION Constructor1(param, refelem) RESULT(ans)
+    CLASS(ReferenceElement_), TARGET, INTENT(INOUT) :: refelem
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(FacetElement_) :: ans
+  END FUNCTION Constructor1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -142,11 +141,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns an instance of [[FacetElement_]]
+! date:         24 March 2021
+! summary:         Returns an instance of [[FacetElement_]]
 !
 !# Introduction
-! 	Constructing an instance of [[FacetElement_]] from another instance of
+!         Constructing an instance of [[FacetElement_]] from another instance of
 ! [[Element_]] or any of its child
 !
 !### Usage
@@ -184,10 +183,10 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE FUNCTION Constructor2( anotherobj ) RESULT( ans )
-  CLASS( Element_ ), TARGET, INTENT( IN ) :: anotherobj
-  TYPE( FacetElement_ ) :: ans
-END FUNCTION Constructor2
+  MODULE FUNCTION Constructor2(anotherobj) RESULT(ans)
+    CLASS(Element_), TARGET, INTENT(IN) :: anotherobj
+    TYPE(FacetElement_) :: ans
+  END FUNCTION Constructor2
 END INTERFACE
 
 INTERFACE FacetElement
@@ -201,8 +200,8 @@ PUBLIC :: FacetElement
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns a pointer to an instance of [[FacetElement_]]
+! date:         24 March 2021
+! summary:         Returns a pointer to an instance of [[FacetElement_]]
 !
 !### Usage
 !
@@ -239,11 +238,11 @@ PUBLIC :: FacetElement
 !```
 
 INTERFACE
-MODULE FUNCTION Constructor_1( param, refelem ) RESULT( ans )
-  TYPE( ParameterList_ ), INTENT( IN ) :: param
-  CLASS( ReferenceElement_ ), TARGET, INTENT( IN ) :: refelem
-  CLASS( FacetElement_ ), POINTER :: ans
-END FUNCTION Constructor_1
+  MODULE FUNCTION Constructor_1(param, refelem) RESULT(ans)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: refelem
+    CLASS(FacetElement_), POINTER :: ans
+  END FUNCTION Constructor_1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -251,11 +250,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns a pointer to an instance of [[FacetElement_]]
+! date:         24 March 2021
+! summary:         Returns a pointer to an instance of [[FacetElement_]]
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns a pointer to an instance of [[FacetElement_]]
+! date:         24 March 2021
+! summary:         Returns a pointer to an instance of [[FacetElement_]]
 !
 !### Usage
 !
@@ -292,10 +291,10 @@ END INTERFACE
 !```
 
 INTERFACE
-MODULE FUNCTION Constructor_2( anotherobj ) RESULT( ans )
-  CLASS( FacetElement_ ), TARGET, INTENT( IN ) :: anotherobj
-  CLASS( FacetElement_ ), POINTER :: ans
-END FUNCTION Constructor_2
+  MODULE FUNCTION Constructor_2(anotherobj) RESULT(ans)
+    CLASS(FacetElement_), TARGET, INTENT(IN) :: anotherobj
+    CLASS(FacetElement_), POINTER :: ans
+  END FUNCTION Constructor_2
 END INTERFACE
 
 INTERFACE FacetElement_Pointer
@@ -309,13 +308,13 @@ PUBLIC :: FacetElement_Pointer
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Deallocate the memeory occupied by [[FacetElement_]]
+! date:         24 March 2021
+! summary:         Deallocate the memeory occupied by [[FacetElement_]]
 
 INTERFACE
-MODULE PURE SUBROUTINE elem_Deallocate( obj )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE elem_Deallocate
+  MODULE PURE SUBROUTINE elem_Deallocate(obj)
+    CLASS(FacetElement_), INTENT(INOUT) :: obj
+  END SUBROUTINE elem_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -323,13 +322,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	17 April 2021
-! summary: 	finalizer for [[FacetElement_]]
+! date:         17 April 2021
+! summary:         finalizer for [[FacetElement_]]
 
 INTERFACE
-MODULE SUBROUTINE faceElem_Deallocate( obj )
-  TYPE( FacetElement_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE faceElem_Deallocate
+  MODULE SUBROUTINE faceElem_Deallocate(obj)
+    TYPE(FacetElement_), INTENT(INOUT) :: obj
+  END SUBROUTINE faceElem_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -337,14 +336,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns the node number of cell element
+! date:         24 March 2021
+! summary:         Returns the node number of cell element
 
 INTERFACE
-MODULE PURE FUNCTION faceElem_getCellNptrs( obj ) RESULT( ans )
-  CLASS( FacetElement_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: ans( : )
-END FUNCTION faceElem_getCellNptrs
+  MODULE PURE FUNCTION faceElem_getCellNptrs(obj) RESULT(ans)
+    CLASS(FacetElement_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION faceElem_getCellNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -352,14 +351,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns the node number of cell element
+! date:         24 March 2021
+! summary:         Returns the node number of cell element
 
 INTERFACE
-MODULE PURE SUBROUTINE faceElem_setCellNptrs( obj, nptrs )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: nptrs( : )
-END SUBROUTINE faceElem_setCellNptrs
+  MODULE PURE SUBROUTINE faceElem_setCellNptrs(obj, nptrs)
+    CLASS(FacetElement_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nptrs(:)
+  END SUBROUTINE faceElem_setCellNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -367,14 +366,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns the pointer to cell
+! date:         24 March 2021
+! summary:         Returns the pointer to cell
 
 INTERFACE
-MODULE FUNCTION faceElem_getCellPointer( obj ) RESULT( ans )
-  CLASS( FacetElement_ ), INTENT( IN ), TARGET :: obj
-  CLASS( Element_ ), POINTER :: ans
-END FUNCTION faceElem_getCellPointer
+  MODULE FUNCTION faceElem_getCellPointer(obj) RESULT(ans)
+    CLASS(FacetElement_), INTENT(IN), TARGET :: obj
+    CLASS(Element_), POINTER :: ans
+  END FUNCTION faceElem_getCellPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -382,14 +381,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Sets the pointer to cell element
+! date:         24 March 2021
+! summary:         Sets the pointer to cell element
 
 INTERFACE
-MODULE PURE SUBROUTINE faceElem_setCellPointer( obj, cell )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
-  CLASS( Element_ ), INTENT( INOUT ), TARGET :: cell
-END SUBROUTINE faceElem_setCellPointer
+  MODULE PURE SUBROUTINE faceElem_setCellPointer(obj, cell)
+    CLASS(FacetElement_), INTENT(INOUT) :: obj
+    CLASS(Element_), INTENT(INOUT), TARGET :: cell
+  END SUBROUTINE faceElem_setCellPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -397,13 +396,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Free the pointer to cell
+! date:         24 March 2021
+! summary:         Free the pointer to cell
 
 INTERFACE
-MODULE PURE SUBROUTINE faceElem_freeCellPointer( obj )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE faceElem_freeCellPointer
+  MODULE PURE SUBROUTINE faceElem_freeCellPointer(obj)
+    CLASS(FacetElement_), INTENT(INOUT) :: obj
+  END SUBROUTINE faceElem_freeCellPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -411,14 +410,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns the facet local ID
+! date:         24 March 2021
+! summary:         Returns the facet local ID
 
 INTERFACE
-MODULE PURE FUNCTION faceElem_getFacetLocalID( obj ) RESULT( ans )
-  CLASS( FacetElement_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ) :: ans
-END FUNCTION faceElem_getFacetLocalID
+  MODULE PURE FUNCTION faceElem_getFacetLocalID(obj) RESULT(ans)
+    CLASS(FacetElement_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION faceElem_getFacetLocalID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -426,14 +425,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
-! summary: 	Returns the facet local ID
+! date:         24 March 2021
+! summary:         Returns the facet local ID
 
 INTERFACE
-MODULE PURE SUBROUTINE faceElem_setFacetLocalID( obj, id )
-  CLASS( FacetElement_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ), INTENT( IN ) :: id
-END SUBROUTINE faceElem_setFacetLocalID
+  MODULE PURE SUBROUTINE faceElem_setFacetLocalID(obj, id)
+    CLASS(FacetElement_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: id
+  END SUBROUTINE faceElem_setFacetLocalID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -445,10 +444,10 @@ END INTERFACE
 ! summary: Returns the Local node number of facet element
 
 INTERFACE
-MODULE FUNCTION faceElem_getFacetLocalNptrs( obj ) RESULT( nptrs )
-  CLASS( FacetElement_ ), INTENT( IN ) :: obj
-  INTEGER( I4B ), ALLOCATABLE :: nptrs( : )
-END FUNCTION faceElem_getFacetLocalNptrs
+  MODULE FUNCTION faceElem_getFacetLocalNptrs(obj) RESULT(nptrs)
+    CLASS(FacetElement_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+  END FUNCTION faceElem_getFacetLocalNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -456,16 +455,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 	24 March 2021
+! date:         24 March 2021
 ! summary: Displays content of [[FacetElement_]]
 
 INTERFACE
-MODULE SUBROUTINE faceElem_display( obj, msg, UnitNo, FullDisp )
-  CLASS( FacetElement_ ), INTENT( IN ) :: obj
-  CHARACTER( LEN = * ), INTENT( IN ) :: Msg
-  INTEGER( I4B ), INTENT( IN ), OPTIONAL :: UnitNo
-  LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: FullDisp
-END SUBROUTINE faceElem_display
+  MODULE SUBROUTINE faceElem_display(obj, msg, UnitNo, FullDisp)
+    CLASS(FacetElement_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: Msg
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: UnitNo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: FullDisp
+  END SUBROUTINE faceElem_display
 END INTERFACE
 
 !----------------------------------------------------------------------------
