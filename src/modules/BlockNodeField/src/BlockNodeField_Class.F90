@@ -42,7 +42,7 @@ CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
 ! date: 06 Jan 2022
 ! summary: This nodal field is designed for the multiphysics applications
 !
-!{!pages/BlockNodeField_.md}
+!{!pages/docs-api/BlockNodeField/BlockNodeField_.md!}
 
 TYPE, EXTENDS(AbstractNodeField_) :: BlockNodeField_
 CONTAINS
