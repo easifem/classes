@@ -13,12 +13,19 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE AbstractFE_Class
 USE GlobalData
 USE BaseType, ONLY: BaseInterpolation_, &
-& BaseContinuity_, ElemShapeData_
+  & BaseContinuity_,  &
+  & ElemShapeData_,  &
+  & QuadraturePoint_,  &
+  & LagrangeInterpolation_,  &
+  & OrthogonalInterpolation_,  &
+  & HierarchyInterpolation_,  &
+  & SerendipityInterpolation_,  &
+  & HermitInterpolation_,  &
+  & ReferenceElement_
 USE String_Class, ONLY: String
 USE AbstractRefElement_Class
 USE FPL, ONLY: ParameterList_
@@ -27,21 +34,19 @@ PRIVATE
 PUBLIC :: AbstractFE_
 PUBLIC :: AbstractFEPointer_
 PUBLIC :: SetAbstractFEParam
-PUBLIC :: SetFiniteElementParam
 PUBLIC :: AbstractFEDeallocate
 PUBLIC :: AbstractFEDisplay
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
-CHARACTER(*), PARAMETER :: myprefix = "AbstractFE"
 
 INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
 INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
 
-INTEGER(I4B), PARAMETER :: MAX_NO_FACE = 30
+INTEGER(I4B), PARAMETER :: MAX_NO_FACE = 6
 !! Maximum number of faces in an element
-INTEGER(I4B), PARAMETER :: MAX_NO_EDGE = 20
+INTEGER(I4B), PARAMETER :: MAX_NO_EDGE = 12
 !! Maximum number of edges in an element
 
 !----------------------------------------------------------------------------
@@ -56,8 +61,9 @@ INTEGER(I4B), PARAMETER :: MAX_NO_EDGE = 20
 
 TYPE, ABSTRACT :: AbstractFE_
   PRIVATE
-  CLASS(AbstractRefElement_), POINTER :: refelem => NULL()
-  !! reference element
+  LOGICAL(LGT) :: firstCall = .TRUE.
+  LOGICAL(LGT) :: isInitiated = .FALSE.
+  !! It is set to true at the time of constructor
   INTEGER(I4B) :: nsd = 0
   !! spatial dimension of fintie element
   INTEGER(I4B) :: order = 0
@@ -109,7 +115,7 @@ TYPE, ABSTRACT :: AbstractFE_
   !! - FE_TRANSFORM_IDENTITY
   TYPE(String) :: baseContinuity0
   !! String name of base continuity
-  TYPE(String) :: baseInterpol0
+  TYPE(String) :: baseInterpolation0
   !! String name of base interpolation
   !! LagrangePolynomial
   !! SerendipityPolynomial
@@ -135,7 +141,7 @@ TYPE, ABSTRACT :: AbstractFE_
   !! continuity or conformity of basis defined on reference
   !! element, following values are allowed
   !! H1, HCurl, HDiv, DG
-  CLASS(BaseInterpolation_), ALLOCATABLE :: baseInterpol
+  CLASS(BaseInterpolation_), ALLOCATABLE :: baseInterpolation
   !! Type of basis functions used for interpolation on reference
   !! element, Following values are allowed
   !! LagrangeInterpolation
@@ -143,12 +149,29 @@ TYPE, ABSTRACT :: AbstractFE_
   !! SerendipityInterpolation
   !! HierarchyInterpolation
   !! OrthogonalInterpolation
+  CLASS(AbstractRefElement_), POINTER :: refelem => NULL()
+  !! reference element
+  TYPE(ReferenceElement_) :: refelem0
+  !! This is only for internal use
+  !! At the time of initiate we extract refelem0 from refelem
+  !! This way we do not have to make copy every time we
+  !! make quadrature points and shape function data
+  TYPE(ReferenceElement_) :: facetElem0(MAX_NO_FACE)
+  !! Facet elements
+  REAL(DFP), ALLOCATABLE :: coeff(:, :)
 CONTAINS
+  PRIVATE
+  ! CONSTRUCTOR:
+  !@ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fe_Initiate
   !! Constructor method for AbstractFE element
   !! This method can be overloaded by Subclass of this abstract class.
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-  & fe_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => fe_Copy
+  !! Initiate by copy
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
+  !! Initiate by copy
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & fe_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Display => fe_Display
   !! Display the content of a finite element
   PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => fe_MdEncode
@@ -163,15 +186,41 @@ CONTAINS
   !! Sets the parameters of finite element
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData =>  &
     &  fe_GetLocalElemShapeData
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemshapeData_H1 =>  &
-    & fe_GetLocalElemShapeData_H1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_H1 =>  &
+    & fe_GetLocalElemShapeData_H1_Master
   !! Get local element shape data for H1
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemshapeData_HDiv =>  &
-    & fe_GetLocalElemShapeData_HDiv
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HDiv =>  &
+    & fe_GetLocalElemShapeData_HDiv_Master
   !! Get local element shape data for Hdiv
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemshapeData_HCurl =>  &
-    & fe_GetLocalElemShapeData_HCurl
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HCurl =>  &
+    & fe_GetLocalElemShapeData_HCurl_Master
   !! Get local element shape data for HCurl
+  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_DG =>  &
+    & fe_GetLocalElemShapeData_DG_Master
+
+  ! GET:
+  ! @Global element shapedata
+
+  !! Get local element shape data for Discontinuous Galerkin
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData =>  &
+    &  fe_GetGlobalElemShapeData
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_H1 =>  &
+    & fe_GetGlobalElemShapeData_H1_Master
+  !! Get global shape data for H1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HDiv =>  &
+    & fe_GetGlobalElemShapeData_HDiv_Master
+  !! Get global shape data for Hdiv
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HCurl =>  &
+    & fe_GetGlobalElemShapeData_HCurl_Master
+  !! Get global shape data for HCurl
+  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_DG =>  &
+    & fe_GetGlobalElemShapeData_DG_Master
+  !! Get global shape data for Discontinuous Galerkin
+
+  ! GET:
+  ! @QuadratureMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints =>  &
+    & fe_GetQuadraturePoints1
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -183,19 +232,37 @@ TYPE :: AbstractFEPointer_
 END TYPE AbstractFEPointer_
 
 !----------------------------------------------------------------------------
-!                                               checkEssentialParam@Methods
+!                                               CheckEssentialParam@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2023-08-11
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE fe_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE fe_CheckEssentialParam(obj, param)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE fe_checkEssentialParam
+  END SUBROUTINE fe_CheckEssentialParam
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               CheckEssentialParam@Methods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-08-11
+! summary: This routine Check the essential parameters in param.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFECheckEssentialParam(obj, param, prefix)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractFECheckEssentialParam
+END INTERFACE
+
+PUBLIC :: AbstractFECheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                     SetAbstractFEParam@ConstructorMethods
@@ -205,13 +272,14 @@ END INTERFACE
 ! date:  2023-08-11
 ! summary:  Sets the parameters for initiating abstract finite element
 
-INTERFACE SetFiniteElementParam
+INTERFACE
   MODULE SUBROUTINE SetAbstractFEParam( &
     & param, &
+    & prefix, &
     & nsd, &
     & elemType, &
     & baseContinuity, &
-    & baseInterpol, &
+    & baseInterpolation, &
     & ipType, &
     & basisType, &
     & alpha, &
@@ -222,53 +290,56 @@ INTERFACE SetFiniteElementParam
     & edgeOrder,  &
     & faceOrder,  &
     & cellOrder)
-    TYPE(ParameterList_) :: param
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    !! ParameterList
+    CHARACTER(*), INTENT(IN) :: prefix
+    !! Prefix
     INTEGER(I4B), INTENT(IN) :: nsd
-      !! Number of spatial dimension
+    !! Number of spatial dimension
     INTEGER(I4B), INTENT(IN) :: elemType
-      !! Type of finite element
-      !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
-      !! Hexahedron
+    !! Type of finite element
+    !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
+    !! Hexahedron
     CHARACTER(*), INTENT(IN) :: baseContinuity
-      !! Continuity or Conformity of basis function.
-      !! This parameter is used to determine the nodal coordinates of
-      !! reference element, when xij is not present.
-      !! If xij is present then this parameter is ignored
-      !! H1* (default), HDiv, HCurl, DG
-    CHARACTER(*), INTENT(IN) :: baseInterpol
-      !! Basis function family used for interpolation.
-      !! This parameter is used to determine the nodal coordinates of
-      !! reference element, when xij is not present.
-      !! If xij is present then this parameter is ignored
-      !! LagrangeInterpolation, LagrangePolynomial
-      !! SerendipityInterpolation, SerendipityPolynomial
-      !! HierarchyInterpolation, HierarchyPolynomial
-      !! OrthogonalInterpolation, OrthogonalPolynomial
-      !! HermitInterpolation, HermitPolynomial
+    !! Continuity or Conformity of basis function.
+    !! This parameter is used to determine the nodal coordinates of
+    !! reference element, when xij is not present.
+    !! If xij is present then this parameter is ignored
+    !! H1* (default), HDiv, HCurl, DG
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! Basis function family used for interpolation.
+    !! This parameter is used to determine the nodal coordinates of
+    !! reference element, when xij is not present.
+    !! If xij is present then this parameter is ignored
+    !! LagrangeInterpolation, LagrangePolynomial
+    !! SerendipityInterpolation, SerendipityPolynomial
+    !! HierarchyInterpolation, HierarchyPolynomial
+    !! OrthogonalInterpolation, OrthogonalPolynomial
+    !! HermitInterpolation, HermitPolynomial
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-      !! Interpolation point type, It is required when
-      !! baseInterpol is LagrangePolynomial
+    !! Interpolation point type, It is required when
+    !! baseInterpol is LagrangePolynomial
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-      !! Basis type: Legendre, Lobatto, Ultraspherical,
-      !! Jacobi, Monomial
+    !! Basis type: Legendre, Lobatto, Ultraspherical,
+    !! Jacobi, Monomial
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-      !! Jacobi parameter
+    !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-      !! Jacobi parameter
+    !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-      !! Ultraspherical parameters
+    !! Ultraspherical parameters
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-      !! Isotropic Order of finite element
+    !! Isotropic Order of finite element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
     !! Anisotropic order, order in x, y, and z directions
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-      !! Order of approximation along edges
+    !! Order of approximation along edges
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
-      !! Order of approximation along face
+    !! Order of approximation along face
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-      !! Order of approximation along cell
+    !! Order of approximation along cell
   END SUBROUTINE SetAbstractFEParam
-END INTERFACE SetFiniteElementParam
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -286,12 +357,45 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 27 Aug 2022
+! summary: Initiates an instance of the finite element
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFEInitiate(obj, param, prefix)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractFEInitiate
+END INTERFACE
+
+PUBLIC :: AbstractFEInitiate
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary: Initiates an instance of the finite element by copying
+
+INTERFACE
+  MODULE SUBROUTINE fe_Copy(obj, obj2)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(AbstractFE_), INTENT(IN) :: obj2
+  END SUBROUTINE fe_Copy
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                        Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 29 Aug 2022
-! summary:         Deallocate the data
+! summary: Deallocate the data
 
 INTERFACE AbstractFEDeallocate
   MODULE SUBROUTINE fe_Deallocate(obj)
@@ -300,7 +404,7 @@ INTERFACE AbstractFEDeallocate
 END INTERFACE AbstractFEDeallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -347,7 +451,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetParam@Methods
+!                                                        SetParam@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -374,7 +478,7 @@ INTERFACE
     & transformType, &
     & refElemDomain, &
     & baseContinuity, &
-    & baseInterpol, &
+    & baseInterpolation, &
     & isIsotropicOrder,  &
     & isAnisotropicOrder,  &
     & isEdgeOrder, &
@@ -416,7 +520,7 @@ INTERFACE
     !! transformation type
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
     !! String name of type of continuity used for basis functions
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpol
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpolation
     !! String name of type of interpolation used for basis functions
     CHARACTER(*), OPTIONAL, INTENT(IN) :: refElemDomain
     !! Domain of reference element
@@ -434,12 +538,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetParam@Methods
+!                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2022
-! summary: Set the parameters
+! summary: Get the parameters
 
 INTERFACE
   MODULE SUBROUTINE fe_GetParam( &
@@ -461,7 +565,7 @@ INTERFACE
     & transformType, &
     & refElemDomain, &
     & baseContinuity, &
-    & baseInterpol, &
+    & baseInterpolation, &
     & isIsotropicOrder,  &
     & isAnisotropicOrder,  &
     & isEdgeOrder, &
@@ -503,7 +607,7 @@ INTERFACE
     !! transformation type
     TYPE(String), OPTIONAL, INTENT(OUT) :: baseContinuity
     !! String name of type of continuity used for basis functions
-    TYPE(String), OPTIONAL, INTENT(OUT) :: baseInterpol
+    TYPE(String), OPTIONAL, INTENT(OUT) :: baseInterpolation
     !! String name of type of interpolation used for basis functions
     TYPE(String), OPTIONAL, INTENT(OUT) :: refElemDomain
     !! Domain of reference element
@@ -521,18 +625,43 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetLocalElemShapeData@H1Methods
+!                                          GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
-! summary:  Get local shape data
+! summary:  Get local element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData(obj, elemsd)
+  MODULE SUBROUTINE fe_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
   END SUBROUTINE fe_GetLocalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetLocalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data on facets
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetLocalFacetElemShapeData(obj, cellElemsd, &
+    & facetElemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+      !! finite element
+    CLASS(ElemShapedata_), INTENT(INOUT) :: cellElemsd
+      !! element shape data on cell
+    CLASS(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
+      !! element shapedata on facet element
+      !! The size of facetElemsd should be equal to total number of
+      !! facets in element.
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad(:)
+      !! Quadrature points on each facet element
+  END SUBROUTINE fe_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -544,10 +673,11 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_H1(obj, elemsd)
+  MODULE SUBROUTINE fe_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-  END SUBROUTINE fe_GetLocalElemShapeData_H1
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemshapeData_H1_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -559,10 +689,11 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_HDiv(obj, elemsd)
+  MODULE SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-  END SUBROUTINE fe_GetLocalElemShapeData_HDiv
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -574,10 +705,206 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_HCurl(obj, elemsd)
+  MODULE SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-  END SUBROUTINE fe_GetLocalElemShapeData_HCurl
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetLocalElemShapeData_DG@DGMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemShapeData_DG_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     GetQuadraturePoints@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetQuadraturePoints1(obj, quad, quadratureType,  &
+    & order, nips, alpha, beta, lambda)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: quadratureType(:)
+    !! Type of quadrature points
+    !! GaussLegendre
+    !! GaussLegendreLobatto
+    !! GaussLegendreRadau, GaussLegendreRadauLeft
+    !! GaussLegendreRadauRight
+    !! GaussChebyshev
+    !! GaussChebyshevLobatto
+    !! GaussChebyshevRadau, GaussChebyshevRadauLeft
+    !! GaussChebyshevRadauRight
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    !! Order of integrand, either order or nips should be present
+    !! Both nips and order should not be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(:)
+    !! Number of integration points required
+    !! Either order or nips should be present
+    !! Both nips and order should not be present
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! Ultraspherical parameter
+  END SUBROUTINE fe_GetQuadraturePoints1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE fe_GetGlobalElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetGlobalElemShapeData_H1_Master(obj, elemsd,   &
+    & xij, geoElemsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE fe_GetGlobalElemShapeData_H1_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetGlobalElemShapeData_HDiv_Master(obj, elemsd, &
+    & xij, geoElemsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE fe_GetGlobalElemShapeData_HDiv_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetGlobalElemShapeData_HCurl_Master(obj, elemsd, &
+    & xij, geoElemsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE fe_GetGlobalElemShapeData_HCurl_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get Global element shape data shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetGlobalElemShapeData_DG_Master(obj, elemsd, &
+    & xij, geoElemsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! shape function data
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of element
+    !! The number of rows in xij should be same as the spatial dimension
+    !! The number of columns should be same as the number of nodes
+    !! present in the reference element in geoElemsd.
+    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+  END SUBROUTINE fe_GetGlobalElemShapeData_DG_Master
 END INTERFACE
 
 END MODULE AbstractFE_Class

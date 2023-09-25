@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AbstractFE_Class) Methods
+SUBMODULE(AbstractFE_Class) ConstructorMethods
 USE BaseMethod
 USE ExceptionHandler_Class, ONLY: e
 USE FPL_Method, ONLY: GetValue
@@ -26,46 +26,58 @@ CONTAINS
 !                                                     CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "fe_checkEssentialParam"
+MODULE PROCEDURE fe_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "fe_CheckEssentialParam"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented '//  &
+  & ' by the child class.')
+END PROCEDURE fe_CheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                                     CheckEssentialParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFECheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "AbstractFECheckEssentialParam()"
 INTEGER(I4B), PARAMETER :: jj = 26
 TYPE(String) :: necessary(jj)
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, ierr
 
-necessary(1) = myprefix//"/nsd"
-necessary(2) = myprefix//"/order"
-necessary(3) = myprefix//"/anisoOrder"
-necessary(4) = myprefix//"/tEdgeOrder"
-necessary(5) = myprefix//"/edgeOrder"
-necessary(6) = myprefix//"/tFaceOrder"
-necessary(7) = myprefix//"/faceOrder"
-necessary(8) = myprefix//"/cellOrder"
-necessary(9) = myprefix//"/feType"
-necessary(10) = myprefix//"/elemType"
-necessary(11) = myprefix//"/ipType"
-necessary(12) = myprefix//"/dofType"
-necessary(13) = myprefix//"/transformType"
-necessary(14) = myprefix//"/refElemDomain"
-necessary(15) = myprefix//"/baseContinuity"
-necessary(16) = myprefix//"/baseInterpol"
-necessary(17) = myprefix//"/isIsotropicOrder"
-necessary(18) = myprefix//"/isAnisotropicOrder"
-necessary(19) = myprefix//"/isEdgeOrder"
-necessary(20) = myprefix//"/isFaceOrder"
-necessary(21) = myprefix//"/isCellOrder"
-necessary(22) = myprefix//"/tCellOrder"
-necessary(23) = myprefix//"/basisType"
-necessary(24) = myprefix//"/alpha"
-necessary(25) = myprefix//"/beta"
-necessary(26) = myprefix//"/lambda"
+necessary(1) = prefix//"/nsd"
+necessary(2) = prefix//"/order"
+necessary(3) = prefix//"/anisoOrder"
+necessary(4) = prefix//"/tEdgeOrder"
+necessary(5) = prefix//"/edgeOrder"
+necessary(6) = prefix//"/tFaceOrder"
+necessary(7) = prefix//"/faceOrder"
+necessary(8) = prefix//"/cellOrder"
+necessary(9) = prefix//"/feType"
+necessary(10) = prefix//"/elemType"
+necessary(11) = prefix//"/ipType"
+necessary(12) = prefix//"/dofType"
+necessary(13) = prefix//"/transformType"
+necessary(14) = prefix//"/refElemDomain"
+necessary(15) = prefix//"/baseContinuity"
+necessary(16) = prefix//"/baseInterpolation"
+necessary(17) = prefix//"/isIsotropicOrder"
+necessary(18) = prefix//"/isAnisotropicOrder"
+necessary(19) = prefix//"/isEdgeOrder"
+necessary(20) = prefix//"/isFaceOrder"
+necessary(21) = prefix//"/isCellOrder"
+necessary(22) = prefix//"/tCellOrder"
+necessary(23) = prefix//"/basisType"
+necessary(24) = prefix//"/alpha"
+necessary(25) = prefix//"/beta"
+necessary(26) = prefix//"/lambda"
 
 DO ii = 1, jj
   IF (.NOT. param%isPresent(key=necessary(ii)%chars())) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-    & necessary(ii)//' should be present in param')
+      & necessary(ii)//' should be present in param')
   END IF
 END DO
-END PROCEDURE fe_checkEssentialParam
+
+END PROCEDURE AbstractFECheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                       SetAbstractFEParam
@@ -75,21 +87,25 @@ MODULE PROCEDURE SetAbstractFEParam
 INTEGER(I4B) :: ierr, ii, ipType0
 TYPE(String) :: astr
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFEParam()"
+TYPE(ParameterList_), POINTER :: sublist
 
-ierr = param%set(key=myprefix//"/nsd", VALUE=nsd)
-ierr = param%set(key=myprefix//"/elemType", VALUE=elemType)
-ierr = param%set(key=myprefix//"/baseContinuity", VALUE=baseContinuity)
-ierr = param%set(key=myprefix//"/baseInterpol", VALUE=baseInterpol)
+sublist => NULL()
+sublist => param%NewSubList(key=prefix)
+
+ierr = sublist%Set(key=prefix//"/nsd", VALUE=nsd)
+ierr = sublist%Set(key=prefix//"/elemType", VALUE=elemType)
+ierr = sublist%Set(key=prefix//"/baseContinuity", VALUE=baseContinuity)
+ierr = sublist%Set(key=prefix//"/baseInterpolation", VALUE=baseInterpolation)
 
 ! TODO finite element type
 CALL e%raiseWarning(modName//'::'//myName//' - '// &
   & '[BUG] feType, dofType, transformType are not handled properly.')
 
-ierr = param%set(key=myprefix//"/feType", VALUE=Scalar)
-ierr = param%set(key=myprefix//"/dofType", VALUE=DEFAULT_DOF_TYPE)
-ierr = param%set(key=myprefix//"/transformType", VALUE=DEFAULT_TRANSFORM_TYPE)
+ierr = sublist%Set(key=prefix//"/feType", VALUE=Scalar)
+ierr = sublist%Set(key=prefix//"/dofType", VALUE=DEFAULT_DOF_TYPE)
+ierr = sublist%Set(key=prefix//"/transformType", VALUE=DEFAULT_TRANSFORM_TYPE)
 
-astr = UpperCase(baseInterpol)
+astr = UpperCase(baseInterpolation)
 IF (astr%chars() .EQ. "LAGRANGE" .OR.  &
   & astr%chars() .EQ. "LAGRANGEPOLYNOMIAL") THEN
   IF (.NOT. PRESENT(ipType)) THEN
@@ -99,48 +115,72 @@ IF (astr%chars() .EQ. "LAGRANGE" .OR.  &
   END IF
 END IF
 ipType0 = input(default=Equidistance, option=ipType)
-ierr = param%set(key=myprefix//"/ipType", VALUE=ipType)
+ierr = sublist%Set(key=prefix//"/ipType", VALUE=ipType)
 
 astr = RefElemDomain( &
-  & baseInterpol=baseInterpol, &
+  & baseInterpol=baseInterpolation, &
   & baseContinuity=baseContinuity, &
   & elemType=elemType)
-ierr = param%set(key=myprefix//"/refElemDomain", VALUE=astr%chars())
+ierr = sublist%Set(key=prefix//"/refElemDomain", VALUE=astr%chars())
 
 CALL SetFEPram_BasisType( &
-  & param=param, &
+  & param=sublist, &
   & elemType=elemType, &
   & nsd=nsd, &
   & baseContinuity0=UpperCase(baseContinuity),  &
-  & baseInterpol0=UpperCase(baseInterpol),  &
+  & baseInterpol0=UpperCase(baseInterpolation),  &
   & basisType=basisType,  &
   & alpha=alpha,  &
   & beta=beta,  &
-  & lambda=lambda)
+  & lambda=lambda,  &
+  & prefix=prefix)
 
 IF (PRESENT(order)) THEN
-  CALL SetFEPram_Order(param, order, elemType)
+  CALL SetFEPram_Order(param=sublist, order=order, elemType=elemType,  &
+    & prefix=prefix)
+  sublist => NULL()
   RETURN
 ELSE
   IF (nsd .EQ. 1_I4B) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & '[ARGUMENT ERROR] For 1D elements Order must be present.')
+    sublist => NULL()
     RETURN
   END IF
 END IF
 
 IF (PRESENT(anisoOrder)) THEN
-  CALL SetFEPram_AnisoOrder(param, anisoOrder, elemType, nsd)
+  CALL SetFEPram_AnisoOrder( &
+  & param=sublist, &
+  & anisoOrder=anisoOrder, &
+  & elemType=elemType,  &
+  & nsd=nsd,  &
+  & prefix=prefix)
+  sublist => NULL()
   RETURN
 END IF
 
 SELECT CASE (nsd)
 CASE (2)
-  CALL SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, faceOrder)
+  CALL SetFEPram_Heirarchy2D( &
+  & param=sublist,  &
+  & elemType=elemType,  &
+  & nsd=nsd, &
+  & edgeOrder=edgeOrder, &
+  & faceOrder=faceOrder,  &
+  & prefix=prefix)
 CASE (3)
-  CALL SetFEPram_Heirarchy3D(param, elemType, nsd, edgeOrder, &
-    &  faceOrder, cellOrder)
+  CALL SetFEPram_Heirarchy3D(  &
+    & param=sublist, &
+    & elemType=elemType, &
+    & nsd=nsd, &
+    & edgeOrder=edgeOrder, &
+    & faceOrder=faceOrder, &
+    & cellOrder=cellOrder,  &
+    & prefix=prefix)
 END SELECT
+
+sublist => NULL()
 
 END PROCEDURE SetAbstractFEParam
 
@@ -156,7 +196,7 @@ SUBROUTINE SetFEPram_BasisType( &
   & baseInterpol0, &
   & basisType, &
   & alpha, &
-  & beta, lambda)
+  & beta, lambda, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: nsd
@@ -166,8 +206,9 @@ SUBROUTINE SetFEPram_BasisType( &
   REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
   REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
   REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  CHARACTER(*), INTENT(IN) :: prefix
 
-  CHARACTER(*), PARAMETER :: myName = "SetFEPram_AnisoOrder()"
+  CHARACTER(*), PARAMETER :: myName = "SetFEPram_BasisType()"
   INTEGER(I4B) :: xidim, basisType0(3), ii, ierr
   REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
 
@@ -294,10 +335,10 @@ SUBROUTINE SetFEPram_BasisType( &
       & '[NO CASE FOUND] No case found for given element type')
   END SELECT
 
-  ierr = param%set(key=myprefix//"/alpha", VALUE=alpha0)
-  ierr = param%set(key=myprefix//"/beta", VALUE=beta0)
-  ierr = param%set(key=myprefix//"/lambda", VALUE=lambda0)
-  ierr = param%set(key=myprefix//"/basisType", VALUE=basisType0)
+  ierr = param%Set(key=prefix//"/alpha", VALUE=alpha0)
+  ierr = param%Set(key=prefix//"/beta", VALUE=beta0)
+  ierr = param%Set(key=prefix//"/lambda", VALUE=lambda0)
+  ierr = param%Set(key=prefix//"/basisType", VALUE=basisType0)
 
 END SUBROUTINE SetFEPram_BasisType
 
@@ -305,11 +346,12 @@ END SUBROUTINE SetFEPram_BasisType
 !                                                          SetFEPram_Order
 !----------------------------------------------------------------------------
 
-SUBROUTINE SetFEPram_Order(param, order, elemType)
+SUBROUTINE SetFEPram_Order(param, order, elemType, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: order
   INTEGER(I4B), INTENT(IN) :: elemType
-
+  CHARACTER(*), INTENT(IN) :: prefix
+  ! Internal variables
   INTEGER(I4B) :: tEdgeOrder, tFaceOrder, tCellOrder, order0, &
     &  cellOrder0(3), anisoOrder0(3), ierr, ii
   INTEGER(I4B), ALLOCATABLE :: edgeOrder0(:), faceOrder0(:)
@@ -345,36 +387,37 @@ SUBROUTINE SetFEPram_Order(param, order, elemType)
 
   isIsotropicOrder = .TRUE.
   order0 = order
-  ierr = param%set(key=myprefix//"/order", VALUE=order0)
-  ierr = param%set(key=myprefix//"/anisoOrder", VALUE=anisoOrder0)
-  ierr = param%set(key=myprefix//"/edgeOrder", VALUE=edgeOrder0)
-  ierr = param%set(key=myprefix//"/faceOrder", VALUE=faceOrder0)
-  ierr = param%set(key=myprefix//"/cellOrder", VALUE=cellOrder0)
-  ierr = param%set(key=myprefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
-  ierr = param%set( &
-    & key=myprefix//"/isAnisotropicOrder", &
+  ierr = param%Set(key=prefix//"/order", VALUE=order0)
+  ierr = param%Set(key=prefix//"/anisoOrder", VALUE=anisoOrder0)
+  ierr = param%Set(key=prefix//"/edgeOrder", VALUE=edgeOrder0)
+  ierr = param%Set(key=prefix//"/faceOrder", VALUE=faceOrder0)
+  ierr = param%Set(key=prefix//"/cellOrder", VALUE=cellOrder0)
+  ierr = param%Set(key=prefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
+  ierr = param%Set( &
+    & key=prefix//"/isAnisotropicOrder", &
     & VALUE=isAnisotropicOrder)
-  ierr = param%set(key=myprefix//"/isEdgeOrder", VALUE=isEdgeOrder)
-  ierr = param%set(key=myprefix//"/isFaceOrder", VALUE=isFaceOrder)
-  ierr = param%set(key=myprefix//"/isCellOrder", VALUE=isCellOrder)
-  ierr = param%set(key=myprefix//"/tEdgeOrder", VALUE=tEdgeOrder)
-  ierr = param%set(key=myprefix//"/tFaceOrder", VALUE=tFaceOrder)
-  ierr = param%set(key=myprefix//"/tCellOrder", VALUE=tCellOrder)
+  ierr = param%Set(key=prefix//"/isEdgeOrder", VALUE=isEdgeOrder)
+  ierr = param%Set(key=prefix//"/isFaceOrder", VALUE=isFaceOrder)
+  ierr = param%Set(key=prefix//"/isCellOrder", VALUE=isCellOrder)
+  ierr = param%Set(key=prefix//"/tEdgeOrder", VALUE=tEdgeOrder)
+  ierr = param%Set(key=prefix//"/tFaceOrder", VALUE=tFaceOrder)
+  ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
-
 END SUBROUTINE SetFEPram_Order
 
 !----------------------------------------------------------------------------
 !                                                       SetFEPram_AnisoOrder
 !----------------------------------------------------------------------------
 
-SUBROUTINE SetFEPram_AnisoOrder(param, anisoOrder, elemType, nsd)
+SUBROUTINE SetFEPram_AnisoOrder(param, anisoOrder, elemType, nsd, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: anisoOrder(3)
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: nsd
+  CHARACTER(*), INTENT(IN) :: prefix
 
+  ! internal variables
   INTEGER(I4B) :: tEdgeOrder, tFaceOrder, tCellOrder, order0, &
     &  cellOrder0(3), anisoOrder0(3), ierr, ii
   INTEGER(I4B), ALLOCATABLE :: edgeOrder0(:), faceOrder0(:)
@@ -411,21 +454,21 @@ SUBROUTINE SetFEPram_AnisoOrder(param, anisoOrder, elemType, nsd)
   anisoOrder0 = anisoOrder
   cellOrder0 = -1
 
-  ierr = param%set(key=myprefix//"/order", VALUE=order0)
-  ierr = param%set(key=myprefix//"/anisoOrder", VALUE=anisoOrder0)
-  ierr = param%set(key=myprefix//"/edgeOrder", VALUE=edgeOrder0)
-  ierr = param%set(key=myprefix//"/faceOrder", VALUE=faceOrder0)
-  ierr = param%set(key=myprefix//"/cellOrder", VALUE=cellOrder0)
-  ierr = param%set(key=myprefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
-  ierr = param%set( &
-    & key=myprefix//"/isAnisotropicOrder", &
+  ierr = param%Set(key=prefix//"/order", VALUE=order0)
+  ierr = param%Set(key=prefix//"/anisoOrder", VALUE=anisoOrder0)
+  ierr = param%Set(key=prefix//"/edgeOrder", VALUE=edgeOrder0)
+  ierr = param%Set(key=prefix//"/faceOrder", VALUE=faceOrder0)
+  ierr = param%Set(key=prefix//"/cellOrder", VALUE=cellOrder0)
+  ierr = param%Set(key=prefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
+  ierr = param%Set( &
+    & key=prefix//"/isAnisotropicOrder", &
     & VALUE=isAnisotropicOrder)
-  ierr = param%set(key=myprefix//"/isEdgeOrder", VALUE=isEdgeOrder)
-  ierr = param%set(key=myprefix//"/isFaceOrder", VALUE=isFaceOrder)
-  ierr = param%set(key=myprefix//"/isCellOrder", VALUE=isCellOrder)
-  ierr = param%set(key=myprefix//"/tEdgeOrder", VALUE=tEdgeOrder)
-  ierr = param%set(key=myprefix//"/tFaceOrder", VALUE=tFaceOrder)
-  ierr = param%set(key=myprefix//"/tCellOrder", VALUE=tCellOrder)
+  ierr = param%Set(key=prefix//"/isEdgeOrder", VALUE=isEdgeOrder)
+  ierr = param%Set(key=prefix//"/isFaceOrder", VALUE=isFaceOrder)
+  ierr = param%Set(key=prefix//"/isCellOrder", VALUE=isCellOrder)
+  ierr = param%Set(key=prefix//"/tEdgeOrder", VALUE=tEdgeOrder)
+  ierr = param%Set(key=prefix//"/tFaceOrder", VALUE=tFaceOrder)
+  ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
 
@@ -435,13 +478,15 @@ END SUBROUTINE SetFEPram_AnisoOrder
 !                                                     SetFEPram_Heirarchy2D
 !----------------------------------------------------------------------------
 
-SUBROUTINE SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, faceOrder)
+SUBROUTINE SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, &
+  & faceOrder, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: nsd
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
-
+  CHARACTER(*), INTENT(IN) :: prefix
+  ! internal variables
   INTEGER(I4B) :: tEdgeOrder, tFaceOrder, tCellOrder, order0, &
     &  cellOrder0(3), anisoOrder0(3), ierr, ii, xidim
   INTEGER(I4B), ALLOCATABLE :: edgeOrder0(:), faceOrder0(:)
@@ -463,7 +508,7 @@ SUBROUTINE SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, faceOrder)
 
   IF (.NOT. PRESENT(edgeOrder) .OR. .NOT. PRESENT(faceOrder)) THEN
     amsg = "[ARGUMENT ERROR] For 2D elements, you should specify \n"//  &
-    & "one of the entries from following sets: \n"//  &
+    & "one of the entries from following Sets: \n"//  &
     & "[order, anisoOrder, (edgeOrder, faceOrder)]"
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & amsg)
@@ -514,69 +559,83 @@ SUBROUTINE SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, faceOrder)
   anisoOrder0 = -1
   cellOrder0 = -1
 
-  ierr = param%set(key=myprefix//"/order", VALUE=order0)
-  ierr = param%set(key=myprefix//"/anisoOrder", VALUE=anisoOrder0)
-  ierr = param%set(key=myprefix//"/edgeOrder", VALUE=edgeOrder0)
-  ierr = param%set(key=myprefix//"/faceOrder", VALUE=faceOrder0)
-  ierr = param%set(key=myprefix//"/cellOrder", VALUE=cellOrder0)
-  ierr = param%set(key=myprefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
-  ierr = param%set( &
-    & key=myprefix//"/isAnisotropicOrder", &
+  ierr = param%Set(key=prefix//"/order", VALUE=order0)
+  ierr = param%Set(key=prefix//"/anisoOrder", VALUE=anisoOrder0)
+  ierr = param%Set(key=prefix//"/edgeOrder", VALUE=edgeOrder0)
+  ierr = param%Set(key=prefix//"/faceOrder", VALUE=faceOrder0)
+  ierr = param%Set(key=prefix//"/cellOrder", VALUE=cellOrder0)
+  ierr = param%Set(key=prefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
+  ierr = param%Set( &
+    & key=prefix//"/isAnisotropicOrder", &
     & VALUE=isAnisotropicOrder)
-  ierr = param%set(key=myprefix//"/isEdgeOrder", VALUE=isEdgeOrder)
-  ierr = param%set(key=myprefix//"/isFaceOrder", VALUE=isFaceOrder)
-  ierr = param%set(key=myprefix//"/isCellOrder", VALUE=isCellOrder)
-  ierr = param%set(key=myprefix//"/tEdgeOrder", VALUE=tEdgeOrder)
-  ierr = param%set(key=myprefix//"/tFaceOrder", VALUE=tFaceOrder)
-  ierr = param%set(key=myprefix//"/tCellOrder", VALUE=tCellOrder)
+  ierr = param%Set(key=prefix//"/isEdgeOrder", VALUE=isEdgeOrder)
+  ierr = param%Set(key=prefix//"/isFaceOrder", VALUE=isFaceOrder)
+  ierr = param%Set(key=prefix//"/isCellOrder", VALUE=isCellOrder)
+  ierr = param%Set(key=prefix//"/tEdgeOrder", VALUE=tEdgeOrder)
+  ierr = param%Set(key=prefix//"/tFaceOrder", VALUE=tFaceOrder)
+  ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
 END SUBROUTINE SetFEPram_Heirarchy2D
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fe_Initiate
-CHARACTER(*), PARAMETER :: myName = "fe_Initiate"
+CHARACTER(*), PARAMETER :: myName = "fe_Initiate()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented '//  &
+  & ' by the child class.')
+END PROCEDURE fe_Initiate
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFEInitiate
+CHARACTER(*), PARAMETER :: myName = "AbstractFEInitiate()"
 INTEGER(I4B) :: ierr, nsd, elemType, order, anisoOrder(3), &
-& cellOrder(3), feType, ipType, dofType(4), transformType, basisType(3), &
-& tEdgeOrder, tFaceOrder, tCellOrder
+  & cellOrder(3), feType, ipType, dofType(4), transformType, basisType(3), &
+  & tEdgeOrder, tFaceOrder, tCellOrder, ii
 INTEGER(I4B), ALLOCATABLE :: edgeOrder(:), faceOrder(:)
 TYPE(String) :: baseInterpol, baseCont, refElemDomain0
 REAL(DFP) :: alpha(3), beta(3), lambda(3)
-
 LOGICAL(LGT) :: isEdgeOrder, isFaceOrder, isCellOrder,  &
-& isIsotropicOrder, isAnisotropicOrder
+  & isIsotropicOrder, isAnisotropicOrder
+TYPE(AbstractRefElementPointer_), ALLOCATABLE :: facetElemPtrs(:)
+TYPE(ParameterList_), POINTER :: sublist
 
+sublist => NULL()
+ierr = param%GetSubList(key=prefix, sublist=sublist)
 CALL obj%DEALLOCATE()
-CALL obj%checkEssentialParam(param)
+CALL obj%CheckEssentialParam(sublist)
 
-!! Get parameters
-ierr = param%get(key=myprefix//"/nsd", VALUE=nsd)
-ierr = param%get(key=myprefix//"/elemType", VALUE=elemType)
+!! Get sublisteters
+ierr = sublist%get(key=prefix//"/nsd", VALUE=nsd)
+ierr = sublist%get(key=prefix//"/elemType", VALUE=elemType)
 CALL GetValue( &
-  & obj=param, &
-  & key=myprefix//"/baseContinuity", &
+  & obj=sublist, &
+  & key=prefix//"/baseContinuity", &
   & VALUE=baseCont)
 
 CALL GetValue( &
-  & obj=param, &
-  & key=myprefix//"/baseInterpol", &
+  & obj=sublist, &
+  & key=prefix//"/baseInterpolation", &
   & VALUE=baseInterpol)
 
-ierr = param%get(key=myprefix//"/feType", VALUE=feType)
-ierr = param%get(key=myprefix//"/ipType", VALUE=ipType)
-ierr = param%get(key=myprefix//"/dofType", VALUE=dofType)
-ierr = param%get(key=myprefix//"/transformType", VALUE=transformType)
-ierr = param%get(key=myprefix//"/basisType", VALUE=basisType)
-ierr = param%get(key=myprefix//"/alpha", VALUE=alpha)
-ierr = param%get(key=myprefix//"/beta", VALUE=beta)
-ierr = param%get(key=myprefix//"/lambda", VALUE=lambda)
+ierr = sublist%get(key=prefix//"/feType", VALUE=feType)
+ierr = sublist%get(key=prefix//"/ipType", VALUE=ipType)
+ierr = sublist%get(key=prefix//"/dofType", VALUE=dofType)
+ierr = sublist%get(key=prefix//"/transformType", VALUE=transformType)
+ierr = sublist%get(key=prefix//"/basisType", VALUE=basisType)
+ierr = sublist%get(key=prefix//"/alpha", VALUE=alpha)
+ierr = sublist%get(key=prefix//"/beta", VALUE=beta)
+ierr = sublist%get(key=prefix//"/lambda", VALUE=lambda)
 
 CALL GetValue( &
-  & obj=param, &
-  & key=myprefix//"/refElemDomain", &
+  & obj=sublist, &
+  & key=prefix//"/refElemDomain", &
   & VALUE=refElemDomain0)
 
 !! Initiate ReferenceElement
@@ -584,7 +643,7 @@ obj%refelem => RefElement_Pointer(elemType)
 CALL obj%refelem%Initiate( &
   & nsd=nsd, &
   & baseContinuity=baseCont%chars(), &
-  & baseInterpol=baseInterpol%chars())
+  & baseInterpolation=baseInterpol%chars())
 
 !! Set parameters
 
@@ -593,7 +652,7 @@ CALL obj%SetParam(&
   & elemType=elemType, &
   & feType=feType, &
   & baseContinuity=baseCont%chars(), &
-  & baseInterpol=baseInterpol%chars(),  &
+  & baseInterpolation=baseInterpol%chars(),  &
   & refElemDomain=refElemDomain0%chars(), &
   & transformType=transformType,  &
   & dofType=dofType,  &
@@ -603,29 +662,29 @@ CALL obj%SetParam(&
   & beta=beta,  &
   & lambda=lambda)
 
-ierr = param%get(key=myprefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
-ierr = param%get(key=myprefix//"/isAnisotropicOrder", VALUE=isAnisotropicOrder)
-ierr = param%get(key=myprefix//"/isEdgeOrder", VALUE=isEdgeOrder)
-ierr = param%get(key=myprefix//"/isFaceOrder", VALUE=isFaceOrder)
-ierr = param%get(key=myprefix//"/isCellOrder", VALUE=isCellOrder)
+ierr = sublist%get(key=prefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
+ierr = sublist%get(key=prefix//"/isAnisotropicOrder", VALUE=isAnisotropicOrder)
+ierr = sublist%get(key=prefix//"/isEdgeOrder", VALUE=isEdgeOrder)
+ierr = sublist%get(key=prefix//"/isFaceOrder", VALUE=isFaceOrder)
+ierr = sublist%get(key=prefix//"/isCellOrder", VALUE=isCellOrder)
 
 IF (isIsotropicOrder) THEN
-  ierr = param%get(key=myprefix//"/order", VALUE=order)
+  ierr = sublist%get(key=prefix//"/order", VALUE=order)
   CALL obj%SetParam(order=order, isIsotropicOrder=isIsotropicOrder)
 END IF
 
 IF (isAnisotropicOrder) THEN
-  ierr = param%get(key=myprefix//"/anisoOrder", VALUE=anisoOrder)
+  ierr = sublist%get(key=prefix//"/anisoOrder", VALUE=anisoOrder)
   CALL obj%SetParam( &
     & anisoOrder=anisoOrder, &
     & isAnisotropicOrder=isAnisotropicOrder)
 END IF
 
 IF (isEdgeOrder) THEN
-  ierr = param%get(key=myprefix//"/tEdgeOrder", VALUE=tEdgeOrder)
+  ierr = sublist%get(key=prefix//"/tEdgeOrder", VALUE=tEdgeOrder)
   IF (tEdgeOrder .GT. 0_I4B) THEN
     CALL Reallocate(edgeOrder, tEdgeOrder)
-    ierr = param%get(key=myprefix//"/edgeOrder", VALUE=edgeOrder)
+    ierr = sublist%get(key=prefix//"/edgeOrder", VALUE=edgeOrder)
     CALL obj%SetParam( &
       & isEdgeOrder=isEdgeOrder, &
       & edgeOrder=edgeOrder,  &
@@ -634,10 +693,10 @@ IF (isEdgeOrder) THEN
 END IF
 
 IF (isFaceOrder) THEN
-  ierr = param%get(key=myprefix//"/tFaceOrder", VALUE=tFaceOrder)
+  ierr = sublist%get(key=prefix//"/tFaceOrder", VALUE=tFaceOrder)
   IF (tFaceOrder .GT. 0_I4B) THEN
     CALL Reallocate(faceOrder, tFaceOrder)
-    ierr = param%get(key=myprefix//"/faceOrder", VALUE=faceOrder)
+    ierr = sublist%get(key=prefix//"/faceOrder", VALUE=faceOrder)
     CALL obj%SetParam( &
       & isFaceOrder=isFaceOrder, &
       & faceOrder=faceOrder,  &
@@ -646,27 +705,105 @@ IF (isFaceOrder) THEN
 END IF
 
 IF (isCellOrder) THEN
-  ierr = param%get(key=myprefix//"/tCellOrder", VALUE=tCellOrder)
-  ierr = param%get(key=myprefix//"/cellOrder", VALUE=cellOrder)
+  ierr = sublist%get(key=prefix//"/tCellOrder", VALUE=tCellOrder)
+  ierr = sublist%get(key=prefix//"/cellOrder", VALUE=cellOrder)
   CALL obj%SetParam( &
     & isCellOrder=isCellOrder, &
     & cellOrder=cellOrder,  &
     & tCellOrder=tCellOrder)
 END IF
-END PROCEDURE fe_Initiate
+
+obj%isInitiated = .TRUE.
+
+CALL obj%refelem%GetParam(refelem=obj%refelem0)
+
+CALL obj%refelem%GetFacetElements(ans=facetElemPtrs)
+
+DO ii = 1, SIZE(facetElemPtrs)
+  CALL facetElemPtrs(ii)%ptr%GetParam(refelem=obj%facetElem0(ii))
+  CALL facetElemPtrs(ii)%ptr%DEALLOCATE()
+  facetElemPtrs(ii)%ptr => NULL()
+END DO
+DEALLOCATE (facetElemPtrs)
+
+END PROCEDURE AbstractFEInitiate
+
+!----------------------------------------------------------------------------
+!                                                                     Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE fe_Copy
+INTEGER(I4B) :: ii, elemType
+
+CALL obj%DEALLOCATE()
+obj%firstCall = obj2%firstCall
+obj%isInitiated = obj2%isInitiated
+obj%nsd = obj2%nsd
+obj%order = obj2%order
+obj%isIsotropicOrder = obj2%isIsotropicOrder
+obj%anisoOrder = obj2%anisoOrder
+obj%isAnisotropicOrder = obj2%isAnisotropicOrder
+obj%edgeOrder = obj2%edgeOrder
+obj%tEdgeOrder = obj2%tEdgeOrder
+obj%isEdgeOrder = obj2%isEdgeOrder
+obj%faceOrder = obj2%faceOrder
+obj%tFaceOrder = obj2%tFaceOrder
+obj%isFaceOrder = obj2%isFaceOrder
+obj%cellOrder = obj2%cellOrder
+obj%tCellOrder = obj2%tCellOrder
+obj%isCellOrder = obj2%isCellOrder
+obj%feType = obj2%feType
+obj%elemType = obj2%elemType
+obj%ipType = obj2%ipType
+obj%dofType = obj2%dofType
+obj%transformType = obj2%transformType
+obj%baseContinuity0 = obj2%baseContinuity0
+obj%baseInterpolation0 = obj2%baseInterpolation0
+obj%basisType = obj2%basisType
+obj%alpha = obj2%alpha
+obj%beta = obj2%beta
+obj%lambda = obj2%lambda
+obj%refElemDomain = obj2%refElemDomain
+obj%refelem0 = obj2%refelem0
+
+IF (ALLOCATED(obj2%baseContinuity)) THEN
+  ALLOCATE (obj%baseContinuity, source=obj2%baseContinuity)
+END IF
+
+IF (ALLOCATED(obj2%baseInterpolation)) THEN
+  ALLOCATE (obj%baseInterpolation, source=obj2%baseInterpolation)
+END IF
+
+! obj%refelem
+IF (ASSOCIATED(obj2%refelem)) THEN
+  elemType = obj2%refelem%GetName()
+  obj%refelem => RefElement_Pointer(elemType)
+  CALL obj%refelem%Copy(obj2%refelem)
+END IF
+
+DO ii = 1, SIZE(obj2%facetElem0)
+  obj%facetElem0(ii) = obj2%facetElem0(ii)
+END DO
+
+IF (ALLOCATED(obj2%coeff)) THEN
+  obj%coeff = obj2%coeff
+END IF
+
+END PROCEDURE fe_Copy
 
 !----------------------------------------------------------------------------
 !                                                     SetFEPram_Heirarchy2D
 !----------------------------------------------------------------------------
 
 SUBROUTINE SetFEPram_Heirarchy3D(param, elemType, nsd, edgeOrder, &
-  &  faceOrder, cellOrder)
+  &  faceOrder, cellOrder, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: nsd
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+  CHARACTER(*), INTENT(IN) :: prefix
 
   INTEGER(I4B) :: tEdgeOrder, tFaceOrder, tCellOrder, order0, &
     &  cellOrder0(3), anisoOrder0(3), ierr, ii, xidim
@@ -691,7 +828,7 @@ SUBROUTINE SetFEPram_Heirarchy3D(param, elemType, nsd, edgeOrder, &
     & .NOT. PRESENT(faceOrder) .OR.  &
     & .NOT. PRESENT(cellOrder)) THEN
     amsg = "[ARGUMENT ERROR] For 3D elements, you should specify \n"//  &
-    & "one of the entries from following sets: \n"//  &
+    & "one of the entries from following Sets: \n"//  &
     & "[order, anisoOrder, (edgeOrder, faceOrder, cellOrder)]"
     CALL e%raiseError(modName//'::'//myName//' - '//amsg)
     RETURN
@@ -765,21 +902,21 @@ SUBROUTINE SetFEPram_Heirarchy3D(param, elemType, nsd, edgeOrder, &
   faceOrder0(1:tFaceOrder) = faceOrder(1:tFaceOrder)
   cellOrder0(1:tCellOrder) = cellOrder(1:tCellOrder)
 
-  ierr = param%set(key=myprefix//"/order", VALUE=order0)
-  ierr = param%set(key=myprefix//"/anisoOrder", VALUE=anisoOrder0)
-  ierr = param%set(key=myprefix//"/edgeOrder", VALUE=edgeOrder0)
-  ierr = param%set(key=myprefix//"/faceOrder", VALUE=faceOrder0)
-  ierr = param%set(key=myprefix//"/cellOrder", VALUE=cellOrder0)
-  ierr = param%set(key=myprefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
-  ierr = param%set( &
-    & key=myprefix//"/isAnisotropicOrder", &
+  ierr = param%Set(key=prefix//"/order", VALUE=order0)
+  ierr = param%Set(key=prefix//"/anisoOrder", VALUE=anisoOrder0)
+  ierr = param%Set(key=prefix//"/edgeOrder", VALUE=edgeOrder0)
+  ierr = param%Set(key=prefix//"/faceOrder", VALUE=faceOrder0)
+  ierr = param%Set(key=prefix//"/cellOrder", VALUE=cellOrder0)
+  ierr = param%Set(key=prefix//"/isIsotropicOrder", VALUE=isIsotropicOrder)
+  ierr = param%Set( &
+    & key=prefix//"/isAnisotropicOrder", &
     & VALUE=isAnisotropicOrder)
-  ierr = param%set(key=myprefix//"/isEdgeOrder", VALUE=isEdgeOrder)
-  ierr = param%set(key=myprefix//"/isFaceOrder", VALUE=isFaceOrder)
-  ierr = param%set(key=myprefix//"/isCellOrder", VALUE=isCellOrder)
-  ierr = param%set(key=myprefix//"/tEdgeOrder", VALUE=tEdgeOrder)
-  ierr = param%set(key=myprefix//"/tFaceOrder", VALUE=tFaceOrder)
-  ierr = param%set(key=myprefix//"/tCellOrder", VALUE=tCellOrder)
+  ierr = param%Set(key=prefix//"/isEdgeOrder", VALUE=isEdgeOrder)
+  ierr = param%Set(key=prefix//"/isFaceOrder", VALUE=isFaceOrder)
+  ierr = param%Set(key=prefix//"/isCellOrder", VALUE=isCellOrder)
+  ierr = param%Set(key=prefix//"/tEdgeOrder", VALUE=tEdgeOrder)
+  ierr = param%Set(key=prefix//"/tFaceOrder", VALUE=tFaceOrder)
+  ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
 END SUBROUTINE SetFEPram_Heirarchy3D
@@ -789,6 +926,14 @@ END SUBROUTINE SetFEPram_Heirarchy3D
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fe_Deallocate
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(obj%facetElem0)
+  CALL DEALLOCATE (obj%facetElem0(ii))
+END DO
+
+CALL DEALLOCATE (obj%refelem0)
+IF (ALLOCATED(obj%coeff)) DEALLOCATE (obj%coeff)
+obj%firstCall = .TRUE.
 IF (ASSOCIATED(obj%refelem)) THEN
   CALL obj%refelem%DEALLOCATE()
   DEALLOCATE (obj%refelem)
@@ -814,295 +959,19 @@ obj%ipType = 0
 obj%dofType = 0
 obj%transformType = 0
 obj%baseContinuity0 = ""
-obj%baseInterpol0 = ""
+obj%baseInterpolation0 = ""
 obj%basisType = 0
 obj%alpha = 0.0
 obj%beta = 0.0
 obj%lambda = 0.0
 obj%refElemDomain = ""
 IF (ALLOCATED(obj%baseContinuity)) DEALLOCATE (obj%baseContinuity)
-IF (ALLOCATED(obj%baseInterpol)) DEALLOCATE (obj%baseInterpol)
+IF (ALLOCATED(obj%baseInterpolation)) DEALLOCATE (obj%baseInterpolation)
+obj%isInitiated = .FALSE.
 END PROCEDURE fe_Deallocate
-
-!----------------------------------------------------------------------------
-!                                                                 Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE fe_Display
-IF (ASSOCIATED(obj%refelem)) THEN
-  CALL obj%refelem%Display( &
-    & msg="ReferenceElement: ",  &
-    & unitno=unitno, &
-    & notFull=notFull)
-END IF
-
-CALL Display(obj%nsd, msg="nsd: ", unitno=unitno)
-CALL Display(obj%feType, msg="feType: ", unitno=unitno)
-CALL Display(obj%elemType, msg="elemType: ", unitno=unitno)
-CALL Display(obj%ipType, msg="ipType: ", unitno=unitno)
-CALL Display(obj%basisType, msg="basisType: ", unitno=unitno)
-CALL Display(obj%alpha, msg="alpha: ", unitno=unitno)
-CALL Display(obj%beta, msg="beta: ", unitno=unitno)
-CALL Display(obj%lambda, msg="lambda: ", unitno=unitno)
-CALL Display(obj%dofType, msg="dofType: ", unitno=unitno)
-CALL Display(obj%transformType, msg="transformType: ", unitno=unitno)
-CALL Display(obj%baseContinuity0, msg="baseContinuity: ", unitno=unitno)
-CALL Display(obj%baseInterpol0, msg="baseInterpol: ", unitno=unitno)
-CALL Display(obj%refElemDomain, msg="refElemDomain: ", unitno=unitno)
-
-IF (obj%isIsotropicOrder) THEN
-  CALL Display("isIsotropicOrder: TRUE", unitno=unitno)
-  CALL Display(obj%order, msg="order: ", unitno=unitno)
-END IF
-
-IF (obj%isAnisotropicOrder) THEN
-  CALL Display("isAnisotropicOrder: TRUE", unitno=unitno)
-  CALL Display(obj%anisoOrder, msg="anisoOrder: ", unitno=unitno)
-END IF
-
-IF (obj%isEdgeOrder) THEN
-  CALL Display("isEdgeOrder: TRUE", unitno=unitno)
-  IF (obj%tEdgeOrder .GT. 0_I4B) THEN
-    CALL Display( &
-      & obj%edgeOrder(:obj%tEdgeOrder), &
-      & msg="edgeOrder: ", &
-      & unitno=unitno)
-  END IF
-END IF
-
-IF (obj%isFaceOrder) THEN
-  CALL Display("isFaceOrder: TRUE", unitno=unitno)
-  IF (obj%tFaceOrder .GT. 0_I4B) THEN
-    CALL Display( &
-      & obj%faceOrder(:obj%tFaceOrder), &
-      & msg="faceOrder: ", &
-      & unitno=unitno)
-  END IF
-END IF
-
-IF (obj%isCellOrder) THEN
-  CALL Display("isCellOrder: TRUE", unitno=unitno)
-  IF (obj%tCellOrder .GT. 0_I4B) THEN
-    CALL Display( &
-      & obj%cellOrder(:obj%tCellOrder), &
-      & msg="cellOrder: ", &
-      & unitno=unitno)
-  END IF
-END IF
-
-END PROCEDURE fe_Display
-
-!----------------------------------------------------------------------------
-!                                                                MdEncode
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE fe_MdEncode
-CHARACTER(*), PARAMETER :: myName = "fe_MdEncode"
-INTEGER(I4B), PARAMETER :: jj = 21
-TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
-
-colTitle(1) = ""
-rowTitle(1) = "**nsd**"; astr(1) = tostring(obj%nsd)
-rowTitle(2) = "**feType**"; astr(2) = tostring(obj%feType)
-rowTitle(3) = "**elemType**"; astr(3) = ElementName(obj%elemType)
-rowTitle(4) = "**ipType**"; astr(4) = tostring(obj%ipType)
-rowTitle(5) = "**basisType**"; astr(5) = tostring(obj%basisType)
-rowTitle(6) = "**alpha**"; astr(6) = tostring(obj%alpha)
-rowTitle(7) = "**beta**"; astr(7) = tostring(obj%beta)
-rowTitle(8) = "**lambda**"; astr(8) = tostring(obj%lambda)
-rowTitle(9) = "**dofType**"; astr(9) = tostring(obj%dofType)
-rowTitle(10) = "**transformType**"; astr(10) = tostring(obj%transformType)
-rowTitle(11) = "**baseContinuity**"; astr(11) = obj%baseContinuity0%chars()
-rowTitle(12) = "**baseInterpolion**"; astr(12) = obj%baseInterpol0%chars()
-rowTitle(13) = "**refElemDomain**"; astr(13) = obj%refElemDomain%chars()
-rowTitle(14) = "**isIsotropicOrder**"; astr(14) = tostring(obj%isIsotropicOrder)
-rowTitle(15) = "**isAnisotropicOrder**"; astr(15) = tostring(obj%isAnisotropicOrder)
-rowTitle(16) = "**isEdgeOrder**"; astr(16) = tostring(obj%isEdgeOrder)
-rowTitle(17) = "**isFaceOrder**"; astr(17) = tostring(obj%isFaceOrder)
-rowTitle(18) = "**isCellOrder**"; astr(18) = tostring(obj%isCellOrder)
-IF (obj%isEdgeOrder) THEN
-  rowTitle(19) = "**edgeOrder**"; astr(19) = tostring(obj%edgeOrder)
-ELSE
-  rowTitle(19) = "**edgeOrder**"; astr(19) = " "
-END IF
-
-IF (obj%isFaceOrder) THEN
-  rowTitle(20) = "**faceOrder**"; astr(20) = tostring(obj%faceOrder)
-ELSE
-  rowTitle(20) = "**faceOrder**"; astr(20) = " "
-END IF
-
-IF (obj%iscellOrder) THEN
-  rowTitle(21) = "**cellOrder**"; astr(21) = tostring(obj%cellOrder)
-ELSE
-  rowTitle(21) = "**cellOrder**"; astr(21) = " "
-END IF
-
-ans = MdEncode( &
-  & val=astr(1:21), &
-  & rh=rowTitle(1:21), &
-  & ch=colTitle)//char_lf//"**Reference Element**"// &
-  & char_lf//char_lf//obj%refelem%MdEncode()
-
-END PROCEDURE fe_MdEncode
-
-!----------------------------------------------------------------------------
-!                                                                MdEncode
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE fe_ReactEncode
-CHARACTER(*), PARAMETER :: myName = "fe_ReactEncode"
-INTEGER(I4B), PARAMETER :: jj = 21
-TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
-
-colTitle(1) = ""
-rowTitle(1) = "**nsd**"
-astr(1) = tostring(obj%nsd)
-
-rowTitle(2) = "**feType**"
-astr(2) = tostring(obj%feType)
-
-rowTitle(3) = "**elemType**"
-astr(3) = ElementName(obj%elemType)
-
-rowTitle(4) = "**ipType**"
-astr(4) = tostring(obj%ipType)
-
-rowTitle(5) = "**basisType**"
-astr(5) = tostring(obj%basisType)
-
-rowTitle(6) = "**alpha**"
-astr(6) = tostring(obj%alpha)
-
-rowTitle(7) = "**beta**"
-astr(7) = tostring(obj%beta)
-
-rowTitle(8) = "**lambda**"
-astr(8) = tostring(obj%lambda)
-
-rowTitle(9) = "**dofType**"
-astr(9) = tostring(obj%dofType)
-
-rowTitle(10) = "**transformType**"
-astr(10) = tostring(obj%transformType)
-
-rowTitle(11) = "**baseContinuity**"
-astr(11) = obj%baseContinuity0%chars()
-
-rowTitle(12) = "**baseInterpolion**"
-astr(12) = obj%baseInterpol0%chars()
-
-rowTitle(13) = "**refElemDomain**"
-astr(13) = obj%refElemDomain%chars()
-
-rowTitle(14) = "**isIsotropicOrder**"
-astr(14) = tostring(obj%isIsotropicOrder)
-
-rowTitle(15) = "**isAnisotropicOrder**"
-astr(15) = tostring(obj%isAnisotropicOrder)
-
-rowTitle(16) = "**isEdgeOrder**"
-astr(16) = tostring(obj%isEdgeOrder)
-
-rowTitle(17) = "**isFaceOrder**"
-astr(17) = tostring(obj%isFaceOrder)
-
-rowTitle(18) = "**isCellOrder**"
-astr(18) = tostring(obj%isCellOrder)
-
-IF (obj%isEdgeOrder) THEN
-  rowTitle(19) = "**edgeOrder**"
-  astr(19) = tostring(obj%edgeOrder)
-ELSE
-  rowTitle(19) = "**edgeOrder**"
-  astr(19) = " "
-END IF
-
-IF (obj%isFaceOrder) THEN
-  rowTitle(20) = "**faceOrder**"
-  astr(20) = tostring(obj%faceOrder)
-ELSE
-  rowTitle(20) = "**faceOrder**"
-  astr(20) = " "
-END IF
-
-IF (obj%iscellOrder) THEN
-  rowTitle(21) = "**cellOrder**"
-  astr(21) = tostring(obj%cellOrder)
-ELSE
-  rowTitle(21) = "**cellOrder**"
-  astr(21) = " "
-END IF
-
-ans = React_StartTabs()//char_lf
-ans = ans//React_StartTabItem(VALUE="0", label="Finite Element")//char_lf// &
-  & MdEncode( &
-  & val=astr(1:21), &
-  & rh=rowTitle(1:21), &
-  & ch=colTitle)//char_lf// &
-  & React_EndTabItem()//char_lf// &
-  & React_StartTabItem(VALUE="1", label="Reference Element")//char_lf// &
-  & char_lf//obj%refelem%ReactEncode()//char_lf// &
-  & React_EndTabItem()//char_lf//React_EndTabs()//char_lf
-END PROCEDURE fe_ReactEncode
-
-!----------------------------------------------------------------------------
-!                                                                  SetParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE fe_SetParam
-IF (PRESENT(nsd)) obj%nsd = nsd
-IF (PRESENT(order)) obj%order = order
-IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
-IF (PRESENT(edgeOrder)) obj%edgeOrder(1:SIZE(edgeOrder)) = edgeOrder
-IF (PRESENT(faceOrder)) obj%faceOrder(1:SIZE(faceOrder)) = faceOrder
-IF (PRESENT(cellOrder)) obj%cellOrder(1:SIZE(cellOrder)) = cellOrder
-IF (PRESENT(feType)) obj%feType = feType
-IF (PRESENT(elemType)) obj%elemType = elemType
-IF (PRESENT(ipType)) obj%ipType = ipType
-IF (PRESENT(dofType)) obj%dofType = dofType
-IF (PRESENT(transformType)) obj%transformType = transformType
-IF (PRESENT(baseContinuity)) THEN
-  CALL BaseContinuity_fromString( &
-    & obj=obj%baseContinuity, &
-    & name=baseContinuity)
-  obj%baseContinuity0 = baseContinuity
-END IF
-IF (PRESENT(baseInterpol)) THEN
-  CALL BaseInterpolation_fromString( &
-    & obj=obj%baseInterpol,   &
-    & name=baseInterpol)
-  obj%baseInterpol0 = baseInterpol
-END IF
-IF (PRESENT(refElemDomain)) obj%refElemDomain = refElemDomain
-IF (PRESENT(isIsotropicOrder)) obj%isIsotropicOrder = isIsotropicOrder
-IF (PRESENT(isAnisotropicOrder)) obj%isAnisotropicOrder = isAnisotropicOrder
-IF (PRESENT(isEdgeOrder)) obj%isEdgeOrder = isEdgeOrder
-IF (PRESENT(isFaceOrder)) obj%isFaceOrder = isFaceOrder
-IF (PRESENT(isCellOrder)) obj%isCellOrder = isCellOrder
-
-IF (PRESENT(tEdgeOrder)) obj%tEdgeOrder = tEdgeOrder
-IF (PRESENT(tFaceOrder)) obj%tFaceOrder = tFaceOrder
-IF (PRESENT(tCellOrder)) obj%tCellOrder = tCellOrder
-
-IF (PRESENT(basisType)) obj%basisType = basisType
-IF (PRESENT(alpha)) obj%alpha = alpha
-IF (PRESENT(beta)) obj%beta = beta
-IF (PRESENT(lambda)) obj%lambda = lambda
-END PROCEDURE fe_SetParam
-
-!----------------------------------------------------------------------------
-!                                                                GetParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE fe_GetParam
-CHARACTER(*), PARAMETER :: myName = "fe_GetParam()"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & '[WORK IN PROGRESS]')
-END PROCEDURE fe_GetParam
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE Methods
+END SUBMODULE ConstructorMethods

@@ -14,36 +14,36 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AbstractFE_Class) HCurlMethods
+SUBMODULE(AbstractFE_Class) DGMethods
 ! USE BaseMethod
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    GetLocalElemShapeData
+!                                                 GetLocalElemShapeData_DG
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData_HCurl_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData_HCurl()"
+MODULE PROCEDURE fe_GetLocalElemShapeData_DG_Master
+CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData_DG()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-!TODO: Implement get_GetLocalElemShapeData_HCurl_Master
-END PROCEDURE fe_GetLocalElemShapeData_HCurl_Master
+!TODO: Implement fe_GetLocalElemShapeData_DG_Master
+END PROCEDURE fe_GetLocalElemShapeData_DG_Master
 
 !----------------------------------------------------------------------------
-!                                                    GetGlobalElemShapeData
+!                                                 GetGlobalElemShapeData_DG
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData_HCurl_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData_HCurl()"
+MODULE PROCEDURE fe_GetGlobalElemShapeData_DG_Master
+CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData_DG()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-!TODO: Implement get_GetGlobalElemShapeData_HCurl_Master
-END PROCEDURE fe_GetGlobalElemShapeData_HCurl_Master
+!TODO: Implement fe_GetGlobalElemShapeData_DG_Master
+END PROCEDURE fe_GetGlobalElemShapeData_DG_Master
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE HCurlMethods
+END SUBMODULE DGMethods
