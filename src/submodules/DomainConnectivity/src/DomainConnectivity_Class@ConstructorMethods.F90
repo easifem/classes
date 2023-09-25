@@ -36,11 +36,42 @@ IF (ALLOCATED(obj%elemToElem)) DEALLOCATE (obj%elemToElem)
 END PROCEDURE dc_Deallocate
 
 !----------------------------------------------------------------------------
+!                                                               Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE dc_Deallocate2
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    CALL obj(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE dc_Deallocate2
+
+!----------------------------------------------------------------------------
+!                                                               Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE dc_Deallocate3
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE dc_Deallocate3
+
+!----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE dc_Final
 
 !----------------------------------------------------------------------------
