@@ -23,10 +23,10 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setSTVectorMeshFieldParam
-!!
+MODULE PROCEDURE SetSTVectorMeshFieldParam
+
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL setAbstractMeshFieldParam( &
+  CALL SetAbstractMeshFieldParam( &
     & param=param, &
     & prefix="STVectorMeshField", &
     & name=name, &
@@ -37,7 +37,7 @@ IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
     & rank=Vector, &
     & s=[spaceCompo])
 ELSE
-  CALL setAbstractMeshFieldParam( &
+  CALL SetAbstractMeshFieldParam( &
     & param=param, &
     & prefix="STVectorMeshField", &
     & name=name, &
@@ -48,19 +48,19 @@ ELSE
     & rank=Vector, &
     & s=[spaceCompo, nns, nnt])
 END IF
-!!
-END PROCEDURE setSTVectorMeshFieldParam
+
+END PROCEDURE SetSTVectorMeshFieldParam
 
 !----------------------------------------------------------------------------
-!                                                       checkEssentialParam
+!                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_checkEssentialParam
+MODULE PROCEDURE aField_CheckEssentialParam
 CALL AbstractFieldCheckEssentialParam( &
   & obj=obj, &
   & prefix="STVectorMeshField", &
   & param=param)
-END PROCEDURE aField_checkEssentialParam
+END PROCEDURE aField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
@@ -72,6 +72,38 @@ CALL AbstractMeshFieldInitiate( &
   & prefix="STVectorMeshField", &
   & param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_Deallocate_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    CALL obj(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE aField_Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE aField_Deallocate_Ptr_Vector
+
 
 !----------------------------------------------------------------------------
 !
