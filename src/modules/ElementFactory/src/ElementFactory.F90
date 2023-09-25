@@ -28,7 +28,7 @@ PRIVATE
 PUBLIC :: Element_, ElementPointer_, Element, Element_Pointer, TypeElement
 PUBLIC :: FacetElement_, FacetElementPointer_, &
   & FacetElement, FacetElement_Pointer, TypeFacetElement
-CHARACTER(LEN=*), PARAMETER :: modName = "ElementFactory"
+CHARACTER(*), PARAMETER :: modName = "ElementFactory"
 
 !----------------------------------------------------------------------------
 !
@@ -67,8 +67,8 @@ FUNCTION elem_factory_from_fpl(param, refelem) RESULT(ans)
   CLASS(Element_), POINTER :: ans
   ! Define internal variables
   INTEGER(I4B) :: ierr
-  CHARACTER(LEN=*), PARAMETER :: myName = "elem_factory_from_fpl()"
-  CHARACTER(LEN=100) :: elemTypeName
+  CHARACTER(*), PARAMETER :: myName = "elem_factory_from_fpl()"
+  CHARACTER(100) :: elemTypeName
   TYPE(String) :: elemType
 
   IF (.NOT. param%ispresent(key="type")) THEN
@@ -98,7 +98,7 @@ FUNCTION elem_factory_elem(obj) RESULT(ans)
   CLASS(Element_), INTENT(IN) :: obj
   CLASS(Element_), POINTER :: ans
   ! Define internal type
-  CHARACTER(LEN=*), PARAMETER :: myName = "elem_factory_elem()"
+  CHARACTER(*), PARAMETER :: myName = "elem_factory_elem()"
   SELECT TYPE (obj)
   TYPE IS (Element_)
     ALLOCATE (Element_ :: ans)
@@ -118,11 +118,11 @@ END FUNCTION elem_factory_elem
 
 SUBROUTINE elem_factor_display(obj, msg, unitno, FullDisp)
   CLASS(Element_), INTENT(IN) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: msg
+  CHARACTER(*), INTENT(IN) :: msg
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: FullDisp
   ! Define internal variables
-  CHARACTER(LEN=*), PARAMETER :: myName = "elem_factor_display()"
+  CHARACTER(*), PARAMETER :: myName = "elem_factor_display()"
   SELECT TYPE (obj)
   TYPE IS (Element_)
     CALL obj%display(msg=msg, unitno=unitno, FullDisp=FullDisp)
