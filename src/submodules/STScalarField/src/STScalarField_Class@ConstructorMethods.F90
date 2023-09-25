@@ -21,45 +21,45 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    setSTScalarFieldParam
+!                                                    SetSTScalarFieldParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setSTScalarFieldParam
+MODULE PROCEDURE SetSTScalarFieldParam
 INTEGER(I4B) :: ierr
-ierr = param%set(key=myprefix//"/name", VALUE=TRIM(name))
-ierr = param%set(key=myprefix//"/timeCompo", VALUE=timeCompo)
-ierr = param%set(key=myprefix//"/engine", VALUE=TRIM(engine))
+ierr = param%Set(key=myprefix//"/name", VALUE=TRIM(name))
+ierr = param%Set(key=myprefix//"/timeCompo", VALUE=timeCompo)
+ierr = param%Set(key=myprefix//"/engine", VALUE=TRIM(engine))
 IF (PRESENT(fieldType)) THEN
-  ierr = param%set(key=myprefix//"/fieldType", VALUE=fieldType)
+  ierr = param%Set(key=myprefix//"/fieldType", VALUE=fieldType)
 ELSE
-  ierr = param%set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
+  ierr = param%Set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
 END IF
 
 IF (PRESENT(comm)) THEN
-  ierr = param%set(key=myprefix//"/comm", VALUE=comm)
+  ierr = param%Set(key=myprefix//"/comm", VALUE=comm)
 ELSE
-  ierr = param%set(key=myprefix//"/comm", VALUE=0_I4B)
+  ierr = param%Set(key=myprefix//"/comm", VALUE=0_I4B)
 END IF
 
 IF (PRESENT(local_n)) THEN
-  ierr = param%set(key=myprefix//"/local_n", VALUE=local_n)
+  ierr = param%Set(key=myprefix//"/local_n", VALUE=local_n)
 ELSE
-  ierr = param%set(key=myprefix//"/local_n", VALUE=0_I4B)
+  ierr = param%Set(key=myprefix//"/local_n", VALUE=0_I4B)
 END IF
 
 IF (PRESENT(global_n)) THEN
-  ierr = param%set(key=myprefix//"/global_n", VALUE=global_n)
+  ierr = param%Set(key=myprefix//"/global_n", VALUE=global_n)
 ELSE
-  ierr = param%set(key=myprefix//"/global_n", VALUE=0_I4B)
+  ierr = param%Set(key=myprefix//"/global_n", VALUE=0_I4B)
 END IF
-END PROCEDURE setSTScalarFieldParam
+END PROCEDURE SetSTScalarFieldParam
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "stsField_checkEssentialParam"
+MODULE PROCEDURE stsField_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "stsField_CheckEssentialParam"
 IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & myprefix//'/name should be present in param')
@@ -84,7 +84,7 @@ IF (.NOT. param%isPresent(key=myprefix//"/local_n")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'local_n should be present in param')
 END IF
-END PROCEDURE stsField_checkEssentialParam
+END PROCEDURE stsField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
@@ -103,37 +103,37 @@ IF (obj%isInitiated) THEN
     & 'STScalarField_::obj is already initiated')
 END IF
 
-CALL obj%checkEssentialParam(param)
+CALL obj%CheckEssentialParam(param)
 
 ! engine
 ALLOCATE (CHARACTER( &
   & param%DataSizeInBytes(key=myprefix//"/engine")) :: char_var)
-ierr = param%get(key=myprefix//"/engine", VALUE=char_var)
+ierr = param%Get(key=myprefix//"/engine", VALUE=char_var)
 obj%engine = char_var
 DEALLOCATE (char_var)
 
 ! name
 ALLOCATE (CHARACTER( &
   & param%DataSizeInBytes(key=myprefix//"/name")) :: char_var)
-ierr = param%get(key=myprefix//"/name", VALUE=char_var)
+ierr = param%Get(key=myprefix//"/name", VALUE=char_var)
 obj%name = char_var
 names_char(1) (1:1) = char_var(1:1)
 DEALLOCATE (char_var)
 
 ! fieldType
 IF (param%isPresent(key=myprefix//"/fieldType")) THEN
-  ierr = param%get(key=myprefix//"/fieldType", VALUE=obj%fieldType)
+  ierr = param%Get(key=myprefix//"/fieldType", VALUE=obj%fieldType)
 ELSE
   obj%fieldType = FIELD_TYPE_NORMAL
 END IF
 
 ! comm
-ierr = param%get(key=myprefix//"/comm", VALUE=obj%comm)
-ierr = param%get(key=myprefix//"/global_n", VALUE=obj%global_n)
-ierr = param%get(key=myprefix//"/local_n", VALUE=obj%local_n)
+ierr = param%Get(key=myprefix//"/comm", VALUE=obj%comm)
+ierr = param%Get(key=myprefix//"/global_n", VALUE=obj%global_n)
+ierr = param%Get(key=myprefix//"/local_n", VALUE=obj%local_n)
 
 ! timeCompo
-ierr = param%get(key=myprefix//"/timeCompo", VALUE=obj%timeCompo)
+ierr = param%Get(key=myprefix//"/timeCompo", VALUE=obj%timeCompo)
 
 timeCompo = obj%timeCompo
 spaceCompo = 1
@@ -141,7 +141,7 @@ storageFMT = FMT_NODES
 obj%domain => dom
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   tNodes = 1
-  obj%tSize = obj%domain%getTotalNodes() * obj%timeCompo
+  obj%tSize = obj%domain%GetTotalNodes() * obj%timeCompo
   IF (obj%local_n .EQ. 0) THEN
     obj%local_n = tNodes(1) * obj%timeCompo
   END IF
@@ -149,7 +149,7 @@ IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
     obj%global_n = tNodes(1) * obj%timeCompo
   END IF
 ELSE
-  tNodes = obj%domain%getTotalNodes()
+  tNodes = obj%domain%GetTotalNodes()
   obj%tSize = tNodes(1) * obj%timeCompo
   IF (obj%local_n .EQ. 0) THEN
     obj%local_n = obj%tSize
