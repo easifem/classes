@@ -1,186 +1,186 @@
 !> Utility module containing miscellaneous tools that don't
 !> quite fit anywhere else.
-module EasyPlplot_Utilities
-use GlobalData, ONLY: wp => DFP
-implicit none
-private
+MODULE EasyPlplot_Utilities
+USE GlobalData, ONLY: wp => DFP
+IMPLICIT NONE
+PRIVATE
 
 !> Return a 2-vector comprising the minimum and maximum values of an array
-interface mixval
-  module procedure mixval_1
-  module procedure mixval_2
-  module procedure mixval_3
-end interface
+INTERFACE mixval
+  MODULE PROCEDURE mixval_1
+  MODULE PROCEDURE mixval_2
+  MODULE PROCEDURE mixval_3
+END INTERFACE
 
 !> Return a the maximum-minumum values of an array
-interface span
-  module procedure span_1
-  module procedure span_2
-  module procedure span_3
-end interface
+INTERFACE span
+  MODULE PROCEDURE span_1
+  MODULE PROCEDURE span_2
+  MODULE PROCEDURE span_3
+END INTERFACE
 
 !> Reduce an array to one dimension
-interface flatten
-  module procedure flatten_2
-  module procedure flatten_3
-end interface
+INTERFACE flatten
+  MODULE PROCEDURE flatten_2
+  MODULE PROCEDURE flatten_3
+END INTERFACE
 
-public :: mixval
-public :: span
-public :: linspace
+PUBLIC :: mixval
+PUBLIC :: span
+PUBLIC :: linspace
 
-public :: startsWith
-public :: endsWith
+PUBLIC :: startsWith
+PUBLIC :: endsWith
 
-public :: meshGridX
-public :: meshGridY
+PUBLIC :: meshGridX
+PUBLIC :: meshGridY
 
-public :: randomNormal
-public :: randomUniform
-public :: mean
-public :: stdev
+PUBLIC :: randomNormal
+PUBLIC :: randomUniform
+PUBLIC :: mean
+PUBLIC :: stdev
 
-public :: flatten
+PUBLIC :: flatten
 
-public :: colorize
-public :: int2char
-public :: real2char
+PUBLIC :: colorize
+PUBLIC :: int2char
+PUBLIC :: real2char
 
-public :: showProgress
+PUBLIC :: showProgress
 
-contains
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> Return [hi,low] for an array
-function mixval_1(x) result(b)
-  real(wp), dimension(:), intent(in) :: x
-  !! Array to find extrema in
-  real(wp), dimension(2) :: b
-
-  b = [minval(x), maxval(x)]
-end function mixval_1
+CONTAINS
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Return [hi,low] for an array
-function mixval_2(x) result(b)
-  real(wp), dimension(:, :), intent(in) :: x
+FUNCTION mixval_1(x) RESULT(b)
+  REAL(wp), DIMENSION(:), INTENT(in) :: x
   !! Array to find extrema in
-  real(wp), dimension(2) :: b
+  REAL(wp), DIMENSION(2) :: b
 
-  b = [minval(x), maxval(x)]
-end function mixval_2
+  b = [MINVAL(x), MAXVAL(x)]
+END FUNCTION mixval_1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Return [hi,low] for an array
-function mixval_3(x) result(b)
-  real(wp), dimension(:, :, :), intent(in) :: x
+FUNCTION mixval_2(x) RESULT(b)
+  REAL(wp), DIMENSION(:, :), INTENT(in) :: x
   !! Array to find extrema in
-  real(wp), dimension(2) :: b
+  REAL(wp), DIMENSION(2) :: b
 
-  b = [minval(x), maxval(x)]
-end function mixval_3
+  b = [MINVAL(x), MAXVAL(x)]
+END FUNCTION mixval_2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> Return [hi,low] for an array
+FUNCTION mixval_3(x) RESULT(b)
+  REAL(wp), DIMENSION(:, :, :), INTENT(in) :: x
+  !! Array to find extrema in
+  REAL(wp), DIMENSION(2) :: b
+
+  b = [MINVAL(x), MAXVAL(x)]
+END FUNCTION mixval_3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Return hi-low for an array
-function span_1(x) result(o)
-  real(wp), dimension(:), intent(in) :: x
+FUNCTION span_1(x) RESULT(o)
+  REAL(wp), DIMENSION(:), INTENT(in) :: x
   !! Array to find span in
-  real(wp) :: o
+  REAL(wp) :: o
 
-  o = maxval(x) - minval(x)
-end function span_1
+  o = MAXVAL(x) - MINVAL(x)
+END FUNCTION span_1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Return hi-low for an array
-function span_2(x) result(o)
-  real(wp), dimension(:, :), intent(in) :: x
+FUNCTION span_2(x) RESULT(o)
+  REAL(wp), DIMENSION(:, :), INTENT(in) :: x
   !! Array to find span in
-  real(wp) :: o
+  REAL(wp) :: o
 
-  o = maxval(x) - minval(x)
-end function span_2
+  o = MAXVAL(x) - MINVAL(x)
+END FUNCTION span_2
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Return hi-low for an array
-function span_3(x) result(o)
-  real(wp), dimension(:, :, :), intent(in) :: x
+FUNCTION span_3(x) RESULT(o)
+  REAL(wp), DIMENSION(:, :, :), INTENT(in) :: x
   !! Array to find span in
-  real(wp) :: o
+  REAL(wp) :: o
 
-  o = maxval(x) - minval(x)
-end function span_3
+  o = MAXVAL(x) - MINVAL(x)
+END FUNCTION span_3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Return an array of evenly-spaced values
-function linspace(l, h, N) result(o)
-  real(wp), intent(in) :: l
+FUNCTION linspace(l, h, N) RESULT(o)
+  REAL(wp), INTENT(in) :: l
   !! Low-bound for values
-  real(wp), intent(in) :: h
+  REAL(wp), INTENT(in) :: h
   !! High-bound for values
-  integer, intent(in), optional :: N
+  INTEGER, INTENT(in), OPTIONAL :: N
   !! Number of values (default 20)
-  real(wp), dimension(:), allocatable :: o
+  REAL(wp), DIMENSION(:), ALLOCATABLE :: o
 
-  integer :: Nl, i
+  INTEGER :: Nl, i
 
   Nl = 20
-  if (present(N)) Nl = N
+  IF (PRESENT(N)) Nl = N
 
-  o = [((h - l) * real(i - 1, wp) / real(Nl - 1, wp) + l, i=1, Nl)]
-end function linspace
+  o = [((h - l) * REAL(i - 1, wp) / REAL(Nl - 1, wp) + l, i=1, Nl)]
+END FUNCTION linspace
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Test if text starts with str
-function startsWith(text, str) result(o)
-  character(*), intent(in) :: text    !! Text to search
-  character(*), intent(in) :: str     !! String to look for
-  logical :: o
-  integer :: k
+FUNCTION startsWith(text, str) RESULT(o)
+  CHARACTER(*), INTENT(in) :: text !! Text to search
+  CHARACTER(*), INTENT(in) :: str !! String to look for
+  LOGICAL :: o
+  INTEGER :: k
 
-  k = len(str)
+  k = LEN(str)
   o = text(1:k) == str
-end function startsWith
+END FUNCTION startsWith
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Test if text ends with str
-function endsWith(text, str) result(o)
-  character(*), intent(in) :: text
+FUNCTION endsWith(text, str) RESULT(o)
+  CHARACTER(*), INTENT(in) :: text
   !! Text to search
-  character(*), intent(in) :: str
+  CHARACTER(*), INTENT(in) :: str
   !! String to look for
-  logical :: o
-  integer :: k
+  LOGICAL :: o
+  INTEGER :: k
 
-  k = len(text)
-  o = text(k - len(str) + 1:k) == str
-end function endsWith
+  k = LEN(text)
+  o = text(k - LEN(str) + 1:k) == str
+END FUNCTION endsWith
 
 !----------------------------------------------------------------------------
 !
@@ -189,13 +189,13 @@ end function endsWith
 !> Return a sample from an approximate normal distribution
 !> with a mean of \(\mu=0\) and a standard deviation of
 !> \(\sigma=1\). In this approximate distribution, \(x\in[-6,6]\).
-function randomNormal() result(o)
-  real(wp) :: o
-  real(wp), dimension(12) :: x
+FUNCTION randomNormal() RESULT(o)
+  REAL(wp) :: o
+  REAL(wp), DIMENSION(12) :: x
 
-  call random_number(x)
-  o = sum(x) - 6.0_wp
-end function randomNormal
+  CALL RANDOM_NUMBER(x)
+  o = SUM(x) - 6.0_WP
+END FUNCTION randomNormal
 
 !----------------------------------------------------------------------------
 !
@@ -203,266 +203,270 @@ end function randomNormal
 
 !> Return a sample from a uniform distribution
 !> in the range \(x\in[-1,1]\).
-function randomUniform() result(o)
-  real(wp) :: o
+FUNCTION randomUniform() RESULT(o)
+  REAL(wp) :: o
 
-  call random_number(o)
-  o = o * 2.0_wp - 1.0_wp
-end function randomUniform
+  CALL RANDOM_NUMBER(o)
+  o = o * 2.0_WP - 1.0_WP
+END FUNCTION randomUniform
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Convert a 2d array to 1d
-function flatten_2(A) result(o)
-  real(wp), dimension(:, :), intent(in) :: A
+FUNCTION flatten_2(A) RESULT(o)
+  REAL(wp), DIMENSION(:, :), INTENT(in) :: A
   !! Array to convert
-  real(wp), dimension(:), allocatable :: o
+  REAL(wp), DIMENSION(:), ALLOCATABLE :: o
 
-  o = reshape(A, [size(A)])
-end function flatten_2
+  o = RESHAPE(A, [SIZE(A)])
+END FUNCTION flatten_2
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Convert a 3d array to 1d
-function flatten_3(A) result(o)
-  real(wp), dimension(:, :, :), intent(in) :: A
+FUNCTION flatten_3(A) RESULT(o)
+  REAL(wp), DIMENSION(:, :, :), INTENT(in) :: A
   !! Array to convert
-  real(wp), dimension(:), allocatable :: o
+  REAL(wp), DIMENSION(:), ALLOCATABLE :: o
 
-  o = reshape(A, [size(A)])
-end function flatten_3
+  o = RESHAPE(A, [SIZE(A)])
+END FUNCTION flatten_3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Construct a 2d array of X values from a structured grid
-function meshGridX(x, y) result(o)
-  real(wp), dimension(:), intent(in) :: x
+FUNCTION meshGridX(x, y) RESULT(o)
+  REAL(wp), DIMENSION(:), INTENT(in) :: x
   !! x-positions in grid
-  real(wp), dimension(:), intent(in) :: y
+  REAL(wp), DIMENSION(:), INTENT(in) :: y
   !! y-positions in grid
-  real(wp), dimension(:, :), allocatable :: o
+  REAL(wp), DIMENSION(:, :), ALLOCATABLE :: o
 
-  integer :: Nx, Ny
-  integer :: i, j
+  INTEGER :: Nx, Ny
+  INTEGER :: i, j
 
-  Nx = size(x)
-  Ny = size(y)
+  Nx = SIZE(x)
+  Ny = SIZE(y)
 
-  allocate (o(Nx, Ny))
+  ALLOCATE (o(Nx, Ny))
 
-  forall (i=1:Nx, j=1:Ny) o(i, j) = x(i)
-end function meshGridX
+  DO CONCURRENT(i=1:Nx, j=1:Ny)
+    o(i, j) = x(i)
+  END DO
+END FUNCTION meshGridX
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Construct a 2d array of Y values from a structured grid
-function meshGridY(x, y) result(o)
-  real(wp), dimension(:), intent(in) :: x
+FUNCTION meshGridY(x, y) RESULT(o)
+  REAL(wp), DIMENSION(:), INTENT(in) :: x
   !! x-positions in grid
-  real(wp), dimension(:), intent(in) :: y
+  REAL(wp), DIMENSION(:), INTENT(in) :: y
   !! y-positions in grid
-  real(wp), dimension(:, :), allocatable :: o
+  REAL(wp), DIMENSION(:, :), ALLOCATABLE :: o
 
-  integer :: Nx, Ny
-  integer :: i, j
+  INTEGER :: Nx, Ny
+  INTEGER :: i, j
 
-  Nx = size(x)
-  Ny = size(y)
+  Nx = SIZE(x)
+  Ny = SIZE(y)
 
-  allocate (o(Nx, Ny))
+  ALLOCATE (o(Nx, Ny))
 
-  forall (i=1:Nx, j=1:Ny) o(i, j) = y(j)
-end function meshGridY
+  DO CONCURRENT(i=1:Nx, j=1:Ny)
+    o(i, j) = y(j)
+  END DO
+END FUNCTION meshGridY
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Add terminal format codes to coloize a string
-function colorize(s, c) result(o)
-  character(*), intent(in) :: s
+FUNCTION colorize(s, c) RESULT(o)
+  CHARACTER(*), INTENT(in) :: s
   !! String to colorize
-  integer, dimension(3) :: c ! c in [0,5]
+  INTEGER, DIMENSION(3) :: c ! c in [0,5]
   !! Color code in [r,g,b] where \(r,g,b\in[0,5]\)
-  character(:), allocatable :: o
+  CHARACTER(:), ALLOCATABLE :: o
 
-  character(1), parameter :: CR = achar(13)
-  character(1), parameter :: ESC = achar(27)
+  CHARACTER(1), PARAMETER :: CR = ACHAR(13)
+  CHARACTER(1), PARAMETER :: ESC = ACHAR(27)
 
-  character(20) :: pre
-  character(3) :: cb
+  CHARACTER(20) :: pre
+  CHARACTER(3) :: cb
 
-  write (cb, '(1I3)') 36 * c(1) + 6 * c(2) + c(3) + 16
-  pre = ESC//'[38;5;'//trim(adjustl(cb))//'m'
-  o = trim(pre)//s//ESC//'[0m'
-end function colorize
+  WRITE (cb, '(1I3)') 36 * c(1) + 6 * c(2) + c(3) + 16
+  pre = ESC//'[38;5;'//TRIM(ADJUSTL(cb))//'m'
+  o = TRIM(pre)//s//ESC//'[0m'
+END FUNCTION colorize
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Convert a real to a character
-pure function real2char(a, f, l) result(o)
-  real(wp), intent(in) :: a
+PURE FUNCTION real2char(a, f, l) RESULT(o)
+  REAL(wp), INTENT(in) :: a
   !! Real value to convert
-  character(*), optional, intent(in) :: f
+  CHARACTER(*), OPTIONAL, INTENT(in) :: f
   !! Format of result
-  integer, optional, intent(in) :: l
+  INTEGER, OPTIONAL, INTENT(in) :: l
   !! Length of result
-  character(:), allocatable :: o
+  CHARACTER(:), ALLOCATABLE :: o
 
-  character(128) :: buf
+  CHARACTER(128) :: buf
 
-  if (present(l)) then
-    allocate (character(l) :: o)
-    if (present(f)) then
-      write (o, '('//f//')') a
-    else
-      write (o, *) a
-    end if
-  else
-    if (present(f)) then
-      write (buf, '('//f//')') a
-    else
-      write (buf, *) a
-    end if
-    o = trim(adjustl(buf))
-  end if
-end function real2char
+  IF (PRESENT(l)) THEN
+    ALLOCATE (CHARACTER(l) :: o)
+    IF (PRESENT(f)) THEN
+      WRITE (o, '('//f//')') a
+    ELSE
+      WRITE (o, *) a
+    END IF
+  ELSE
+    IF (PRESENT(f)) THEN
+      WRITE (buf, '('//f//')') a
+    ELSE
+      WRITE (buf, *) a
+    END IF
+    o = TRIM(ADJUSTL(buf))
+  END IF
+END FUNCTION real2char
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Convert an integer to a character
-pure function int2char(a, f, l) result(o)
-  integer, intent(in) :: a
+PURE FUNCTION int2char(a, f, l) RESULT(o)
+  INTEGER, INTENT(in) :: a
   !! Integer value to convert
-  character(*), optional, intent(in) :: f
+  CHARACTER(*), OPTIONAL, INTENT(in) :: f
   !! Format of result
-  integer, optional, intent(in) :: l
+  INTEGER, OPTIONAL, INTENT(in) :: l
   !! Length of result
-  character(:), allocatable :: o
+  CHARACTER(:), ALLOCATABLE :: o
 
-  character(128) :: buf
+  CHARACTER(128) :: buf
 
-  if (present(l)) then
-    allocate (character(l) :: o)
-    if (present(f)) then
-      write (o, '('//f//')') a
-    else
-      write (o, *) a
-    end if
-  else
-    if (present(f)) then
-      write (buf, '('//f//')') a
-    else
-      write (buf, *) a
-    end if
-    o = trim(adjustl(buf))
-  end if
-end function int2char
+  IF (PRESENT(l)) THEN
+    ALLOCATE (CHARACTER(l) :: o)
+    IF (PRESENT(f)) THEN
+      WRITE (o, '('//f//')') a
+    ELSE
+      WRITE (o, *) a
+    END IF
+  ELSE
+    IF (PRESENT(f)) THEN
+      WRITE (buf, '('//f//')') a
+    ELSE
+      WRITE (buf, *) a
+    END IF
+    o = TRIM(ADJUSTL(buf))
+  END IF
+END FUNCTION int2char
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Show a progress bar with a message
-subroutine showProgress(m, p)
-  character(*), intent(in) :: m
+SUBROUTINE showProgress(m, p)
+  CHARACTER(*), INTENT(in) :: m
   !! Message to show
-  real(wp), intent(in) :: p
+  REAL(wp), INTENT(in) :: p
   !! Progress level \(p\in[0,1]\)
 
-  real(wp) :: r
-  real(wp), save :: po
-  integer :: N, k
+  REAL(wp) :: r
+  REAL(wp), SAVE :: po
+  INTEGER :: N, k
 
   N = 40
 
-  if (p <= 0.0_wp) then
+  IF (p <= 0.0_WP) THEN
     po = p
-  end if
-  if (p - po < 0.05 .and. p < 1.0_wp) then
-    return
-  else
+  END IF
+  IF (p - po < 0.05 .AND. p < 1.0_WP) THEN
+    RETURN
+  ELSE
     po = p
-  end if
+  END IF
 
-  write (*, '(1A)', advance='no') achar(13)//colorize(m//' [', [5, 5, 0])
-  do k = 1, N
-    r = real(k - 1, wp) / real(N - 1, wp)
-    if (r <= p) then
-      write (*, '(1A)', advance='no') colorize('=', cmap(r, [0.0_wp, 1.0_wp]))
-    else
-      write (*, '(1A)', advance='no') colorize(' ', [0, 0, 0])
-    end if
-  end do
-  write (*, '(1A,1A,1X,1A)', advance='no') colorize('] ', [5, 5, 0]), &
-    & colorize(real2char(100.0_wp * p, '1F5.1'), &
-    & cmap(p, [0.0_wp, 1.0_wp])), &
+  WRITE (*, '(1A)', advance='no') ACHAR(13)//colorize(m//' [', [5, 5, 0])
+  DO k = 1, N
+    r = REAL(k - 1, wp) / REAL(N - 1, wp)
+    IF (r <= p) THEN
+      WRITE (*, '(1A)', advance='no') colorize('=', cmap(r, [0.0_WP, 1.0_WP]))
+    ELSE
+      WRITE (*, '(1A)', advance='no') colorize(' ', [0, 0, 0])
+    END IF
+  END DO
+  WRITE (*, '(1A,1A,1X,1A)', advance='no') colorize('] ', [5, 5, 0]), &
+    & colorize(real2char(100.0_WP * p, '1F5.1'), &
+    & cmap(p, [0.0_WP, 1.0_WP])), &
     & colorize('%', [5, 5, 0])
-  if (p >= 1.0_wp) write (*, '(1A)') ''
-  flush (6)
-end subroutine showProgress
+  IF (p >= 1.0_WP) WRITE (*, '(1A)') ''
+  FLUSH (6)
+END SUBROUTINE showProgress
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Sample a color from a cool-warm colormap for colorize
-function cmap(v, r) result(c)
-  real(wp), intent(in) :: v
+FUNCTION cmap(v, r) RESULT(c)
+  REAL(wp), INTENT(in) :: v
   !! Value to sample
-  real(wp), dimension(2), intent(in) :: r
+  REAL(wp), DIMENSION(2), INTENT(in) :: r
   !! Range to sample from
-  integer, dimension(3) :: c
+  INTEGER, DIMENSION(3) :: c
 
-  integer :: s
+  INTEGER :: s
 
-  if (v < sum(r) / 2.0_wp) then
-    s = nint((v - r(1)) / (sum(r) / 2.0_wp - r(1)) * 5.0_wp)
+  IF (v < SUM(r) / 2.0_WP) THEN
+    s = NINT((v - r(1)) / (SUM(r) / 2.0_WP - r(1)) * 5.0_WP)
     c = [s, s, 5]
-  else
-    s = 5 - nint((v - sum(r) / 2.0_wp) / (r(2) - sum(r) / 2.0_wp) * 5.0_wp)
+  ELSE
+    s = 5 - NINT((v - SUM(r) / 2.0_WP) / (r(2) - SUM(r) / 2.0_WP) * 5.0_WP)
     c = [5, s, s]
-  end if
-end function cmap
+  END IF
+END FUNCTION cmap
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Compute the arithmetic mean of an array
-function mean(d) result(o)
-  real(wp), dimension(:), intent(in) :: d
-  real(wp) :: o
+FUNCTION mean(d) RESULT(o)
+  REAL(wp), DIMENSION(:), INTENT(in) :: d
+  REAL(wp) :: o
 
-  o = sum(d) / real(size(d), wp)
-end function mean
+  o = SUM(d) / REAL(SIZE(d), wp)
+END FUNCTION mean
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 !> Compute the standard deviation of an array
-function stdev(d) result(o)
-  real(wp), dimension(:), intent(in) :: d
-  real(wp) :: o
+FUNCTION stdev(d) RESULT(o)
+  REAL(wp), DIMENSION(:), INTENT(in) :: d
+  REAL(wp) :: o
 
-  o = sqrt(sum((d - mean(d))**2) / real(size(d) - 1, wp))
-end function stdev
+  o = SQRT(SUM((d - mean(d))**2) / REAL(SIZE(d) - 1, wp))
+END FUNCTION stdev
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-end module EasyPlplot_Utilities
+END MODULE EasyPlplot_Utilities
