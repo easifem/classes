@@ -69,4 +69,64 @@ MODULE PROCEDURE bc_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE bc_Final
 
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Deallocate_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    CALL obj(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE bc_Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE bc_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                            AddNitscheBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_AddNitscheBC
+CHARACTER(*), PARAMETER :: myName = "bc_AddNitscheBC"
+
+IF (dbcNo .GT. SIZE(dbc)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & '[OUT OF BOUND ERROR] :: dbcNo [= '//TOSTRING(dbcNo)//  &
+  & '] is out of bound for dbc [= '// &
+  & TOSTRING(SIZE(dbc))//']')
+END IF
+
+IF (ASSOCIATED(dbc(dbcNo)%ptr)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & '[ALLOCATION ERROR] :: DBC( '//TOSTRING(dbcNo)// &
+  &  ')%ptr is already associated, deallocate and nullify it first.')
+END IF
+
+ALLOCATE (dbc(dbcNo)%ptr)
+
+CALL dbc(dbcNo)%ptr%initiate( &
+  & param=param, &
+  & boundary=boundary, &
+  & dom=dom)
+
+END PROCEDURE bc_AddNitscheBC
+
 END SUBMODULE ConstructorMethods
