@@ -303,39 +303,39 @@ CHARACTER(1), ALLOCATABLE :: names_char(:)
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP] :: This routine is under development')
 
-CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
-CALL Initiate_FE(obj=obj%fe, param=param, dom=dom)
-!INFO: Initiate_FE is defined in FiniteElement_Class
-spaceCompo = obj%GetSpaceCompo()
-timeCompo = obj%GetTimeCompo()
-storageFMT = obj%GetStorageFMT()
-! names_char = obj%GetNames()
-!FIXME: How to get the names in the vase of block matrix?
-
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  tNodes = 1
-ELSE
-  tNodes = obj%GetTotalDOF()
-END IF
-
-CALL Initiate( &
-  & obj=obj%dof, &
-  & tNodes=tNodes, &
-  & names=names_char, &
-  & spaceCompo=spaceCompo, &
-  & timeCompo=timeCompo, &
-  & storageFMT=storageFMT)
-
-CALL Initiate(obj%realVec, obj%dof)
-
-obj%tSize = SIZE(obj%realVec)
-
-IF (obj%local_n .EQ. 0) THEN
-  obj%local_n = obj%tSize
-END IF
-IF (obj%global_n .EQ. 0) THEN
-  obj%global_n = obj%tSize
-END IF
+! CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
+! CALL Initiate_FE(obj=obj%fe, param=param, dom=dom)
+! !INFO: Initiate_FE is defined in FiniteElement_Class
+! spaceCompo = obj%GetSpaceCompo()
+! timeCompo = obj%GetTimeCompo()
+! storageFMT = obj%GetStorageFMT()
+! ! names_char = obj%GetNames()
+! !FIXME: How to get the names in the vase of block matrix?
+!
+! IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+!   tNodes = 1
+! ELSE
+!   tNodes = obj%GetTotalDOF()
+! END IF
+!
+! CALL Initiate( &
+!   & obj=obj%dof, &
+!   & tNodes=tNodes, &
+!   & names=names_char, &
+!   & spaceCompo=spaceCompo, &
+!   & timeCompo=timeCompo, &
+!   & storageFMT=storageFMT)
+!
+! CALL Initiate(obj%realVec, obj%dof)
+!
+! obj%tSize = SIZE(obj%realVec)
+!
+! IF (obj%local_n .EQ. 0) THEN
+!   obj%local_n = obj%tSize
+! END IF
+! IF (obj%global_n .EQ. 0) THEN
+!   obj%global_n = obj%tSize
+! END IF
 
 END PROCEDURE AbstractNodeFieldInitiate
 

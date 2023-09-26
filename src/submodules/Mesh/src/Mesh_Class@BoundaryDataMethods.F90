@@ -29,49 +29,44 @@ MODULE PROCEDURE mesh_InitiateBoundaryData
 INTEGER(I4B) :: iel, tFace, ii, jj, kk
 INTEGER(I4B), ALLOCATABLE :: global_nptrs(:), ElemToElem(:, :)
 CHARACTER(*), PARAMETER :: myName = "mesh_InitiateBoundaryData"
-!
+
 ! check
-!
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
-!
+
 ! check
-!
 IF (.NOT. ASSOCIATED(obj%refelem)) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Unable to identify the Reference element of the mesh, &
     & may be it is not set")
 END IF
-!
+
 ! check
-!
 IF (obj%isBoundaryDataInitiated) THEN
   CALL e%raiseWarning(modName//"::"//myName//" - "// &
     & "Boundary data information is already initiated. If you want to &
     & Reinitiate it then deallocate nodeData, first!")
   RETURN
 END IF
-!
+
 IF (.NOT. obj%isElementToElementsInitiated) &
   & CALL obj%InitiateElementToElements()
-!
+
 obj%isBoundaryDataInitiated = .TRUE.
-!
+
 IF (.NOT. ALLOCATED(obj%FacetElements)) &
   & obj%FacetElements = FacetElements(obj%refelem)
-!
+
 tFace = SIZE(obj%FacetElements)
-!
+
 ! Case of single element in the mesh
-!
 IF (obj%tElements .EQ. 1) THEN
   obj%elementData(1)%elementType = BOUNDARY_ELEMENT
   tFace = SIZE(obj%FacetElements)
   obj%elementData(1)%boundaryData = [(ii, ii=1, tFace)]
 ELSE
-  !
+
   ! Now we will include those elements in boundary elements
   ! which contains the boundary nodes
-  !
   DO ii = 1, obj%tElements
     iel = obj%getGlobalElemNumber(ii)
     global_nptrs = obj%getConnectivity(iel)
@@ -80,7 +75,7 @@ ELSE
         & obj%elementData(ii)%elementType = BOUNDARY_ELEMENT
     END DO
   END DO
-  !
+
   DO ii = 1, obj%tElements
     IF (obj%elementData(ii)%elementType .NE. BOUNDARY_ELEMENT) CYCLE
     iel = obj%getGlobalElemNumber(ii)

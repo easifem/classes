@@ -268,8 +268,10 @@ TYPE :: Mesh_
     !! element data
   TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData(:)
     !! Internal facet data
+    !! INFO: This data is initiated by InitiateFacetElements method
   TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
     !! Domain Facet Data
+    !! INFO: This data is initiated by InitiateFacetElements method
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
     !! TODO: Change refelem to Type(ReferenceElement_)
