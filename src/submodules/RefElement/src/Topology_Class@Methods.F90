@@ -54,6 +54,53 @@ CALL Display(obj%nptrs, "nptrs : ", unitno=unitno, orient="ROW")
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
+!                                                                MdEncode
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_MdEncode
+TYPE(String), ALLOCATABLE :: astr(:, :)
+INTEGER(I4B) :: n, ii, jj
+TYPE(String) :: rh(3), ch(1)
+
+rh(1) = "Element type"
+rh(2) = "Xidimension"
+rh(3) = "Nptrs"
+ch(1) = ""
+
+IF (ALLOCATED(obj%nptrs)) THEN
+  n = SIZE(obj%nptrs)
+  CALL reallocate(astr, 3, n)
+  astr(1, 1) = ElementName(obj%name)
+  DO ii = 2, n
+    astr(1, ii) = ""
+  END DO
+
+  astr(2, 1) = tostring(obj%xidimension)
+  DO ii = 2, n
+    astr(2, ii) = ""
+  END DO
+
+  DO ii = 1, n
+    astr(3, ii) = tostring(obj%nptrs(ii))
+  END DO
+
+ELSE
+
+  n = 1
+  CALL reallocate(astr, 3, n)
+  astr(1, 1) = ElementName(obj%name)
+  astr(2, 1) = tostring(obj%xidimension)
+  astr(3, 1) = "NOT ALLOCATED"
+
+END IF
+
+ans = MdEncode(val=astr, rh=rh, ch=ch)
+
+IF (ALLOCATED(astr)) DEALLOCATE (astr)
+
+END PROCEDURE obj_MdEncode
+
+!----------------------------------------------------------------------------
 !                                                                   Getnptrs
 !----------------------------------------------------------------------------
 
@@ -98,9 +145,7 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetTopology
-  !!
 SELECT CASE (elemType)
-  !!
 CASE (Line2)
   ALLOCATE (ans(2))
   ans(1)%nptrs = nptrs(1:1)
@@ -110,7 +155,6 @@ CASE (Line2)
   ans(2)%nptrs = nptrs(2:2)
   ans(2)%name = point
   ans(2)%xidimension = 0
-  !!
 CASE (Triangle3)
   ALLOCATE (ans(3))
   ans(1)%nptrs = nptrs([1, 2])
@@ -118,7 +162,6 @@ CASE (Triangle3)
   ans(3)%nptrs = nptrs([3, 1])
   ans(1:3)%xidimension = 1
   ans(1:3)%name = line2
-  !!
 CASE (Quadrangle4)
   ALLOCATE (ans(4))
   ans(1)%nptrs = nptrs([1, 2])
@@ -127,7 +170,6 @@ CASE (Quadrangle4)
   ans(4)%nptrs = nptrs([4, 1])
   ans(1:)%xidimension = 1
   ans(1:)%name = line2
-  !!
 CASE (Tetrahedron4)
   ALLOCATE (ans(4))
   ans(1)%nptrs = nptrs([1, 2, 3])
@@ -136,7 +178,6 @@ CASE (Tetrahedron4)
   ans(4)%nptrs = nptrs([1, 2, 4])
   ans(:)%xidimension = 2
   ans(:)%name = Triangle3
-  !!
 CASE (Hexahedron8)
   ALLOCATE (ans(6))
   ans(1)%nptrs = nptrs([1, 4, 3, 2])
@@ -147,7 +188,6 @@ CASE (Hexahedron8)
   ans(6)%nptrs = nptrs([1, 2, 6, 5])
   ans(:)%xidimension = 2
   ans(:)%name = Quadrangle4
-  !!
 CASE (Prism6)
   ALLOCATE (ans(5))
   ans(1)%nptrs = nptrs([5, 4, 1, 2])
@@ -158,7 +198,6 @@ CASE (Prism6)
   ans(:)%xidimension = 2
   ans(1:3)%name = Quadrangle4
   ans(4:5)%name = Triangle3
-  !!
 CASE (Pyramid5)
   ALLOCATE (ans(5))
   ans(1)%nptrs = nptrs([1, 2, 5])
@@ -169,7 +208,6 @@ CASE (Pyramid5)
   ans(:)%xidimension = 2
   ans(1:4)%name = Triangle3
   ans(5)%name = Quadrangle4
-    !! Order=2 elements
 CASE (Line3)
   ALLOCATE (ans(2))
   ans(1)%nptrs = nptrs([1])
@@ -178,7 +216,6 @@ CASE (Line3)
   ans(2)%nptrs = nptrs([2])
   ans(2)%name = point
   ans(2)%xidimension = 0
-  !!
 CASE (Triangle6)
   ALLOCATE (ans(3))
   ans(1)%nptrs = nptrs([1, 2, 4])
@@ -186,7 +223,6 @@ CASE (Triangle6)
   ans(3)%nptrs = nptrs([3, 1, 6])
   ans(1:3)%xidimension = 1
   ans(1:3)%name = line3
-  !!
 CASE (Quadrangle9)
   ALLOCATE (ans(4))
   ans(1)%nptrs = nptrs([1, 2, 5])
@@ -195,7 +231,6 @@ CASE (Quadrangle9)
   ans(4)%nptrs = nptrs([4, 1, 8])
   ans(1:)%xidimension = 1
   ans(1:)%name = line3
-  !!
 CASE (Quadrangle8)
   ALLOCATE (ans(4))
   ans(1)%nptrs = nptrs([1, 2, 5])
@@ -204,7 +239,6 @@ CASE (Quadrangle8)
   ans(4)%nptrs = nptrs([4, 1, 8])
   ans(1:)%xidimension = 1
   ans(1:)%name = line3
-  !!
 CASE (Tetrahedron10)
   ALLOCATE (ans(4))
   ans(1)%nptrs = nptrs([1, 2, 3, 5, 6, 7])
@@ -213,7 +247,6 @@ CASE (Tetrahedron10)
   ans(4)%nptrs = nptrs([1, 2, 4, 5, 9, 8])
   ans(:)%xidimension = 2
   ans(:)%name = Triangle6
-  !!
 CASE (Hexahedron20)
   ALLOCATE (ans(6))
   ans(1)%nptrs = nptrs([1, 4, 3, 2, 10, 14, 12, 9])
@@ -224,7 +257,6 @@ CASE (Hexahedron20)
   ans(6)%nptrs = nptrs([1, 2, 6, 5, 9, 13, 17, 11])
   ans(:)%xidimension = 2
   ans(:)%name = Quadrangle8
-  !!
 CASE (Hexahedron27)
   ALLOCATE (ans(6))
   ans(1)%nptrs = nptrs([1, 4, 3, 2, 10, 14, 12, 9, 21])
@@ -235,7 +267,6 @@ CASE (Hexahedron27)
   ans(6)%nptrs = nptrs([1, 2, 6, 5, 9, 13, 17, 11, 22])
   ans(:)%xidimension = 2
   ans(:)%name = Quadrangle9
-  !!
 CASE (Prism15)
   ALLOCATE (ans(5))
   ans(1)%nptrs = nptrs([5, 4, 1, 2, 13, 9, 7, 11])
@@ -246,7 +277,6 @@ CASE (Prism15)
   ans(:)%xidimension = 2
   ans(1:3)%name = Quadrangle8
   ans(4:5)%name = Triangle6
-  !!
 CASE (Prism18)
   ALLOCATE (ans(5))
   ans(1)%nptrs = nptrs([5, 4, 1, 2, 13, 9, 7, 11, 16])
@@ -257,7 +287,6 @@ CASE (Prism18)
   ans(:)%xidimension = 2
   ans(1:3)%name = Quadrangle9
   ans(4:5)%name = Triangle6
-  !!
 CASE (Pyramid13)
   ALLOCATE (ans(5))
   ans(1)%nptrs = nptrs([1, 2, 5, 6, 10, 8])
@@ -268,7 +297,6 @@ CASE (Pyramid13)
   ans(:)%xidimension = 2
   ans(1:4)%name = Triangle6
   ans(5)%name = Quadrangle8
-  !!
 CASE (Pyramid14)
   ALLOCATE (ans(5))
   ans(1)%nptrs = nptrs([1, 2, 5, 6, 10, 8])
@@ -279,7 +307,6 @@ CASE (Pyramid14)
   ans(:)%xidimension = 2
   ans(1:4)%name = Triangle6
   ans(5)%name = Quadrangle9
-  !!
 CASE (Triangle9)
   ALLOCATE (ans(3))
   ans(1)%nptrs = nptrs([1, 2, 4, 5])
@@ -287,69 +314,54 @@ CASE (Triangle9)
   ans(3)%nptrs = nptrs([3, 1, 8, 9])
   ans(1:3)%xidimension = 1
   ans(1:3)%name = line4
-  !!
 CASE (Triangle10)
   ALLOCATE (ans(3))
   ans(1)%nptrs = nptrs([1, 2, 4, 5])
   ans(2)%nptrs = nptrs([2, 3, 6, 7])
   ans(3)%nptrs = nptrs([3, 1, 8, 9])
-
   ans(1:3)%xidimension = 1
   ans(1:3)%name = line4
-
 CASE (Triangle12)
   ALLOCATE (ans(3))
   ans(1)%nptrs = nptrs([1, 2, 4, 5, 6])
   ans(2)%nptrs = nptrs([2, 3, 7, 8, 9])
   ans(3)%nptrs = nptrs([3, 1, 10, 11, 12])
-
   ans(1:3)%xidimension = 1
   ans(1:3)%name = line5
-
 CASE (Triangle15a)
   ALLOCATE (ans(3))
   ans(1)%nptrs = nptrs([1, 2, 4, 5, 6])
   ans(2)%nptrs = nptrs([2, 3, 7, 8, 9])
   ans(3)%nptrs = nptrs([3, 1, 10, 11, 12])
-
   ans(1:3)%xidimension = 1
   ans(1:3)%name = line5
-
 CASE (Line4)
   ALLOCATE (ans(2))
   ans(1)%nptrs = nptrs([1])
   ans(1)%name = point
   ans(1)%xidimension = 0
-
   ans(2)%nptrs = nptrs([2])
   ans(2)%name = point
   ans(2)%xidimension = 0
-
 CASE (Line5)
   ALLOCATE (ans(2))
   ans(1)%nptrs = nptrs([1])
   ans(1)%name = point
   ans(1)%xidimension = 0
-
   ans(2)%nptrs = nptrs([2])
   ans(2)%name = point
   ans(2)%xidimension = 0
-
 CASE (Line6)
   ALLOCATE (ans(2))
   ans(1)%nptrs = nptrs([1])
   ans(1)%name = point
   ans(1)%xidimension = 0
-
   ans(2)%nptrs = nptrs([2])
   ans(2)%name = point
   ans(2)%xidimension = 0
-
 CASE (Triangle15b, Triangle21, Tetrahedron20, Tetrahedron35, &
   & Tetrahedron56, Hexahedron64, Hexahedron125)
-    !!
 END SELECT
-  !!
 END PROCEDURE obj_GetFacetTopology
 
 END SUBMODULE Methods

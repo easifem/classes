@@ -17,7 +17,7 @@
 
 MODULE TensorMeshField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
@@ -27,6 +27,10 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "TensorMeshField_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "TensorMeshField"
+PUBLIC :: DEALLOCATE
+PUBLIC :: TensorMeshField_
+PUBLIC :: TensorMeshFieldPointer_
+PUBLIC :: SetTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                     TensorMeshField_Class
@@ -39,14 +43,12 @@ CHARACTER(*), PARAMETER :: myPrefix = "TensorMeshField"
 TYPE, EXTENDS(AbstractMeshField_) :: TensorMeshField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & aField_CheckEssentialParam
+    !! Check essential parameters
   PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
     !! Initiate the field by reading param and a given mesh
 END TYPE TensorMeshField_
-
-PUBLIC :: TensorMeshField_
 
 !----------------------------------------------------------------------------
 !
@@ -56,18 +58,16 @@ TYPE :: TensorMeshFieldPointer_
   CLASS(TensorMeshField_), POINTER :: ptr => NULL()
 END TYPE TensorMeshFieldPointer_
 
-PUBLIC :: TensorMeshFieldPointer_
-
 !----------------------------------------------------------------------------
-!                              setAbstractMeshFieldParam@ConstructorMethods
+!                              SetAbstractMeshFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setTensorMeshFieldParam(param, name, &
+  MODULE SUBROUTINE SetTensorMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, dim1, dim2, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
@@ -80,24 +80,22 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim2
     INTEGER(I4B), INTENT(IN) :: nns
     !! Number of node in space
-  END SUBROUTINE setTensorMeshFieldParam
+  END SUBROUTINE SetTensorMeshFieldParam
 END INTERFACE
 
-PUBLIC :: setTensorMeshFieldParam
-
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE aField_CheckEssentialParam(obj, param)
     CLASS(TensorMeshField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
+  END SUBROUTINE aField_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -115,5 +113,33 @@ INTERFACE
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE aField_Initiate1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+    TYPE(TensorMeshField_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+    TYPE(TensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 END MODULE TensorMeshField_Class

@@ -25,7 +25,9 @@ USE Topology_Class
 USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefPoint_Class"
+CHARACTER(*), PARAMETER :: modName = "RefPoint_Class"
+PUBLIC :: RefPointPointer_
+PUBLIC :: RefPoint_
 
 !----------------------------------------------------------------------------
 !                                                   RefPoint_
@@ -35,7 +37,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefPoint_Class"
 ! date: 9 Aug 2022
 ! summary:         RefPoint class is defined
 !
-!{!pages/RefPoint_.md!}
+!{!pages/docs-api/RefPoint/RefPoint_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefPoint_
 CONTAINS
@@ -44,12 +46,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElements => &
     & refelem_GetFacetElements
   !! Returns the facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
-    & refelem_GenerateTopology
-  !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefPoint_
-
-PUBLIC :: RefPoint_
 
 !----------------------------------------------------------------------------
 !                                            RefPointPointer_
@@ -59,7 +58,23 @@ TYPE :: RefPointPointer_
   CLASS(RefPoint_), POINTER :: ptr => NULL()
 END TYPE RefPointPointer_
 
-PUBLIC :: RefPointPointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+  MODULE FUNCTION refelem_RefCoord(obj, baseInterpolation, baseContinuity) &
+    & RESULT(ans)
+    CLASS(RefPoint_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                          GetName@Methods
@@ -89,21 +104,6 @@ INTERFACE
     CLASS(RefPoint_), INTENT(IN) :: obj
     TYPE(AbstractRefElementPointer_), ALLOCATABLE :: ans(:)
   END SUBROUTINE refelem_GetFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GenerateTopology@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2022
-! summary: Generate topology of reference element
-!
-
-INTERFACE
-  MODULE SUBROUTINE refelem_GenerateTopology(obj)
-    CLASS(RefPoint_), INTENT(INOUT) :: obj
-  END SUBROUTINE refelem_GenerateTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------

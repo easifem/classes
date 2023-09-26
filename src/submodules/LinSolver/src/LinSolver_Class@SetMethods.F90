@@ -95,6 +95,7 @@ END PROCEDURE ls_Set
 
 MODULE PROCEDURE setLinSolverParam
 CHARACTER(*), PARAMETER :: myName = "setLinSolverParam"
+INTEGER(I4B) :: p_name0 
 
 IF (.NOT. PRESENT(solverName)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -120,6 +121,8 @@ IF (.NOT. PRESENT(preconditionOption)) THEN
     & 'preconditionOption should be present')
 END IF
 
+p_name0 = input(option=p_name, default=PRECOND_NONE)
+
 IF (preconditionOption .NE. PRECOND_NONE) THEN
   IF (.NOT. PRESENT(p_name)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -128,7 +131,9 @@ IF (preconditionOption .NE. PRECOND_NONE) THEN
   END IF
 END IF
 
-SELECT CASE (p_name)
+SELECT CASE (p_name0)
+CASE( PRECOND_NONE )
+  !! Do nothing
 CASE (PRECOND_ILUT)
   IF (.NOT. PRESENT(p_ilu_droptol) .OR. &
     & .NOT. PRESENT(p_ilu_lfil)) THEN
@@ -263,11 +268,11 @@ END SELECT
 
 CALL setAbstractLinSolverParam( &
 & param=param, &
-& prefix="LinSolver", &
+& prefix=myprefix, &
 & engine="NATIVE_SERIAL", &
 & solverName=solverName, &
 & preconditionOption=preconditionOption, &
-& p_name=p_name, &
+& p_name=p_name0, &
 & convergenceIn=INPUT(option=convergenceIn, default=default_convergenceIn), &
 & convergenceType=INPUT(option=convergenceType, default=default_convergenceType), &
 & maxIter=INPUT(option=maxIter, default=default_maxIter), &

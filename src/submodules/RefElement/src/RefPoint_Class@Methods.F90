@@ -20,6 +20,15 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                  RefCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE refelem_RefCoord
+CALL Reallocate(ans, 3_I4B, 1_I4B)
+ans = 0.0_DFP
+END PROCEDURE refelem_RefCoord
+
+!----------------------------------------------------------------------------
 !                                                                    GetName
 !----------------------------------------------------------------------------
 
@@ -34,18 +43,6 @@ END PROCEDURE refelem_GetName
 MODULE PROCEDURE refelem_GetFacetElements
 ALLOCATE (ans(0))
 END PROCEDURE refelem_GetFacetElements
-
-!----------------------------------------------------------------------------
-!                                                          GenerateTopology
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE refelem_GenerateTopology
-ALLOCATE (obj%pointTopology(1))
-CALL obj%pointTopology(1)%Initiate( &
-  & nptrs=[1_I4B], &
-  & name=Point1, &
-  & xidimension=0_I4B)
-END PROCEDURE refelem_GenerateTopology
 
 !----------------------------------------------------------------------------
 !

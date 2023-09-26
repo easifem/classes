@@ -26,6 +26,10 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STTensorMeshField_Class"
+PUBLIC :: DEALLOCATE
+PUBLIC :: STTensorMeshField_
+PUBLIC :: STTensorMeshFieldPointer_
+PUBLIC :: SetSTTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                     STTensorMeshField_Class
@@ -45,8 +49,6 @@ CONTAINS
     !! Initiate the field by reading param and a given mesh
 END TYPE STTensorMeshField_
 
-PUBLIC :: STTensorMeshField_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -54,8 +56,6 @@ PUBLIC :: STTensorMeshField_
 TYPE :: STTensorMeshFieldPointer_
   CLASS(STTensorMeshField_), POINTER :: ptr => NULL()
 END TYPE STTensorMeshFieldPointer_
-
-PUBLIC :: STTensorMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                              setAbstractMeshFieldParam@ConstructorMethods
@@ -82,8 +82,6 @@ INTERFACE
     !! Number of node in space
   END SUBROUTINE SetSTTensorMeshFieldParam
 END INTERFACE
-
-PUBLIC :: SetSTTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -115,5 +113,33 @@ INTERFACE
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE aField_Initiate1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+    TYPE(STTensorMeshField_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+    TYPE(STTensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 END MODULE STTensorMeshField_Class

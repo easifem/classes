@@ -28,8 +28,13 @@ USE DomainConnectivity_Class, ONLY: DomainConnectivity_, &
 & DomainConnectivityPointer_
 IMPLICIT NONE
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "NitscheBC_CLASS"
+CHARACTER(*), PARAMETER :: modName = "NitscheBC_Class"
 CHARACTER(*), PARAMETER :: myprefix = "NitscheBC"
+PUBLIC :: DEALLOCATE
+PUBLIC :: NitscheBCPointer_
+PUBLIC :: NitscheBC_
+PUBLIC :: AddNitscheBC
+PUBLIC :: GetNitscheBCPointer
 
 !----------------------------------------------------------------------------
 !                                                               NitscheBC_
@@ -60,8 +65,6 @@ CONTAINS
   FINAL :: bc_Final
 END TYPE NitscheBC_
 
-PUBLIC :: NitscheBC_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -70,7 +73,33 @@ TYPE :: NitscheBCPointer_
   CLASS(NitscheBC_), POINTER :: ptr => NULL()
 END TYPE NitscheBCPointer_
 
-PUBLIC :: NitscheBCPointer_
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE bc_Deallocate_Vector(obj)
+    TYPE(NitscheBC_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE bc_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
+    TYPE(NitscheBCPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE bc_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                      checkEssentialParam@ConstructorMethods
@@ -222,6 +251,47 @@ INTERFACE
     INTEGER(I4B) :: ans
   END FUNCTION bc_getLocalFacetID
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 addNitscheBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Add Nitsche boundary conditions to the vector of pointer
+
+INTERFACE AddNitscheBC
+  MODULE SUBROUTINE bc_AddNitscheBC(dbc, dbcNo, param, boundary, dom)
+    TYPE(NitscheBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Nitsche boundary to form
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Nitsche boundary number
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[NitscheBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    CLASS(Domain_), INTENT(IN) :: dom
+  END SUBROUTINE bc_AddNitscheBC
+END INTERFACE AddNitscheBC
+
+!----------------------------------------------------------------------------
+!                                                 GetNitscheBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Get dirichlet boundary conditions to the vector of pointer
+
+INTERFACE GetNitscheBCPointer
+  MODULE FUNCTION bc_GetNitscheBCPointer(dbc, dbcNo) RESULT(ans)
+    CLASS(NitscheBCPointer_), INTENT(IN) :: dbc(:)
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Nitsche boundary nunber
+    CLASS(NitscheBC_), POINTER :: ans
+  END FUNCTION bc_GetNitscheBCPointer
+END INTERFACE GetNitscheBCPointer
 
 !----------------------------------------------------------------------------
 !

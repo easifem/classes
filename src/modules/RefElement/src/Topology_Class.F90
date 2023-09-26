@@ -21,6 +21,7 @@
 
 MODULE Topology_Class
 USE GlobalData
+USE String_Class, ONLY: String
 IMPLICIT NONE
 PRIVATE
 
@@ -32,21 +33,26 @@ PRIVATE
 ! date: 9 Aug 2022
 ! summary: Topology class is defined
 !
-!{!pages/Topology_.md!}
+!{!pages/docs-api/Topology/Topology_.md!}
 
 TYPE :: Topology_
   PRIVATE
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+  !! node numbers
   INTEGER(I4B) :: name = 0
+  !! name of topology
   INTEGER(I4B) :: xiDimension = 0
+  !! xidimension
   !!
 CONTAINS
   !!
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => topo_Initiate
   !! Initiate the topology object
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the topology object
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content
+  PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
   !! Display the content
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Get the nptrs
@@ -112,9 +118,24 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(Topology_), INTENT(IN) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: msg
+    CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Display@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 9 Aug 2022
+! summary: Display the contents
+
+INTERFACE
+  MODULE FUNCTION obj_MdEncode(obj) RESULT(ans)
+    CLASS(Topology_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION obj_MdEncode
 END INTERFACE
 
 !----------------------------------------------------------------------------

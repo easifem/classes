@@ -23,9 +23,12 @@ MODULE RefLine_Class
 USE GlobalData
 USE Topology_Class
 USE AbstractRefElement_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefLine_Class"
+CHARACTER(*), PARAMETER :: modName = "RefLine_Class"
+PUBLIC :: RefLine_
+PUBLIC :: RefLinePointer_
 
 !----------------------------------------------------------------------------
 !                                                                  RefLine_
@@ -35,7 +38,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefLine_Class"
 ! date: 9 Aug 2022
 ! summary:         RefLine class is defined
 !
-!{!pages/RefLine_.md!}
+!{!pages/docs-api/RefLine/RefLine_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefLine_
 CONTAINS
@@ -44,22 +47,39 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElements => &
     & refelem_GetFacetElements
   !! Returns the facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
-    & refelem_GenerateTopology
-  !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefLine_
-
-PUBLIC :: RefLine_
 
 !----------------------------------------------------------------------------
 !                                                           RefLinePointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-08
+! summary:  Rererence Line Pointer
+
 TYPE :: RefLinePointer_
   CLASS(RefLine_), POINTER :: ptr => NULL()
 END TYPE RefLinePointer_
 
-PUBLIC :: RefLinePointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+ MODULE FUNCTION refelem_RefCoord(obj, baseInterpolation, baseContinuity) &
+  & RESULT(ans)
+    CLASS(RefLine_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods
@@ -86,28 +106,13 @@ END INTERFACE
 !
 !# Introduction
 !
-! Returns the facet elements.
+! The facet elements in the case of line are points.
 
 INTERFACE
   MODULE SUBROUTINE refelem_GetFacetElements(obj, ans)
     CLASS(RefLine_), INTENT(IN) :: obj
     TYPE(AbstractRefElementPointer_), ALLOCATABLE :: ans(:)
   END SUBROUTINE refelem_GetFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GenerateTopology@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2022
-! summary: Generate topology of reference element
-!
-
-INTERFACE
-  MODULE SUBROUTINE refelem_GenerateTopology(obj)
-    CLASS(RefLine_), INTENT(INOUT) :: obj
-  END SUBROUTINE refelem_GenerateTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -23,7 +23,7 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 USE mshFormat_Class
 USE mshPhysicalNames_Class
-USE mshEntity_Class
+USE mshEntity_Class, only: mshEntity_, TypeMshEntity
 USE mshNodes_Class
 USE mshElements_Class
 USE HDF5File_Class

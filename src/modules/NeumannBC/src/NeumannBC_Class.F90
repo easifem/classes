@@ -28,6 +28,12 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "NeumannBC_CLASS"
 CHARACTER(*), PARAMETER :: myprefix = "NeumannBC"
+PUBLIC :: NeumannBC_
+PUBLIC :: NeumannBCPointer_
+PUBLIC :: SetNeumannBCParam
+PUBLIC :: DEALLOCATE
+PUBLIC :: AddNeumannBC
+PUBLIC :: GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
 !                                                               NeumannBC_
@@ -46,8 +52,6 @@ CONTAINS
   FINAL :: bc_Final
 END TYPE NeumannBC_
 
-PUBLIC :: NeumannBC_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -56,7 +60,33 @@ TYPE :: NeumannBCPointer_
   CLASS(NeumannBC_), POINTER :: ptr => NULL()
 END TYPE NeumannBCPointer_
 
-PUBLIC :: NeumannBCPointer_
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE bc_Deallocate_Vector(obj)
+    TYPE(NeumannBC_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE bc_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
+    TYPE(NeumannBCPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE bc_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                      checkEssentialParam@ConstructorMethods
@@ -67,10 +97,10 @@ PUBLIC :: NeumannBCPointer_
 ! summary: Check essential parameters
 
 INTERFACE
-  MODULE SUBROUTINE bc_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE bc_CheckEssentialParam(obj, param)
     CLASS(NeumannBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE bc_checkEssentialParam
+  END SUBROUTINE bc_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -78,7 +108,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE setNeumannBCParam(param, name, idof, nodalValueType, &
+  MODULE SUBROUTINE SetNeumannBCParam(param, name, idof, nodalValueType, &
     & useFunction, isNormal, isTangent)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
@@ -91,10 +121,8 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
-  END SUBROUTINE setNeumannBCParam
+  END SUBROUTINE SetNeumannBCParam
 END INTERFACE
-
-PUBLIC :: setNeumannBCParam
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -118,5 +146,46 @@ INTERFACE
     TYPE(NeumannBC_), INTENT(INOUT) :: obj
   END SUBROUTINE bc_Final
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 addNeumannBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Add Neumann boundary conditions to the vector of pointer
+
+INTERFACE AddNeumannBC
+  MODULE SUBROUTINE bc_AddNeumannBC(nbc, nbcNo, param, boundary, dom)
+    TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
+    !! Dirichlet boundary to form
+    INTEGER(I4B), INTENT(IN) :: nbcNo
+    !! Dirichlet boundary number
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    CLASS(Domain_), INTENT(IN) :: dom
+  END SUBROUTINE bc_AddNeumannBC
+END INTERFACE AddNeumannBC
+
+!----------------------------------------------------------------------------
+!                                                 GetNeumannBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Get dirichlet boundary conditions to the vector of pointer
+
+INTERFACE GetNeumannBCPointer
+  MODULE FUNCTION bc_GetNeumannBCPointer(nbc, nbcNo) RESULT(ans)
+    CLASS(NeumannBCPointer_), INTENT(IN) :: nbc(:)
+    INTEGER(I4B), INTENT(IN) :: nbcNo
+    !! Neumann boundary nunber
+    CLASS(NeumannBC_), POINTER :: ans
+  END FUNCTION bc_GetNeumannBCPointer
+END INTERFACE GetNeumannBCPointer
 
 END MODULE NeumannBC_Class

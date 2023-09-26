@@ -1,309 +1,309 @@
 !> A collection of example plots
-program examples
-    use easy_plplot_m
-    implicit none
-    real(wp), parameter :: pi = acos(-1.0d0)
+PROGRAM examples
+USE easy_plplot_m
+IMPLICIT NONE
+REAL(wp), PARAMETER :: pi = ACOS(-1.0D0)
 
     call setup(device='svg', fileName='media/example-%n.svg', figSize=[600, 500], transparent=.true.)
 
-    call doPlot()
-    call doScatter()
-    call doContour()
-    call doLegend()
-    call doQuiver()
-    call doBar()
-    call doFillBetween()
-    call doHist()
-    call doSurface()
-    call doError()
-    call doLogPlot()
+CALL doPlot()
+CALL doScatter()
+CALL doContour()
+CALL doLegend()
+CALL doQuiver()
+CALL doBar()
+CALL doFillBetween()
+CALL doHist()
+CALL doSurface()
+CALL doError()
+CALL doLogPlot()
 
-    call show()
+CALL show()
 
-contains
+CONTAINS
 
-    !> ![plot](../|media|/example-1.svg)
-    subroutine doPlot
-        integer, parameter :: N = 20
-        real(wp), dimension(N) :: x, y
+!> ![plot](../|media|/example-1.svg)
+SUBROUTINE doPlot
+  INTEGER, PARAMETER :: N = 20
+  REAL(wp), DIMENSION(N) :: x, y
 
-        x = linspace(0.0_wp, 1.0_wp, N)
-        y = x**2 - 1.0_wp
+  x = linspace(0.0_WP, 1.0_WP, N)
+  y = x**2 - 1.0_WP
 
-        call figure()
-        call subplot(1, 1, 1)
-        call xylim(mixval(x), mixval(y))
+  CALL figure()
+  CALL subplot(1, 1, 1)
+  CALL xylim(mixval(x), mixval(y))
 
-        call plot(x, y, lineColor='red', lineWidth=2.0_wp, &
-                & markStyle='.', markColor='cyan', markSize=2.0_wp)
+  CALL plot(x, y, lineColor='red', lineWidth=2.0_WP, &
+          & markStyle='.', markColor='cyan', markSize=2.0_WP)
 
-        call plot(x, -1.0_wp - y, lineColor='blue', lineStyle=':', lineWidth=2.0_wp, &
-                & markStyle='+', markColor='green', markSize=1.0_wp)
+CALL plot(x, -1.0_WP - y, lineColor='blue', lineStyle=':', lineWidth=2.0_WP, &
+                      & markStyle='+', markColor='green', markSize=1.0_WP)
 
 !~                 call ticks()
-        call xticks(primary=.true., secondary=.false.)
-        call yticks(primary=.true., secondary=.false.)
+  CALL xticks(primary=.TRUE., secondary=.FALSE.)
+  CALL yticks(primary=.TRUE., secondary=.FALSE.)
 !~                 call labels('x','y','f(x)=x#u2#d-1; g(x)=-x#u2#d')
-        call xlabel('x')
-        call ylabel('y')
-        call title('f(x)=x#u2#d-1; g(x)=-x#u2#d')
-    end subroutine doPlot
+  CALL xlabel('x')
+  CALL ylabel('y')
+  CALL title('f(x)=x#u2#d-1; g(x)=-x#u2#d')
+END SUBROUTINE doPlot
 
-    !> ![scatter](../|media|/example-2.svg)
-    subroutine doScatter
-        integer, parameter :: N = 100
-        real(wp), dimension(N) :: x, y, z
+!> ![scatter](../|media|/example-2.svg)
+SUBROUTINE doScatter
+  INTEGER, PARAMETER :: N = 100
+  REAL(wp), DIMENSION(N) :: x, y, z
 
-        call random_number(x)
-        call random_number(y)
-        z = sqrt(x**2 + y**2)
+  CALL RANDOM_NUMBER(x)
+  CALL RANDOM_NUMBER(y)
+  z = SQRT(x**2 + y**2)
 
-        call figure()
+  CALL figure()
 
-        call subplot(2, 2, 1)
-        call xylim([0.0_wp, 1.0_wp], [0.0_wp, 1.0_wp])
-        call scatter(x, y)
-        call ticks()
-        call labels('x', 'y', '')
+  CALL subplot(2, 2, 1)
+  CALL xylim([0.0_WP, 1.0_WP], [0.0_WP, 1.0_WP])
+  CALL scatter(x, y)
+  CALL ticks()
+  CALL labels('x', 'y', '')
 
-        call subplot(2, 2, 2)
-        call xylim([0.0_wp, 1.0_wp], [0.0_wp, 1.0_wp])
-        call scatter(x, y, c=z)
-        call ticks()
-        call labels('x', 'y', '')
+  CALL subplot(2, 2, 2)
+  CALL xylim([0.0_WP, 1.0_WP], [0.0_WP, 1.0_WP])
+  CALL scatter(x, y, c=z)
+  CALL ticks()
+  CALL labels('x', 'y', '')
 
-        call subplot(2, 2, 3)
-        call xylim([0.0_wp, 1.0_wp], [0.0_wp, 1.0_wp])
-        call scatter(x, y, s=(4.0_wp*z + 1.0_wp), markColor='blue')
-        call ticks()
-        call labels('x', 'y', '')
+  CALL subplot(2, 2, 3)
+  CALL xylim([0.0_WP, 1.0_WP], [0.0_WP, 1.0_WP])
+  CALL scatter(x, y, s=(4.0_WP * z + 1.0_WP), markColor='blue')
+  CALL ticks()
+  CALL labels('x', 'y', '')
 
-        call subplot(2, 2, 4)
-        call xylim([0.0_wp, 1.0_wp], [0.0_wp, 1.0_wp])
-        call scatter(x, y, c=z, s=(4.0_wp*z + 1.0_wp))
-        call ticks()
-        call labels('x', 'y', '')
-    end subroutine doScatter
+  CALL subplot(2, 2, 4)
+  CALL xylim([0.0_WP, 1.0_WP], [0.0_WP, 1.0_WP])
+  CALL scatter(x, y, c=z, s=(4.0_WP * z + 1.0_WP))
+  CALL ticks()
+  CALL labels('x', 'y', '')
+END SUBROUTINE doScatter
 
-    !> ![contour](../|media|/example-3.svg)
-    subroutine doContour
-        integer, parameter :: N = 50
-        real(wp), dimension(N) :: x, y
-        real(wp), dimension(N, N) :: z
-        integer :: i, j
+!> ![contour](../|media|/example-3.svg)
+SUBROUTINE doContour
+  INTEGER, PARAMETER :: N = 50
+  REAL(wp), DIMENSION(N) :: x, y
+  REAL(wp), DIMENSION(N, N) :: z
+  INTEGER :: i, j
 
-        x = linspace(-10.0_wp, 10.0_wp, N)
-        y = linspace(-10.0_wp, 10.0_wp, N)
-        forall (i=1:N, j=1:N)
-            z(i, j) = sin(sqrt(x(i)**2 + y(j)**2))/sqrt(x(i)**2 + y(j)**2)
-        end forall
+  x = linspace(-10.0_WP, 10.0_WP, N)
+  y = linspace(-10.0_WP, 10.0_WP, N)
+  DO CONCURRENT(i=1:N, j=1:N)
+    z(i, j) = SIN(SQRT(x(i)**2 + y(j)**2)) / SQRT(x(i)**2 + y(j)**2)
+  END DO
 
-        call figure()
+  CALL figure()
 
-        call subplot(1, 1, 1, aspect=1.0_wp)
-        call xylim(mixval(x), mixval(y))
-        call contourf(x, y, z, 10)
-        call contour(x, y, z, 10)
-        call colorbar(z, 5)
-        call ticks()
-        call labels('x', 'y', '')
-    end subroutine doContour
+  CALL subplot(1, 1, 1, aspect=1.0_WP)
+  CALL xylim(mixval(x), mixval(y))
+  CALL contourf(x, y, z, 10)
+  CALL contour(x, y, z, 10)
+  CALL colorbar(z, 5)
+  CALL ticks()
+  CALL labels('x', 'y', '')
+END SUBROUTINE doContour
 
-    !> ![legend](../|media|/example-4.svg)
-    subroutine doLegend
-        integer, parameter :: N = 20
-        real(wp), dimension(N) :: x, y
-        character(32), dimension(3, 7) :: series
+!> ![legend](../|media|/example-4.svg)
+SUBROUTINE doLegend
+  INTEGER, PARAMETER :: N = 20
+  REAL(wp), DIMENSION(N) :: x, y
+  CHARACTER(32), DIMENSION(3, 7) :: series
 
-        x = linspace(0.0_wp, 1.0_wp, N)
-        y = x**2 - 1.0_wp
+  x = linspace(0.0_WP, 1.0_WP, N)
+  y = x**2 - 1.0_WP
 
-        call figure()
-        call subplot(1, 1, 1)
-        call xylim(mixval(x), mixval(y))
+  CALL figure()
+  CALL subplot(1, 1, 1)
+  CALL xylim(mixval(x), mixval(y))
 
-        call plot(x, y, lineColor='red', lineWidth=2.0_wp, &
-                & markStyle='.', markColor='cyan', markSize=2.0_wp)
+  CALL plot(x, y, lineColor='red', lineWidth=2.0_WP, &
+          & markStyle='.', markColor='cyan', markSize=2.0_WP)
 
-        call plot(x, -1.0_wp - y, lineColor='blue', lineStyle=':', lineWidth=2.0_wp, &
-                & markStyle='+', markColor='green', markSize=1.0_wp)
+CALL plot(x, -1.0_WP - y, lineColor='blue', lineStyle=':', lineWidth=2.0_WP, &
+                      & markStyle='+', markColor='green', markSize=1.0_WP)
 
-        ! [name,textColor,lineStyle,lineColor,markStyle,markColor]
-        series(1, :) = [character(32) :: 'f(x)=x#u2#d-1', '', '-', 'r', '.', 'c', '']
-        series(2, :) = [character(32) :: 'g(x)=-x#u2#d', '', ':', 'b', '+', 'g', '']
-        series(3, :) = [character(32) :: 'Box', '', '', '', '', '', 'r']
+  ! [name,textColor,lineStyle,lineColor,markStyle,markColor]
+ series(1, :) = [CHARACTER(32) :: 'f(x)=x#u2#d-1', '', '-', 'r', '.', 'c', '']
+  series(2, :) = [CHARACTER(32) :: 'g(x)=-x#u2#d', '', ':', 'b', '+', 'g', '']
+  series(3, :) = [CHARACTER(32) :: 'Box', '', '', '', '', '', 'r']
 
-        call legend('center left', series)
-        call ticks()
-        call labels('x', 'y', '')
-    end subroutine doLegend
+  CALL legend('center left', series)
+  CALL ticks()
+  CALL labels('x', 'y', '')
+END SUBROUTINE doLegend
 
-    !> ![quiver](../|media|/example-5.svg)
-    subroutine doQuiver
-        integer, parameter :: N = 20
-        real(wp), dimension(N) :: x, y
-        real(wp), dimension(N, N) :: u, v, m
-        integer :: i, j
+!> ![quiver](../|media|/example-5.svg)
+SUBROUTINE doQuiver
+  INTEGER, PARAMETER :: N = 20
+  REAL(wp), DIMENSION(N) :: x, y
+  REAL(wp), DIMENSION(N, N) :: u, v, m
+  INTEGER :: i, j
 
-        x = linspace(-10.0_wp, 10.0_wp, N)
-        y = linspace(-10.0_wp, 10.0_wp, N)
-        forall (i=1:N, j=1:N)
-            u(i, j) = -y(j)
-            v(i, j) = x(i)
-            m(i, j) = sqrt(u(i, j)**2 + v(i, j)**2)
-        end forall
+  x = linspace(-10.0_WP, 10.0_WP, N)
+  y = linspace(-10.0_WP, 10.0_WP, N)
+  DO CONCURRENT(i=1:N, j=1:N)
+    u(i, j) = -y(j)
+    v(i, j) = x(i)
+    m(i, j) = SQRT(u(i, j)**2 + v(i, j)**2)
+  END DO
 
-        call figure()
+  CALL figure()
 
-        call subplot(1, 1, 1, aspect=1.0_wp)
-        call xylim(mixval(x), mixval(y))
-        call quiver(x, y, u, v, c=m, s=m, scaling=2.0_wp, lineWidth=2.0_wp)
-        call colorbar(m, 10)
-        call ticks()
-        call labels('x', 'y', '')
-    end subroutine doQuiver
+  CALL subplot(1, 1, 1, aspect=1.0_WP)
+  CALL xylim(mixval(x), mixval(y))
+  CALL quiver(x, y, u, v, c=m, s=m, scaling=2.0_WP, lineWidth=2.0_WP)
+  CALL colorbar(m, 10)
+  CALL ticks()
+  CALL labels('x', 'y', '')
+END SUBROUTINE doQuiver
 
-    !> ![bar](../|media|/example-6.svg)
-    subroutine doBar
-        integer, parameter :: N = 21
-        real(wp), dimension(N) :: x, y
+!> ![bar](../|media|/example-6.svg)
+SUBROUTINE doBar
+  INTEGER, PARAMETER :: N = 21
+  REAL(wp), DIMENSION(N) :: x, y
 
-        x = linspace(-PI, PI, N)
-        y = exp(-x**2)
+  x = linspace(-PI, PI, N)
+  y = EXP(-x**2)
 
-        call figure()
+  CALL figure()
 
-        call subplot(1, 2, 1)
-        call xylim(mixval(x) + [-0.1_wp, 0.1_wp], mixval(y) + [0.0_wp, 0.1_wp])
-        call bar(x, y, c=y, relWidth=1.0_wp)
-        call ticks()
-        call labels('x', 'y', '')
+  CALL subplot(1, 2, 1)
+  CALL xylim(mixval(x) + [-0.1_WP, 0.1_WP], mixval(y) + [0.0_WP, 0.1_WP])
+  CALL bar(x, y, c=y, relWidth=1.0_WP)
+  CALL ticks()
+  CALL labels('x', 'y', '')
 
-        call subplot(1, 2, 2)
-        call xylim(mixval(y) + [0.0_wp, 0.1_wp], mixval(x) + [-0.1_wp, 0.1_wp])
-        call barh(x, y, fillColor='r', relWidth=1.0_wp)
-        call ticks()
-        call labels('x', 'y', '')
-    end subroutine doBar
+  CALL subplot(1, 2, 2)
+  CALL xylim(mixval(y) + [0.0_WP, 0.1_WP], mixval(x) + [-0.1_WP, 0.1_WP])
+  CALL barh(x, y, fillColor='r', relWidth=1.0_WP)
+  CALL ticks()
+  CALL labels('x', 'y', '')
+END SUBROUTINE doBar
 
-    !> ![fillBetween](../|media|/example-7.svg)
-    subroutine doFillBetween
-        integer, parameter :: N = 51
-        real(wp), dimension(N) :: x, y1, y2
+!> ![fillBetween](../|media|/example-7.svg)
+SUBROUTINE doFillBetween
+  INTEGER, PARAMETER :: N = 51
+  REAL(wp), DIMENSION(N) :: x, y1, y2
 
-        x = linspace(-3.0_wp, 3.0_wp, N)
-        y1 = x**2 - 1.0_wp
-        y2 = x**3 - 1.0_wp
+  x = linspace(-3.0_WP, 3.0_WP, N)
+  y1 = x**2 - 1.0_WP
+  y2 = x**3 - 1.0_WP
 
-        call figure()
-        call subplot(1, 1, 1)
-        call xylim(mixval(x), mixval([y1, y2]))
-        call fillBetween(x, y1, y2, fillColor='c', fillPattern='#', lineWidth=2.0_wp)
-        call plot(x, y1, lineColor='k', lineWidth=3.0_wp)
-        call plot(x, y2, lineColor='k', lineWidth=3.0_wp)
-        call ticks(color='b', lineWidth=3.0_wp)
-        call labels('x', 'y', 'f(x)=x#u2#d-1', color='r')
-    end subroutine doFillBetween
+  CALL figure()
+  CALL subplot(1, 1, 1)
+  CALL xylim(mixval(x), mixval([y1, y2]))
+ CALL fillBetween(x, y1, y2, fillColor='c', fillPattern='#', lineWidth=2.0_WP)
+  CALL plot(x, y1, lineColor='k', lineWidth=3.0_WP)
+  CALL plot(x, y2, lineColor='k', lineWidth=3.0_WP)
+  CALL ticks(color='b', lineWidth=3.0_WP)
+  CALL labels('x', 'y', 'f(x)=x#u2#d-1', color='r')
+END SUBROUTINE doFillBetween
 
-    !> ![hist](../|media|/example-8.svg)
-    subroutine doHist
-        integer, parameter :: N = 10000
-        real(wp), dimension(N, 12) :: r
-        real(wp), dimension(N) :: x
-        real(wp), dimension(:, :), allocatable :: h
+!> ![hist](../|media|/example-8.svg)
+SUBROUTINE doHist
+  INTEGER, PARAMETER :: N = 10000
+  REAL(wp), DIMENSION(N, 12) :: r
+  REAL(wp), DIMENSION(N) :: x
+  REAL(wp), DIMENSION(:, :), ALLOCATABLE :: h
 
-        call random_number(r)
-        x = sum(r, 2) - 6.0_wp
-        call figure()
+  CALL RANDOM_NUMBER(r)
+  x = SUM(r, 2) - 6.0_WP
+  CALL figure()
 
-        call subplot(1, 2, 1)
-        call xylim(mixval(x), [0.0_wp, 1.05_wp])
-        call hist(x, 20)
-        call ticks()
+  CALL subplot(1, 2, 1)
+  CALL xylim(mixval(x), [0.0_WP, 1.05_WP])
+  CALL hist(x, 20)
+  CALL ticks()
 
-        h = binData(x, 20, normalize=2)
-        call subplot(1, 2, 2)
-        call xylim(mixval(h(:, 1)), [0.0_wp, 1.05_wp*maxval(h(:, 2))])
-        call bar(h(:, 1), h(:, 2), c=h(:, 2), relWidth=1.0_wp)
-        call ticks()
-    end subroutine doHist
+  h = binData(x, 20, normalize=2)
+  CALL subplot(1, 2, 2)
+  CALL xylim(mixval(h(:, 1)), [0.0_WP, 1.05_WP * MAXVAL(h(:, 2))])
+  CALL bar(h(:, 1), h(:, 2), c=h(:, 2), relWidth=1.0_WP)
+  CALL ticks()
+END SUBROUTINE doHist
 
-    !> ![surface](../|media|/example-9.svg)
-    subroutine doSurface
-        integer, parameter :: N = 24
-        real(wp), dimension(N) :: x, y
-        real(wp), dimension(N, N) :: z
-        integer :: i, j
+!> ![surface](../|media|/example-9.svg)
+SUBROUTINE doSurface
+  INTEGER, PARAMETER :: N = 24
+  REAL(wp), DIMENSION(N) :: x, y
+  REAL(wp), DIMENSION(N, N) :: z
+  INTEGER :: i, j
 
-        x = linspace(-10.0_wp, 10.0_wp, N)
-        y = linspace(-10.0_wp, 10.0_wp, N)
-        forall (i=1:N, j=1:N)
-            z(i, j) = sin(sqrt(x(i)**2 + y(j)**2))/sqrt(x(i)**2 + y(j)**2)
-        end forall
+  x = linspace(-10.0_WP, 10.0_WP, N)
+  y = linspace(-10.0_WP, 10.0_WP, N)
+  DO CONCURRENT(i=1:N, j=1:N)
+    z(i, j) = SIN(SQRT(x(i)**2 + y(j)**2)) / SQRT(x(i)**2 + y(j)**2)
+  END DO
 
-        call figure()
+  CALL figure()
 
-        call subplot(1, 1, 1, is3d=.true.)
-        call xyzlim(mixval(x), mixval(y), mixval(z), zoom=1.1_wp)
-        call surface(x, y, z, 11)
+  CALL subplot(1, 1, 1, is3d=.TRUE.)
+  CALL xyzlim(mixval(x), mixval(y), mixval(z), zoom=1.1_WP)
+  CALL surface(x, y, z, 11)
 !~                 call wireframe(x,y,z,lineColor='k')
-        call box('x', 'y', 'z')
+  CALL box('x', 'y', 'z')
 
-    end subroutine doSurface
+END SUBROUTINE doSurface
 
-    !> ![error](../|media|/example-10.svg)
-    subroutine doError
+!> ![error](../|media|/example-10.svg)
+SUBROUTINE doError
 
-        integer, parameter :: N = 25
-        real(wp), dimension(N) :: x, y, xe, ye
-        real(wp), dimension(12) :: r
-        real(wp) :: m, s
-        integer :: k
+  INTEGER, PARAMETER :: N = 25
+  REAL(wp), DIMENSION(N) :: x, y, xe, ye
+  REAL(wp), DIMENSION(12) :: r
+  REAL(wp) :: m, s
+  INTEGER :: k
 
-        x = linspace(0.0_wp, 5.0_wp, N)
-        y = 1.0_wp/(x**2 + 1.0_wp)
+  x = linspace(0.0_WP, 5.0_WP, N)
+  y = 1.0_WP / (x**2 + 1.0_WP)
 
-        do k = 1, N
-            call random_number(r)
-            r = 0.25_wp*(2.0_wp*r - 1.0_wp)
-            m = sum(r)/real(size(r))
-            s = sqrt(sum((r - m)**2)/real(size(r) - 1))
-            x(k) = x(k) + m
-            xe(k) = s
+  DO k = 1, N
+    CALL RANDOM_NUMBER(r)
+    r = 0.25_WP * (2.0_WP * r - 1.0_WP)
+    m = SUM(r) / REAL(SIZE(r))
+    s = SQRT(SUM((r - m)**2) / REAL(SIZE(r) - 1))
+    x(k) = x(k) + m
+    xe(k) = s
 
-            call random_number(r)
-            r = 0.15_wp*(2.0_wp*r - 1.0_wp)
-            m = sum(r)/real(size(r))
-            s = sqrt(sum((r - m)**2)/real(size(r) - 1))
-            y(k) = y(k) + m
-            ye(k) = s
-        end do
+    CALL RANDOM_NUMBER(r)
+    r = 0.15_WP * (2.0_WP * r - 1.0_WP)
+    m = SUM(r) / REAL(SIZE(r))
+    s = SQRT(SUM((r - m)**2) / REAL(SIZE(r) - 1))
+    y(k) = y(k) + m
+    ye(k) = s
+  END DO
 
-        call figure()
-        call subplot(1, 1, 1)
+  CALL figure()
+  CALL subplot(1, 1, 1)
         call xylim(mixval([x - xe, x + xe]) + [-0.5_wp, 0.5_wp], mixval([y - ye, y + ye]) + [-0.2_wp, 0.2_wp])
-        call errorbar(x, y, xerr=xe, yerr=ye, lineColor='b', lineWidth=1.0_wp)
-        call plot(x, y, lineStyle='', markStyle='s', markColor='r', markSize=1.5_wp)
-        call ticks()
-        call labels('x', 'y', '')
-    end subroutine doError
+  CALL errorbar(x, y, xerr=xe, yerr=ye, lineColor='b', lineWidth=1.0_WP)
+  CALL plot(x, y, lineStyle='', markStyle='s', markColor='r', markSize=1.5_WP)
+  CALL ticks()
+  CALL labels('x', 'y', '')
+END SUBROUTINE doError
 
-    !> ![logPlot](../|media|/example-11.svg)
-    subroutine doLogPlot
+!> ![logPlot](../|media|/example-11.svg)
+SUBROUTINE doLogPlot
 
-        integer, parameter :: N = 25
-        real(wp), dimension(N) :: x, y, yl
+  INTEGER, PARAMETER :: N = 25
+  REAL(wp), DIMENSION(N) :: x, y, yl
 
-        x = linspace(0.0_wp, 5.0_wp, N)
-        y = exp(-x**2)
-        yl = log10(y)
+  x = linspace(0.0_WP, 5.0_WP, N)
+  y = EXP(-x**2)
+  yl = LOG10(y)
 
-        call figure()
-        call subplot(1, 1, 1)
-        call xylim(mixval(x), mixval(yl))
-        call plot(x, yl, lineColor='r', lineWidth=2.0_wp)
-        call ticks(logy=.true.)
-        call labels('x [linear]', 'y [log]', 'exp(-x#u2#d)')
-    end subroutine doLogPlot
+  CALL figure()
+  CALL subplot(1, 1, 1)
+  CALL xylim(mixval(x), mixval(yl))
+  CALL plot(x, yl, lineColor='r', lineWidth=2.0_WP)
+  CALL ticks(logy=.TRUE.)
+  CALL labels('x [linear]', 'y [log]', 'exp(-x#u2#d)')
+END SUBROUTINE doLogPlot
 
-end program examples
+END PROGRAM examples

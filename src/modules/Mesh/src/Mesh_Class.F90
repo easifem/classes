@@ -20,9 +20,8 @@
 
 MODULE Mesh_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE String_Class, ONLY: String
-USE ElementFactory
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
@@ -107,11 +106,8 @@ TYPE :: ElemData_
     !! It may happen that a boundary element has no boundary face, in which
     !! case boundaryData will have zero size
 CONTAINS
-  !!
-  !! Contains
-  !!
   PROCEDURE, PUBLIC, PASS(obj) :: Display => elemData_Display
-  !!
+  !! Display the content of elemdata
 END TYPE ElemData_
 
 !----------------------------------------------------------------------------
@@ -132,9 +128,6 @@ TYPE InternalFacetData_
   INTEGER(I4B) :: slaveLocalFacetID = 0
     !! slave facet ID in slave cell
 CONTAINS
-  !!
-  !! Contains
-  !!
   PROCEDURE, PUBLIC, PASS(obj) :: Display => InternalFacetData_Display
   !! Display the content of an instance of InternalFacetData_
 END TYPE InternalFacetData_
@@ -159,11 +152,8 @@ TYPE BoundaryFacetData_
   INTEGER(I4B) :: masterLocalFacetID = 0
   INTEGER(I4B) :: elementType = 0
 CONTAINS
-  !!
-  !! Contains
-  !!
   PROCEDURE, PUBLIC, PASS(obj) :: Display => BoundaryFacetData_Display
-  !!
+  !! Display the content of boundary facetdata
 END TYPE BoundaryFacetData_
 
 ! PUBLIC :: BoundaryFacetData_
@@ -176,14 +166,14 @@ END TYPE BoundaryFacetData_
 ! date: 13 June 2021
 ! summary: This datatype contains the meta data of a mesh
 !
-!{!pages/Mesh_.md!}
+!{!pages/docs-api/Mesh/Mesh_.md!}
 
 TYPE :: Mesh_
   PRIVATE
   LOGICAL(LGT) :: readFromFile = .TRUE.
     !! True if the mesh is read from a file
   LOGICAL(LGT) :: isInitiated = .FALSE.
-    !! logical flag denoting for whether mesh data is initiated or not
+    !! logical flag denoting for whether mesh data is Initiated or not
   LOGICAL(LGT) :: isNodeToElementsInitiated = .FALSE.
     !! Node to elements mapping
   LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
@@ -196,6 +186,7 @@ TYPE :: Mesh_
     !! Boundary data
   LOGICAL(LGT), PUBLIC :: isFacetDataInitiated = .FALSE.
     !! FacetData
+    !! TODO: Make isFacetDataInitiated PRIVATE
   INTEGER(I4B) :: uid = 0
     !! Unique id of the mesh
   INTEGER(I4B) :: xidim = 0
@@ -277,20 +268,21 @@ TYPE :: Mesh_
     !! element data
   TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData(:)
     !! Internal facet data
+    !! INFO: This data is initiated by InitiateFacetElements method
   TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
     !! Domain Facet Data
+    !! INFO: This data is initiated by InitiateFacetElements method
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
+    !! TODO: Change refelem to Type(ReferenceElement_)
   REAL(DFP), ALLOCATABLE :: quality(:, :)
     !! number of rows are meshquality
     !! number of columns are elements
   INTEGER(I4B), PUBLIC :: ipType = Equidistance
     !! interpolation point type
-  !!
-  !! Following variables are required during processing.
-  !!
-  !! time
-  !!
+
+  ! Following variables are required during processing.
+  ! time
   TYPE(QuadraturePoint_), PUBLIC :: quadForTime
     !! quadrature point for time domain #STFEM
   TYPE(ElemshapeData_), PUBLIC :: linTimeElemSD
@@ -305,9 +297,8 @@ TYPE :: Mesh_
     !! interpolation of base function for time
   INTEGER(I4B) :: orderTime
     !! order for time
-  !!
-  !! space (cell)
-  !!
+
+  ! space (cell)
   TYPE(QuadraturePoint_), PUBLIC :: quadForSpace
     !! quadrature point for space
   TYPE(ElemshapeData_), PUBLIC :: linSpaceElemSD
@@ -324,9 +315,8 @@ TYPE :: Mesh_
     !! interoplation type of base function for space
   INTEGER(I4B) :: orderSpace
     !! order for space
-  !!
-  !! space (facets)
-  !!
+
+  ! space (facets)
   TYPE(QuadraturePoint_), ALLOCATABLE, PUBLIC :: quadForFacet(:)
     !! quadrature point for facet elements
   TYPE(QuadraturePoint_), ALLOCATABLE, PUBLIC :: quadForFacetCell(:)
@@ -349,26 +339,26 @@ TYPE :: Mesh_
     !! order for facet element
   TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: facetSTelemsd(:, :)
     !! Element shape data on facet element
-  !!
+
 CONTAINS
   PRIVATE
-  !!
-  !! @ConstructorMethods
-  !!
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => mesh_initiate
     !! Allocate size of a mesh
   FINAL :: mesh_final
     !! mesh finalizer
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mesh_Deallocate
     !! Deallocate memory occupied by the mesh instance
-  !!
   PROCEDURE, PUBLIC, PASS(obj) :: isEmpty => mesh_isEmpty
-  !!
-  !! @IOMethods
-  !!
+  !! Returns true if the mesh is empty.
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mesh_Import
     !! Read mesh from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: getNodeCoord => mesh_getNodeCoord
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => mesh_GetNodeCoord
     !! Read the nodeCoords from the hdf5file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => mesh_Export
     !! Export mesh to an hdf5 file
@@ -393,9 +383,9 @@ CONTAINS
     !! Display facet element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & mesh_DisplayFacetElements
-  !
-  !@NodeDataMethods
-  !
+
+  ! SET:
+  ! @NodeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & mesh_InitiateNodeToElements
   !! Initiate node to node data
@@ -405,24 +395,25 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
     & mesh_InitiateExtraNodetoNodes
   !! Initiate Node to nodes mapping
-  !
-  !@ElementDataMethods
-  !
+
+  ! SET:
+  ! @ElementDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     & mesh_InitiateElementToElements
   !! Initiate element to elements mapping
-  !
-  !@BoundaryDataMethods
-  !
+
+  ! SET:
+  ! @BoundaryDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
     & mesh_InitiateBoundaryData
-  !
-  !@FacetDataMethods
-  !
-  !! Initiate boundary data
+
+  ! SET:
+  ! @FacetDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     & mesh_InitiateFacetElements
-  !!
+  !! Initiate boundary data
+
+  ! GET:
   PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryNode => &
     & mesh_isBoundaryNode
   !! Returns true if a given global node number is a boundary node
@@ -449,191 +440,192 @@ CONTAINS
   !! Returns true if a given element number is present
   PROCEDURE, PUBLIC, PASS(obj) :: Size => mesh_size
   !! Returns the size of the mesh (total number of elements)
-  PROCEDURE, PUBLIC, PASS(obj) :: getElemNum => mesh_getElemNum
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemNum => mesh_GetElemNum
   !! returns global element number in the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: getRefElemPointer =>  &
-    & mesh_getRefElemPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer =>  &
+    & mesh_GetRefElemPointer
   !! Returns pointer to the reference element
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalElements => mesh_size
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => mesh_size
   !! Returns the size of the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: getBoundingEntity => &
-    & mesh_getBoundingEntity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingEntity => &
+    & mesh_GetBoundingEntity
   !! Returns the nodal coordinates
-  PROCEDURE, PUBLIC, PASS(obj) :: getNptrs => mesh_getNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => mesh_GetNptrs
   !! Returns the node number of mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: getInternalNptrs => &
-    & mesh_getInternalNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
+    & mesh_GetInternalNptrs
   !! Returns a vector of internal node numbers
-  PROCEDURE, PUBLIC, PASS(obj) :: getBoundaryNptrs => &
-    & mesh_getBoundaryNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryNptrs => &
+    & mesh_GetBoundaryNptrs
   !! Returns a vector of boundary node numbers
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalInternalNodes => &
-    & mesh_getTotalInternalNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalNodes => &
+    & mesh_GetTotalInternalNodes
   !! Returns the total number of internal nodes
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalNodes => mesh_getTotalNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => mesh_GetTotalNodes
   !! Returns the total number of nodes
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalBoundaryNodes =>  &
-    & mesh_getTotalBoundaryNodes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryNodes =>  &
+    & mesh_GetTotalBoundaryNodes
   !! Returns the total number of boundary nodes
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalBoundaryElements => &
-    & mesh_getTotalBoundaryElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryElements => &
+    & mesh_GetTotalBoundaryElements
   !! Returns the total number of boundary element
-  PROCEDURE, PASS(obj) :: getBoundingBox1 => mesh_getBoundingBox1
+  PROCEDURE, PASS(obj) :: GetBoundingBox1 => mesh_GetBoundingBox1
   !! Returns the bounding box of the mesh
-  PROCEDURE, PASS(obj) :: getBoundingBox2 => mesh_getBoundingBox2
+  PROCEDURE, PASS(obj) :: GetBoundingBox2 => mesh_GetBoundingBox2
   !! Return the bounding box from the given nodes, and local_nptrs
-  GENERIC, PUBLIC :: getBoundingBox => getBoundingBox1,  &
-    & getBoundingBox2
+  GENERIC, PUBLIC :: GetBoundingBox => GetBoundingBox1,  &
+    & GetBoundingBox2
   !! Return the bounding box
-  PROCEDURE, PUBLIC, PASS(obj) :: getConnectivity => &
-    & mesh_getConnectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => &
+    & mesh_GetConnectivity
   !! Returns  node numbers in an element
-  PROCEDURE, PASS(obj) :: mesh_getLocalNodeNumber1
+  PROCEDURE, PASS(obj) :: mesh_GetLocalNodeNumber1
   !! Returns the local node number of a glocal node number
-  PROCEDURE, PASS(obj) :: mesh_getLocalNodeNumber2
+  PROCEDURE, PASS(obj) :: mesh_GetLocalNodeNumber2
   !! Returns the local node number of a global node number
-  GENERIC, PUBLIC :: getLocalNodeNumber => mesh_getLocalNodeNumber1, &
-    & mesh_getLocalNodeNumber2
+  GENERIC, PUBLIC :: GetLocalNodeNumber => mesh_GetLocalNodeNumber1, &
+    & mesh_GetLocalNodeNumber2
   !! Returns the local node number of a global node number
-  PROCEDURE, PASS(obj) :: mesh_getGlobalNodeNumber1
+  PROCEDURE, PASS(obj) :: mesh_GetGlobalNodeNumber1
   !! Returns the global node number of a local node number
-  PROCEDURE, PASS(obj) :: mesh_getGlobalNodeNumber2
+  PROCEDURE, PASS(obj) :: mesh_GetGlobalNodeNumber2
   !! Returns the global node number of a local node number
-  GENERIC, PUBLIC :: getGlobalNodeNumber => mesh_getGlobalNodeNumber1, &
-    & mesh_getGlobalNodeNumber2
-  PROCEDURE, PASS(obj) :: mesh_getGlobalElemNumber1
-  PROCEDURE, PASS(obj) :: mesh_getGlobalElemNumber2
-  GENERIC, PUBLIC :: getGlobalElemNumber => &
-    & mesh_getGlobalElemNumber1, mesh_getGlobalElemNumber2
+  GENERIC, PUBLIC :: GetGlobalNodeNumber => mesh_GetGlobalNodeNumber1, &
+    & mesh_GetGlobalNodeNumber2
+  PROCEDURE, PASS(obj) :: mesh_GetGlobalElemNumber1
+  PROCEDURE, PASS(obj) :: mesh_GetGlobalElemNumber2
+  GENERIC, PUBLIC :: GetGlobalElemNumber => &
+    & mesh_GetGlobalElemNumber1, mesh_getGlobalElemNumber2
   !! Returns the global element number for a local element number
-  PROCEDURE, PASS(obj) :: mesh_getLocalElemNumber1
-  PROCEDURE, PASS(obj) :: mesh_getLocalElemNumber2
-  GENERIC, PUBLIC :: getLocalElemNumber => &
-    & mesh_getLocalElemNumber1, mesh_getLocalElemNumber2
+  PROCEDURE, PASS(obj) :: mesh_GetLocalElemNumber1
+  PROCEDURE, PASS(obj) :: mesh_GetLocalElemNumber2
+  GENERIC, PUBLIC :: GetLocalElemNumber => &
+    & mesh_GetLocalElemNumber1, mesh_getLocalElemNumber2
   !! Returns the local element number of a global element number
-  PROCEDURE, PASS(obj) :: mesh_getNodeToElements1
-  PROCEDURE, PASS(obj) :: mesh_getNodeToElements2
-  GENERIC, PUBLIC :: getNodeToElements => &
-    & mesh_getNodeToElements1, &
-    & mesh_getNodeToElements2
+  PROCEDURE, PASS(obj) :: mesh_GetNodeToElements1
+  PROCEDURE, PASS(obj) :: mesh_GetNodeToElements2
+  GENERIC, PUBLIC :: GetNodeToElements => &
+    & mesh_GetNodeToElements1, &
+    & mesh_GetNodeToElements2
   !! Returns the element attached to a given global node number
-  PROCEDURE, PASS(obj) :: mesh_getNodeToNodes1
+  PROCEDURE, PASS(obj) :: mesh_GetNodeToNodes1
   !! Returns global node number connected to a given global node
-  PROCEDURE, PASS(obj) :: mesh_getNodeToNodes2
+  PROCEDURE, PASS(obj) :: mesh_GetNodeToNodes2
   !! Returns global node numbers connected to given global node numbers
-  GENERIC, PUBLIC :: getNodeToNodes => &
-    & mesh_getNodeToNodes1, &
-    & mesh_getNodeToNodes2
+  GENERIC, PUBLIC :: GetNodeToNodes => &
+    & mesh_GetNodeToNodes1, &
+    & mesh_GetNodeToNodes2
   !! Returns nodes connected to a given node number
-  PROCEDURE, PUBLIC, PASS(obj) :: getElementToElements => &
-    & mesh_getElementToElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElementToElements => &
+    & mesh_GetElementToElements
   !! Returns local element number connected to a given local
   !! element number, it also gives information about the local
   !! facet number
-  PROCEDURE, PUBLIC, PASS(obj) :: getBoundaryElementData => &
-    & mesh_getBoundaryElementData
+  PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryElementData => &
+    & mesh_GetBoundaryElementData
   !! Returns boundary element data
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalFacetElements => &
-    & mesh_getTotalFacetElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFacetElements => &
+    & mesh_GetTotalFacetElements
   !! Returns the total number of facet elements in the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalBoundaryFacetElements => &
-    & mesh_getTotalBoundaryFacetElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryFacetElements => &
+    & mesh_GetTotalBoundaryFacetElements
   !! Returns the total number of boundary facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalInternalFacetElements => &
-    & mesh_getTotalInternalFacetElements
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalFacetElements => &
+    & mesh_GetTotalInternalFacetElements
   !! Returns the total number of internal facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: getMasterCellNumber => &
-    & mesh_getMasterCellNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMasterCellNumber => &
+    & mesh_GetMasterCellNumber
   !! Returns the master cell number of a facet element
-  PROCEDURE, PUBLIC, PASS(obj) :: getSlaveCellNumber => &
-    & mesh_getSlaveCellNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSlaveCellNumber => &
+    & mesh_GetSlaveCellNumber
   !! Returns the slave cell number of a facet element
-  PROCEDURE, PUBLIC, PASS(obj) :: getCellNumber => &
-    & mesh_getCellNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellNumber => &
+    & mesh_GetCellNumber
   !! Returns the master and slave cell number of a facet element
-  PROCEDURE, PUBLIC, PASS(obj) :: getLocalFacetID => &
-    & mesh_getLocalFacetID
-  !! Return the local facet id, so that we can get reference element of
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => &
+    & mesh_GetLocalFacetID
+  !! Return the local facet id, so that we can Get reference element of
   !! the facet element
-  PROCEDURE, PASS(obj) :: mesh_getFacetConnectivity1
+  PROCEDURE, PASS(obj) :: mesh_GetFacetConnectivity1
   !! Return the node nubmers in the facet element
-  PROCEDURE, PASS(obj) :: mesh_getFacetConnectivity2
+  PROCEDURE, PASS(obj) :: mesh_GetFacetConnectivity2
   !! Return the node nubmers in the facet element of a cellElement
-  GENERIC, PUBLIC :: getFacetConnectivity => &
-    & mesh_getFacetConnectivity1, &
-    & mesh_getFacetConnectivity2
-  !! Generic method to get the connectivity of a facet element
-  PROCEDURE, PUBLIC, PASS(obj) :: getFacetElementType => &
-    & mesh_getFacetElementType
+  GENERIC, PUBLIC :: GetFacetConnectivity => &
+    & mesh_GetFacetConnectivity1, &
+    & mesh_GetFacetConnectivity2
+  !! Generic method to Get the connectivity of a facet element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElementType => &
+    & mesh_GetFacetElementType
   !! Returns the facet element type of a given cell element number
-  PROCEDURE, PUBLIC, PASS(obj) :: getOrder => &
-    & mesh_getOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => &
+    & mesh_GetOrder
   !! Returns the order ofthe element of mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: getNSD => &
-    & mesh_getNSD
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => &
+    & mesh_GetNSD
   !! Return the NSD
-  PROCEDURE, PUBLIC, PASS(obj) :: getXidimension => &
-    & mesh_getXidimension
+  PROCEDURE, PUBLIC, PASS(obj) :: GetXidimension => &
+    & mesh_GetXidimension
   !! Return the NSD
-  PROCEDURE, PUBLIC, PASS(obj) :: getMaterial => mesh_getMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaterial => mesh_GetMaterial
   !! returns the material id of a given medium
-  PROCEDURE, PUBLIC, PASS(obj) :: getTotalMaterial => mesh_getTotalMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => mesh_GetTotalMaterial
   !! returns the total material
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => mesh_GetQuery
-  !! Get query
-  PROCEDURE, PUBLIC, PASS(obj) :: getMinElemNumber => &
-    & mesh_getMinElemNumber
-  PROCEDURE, PUBLIC, PASS(obj) :: getMaxElemNumber => &
-    & mesh_getMaxElemNumber
-  PROCEDURE, PUBLIC, PASS(obj) :: getMinNodeNumber => &
-    & mesh_getMinNodeNumber
-  PROCEDURE, PUBLIC, PASS(obj) :: getMaxNodeNumber => &
-    & mesh_getMaxNodeNumber
-  !
+  !! Please use GetParam instead of GetQuery.
+  !! They are the same. But I like the name GetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => mesh_GetQuery
+  !! Get parameter of mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => &
+    & mesh_GetMinElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxElemNumber => &
+    & mesh_GetMaxElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinNodeNumber => &
+    & mesh_GetMinNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => &
+    & mesh_GetMaxNodeNumber
+
   ! @SetMethods
-  !
   !! Returns the order of reference element
-  PROCEDURE, PASS(obj) :: setBoundingBox1 => mesh_setBoundingBox1
+  PROCEDURE, PASS(obj) :: SetBoundingBox1 => mesh_setBoundingBox1
   !! Set the bounding box of the mesh
-  PROCEDURE, PASS(obj) :: setBoundingBox2 => mesh_setBoundingBox2
+  PROCEDURE, PASS(obj) :: SetBoundingBox2 => mesh_setBoundingBox2
   !! Set the bounding box from the given nodes, and local_nptrs
-  GENERIC, PUBLIC :: setBoundingBox => setBoundingBox1,  &
-    & setBoundingBox2
+  GENERIC, PUBLIC :: SetBoundingBox => setBoundingBox1,  &
+    & SetBoundingBox2
   !! Set the bounding box
-  PROCEDURE, PRIVATE, PASS(obj) :: setSparsity1 => mesh_setSparsity1
-  PROCEDURE, PRIVATE, PASS(obj) :: setSparsity2 => mesh_setSparsity2
-  PROCEDURE, PRIVATE, PASS(obj) :: setSparsity3 => mesh_setSparsity3
-  PROCEDURE, PRIVATE, PASS(obj) :: setSparsity4 => mesh_setSparsity4
-  GENERIC, PUBLIC :: setSparsity => setSparsity1, setSparsity2,  &
-    & setSparsity3, setSparsity4
-  PROCEDURE, PUBLIC, PASS(obj) :: setTotalMaterial => mesh_setTotalMaterial
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => mesh_setSparsity1
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity2 => mesh_setSparsity2
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity3 => mesh_setSparsity3
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity4 => mesh_setSparsity4
+  GENERIC, PUBLIC :: SetSparsity => setSparsity1, setSparsity2,  &
+    & SetSparsity3, setSparsity4
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => mesh_SetTotalMaterial
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: setMaterial => mesh_setMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => mesh_setMaterial
   !! Adding a material ID of a medium which is mapped to the mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: setFacetElementType => &
-    & mesh_setFacetElementType
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFacetElementType => &
+    & mesh_SetFacetElementType
   !! Set the facet element type of a given cell number
-  PROCEDURE, PUBLIC, PASS(obj) :: setQuality => mesh_setQuality
-    !! set mesh quality
-  !
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => mesh_setQuality
+    !! Set mesh quality
+
   ! @ShapeDataMethods
-  !
-  PROCEDURE, PASS(obj) :: initiateElemSD1 => mesh_initiateElemSD1
-  PROCEDURE, PASS(obj) :: initiateElemSD2 => mesh_initiateElemSD2
-  PROCEDURE, PASS(obj) :: initiateElemSD3 => mesh_initiateElemSD3
-  PROCEDURE, PASS(obj) :: initiateElemSD4 => mesh_initiateElemSD4
-  GENERIC, PUBLIC :: initiateElemSD => &
-    & initiateElemSD1, &
-    & initiateElemSD2, &
-    & initiateElemSD3, &
-    & initiateElemSD4
-  PROCEDURE, PASS(obj) :: initiateFacetElemSD1 => mesh_initiateFacetElemSD1
-  PROCEDURE, PASS(obj) :: initiateFacetElemSD2 => mesh_initiateFacetElemSD2
-  PROCEDURE, PASS(obj) :: initiateFacetElemSD3 => mesh_initiateFacetElemSD3
-  GENERIC, PUBLIC :: initiateFacetElemSD => &
-    & initiateFacetElemSD1, &
-    & initiateFacetElemSD2, &
-    & initiateFacetElemSD3
+  PROCEDURE, PASS(obj) :: InitiateElemSD1 => mesh_initiateElemSD1
+  PROCEDURE, PASS(obj) :: InitiateElemSD2 => mesh_initiateElemSD2
+  PROCEDURE, PASS(obj) :: InitiateElemSD3 => mesh_initiateElemSD3
+  PROCEDURE, PASS(obj) :: InitiateElemSD4 => mesh_initiateElemSD4
+  GENERIC, PUBLIC :: InitiateElemSD => &
+    & InitiateElemSD1, &
+    & InitiateElemSD2, &
+    & InitiateElemSD3, &
+    & InitiateElemSD4
+  PROCEDURE, PASS(obj) :: InitiateFacetElemSD1 => mesh_initiateFacetElemSD1
+  PROCEDURE, PASS(obj) :: InitiateFacetElemSD2 => mesh_initiateFacetElemSD2
+  PROCEDURE, PASS(obj) :: InitiateFacetElemSD3 => mesh_initiateFacetElemSD3
+  GENERIC, PUBLIC :: InitiateFacetElemSD => &
+    & InitiateFacetElemSD1, &
+    & InitiateFacetElemSD2, &
+    & InitiateFacetElemSD3
   !! Initiating local shape data for mesh
 END TYPE Mesh_
 
@@ -668,7 +660,7 @@ PUBLIC :: MeshPointer_
 !
 !# Introduction
 !
-! This routine initiate the the mesh by reading the data stored inside
+! This routine Initiate the the mesh by reading the data stored inside
 ! the HDF5 file.
 ! It calls following routines
 !
@@ -681,14 +673,14 @@ PUBLIC :: MeshPointer_
 ! - obj%InitiateBoundaryData()
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiate(obj, hdf5, group)
+  MODULE SUBROUTINE mesh_Initiate(obj, hdf5, group)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! mesh object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! Mesh file in hdf5 file format
     CHARACTER(*), INTENT(IN) :: group
     !! location in HDF5 file
-  END SUBROUTINE mesh_initiate
+  END SUBROUTINE mesh_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -807,10 +799,10 @@ END INTERFACE
 ! meshData%physicalTag, meshData%InternalNptrs, meshData%elemNumber,
 ! meshData%connectivity, meshData%boundingEntity
 !
-! This routine initiate the local_nptrs data in mesh.
-! This routine also sets the number of nodes in the mesh (tNodes)
+! This routine Initiate the local_nptrs data in mesh.
+! This routine also Sets the number of nodes in the mesh (tNodes)
 ! This routine allocate obj%nodeData
-! This routine set localNodeNum and globalNodeNum data inside the
+! This routine Set localNodeNum and globalNodeNum data inside the
 ! nodeData
 
 INTERFACE
@@ -822,7 +814,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getNodeCoord@IOMethods
+!                                                     GetNodeCoord@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -841,18 +833,18 @@ END INTERFACE
 !@note
 ! The nodeCoord returned by this routine should be used by the mesh object
 ! itself. This is because, in nodeCoords the nodes are arranged locally.
-! However, if you wish to use nodeCoord, then get the localNodeNumber of a
+! However, if you wish to use nodeCoord, then Get the localNodeNumber of a
 ! global node by calling the mesh methods, and use this localNodeNumber to
 ! extract the coordinates.
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE mesh_getNodeCoord(obj, nodeCoord, hdf5, group)
+  MODULE SUBROUTINE mesh_GetNodeCoord(obj, nodeCoord, hdf5, group)
     CLASS(Mesh_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE mesh_getNodeCoord
+  END SUBROUTINE mesh_GetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -890,18 +882,18 @@ END INTERFACE
 ! - If `content` is present then write cell data by calling
 ! [[VTKFile_:WriteCells]] methods
 ! - If openTag is true then write piece info
-! - If closeTag is true then close the piece
+! - If cloSetag is true then close the piece
 
 INTERFACE
   MODULE SUBROUTINE mesh_ExportToVTK(obj, vtkFile, nodeCoord, filename, &
-    & OpenTag, Content, CloseTag)
+    & OpenTag, Content, CloSetag)
     CLASS(Mesh_), INTENT(IN) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtkFile
     REAL(DFP), OPTIONAL, INTENT(IN) :: nodeCoord(:, :)
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: OpenTag
     !! Default is true
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: CloseTag
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: CloSetag
     !! Default is true
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Content
     !! Default is true
@@ -1107,7 +1099,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 getTotalElements@GetMethods
+!                                                 GetTotalElements@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1123,7 +1115,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getElemNum@GetMethods
+!                                                       GetElemNum@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1132,14 +1124,14 @@ END INTERFACE
 ! summary: Returns the global element numbers present in the mesh
 
 INTERFACE
-  MODULE FUNCTION mesh_getElemNum(obj) RESULT(ans)
+  MODULE FUNCTION mesh_GetElemNum(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getElemNum
+  END FUNCTION mesh_GetElemNum
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               getRefElemPointer@GetMethods
+!                                               GetRefElemPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1147,14 +1139,14 @@ END INTERFACE
 ! summary: Returns the pointer to the reference element
 
 INTERFACE
-  MODULE FUNCTION mesh_getRefElemPointer(obj) RESULT(ans)
+  MODULE FUNCTION mesh_GetRefElemPointer(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     CLASS(ReferenceElement_), POINTER :: ans
-  END FUNCTION mesh_getRefElemPointer
+  END FUNCTION mesh_GetRefElemPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               getBoundingEntity@GetMethods
+!                                               GetBoundingEntity@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1162,14 +1154,14 @@ END INTERFACE
 ! summary: Returns bounding entity of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getBoundingEntity(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetBoundingEntity(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getBoundingEntity
+  END FUNCTION mesh_GetBoundingEntity
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        getNptrs@GetMethods
+!                                                        GetNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1177,14 +1169,14 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getNptrs(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetNptrs(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getNptrs
+  END FUNCTION mesh_GetNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getInternalNptrs@GetMethods
+!                                                GetInternalNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1192,14 +1184,14 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers of internal nodes
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getInternalNptrs(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetInternalNptrs(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getInternalNptrs
+  END FUNCTION mesh_GetInternalNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getBoundaryNptrs@GetMethods
+!                                                GetBoundaryNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1207,10 +1199,10 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers of boundary nodes
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getBoundaryNptrs(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetBoundaryNptrs(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getBoundaryNptrs
+  END FUNCTION mesh_GetBoundaryNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1364,7 +1356,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           getTotalInternalNodes@GetMethodss
+!                                           GetTotalInternalNodes@GetMethodss
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1372,14 +1364,14 @@ END INTERFACE
 ! summary: Returns total number of internal nodes inside the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalInternalNodes(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalInternalNodes(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalInternalNodes
+  END FUNCTION mesh_GetTotalInternalNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getTotalNodes@MeshDataMethods
+!                                             GetTotalNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1387,14 +1379,14 @@ END INTERFACE
 ! summary: returns total number of nodes in the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalNodes(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalNodes(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalNodes
+  END FUNCTION mesh_GetTotalNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     getTotalBoundaryNodes@MeshDataMethods
+!                                     GetTotalBoundaryNodes@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1402,14 +1394,14 @@ END INTERFACE
 ! summary: returns total number of boundary nodes in the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalBoundaryNodes(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalBoundaryNodes(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalBoundaryNodes
+  END FUNCTION mesh_GetTotalBoundaryNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  getTotalBoundaryElements@MeshDataMethods
+!                                  GetTotalBoundaryElements@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1417,14 +1409,14 @@ END INTERFACE
 ! summary: returns total number of boundary elements
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalBoundaryElements(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalBoundaryElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalBoundaryElements
+  END FUNCTION mesh_GetTotalBoundaryElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            getBoundingBox@MeshDataMethods
+!                                            GetBoundingBox@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1432,14 +1424,14 @@ END INTERFACE
 ! summary: returns bounding box of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getBoundingBox1(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetBoundingBox1(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     TYPE(BoundingBox_) :: ans
-  END FUNCTION mesh_getBoundingBox1
+  END FUNCTION mesh_GetBoundingBox1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            getBoundingBox@GetMethods
+!                                            GetBoundingBox@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1447,18 +1439,18 @@ END INTERFACE
 ! summary: returns bounding box of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getBoundingBox2(obj, nodes, local_nptrs)  &
+  MODULE PURE FUNCTION mesh_GetBoundingBox2(obj, nodes, local_nptrs)  &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: nodes(:, :)
     !! Nodal coordinates in XiJ format
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_nptrs(:)
     TYPE(BoundingBox_) :: ans
-  END FUNCTION mesh_getBoundingBox2
+  END FUNCTION mesh_GetBoundingBox2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 getConnectivity@GetMethods
+!                                                 GetConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1466,15 +1458,15 @@ END INTERFACE
 ! summary: This routine returns global node numbers in a given global elem
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getConnectivity(obj, globalElement) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetConnectivity(obj, globalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getConnectivity
+  END FUNCTION mesh_GetConnectivity
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getLocalNodeNumber@GetMethods
+!                                             GetLocalNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1486,15 +1478,15 @@ END INTERFACE
 ! This function returns the local node numbers from global node numbers.
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getLocalNodeNumber1(obj, globalNode) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetLocalNodeNumber1(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B) :: ans(SIZE(globalNode))
-  END FUNCTION mesh_getLocalNodeNumber1
+  END FUNCTION mesh_GetLocalNodeNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         getLocalNodeNumber@GetMethods
+!                                         GetLocalNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1502,15 +1494,15 @@ END INTERFACE
 ! summary: This routine returns the local node number from a global node number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getLocalNodeNumber2(obj, globalNode) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetLocalNodeNumber2(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getLocalNodeNumber2
+  END FUNCTION mesh_GetLocalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getGlobalNptrs@GetMethods
+!                                          GetGlobalNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1518,15 +1510,15 @@ END INTERFACE
 ! summary: This function returns the Global node number from local node num
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getGlobalNodeNumber1(obj, localNode) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetGlobalNodeNumber1(obj, localNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode(:)
     INTEGER(I4B) :: ans(SIZE(localNode))
-  END FUNCTION mesh_getGlobalNodeNumber1
+  END FUNCTION mesh_GetGlobalNodeNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getGlobalNptrs@GetMethods
+!                                          GetGlobalNptrs@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1534,15 +1526,15 @@ END INTERFACE
 ! summary: This routine returns the Global node number from a local node number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getGlobalNodeNumber2(obj, localNode) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getGlobalNodeNumber2
+  END FUNCTION mesh_GetGlobalNodeNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       getGlobalElemNumber@GetMethods
+!                                       GetGlobalElemNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1550,16 +1542,16 @@ END INTERFACE
 ! summary: This function returns the Global node number from local node num
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getGlobalElemNumber1(obj, LocalElement) &
+  MODULE PURE FUNCTION mesh_GetGlobalElemNumber1(obj, LocalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: LocalElement(:)
     INTEGER(I4B) :: ans(SIZE(LocalElement))
-  END FUNCTION mesh_getGlobalElemNumber1
+  END FUNCTION mesh_GetGlobalElemNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getGlobalElemNumber@GetMethods
+!                                             GetGlobalElemNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1567,15 +1559,15 @@ END INTERFACE
 ! summary: This routine returns the Global node number from a local node number
 
 INTERFACE
- MODULE PURE FUNCTION mesh_getGlobalElemNumber2(obj, LocalElement) RESULT(ans)
+ MODULE PURE FUNCTION mesh_GetGlobalElemNumber2(obj, LocalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: LocalElement
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getGlobalElemNumber2
+  END FUNCTION mesh_GetGlobalElemNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              getLocalElemNumber@GetMethods
+!                                              GetLocalElemNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1583,15 +1575,15 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
- MODULE PURE FUNCTION mesh_getLocalElemNumber1(obj, GlobalElement) RESULT(ans)
+ MODULE PURE FUNCTION mesh_GetLocalElemNumber1(obj, GlobalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: GlobalElement(:)
     INTEGER(I4B) :: ans(SIZE(GlobalElement))
-  END FUNCTION mesh_getLocalElemNumber1
+  END FUNCTION mesh_GetLocalElemNumber1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              getLocalElemNumber@GetMethods
+!                                              GetLocalElemNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1599,15 +1591,15 @@ END INTERFACE
 ! summary: This function returns the local element number
 
 INTERFACE
- MODULE PURE FUNCTION mesh_getLocalElemNumber2(obj, GlobalElement) RESULT(ans)
+ MODULE PURE FUNCTION mesh_GetLocalElemNumber2(obj, GlobalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: GlobalElement
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getLocalElemNumber2
+  END FUNCTION mesh_GetLocalElemNumber2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               getNodeToElements@GetMethods
+!                                               GetNodeToElements@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1625,18 +1617,18 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getNodeToElements1(obj, globalNode) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetNodeToElements1(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global node number
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! A vector of local element number
-  END FUNCTION mesh_getNodeToElements1
+  END FUNCTION mesh_GetNodeToElements1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               getNodeToElements@GetMethods
+!                                               GetNodeToElements@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1656,18 +1648,18 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getNodeToElements2(obj, globalNode) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetNodeToElements2(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node number
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! A vector of local element number
-  END FUNCTION mesh_getNodeToElements2
+  END FUNCTION mesh_GetNodeToElements2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  getNodeToNodes@GetMethods
+!                                                  GetNodeToNodes@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1688,17 +1680,17 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION mesh_getNodeToNodes1(obj, globalNode, IncludeSelf) &
+  MODULE FUNCTION mesh_GetNodeToNodes1(obj, globalNode, IncludeSelf) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT), INTENT(IN) :: IncludeSelf
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getNodeToNodes1
+  END FUNCTION mesh_GetNodeToNodes1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 getNodeToNodes@GetMethods
+!                                                 GetNodeToNodes@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1720,17 +1712,17 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE FUNCTION mesh_getNodeToNodes2(obj, globalNode, IncludeSelf) &
+  MODULE FUNCTION mesh_GetNodeToNodes2(obj, globalNode, IncludeSelf) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), INTENT(IN) :: IncludeSelf
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getNodeToNodes2
+  END FUNCTION mesh_GetNodeToNodes2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      getElementToElements@MeshDataMethods
+!                                      GetElementToElements@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1741,7 +1733,7 @@ END INTERFACE
 ! This routine returns element to element connectivity information
 ! for a given global element number `globalElement`
 !
-! If `OnlyElements` is absent or it is set to FALSE then, this routine
+! If `OnlyElements` is absent or it is Set to FALSE then, this routine
 ! returns the **full information** about elements surrounding the global
 ! element `globalElement`. In this case,
 !
@@ -1758,7 +1750,7 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getElementToElements(obj, globalElement, &
+  MODULE PURE FUNCTION mesh_GetElementToElements(obj, globalElement, &
     & onlyElements) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     !! mesh data
@@ -1771,11 +1763,11 @@ INTERFACE
     !! information about the elements connected to element iel is given
     INTEGER(I4B), ALLOCATABLE :: ans(:, :)
     !! list of elements surrounding elements
-  END FUNCTION mesh_getElementToElements
+  END FUNCTION mesh_GetElementToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getBoundaryElementData@GetMethods
+!                                          GetBoundaryElementData@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1802,16 +1794,16 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getBoundaryElementData(obj, globalElement) &
+  MODULE PURE FUNCTION mesh_GetBoundaryElementData(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getBoundaryElementData
+  END FUNCTION mesh_GetBoundaryElementData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        getOrder@GetMethods
+!                                                        GetOrder@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1820,14 +1812,14 @@ END INTERFACE
 ! summary: Returns the order of reference element
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getOrder(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetOrder(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getOrder
+  END FUNCTION mesh_GetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         getNSD@GetMethods
+!                                                         GetNSD@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1835,14 +1827,14 @@ END INTERFACE
 ! summary: Returns the spatial dimension of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getNSD(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetNSD(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getNSD
+  END FUNCTION mesh_GetNSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  getXidimension@GetMethods
+!                                                  GetXidimension@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1850,14 +1842,14 @@ END INTERFACE
 ! summary: Returns the xidimension of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getXidimension(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetXidimension(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getXidimension
+  END FUNCTION mesh_GetXidimension
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getMaterial@GetMethods
+!                                                     GetMaterial@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1866,15 +1858,15 @@ END INTERFACE
 ! summary: Returns the materials id of a given medium
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getMaterial(obj, medium) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetMaterial(obj, medium) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: medium
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getMaterial
+  END FUNCTION mesh_GetMaterial
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getMaterial@GetMethods
+!                                                     GetMaterial@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1883,14 +1875,14 @@ END INTERFACE
 ! summary: Returns the materials id of a given medium
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalMaterial(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalMaterial(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalMaterial
+  END FUNCTION mesh_GetTotalMaterial
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           getTotalFacetElements@GetMethods
+!                                           GetTotalFacetElements@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1906,14 +1898,14 @@ END INTERFACE
 ! - MeshFacet Elements
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalFacetElements(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalFacetElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalFacetElements
+  END FUNCTION mesh_GetTotalFacetElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   getTotalInternalFacetElements@GetMethods
+!                                   GetTotalInternalFacetElements@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1921,25 +1913,25 @@ END INTERFACE
 ! summary: Returns the total number of internal facets element in mesh
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalInternalFacetElements(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalInternalFacetElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalInternalFacetElements
+  END FUNCTION mesh_GetTotalInternalFacetElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   getTotalBoundaryFacetElements@GetMethods
+!                                   GetTotalBoundaryFacetElements@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getTotalBoundaryFacetElements(obj) RESULT(ans)
+  MODULE PURE FUNCTION mesh_GetTotalBoundaryFacetElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getTotalBoundaryFacetElements
+  END FUNCTION mesh_GetTotalBoundaryFacetElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            getMasterCellNumber@GetMethods
+!                                            GetMasterCellNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1953,18 +1945,18 @@ END INTERFACE
 ! - The master cell number is the global element number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getMasterCellNumber(obj, facetElement, &
+  MODULE PURE FUNCTION mesh_GetMasterCellNumber(obj, facetElement, &
     & elementType)&
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getMasterCellNumber
+  END FUNCTION mesh_GetMasterCellNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            getSlaveCellNumber@GetMethods
+!                                            GetSlaveCellNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1978,17 +1970,17 @@ END INTERFACE
 ! - The slave cell number is the global element number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getSlaveCellNumber(obj, facetElement, &
+  MODULE PURE FUNCTION mesh_GetSlaveCellNumber(obj, facetElement, &
     & elementType) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getSlaveCellNumber
+  END FUNCTION mesh_GetSlaveCellNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   getCellNumber@GetMethods
+!                                                   GetCellNumber@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2004,17 +1996,17 @@ END INTERFACE
 ! - ans(2)  contains the slave cell number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getCellNumber(obj, facetElement, &
+  MODULE PURE FUNCTION mesh_GetCellNumber(obj, facetElement, &
     & elementType) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
     INTEGER(I4B) :: ans(2)
-  END FUNCTION mesh_getCellNumber
+  END FUNCTION mesh_GetCellNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getLocalFacetID@GetMethods
+!                                                GetLocalFacetID@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2022,18 +2014,18 @@ END INTERFACE
 ! summary: Returns the local facet id
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getLocalFacetID(obj, facetElement, &
+  MODULE PURE FUNCTION mesh_GetLocalFacetID(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
     INTEGER(I4B), INTENT(IN) :: elementType
     LOGICAL(LGT), INTENT(IN) :: isMaster
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getLocalFacetID
+  END FUNCTION mesh_GetLocalFacetID
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           getFacetConnectivity@GetMethods
+!                                           GetFacetConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2046,7 +2038,7 @@ END INTERFACE
 ! - facetElement is local facet element number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getFacetConnectivity1(obj, facetElement, &
+  MODULE PURE FUNCTION mesh_GetFacetConnectivity1(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -2059,11 +2051,11 @@ INTERFACE
       !! Currently, we do not support slave-cell for meshFacet because
       !! the slave of meshFacet lives in different instance of mesh_
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getFacetConnectivity1
+  END FUNCTION mesh_GetFacetConnectivity1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           getFacetConnectivity@GetMethods
+!                                           GetFacetConnectivity@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2077,17 +2069,17 @@ END INTERFACE
 ! - iface is the local face number in globalElement
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getFacetConnectivity2(obj, globalElement, &
+  MODULE PURE FUNCTION mesh_GetFacetConnectivity2(obj, globalElement, &
     & iface) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getFacetConnectivity2
+  END FUNCTION mesh_GetFacetConnectivity2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            getFacetElementType@GetMethods
+!                                            GetFacetElementType@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2095,16 +2087,16 @@ END INTERFACE
 ! summary: Returns the facet element type of the cell element number
 
 INTERFACE
-  MODULE PURE FUNCTION mesh_getFacetElementType(obj, globalElement) &
+  MODULE PURE FUNCTION mesh_GetFacetElementType(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION mesh_getFacetElementType
+  END FUNCTION mesh_GetFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     getQuery@GetMethods
+!                                                     GetQuery@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -2168,47 +2160,47 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getMinElemNumber@GetMethods
+!                                                GetMinElemNumber@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION mesh_getMinElemNumber(obj) RESULT(ans)
+  MODULE FUNCTION mesh_GetMinElemNumber(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getMinElemNumber
+  END FUNCTION mesh_GetMinElemNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getMaxElemNumber@GetMethods
+!                                                GetMaxElemNumber@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION mesh_getMaxElemNumber(obj) RESULT(ans)
+  MODULE FUNCTION mesh_GetMaxElemNumber(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getMaxElemNumber
+  END FUNCTION mesh_GetMaxElemNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getMinNodeNumber@GetMethods
+!                                                GetMinNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION mesh_getMinNodeNumber(obj) RESULT(ans)
+  MODULE FUNCTION mesh_GetMinNodeNumber(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getMinNodeNumber
+  END FUNCTION mesh_GetMinNodeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                getMaxNodeNumber@GetMethods
+!                                                GetMaxNodeNumber@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION mesh_getMaxNodeNumber(obj) RESULT(ans)
+  MODULE FUNCTION mesh_GetMaxNodeNumber(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION mesh_getMaxNodeNumber
+  END FUNCTION mesh_GetMaxNodeNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2229,7 +2221,7 @@ END INTERFACE
 ! contains the global element numbers.
 !
 !@note
-! Always use method called `getNodeToElements()` to access this information.
+! Always use method called `GetNodeToElements()` to access this information.
 ! This methods requires global Node number
 !@endnote
 !
@@ -2262,7 +2254,7 @@ END INTERFACE
 ! global node data surrounding the local node number.
 !- This list does not include self node.
 !- This methods needs node-to-elements data, therefore if this data
-! is not initiated, then this method calls `InitiateNodeToElements()`
+! is not Initiated, then this method calls `InitiateNodeToElements()`
 !
 
 INTERFACE
@@ -2290,9 +2282,9 @@ END INTERFACE
 !
 !- This methods needs information about `nodeToNodes`, `nodeToElements`,
 ! and `elementToElements`. Therefore,
-!- If `nodeToNodes` is not initiated, then this method initiates it.
-!- If `nodeToElements` is not initiated, then this method initiates it.
-!- If `elementToElements` is not initiated, then this method initiates it.
+!- If `nodeToNodes` is not Initiated, then this method initiates it.
+!- If `nodeToElements` is not Initiated, then this method initiates it.
+!- If `elementToElements` is not Initiated, then this method initiates it.
 
 INTERFACE
   MODULE SUBROUTINE mesh_InitiateExtraNodetoNodes(obj)
@@ -2315,12 +2307,12 @@ END INTERFACE
 !- Before calling this routine make sure the `refelem` in mesh is allocated.
 !- By using `refelem`, this routine forms the FacetElements.
 !- This routine needs `nodeToElements` information, therefore, if
-! `nodeToElements` is not initiated then it calls `initiateNodeToelements`
+! `nodeToElements` is not Initiated then it calls `initiateNodeToelements`
 ! method
 !- This method forms the following data:
 !- `obj%elementData(ielem)%globalElements`
 !- It also identifies those elements which are boundary element of mesh, and
-!- set `obj%elementData(ielem)%elementType=BOUNDARY_ELEMENT` for those element
+!- Set `obj%elementData(ielem)%elementType=BOUNDARY_ELEMENT` for those element
 !- Note that at this point boundary element are those which has at least
 ! one orphan face.
 !- Note that at this point these boundary element can be interface element
@@ -2396,7 +2388,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  setBoundingBox@setMethods
+!                                                  SetBoundingBox@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2404,14 +2396,14 @@ END INTERFACE
 ! summary: Sets the bounding box information in the mesh
 
 INTERFACE
-  MODULE PURE SUBROUTINE mesh_setBoundingBox1(obj, box)
+  MODULE PURE SUBROUTINE mesh_SetBoundingBox1(obj, box)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     TYPE(BoundingBox_), INTENT(IN) :: box
-  END SUBROUTINE mesh_setBoundingBox1
+  END SUBROUTINE mesh_SetBoundingBox1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  setBoundingBox@setMethods
+!                                                  SetBoundingBox@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2419,27 +2411,27 @@ END INTERFACE
 ! summary: Sets the bounding box information in the mesh
 
 INTERFACE
-  MODULE PURE SUBROUTINE mesh_setBoundingBox2(obj, nodes, local_nptrs)
+  MODULE PURE SUBROUTINE mesh_SetBoundingBox2(obj, nodes, local_nptrs)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: nodes(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_nptrs(:)
-  END SUBROUTINE mesh_setBoundingBox2
+  END SUBROUTINE mesh_SetBoundingBox2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      setSparsity@setMethod
+!                                                      SetSparsity@setMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
-! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
 !
 !# Introduction
 !
-! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-  MODULE SUBROUTINE mesh_setSparsity1(obj, mat, localNodeNumber, lbound, &
+  MODULE SUBROUTINE mesh_SetSparsity1(obj, mat, localNodeNumber, lbound, &
     & ubound)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! [[Mesh_]] class
@@ -2449,40 +2441,40 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ubound
     INTEGER(I4B), INTENT(IN) :: localNodeNumber(lbound:ubound)
     !! Global to local node number map
-  END SUBROUTINE mesh_setSparsity1
+  END SUBROUTINE mesh_SetSparsity1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                setSparsity@MeshDataMethods
+!                                                SetSparsity@MeshDataMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 Oct 2021
-! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
 
 INTERFACE
-  MODULE SUBROUTINE mesh_setSparsity2(obj, mat)
+  MODULE SUBROUTINE mesh_SetSparsity2(obj, mat)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! Mesh_ class
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! CSRMatrix object
-  END SUBROUTINE mesh_setSparsity2
+  END SUBROUTINE mesh_SetSparsity2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      setSparsity@setMethod
+!                                                      SetSparsity@setMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
 !
 !# Introduction
 !
-! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-  MODULE SUBROUTINE mesh_setSparsity3(obj, colMesh, nodeToNode, mat, &
+  MODULE SUBROUTINE mesh_SetSparsity3(obj, colMesh, nodeToNode, mat, &
     & ivar, jvar)
     CLASS(Mesh_), INTENT(INOUT) :: obj
   !! [[Mesh_]] class
@@ -2494,23 +2486,23 @@ INTERFACE
   !! [[CSRMatrix_]] object
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
-  END SUBROUTINE mesh_setSparsity3
+  END SUBROUTINE mesh_SetSparsity3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      setSparsity@setMethod
+!                                                      SetSparsity@setMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 12 Oct 2021
-! summary: This routine set the sparsity pattern in [[CSRMatrix_]] object
+! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
 !
 !# Introduction
 !
-! This routine sets the sparsity pattern in [[CSRMatrix_]] object.
+! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
 
 INTERFACE
-  MODULE SUBROUTINE mesh_setSparsity4(obj, colMesh, nodeToNode, mat, &
+  MODULE SUBROUTINE mesh_SetSparsity4(obj, colMesh, nodeToNode, mat, &
   & rowGlobalToLocalNodeNum, rowLBOUND, rowUBOUND, colGlobalToLocalNodeNum, &
   & colLBOUND, colUBOUND, ivar, jvar)
     CLASS(Mesh_), INTENT(INOUT) :: obj
@@ -2532,11 +2524,11 @@ INTERFACE
       & colLBOUND:colUBOUND)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
-  END SUBROUTINE mesh_setSparsity4
+  END SUBROUTINE mesh_SetSparsity4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     setMaterial@setMethods
+!                                                     SetMaterial@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2545,14 +2537,14 @@ END INTERFACE
 ! summary: Set the materials id of a given medium
 
 INTERFACE
-  MODULE PURE SUBROUTINE mesh_setTotalMaterial(obj, n)
+  MODULE PURE SUBROUTINE mesh_SetTotalMaterial(obj, n)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
-  END SUBROUTINE mesh_setTotalMaterial
+  END SUBROUTINE mesh_SetTotalMaterial
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     setMaterial@setMethods
+!                                                     SetMaterial@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2561,15 +2553,15 @@ END INTERFACE
 ! summary: Set the materials id of a given medium
 
 INTERFACE
-  MODULE PURE SUBROUTINE mesh_setMaterial(obj, medium, material)
+  MODULE PURE SUBROUTINE mesh_SetMaterial(obj, medium, material)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: medium
     INTEGER(I4B), INTENT(IN) :: material
-  END SUBROUTINE mesh_setMaterial
+  END SUBROUTINE mesh_SetMaterial
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            setFacetElementType@setMethods
+!                                            SetFacetElementType@setMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2577,25 +2569,25 @@ END INTERFACE
 ! summary: Set the facet element type of a given cell number
 
 INTERFACE
-  MODULE PURE SUBROUTINE mesh_setFacetElementType(obj, globalElement, &
+  MODULE PURE SUBROUTINE mesh_SetFacetElementType(obj, globalElement, &
     & iface, facetElementType)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), INTENT(IN) :: iface
     INTEGER(I4B), INTENT(IN) :: facetElementType
-  END SUBROUTINE mesh_setFacetElementType
+  END SUBROUTINE mesh_SetFacetElementType
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   setQuality@setMethods
+!                                                   SetQuality@setMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-27
-! summary:  set mesh quality
+! summary:  Set mesh quality
 
 INTERFACE
-  MODULE SUBROUTINE mesh_setQuality(obj, measures, max_measures, &
+  MODULE SUBROUTINE mesh_SetQuality(obj, measures, max_measures, &
     & min_measures, nodeCoord, local_nptrs)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: measures(:)
@@ -2603,7 +2595,7 @@ INTERFACE
     REAL(DFP), INTENT(OUT) :: min_measures(:)
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
     INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
-  END SUBROUTINE mesh_setQuality
+  END SUBROUTINE mesh_SetQuality
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2613,15 +2605,15 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! update: 2021-12-09
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 !
 !# Introduction
 !
-! This routine set the local shape data in space (linSpaceElemSD and
+! This routine Set the local shape data in space (linSpaceElemSD and
 ! spaceElemSD) for the mesh. It also creates the quadrature points in space.
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateElemSD1(obj, &
+  MODULE SUBROUTINE mesh_InitiateElemSD1(obj, &
     & orderSpace,  &
     & linSpaceElem, &
     & spaceElem, &
@@ -2641,7 +2633,7 @@ INTERFACE
       !! continuity for base in space
     CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpolation type for base in space
-  END SUBROUTINE mesh_initiateElemSD1
+  END SUBROUTINE mesh_InitiateElemSD1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2651,10 +2643,10 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! update: 2021-12-09
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateElemSD2(obj, &
+  MODULE SUBROUTINE mesh_InitiateElemSD2(obj, &
     & orderSpace,  &
     & linSpaceElem, &
     & spaceElem, &
@@ -2694,7 +2686,7 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE mesh_initiateElemSD2
+  END SUBROUTINE mesh_InitiateElemSD2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2704,10 +2696,10 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! update: 2021-12-09
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateElemSD3(obj, &
+  MODULE SUBROUTINE mesh_InitiateElemSD3(obj, &
     & orderSpace,  &
     & linSpaceElem, &
     & spaceElem, &
@@ -2745,7 +2737,7 @@ INTERFACE
       !! continuity type of base in time
     CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpolation type of base in time
-  END SUBROUTINE mesh_initiateElemSD3
+  END SUBROUTINE mesh_InitiateElemSD3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2755,13 +2747,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! update: 2021-12-09
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateElemSD4(obj, tvec)
+  MODULE SUBROUTINE mesh_InitiateElemSD4(obj, tvec)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE mesh_initiateElemSD4
+  END SUBROUTINE mesh_InitiateElemSD4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2770,10 +2762,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateFacetElemSD1(obj, &
+  MODULE SUBROUTINE mesh_InitiateFacetElemSD1(obj, &
     & orderSpace,  &
     & linSpaceElem, &
     & spaceElem, &
@@ -2793,7 +2785,7 @@ INTERFACE
       !! continuity for base in space
     CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
       !! interpolation type for base in space
-  END SUBROUTINE mesh_initiateFacetElemSD1
+  END SUBROUTINE mesh_InitiateFacetElemSD1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2802,10 +2794,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 May 2022
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateFacetElemSD2(obj, &
+  MODULE SUBROUTINE mesh_InitiateFacetElemSD2(obj, &
     & orderSpace,  &
     & linSpaceElem, &
     & spaceElem, &
@@ -2845,7 +2837,7 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: interpolTypeForTime
       !! interpol type of base in time
     REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE mesh_initiateFacetElemSD2
+  END SUBROUTINE mesh_InitiateFacetElemSD2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2855,13 +2847,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! update: 2021-12-09
-! summary: sets the local shape data for the mesh
+! summary: Sets the local shape data for the mesh
 
 INTERFACE
-  MODULE SUBROUTINE mesh_initiateFacetElemSD3(obj, tvec)
+  MODULE SUBROUTINE mesh_InitiateFacetElemSD3(obj, tvec)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE mesh_initiateFacetElemSD3
+  END SUBROUTINE mesh_InitiateFacetElemSD3
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 
 SUBMODULE(AbstractField_Class) Methods
 USE BaseMethod
+USE FPL_Method, ONLY: GetValue
 IMPLICIT NONE
 CONTAINS
 
@@ -79,6 +80,26 @@ END IF
 END PROCEDURE aField_Display
 
 !----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldInitiate
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP] :: This routine is under development')
+CALL obj%DEALLOCATE()
+CALL obj%CheckEssentialParam(param)
+obj%isInitiated = .TRUE.
+CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
+CALL GetValue(obj=param, prefix=prefix, key="name", VALUE=obj%name)
+CALL GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
+CALL GetValue(obj=param, prefix=prefix, key="comm", VALUE=obj%comm)
+CALL GetValue(obj=param, prefix=prefix, key="global_n", VALUE=obj%global_n)
+CALL GetValue(obj=param, prefix=prefix, key="local_n", VALUE=obj%local_n)
+obj%domain => dom
+END PROCEDURE AbstractFieldInitiate
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -121,7 +142,7 @@ INTEGER(I4B) :: ii
 obj%name = ""
 obj%engine = ""
 obj%isInitiated = .FALSE.
-obj%fieldType = 0
+obj%fieldType = FIELD_TYPE_NORMAL
 obj%comm = 0
 obj%myRank = 0
 obj%numProcs = 1
@@ -309,13 +330,13 @@ IF (.NOT. obj%isInitiated) THEN
     & 'Instnace of MatrixField_ is not initiated')
 END IF
 
-! check
+! Check
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'HDF5 file is not opened')
 END IF
 
-! check
+! Check
 IF (.NOT. hdf5%isWrite()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'HDF5 file does not have write permission')
@@ -390,13 +411,13 @@ IF (obj%isInitiated) THEN
   & 'The instance of AbstractField_ is already initiated')
 END IF
 
-! check
+! Check
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'HDF5 file is not opened')
 END IF
 
-! check
+! Check
 IF (.NOT. hdf5%isRead()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'HDF5 file does not have read permission')
@@ -512,5 +533,50 @@ CALL e%raiseInformation(modName//'::'//myName//' - '// &
 & '[END] Import()')
 
 END PROCEDURE aField_Import
+
+!----------------------------------------------------------------------------
+!                                                           GetSpaceCompo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_GetSpaceCompo
+CHARACTER(*), PARAMETER :: myName = "aField_GetSpaceCompo"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+  & " child classes.")
+END PROCEDURE aField_GetSpaceCompo
+
+!----------------------------------------------------------------------------
+!                                                           GetTimeCompo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_GetTimeCompo
+CHARACTER(*), PARAMETER :: myName = "aField_GetTimeCompo"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+  & " child classes.")
+END PROCEDURE aField_GetTimeCompo
+
+!----------------------------------------------------------------------------
+!                                                           GetStorageFMT
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_GetStorageFMT
+CHARACTER(*), PARAMETER :: myName = "aField_GetStorageFMT"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+  & " child classes.")
+END PROCEDURE aField_GetStorageFMT
+
+!----------------------------------------------------------------------------
+!                                                                 isConstant
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_isConstant
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  ans = .TRUE.
+ELSE
+  ans = .FALSE.
+END IF
+END PROCEDURE aField_isConstant
 
 END SUBMODULE Methods

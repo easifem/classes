@@ -18,6 +18,7 @@
 MODULE VTKPlot_Class
 USE GlobalData
 USE BaseType
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
 USE AbstractPlot_Class
@@ -45,17 +46,31 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x1y1
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x1y1f
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x1y1z1
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x1y1z1w1
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3w2
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x2y2
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x2y2w2
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x2y2w2b
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x2y2w3
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x2y2f
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3w3
+  PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3w4
   PROCEDURE, PUBLIC, PASS(obj) :: vts_plot_x3y3z3f
   GENERIC, PUBLIC :: Plot => &
     & vts_plot_x1y1, &
     & vts_plot_x1y1f, &
     & vts_plot_x1y1z1, &
+    & vts_plot_x1y1z1w1, &
+    & vts_plot_x3y3z3w2, &
     & vts_plot_x2y2, &
+    & vts_plot_x2y2w2, &
+    & vts_plot_x2y2w2b, &
+    & vts_plot_x2y2w3, &
     & vts_plot_x2y2f, &
     & vts_plot_x3y3z3, &
+    & vts_plot_x3y3z3w3, &
+    & vts_plot_x3y3z3w4, &
     & vts_plot_x3y3z3f
   PROCEDURE, PUBLIC, PASS(obj) :: vts_surface_x1y1f
   PROCEDURE, PUBLIC, PASS(obj) :: vts_surface_x2y2f
@@ -68,8 +83,12 @@ CONTAINS
   PROCEDURE, PASS(obj) :: plot_scatter3D_1
   PROCEDURE, PASS(obj) :: plot_scatter3D_2
   PROCEDURE, PASS(obj) :: plot_scatter3D_3
-  GENERIC, PUBLIC :: Scatter3D => plot_scatter3D_1, &
-    & plot_scatter3D_2, plot_scatter3D_3
+  PROCEDURE, PASS(obj) :: plot_scatter3D_4
+  GENERIC, PUBLIC :: Scatter3D => &
+    & plot_scatter3D_1, &
+    & plot_scatter3D_2, &
+    & plot_scatter3D_3, &
+    & plot_scatter3D_4
 END TYPE VTKPlot_
 
 PUBLIC :: VTKPlot_
@@ -170,6 +189,48 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 28 Oct 2022
+! summary: Create mesh grid using x, y, z, and plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x1y1z1w1(obj, x, y, z, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN) :: y(:)
+    REAL(DFP), INTENT(IN) :: z(:)
+    REAL(DFP), INTENT(IN) :: w(:)
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x1y1z1w1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
+! summary: Create mesh grid using x, y, z, and plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x3y3z3w2(obj, x, y, z, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :, :)
+    REAL(DFP), INTENT(IN) :: y(:, :, :)
+    REAL(DFP), INTENT(IN) :: z(:, :, :)
+    REAL(DFP), INTENT(IN) :: w(:, :)
+    !! each columns represents a data set
+    TYPE(string), INTENT(IN) :: label(:)
+    !! label of each dataset
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x3y3z3w2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
 ! summary: Create plot structured grid
 
 INTERFACE
@@ -181,6 +242,75 @@ INTERFACE
     !! y coordinate of mesh grid
     CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE vts_plot_x2y2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
+! summary: Create plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x2y2w2(obj, x, y, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    !! x coordinate of mesh grid
+    REAL(DFP), INTENT(IN) :: y(:, :)
+    !! y coordinate of mesh grid
+    REAL(DFP), INTENT(IN) :: w(:, :)
+    !! z coordinate of mesh grid
+    CHARACTER(*), INTENT(IN) :: label
+    !! label of dataset
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x2y2w2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
+! summary: Create plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x2y2w2b(obj, x, y, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    !! x coordinate of mesh grid
+    REAL(DFP), INTENT(IN) :: y(:, :)
+    !! y coordinate of mesh grid
+    REAL(DFP), INTENT(IN) :: w(:, :)
+    !! each col of w denotes data
+    !! number of cols of w should be same as size of label
+    TYPE(String), INTENT(IN) :: label(:)
+    !! label of dataset
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x2y2w2b
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
+! summary: Create plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x2y2w3(obj, x, y, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :)
+    !! x coordinate of mesh grid
+    REAL(DFP), INTENT(IN) :: y(:, :)
+    !! y coordinate of mesh grid
+    REAL(DFP), INTENT(IN) :: w(:, :, :)
+    !! z coordinate of mesh grid
+    TYPE(String), INTENT(IN) :: label(:)
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x2y2w3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -205,6 +335,56 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
+! summary: plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x3y3z3w3(obj, x, y, z, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :, :)
+    !! x ccoord of mesh grid
+    REAL(DFP), INTENT(IN) :: y(:, :, :)
+    !! y coord of mesh grid
+    REAL(DFP), INTENT(IN) :: z(:, :, :)
+    !! z coord of mesh grid
+    REAL(DFP), INTENT(IN) :: w(:, :, :)
+    !! w coord of mesh grid
+    CHARACTER(*), INTENT(IN) :: label
+    !! label of dataset
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x3y3z3w3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Plot@StructuredGridMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 28 Oct 2022
+! summary: plot structured grid
+
+INTERFACE
+  MODULE SUBROUTINE vts_plot_x3y3z3w4(obj, x, y, z, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:, :, :)
+    !! x ccoord of mesh grid
+    REAL(DFP), INTENT(IN) :: y(:, :, :)
+    !! y coord of mesh grid
+    REAL(DFP), INTENT(IN) :: z(:, :, :)
+    !! z coord of mesh grid
+    REAL(DFP), INTENT(IN) :: w(:, :, :, :)
+    !! w coord of mesh grid
+    TYPE(String), INTENT(IN) :: label(:)
+    !! label of dataset
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE vts_plot_x3y3z3w4
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 Scatter3D@ScatterMethods
 !----------------------------------------------------------------------------
 
@@ -216,11 +396,11 @@ INTERFACE
   MODULE SUBROUTINE plot_scatter3D_1(obj, x, y, z, label, filename)
     CLASS(VTKPlot_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
-    !! x coordinates
+    !! x coordinates of all points
     REAL(DFP), INTENT(IN) :: y(:)
-    !! y coords
+    !! y coords of all points
     REAL(DFP), INTENT(IN) :: z(:)
-    !! z coords
+    !! z coords of all points
     CHARACTER(*), INTENT(IN) :: label
     !! label
     CHARACTER(*), INTENT(IN) :: filename
@@ -237,9 +417,9 @@ INTERFACE
   MODULE SUBROUTINE plot_scatter3D_2(obj, x, y, z, label, filename)
     CLASS(VTKPlot_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
-    !! x coordinates
+    !! x coordinates of all points
     REAL(DFP), INTENT(IN) :: y(:)
-    !! y coordinates
+    !! y coordinates of all points
     REAL(DFP), INTENT(IN) :: z(:, :)
     !! each column of z is considered as data
     !! for jth column data label will be label+j
@@ -268,6 +448,33 @@ INTERFACE
     !! vtkfile name, this file will be opened and closed by this
     !! routine, the extension should be .vtp
   END SUBROUTINE plot_scatter3D_3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Scatter3D@ScatterMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-07-10
+! summary:  Scatter3D plot using VTK
+
+INTERFACE
+  MODULE SUBROUTINE plot_scatter3D_4(obj, x, y, z, w, label, filename)
+    CLASS(VTKPlot_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    !! x coordinates of all points
+    REAL(DFP), INTENT(IN) :: y(:)
+    !! y coords of all points
+    REAL(DFP), INTENT(IN) :: z(:)
+    !! z coords of all points
+    REAL(DFP), INTENT(IN) :: w(:, :)
+    !! each column of w represents data on x,y,z
+    CHARACTER(*), INTENT(IN) :: label
+    !! label
+    CHARACTER(*), INTENT(IN) :: filename
+    !! vtkfile name, this file will be opened and closed by this
+    !! routine, the extension should be .vtp
+  END SUBROUTINE plot_scatter3D_4
 END INTERFACE
 
 CONTAINS

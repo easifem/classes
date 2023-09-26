@@ -22,8 +22,20 @@ USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_, Domain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
+USE FiniteElement_Class, ONLY: FiniteElementPointer_
 IMPLICIT NONE
 PRIVATE
+PUBLIC :: AbstractNodeFieldDisplay
+PUBLIC :: AbstractNodeField_
+PUBLIC :: AbstractNodeFieldPointer_
+PUBLIC :: AbstractNodeFieldImport
+PUBLIC :: AbstractNodeFieldExport
+PUBLIC :: AbstractNodeFieldGetPointer
+PUBLIC :: AbstractNodeFieldInitiate2
+PUBLIC :: AbstractNodeFieldDeallocate
+PUBLIC :: AbstractNodeFieldSetSingle
+PUBLIC :: AbstractNodeFieldGetSingle
+PUBLIC :: AbstractNodeFieldInitiate
 
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 
@@ -43,21 +55,44 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   TYPE(DOF_) :: dof
   !! Degree of freedom object, which contains the information about
   !! how the different components are stored inside the realVec
+  TYPE(FiniteElementPointer_), ALLOCATABLE :: fe(:)
+  !! Finite element
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => anf_Display
+  !! Display the content of AbstractNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => anf_Import
+  !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => anf_Export
+  !! Export AbstractNodeField to HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => anf_GetPointer
+  !! GetPointer to the fortran vector stored inside the realvec
+  !! This function should be called for Native engine only
   PROCEDURE, PUBLIC, PASS(obj) :: Size => anf_Size
+  !! Returns the length of data stored inside the fortran vector
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => anf_Initiate2
+  !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => anf_Initiate3
+  !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => anf_Deallocate
+  !! Deallocate the data stored inside
   PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => anf_Norm2
+  !! Returns the L2 norm
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => anf_SetSingle
+  !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => anf_GetSingle
+  !! Get single entry
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => anf_GetTotalDOF
+  !! Returns the total number of degree of freedoms
+  !! This is same as calling Size
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => anf_GetTotalVertexDOF
+  !! Returns the total number of vertex degree of freedoms
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => anf_GetTotalEdgeDOF
+  !! Returns the total number of edge degree of freedoms
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => anf_GetTotalFaceDOF
+  !! Returns the total number of face degree of freedoms
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => anf_GetTotalCellDOF
+  !! Returns the total number of cell degree of freedoms
 END TYPE AbstractNodeField_
-
-PUBLIC :: AbstractNodeField_
 
 !----------------------------------------------------------------------------
 !
@@ -67,7 +102,22 @@ TYPE :: AbstractNodeFieldPointer_
   CLASS(AbstractNodeField_), POINTER :: ptr => NULL()
 END TYPE AbstractNodeFieldPointer_
 
-PUBLIC :: AbstractNodeFieldPointer_
+!----------------------------------------------------------------------------
+!                                                             Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Initiate an instance of AbstractNodeField
+
+INTERFACE
+  MODULE SUBROUTINE AbstractNodeFieldInitiate(obj, param, dom, prefix)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractNodeFieldInitiate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 Display
@@ -84,8 +134,6 @@ END INTERFACE
 INTERFACE AbstractNodeFieldDisplay
   MODULE PROCEDURE anf_Display
 END INTERFACE AbstractNodeFieldDisplay
-
-PUBLIC :: AbstractNodeFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                                 IMPORT
@@ -105,8 +153,6 @@ INTERFACE AbstractNodeFieldImport
   MODULE PROCEDURE anf_Import
 END INTERFACE AbstractNodeFieldImport
 
-PUBLIC :: AbstractNodeFieldImport
-
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
@@ -123,10 +169,8 @@ INTERFACE AbstractNodeFieldExport
   MODULE PROCEDURE anf_Export
 END INTERFACE AbstractNodeFieldExport
 
-PUBLIC :: AbstractNodeFieldExport
-
 !----------------------------------------------------------------------------
-!                                                                getPointer
+!                                                                GetPointer
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -134,33 +178,15 @@ PUBLIC :: AbstractNodeFieldExport
 ! summary: Returns the pointer to a fortran real vector stored inside realVec
 
 INTERFACE
-  MODULE FUNCTION anf_getPointer(obj) RESULT(ans)
+  MODULE FUNCTION anf_GetPointer(obj) RESULT(ans)
     CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
-  END FUNCTION anf_getPointer
+  END FUNCTION anf_GetPointer
 END INTERFACE
 
 INTERFACE AbstractNodeFieldGetPointer
-  MODULE PROCEDURE anf_getPointer
+  MODULE PROCEDURE anf_GetPointer
 END INTERFACE AbstractNodeFieldGetPointer
-
-PUBLIC :: AbstractNodeFieldGetPointer
-
-!----------------------------------------------------------------------------
-!                                                                    Size
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Sept 2021
-! summary: This function returns the size of the field
-
-INTERFACE
-  MODULE FUNCTION anf_Size(obj, dims) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dims
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_Size
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            anf_Initiate3
@@ -199,8 +225,6 @@ INTERFACE AbstractNodeFieldInitiate2
   MODULE PROCEDURE anf_Initiate2
 END INTERFACE AbstractNodeFieldInitiate2
 
-PUBLIC :: AbstractNodeFieldInitiate2
-
 !----------------------------------------------------------------------------
 !                                                            anf_Initiate3
 !----------------------------------------------------------------------------
@@ -234,8 +258,6 @@ END INTERFACE
 INTERFACE AbstractNodeFieldDeallocate
   MODULE PROCEDURE anf_Deallocate
 END INTERFACE AbstractNodeFieldDeallocate
-
-PUBLIC :: AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Norm2
@@ -275,8 +297,6 @@ INTERFACE AbstractNodeFieldSetSingle
   MODULE PROCEDURE anf_setSingle
 END INTERFACE AbstractNodeFieldSetSingle
 
-PUBLIC :: AbstractNodeFieldSetSingle
-
 !----------------------------------------------------------------------------
 !                                                          GetSingle@Methods
 !----------------------------------------------------------------------------
@@ -286,18 +306,110 @@ PUBLIC :: AbstractNodeFieldSetSingle
 ! summary: Set single entry
 
 INTERFACE
-  MODULE SUBROUTINE anf_getSingle(obj, indx, VALUE)
+  MODULE SUBROUTINE anf_GetSingle(obj, indx, VALUE)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
-  END SUBROUTINE anf_getSingle
+  END SUBROUTINE anf_GetSingle
 END INTERFACE
 
 INTERFACE AbstractNodeFieldGetSingle
-  MODULE PROCEDURE anf_getSingle
+  MODULE PROCEDURE anf_GetSingle
 END INTERFACE AbstractNodeFieldGetSingle
 
-PUBLIC :: AbstractNodeFieldGetSingle
+!----------------------------------------------------------------------------
+!                                                                       Size
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: This function returns the size of the field
+
+INTERFACE
+  MODULE FUNCTION anf_Size(obj, dims) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_Size
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetTotalDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of degree of freedoms
+!
+!# Introduction
+! This method is same as calling the size function.
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalDOF(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalVertexDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of vertex degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalVertexDOF(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalVertexDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalEdgeDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Edge degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalEdgeDOF(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalEdgeDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalFaceDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Face degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalFaceDOF(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalFaceDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalCellDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Cell degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalCellDOF(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalCellDOF
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

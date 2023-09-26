@@ -16,7 +16,7 @@
 
 MODULE AbstractMeshField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
@@ -27,6 +27,13 @@ USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
+PUBLIC :: AbstractMeshField_
+PUBLIC :: AbstractMeshFieldPointer_
+PUBLIC :: SetAbstractMeshFieldParam
+PUBLIC :: AbstractFieldCheckEssentialParam
+PUBLIC :: AbstractMeshFieldDeallocate
+PUBLIC :: AbstractMeshFieldInitiate
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -96,7 +103,7 @@ CONTAINS
   !! Export data in vtkFile
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
   !! Deallocate the field
-  PROCEDURE, PUBLIC, PASS(obj) :: getPointer => aField_getPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => aField_getPointer
   !! Return pointer to val
   PROCEDURE, PUBLIC, PASS(obj) :: Size => aField_Size
   !! Returns size
@@ -110,8 +117,6 @@ CONTAINS
   !! Getting the value
 END TYPE AbstractMeshField_
 
-PUBLIC :: AbstractMeshField_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -120,10 +125,8 @@ TYPE :: AbstractMeshFieldPointer_
   CLASS(AbstractMeshField_), POINTER :: ptr => NULL()
 END TYPE AbstractMeshFieldPointer_
 
-PUBLIC :: AbstractMeshFieldPointer_
-
 !----------------------------------------------------------------------------
-!                              setAbstractMeshFieldParam@ConstructorMethods
+!                              SetAbstractMeshFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -131,7 +134,7 @@ PUBLIC :: AbstractMeshFieldPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setAbstractMeshFieldParam(param, prefix, name, &
+  MODULE SUBROUTINE SetAbstractMeshFieldParam(param, prefix, name, &
     & fieldType, engine, defineOn, varType, rank, s)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
@@ -142,10 +145,8 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: varType
     INTEGER(I4B), INTENT(IN) :: rank
     INTEGER(I4B), INTENT(IN) :: s(:)
-  END SUBROUTINE setAbstractMeshFieldParam
+  END SUBROUTINE SetAbstractMeshFieldParam
 END INTERFACE
-
-PUBLIC :: setAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -178,8 +179,6 @@ INTERFACE
   END SUBROUTINE AbstractFieldCheckEssentialParam
 END INTERFACE
 
-PUBLIC :: AbstractFieldCheckEssentialParam
-
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -198,7 +197,19 @@ INTERFACE AbstractMeshFieldDeallocate
   MODULE PROCEDURE aField_Deallocate
 END INTERFACE AbstractMeshFieldDeallocate
 
-PUBLIC :: AbstractMeshFieldDeallocate
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+    TYPE(AbstractMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -233,8 +244,6 @@ INTERFACE
   END SUBROUTINE AbstractMeshFieldInitiate
 END INTERFACE
 
-PUBLIC :: AbstractMeshFieldInitiate
-
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -255,7 +264,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             getPointer@ConstructorMethods
+!                                             GetPointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -263,10 +272,10 @@ END INTERFACE
 ! summary: Returns the pointer to a fortran real vector stored inside realVec
 
 INTERFACE
-  MODULE FUNCTION aField_getPointer(obj) RESULT(ans)
+  MODULE FUNCTION aField_GetPointer(obj) RESULT(ans)
     CLASS(AbstractMeshField_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:, :)
-  END FUNCTION aField_getPointer
+  END FUNCTION aField_GetPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

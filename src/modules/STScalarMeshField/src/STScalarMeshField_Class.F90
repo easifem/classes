@@ -26,6 +26,7 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STScalarMeshField_Class"
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                     STScalarMeshField_Class
@@ -114,5 +115,33 @@ INTERFACE
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE aField_Initiate1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+    TYPE(STScalarMeshField_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+    TYPE(STScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 END MODULE STScalarMeshField_Class

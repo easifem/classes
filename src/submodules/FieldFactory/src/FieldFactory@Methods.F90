@@ -20,8 +20,58 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) Methods
+USE FPL, ONLY: ParameterList_
+USE BaseMethod
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                          MeshFieldFactory
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MeshFieldFactory
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldFactory"
+! TYPE(String) :: engine0
+TYPE(String) :: name0
+
+! engine0 = UpperCase(TRIM(engine))
+name0 = UpperCase(TRIM(name))
+
+SELECT CASE (name0%chars())
+
+CASE ("SCALAR")
+  ALLOCATE (ScalarMeshField_ :: ans)
+
+CASE ("STSCALAR")
+
+  ALLOCATE (STScalarMeshField_ :: ans)
+
+CASE ("VECTOR")
+
+  ALLOCATE (VectorMeshField_ :: ans)
+
+CASE ("STVECTOR")
+
+  ALLOCATE (STVectorMeshField_ :: ans)
+
+CASE ("TENSOR")
+
+  ALLOCATE (TensorMeshField_ :: ans)
+
+CASE ("STTENSOR")
+
+  ALLOCATE (STTensorMeshField_ :: ans)
+
+CASE DEFAULT
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[NO CASE FOUND] :: No case found for given name'//  &
+    & " following values are accepted = "//  &
+    & "[Scalar, STScalar, Vector, STVector, Tensor, STTensor]"// &
+    & " but found "//TRIM(name))
+
+END SELECT
+END PROCEDURE MeshFieldFactory
 
 !----------------------------------------------------------------------------
 !                                                         MatrixFieldFactory
@@ -29,36 +79,46 @@ CONTAINS
 
 MODULE PROCEDURE MatrixFieldFactory
 CHARACTER(*), PARAMETER :: myName = "MatrixFieldFactory"
+TYPE(String) :: engine0
 
-SELECT CASE (TRIM(engine))
+engine0 = UpperCase(TRIM(engine))
+
+SELECT CASE (engine0%chars())
 
 CASE ("NATIVE_SERIAL", "LIS_OMP")
   ALLOCATE (MatrixField_ :: ans)
 
 CASE ("NATIVE_OMP")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NATIVE_OMP engine is not available currently!!')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[WORK IN PROGRESS] :: NATIVE_OMP engine is not available currently!!')
+  !! TODO: Implement MatrixFieldFactory for NATIVE_OMP
 
 CASE ("NATIVE_MPI")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NATIVE_MPI engine is not available currently!!')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[WORK IN PROGRESS] :: NATIVE_MPI engine is not available currently!!')
+  !! TODO: Implement MatrixFieldFactory for NATIVE_MPI
 
 CASE ("PETSC")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'PETSC engine is not available currently!!')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[WORK IN PROGRESS] :: PETSC engine is not available currently!!')
+  !! TODO: Implement MatrixFieldFactory for PETSC
 
 CASE ("LIS_MPI")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'LIS_MPI engine is not available currently!!')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[WORK IN PROGRESS] :: LIS_MPI engine is not available currently!!')
+  !! TODO: Implement MatrixFieldFactory for LIS_MPI
 
 CASE DEFAULT
 
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'No case found for given engine')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[NO CASE FOUND] :: No case found for given engine '//  &
+    & "following values are acceptable = "//  &
+    & "[NATIVE_SERIAL, LIS_OMP, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_MPI]"//  &
+    & " but found engine = "//TRIM(engine0))
 
 END SELECT
 END PROCEDURE MatrixFieldFactory
@@ -77,22 +137,22 @@ CASE ("NATIVE_SERIAL", "LIS_OMP")
 
 CASE ("NATIVE_OMP")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_MPI")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 END SELECT
 
@@ -123,32 +183,32 @@ CASE ("NATIVE_SERIAL")
 
 CASE ("NATIVE_OMP")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
 
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for given engine')
 
 END SELECT
@@ -167,27 +227,27 @@ CASE ("NATIVE_SERIAL")
   ALLOCATE (BlockNodeField_ :: ans)
 
 CASE ("NATIVE_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for given engine')
 
 END SELECT
@@ -206,27 +266,27 @@ CASE ("NATIVE_SERIAL")
   ALLOCATE (ScalarField_ :: ans)
 
 CASE ("NATIVE_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for given engine')
 
 END SELECT
@@ -245,27 +305,27 @@ CASE ("NATIVE_SERIAL")
   ALLOCATE (VectorField_ :: ans)
 
 CASE ("NATIVE_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for given engine')
 
 END SELECT
@@ -284,27 +344,27 @@ CASE ("NATIVE_SERIAL")
   ALLOCATE (STVectorField_ :: ans)
 
 CASE ("NATIVE_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available currently!!')
 
 CASE ("NATIVE_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for given engine')
 
 END SELECT
@@ -324,30 +384,126 @@ CASE ("NATIVE_SERIAL")
   ALLOCATE (STScalarField_ :: ans)
 
 CASE ("NATIVE_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_OMP engine is not available, currently!!')
 
 CASE ("NATIVE_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'NATIVE_MPI engine is not available currently!!')
 
 CASE ("PETSC")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'PETSC engine is not available currently!!')
 
 CASE ("LIS_OMP")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_OMP engine is not available currently!!')
 
 CASE ("LIS_MPI")
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'LIS_MPI engine is not available currently!!')
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for given engine')
 
 END SELECT
 END PROCEDURE STScalarFieldFactory
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VectorField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "VectorFieldIntiate1"
+INTEGER(I4B) :: tsize, ii
+TYPE(ParameterList_) :: param
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
+  END IF
+
+  obj(ii)%ptr => VectorFieldFactory(engine)
+
+  CALL SetVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
+END DO
+
+CALL param%DEALLOCATE()
+
+END PROCEDURE VectorField_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE VectorField_Initiate2
+CHARACTER(*), PARAMETER :: myName = "VectorFieldIntiate2"
+INTEGER(I4B) :: tsize, ii, nn(6)
+TYPE(ParameterList_) :: param
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+nn = [ &
+  & tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType), SIZE(engine),  &
+  & SIZE(dom) &
+]
+
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fileType, "// &
+  & "engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: VectorField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
+  END IF
+
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
+  END IF
+
+  obj(ii)%ptr => VectorFieldFactory(engine(ii)%Chars())
+
+  CALL SetVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
+END DO
+
+CALL param%DEALLOCATE()
+
+END PROCEDURE VectorField_Initiate2
 
 END SUBMODULE Methods

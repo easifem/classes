@@ -16,6 +16,28 @@
 !
 
 SUBMODULE(NeumannBC_Class) GetMethods
+USE BaseMethod, ONLY: TOSTRING
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                    GetNeumannBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetNeumannBCPointer
+CHARACTER(*), PARAMETER :: myName = "bc_GetNeumannBCPointer"
+
+IF (nbcNo .GT. SIZE(nbc)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & '[OUT OF BOUND ERROR] :: nbcNo is out of bound for nbc')
+END IF
+
+IF (.NOT. ASSOCIATED(nbc(nbcNo)%ptr)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & '[ALLOCATION ERROR] :: nbc( '//TOSTRING(nbcNo) &
+    & //')%ptr is not ASSOCIATED')
+END IF
+ans => nbc(nbcNo)%ptr
+END PROCEDURE bc_GetNeumannBCPointer
+
 END SUBMODULE GetMethods

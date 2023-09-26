@@ -46,15 +46,8 @@ INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
-! CHARACTER( LEN = * ), PARAMETER, PUBLIC :: FIELD_TYPE_NAME( 4 ) = &
-!   & [ &
-!       & "NORMAL        ", &
-!       & "CONSTANT      ", &
-!       & "CONSTANT_SPACE", &
-!       & "CONSTANT_TIME " &
-!   & ]
-
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
+PUBLIC :: AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -66,19 +59,19 @@ CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isInitiated = .FALSE.
-    !! It is true if the object is initiated
+  !! It is true if the object is initiated
   INTEGER(I4B) :: fieldType = FIELD_TYPE_NORMAL
-    !! fieldType can be normal, constant, can vary in space and/ or both.
+  !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE(String) :: name
-    !! name of the field
+  !! name of the field
   TYPE(String) :: engine
-    !! Engine of the field, for example
-    !! NATIVE_SERIAL
-    !! NATIVE_OMP,
-    !! NATIVE_MPI,
-    !! PETSC,
-    !! LIS_OMP,
-    !! LIS_MPI
+  !! Engine of the field, for example
+  !! NATIVE_SERIAL
+  !! NATIVE_OMP,
+  !! NATIVE_MPI,
+  !! PETSC,
+  !! LIS_OMP,
+  !! LIS_MPI
   INTEGER(I4B) :: comm = 0_I4B
   !! communication group (MPI)
   INTEGER(I4B) :: myRank = 0_I4B
@@ -97,13 +90,13 @@ TYPE, ABSTRACT :: AbstractField_
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
   TYPE(Domain_), POINTER :: domain => NULL()
-    !! Domain contains the information of the finite element meshes.
+  !! Domain contains the information of the finite element meshes.
   TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
-    !! Domain for each physical variables
-    !! The size of `domains` should be equal to the total number of
-    !! physical variables.
-    !! It is used in the case of BlockNodeField
-    !! and BlockMatrixField
+  !! Domain for each physical variables
+  !! The size of `domains` should be equal to the total number of
+  !! physical variables.
+  !! It is used in the case of BlockNodeField
+  !! and BlockMatrixField
 CONTAINS
   PRIVATE
   PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
@@ -131,6 +124,18 @@ CONTAINS
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => aField_GetSpaceCompo
+  !! Return space component
+  !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => aField_GetTimeCompo
+  !! Return time component
+  !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => aField_GetStorageFMT
+  !! Return storage format
+  !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant  &
+  & => aField_isConstant
+  !! It returns true if the field is constant field
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
@@ -166,6 +171,23 @@ ABSTRACT INTERFACE
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE aField_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary: Initiate the field by reading param and given domain
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldInitiate(obj, param, dom, prefix)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractFieldInitiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -424,4 +446,62 @@ INTERFACE
   END SUBROUTINE GetParam
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                             GetSpaceCompo
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns space components
+
+INTERFACE
+  MODULE FUNCTION aField_GetSpaceCompo(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION aField_GetSpaceCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetTimeCompo
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns Time components
+
+INTERFACE
+  MODULE FUNCTION aField_GetTimeCompo(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION aField_GetTimeCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetStorageFMT
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns storage format
+
+INTERFACE
+  MODULE FUNCTION aField_GetStorageFMT(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION aField_GetStorageFMT
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               isConstant
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns true if the field is constant
+INTERFACE
+  MODULE FUNCTION aField_isConstant(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION aField_isConstant
+END INTERFACE
 END MODULE AbstractField_Class

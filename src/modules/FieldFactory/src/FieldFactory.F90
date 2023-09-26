@@ -20,11 +20,40 @@
 ! summary: This modules is a factory for linear solver, vector and matrix
 
 MODULE FieldFactory
+USE GlobalData
+USE String_Class
 USE Field
+USE Domain_Class, ONLY: Domain_, DomainPointer_
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "FieldFactory"
+PUBLIC :: MatrixFieldFactory
+PUBLIC :: BlockMatrixFieldFactory
+PUBLIC :: NodeFieldFactory
+PUBLIC :: BlockNodeFieldFactory
+PUBLIC :: ScalarFieldFactory
+PUBLIC :: VectorFieldFactory
+PUBLIC :: STScalarFieldFactory
+PUBLIC :: STVectorFieldFactory
+PUBLIC :: Initiate
+public :: MeshFieldFactory
+
+!----------------------------------------------------------------------------
+!                                                           MeshFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-09-14 
+! summary: This function returns child of AbstractMeshField
+
+INTERFACE
+  MODULE FUNCTION MeshFieldFactory(engine, name) RESULT(Ans)
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: name
+    CLASS(AbstractMeshField_), POINTER :: ans
+  END FUNCTION MeshFieldFactory
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory
@@ -41,8 +70,6 @@ INTERFACE
   END FUNCTION MatrixFieldFactory
 END INTERFACE
 
-PUBLIC :: MatrixFieldFactory
-
 !----------------------------------------------------------------------------
 !                                                   BlockMatrixFieldFactory
 !----------------------------------------------------------------------------
@@ -57,8 +84,6 @@ INTERFACE
     CLASS(AbstractMatrixField_), POINTER :: ans
   END FUNCTION BlockMatrixFieldFactory
 END INTERFACE
-
-PUBLIC :: BlockMatrixFieldFactory
 
 !----------------------------------------------------------------------------
 !                                                         NodeFieldFactory
@@ -76,8 +101,6 @@ INTERFACE
   END FUNCTION NodeFieldFactory
 END INTERFACE
 
-PUBLIC :: NodeFieldFactory
-
 !----------------------------------------------------------------------------
 !                                                      BlockNodeFieldFactory
 !----------------------------------------------------------------------------
@@ -92,8 +115,6 @@ INTERFACE
     CLASS(BlockNodeField_), POINTER :: ans
   END FUNCTION BlockNodeFieldFactory
 END INTERFACE
-
-PUBLIC :: BlockNodeFieldFactory
 
 !----------------------------------------------------------------------------
 !                                                         ScalarFieldFactory
@@ -110,8 +131,6 @@ INTERFACE
   END FUNCTION ScalarFieldFactory
 END INTERFACE
 
-PUBLIC :: ScalarFieldFactory
-
 !----------------------------------------------------------------------------
 !                                                         VectorFieldFactory
 !----------------------------------------------------------------------------
@@ -126,8 +145,6 @@ INTERFACE
     CLASS(VectorField_), POINTER :: ans
   END FUNCTION VectorFieldFactory
 END INTERFACE
-
-PUBLIC :: VectorFieldFactory
 
 !----------------------------------------------------------------------------
 !                                                      STScalarFieldFactory
@@ -144,8 +161,6 @@ INTERFACE
   END FUNCTION STScalarFieldFactory
 END INTERFACE
 
-PUBLIC :: STScalarFieldFactory
-
 !----------------------------------------------------------------------------
 !                                                      STVectorFieldFactory
 !----------------------------------------------------------------------------
@@ -161,6 +176,91 @@ INTERFACE
   END FUNCTION STVectorFieldFactory
 END INTERFACE
 
-PUBLIC :: STVectorFieldFactory
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate a vector of VectorFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of VectorField and
+! its subclasses.
+!
+! Many times we need to initiate the vector field of same structures.
+! Calling intiate methods on each vector field increases the
+! code repeatition.
+! Therefore, we can call this method  instead. This method
+! will create vectorfield of same type. They just have different
+! names.
+!
+! NOTE: This is a module routine not a Method to VectorField_
+
+INTERFACE Initiate
+  MODULE SUBROUTINE VectorField_Initiate1(obj, names, spaceCompo, fieldType,  &
+    & engine, dom)
+    TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to VectorField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! spatial components in vector field
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    CHARACTER(*), INTENT(IN) :: engine
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    !! pointer to the domain
+  END SUBROUTINE VectorField_Initiate1
+END INTERFACE Initiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate a vector of VectorFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of VectorField and
+! its subclasses.
+!
+! Many times we need to initiate the vector field of same structures.
+! Calling intiate methods on each vector field increases the
+! code repeatition.
+! Therefore, we can call this method  instead. This method
+! will create instances of vectorfield and its subclass. 
+! 
+! INFO: This routine is same as VectorField_Initiate1 but 
+! here, we can set different properties to each vector field. 
+!
+! NOTE: This is a module routine not a Method to VectorField_
+
+INTERFACE Initiate
+  MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo, fieldType,  &
+    & engine, dom)
+    TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to VectorField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! spatial components in vector field
+    INTEGER(I4B), INTENT(IN) :: fieldType(:)
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    TYPE(String), INTENT(IN) :: engine(:)
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    !! pointer to the domain
+  END SUBROUTINE VectorField_Initiate2
+END INTERFACE Initiate
+
 
 END MODULE FieldFactory

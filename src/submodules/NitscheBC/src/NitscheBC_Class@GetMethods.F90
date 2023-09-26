@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(NitscheBC_Class) GetMethods
+USE BaseMethod, ONLY: TOSTRING
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                         GetMinCellEntity
+!----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_GetMinCellEntity
 IF (ALLOCATED(obj%cellEntity)) THEN
@@ -85,5 +90,27 @@ END PROCEDURE bc_getCellElem
 MODULE PROCEDURE bc_getLocalFacetID
 ans = obj%localFacetID(entityNum)
 END PROCEDURE bc_getLocalFacetID
+
+!----------------------------------------------------------------------------
+!                                                    GetNitscheBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetNitscheBCPointer
+CHARACTER(*), PARAMETER :: myName = "bc_GetNitscheBCPointer"
+
+IF (dbcNo .GT. SIZE(dbc)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & '[OUT OF BOUND ERROR] :: dbcNo is out of bound for dbc')
+END IF
+
+IF (.NOT. ASSOCIATED(dbc(dbcNo)%ptr)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+    & '[ALLOCATION ERROR] :: obj%dbc( '//TOSTRING(dbcNo) &
+    & //')%ptr is not ASSOCIATED')
+END IF
+
+ans => dbc(dbcNo)%ptr
+
+END PROCEDURE bc_GetNitscheBCPointer
 
 END SUBMODULE GetMethods

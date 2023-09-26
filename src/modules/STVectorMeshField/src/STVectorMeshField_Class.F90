@@ -17,7 +17,7 @@
 
 MODULE STVectorMeshField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
@@ -25,7 +25,8 @@ USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "STVectorMeshField_Class"
+CHARACTER(*), PARAMETER :: modName = "STVectorMeshField_Class"
+PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                     STVectorMeshField_Class
@@ -58,7 +59,7 @@ END TYPE STVectorMeshFieldPointer_
 PUBLIC :: STVectorMeshFieldPointer_
 
 !----------------------------------------------------------------------------
-!                              setAbstractMeshFieldParam@ConstructorMethods
+!                              SetAbstractMeshFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -66,23 +67,23 @@ PUBLIC :: STVectorMeshFieldPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setSTVectorMeshFieldParam(param, name, &
+  MODULE SUBROUTINE SetSTVectorMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, spaceCompo, nns, nnt)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
   !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: nns
     INTEGER(I4B), INTENT(IN) :: nnt
   !! Number of node in space
-  END SUBROUTINE setSTVectorMeshFieldParam
+  END SUBROUTINE SetSTVectorMeshFieldParam
 END INTERFACE
 
-PUBLIC :: setSTVectorMeshFieldParam
+PUBLIC :: SetSTVectorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -114,5 +115,33 @@ INTERFACE
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE aField_Initiate1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+    TYPE(STVectorMeshField_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Vector
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+    TYPE(STVectorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE aField_Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 END MODULE STVectorMeshField_Class

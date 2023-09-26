@@ -76,15 +76,15 @@ obj%isSelectionByElemNum = .FALSE.
 obj%isSelectionByNodeNum = .FALSE.
 obj%isSelectionByMeshID = .FALSE.
 obj%isSelectionByBox = .FALSE.
-CALL Deallocate (obj%PointMeshID)
-CALL Deallocate (obj%CurveMeshID)
-CALL Deallocate (obj%SurfaceMeshID)
-CALL Deallocate (obj%VolumeMeshID)
-CALL Deallocate (obj%PointElemNum)
-CALL Deallocate (obj%CurveElemNum)
-CALL Deallocate (obj%SurfaceElemNum)
-CALL Deallocate (obj%VolumeElemNum)
-CALL Deallocate (obj%NodeNum)
+CALL DEALLOCATE (obj%PointMeshID)
+CALL DEALLOCATE (obj%CurveMeshID)
+CALL DEALLOCATE (obj%SurfaceMeshID)
+CALL DEALLOCATE (obj%VolumeMeshID)
+CALL DEALLOCATE (obj%PointElemNum)
+CALL DEALLOCATE (obj%CurveElemNum)
+CALL DEALLOCATE (obj%SurfaceElemNum)
+CALL DEALLOCATE (obj%VolumeElemNum)
+CALL DEALLOCATE (obj%NodeNum)
 END PROCEDURE meshSelect_Deallocate
 
 !----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ END PROCEDURE meshSelect_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Final
-CALL obj%Deallocate()
+CALL obj%DEALLOCATE()
 END PROCEDURE meshSelect_Final
 
 !----------------------------------------------------------------------------
@@ -118,5 +118,36 @@ IF (isAllocated(obj2%VolumeElemNum)) obj%VolumeElemNum = obj2%VolumeElemNum
 !>
 IF (isAllocated(obj2%NodeNum)) obj%NodeNum = obj2%NodeNum
 END PROCEDURE meshSelect_Copy
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Deallocate_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    CALL obj(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE Deallocate_Ptr_Vector
 
 END SUBMODULE ConstructorMethods

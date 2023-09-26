@@ -208,7 +208,9 @@ FUNCTION localize_1(A) RESULT(o)
 
   N = SIZE(A)
   ALLOCATE (o(N))
-  FORALL (k=1:N) o(k) = REAL(A(k), pp)
+  DO CONCURRENT(k=1:N)
+    o(k) = REAL(A(k), pp)
+  END DO
 END FUNCTION localize_1
 
 !----------------------------------------------------------------------------
@@ -223,7 +225,9 @@ FUNCTION localize_2(A) RESULT(o)
   N = SIZE(A, 1)
   M = SIZE(A, 2)
   ALLOCATE (o(N, M))
-  FORALL (i=1:N, j=1:M) o(i, j) = REAL(A(i, j), pp)
+  DO CONCURRENT(i=1:N, j=1:M)
+    o(i, j) = REAL(A(i, j), pp)
+  END DO
 END FUNCTION localize_2
 
 !----------------------------------------------------------------------------

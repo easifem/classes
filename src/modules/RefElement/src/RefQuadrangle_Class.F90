@@ -17,7 +17,7 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! summary:         Reference element for point is implemented
+! summary:         Reference element for quadrangle
 
 MODULE RefQuadrangle_Class
 USE GlobalData
@@ -25,7 +25,9 @@ USE Topology_Class
 USE AbstractRefElement_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "RefQuadrangle_Class"
+CHARACTER(*), PARAMETER :: modName = "RefQuadrangle_Class"
+PUBLIC :: RefQuadrangle_
+PUBLIC :: RefQuadranglePointer_
 
 !----------------------------------------------------------------------------
 !                                                   RefQuadrangle_
@@ -35,7 +37,7 @@ CHARACTER(LEN=*), PARAMETER :: modName = "RefQuadrangle_Class"
 ! date: 9 Aug 2022
 ! summary:         RefQuadrangle class is defined
 !
-!{!pages/RefQuadrangle_.md!}
+!{!pages/docs-api/RefQuadrangle/RefQuadrangle_.md!}
 
 TYPE, EXTENDS(AbstractRefElement_) :: RefQuadrangle_
 CONTAINS
@@ -44,12 +46,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetElements => &
     & refelem_GetFacetElements
   !! Returns the facet elements
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateTopology => &
-    & refelem_GenerateTopology
-  !! returns the facet topology
+  PROCEDURE, PUBLIC, PASS(obj) :: RefCoord => refelem_RefCoord
+  !! returns coordiantes of linear reference elements
 END TYPE RefQuadrangle_
-
-PUBLIC :: RefQuadrangle_
 
 !----------------------------------------------------------------------------
 !                                            RefQuadranglePointer_
@@ -59,7 +58,23 @@ TYPE :: RefQuadranglePointer_
   CLASS(RefQuadrangle_), POINTER :: ptr => NULL()
 END TYPE RefQuadranglePointer_
 
-PUBLIC :: RefQuadranglePointer_
+!----------------------------------------------------------------------------
+!                                                         RefCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-08-09
+! summary: Return the reference coordiante of linear element
+
+INTERFACE
+  MODULE FUNCTION refelem_RefCoord(obj, baseInterpolation, baseContinuity) &
+     & RESULT(ans)
+    CLASS(RefQuadrangle_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(IN) :: baseInterpolation
+    CHARACTER(*), INTENT(IN) :: baseContinuity
+    REAL(DFP), ALLOCATABLE :: ans(:, :)
+  END FUNCTION refelem_RefCoord
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           GetName@Methods
@@ -93,21 +108,6 @@ INTERFACE
     CLASS(RefQuadrangle_), INTENT(IN) :: obj
     TYPE(AbstractRefElementPointer_), ALLOCATABLE :: ans(:)
   END SUBROUTINE refelem_GetFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  GenerateTopology@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 16 June 2022
-! summary: Generate topology of reference element
-!
-
-INTERFACE
-  MODULE SUBROUTINE refelem_GenerateTopology(obj)
-    CLASS(RefQuadrangle_), INTENT(INOUT) :: obj
-  END SUBROUTINE refelem_GenerateTopology
 END INTERFACE
 
 !----------------------------------------------------------------------------

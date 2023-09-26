@@ -33,6 +33,10 @@ INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
 INTEGER(I4B), PUBLIC, PARAMETER :: rType = 3
 INTEGER(I4B), PUBLIC, PARAMETER :: oversetType = 4
 
+PUBLIC :: DomainConnectivity_
+PUBLIC :: DomainConnectivityPointer_
+PUBLIC :: DEALLOCATE
+
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
 !----------------------------------------------------------------------------
@@ -250,8 +254,6 @@ CONTAINS
     & dc_DisplayFacetToCellData
 END TYPE DomainConnectivity_
 
-PUBLIC :: DomainConnectivity_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -259,8 +261,6 @@ PUBLIC :: DomainConnectivity_
 TYPE :: DomainConnectivityPointer_
   CLASS(DomainConnectivity_), POINTER :: Ptr => NULL()
 END TYPE DomainConnectivityPointer_
-
-PUBLIC :: DomainConnectivityPointer_
 
 !----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods
@@ -276,11 +276,39 @@ PUBLIC :: DomainConnectivityPointer_
 !
 
 INTERFACE
-  MODULE PURE SUBROUTINE dc_Deallocate(obj)
+  MODULE SUBROUTINE dc_Deallocate(obj)
     CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
     !! Mesh connectivity object
   END SUBROUTINE dc_Deallocate
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary: Deallocate a vector of DomainConnectivity_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE dc_Deallocate2(obj)
+    TYPE(DomainConnectivity_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE dc_Deallocate2
+END INTERFACE DEALLOCATE
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary: Deallocate a vector of DomainConnectivityPointer_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE dc_Deallocate3(obj)
+    TYPE(DomainConnectivityPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE dc_Deallocate3
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods

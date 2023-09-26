@@ -21,46 +21,46 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     setSTVectorFieldParam
+!                                                     SetSTVectorFieldParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setSTVectorFieldParam
+MODULE PROCEDURE SetSTVectorFieldParam
 INTEGER(I4B) :: ierr
-ierr = param%set(key=myprefix//"/name", VALUE=TRIM(name))
-ierr = param%set(key=myprefix//"/engine", VALUE=TRIM(engine))
-ierr = param%set(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
-ierr = param%set(key=myprefix//"/timeCompo", VALUE=timeCompo)
+ierr = param%Set(key=myprefix//"/name", VALUE=TRIM(name))
+ierr = param%Set(key=myprefix//"/engine", VALUE=TRIM(engine))
+ierr = param%Set(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
+ierr = param%Set(key=myprefix//"/timeCompo", VALUE=timeCompo)
 IF (PRESENT(fieldType)) THEN
-  ierr = param%set(key=myprefix//"/fieldType", VALUE=fieldType)
+  ierr = param%Set(key=myprefix//"/fieldType", VALUE=fieldType)
 ELSE
-  ierr = param%set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
+  ierr = param%Set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
 END IF
 
 IF (PRESENT(comm)) THEN
-  ierr = param%set(key=myprefix//"/comm", VALUE=comm)
+  ierr = param%Set(key=myprefix//"/comm", VALUE=comm)
 ELSE
-  ierr = param%set(key=myprefix//"/comm", VALUE=0_I4B)
+  ierr = param%Set(key=myprefix//"/comm", VALUE=0_I4B)
 END IF
 
 IF (PRESENT(local_n)) THEN
-  ierr = param%set(key=myprefix//"/local_n", VALUE=local_n)
+  ierr = param%Set(key=myprefix//"/local_n", VALUE=local_n)
 ELSE
-  ierr = param%set(key=myprefix//"/local_n", VALUE=0_I4B)
+  ierr = param%Set(key=myprefix//"/local_n", VALUE=0_I4B)
 END IF
 
 IF (PRESENT(global_n)) THEN
-  ierr = param%set(key=myprefix//"/global_n", VALUE=global_n)
+  ierr = param%Set(key=myprefix//"/global_n", VALUE=global_n)
 ELSE
-  ierr = param%set(key=myprefix//"/global_n", VALUE=0_I4B)
+  ierr = param%Set(key=myprefix//"/global_n", VALUE=0_I4B)
 END IF
-END PROCEDURE setSTVectorFieldParam
+END PROCEDURE SetSTVectorFieldParam
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "stvField_checkEssentialParam"
+MODULE PROCEDURE stvField_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "stvField_CheckEssentialParam"
 IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & myprefix//'/name should be present in param')
@@ -89,7 +89,7 @@ IF (.NOT. param%isPresent(key=myprefix//"/local_n")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'local_n should be present in param')
 END IF
-END PROCEDURE stvField_checkEssentialParam
+END PROCEDURE stvField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
@@ -108,7 +108,7 @@ IF (obj%isInitiated) THEN
     & 'STVectorField_::obj is already initiated')
 END IF
 
-CALL obj%checkEssentialParam(param)
+CALL obj%CheckEssentialParam(param)
 
 ! engine
 ALLOCATE (CHARACTER( &
