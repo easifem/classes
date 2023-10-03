@@ -18,4 +18,5 @@
 MODULE FiniteElementFactory
 USE AbstractFE_Class
 USE FiniteElement_Class
+USE MixedFiniteElement_Class
 END MODULE FiniteElementFactory

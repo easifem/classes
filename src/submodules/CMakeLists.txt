@@ -237,8 +237,14 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 # RefElement
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 
+# AbstractFE
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
+
 # FiniteElement
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
+
+# MixedFiniteElement
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
 
 # AbstractPlot
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)

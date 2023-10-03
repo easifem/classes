@@ -165,8 +165,17 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 # RefElement
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 
+# AbstractFE
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
+
 # FiniteElement
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
+
+# MixedFiniteElement
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
+
+# FiniteElementFactory
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FiniteElementFactory/CMakeLists.txt)
 
 # Tree3R
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)

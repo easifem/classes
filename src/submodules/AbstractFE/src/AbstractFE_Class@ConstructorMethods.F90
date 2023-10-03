@@ -971,6 +971,23 @@ obj%isInitiated = .FALSE.
 END PROCEDURE fe_Deallocate
 
 !----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

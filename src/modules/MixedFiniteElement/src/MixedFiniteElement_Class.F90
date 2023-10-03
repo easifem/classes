@@ -13,22 +13,24 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
 
-MODULE FiniteElement_Class
+MODULE MixedFiniteElement_Class
 USE GlobalData
 USE AbstractRefElement_Class
 USE AbstractFE_Class
+USE FiniteElement_Class, ONLY: FiniteElementPointer_
 USE FPL, ONLY: ParameterList_
-USE Domain_Class, ONLY: Domain_
+USE Domain_Class, ONLY: Domain_, DomainPointer_
 IMPLICIT NONE
 PRIVATE
-PUBLIC :: FiniteElement_
-PUBLIC :: FiniteElementPointer_
-PUBLIC :: SetFiniteElementParam
+PUBLIC :: MixedFiniteElement_
+PUBLIC :: MixedFiniteElementPointer_
+PUBLIC :: SetMixedFiniteElementParam
 PUBLIC :: DEALLOCATE
 PUBLIC :: Initiate
-CHARACTER(*), PARAMETER :: modName = "FiniteElement_Class"
-CHARACTER(*), PARAMETER :: myprefix = "FiniteElement"
+CHARACTER(*), PARAMETER :: modName = "MixedFiniteElement_Class"
+CHARACTER(*), PARAMETER :: myprefix = "MixedFiniteElement"
 
 !----------------------------------------------------------------------------
 !                                                        AbstractRefElement_
@@ -38,25 +40,28 @@ CHARACTER(*), PARAMETER :: myprefix = "FiniteElement"
 ! date: 2023-08-13
 ! summary: Finite element class
 !
-!{!pages/docs-api/FiniteElement/FiniteElement_.md!}
+!{!pages/docs-api/MixedFiniteElement/MixedFiniteElement_.md!}
 
-TYPE, EXTENDS(AbstractFE_) :: FiniteElement_
+TYPE, EXTENDS(AbstractFE_) :: MixedFiniteElement_
+  TYPE(FiniteElementPointer_), ALLOCATABLE :: fe(:)
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fe_Initiate
   !! Constructor method for AbstractFE element
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => fe_Deallocate
+  !! Deallocate data stored in Mixed finite element
   !! This method can be overloaded by Subclass of this abstract class.
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & fe_CheckEssentialParam
-END TYPE FiniteElement_
+END TYPE MixedFiniteElement_
 
 !----------------------------------------------------------------------------
 !                                                      FiniteElementPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: FiniteElementPointer_
-  CLASS(FiniteElement_), POINTER :: ptr => NULL()
-END TYPE FiniteElementPointer_
+TYPE :: MixedFiniteElementPointer_
+  CLASS(MixedFiniteElement_), POINTER :: ptr => NULL()
+END TYPE MixedFiniteElementPointer_
 
 !----------------------------------------------------------------------------
 !                                               CheckEssentialParam@Methods
@@ -68,7 +73,7 @@ END TYPE FiniteElementPointer_
 
 INTERFACE
   MODULE SUBROUTINE fe_CheckEssentialParam(obj, param)
-    CLASS(FiniteElement_), INTENT(IN) :: obj
+    CLASS(MixedFiniteElement_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE fe_CheckEssentialParam
 END INTERFACE
@@ -78,15 +83,29 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
+! date: 2023-10-02
 ! summary: Initiates an instance of the finite element
 
 INTERFACE
   MODULE SUBROUTINE fe_Initiate(obj, param)
-    CLASS(FiniteElement_), INTENT(INOUT) :: obj
+    CLASS(MixedFiniteElement_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE fe_Initiate
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-10-02
+! summary: Initiates an instance of the finite element
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE fe_Deallocate(obj)
+    CLASS(MixedFiniteElement_), INTENT(INOUT) :: obj
+  END SUBROUTINE fe_Deallocate
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
@@ -98,7 +117,7 @@ END INTERFACE
 
 INTERFACE DEALLOCATE
   MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(FiniteElement_), ALLOCATABLE :: obj(:)
+    TYPE(MixedFiniteElement_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
 END INTERFACE DEALLOCATE
 
@@ -112,7 +131,7 @@ END INTERFACE DEALLOCATE
 
 INTERFACE DEALLOCATE
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(FiniteElementPointer_), ALLOCATABLE :: obj(:)
+    TYPE(MixedFiniteElementPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE DEALLOCATE
 
@@ -125,8 +144,10 @@ END INTERFACE DEALLOCATE
 ! summary:  Sets the parameters for initiating abstract finite element
 
 INTERFACE
-  MODULE SUBROUTINE SetFiniteElementParam( &
+  MODULE SUBROUTINE SetMixedFiniteElementParam( &
     & param, &
+    & tFiniteElements, & 
+    & iFiniteElement, &
     & nsd, &
     & elemType, &
     & baseContinuity, &
@@ -142,6 +163,10 @@ INTERFACE
     & faceOrder,  &
     & cellOrder)
     TYPE(ParameterList_), INTENT(INOUT) :: param
+    INTEGER(I4B), INTENT(IN) :: tFiniteElements
+      !! Total number of finite elements
+    INTEGER( I4B ), INTENT( IN ) :: iFiniteElement
+      !! Finite element number
     INTEGER(I4B), INTENT(IN) :: nsd
       !! Number of spatial dimension
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -186,7 +211,7 @@ INTERFACE
       !! Order of approximation along face
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
       !! Order of approximation along cell
-  END SUBROUTINE SetFiniteElementParam
+  END SUBROUTINE SetMixedFiniteElementParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -199,10 +224,26 @@ END INTERFACE
 
 INTERFACE Initiate
   MODULE SUBROUTINE fe_Initiate1(obj, param, dom)
-    TYPE(FiniteElementPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(MixedFiniteElementPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(Domain_), INTENT(IN) :: dom
   END SUBROUTINE fe_Initiate1
 END INTERFACE Initiate
 
-END MODULE FiniteElement_Class
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Initiate vector of FiniteElement pointers
+
+INTERFACE Initiate
+  MODULE SUBROUTINE fe_Initiate2(obj, param, dom)
+    TYPE(MixedFiniteElementPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CLASS(DomainPointer_), INTENT(IN) :: dom(:)
+  END SUBROUTINE fe_Initiate2
+END INTERFACE Initiate
+
+END MODULE MixedFiniteElement_Class

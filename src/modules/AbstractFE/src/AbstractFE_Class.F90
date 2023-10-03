@@ -36,6 +36,9 @@ PUBLIC :: AbstractFEPointer_
 PUBLIC :: SetAbstractFEParam
 PUBLIC :: AbstractFEDeallocate
 PUBLIC :: AbstractFEDisplay
+PUBLIC :: AbstractFEInitiate
+PUBLIC :: AbstractFECheckEssentialParam
+PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
 
@@ -262,8 +265,6 @@ INTERFACE
   END SUBROUTINE AbstractFECheckEssentialParam
 END INTERFACE
 
-PUBLIC :: AbstractFECheckEssentialParam
-
 !----------------------------------------------------------------------------
 !                                     SetAbstractFEParam@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -372,8 +373,6 @@ INTERFACE
   END SUBROUTINE AbstractFEInitiate
 END INTERFACE
 
-PUBLIC :: AbstractFEInitiate
-
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -402,6 +401,20 @@ INTERFACE AbstractFEDeallocate
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
   END SUBROUTINE fe_Deallocate
 END INTERFACE AbstractFEDeallocate
+
+!----------------------------------------------------------------------------
+!                                                         Deallocate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE DEALLOCATE
+  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
+    TYPE(AbstractFEPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods

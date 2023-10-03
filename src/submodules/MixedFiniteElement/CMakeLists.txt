@@ -13,10 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
-#
 
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/FiniteElement_Class.F90
+  ${src_path}/MixedFiniteElement_Class@Methods.F90
 )

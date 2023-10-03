@@ -13,10 +13,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
-#
 
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/FiniteElement_Class.F90
+  ${src_path}/AbstractFE_Class@ConstructorMethods.F90
+  ${src_path}/AbstractFE_Class@IOMethods.F90
+  ${src_path}/AbstractFE_Class@GetMethods.F90
+  ${src_path}/AbstractFE_Class@SetMethods.F90
+  ${src_path}/AbstractFE_Class@H1Methods.F90
+  ${src_path}/AbstractFE_Class@HDivMethods.F90
+  ${src_path}/AbstractFE_Class@HCurlMethods.F90
+  ${src_path}/AbstractFE_Class@DGMethods.F90
+  ${src_path}/AbstractFE_Class@QuadratureMethods.F90
 )
