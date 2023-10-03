@@ -18,13 +18,11 @@ SUBMODULE(AbstractNodeField_Class) Methods
 USE BaseMethod
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Method
-USE FiniteElement_Class, ONLY: Deallocate_FE => DEALLOCATE,  &
-& Initiate_FE => Initiate
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                   Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_Display
@@ -42,71 +40,16 @@ ans => GetPointer(obj%realVec)
 END PROCEDURE anf_GetPointer
 
 !----------------------------------------------------------------------------
-!                                                                    Size
+!                                                                     Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_size
 CHARACTER(*), PARAMETER :: myName = "anf_size"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This method is under development')
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
 ! ans = obj%tSize
 END PROCEDURE anf_size
-
-!----------------------------------------------------------------------------
-!                                                               GetTotalDOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE anf_GetTotalDOF
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This method is under development')
-! IF (ASSOCIATED(obj%domain)) THEN
-!   ! ans = GetTotalDOF(obj=fem, dom=obj%domain)
-! END IF
-!
-! IF (ALLOCATED(obj%domains)) THEN
-! END IF
-END PROCEDURE anf_GetTotalDOF
-
-!----------------------------------------------------------------------------
-!                                                          GetTotalVertexDOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE anf_GetTotalVertexDOF
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalVertexDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This method is under development')
-END PROCEDURE anf_GetTotalVertexDOF
-
-!----------------------------------------------------------------------------
-!                                                          GetTotalEdgeDOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE anf_GetTotalEdgeDOF
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalEdgeDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This method is under development')
-END PROCEDURE anf_GetTotalEdgeDOF
-
-!----------------------------------------------------------------------------
-!                                                          GetTotalFaceDOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE anf_GetTotalFaceDOF
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalFaceDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This method is under development')
-END PROCEDURE anf_GetTotalFaceDOF
-
-!----------------------------------------------------------------------------
-!                                                          GetTotalCellDOF
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE anf_GetTotalCellDOF
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalCellDOF()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This method is under development')
-END PROCEDURE anf_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate2
@@ -128,7 +71,6 @@ SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
   obj%tSize = obj2%tSize
   obj%realVec = obj2%realVec
   obj%dof = obj2%dof
-  ! CALL obj%fe%Copy(obj2%fe)
 END SELECT
 
 END PROCEDURE anf_initiate2
@@ -153,10 +95,12 @@ CALL AbstractFieldDeallocate(obj)
 obj%tSize = 0
 CALL DEALLOCATE (obj%realVec)
 CALL DEALLOCATE (obj%dof)
-IF (ALLOCATED(obj%fe)) THEN
-  CALL DEALLOCATE_FE(obj%fe)
-  ! NOTE: This module is called from FiniteElement_Class
-END IF
+obj%dof_tPhysicalVars = 0
+obj%dof_storageFMT = NODES_FMT
+IF (ALLOCATED(obj%dof_spaceCompo)) DEALLOCATE (obj%dof_spaceCompo)
+IF (ALLOCATED(obj%dof_timeCompo)) DEALLOCATE (obj%dof_timeCompo)
+IF (ALLOCATED(obj%dof_tNodes)) DEALLOCATE (obj%dof_tNodes)
+IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 END PROCEDURE anf_Deallocate
 
 !----------------------------------------------------------------------------
@@ -247,7 +191,7 @@ CALL ExportRealVector(obj=obj%realVec, hdf5=hdf5, &
 
 ! info
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
-& "[END] Export()")
+  & "[END] Export()")
 
 END PROCEDURE anf_Export
 
@@ -295,47 +239,60 @@ END PROCEDURE anf_GetSingle
 
 MODULE PROCEDURE AbstractNodeFieldInitiate
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate"
-INTEGER(I4B), ALLOCATABLE :: spaceCompo(:)
-INTEGER(I4B), ALLOCATABLE :: timeCompo(:)
-INTEGER(I4B) :: storageFMT
-CHARACTER(1), ALLOCATABLE :: names_char(:)
 
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP] :: This routine is under development')
 
-! CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
-! CALL Initiate_FE(obj=obj%fe, param=param, dom=dom)
-! !INFO: Initiate_FE is defined in FiniteElement_Class
-! spaceCompo = obj%GetSpaceCompo()
-! timeCompo = obj%GetTimeCompo()
-! storageFMT = obj%GetStorageFMT()
-! ! names_char = obj%GetNames()
-! !FIXME: How to get the names in the vase of block matrix?
-!
-! IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-!   tNodes = 1
-! ELSE
-!   tNodes = obj%GetTotalDOF()
-! END IF
-!
-! CALL Initiate( &
-!   & obj=obj%dof, &
-!   & tNodes=tNodes, &
-!   & names=names_char, &
-!   & spaceCompo=spaceCompo, &
-!   & timeCompo=timeCompo, &
-!   & storageFMT=storageFMT)
-!
-! CALL Initiate(obj%realVec, obj%dof)
-!
-! obj%tSize = SIZE(obj%realVec)
-!
-! IF (obj%local_n .EQ. 0) THEN
-!   obj%local_n = obj%tSize
-! END IF
-! IF (obj%global_n .EQ. 0) THEN
-!   obj%global_n = obj%tSize
-! END IF
+CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
+
+IF (obj%dof_tPhysicalVars .EQ. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INITIATE ERROR] :: AbstractNodeField_::obj%dof_tPhysicalVars is 0')
+END IF
+
+IF (.NOT. ALLOCATED(obj%dof_spaceCompo)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INITIATE ERROR] :: AbstractNodeField_::obj%dof_spaceCompo '// &
+    & ' is NOT ALLOCATED')
+END IF
+
+IF (.NOT. ALLOCATED(obj%dof_timeCompo)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INITIATE ERROR] :: AbstractNodeField_::obj%dof_timeCompo '// &
+    & ' is NOT ALLOCATED')
+END IF
+
+IF (.NOT. ALLOCATED(obj%dof_tNodes)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INITIATE ERROR] :: AbstractNodeField_::obj%dof_tNodes '// &
+    & ' is NOT ALLOCATED')
+END IF
+
+IF (.NOT. ALLOCATED(obj%dof_names_char)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INITIATE ERROR] :: AbstractNodeField_::obj%dof_names_char '// &
+    & ' is NOT ALLOCATED')
+END IF
+
+CALL Initiate( &
+  & obj=obj%dof, &
+  & tNodes=obj%dof_tNodes, &
+  & names=obj%dof_names_char, &
+  & spaceCompo=obj%dof_spaceCompo, &
+  & timeCompo=obj%dof_timeCompo, &
+  & storageFMT=obj%dof_storageFMT)
+
+CALL Initiate(obj=obj%realVec, dofobj=obj%dof)
+
+obj%tSize = SIZE(obj%realVec)
+
+IF (obj%local_n .EQ. 0) THEN
+  obj%local_n = obj%tSize
+END IF
+
+IF (obj%global_n .EQ. 0) THEN
+  obj%global_n = obj%tSize
+END IF
 
 END PROCEDURE AbstractNodeFieldInitiate
 

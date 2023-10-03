@@ -22,7 +22,6 @@ USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_, Domain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
-USE FiniteElement_Class, ONLY: FiniteElementPointer_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractNodeFieldDisplay
@@ -48,15 +47,33 @@ CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 ! summary: Abstract node field
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
+  INTEGER(I4B) :: dof_tPhysicalVars = 0_I4B
+  !! Total number of physical variables
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B) :: dof_storageFMT = NODES_FMT
+  !! Storage format
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
+  !! Spatial components
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: dof_timeCompo(:)
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: dof_tNodes(:)
+  !! Total number of nodes
+  !! NOTE: This variable is only for internal use
+  CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
+  !! Single character name of physical variable
+  !! NOTE: This variable is only for internal use
   INTEGER(I4B) :: tSize = 0
   !! Total length of the nodal field = tdof * tNodes
+  !! NOTE: This variable is only for internal use
   TYPE(RealVector_) :: realVec
   !! Vector of reals to contains the nodes
+  !! NOTE: This variable is only for internal use
   TYPE(DOF_) :: dof
   !! Degree of freedom object, which contains the information about
   !! how the different components are stored inside the realVec
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: fe(:)
-  !! Finite element
+  !! NOTE: This variable is only for internal use
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => anf_Display
   !! Display the content of AbstractNodeField
@@ -81,17 +98,6 @@ CONTAINS
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => anf_GetSingle
   !! Get single entry
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => anf_GetTotalDOF
-  !! Returns the total number of degree of freedoms
-  !! This is same as calling Size
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => anf_GetTotalVertexDOF
-  !! Returns the total number of vertex degree of freedoms
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => anf_GetTotalEdgeDOF
-  !! Returns the total number of edge degree of freedoms
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => anf_GetTotalFaceDOF
-  !! Returns the total number of face degree of freedoms
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => anf_GetTotalCellDOF
-  !! Returns the total number of cell degree of freedoms
 END TYPE AbstractNodeField_
 
 !----------------------------------------------------------------------------
@@ -331,84 +337,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION anf_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              GetTotalDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of degree of freedoms
-!
-!# Introduction
-! This method is same as calling the size function.
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetTotalVertexDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of vertex degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalVertexDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalVertexDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetTotalEdgeDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Edge degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalEdgeDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalEdgeDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetTotalFaceDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Face degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalFaceDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalFaceDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetTotalCellDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Cell degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalCellDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalCellDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------

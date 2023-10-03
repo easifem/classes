@@ -48,6 +48,11 @@ INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 PUBLIC :: AbstractFieldInitiate
+PUBLIC :: AbstractFieldDisplay
+PUBLIC :: AbstractFieldImport
+PUBLIC :: AbstractFieldExport
+PUBLIC :: AbstractFieldDeallocate
+PUBLIC :: FIELD_TYPE_NUMBER
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -124,6 +129,15 @@ CONTAINS
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars  &
+    & => aField_GetTotalPhysicalVars
+  !! Returns the total number of physical variables
+  !! INFO: This routine should be implemented by child classes
+  !! For block matrices the physical variables are more than one,
+  !! for example, presesure and velocity.
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => aField_GetPhysicalNames
+  !! Returns the names of physical variables
+  !! INFO: This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => aField_GetSpaceCompo
   !! Return space component
   !! INFO: This routine should be implemented by child classes
@@ -133,9 +147,26 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => aField_GetStorageFMT
   !! Return storage format
   !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => aField_GetTotalDOF
+  !! Returns the total number of degree of freedoms
+  !! This is same as calling Size
+  !! INFO: This routine should be implemented by child classes
+ PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => aField_GetTotalVertexDOF
+  !! Returns the total number of vertex degree of freedoms
+  !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => aField_GetTotalEdgeDOF
+  !! Returns the total number of edge degree of freedoms
+  !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => aField_GetTotalFaceDOF
+  !! Returns the total number of face degree of freedoms
+  !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => aField_GetTotalCellDOF
+  !! Returns the total number of cell degree of freedoms
+  !! INFO: This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant  &
-  & => aField_isConstant
+    & => aField_isConstant
   !! It returns true if the field is constant field
+  !! INFO: This routine should be implemented by child classes
 END TYPE AbstractField_
 
 PUBLIC :: AbstractField_
@@ -248,8 +279,6 @@ INTERFACE AbstractFieldDisplay
   MODULE PROCEDURE aField_Display
 END INTERFACE AbstractFieldDisplay
 
-PUBLIC :: AbstractFieldDisplay
-
 !----------------------------------------------------------------------------
 !                                                                 IMPORT
 !----------------------------------------------------------------------------
@@ -268,8 +297,6 @@ INTERFACE AbstractFieldImport
   MODULE PROCEDURE aField_Import
 END INTERFACE AbstractFieldImport
 
-PUBLIC :: AbstractFieldImport
-
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
@@ -286,8 +313,6 @@ INTERFACE AbstractFieldExport
   MODULE PROCEDURE aField_Export
 END INTERFACE AbstractFieldExport
 
-PUBLIC :: AbstractFieldExport
-
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
@@ -302,8 +327,6 @@ INTERFACE AbstractFieldDeallocate
   MODULE PROCEDURE aField_Deallocate
 END INTERFACE AbstractFieldDeallocate
 
-PUBLIC :: AbstractFieldDeallocate
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -314,8 +337,6 @@ INTERFACE
     INTEGER(I4B) :: ans
   END FUNCTION FIELD_TYPE_NUMBER
 END INTERFACE
-
-PUBLIC :: FIELD_TYPE_NUMBER
 
 !----------------------------------------------------------------------------
 !
@@ -447,6 +468,36 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       GetTotalPhysicalVars
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-03
+! summary:  Returns the total number of physical variables
+
+INTERFACE
+  MODULE FUNCTION aField_GetTotalPhysicalVars(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION aField_GetTotalPhysicalVars
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           GetPhysicalNames
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns the names of physical variables
+
+INTERFACE
+  MODULE SUBROUTINE aField_GetPhysicalNames(obj, ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    CHARACTER(*) :: ans(:)
+  END SUBROUTINE aField_GetPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                             GetSpaceCompo
 !----------------------------------------------------------------------------
 
@@ -455,9 +506,12 @@ END INTERFACE
 ! summary:  Returns space components
 
 INTERFACE
-  MODULE FUNCTION aField_GetSpaceCompo(obj) RESULT(ans)
+  MODULE FUNCTION aField_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+      !! Total number of physical variables
+      !! This can be obtained from GetTotalPhysicalVars method
+    INTEGER(I4B) :: ans(tPhysicalVars)
   END FUNCTION aField_GetSpaceCompo
 END INTERFACE
 
@@ -470,9 +524,10 @@ END INTERFACE
 ! summary:  Returns Time components
 
 INTERFACE
-  MODULE FUNCTION aField_GetTimeCompo(obj) RESULT(ans)
+  MODULE FUNCTION aField_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
   END FUNCTION aField_GetTimeCompo
 END INTERFACE
 
@@ -492,6 +547,89 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                              GetTotalDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of degree of freedoms
+!
+!# Introduction
+! This method is same as calling the size function.
+
+INTERFACE
+  MODULE FUNCTION aField_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION aField_GetTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalVertexDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of vertex degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION aField_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION aField_GetTotalVertexDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalEdgeDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Edge degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION aField_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION aField_GetTotalEdgeDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalFaceDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Face degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION aField_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION aField_GetTotalFaceDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalCellDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Cell degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION aField_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION aField_GetTotalCellDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                               isConstant
 !----------------------------------------------------------------------------
 
@@ -504,4 +642,5 @@ INTERFACE
     LOGICAL(LGT) :: ans
   END FUNCTION aField_isConstant
 END INTERFACE
+
 END MODULE AbstractField_Class
