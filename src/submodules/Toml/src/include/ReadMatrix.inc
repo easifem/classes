@@ -23,12 +23,18 @@
       LOGICAL(LGT) :: isFound0, bool1
 
       isFound0 = .FALSE.
+      stat0 = -1
+
+      IF (PRESENT(isFound)) isFound = isFound0
+      IF (PRESENT(stat)) stat = stat0
+
       ! try to read from the array
       array => NULL()
-      CALL toml_get(table, key, array,  &
-        & origin=origin, stat=stat, requested=.FALSE.)
+      CALL toml_get(table, key, array, origin=origin, stat=stat0,  &
+        & requested=.FALSE.)
 
       IF (ASSOCIATED(array)) THEN
+
         trow = toml_len(array)
         DO ii = 1, trow
           row_array => NULL()
@@ -56,12 +62,13 @@
             CALL toml_get(row_array, jj, VALUE(ii, jj))
           END DO
         END DO
+
+        IF (PRESENT(isFound)) isFound = isFound0
+        IF (PRESENT(stat)) stat = stat0
       END IF
 
       ! try to read from the file
       CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
-
-      IF (PRESENT(stat)) stat = stat0
 
       IF (stat0 .EQ. toml_stat%success) THEN
         CALL atxtfile%Initiate(filename=filename%Chars(),  &
@@ -78,9 +85,10 @@
         END IF
         isFound0 = .TRUE.
         CALL atxtfile%DEALLOCATE()
-      END IF
 
-      IF (PRESENT(isFound)) isFound = isFound0
+        IF (PRESENT(stat)) stat = stat0
+        IF (PRESENT(isFound)) isFound = isFound0
+      END IF
 
       filename = ""
       NULLIFY (array)
