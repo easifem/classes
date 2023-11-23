@@ -15,13 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(UserFunction_Class) SetMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-END SUBMODULE SetMethods
+MODULE BoundaryCondition
+USE AbstractBC_Class
+USE DirichletBC_Class
+USE NeumannBC_Class
+USE NitscheBC_Class
+PUBLIC
+END MODULE BoundaryCondition

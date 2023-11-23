@@ -35,8 +35,10 @@ PUBLIC :: AbstractNodeFieldDeallocate
 PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
+PUBLIC :: AbstractNodeFieldSetParam
 
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
 
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
@@ -107,6 +109,29 @@ END TYPE AbstractNodeField_
 TYPE :: AbstractNodeFieldPointer_
   CLASS(AbstractNodeField_), POINTER :: ptr => NULL()
 END TYPE AbstractNodeFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                                 SetParam
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-25
+! summary:  Set parameters of AbstractNodeField_
+
+INTERFACE AbstractNodeFieldSetParam
+  MODULE SUBROUTINE anf_SetParam(obj, dof_tPhysicalVars,  &
+      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
+      & dof_tNodes, dof_names_char, tSize)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+  END SUBROUTINE anf_SetParam
+END INTERFACE AbstractNodeFieldSetParam
 
 !----------------------------------------------------------------------------
 !                                                             Initiate

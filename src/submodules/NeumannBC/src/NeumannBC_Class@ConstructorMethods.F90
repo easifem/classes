@@ -21,47 +21,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_checkEssentialParam
-CALL AbstractBCcheckEssentialParam(&
-& obj=obj, &
-& param=param, &
-& prefix=myprefix)
-END PROCEDURE bc_checkEssentialParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE setNeumannBCParam
-CALL setAbstractBCParam(&
-& param=param, &
-& prefix=myprefix, &
-& name=name, &
-& idof=idof, &
-& nodalValueType=nodalValueType, &
-& useFunction=input(option=useFunction, default=.FALSE.), &
-& isNormal=input(option=isNormal, default=.FALSE.), &
-& isTangent=input(option=isTangent, default=.FALSE.) &
-& )
-END PROCEDURE setNeumannBCParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_Initiate
-CALL AbstractBCInitiate(obj=obj, &
-& param=param, &
-& prefix=myprefix, &
-& boundary=boundary, &
-& dom=dom)
-END PROCEDURE bc_Initiate
-
-!----------------------------------------------------------------------------
-!                                                            Final
+!                                                                    Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Final
@@ -69,7 +29,7 @@ CALL obj%DEALLOCATE()
 END PROCEDURE bc_Final
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Deallocate_Vector
@@ -83,7 +43,7 @@ END IF
 END PROCEDURE bc_Deallocate_Vector
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Deallocate_Ptr_Vector
@@ -100,7 +60,7 @@ END IF
 END PROCEDURE bc_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                            AddNeumannBC
+!                                                               AddNeumannBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_AddNeumannBC

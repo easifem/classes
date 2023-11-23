@@ -33,23 +33,50 @@ END PROCEDURE msh_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE msh_Deallocate
+INTEGER(I4B) :: ii
+CHARACTER(*), PARAMETER :: myName="msh_Deallocate()"
+
 CALL obj%FORMAT%DEALLOCATE()
 CALL obj%PhysicalNames%DEALLOCATE()
 CALL obj%Nodes%DEALLOCATE()
 CALL obj%Elements%DEALLOCATE()
-IF (ALLOCATED(obj%PointEntities)) DEALLOCATE (obj%PointEntities)
-IF (ALLOCATED(obj%CurveEntities)) DEALLOCATE (obj%CurveEntities)
-IF (ALLOCATED(obj%SurfaceEntities)) DEALLOCATE (obj%SurfaceEntities)
-IF (ALLOCATED(obj%VolumeEntities)) DEALLOCATE (obj%VolumeEntities)
+IF (ALLOCATED(obj%PointEntities)) THEN
+  DO ii = 1, SIZE(obj%PointEntities)
+    CALL obj%PointEntities(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj%PointEntities)
+END IF
+
+IF (ALLOCATED(obj%CurveEntities)) THEN
+  DO ii = 1, SIZE(obj%CurveEntities)
+    CALL obj%CurveEntities(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj%CurveEntities)
+END IF
+
+IF (ALLOCATED(obj%SurfaceEntities)) THEN
+  DO ii = 1, SIZE(obj%SurfaceEntities)
+    CALL obj%SurfaceEntities(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj%SurfaceEntities)
+END IF
+
+IF (ALLOCATED(obj%VolumeEntities)) THEN
+  DO ii = 1, SIZE(obj%VolumeEntities)
+    CALL obj%VolumeEntities(ii)%DEALLOCATE()
+  END DO
+  DEALLOCATE (obj%VolumeEntities)
+END IF
+
 obj%nsd = 0
 IF (ASSOCIATED(obj%buffer)) DEALLOCATE (obj%buffer)
 NULLIFY (obj%buffer)
 CALL TxtFileDeallocate(obj, Delete)
 END PROCEDURE msh_Deallocate
 
-! !----------------------------------------------------------------------------
-! !                                                                        msh4
-! !----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
+!                                                                        msh4
+!----------------------------------------------------------------------------
 
 ! MODULE PROCEDURE msh_constuctor1
 !   CALL ans%Initiate( Path, FileName, Extension, NSD )

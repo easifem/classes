@@ -33,10 +33,11 @@ END PROCEDURE el_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Deallocate
-SELECT TYPE (obj)
-TYPE IS (mshElements_)
-  obj = TypemshElements
-END SELECT
+obj%numElements = 0
+obj%numEntityBlocks = 0
+obj%minElementTag = 0
+obj%maxElementTag = 0
+obj%isSparse = .FALSE.
 END PROCEDURE el_Deallocate
 
 !----------------------------------------------------------------------------
@@ -48,30 +49,61 @@ MODULE PROCEDURE el_GotoTag
 INTEGER(I4B) :: IOSTAT, Reopen, unitNo
 CHARACTER(100) :: Dummy
 CHARACTER(*), PARAMETER :: myName = "el_GotoTag"
+LOGICAL(LGT) :: isNotOpen, isNotRead
 
-IF (.NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead()) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GotoTag()')
+#endif
+
+isNotOpen = .NOT. mshFile%isOpen()
+isNotRead = .NOT. mshFile%isRead()
+
+IF (isNotOpen .OR. isNotRead) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'mshFile is either not opened or does not have read access!')
+    & '[INTERNAL ERROR] :: mshFile is either not opened '// &
+      & 'or does not have read access!')
   error = -1
-ELSE
-  Reopen = 0; error = 0; CALL mshFile%REWIND()
-  DO
-    unitNo = mshFile%getUnitNo()
-    READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
-    IF (IS_IOSTAT_END(IOSTAT)) THEN
-      CALL mshFile%setEOFStat(.TRUE.)
-      Reopen = Reopen + 1
-    END IF
-    IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not find $Elements !')
-      error = -2
-      EXIT
-    ELSE IF (TRIM(Dummy) .EQ. '$Elements') THEN
-      EXIT
-    END IF
-  END DO
+  RETURN
 END IF
+
+Reopen = 0; error = 0
+
+#ifndef Darwin_SYSTEM
+CALL mshFile%REWIND()
+#endif
+
+DO
+
+  unitNo = mshFile%getUnitNo()
+  READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
+
+  IF (IS_IOSTAT_END(IOSTAT)) THEN
+    CALL mshFile%setEOFStat(.TRUE.)
+
+#ifdef Darwin_SYSTEM
+    CALL mshFile%CLOSE()
+    CALL mshFile%OPEN()
+#endif
+
+    Reopen = Reopen + 1
+  END IF
+
+  IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Could not find $Elements !')
+    error = -2
+    EXIT
+  ELSE IF (TRIM(Dummy) .EQ. '$Elements') THEN
+    EXIT
+  END IF
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GotoTag()')
+#endif
 END PROCEDURE el_GotoTag
 
 !----------------------------------------------------------------------------
@@ -79,21 +111,37 @@ END PROCEDURE el_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE el_Read
+CHARACTER(*), PARAMETER :: myName = "el_Read()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] el_Read()')
+#endif
+
 CALL obj%GotoTag(mshFile, error)
-IF (error .EQ. 0) THEN
-  IF (mshFormat%getMajorVersion() .GT. 2) THEN
-    READ (mshFile%getUnitNo(), *) obj%numEntityBlocks, obj%numElements, &
-      & obj%minElementTag, obj%maxElementTag
-    IF ((obj%maxElementTag - obj%minElementTag) &
-      & .EQ. (obj%numElements - 1)) THEN
-      obj%isSparse = .FALSE.
-    ELSE
-      obj%isSparse = .TRUE.
-    END IF
-  ELSE
-    READ (mshFile%getUnitNo(), *) obj%numElements
-  END IF
+IF (error .NE. 0) THEN
+  CALL e%RaiseError(modName //'::'//myName// ' - '// &
+    & '[INTERNAL ERROR] :: some error occured while finding the tag.')
 END IF
+
+IF (mshFormat%getMajorVersion() .GT. 2) THEN
+  READ (mshFile%getUnitNo(), *) obj%numEntityBlocks, obj%numElements, &
+    & obj%minElementTag, obj%maxElementTag
+  IF ((obj%maxElementTag - obj%minElementTag) &
+    & .EQ. (obj%numElements - 1)) THEN
+    obj%isSparse = .FALSE.
+  ELSE
+    obj%isSparse = .TRUE.
+  END IF
+ELSE
+  READ (mshFile%getUnitNo(), *) obj%numElements
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] el_Read()')
+#endif
+
 END PROCEDURE el_Read
 
 !----------------------------------------------------------------------------

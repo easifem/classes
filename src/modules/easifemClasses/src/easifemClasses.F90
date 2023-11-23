@@ -16,9 +16,8 @@
 !
 
 MODULE easifemClasses
-#ifdef USE_GMSH_SDK
 USE Gmsh_Class
-#endif
+USE GmshStructuredMesh_Class
 
 USE CommandLine_Method
 USE ExceptionHandler_Class
@@ -55,10 +54,7 @@ USE AbstractLinSolver_Class
 USE LinSolver_Class
 USE LinSolverFactory
 
-USE AbstractBC_Class
-USE DirichletBC_Class
-USE NeumannBC_Class
-USE NitscheBC_Class
+USE BoundaryCondition
 
 USE PolynomialFactory
 USE UserFunction_Class
@@ -70,4 +66,6 @@ USE Tree3R_Class
 
 USE Plot_Method
 ! USE ogpf
+
+USE TomlUtility
 END MODULE easifemClasses

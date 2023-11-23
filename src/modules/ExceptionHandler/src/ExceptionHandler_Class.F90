@@ -59,6 +59,8 @@ LOGICAL(LGT), PARAMETER, PUBLIC :: DEFAULT_QUIET_SETTINGS(4) = &
   & [.FALSE., .FALSE., .FALSE., .FALSE.]
 LOGICAL(LGT), PARAMETER, PUBLIC :: DEFAULT_VERBOSE_SETTINGS(4) = &
   & [.TRUE., .TRUE., .TRUE., .TRUE.]
+PUBLIC :: copyFromSurrogate
+PUBLIC :: exceptionMessage
 
 !----------------------------------------------------------------------------
 !                                                          ExceptionHandler_
@@ -87,7 +89,7 @@ TYPE :: ExceptionHandler_
   LOGICAL(LGT), PRIVATE :: verbose(EXCEPTION_SIZE - 1) = &
     & DEFAULT_VERBOSE_SETTINGS
     !! Logical array that allows for selective verbosity of exception types
-  CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH), PRIVATE :: lastMesg = ''
+  CHARACTER(EXCEPTION_MAX_MESG_LENGTH), PRIVATE :: lastMesg = ''
     !! The last exception message that was reported
   TYPE(ExceptionHandler_), POINTER, PRIVATE :: surrogate => NULL()
     !! Surrogate exception handler to which most functions are delegated.
@@ -177,11 +179,9 @@ INTERFACE
     LOGICAL(LGT), INTENT(INOUT) :: isQuiet
     LOGICAL(LGT), INTENT(IN) :: isLogActive
     INTEGER(I4B), INTENT(IN) :: logUnit
-    CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH), INTENT(INOUT) :: mesg
+    CHARACTER(EXCEPTION_MAX_MESG_LENGTH), INTENT(INOUT) :: mesg
   END SUBROUTINE exceptionMessage
 END INTERFACE
-
-PUBLIC :: exceptionMessage
 
 !----------------------------------------------------------------------------
 !                                              copyFromSurrogate@Constructor
@@ -192,8 +192,6 @@ INTERFACE
     CLASS(ExceptionHandler_), INTENT(INOUT) :: obj
   END SUBROUTINE copyFromSurrogate
 END INTERFACE
-
-PUBLIC :: copyFromSurrogate
 
 !----------------------------------------------------------------------------
 !                                                  obj_assign_obj@Constructor
@@ -341,7 +339,7 @@ END INTERFACE
 INTERFACE
   MODULE PURE FUNCTION getLastMessage(obj) RESULT(ans)
     CLASS(ExceptionHandler_), INTENT(IN) :: obj
-    CHARACTER(LEN=EXCEPTION_MAX_MESG_LENGTH) :: ans
+    CHARACTER(EXCEPTION_MAX_MESG_LENGTH) :: ans
   END FUNCTION getLastMessage
 END INTERFACE
 
@@ -554,7 +552,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE raiseInformation(obj, mesg)
     CLASS(ExceptionHandler_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: mesg
+    CHARACTER(*), INTENT(IN) :: mesg
   END SUBROUTINE raiseInformation
 END INTERFACE
 
@@ -565,7 +563,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE raiseWarning(obj, mesg)
     CLASS(ExceptionHandler_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: mesg
+    CHARACTER(*), INTENT(IN) :: mesg
   END SUBROUTINE raiseWarning
 END INTERFACE
 
@@ -576,7 +574,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE raiseDebug(obj, mesg)
     CLASS(ExceptionHandler_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: mesg
+    CHARACTER(*), INTENT(IN) :: mesg
   END SUBROUTINE raiseDebug
 END INTERFACE
 
@@ -587,7 +585,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE raiseError(obj, mesg)
     CLASS(ExceptionHandler_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: mesg
+    CHARACTER(*), INTENT(IN) :: mesg
   END SUBROUTINE raiseError
 END INTERFACE
 
@@ -598,9 +596,12 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE raiseFatalError(obj, mesg)
     CLASS(ExceptionHandler_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN) :: mesg
+    CHARACTER(*), INTENT(IN) :: mesg
   END SUBROUTINE raiseFatalError
 END INTERFACE
 
-END MODULE ExceptionHandler_Class
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
+END MODULE ExceptionHandler_Class

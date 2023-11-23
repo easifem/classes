@@ -21,11 +21,23 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                 getLinSolverCodeFromName
+!                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_getLinSolverCodeFromName
-SELECT CASE (TRIM(name))
+MODULE PROCEDURE ls_GetPrefix
+ans = myprefix
+END PROCEDURE ls_GetPrefix
+
+
+!----------------------------------------------------------------------------
+!                                                 GetLinSolverCodeFromName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ls_GetLinSolverCodeFromName
+TYPE(String) :: astr
+astr = UpperCase(name)
+
+SELECT CASE (astr%chars())
 CASE ("SUPERLU") !1
   ans = LIS_SUPERLU
 CASE ("CG") !1
@@ -85,13 +97,14 @@ CASE ("DBICG") !27
 CASE ("DQGMRES") !28
   ans = LIS_DQGMRES
 END SELECT
-END PROCEDURE ls_getLinSolverCodeFromName
+astr = ""
+END PROCEDURE ls_GetLinSolverCodeFromName
 
 !----------------------------------------------------------------------------
-!                                                 getLinSolverNameFromCode
+!                                                 GetLinSolverNameFromCode
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_getLinSolverNameFromCode
+MODULE PROCEDURE ls_GetLinSolverNameFromCode
 SELECT CASE (name)
 CASE (LIS_SUPERLU)
   ans = "SUPERLU" !1
@@ -152,14 +165,14 @@ CASE (LIS_DBICG)
 CASE (LIS_DQGMRES)
   ans = "DQGMRES" !28
 END SELECT
-END PROCEDURE ls_getLinSolverNameFromCode
+END PROCEDURE ls_GetLinSolverNameFromCode
 
 !----------------------------------------------------------------------------
-!                                                   getLinSolverParam
+!                                                   GetLinSolverParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getLinSolverParam
-CALL getAbstractLinSolverParam( &
+MODULE PROCEDURE GetLinSolverParam
+CALL GetAbstractLinSolverParam( &
   & param=param, &
   & prefix=myPrefix, &
   & solverName=solverName, &
@@ -199,7 +212,7 @@ CALL getAbstractLinSolverParam( &
   & p_adds=p_adds, &
   & p_adds_iter=p_adds_iter &
   & )
-END PROCEDURE getLinSolverParam
+END PROCEDURE GetLinSolverParam
 
 !----------------------------------------------------------------------------
 !

@@ -43,6 +43,7 @@ CHARACTER(*), PARAMETER :: myprefix = "MixedFiniteElement"
 !{!pages/docs-api/MixedFiniteElement/MixedFiniteElement_.md!}
 
 TYPE, EXTENDS(AbstractFE_) :: MixedFiniteElement_
+  PRIVATE
   TYPE(FiniteElementPointer_), ALLOCATABLE :: fe(:)
 CONTAINS
   PRIVATE

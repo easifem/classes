@@ -21,47 +21,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_checkEssentialParam
-CALL AbstractBCcheckEssentialParam(&
-& obj=obj, &
-& param=param, &
-& prefix=myprefix)
-END PROCEDURE bc_checkEssentialParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE setNitscheBCParam
-CALL setAbstractBCParam(&
-& param=param, &
-& prefix=myprefix, &
-& name=name, &
-& idof=idof, &
-& nodalValueType=nodalValueType, &
-& useFunction=input(option=useFunction, default=.FALSE.), &
-& isNormal=input(option=isNormal, default=.FALSE.), &
-& useExternal=input(option=useExternal, default=.FALSE.), &
-& isTangent=input(option=isTangent, default=.FALSE.) &
-& )
-END PROCEDURE setNitscheBCParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_Initiate
-CALL AbstractBCInitiate(obj=obj, &
-& param=param, &
-& prefix=myprefix, &
-& boundary=boundary, &
-& dom=dom)
-END PROCEDURE bc_Initiate
-
-!----------------------------------------------------------------------------
 !                                                            Final
 !----------------------------------------------------------------------------
 

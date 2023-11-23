@@ -17,7 +17,7 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date:         26 April 2021
-! summary:Gmsh-Fortran Interface
+! summary: Gmsh-Fortran Interface
 
 MODULE Gmsh_Class
 USE ISO_C_BINDING
@@ -34,7 +34,7 @@ USE GmshOnelab_Class
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(LEN=*), PARAMETER :: modName = "Gmsh_Class"
+CHARACTER(*), PARAMETER :: modName = "Gmsh_Class"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
 INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN

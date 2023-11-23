@@ -233,8 +233,12 @@ CONTAINS
   !! This routine a pointer to [[Mesh_]] object
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => Domain_GetDimEntityNum
   !! Returns a dim entity-num of mesh which contains the element number
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => Domain_GetNodeCoord
+  PROCEDURE, PASS(obj) :: GetNodeCoord1 => Domain_GetNodeCoord
   !! This routine returns the nodal coordinate in rank2 array
+  PROCEDURE, PASS(obj) :: GetNodeCoord2 => Domain_GetNodeCoord2
+  !! This routine returns the nodal coordinate in rank2 array
+  GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2
+  !! Generic method which returns the nodal coordinates
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
     & Domain_GetNodeCoordPointer
   !! This routine returns the pointer to nodal coordinate
@@ -1006,6 +1010,34 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
   END SUBROUTINE Domain_GetNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     getNodeCoord@getMethod
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This routine returns the nodal coordinates
+!
+!# Introduction
+! - This routine returns the nodal coordinates in the form of rank2 array.
+! - The nodal coordinates are in XiJ, the columns of XiJ denotes the node
+! number, and the rows correspond to the component.
+! - If `dim` and `tag` are absent then this routine returns the nodal
+! coordinates of the entire domain
+! - If `dim` and `tag` are present then the routine selects the mesh and
+! returns its nodal coordinates
+
+INTERFACE
+  MODULE SUBROUTINE Domain_GetNodeCoord2(obj, nodeCoord, globalNode)
+    CLASS(Domain_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! It should be allocated by the user.
+    !! SIZE(nodeCoord, 1) is equal to nsd
+    !! Size(nodeCoord, 2) is equal to the size(globalNode)
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+  END SUBROUTINE Domain_GetNodeCoord2
 END INTERFACE
 
 !----------------------------------------------------------------------------

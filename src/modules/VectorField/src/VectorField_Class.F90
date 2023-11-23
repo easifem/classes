@@ -29,6 +29,7 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
 USE DirichletBC_Class
+USE FiniteElement_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
@@ -63,68 +64,68 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => vField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => vField_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => vField_Deallocate
-  PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent => &
-    & vField_getPointerOfComponent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent => &
+    & vField_GetPointerOfComponent
   PROCEDURE, PUBLIC, PASS(obj) :: Display => vField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => vField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export
   FINAL :: vField_Final
   !! SetMethods
-  PROCEDURE, PASS(obj) :: Set1 => vField_set1
-    !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => vField_set2
-    !! Set all values to a Vector values
-  PROCEDURE, PASS(obj) :: Set3 => vField_set3
-    !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => vField_set4
-    !! Set selected values to given Vector
-  PROCEDURE, PASS(obj) :: Set5 => vField_set5
-    !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => vField_set6
-    !! Set values to a Vector by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => vField_set7
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => vField_set8
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set9 => vField_set9
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set10 => vField_set10
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set11 => vField_set11
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set12 => vField_set12
-    !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set13 => vField_set13
-  PROCEDURE, PASS(obj) :: Set14 => vField_set14
-  PROCEDURE, PASS(obj) :: Set15 => vField_set15
-    !! Set selected values using FEVariable
+  PROCEDURE, PASS(obj) :: Set1 => vField_Set1
+  !! Set single entry
+  PROCEDURE, PASS(obj) :: Set2 => vField_Set2
+  !! Set all values to a Vector values
+  PROCEDURE, PASS(obj) :: Set3 => vField_Set3
+  !! Set all values to a given vector
+  PROCEDURE, PASS(obj) :: Set4 => vField_Set4
+  !! Set selected values to given Vector
+  PROCEDURE, PASS(obj) :: Set5 => vField_Set5
+  !! Set selected values to given vector
+  PROCEDURE, PASS(obj) :: Set6 => vField_Set6
+  !! Set values to a Vector by using triplet
+  PROCEDURE, PASS(obj) :: Set7 => vField_Set7
+  !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set8 => vField_Set8
+  !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set9 => vField_Set9
+  !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set10 => vField_Set10
+  !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set11 => vField_Set11
+  !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set12 => vField_Set12
+  !! Set values to a vector by using triplet
+  PROCEDURE, PASS(obj) :: Set13 => vField_Set13
+  PROCEDURE, PASS(obj) :: Set14 => vField_Set14
+  PROCEDURE, PASS(obj) :: Set15 => vField_Set15
+  !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => &
-    & Set1, set2, set3, set4, set5, set6, &
-    & Set7, set8, set9, set10, set11, set12, &
-    & Set13, set14, set15
+    & Set1, Set2, Set3, Set4, Set5, Set6, &
+    & Set7, Set8, Set9, Set10, Set11, Set12, &
+    & Set13, Set14, Set15
 
-  PROCEDURE, PASS(obj) :: get1 => vField_get1
-    !! returns the single entry
-  PROCEDURE, PASS(obj) :: get2 => vField_get2
-    !! returns all entries in rank2 array of real
-  PROCEDURE, PASS(obj) :: get3 => vField_get3
-    !! returns selected values in XiJ format
-  PROCEDURE, PASS(obj) :: get4 => vField_get4
-  PROCEDURE, PASS(obj) :: get5 => vField_get5
-  PROCEDURE, PASS(obj) :: get6 => vField_get6
-  PROCEDURE, PASS(obj) :: get7 => vField_get7
-  PROCEDURE, PASS(obj) :: get8 => vField_get8
-  PROCEDURE, PASS(obj) :: get9 => vField_get9
-  PROCEDURE, PASS(obj) :: get10 => vField_get10
-  PROCEDURE, PASS(obj) :: get11 => vField_get11
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
-    & get5, get6, get7, get8, get9, get10, get11
-    !! get the entries of Vector field
-  PROCEDURE, PASS(obj) :: vField_applyDirichletBC1
-  PROCEDURE, PASS(obj) :: vField_applyDirichletBC2
-  GENERIC, PUBLIC :: applyDirichletBC => &
-    & vField_applyDirichletBC1, &
-    & vField_applyDirichletBC2
+  PROCEDURE, PASS(obj) :: Get1 => vField_Get1
+  !! returns the single entry
+  PROCEDURE, PASS(obj) :: Get2 => vField_Get2
+  !! returns all entries in rank2 array of real
+  PROCEDURE, PASS(obj) :: Get3 => vField_Get3
+  !! returns selected values in XiJ format
+  PROCEDURE, PASS(obj) :: Get4 => vField_Get4
+  PROCEDURE, PASS(obj) :: Get5 => vField_Get5
+  PROCEDURE, PASS(obj) :: Get6 => vField_Get6
+  PROCEDURE, PASS(obj) :: Get7 => vField_Get7
+  PROCEDURE, PASS(obj) :: Get8 => vField_Get8
+  PROCEDURE, PASS(obj) :: Get9 => vField_Get9
+  PROCEDURE, PASS(obj) :: Get10 => vField_Get10
+  PROCEDURE, PASS(obj) :: Get11 => vField_Get11
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
+    & Get5, Get6, Get7, Get8, Get9, Get10, Get11
+  !! Get the entries of Vector field
+  PROCEDURE, PASS(obj) :: vField_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: vField_ApplyDirichletBC2
+  GENERIC, PUBLIC :: ApplyDirichletBC => &
+    & vField_ApplyDirichletBC1, &
+    & vField_ApplyDirichletBC2
 END TYPE VectorField_
 
 TYPE(VectorField_), PARAMETER, PUBLIC :: TypeVectorField =  &
@@ -148,12 +149,15 @@ END TYPE VectorFieldPointer_
 !
 INTERFACE
   MODULE SUBROUTINE SetVectorFieldParam(param, name, engine, &
-    & spaceCompo, fieldType)
+    & spaceCompo, fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
   END SUBROUTINE SetVectorFieldParam
 END INTERFACE
 
@@ -203,6 +207,31 @@ INTERFACE VectorFieldInitiate1
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE vField_Initiate1
 END INTERFACE VectorFieldInitiate1
+
+!----------------------------------------------------------------------------
+!                                                      Initiate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This subroutine initiates the VectorField_ object
+!
+!# Introduction
+! This routine initiate the vector field object.
+! `param` contains the information of parameters required to initiate the
+! vector. There are essential and optional information.
+! Essential information are described below.
+! - `name`  character defining the name of vector field
+! - `spaceCompo` is the total degree of freedom or components
+! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
+
+INTERFACE
+  MODULE SUBROUTINE vField_Initiate1_old(obj, param, dom)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE vField_Initiate1_old
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -447,7 +476,7 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-! call reallocate( real2, 3, dom%getTotalNodes() )
+! call reallocate( real2, 3, dom%GetTotalNodes() )
 ! real2 = 1.0_DFP
 ! call obj%Set( value=real2 )
 ! call obj%display( "test-4: vector field = " )
@@ -480,7 +509,7 @@ END INTERFACE
 !### Usage
 !
 !```fortran
-! call reallocate( real1, dom%getTotalNodes() )
+! call reallocate( real1, dom%GetTotalNodes() )
 ! real1 = 3.0_DFP
 ! call obj%Set( value=real1, spaceCompo=3 )
 ! call obj%display( "test-5: vector field = " )
@@ -790,12 +819,12 @@ END INTERFACE
 ! In this case this routine returns the entire vector of spacecompo.
 
 INTERFACE
-  MODULE SUBROUTINE vField_get1(obj, VALUE, globalNode, spaceCompo)
+  MODULE SUBROUTINE vField_Get1(obj, VALUE, globalNode, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_get1
+  END SUBROUTINE vField_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -804,14 +833,14 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine get all the entries by using given Vector field
+! summary: This routine Get all the entries by using given Vector field
 
 INTERFACE
-  MODULE SUBROUTINE vField_get2(obj, VALUE, force3D)
+  MODULE SUBROUTINE vField_Get2(obj, VALUE, force3D)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
-  END SUBROUTINE vField_get2
+  END SUBROUTINE vField_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -823,12 +852,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_get3(obj, VALUE, globalNode, force3D)
+  MODULE SUBROUTINE vField_Get3(obj, VALUE, globalNode, force3D)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
-  END SUBROUTINE vField_get3
+  END SUBROUTINE vField_Get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -840,12 +869,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_get4(obj, VALUE, globalNode, spaceCompo)
+  MODULE SUBROUTINE vField_Get4(obj, VALUE, globalNode, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_get4
+  END SUBROUTINE vField_Get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -857,12 +886,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_get5(obj, VALUE, globalNode, spaceCompo)
+  MODULE SUBROUTINE vField_Get5(obj, VALUE, globalNode, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_get5
+  END SUBROUTINE vField_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -874,13 +903,13 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_get6(obj, VALUE, istart, iend, stride)
+  MODULE SUBROUTINE vField_Get6(obj, VALUE, istart, iend, stride)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
-  END SUBROUTINE vField_get6
+  END SUBROUTINE vField_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -892,14 +921,14 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_get7(obj, VALUE, istart, iend, stride, spaceCompo)
+  MODULE SUBROUTINE vField_Get7(obj, VALUE, istart, iend, stride, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_get7
+  END SUBROUTINE vField_Get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -911,11 +940,11 @@ END INTERFACE
 ! summary: This routine returns the selected entries in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_get8(obj, VALUE, globalNode)
+  MODULE SUBROUTINE vField_Get8(obj, VALUE, globalNode)
     CLASS(VectorField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE vField_get8
+  END SUBROUTINE vField_Get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -927,11 +956,11 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_get9(obj, VALUE, spaceCompo)
+  MODULE SUBROUTINE vField_Get9(obj, VALUE, spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_get9
+  END SUBROUTINE vField_Get9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -943,14 +972,14 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_get10(obj, VALUE)
+  MODULE SUBROUTINE vField_Get10(obj, VALUE)
     CLASS(VectorField_), INTENT(IN) :: obj
     CLASS(VectorField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE vField_get10
+  END SUBROUTINE vField_Get10
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -958,18 +987,18 @@ END INTERFACE
 ! summary: Get value
 
 INTERFACE
-MODULE SUBROUTINE vField_get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
+MODULE SUBROUTINE vField_Get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(VectorField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: ivar_value
     INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE vField_get11
+  END SUBROUTINE vField_Get11
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -977,14 +1006,14 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE vField_applyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE vField_ApplyDirichletBC1(obj, dbc)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
-  END SUBROUTINE vField_applyDirichletBC1
+  END SUBROUTINE vField_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -992,14 +1021,14 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE vField_applyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE vField_ApplyDirichletBC2(obj, dbc)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-  END SUBROUTINE vField_applyDirichletBC2
+  END SUBROUTINE vField_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          getPointerOfComponent@GetMethods
+!                                          GetPointerOfComponent@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1007,11 +1036,11 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-  MODULE FUNCTION vField_getPointerOfComponent(obj, spaceCompo) RESULT(ans)
+  MODULE FUNCTION vField_GetPointerOfComponent(obj, spaceCompo) RESULT(ans)
     CLASS(VectorField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), POINTER :: ans(:)
-  END FUNCTION vField_getPointerOfComponent
+  END FUNCTION vField_GetPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------

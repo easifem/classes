@@ -21,6 +21,152 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                     solverName_ToInteger
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE solverName_ToInteger
+ans = obj%GetLinSolverCodeFromName(name)
+END PROCEDURE solverName_ToInteger
+
+!----------------------------------------------------------------------------
+!                                             preconditionOption_ToInteger
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE preconditionOption_ToInteger
+TYPE(String) :: astr
+astr = UpperCase(name)
+ans = NO_PRECONDITION
+SELECT CASE (astr%chars())
+CASE ("NO", "NONE", "NO_PRECONDITION")
+  ans = NO_PRECONDITION
+CASE ("LEFT", "LEFT_PRECONDITION")
+  ans = LEFT_PRECONDITION
+CASE ("RIGHT", "RIGHT_PRECONDITION")
+  ans = RIGHT_PRECONDITION
+CASE ("LEFTRIGHT", "RIGHTLEFT", "LEFTRIGHT_PRECONDITION",  &
+  & "RIGHTLEFT_PRECONDITION")
+  ans = LEFT_RIGHT_PRECONDITION
+END SELECT
+END PROCEDURE preconditionOption_ToInteger
+
+!----------------------------------------------------------------------------
+!                                                  convergenceIn_ToInteger
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE convergenceIn_ToInteger
+TYPE(String) :: astr
+astr = UpperCase(name)
+ans = ConvergenceInRes
+SELECT CASE (astr%chars())
+CASE ("RESIDUAL")
+  ans = ConvergenceInRes
+CASE ("SOL")
+  ans = ConvergenceInSol
+CASE ("RESIDUALSOL", "SOLRESIDUAL")
+  ans = ConvergenceInResSol
+END SELECT
+END PROCEDURE convergenceIn_ToInteger
+
+!----------------------------------------------------------------------------
+!                                                  convergenceType_ToInteger
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE convergenceType_ToInteger
+TYPE(String) :: astr
+astr = UpperCase(name)
+SELECT CASE (astr%chars())
+CASE ("RELATIVE")
+  ans = RelativeConvergence
+CASE ("ABSOLUTE")
+  ans = AbsoluteConvergence
+END SELECT
+END PROCEDURE convergenceType_ToInteger
+
+!----------------------------------------------------------------------------
+!                                                  scale_ToInteger
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE scale_ToInteger
+TYPE(String) :: astr
+astr = UpperCase(name)
+SELECT CASE (astr%chars())
+CASE ("NO", "NONE")
+  ans = scale_none
+CASE ("JACOBI")
+  ans = scale_jacobi
+CASE ("SYMDIAG")
+  ans = scale_symm_diag
+END SELECT
+END PROCEDURE scale_ToInteger
+
+!----------------------------------------------------------------------------
+!                                                 preconditionName_ToInteger
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE preconditionName_ToInteger
+TYPE(String) :: astr
+astr = UpperCase(name)
+
+SELECT CASE (astr%chars())
+CASE ("NONE")
+  ans = PRECOND_NONE
+
+CASE ("JACOBI")
+  ans = PRECOND_JACOBI
+
+CASE ("ILU")
+  ans = PRECOND_ILU
+
+CASE ("SSOR")
+  ans = PRECOND_SSOR
+
+CASE ("HYBRID")
+  ans = PRECOND_HYBRID
+
+CASE ("IS")
+  ans = PRECOND_IS
+
+CASE ("SAINV")
+  ans = PRECOND_SAINV
+
+CASE ("SAAMG")
+  ans = PRECOND_SAAMG
+
+CASE ("ILUC")
+  ans = PRECOND_ILUC
+
+CASE ("ADDS")
+  ans = PRECOND_ADDS
+
+CASE ("ILUTP")
+  ans = PRECOND_ILUTP
+
+CASE ("ILUD")
+  ans = PRECOND_ILUD
+
+CASE ("ILUDP")
+  ans = PRECOND_ILUDP
+
+CASE ("ILU0")
+  ans = PRECOND_ILU0
+
+CASE ("ILUK")
+  ans = PRECOND_ILUK
+
+CASE ("ILUT")
+  ans = PRECOND_ILUT
+END SELECT
+END PROCEDURE preconditionName_ToInteger
+
+!----------------------------------------------------------------------------
+!                                                                GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE als_GetPrefix
+ans = myprefix
+END PROCEDURE als_GetPrefix
+
+!----------------------------------------------------------------------------
 !                                                                 GetParam
 !----------------------------------------------------------------------------
 

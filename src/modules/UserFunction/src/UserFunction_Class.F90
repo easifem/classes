@@ -16,13 +16,17 @@
 
 MODULE UserFunction_Class
 USE GlobalData
+USE BaseType
+USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
+USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
+USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
-!!
 CHARACTER(*), PARAMETER :: modName = "UserFunction_Class"
+CHARACTER(*), PARAMETER :: myprefix = "UserFunction"
 CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) =  &
   & [ &
   & "Scalar", &
@@ -37,49 +41,103 @@ CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) =  &
   & "SpaceTime        ",  &
   & "SolutionDependent"  &
   & ]
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SCALAR = 1
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_VECTOR = 3
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_MATRIX = 6
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_CONSTANT = 0
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SPACE = 3
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_TIME = 1
+INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SPACETIME = 4
+
+PUBLIC :: UserFunction_
+PUBLIC :: UserFunctionGetReturnType
+PUBLIC :: UserFunctionGetArgType
+PUBLIC :: SetUserFunctionParam
+PUBLIC :: UserFunctionImportFromToml
+PUBLIC :: UserFunctionImportParamFromToml
+PUBLIC :: UserFunctionPointer_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-20
+! summary:  User defined function
+
 TYPE :: UserFunction_
+  PRIVATE
   LOGICAL(LGT) :: isInitiated = .FALSE.
   LOGICAL(LGT) :: isUserFunctionSet = .FALSE.
+  LOGICAL(LGT) :: isLuaScript = .FALSE.
+  TYPE(String) :: luaScript
+  TYPE(String) :: luaFunctionName
   INTEGER(I4B) :: returnType = 0
   INTEGER(I4B) :: argType = 0
+  INTEGER(I4B) :: numArgs = 0
+  !! Number of arguments
+  !! number of args is 1 for scalar argType scalar
+  INTEGER(I4B) :: numReturns = 0
+  !! Number of return types
+  !! number of return type is 1 for scalar return
+  INTEGER(I4B) :: returnShape(2) = 0
+  !! Shape of return
+  !! Only used when returnType is matrix
   REAL(DFP) :: scalarValue = 0.0
+  !! Scalar constant value
   REAL(DFP), ALLOCATABLE :: vectorValue(:)
+  !! Vector constant value
   REAL(DFP), ALLOCATABLE :: matrixValue(:, :)
-  CLASS(UserFunction_), POINTER :: userFunction => NULL()
+  !! Matrix constant value
+  PROCEDURE(iface_ScalarFunction), POINTER, NOPASS :: scalarFunction =>  &
+    & NULL()
+  !! Scalar function pointer
+  PROCEDURE(iface_VectorFunction), POINTER, NOPASS :: vectorFunction =>  &
+    & NULL()
+  !! vector function pointer
+  PROCEDURE(iface_MatrixFunction), POINTER, NOPASS :: matrixFunction =>  &
+    & NULL()
+  !! matrix function pointer
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & auf_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & auf_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => auf_Deallocate
   FINAL :: auf_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => auf_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Set1 => auf_Set1
-  PROCEDURE, PUBLIC, PASS(obj) :: Set2 => auf_Set2
-  GENERIC, PUBLIC :: Set => Set1, Set2
-  PROCEDURE, PUBLIC, PASS(obj) :: getScalarValue => auf_getScalarValue
-  PROCEDURE, PUBLIC, PASS(obj) :: getVectorValue => auf_getVectorValue
-  PROCEDURE, PUBLIC, PASS(obj) :: getMatrixValue => auf_getMatrixValue
-  GENERIC, PUBLIC :: get => getScalarValue, getVectorValue, getMatrixValue
-  PROCEDURE, PUBLIC, PASS(obj) :: getArgType => auf_getArgType
-  PROCEDURE, PUBLIC, PASS(obj) :: getReturnType => auf_getReturnType
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => auf_Set1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => auf_GetScalarValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => auf_GetVectorValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => auf_GetMatrixValue
+  GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue, GetMatrixValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => auf_GetArgType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => auf_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: Display => auf_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => auf_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => auf_Export
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => auf_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => auf_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    & ImportFromToml2
+  !! Import abstract kernel from toml
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
+    & auf_ImportParamFromToml
 END TYPE UserFunction_
 
-PUBLIC :: UserFunction_
+!----------------------------------------------------------------------------
+!                                                       UserFunctionPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: UserFunctionPointer_
+  CLASS(UserFunction_), POINTER :: ptr => NULL()
+END TYPE UserFunctionPointer_
 
 !----------------------------------------------------------------------------
-!                                   getReturnTypeFromName@ConstructorMethods
+!                                   GetReturnTypeFromName@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 Oct 2021
-! summary: Returns the Integer corresponding to name
+! summary: Returns the Integer number for given return type name (String)
 
 INTERFACE
   MODULE PURE FUNCTION UserFunctionGetReturnType(name) RESULT(Ans)
@@ -87,8 +145,6 @@ INTERFACE
     INTEGER(I4B) :: ans
   END FUNCTION UserFunctionGetReturnType
 END INTERFACE
-
-PUBLIC :: UserFunctionGetReturnType
 
 !----------------------------------------------------------------------------
 !                                      etArgTypeFromName@ConstructorMethods
@@ -104,8 +160,6 @@ INTERFACE
     INTEGER(I4B) :: ans
   END FUNCTION UserFunctionGetArgType
 END INTERFACE
-
-PUBLIC :: UserFunctionGetArgType
 
 !----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods
@@ -131,14 +185,26 @@ END INTERFACE
 ! summary: Sets user funciton parameter
 
 INTERFACE
-  MODULE SUBROUTINE setUserFunctionParam(param, returnType, argType)
+  MODULE SUBROUTINE SetUserFunctionParam(param, returnType, argType,  &
+    & numArgs, numReturns, luaScript, luaFunctionName, returnShape)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     INTEGER(I4B), INTENT(IN) :: returnType
+    !! Scalar, Vector, Matrix
     INTEGER(I4B), INTENT(IN) :: argType
-  END SUBROUTINE setUserFunctionParam
+    !! Constant, Space, Time, SpaceTime
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numArgs
+    !! number of argument
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numReturns
+    !! number of returns
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
+    !! lua script
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
+    !! lua function name
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
+    !! Shape of return type
+    !! Only used when returnType is Matrix
+  END SUBROUTINE SetUserFunctionParam
 END INTERFACE
-
-PUBLIC :: setUserFunctionParam
 
 !----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods
@@ -146,7 +212,7 @@ PUBLIC :: setUserFunctionParam
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
-! summary: Deallocate the data in [[Userfunction_]]
+! summary: Deallocate the data in UserFunction.
 
 INTERFACE
   MODULE SUBROUTINE auf_Deallocate(obj)
@@ -160,7 +226,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
-! summary: Deallocate the data in [[Userfunction_]]
+! summary: Deallocate the data in UserFunction.
 
 INTERFACE
   MODULE SUBROUTINE auf_Final(obj)
@@ -177,44 +243,10 @@ END INTERFACE
 ! summary: Initiate the user function
 
 INTERFACE
-  MODULE SUBROUTINE auf_Initiate(obj, argType, returnType, param)
+  MODULE SUBROUTINE auf_Initiate(obj, param)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: argType
-    INTEGER(I4B), INTENT(IN) :: returnType
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE auf_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
-! summary: Sets the user function
-
-INTERFACE
-  MODULE SUBROUTINE auf_Set1(obj, anotherObj)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    CLASS(UserFunction_), TARGET, INTENT(IN) :: anotherobj
-  END SUBROUTINE auf_Set1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
-! summary: Sets the user function
-
-INTERFACE
-  MODULE SUBROUTINE auf_Set2(obj, scalarValue, vectorValue, matrixValue)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scalarValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: vectorValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: matrixValue(:, :)
-  END SUBROUTINE auf_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -226,11 +258,11 @@ END INTERFACE
 ! summary: Returns the scalar value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE auf_getScalarValue(obj, val, args)
+  MODULE RECURSIVE SUBROUTINE auf_GetScalarValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE auf_getScalarValue
+  END SUBROUTINE auf_GetScalarValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -242,11 +274,11 @@ END INTERFACE
 ! summary: Returns the vector value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE auf_getVectorValue(obj, val, args)
+  MODULE RECURSIVE SUBROUTINE auf_GetVectorValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE auf_getVectorValue
+  END SUBROUTINE auf_GetVectorValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -258,15 +290,15 @@ END INTERFACE
 ! summary: Returns the Matrix value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE auf_getMatrixValue(obj, val, args)
+  MODULE RECURSIVE SUBROUTINE auf_GetMatrixValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE auf_getMatrixValue
+  END SUBROUTINE auf_GetMatrixValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      getArgType@GetMethods
+!                                                      GetArgType@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -274,14 +306,14 @@ END INTERFACE
 ! summary: Returns the argument type
 
 INTERFACE
-  MODULE PURE FUNCTION auf_getArgType(obj) RESULT(ans)
+  MODULE PURE FUNCTION auf_GetArgType(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION auf_getArgType
+  END FUNCTION auf_GetArgType
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   getReturnType@GetMethods
+!                                                   GetReturnType@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -289,15 +321,19 @@ END INTERFACE
 ! summary: Returns the return type
 
 INTERFACE
-  MODULE PURE FUNCTION auf_getReturnType(obj) RESULT(ans)
+  MODULE PURE FUNCTION auf_GetReturnType(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION auf_getReturnType
+  END FUNCTION auf_GetReturnType
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-20
+! summary:  Display the content of UserFunction
 
 INTERFACE
   MODULE SUBROUTINE auf_Display(obj, msg, unitNo)
@@ -311,6 +347,10 @@ END INTERFACE
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-20
+! summary: Import data from HDF5File
+
 INTERFACE
   MODULE SUBROUTINE auf_Import(obj, hdf5, group)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
@@ -320,8 +360,62 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              ImportParamFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param by reading the toml table
+
+INTERFACE UserFunctionImportParamFromToml
+  MODULE SUBROUTINE auf_ImportParamFromToml(obj, param, table)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE auf_ImportParamFromToml
+END INTERFACE UserFunctionImportParamFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE UserFunctionImportFromToml
+  MODULE SUBROUTINE auf_ImportFromToml1(obj, table)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE auf_ImportFromToml1
+END INTERFACE UserFunctionImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE UserFunctionImportFromToml
+  MODULE SUBROUTINE auf_ImportFromToml2(obj, tomlName, afile,  &
+    & filename, printToml)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE auf_ImportFromToml2
+END INTERFACE UserFunctionImportFromToml
+
+!----------------------------------------------------------------------------
 !                                                           Export@IOMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-20
+! summary:  Export data to HDF5File
 
 INTERFACE
   MODULE SUBROUTINE auf_Export(obj, hdf5, group)
@@ -334,5 +428,157 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Sets the user function
+
+SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
+  & luaScript, luaFunctionName, scalarFunction, vectorFunction,  &
+  & matrixFunction)
+  USE BaseMethod, ONLY: Reallocate, tostring
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  REAL(DFP), OPTIONAL, INTENT(IN) :: scalarValue
+  REAL(DFP), OPTIONAL, INTENT(IN) :: vectorValue(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: matrixValue(:, :)
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
+  PROCEDURE(iface_ScalarFunction), POINTER, OPTIONAL, INTENT(IN) ::  &
+    & scalarFunction
+  PROCEDURE(iface_VectorFunction), POINTER, OPTIONAL, INTENT(IN) ::  &
+    & vectorFunction
+  PROCEDURE(iface_MatrixFunction), POINTER, OPTIONAL, INTENT(IN) ::  &
+    & matrixFunction
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "auf_Set()"
+  LOGICAL(LGT) :: isNotOK
+  INTEGER(I4B) :: tsize, myshape(2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] Set()')
+#endif
+
+  isNotOK = .NOT. obj%isInitiated
+  IF (isNotOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj is not initiated.')
+    RETURN
+  END IF
+
+  IF (PRESENT(scalarValue)) THEN
+    isNotOK = (obj%argType .NE. Constant) .OR. (obj%returnType .NE. Scalar)
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%argType is NOT Constant '//  &
+      & ' or UserFunction_::obj%returnType is not Scalar')
+      RETURN
+    END IF
+    obj%scalarValue = scalarValue
+  END IF
+
+  IF (PRESENT(vectorValue)) THEN
+    isNotOK = (obj%argType .NE. Constant) .OR. (obj%returnType .NE. Vector)
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%argType '//  &
+      & CHAR_LF//' is NOT Constant '//  &
+      & CHAR_LF//'or UserFunction_::obj%returnType is not Vector.')
+      RETURN
+    END IF
+    tsize = SIZE(vectorValue)
+    isNotOK = tsize .NE. obj%numReturns
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%numReturns '//  &
+      & CHAR_LF//tostring(obj%numReturns)//'is NOT equal to '//  &
+      & CHAR_LF//' the size of vectorValue ('//tostring(tsize)//').')
+      RETURN
+    END IF
+    CALL Reallocate(obj%vectorValue, SIZE(vectorValue))
+    obj%vectorValue = vectorValue
+  END IF
+
+  IF (PRESENT(matrixValue)) THEN
+    isNotOK = (obj%argType .NE. Constant) .OR. (obj%returnType .NE. Matrix)
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%argType '//  &
+      & CHAR_LF//'is NOT Constant '//  &
+      & CHAR_LF//'or UserFunction_::obj%returnType is not Matrix')
+      RETURN
+    END IF
+    myshape = SHAPE(matrixValue)
+
+    isNotOK = ALL(myshape .NE. obj%returnShape)
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is '//  &
+        & 'Matrix, but shape of matrixValue is not same as obj%returnShape')
+      RETURN
+    END IF
+
+    CALL Reallocate(obj%matrixValue, myshape(1), myshape(2))
+    obj%matrixValue = matrixValue
+  END IF
+
+  IF (PRESENT(luaScript)) THEN
+    obj%isLuaScript = .TRUE.
+    obj%luaScript = luaScript
+    IF (PRESENT(luaFunctionName)) THEN
+      obj%luaFunctionName = luaFunctionName
+    ELSE
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: both luaScript and luaFunctionName '//  &
+        & 'should be present.')
+      RETURN
+    END IF
+  END IF
+
+  IF (PRESENT(scalarFunction)) THEN
+    isNotOK = obj%returnType .NE. Scalar
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Scalar')
+      RETURN
+    END IF
+    obj%isUserFunctionSet = .TRUE.
+    obj%scalarFunction => scalarFunction
+  END IF
+
+  IF (PRESENT(vectorFunction)) THEN
+    isNotOK = obj%returnType .NE. Vector
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Vector')
+      RETURN
+    END IF
+    obj%isUserFunctionSet = .TRUE.
+    obj%vectorFunction => vectorFunction
+  END IF
+
+  IF (PRESENT(matrixFunction)) THEN
+    isNotOK = obj%returnType .NE. Matrix
+    IF (isNotOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Matrix')
+      RETURN
+    END IF
+    obj%isUserFunctionSet = .TRUE.
+    obj%matrixFunction => matrixFunction
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] Set()')
+#endif
+END SUBROUTINE auf_Set1
 
 END MODULE UserFunction_Class

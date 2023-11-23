@@ -15,18 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-05
+! summary:  This module is used when Gmsh SDK is not used
+
+MODULE Gmsh_Class
+IMPLICIT NONE
+END MODULE Gmsh_Class
+
 !----------------------------------------------------------------------------
-!                                              isValidRecord@EnquireMethods
+!
 !----------------------------------------------------------------------------
 
-INTERFACE
-MODULE FUNCTION txt_isValidRecord( obj, aline, ignoreComment, ignoreBlank, &
-  & commentSymbol ) RESULT( Ans )
-  CLASS(TxtFile_), INTENT(IN) :: obj
-  TYPE(String), INTENT( IN ) :: aline
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
-  CHARACTER(len=1), OPTIONAL, INTENT(IN) :: commentSymbol
-  LOGICAL( LGT ) :: ans
-END FUNCTION txt_isValidRecord
-END INTERFACE
+MODULE GmshStructuredGrid_Class
+IMPLICIT NONE
+END MODULE GmshStructuredGrid_Class
+

@@ -22,6 +22,43 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_SetParam
+INTEGER(I4B) :: ii
+
+IF (PRESENT(dof_tPhysicalVars)) THEN
+  obj%dof_tPhysicalVars = dof_tPhysicalVars
+END IF
+
+IF (PRESENT(dof_storageFMT)) THEN
+  obj%dof_storageFMT = dof_storageFMT
+END IF
+
+IF (PRESENT(dof_spaceCompo)) THEN
+  obj%dof_spaceCompo = dof_spaceCompo
+END IF
+
+IF (PRESENT(dof_timeCompo)) THEN
+  obj%dof_timeCompo = dof_timeCompo
+END IF
+
+IF (PRESENT(dof_tNodes)) THEN
+  obj%dof_tNodes = dof_tNodes
+END IF
+
+IF (PRESENT(dof_names_char)) THEN
+  IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
+  ALLOCATE (obj%dof_names_char(SIZE(dof_names_char)))
+  DO ii = 1, SIZE(dof_names_char)
+    obj%dof_names_char(ii) = obj%dof_names_char(ii)
+  END DO
+END IF
+
+END PROCEDURE anf_SetParam
+
+!----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
@@ -239,9 +276,6 @@ END PROCEDURE anf_GetSingle
 
 MODULE PROCEDURE AbstractNodeFieldInitiate
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate"
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This routine is under development')
 
 CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
 

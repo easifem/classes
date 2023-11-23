@@ -47,8 +47,10 @@ CALL AbstractLinSolverImport(obj=obj, hdf5=hdf5, group=group)
 obj%isInitiated = .FALSE.
 
 CALL param%initiate()
-CALL setLinSolverParam( &
+CALL SetAbstractLinSolverParam( &
   & param=param, &
+  & prefix=obj%GetPrefix(), &
+  & engine=myengine, &
   & solverName=obj%solverName,&
   & preconditionOption=obj%preconditionOption, &
   & convergenceIn=obj%convergenceIn, &

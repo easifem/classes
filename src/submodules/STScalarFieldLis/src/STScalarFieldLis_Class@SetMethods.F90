@@ -26,7 +26,7 @@ CONTAINS
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_setSingle
+MODULE PROCEDURE stsField_SetSingle
 #include "lisf.h"
 INTEGER(I4B) :: i, ierr
 REAL(DFP) :: value0
@@ -59,13 +59,13 @@ ELSE
   CALL CHKERR(ierr)
 END IF
 
-END PROCEDURE stsField_setSingle
+END PROCEDURE stsField_SetSingle
 
 !----------------------------------------------------------------------------
 !                                                               SetMultiple
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_setMultiple
+MODULE PROCEDURE stsField_SetMultiple
 #include "lisf.h"
 INTEGER(I4B) :: i(SIZE(indx)), ierr, n
 REAL(DFP) :: value0(SIZE(VALUE))
@@ -96,13 +96,13 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stsField_setMultiple
+END PROCEDURE stsField_SetMultiple
 
 !----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_setAll
+MODULE PROCEDURE stsField_SetAll
 #include "lisf.h"
 INTEGER(I4B) :: ierr, ii, n
 REAL(DFP) :: value0
@@ -129,36 +129,39 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stsField_setAll
+END PROCEDURE stsField_SetAll
 
 !----------------------------------------------------------------------------
-!                                                                   set
+!                                                                   Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set1
-CHARACTER(*), PARAMETER :: myName = "stsField_set1"
+MODULE PROCEDURE stsField_Set1
+CHARACTER(*), PARAMETER :: myName = "stsField_Set1"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: tsize
-INTEGER(I4B) :: indx(obj%timeCompo)
-INTEGER(I4B) :: ierr
+INTEGER(I4B), ALLOCATABLE :: indx(:)
+INTEGER(I4B) :: ierr, timeCompo
+
+timeCompo = STScalarFieldGetTimeCompo(obj)
+CALL Reallocate(indx, timeCompo)
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+IF (.NOT. obj%IsInitiated .OR. ierr .EQ. LIS_TRUE) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (SIZE(VALUE) .NE. obj%timeCompo) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+IF (SIZE(VALUE) .NE. timeCompo) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Size of value should be equal to obj%timeCompo')
 END IF
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
 
 IF (localNode .EQ. 0_I4B) THEN
-  CALL e%raiseError(modName//'::'//myName//" - " &
+  CALL e%RaiseError(modName//'::'//myName//" - " &
     & //'globalNode :: '//TRIM(str(globalNode, .TRUE.)) &
     & //" is out of bound for the domain.")
 END IF
@@ -171,33 +174,37 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stsField_set1
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+END PROCEDURE stsField_Set1
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set2
-CHARACTER(*), PARAMETER :: myName = "stsField_set2"
+MODULE PROCEDURE stsField_Set2
+CHARACTER(*), PARAMETER :: myName = "stsField_Set2"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: tsize
-INTEGER(I4B) :: indx(obj%timeCompo)
-INTEGER(I4B) :: ierr
+INTEGER(I4B), ALLOCATABLE :: indx(:)
+INTEGER(I4B) :: ierr, timeCompo
+
+timeCompo = STScalarFieldGetTimeCompo(obj)
+CALL Reallocate(indx, timeCompo)
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
-IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+IF (.NOT. obj%IsInitiated .OR. ierr .EQ. LIS_TRUE) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either ScalarField object is not initiated'// &
   & " or, lis_ptr is not available")
 END IF
 
 IF (SIZE(VALUE) .NE. obj%timeCompo) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'size(value) should be same as obj%timeCompo')
 END IF
 
-tsize = obj%domain%getTotalNodes()
+tsize = obj%domain%GetTotalNodes()
 
 DO ii = 1, tsize
   indx = GetIndex(obj=obj%dof, nodenum=ii)
@@ -208,33 +215,37 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stsField_set2
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+
+END PROCEDURE stsField_Set2
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set3
-CHARACTER(*), PARAMETER :: myName = "stsField_set3"
+MODULE PROCEDURE stsField_Set3
+CHARACTER(*), PARAMETER :: myName = "stsField_Set3"
 INTEGER(I4B) :: indx
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: ii
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, timeCompo0
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+timeCompo0 = STScalarFieldGetTimeCompo(obj)
+
+IF (timeCompo .GT. timeCompo0) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'given timeCompo should be less than or equal to obj%timeCompo')
 END IF
 
-tsize = obj%domain%getTotalNodes()
+tsize = obj%domain%GetTotalNodes()
 
 DO ii = 1, tsize
   indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=timeCompo)
@@ -245,39 +256,41 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stsField_set3
+END PROCEDURE stsField_Set3
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set4
-CHARACTER(*), PARAMETER :: myName = "stsField_set4"
+MODULE PROCEDURE stsField_Set4
+CHARACTER(*), PARAMETER :: myName = "stsField_Set4"
 INTEGER(I4B) :: ii, tnodes, aa, jj
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, timeCompo
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
+timeCompo = STScalarFieldGetTimeCompo(obj)
+
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'This subroutine is not callable for constant STScalar field')
 END IF
 
 tnodes = obj%domain%getTotalNodes()
 
 IF ( &
-  &      SIZE(VALUE, 1) .NE. obj%timeCompo &
+  &      SIZE(VALUE, 1) .NE. timeCompo &
   & .OR. SIZE(VALUE, 2) .NE. tnodes) THEN
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'The shape of value should be [ ' &
-    & //tostring(obj%timeCompo) &
+    & //tostring(timeCompo) &
     & //', ' &
     & //tostring(tnodes) &
     & //' ]')
@@ -286,7 +299,7 @@ END IF
 
 aa = 0
 DO jj = 1, tnodes
-  DO ii = 1, obj%timeCompo
+  DO ii = 1, timeCompo
     aa = aa + 1
     CALL obj%SetSingle(&
       & indx=aa, &
@@ -296,39 +309,41 @@ DO jj = 1, tnodes
   END DO
 END DO
 
-END PROCEDURE stsField_set4
+END PROCEDURE stsField_Set4
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set5
-CHARACTER(*), PARAMETER :: myName = "stsField_set5"
+MODULE PROCEDURE stsField_Set5
+CHARACTER(*), PARAMETER :: myName = "stsField_Set5"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: indx
 INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize, timeCompo0
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+timeCompo0 = STScalarFieldGetTimeCompo(obj)
+
+IF (timeCompo .GT. timeCompo0) &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'given timeCompo should be less than or equal to obj%timeCompo')
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'This subroutine is not callable for constant STScalar field')
 
 tsize = SIZE(VALUE)
 
 IF (tsize .NE. obj%domain%getTotalNodes()) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Size of value should be equal to the total number of nodes')
 
 DO ii = 1, tsize
@@ -340,60 +355,62 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stsField_set5
+END PROCEDURE stsField_Set5
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set6
+MODULE PROCEDURE stsField_Set6
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stsField_set5"
+CHARACTER(*), PARAMETER :: myName = "stsField_Set5"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize1
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
-INTEGER(I4B) :: indx
+INTEGER(I4B) :: indx, timeCompo0
 REAL(DFP) :: avar
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE &
   & .OR. .NOT. VALUE%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::object is not initiated'// &
   & ', or, ScalarField::value is not initiated'// &
   & ", or, obj%lis_ptr is not available")
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+timeCompo0 = STScalarFieldGetTimeCompo(obj)
+
+IF (timeCompo .GT. timeCompo0) &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'given timeCompo should be less than or equal to obj%timeCompo')
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'This subroutine is not callable for constant STScalar field')
 
-tsize = obj%domain%getTotalNodes()
-tsize1 = VALUE%domain%getTotalNodes()
+tsize = obj%domain%GetTotalNodes()
+tsize1 = VALUE%domain%GetTotalNodes()
 
 IF (tsize .NE. tsize1) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Size of value should be equal to the total number of nodes')
 END IF
 
 SELECT TYPE (VALUE)
-TYPE is (ScalarField_)
+TYPE IS (ScalarField_)
 
   IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-    vecPointer => VALUE%getPointer()
-    CALL obj%set(VALUE=vecPointer(1), timeCompo=timeCompo, &
+    vecPointer => VALUE%GetPointer()
+    CALL obj%Set(VALUE=vecPointer(1), timeCompo=timeCompo, &
       & scale=scale, addContribution=addContribution)
     vecPointer => NULL()
   ELSE
-    vecPointer => VALUE%getPointer()
-    CALL obj%set(VALUE=vecPointer, timeCompo=timeCompo, &
+    vecPointer => VALUE%GetPointer()
+    CALL obj%Set(VALUE=vecPointer, timeCompo=timeCompo, &
       & scale=scale, addContribution=addContribution)
     vecPointer => NULL()
   END IF
@@ -403,14 +420,14 @@ TYPE is (ScalarFieldLis_)
   CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
 
   IF (ierr .EQ. LIS_TRUE) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
     & "ScalarFieldLis_::value%lis_ptr is not available")
   END IF
 
   IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
 
     CALL VALUE%get(VALUE=avar, globalNode=1)
-    CALL obj%set( &
+    CALL obj%Set( &
       & VALUE=avar, &
       & timeCompo=timeCompo, &
       & scale=scale, &
@@ -427,7 +444,7 @@ TYPE is (ScalarFieldLis_)
         ! CALL Display(avar, "avar = ")
         indx = GetNodeLoc(obj=obj%dof, nodenum=ii, idof=timeCompo)
 
-        CALL obj%setSingle( &
+        CALL obj%SetSingle( &
           & VALUE=avar, &
           & indx=indx, &
           & scale=scale, &
@@ -440,55 +457,57 @@ TYPE is (ScalarFieldLis_)
   END IF
 
 CLASS DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
   & 'No case found for the type of Value')
 END SELECT
 
-END PROCEDURE stsField_set6
+END PROCEDURE stsField_Set6
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set7
+MODULE PROCEDURE stsField_Set7
 REAL(DFP) :: val(SIZE(VALUE), SIZE(globalNode))
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
   val(:, ii) = VALUE(:)
 END DO
-CALL obj%set( &
+CALL obj%Set( &
   & VALUE=val, &
   & globalNode=globalNode, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stsField_set7
+END PROCEDURE stsField_Set7
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set8
-CHARACTER(*), PARAMETER :: myName = "stsField_set8"
+MODULE PROCEDURE stsField_Set8
+CHARACTER(*), PARAMETER :: myName = "stsField_Set8"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: val(SIZE(VALUE))
 INTEGER(I4B) :: indx(SIZE(VALUE))
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, timeCompo0
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'This routine should not be called for constant STScalar field')
 
-IF (SIZE(VALUE, 1) .NE. obj%timeCompo .OR. &
+timeCompo0 = STScalarFieldGetTimeCompo(obj)
+
+IF (SIZE(VALUE, 1) .NE. timeCompo0 .OR. &
   & SIZE(VALUE, 2) .NE. SIZE(globalNode)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'SIZE( value, 1 ) not equal to timeCompo'// &
   & 'or SIZE( value, 2 ) not equal to'// &
   & ' the SIZE(globalNode)')
@@ -497,7 +516,7 @@ END IF
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
 IF (ANY(localNode .EQ. 0_I4B)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Some of the globalNode are out of bound')
 END IF
 
@@ -507,7 +526,7 @@ indx = GetNodeLoc( &
 & nodenum=localNode, &
 & ivar=1_I4B, &
 & spaceCompo=1_I4B, &
-& timeCompo=arange(1, obj%timeCompo))
+& timeCompo=arange(1, timeCompo0))
 
 CALL obj%SetMultiple(&
 & VALUE=val, &
@@ -515,42 +534,44 @@ CALL obj%SetMultiple(&
 & scale=scale, &
 & addContribution=addContribution)
 
-END PROCEDURE stsField_set8
+END PROCEDURE stsField_Set8
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set9
-CHARACTER(*), PARAMETER :: myName = "stsField_set9"
+MODULE PROCEDURE stsField_Set9
+CHARACTER(*), PARAMETER :: myName = "stsField_Set9"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: indx(SIZE(globalNode))
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr, timeCompo0
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+timeCompo0 = STScalarFieldGetTimeCompo(obj)
+
+IF (timeCompo .GT. timeCompo0) &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'given timeCompo should be less than or equal to obj%timeCompo')
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'This subroutine is not callable for constant STScalar field')
 
 IF (SIZE(VALUE) .NE. SIZE(globalNode)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Size of value should be equal to size of globalNode')
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
 IF (ANY(localNode .EQ. 0_I4B)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Some of the global node num are out of bound')
 
 indx = GetNodeLoc(&
@@ -567,38 +588,41 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stsField_set9
+END PROCEDURE stsField_Set9
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set10
-CHARACTER(*), PARAMETER :: myName = "stsField_set10"
+MODULE PROCEDURE stsField_Set10
+CHARACTER(*), PARAMETER :: myName = "stsField_Set10"
 INTEGER(I4B) :: indx
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ierr
+INTEGER(I4B) :: timeCompo0
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+timeCompo0 = STScalarFieldGetTimeCompo(obj)
+
+IF (timeCompo .GT. timeCompo0) &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'given timeCompo should be less than or equal to obj%timeCompo')
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'This subroutine is not callable for constant STScalar field')
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
 
 IF (localNode .EQ. 0_I4B) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'The given global node num are out of bound')
 
 indx = getNodeLoc( &
@@ -608,68 +632,68 @@ indx = getNodeLoc( &
   & timeCompo=timeCompo, &
   & nodenum=localNode)
 
-CALL obj%setSingle(&
+CALL obj%SetSingle(&
   & indx=indx, &
   & VALUE=VALUE, &
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stsField_set10
+END PROCEDURE stsField_Set10
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set11
-CHARACTER(*), PARAMETER :: myName = "stsField_set11"
+MODULE PROCEDURE stsField_Set11
+CHARACTER(*), PARAMETER :: myName = "stsField_Set11"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%set(globalNode=globalNode, VALUE=VALUE, &
+CALL obj%Set(globalNode=globalNode, VALUE=VALUE, &
   & scale=scale, addContribution=addContribution)
-END PROCEDURE stsField_set11
+END PROCEDURE stsField_Set11
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set12
-CHARACTER(*), PARAMETER :: myName = "stsField_set12"
+MODULE PROCEDURE stsField_Set12
+CHARACTER(*), PARAMETER :: myName = "stsField_Set12"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%set( &
+CALL obj%Set( &
   & globalNode=globalNode, &
   & VALUE=VALUE, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stsField_set12
+END PROCEDURE stsField_Set12
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set13
-CHARACTER(*), PARAMETER :: myName = "stsField_set13"
+MODULE PROCEDURE stsField_Set13
+CHARACTER(*), PARAMETER :: myName = "stsField_Set13"
 
 IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Scalar field object is not initiated')
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+  & CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'This routine should not be called for constant STScalar field')
 
 SELECT CASE (VALUE%vartype)
 CASE (SpaceTime)
 
-  CALL obj%set( &
+  CALL obj%Set( &
     & VALUE=GET(VALUE, TypeFEVariableScalar, TypeFEVariableSpaceTime), &
     & globalNode=globalNode, &
     & scale=scale, &
@@ -677,31 +701,31 @@ CASE (SpaceTime)
 
 CASE DEFAULT
 
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'No case found for Value%vartype')
 
 END SELECT
-END PROCEDURE stsField_set13
+END PROCEDURE stsField_Set13
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_set14
-CHARACTER(*), PARAMETER :: myName = "stsField_set14"
+MODULE PROCEDURE stsField_Set14
+CHARACTER(*), PARAMETER :: myName = "stsField_Set14"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Either STScalarFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-CALL obj%setAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
+CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 
-END PROCEDURE stsField_set14
+END PROCEDURE stsField_Set14
 
 !----------------------------------------------------------------------------
 !

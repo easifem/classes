@@ -106,7 +106,9 @@ IF (ALLOCATED(obj%meshFacetData)) DEALLOCATE (obj%meshFacetData)
 ! BUG
 CALL e%raiseDebug(modName//'::'//myName//'-'// &
   & 'There should be better way to deallocate obj%meshList...')
-IF (ALLOCATED(obj%meshList)) DEALLOCATE (obj%meshList)
+IF (ALLOCATED(obj%meshList)) THEN
+  DEALLOCATE (obj%meshList)
+END IF
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
 IF (ALLOCATED(obj%local_nptrs)) DEALLOCATE (obj%local_nptrs)
 IF (ALLOCATED(obj%global_nptrs)) DEALLOCATE (obj%global_nptrs)

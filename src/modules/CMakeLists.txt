@@ -15,6 +15,9 @@
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
+# fhash
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Fhash/CMakeLists.txt)
+
 # ExceptionHandler
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 
@@ -53,6 +56,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
 
 # FPL
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FPL/CMakeLists.txt)
+
+# Toml 
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Toml/CMakeLists.txt)
 
 # Element
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/Element/CMakeLists.txt)
@@ -191,6 +197,9 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NeumannBC/CMakeLists.txt)
 
 # NitscheBC
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
+
+# BoundaryCondition
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/BoundaryCondition/CMakeLists.txt)
 
 # UserFunction
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)

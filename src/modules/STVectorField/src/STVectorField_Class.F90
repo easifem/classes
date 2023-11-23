@@ -20,7 +20,7 @@
 
 MODULE STVectorField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ExceptionHandler_Class, ONLY: e
@@ -28,10 +28,21 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
 USE DirichletBC_Class
+USE FiniteElement_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STVectorField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "STVectorField"
+PUBLIC :: STVectorFieldPointer_
+PUBLIC :: SetSTVectorFieldParam
+PUBLIC :: STVectorFieldInitiate1
+PUBLIC :: STVectorFieldInitiate2
+PUBLIC :: STVectorFieldDeallocate
+PUBLIC :: STVectorField
+PUBLIC :: STVectorField_Pointer
+PUBLIC :: STVectorFieldDisplay
+PUBLIC :: STVectorFieldImport
+PUBLIC :: STVectorFieldExport
 
 !----------------------------------------------------------------------------
 !                                                             STVectorField_
@@ -41,9 +52,10 @@ CHARACTER(*), PARAMETER :: myprefix = "STVectorField"
 ! date: 25 June 2021
 ! summary: STVector field
 !
-!{!pages/STVectorField_.md}
+!{!pages/docs-api/STVectorField/STVectorField_.md}
 
 TYPE, EXTENDS(AbstractNodeField_) :: STVectorField_
+  ! private
   INTEGER(I4B) :: spaceCompo = 0_I4B
   INTEGER(I4B) :: timeCompo = 0_I4B
 CONTAINS
@@ -57,59 +69,59 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => stvField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => stvField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => stvField_Export
-  PROCEDURE, PASS(obj) :: set1 => stvField_set1
-    !! set single entry
-  PROCEDURE, PASS(obj) :: set2 => stvField_set2
-    !! set all values to a STVector values
-  PROCEDURE, PASS(obj) :: set3 => stvField_set3
-    !! set all values to a given STvector
-  PROCEDURE, PASS(obj) :: set4 => stvField_set4
-    !! set selected values to given STVector
-  PROCEDURE, PASS(obj) :: set5 => stvField_set5
-    !! set selected values to given STvector
-  PROCEDURE, PASS(obj) :: set6 => stvField_set6
-    !! set values to a STVector by using triplet
-  PROCEDURE, PASS(obj) :: set7 => stvField_set7
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set8 => stvField_set8
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set9 => stvField_set9
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set10 => stvField_set10
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set11 => stvField_set11
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set12 => stvField_set12
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set13 => stvField_set13
-  PROCEDURE, PASS(obj) :: set14 => stvField_set14
-    !! set values to a STvector by using triplet
-  PROCEDURE, PASS(obj) :: set15 => stvField_set15
-  GENERIC, PUBLIC :: set => &
-    & set1, set2, set3, set4, set5, set6, &
-    & set7, set8, set9, set10, set11, &
-    & set12, set13, set14, set15
-  PROCEDURE, PASS(obj) :: get1 => stvField_get1
-  PROCEDURE, PASS(obj) :: get2 => stvField_get2
-  PROCEDURE, PASS(obj) :: get3 => stvField_get3
-  PROCEDURE, PASS(obj) :: get4 => stvField_get4
-  PROCEDURE, PASS(obj) :: get5 => stvField_get5
-  PROCEDURE, PASS(obj) :: get6 => stvField_get6
-  PROCEDURE, PASS(obj) :: get7 => stvField_get7
-  PROCEDURE, PASS(obj) :: get8 => stvField_get8
-  PROCEDURE, PASS(obj) :: get9 => stvField_get9
-  PROCEDURE, PASS(obj) :: get10 => stvField_get10
-  PROCEDURE, PASS(obj) :: get11 => stvField_get11
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, get5, &
-    & get6, get7, get8, get9, get10, get11
-  PROCEDURE, PUBLIC, PASS(obj) :: getPointerOfComponent =>  &
-    & stvField_getPointerOfComponent
-    !! get the entries of STVector field
-  PROCEDURE, PASS(obj) :: stvField_applyDirichletBC1
-  PROCEDURE, PASS(obj) :: stvField_applyDirichletBC2
-  GENERIC, PUBLIC :: applyDirichletBC => &
-    & stvField_applyDirichletBC1, &
-    & stvField_applyDirichletBC2
+  PROCEDURE, PASS(obj) :: Set1 => stvField_Set1
+    !! Set single entry
+  PROCEDURE, PASS(obj) :: Set2 => stvField_Set2
+    !! Set all values to a STVector values
+  PROCEDURE, PASS(obj) :: Set3 => stvField_Set3
+    !! Set all values to a given STvector
+  PROCEDURE, PASS(obj) :: Set4 => stvField_Set4
+    !! Set selected values to given STVector
+  PROCEDURE, PASS(obj) :: Set5 => stvField_Set5
+    !! Set selected values to given STvector
+  PROCEDURE, PASS(obj) :: Set6 => stvField_Set6
+    !! Set values to a STVector by using triplet
+  PROCEDURE, PASS(obj) :: Set7 => stvField_Set7
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set8 => stvField_Set8
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set9 => stvField_Set9
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set10 => stvField_Set10
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set11 => stvField_Set11
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set12 => stvField_Set12
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set13 => stvField_Set13
+  PROCEDURE, PASS(obj) :: Set14 => stvField_Set14
+    !! Set values to a STvector by using triplet
+  PROCEDURE, PASS(obj) :: Set15 => stvField_Set15
+  GENERIC, PUBLIC :: Set => &
+    & Set1, Set2, Set3, Set4, Set5, Set6, &
+    & Set7, Set8, Set9, Set10, Set11, &
+    & Set12, Set13, Set14, Set15
+  PROCEDURE, PASS(obj) :: Get1 => stvField_Get1
+  PROCEDURE, PASS(obj) :: Get2 => stvField_Get2
+  PROCEDURE, PASS(obj) :: Get3 => stvField_Get3
+  PROCEDURE, PASS(obj) :: Get4 => stvField_Get4
+  PROCEDURE, PASS(obj) :: Get5 => stvField_Get5
+  PROCEDURE, PASS(obj) :: Get6 => stvField_Get6
+  PROCEDURE, PASS(obj) :: Get7 => stvField_Get7
+  PROCEDURE, PASS(obj) :: Get8 => stvField_Get8
+  PROCEDURE, PASS(obj) :: Get9 => stvField_Get9
+  PROCEDURE, PASS(obj) :: Get10 => stvField_Get10
+  PROCEDURE, PASS(obj) :: Get11 => stvField_Get11
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, &
+    & Get6, Get7, Get8, Get9, Get10, Get11
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent =>  &
+    & stvField_GetPointerOfComponent
+    !! Get the entries of STVector field
+  PROCEDURE, PASS(obj) :: stvField_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: stvField_ApplyDirichletBC2
+  GENERIC, PUBLIC :: ApplyDirichletBC => &
+    & stvField_ApplyDirichletBC1, &
+    & stvField_ApplyDirichletBC2
 END TYPE STVectorField_
 
 PUBLIC :: STVectorField_
@@ -124,18 +136,16 @@ TYPE :: STVectorFieldPointer_
   CLASS(STVectorField_), POINTER :: ptr => NULL()
 END TYPE STVectorFieldPointer_
 
-PUBLIC :: STVectorFieldPointer_
-
 !----------------------------------------------------------------------------
-!                                   setSTVectorFieldParam@ConstructorMethods
+!                                   SetSTVectorFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Aug 2021
-! summary: set essential parameter
+! summary: Set essential parameter
 
 INTERFACE
-  MODULE SUBROUTINE setSTVectorFieldParam(param, name, engine, &
+  MODULE SUBROUTINE SetSTVectorFieldParam(param, name, engine, &
     & spaceCompo, timeCompo, fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
@@ -146,10 +156,8 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-  END SUBROUTINE setSTVectorFieldParam
+  END SUBROUTINE SetSTVectorFieldParam
 END INTERFACE
-
-PUBLIC :: setSTVectorFieldParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -186,19 +194,41 @@ END INTERFACE
 ! - `timeCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE
+INTERFACE STVectorFieldInitiate1
   MODULE SUBROUTINE stvField_Initiate1(obj, param, dom)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    TYPE(Domain_), TARGet, INTENT(IN) :: dom
   END SUBROUTINE stvField_Initiate1
-END INTERFACE
-
-INTERFACE STVectorFieldInitiate1
-  MODULE PROCEDURE stvField_Initiate1
 END INTERFACE STVectorFieldInitiate1
 
-PUBLIC :: STVectorFieldInitiate1
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This subroutine initiates the space-time vector field
+!
+!# Introduction
+!
+! This routine initiate the space-time vector field object.
+! `param` contains the information of parameters required to initiate the
+! this field.
+! There are essential and optional information.
+! Essential information are described below.
+! - `name`  character defining the name of STvector field
+! - `spaceCompo` is the total degree of freedom or components
+! - `timeCompo` is the total degree of freedom or components
+! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
+
+INTERFACE
+  MODULE SUBROUTINE stvField_Initiate1_old(obj, param, dom)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+  END SUBROUTINE stvField_Initiate1_old
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -208,7 +238,7 @@ PUBLIC :: STVectorFieldInitiate1
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE
+INTERFACE STVectorFieldInitiate2
   MODULE SUBROUTINE stvField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
@@ -218,13 +248,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE stvField_Initiate2
-END INTERFACE
-
-INTERFACE STVectorFieldInitiate2
-  MODULE PROCEDURE stvField_Initiate2
 END INTERFACE STVectorFieldInitiate2
-
-PUBLIC :: STVectorFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -234,17 +258,11 @@ PUBLIC :: STVectorFieldInitiate2
 ! date: 25 June 2021
 ! summary: This routine deallocates the data stored inside the STVectorField_ obj
 
-INTERFACE
+INTERFACE STVectorFieldDeallocate
   MODULE SUBROUTINE stvField_Deallocate(obj)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
   END SUBROUTINE stvField_Deallocate
-END INTERFACE
-
-INTERFACE STVectorFieldDeallocate
-  MODULE PROCEDURE stvField_Deallocate
 END INTERFACE STVectorFieldDeallocate
-
-PUBLIC :: STVectorFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -264,19 +282,13 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This function returns an instance of [[STVectorField_]]
 
-INTERFACE
+INTERFACE STVectorField
   MODULE FUNCTION stvField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    TYPE(Domain_), TARGet, INTENT(IN) :: dom
     TYPE(STVectorField_) :: ans
   END FUNCTION stvField_Constructor1
-END INTERFACE
-
-INTERFACE STVectorField
-  MODULE PROCEDURE stvField_Constructor1
 END INTERFACE STVectorField
-
-PUBLIC :: STVectorField
 
 !----------------------------------------------------------------------------
 !                                   STVectorField_Pointer@ConstructorMethods
@@ -286,19 +298,13 @@ PUBLIC :: STVectorField
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[STVectorField_]]
 
-INTERFACE
+INTERFACE STVectorField_Pointer
   MODULE FUNCTION stvField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    TYPE(Domain_), TARGet, INTENT(IN) :: dom
     CLASS(STVectorField_), POINTER :: ans
   END FUNCTION stvField_Constructor_1
-END INTERFACE
-
-INTERFACE STVectorField_Pointer
-  MODULE PROCEDURE stvField_Constructor_1
 END INTERFACE STVectorField_Pointer
-
-PUBLIC :: STVectorField_Pointer
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
@@ -308,19 +314,13 @@ PUBLIC :: STVectorField_Pointer
 ! date: 26 June 2021
 ! summary: Display the content of [[STVectorField_]]
 
-INTERFACE
+INTERFACE STVectorFieldDisplay
   MODULE SUBROUTINE stvField_Display(obj, msg, unitNo)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE stvField_Display
-END INTERFACE
-
-INTERFACE STVectorFieldDisplay
-  MODULE PROCEDURE stvField_Display
 END INTERFACE STVectorFieldDisplay
-
-PUBLIC :: STVectorFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -330,21 +330,15 @@ PUBLIC :: STVectorFieldDisplay
 ! date: 16 July 2021
 ! summary: This routine Imports the content
 
-INTERFACE
+INTERFACE STVectorFieldImport
   MODULE SUBROUTINE stvField_Import(obj, hdf5, group, dom, domains)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    TYPE(Domain_), TARGet, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGet, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE stvField_Import
-END INTERFACE
-
-INTERFACE STVectorFieldImport
-  MODULE PROCEDURE stvField_Import
 END INTERFACE STVectorFieldImport
-
-PUBLIC :: STVectorFieldImport
 
 !----------------------------------------------------------------------------
 !                                                           Export@IOMethods
@@ -354,19 +348,13 @@ PUBLIC :: STVectorFieldImport
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE
+INTERFACE STVectorFieldExport
   MODULE SUBROUTINE stvField_Export(obj, hdf5, group)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE stvField_Export
-END INTERFACE
-
-INTERFACE STVectorFieldExport
-  MODULE PROCEDURE stvField_Export
 END INTERFACE STVectorFieldExport
-
-PUBLIC :: STVectorFieldExport
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -374,10 +362,10 @@ PUBLIC :: STVectorFieldExport
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the single entry of the STVector field
+! summary: This routine Sets the single entry of the STVector field
 !
 !# Introduction
-! This routine sets the single entry of the STvector field. Here,
+! This routine Sets the single entry of the STvector field. Here,
 ! `value` is a two dimensional array of real numbers, denoting the space-time
 ! components of the vector. The first index denotes the space components,
 ! second index denotes the time-components. As a result, total number of rows
@@ -387,14 +375,14 @@ PUBLIC :: STVectorFieldExport
 ! STvector( :, :, globalNode ) = value( :, : )
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set1(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE stvField_Set1(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set1
+  END SUBROUTINE stvField_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -403,10 +391,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets all the entries of a STVector field
+! summary: This routine Sets all the entries of a STVector field
 !
 !# Introduction
-! This routine sets all entries of the STvector field. Here,
+! This routine Sets all entries of the STvector field. Here,
 ! `value` is a two dimensional array of real numbers, denoting the space-time
 ! components of the vector. The first index denotes the space components,
 ! second index denotes the time-components. As a result, total number of rows
@@ -416,12 +404,12 @@ END INTERFACE
 ! STvector( :, :, i ) = value( :, : ), for i = 1, tNodes
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set2(obj, VALUE, scale, addContribution)
-    CLASS(STVectorField_), TARGET, INTENT(INOUT) :: obj
+  MODULE SUBROUTINE stvField_Set2(obj, VALUE, scale, addContribution)
+    CLASS(STVectorField_), TARGet, INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set2
+  END SUBROUTINE stvField_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -430,17 +418,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets all the entries of a STVector field
+! summary: This routine Sets all the entries of a STVector field
 !
 !# Introduction
-! This routine sets all entries of the space-time vector field. Here
+! This routine Sets all entries of the space-time vector field. Here
 ! `spaceCompo` and `timeCompo` are the spatial temporal components, which we
 ! want to replace by a scalar value `value`.
 !
 ! STvector( spaceCompo, timeCompo, i ) = value, for i = 1, tNodes
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set3(obj, VALUE, spaceCompo, timeCompo, &
+  MODULE SUBROUTINE stvField_Set3(obj, VALUE, spaceCompo, timeCompo, &
     & scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
@@ -448,7 +436,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set3
+  END SUBROUTINE stvField_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -457,10 +445,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all the entries by using given STVector field
+! summary: This routine Set all the entries by using given STVector field
 !
 !# Introduction
-! This routine set all entries of the space-time vector.
+! This routine Set all entries of the space-time vector.
 ! The first index of `value` denotes the spatial components
 ! The second index of `value` denotes the temporal components
 ! The thrid index of `value` denotes the node number
@@ -468,12 +456,12 @@ END INTERFACE
 ! STvector( :, :, : ) = value( :, :, : )
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set4(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE stvField_Set4(obj, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set4
+  END SUBROUTINE stvField_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -482,11 +470,11 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all nodal values of a given space-time component
+! summary: This routine Set all nodal values of a given space-time component
 !
 !# Introduction
 !
-! This routine sets all entries of the space-time vector field. Here
+! This routine Sets all entries of the space-time vector field. Here
 ! `spaceCompo` and `timeCompo` are the spatial temporal components, which we
 ! want to replace by a vector `value`. Note that the size of `value` should
 ! be equal to the total number of nodes in the mesh.
@@ -494,7 +482,7 @@ END INTERFACE
 ! STvector( spaceCompo, timeCompo, : ) = value( : )
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set5(obj, VALUE, spaceCompo, timeCompo,  &
+  MODULE SUBROUTINE stvField_Set5(obj, VALUE, spaceCompo, timeCompo,  &
     & scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
@@ -502,7 +490,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set5
+  END SUBROUTINE stvField_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -511,11 +499,11 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine set all nodal values of a given space-time component
+! summary: This routine Set all nodal values of a given space-time component
 !
 !# Introduction
 !
-! This routine sets all entries of the space-time vector field. Here
+! This routine Sets all entries of the space-time vector field. Here
 ! `spaceCompo` and `timeCompo` are the spatial temporal components, which we
 ! want to replace by a vector of scalars. These vectors of scalar are stored
 ! inside a scalar field called `value`. Note that the size of `value` should
@@ -524,7 +512,7 @@ END INTERFACE
 ! STvector( spaceCompo, : ) = value
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set6(obj, VALUE, spaceCompo, timeCompo,  &
+  MODULE SUBROUTINE stvField_Set6(obj, VALUE, spaceCompo, timeCompo,  &
     & scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
@@ -532,7 +520,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set6
+  END SUBROUTINE stvField_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -541,10 +529,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This soubroutine sets the selected enties in space-time vector to a
+! This soubroutine Sets the selected enties in space-time vector to a
 ! constant space-time nodal values. Here globalNode is the list of global
 ! node number. `value` is a rank2 array of real numbers. Its first index
 ! denotes the space component and second component denotes the time component.
@@ -554,14 +542,14 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, : ), for entries in global nodes
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set7(obj, VALUE, globalNode, scale,  &
+  MODULE SUBROUTINE stvField_Set7(obj, VALUE, globalNode, scale,  &
     & addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set7
+  END SUBROUTINE stvField_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -570,10 +558,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This routine sets selected entries of space-time vector field. Here
+! This routine Sets selected entries of space-time vector field. Here
 ! globalNode contains the list of global nodes where values will be changed.
 !
 ! - `value` is a rank-3 array.
@@ -588,14 +576,14 @@ END INTERFACE
 ! STvector( :, :, globalNode ) = value( :, :, : )
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set8(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE stvField_Set8(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:, :, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set8
+  END SUBROUTINE stvField_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -604,15 +592,15 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This routine sets the selected components of selected nodes to a given value
+! This routine Sets the selected components of selected nodes to a given value
 !
 ! STvector( spaceCompo, globalNode ) = value( : )
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set9(obj, VALUE, globalNode, spaceCompo,  &
+  MODULE SUBROUTINE stvField_Set9(obj, VALUE, globalNode, spaceCompo,  &
     & timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
@@ -621,7 +609,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set9
+  END SUBROUTINE stvField_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -630,7 +618,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 !
 !# Introduction
 ! selected components, selected nodes
@@ -638,7 +626,7 @@ END INTERFACE
 ! STvector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set10(obj, VALUE, globalNode, spaceCompo, &
+  MODULE SUBROUTINE stvField_Set10(obj, VALUE, globalNode, spaceCompo, &
     & timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
@@ -647,7 +635,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set10
+  END SUBROUTINE stvField_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -656,10 +644,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set11(obj, VALUE, istart, iend, stride,  &
+  MODULE SUBROUTINE stvField_Set11(obj, VALUE, istart, iend, stride,  &
     & scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
@@ -668,7 +656,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set11
+  END SUBROUTINE stvField_Set11
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -677,10 +665,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the STvector values using triplet
+! summary: Set the STvector values using triplet
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set12(obj, VALUE, istart, iend, stride,  &
+  MODULE SUBROUTINE stvField_Set12(obj, VALUE, istart, iend, stride,  &
     & scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :, :)
@@ -689,7 +677,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: stride
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set12
+  END SUBROUTINE stvField_Set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -698,17 +686,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the STvector values using triplet
+! summary: Set the STvector values using triplet
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set13(obj, VALUE, globalNode, scale, &
+  MODULE SUBROUTINE stvField_Set13(obj, VALUE, globalNode, scale, &
     & addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set13
+  END SUBROUTINE stvField_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -717,15 +705,15 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: set the STvector values using triplet
+! summary: Set the STvector values using triplet
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set14(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE stvField_Set14(obj, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set14
+  END SUBROUTINE stvField_Set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -737,7 +725,7 @@ END INTERFACE
 ! summary: Setvalues
 
 INTERFACE
-  MODULE SUBROUTINE stvField_set15(obj, ivar, idof, VALUE, ivar_value, &
+  MODULE SUBROUTINE stvField_Set15(obj, ivar, idof, VALUE, ivar_value, &
     & idof_value, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -747,7 +735,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof_value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE stvField_set15
+  END SUBROUTINE stvField_Set15
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -768,14 +756,14 @@ END INTERFACE
 ! - Either globalNode should be present or
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get1(obj, VALUE, globalNode, spaceCompo, &
+  MODULE SUBROUTINE stvField_Get1(obj, VALUE, globalNode, spaceCompo, &
     & timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-  END SUBROUTINE stvField_get1
+  END SUBROUTINE stvField_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -784,7 +772,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine get all the entries of the space-time vector field
+! summary: This routine Get all the entries of the space-time vector field
 !
 !# Introduction
 ! This routine returns all the nodal values of a space-time nodal vector field.
@@ -795,10 +783,10 @@ END INTERFACE
 ! - the third index denotes the node number.
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get2(obj, VALUE)
+  MODULE SUBROUTINE stvField_Get2(obj, VALUE)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :, :)
-  END SUBROUTINE stvField_get2
+  END SUBROUTINE stvField_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -821,11 +809,11 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get3(obj, VALUE, globalNode)
+  MODULE SUBROUTINE stvField_Get3(obj, VALUE, globalNode)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :, :)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE stvField_get3
+  END SUBROUTINE stvField_Get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -844,14 +832,14 @@ END INTERFACE
 ! that the length of value should be equal to the size of globalNode vector.
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get4(obj, VALUE, globalNode, spaceCompo, &
+  MODULE SUBROUTINE stvField_Get4(obj, VALUE, globalNode, spaceCompo, &
     & timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-  END SUBROUTINE stvField_get4
+  END SUBROUTINE stvField_Get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -863,14 +851,14 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get5(obj, VALUE, globalNode, spaceCompo, &
+  MODULE SUBROUTINE stvField_Get5(obj, VALUE, globalNode, spaceCompo, &
     & timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-  END SUBROUTINE stvField_get5
+  END SUBROUTINE stvField_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -882,13 +870,13 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get6(obj, VALUE, istart, iend, stride)
+  MODULE SUBROUTINE stvField_Get6(obj, VALUE, istart, iend, stride)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :, :)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
-  END SUBROUTINE stvField_get6
+  END SUBROUTINE stvField_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -900,7 +888,7 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get7(obj, VALUE, istart, iend, stride, &
+  MODULE SUBROUTINE stvField_Get7(obj, VALUE, istart, iend, stride, &
     & spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
@@ -909,7 +897,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: stride
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-  END SUBROUTINE stvField_get7
+  END SUBROUTINE stvField_Get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -921,11 +909,11 @@ END INTERFACE
 ! summary: This routine returns the space-time value at given node number
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get8(obj, VALUE, globalNode)
+  MODULE SUBROUTINE stvField_Get8(obj, VALUE, globalNode)
     CLASS(STVectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: globalNode
-  END SUBROUTINE stvField_get8
+  END SUBROUTINE stvField_Get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -937,11 +925,11 @@ END INTERFACE
 ! summary: This routine returns the space-time value at given node number
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get9(obj, VALUE, globalNode)
+  MODULE SUBROUTINE stvField_Get9(obj, VALUE, globalNode)
     CLASS(STVectorField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE stvField_get9
+  END SUBROUTINE stvField_Get9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -953,16 +941,16 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE stvField_get10(obj, VALUE, spaceCompo, timeCompo)
+  MODULE SUBROUTINE stvField_Get10(obj, VALUE, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-  END SUBROUTINE stvField_get10
+  END SUBROUTINE stvField_Get10
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -970,18 +958,18 @@ END INTERFACE
 ! summary: REturns the value
 
 INTERFACE
-MODULE SUBROUTINE stvField_get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
+MODULE SUBROUTINE stvField_Get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(STVectorField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: ivar_value
     INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE stvField_get11
+  END SUBROUTINE stvField_Get11
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -989,14 +977,14 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stvField_applyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE stvField_ApplyDirichletBC1(obj, dbc)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
-  END SUBROUTINE stvField_applyDirichletBC1
+  END SUBROUTINE stvField_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1004,14 +992,14 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stvField_applyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE stvField_ApplyDirichletBC2(obj, dbc)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-  END SUBROUTINE stvField_applyDirichletBC2
+  END SUBROUTINE stvField_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         getPointerOfComponent@GetMethods
+!                                         GetPointerOfComponent@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1019,13 +1007,13 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-  MODULE FUNCTION stvField_getPointerOfComponent(obj, spaceCompo, timeCompo) &
+  MODULE FUNCTION stvField_GetPointerOfComponent(obj, spaceCompo, timeCompo) &
     & RESULT(ans)
     CLASS(STVectorField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), POINTER :: ans(:)
-  END FUNCTION stvField_getPointerOfComponent
+  END FUNCTION stvField_GetPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------

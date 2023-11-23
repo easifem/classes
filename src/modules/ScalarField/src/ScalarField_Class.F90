@@ -21,7 +21,7 @@
 MODULE ScalarField_Class
 USE GlobalData
 USE String_Class
-USE BaseType
+USE BaSetype
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ExceptionHandler_Class, ONLY: e
@@ -29,6 +29,7 @@ USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE Domain_Class
 USE DirichletBC_Class
+USE FiniteElement_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
@@ -41,6 +42,7 @@ PUBLIC :: ScalarFieldInitiate1
 PUBLIC :: ScalarField
 PUBLIC :: ScalarField_Pointer
 PUBLIC :: ScalarFieldImport
+PUBLIC :: ScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -59,27 +61,27 @@ CONTAINS
     & sField_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => sField_Initiate1
   FINAL :: sField_Final
-  PROCEDURE, PASS(obj) :: Set1 => sField_set1
+  PROCEDURE, PASS(obj) :: Set1 => sField_Set1
     !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => sField_set2
+  PROCEDURE, PASS(obj) :: Set2 => sField_Set2
     !! Set all values to a scalar values
-  PROCEDURE, PASS(obj) :: Set3 => sField_set3
+  PROCEDURE, PASS(obj) :: Set3 => sField_Set3
     !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => sField_set4
+  PROCEDURE, PASS(obj) :: Set4 => sField_Set4
     !! Set selected values to given scalar
-  PROCEDURE, PASS(obj) :: Set5 => sField_set5
+  PROCEDURE, PASS(obj) :: Set5 => sField_Set5
     !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => sField_set6
+  PROCEDURE, PASS(obj) :: Set6 => sField_Set6
     !! Set values to a scalar by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => sField_set7
+  PROCEDURE, PASS(obj) :: Set7 => sField_Set7
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => sField_set8
+  PROCEDURE, PASS(obj) :: Set8 => sField_Set8
     !! This method is used for assignment operator
-  PROCEDURE, PASS(obj) :: Set9 => sField_set9
+  PROCEDURE, PASS(obj) :: Set9 => sField_Set9
     !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set10 => sField_set10
+  PROCEDURE, PASS(obj) :: Set10 => sField_Set10
     !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set11 => sField_set11
+  PROCEDURE, PASS(obj) :: Set11 => sField_Set11
     !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
     & Set5, Set6, Set7, Set8, Set9, Set10, Set11
@@ -104,12 +106,12 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyDirichletBC => &
     & sField_ApplyDirichletBC1, &
     & sField_ApplyDirichletBC2
-  !!
+  !! Apply Dirichlet Boundary Condition
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => sField_Import
 END TYPE ScalarField_
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 TYPE(ScalarField_), PARAMETER, PUBLIC ::  &
@@ -184,15 +186,34 @@ END INTERFACE
 ! Essential information are described below.
 
 INTERFACE
+  MODULE SUBROUTINE sField_Initiate_old(obj, param, dom)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE sField_Initiate_old
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Initiate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 June 2021
+! summary: This subroutine initiates the ScalarField_ object
+!
+!# Introduction
+!
+! This routine initiate the [[ScalarField_]] object.
+! `param` contains the information of parameters required to initiate the
+! scalar field. There are essential and optional information.
+! Essential information are described below.
+
+INTERFACE ScalarFieldInitiate1
   MODULE SUBROUTINE sField_Initiate1(obj, param, dom)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE sField_Initiate1
-END INTERFACE
-
-INTERFACE ScalarFieldInitiate1
-  MODULE PROCEDURE sField_Initiate1
 END INTERFACE ScalarFieldInitiate1
 
 !----------------------------------------------------------------------------
@@ -206,6 +227,16 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                         Final@Constructor
+!----------------------------------------------------------------------------
+
+INTERFACE ScalarFieldDeallocate
+  MODULE SUBROUTINE sField_Deallocate(obj)
+    TYPE(ScalarField_), INTENT(INOUT) :: obj
+  END SUBROUTINE sField_Deallocate
+END INTERFACE ScalarFieldDeallocate
+
+!----------------------------------------------------------------------------
 !                                                         Vector@Constructor
 !----------------------------------------------------------------------------
 
@@ -216,7 +247,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION sField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(ScalarField_) :: ans
   END FUNCTION sField_Constructor1
 END INTERFACE
@@ -236,7 +267,7 @@ END INTERFACE ScalarField
 INTERFACE
   MODULE FUNCTION sField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(ScalarField_), POINTER :: ans
   END FUNCTION sField_Constructor_1
 END INTERFACE
@@ -258,8 +289,8 @@ INTERFACE
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGet, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGet, OPTIONAL, INTENT(IN) :: domains(:)
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE sField_Import
 END INTERFACE
 

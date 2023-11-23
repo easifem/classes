@@ -30,7 +30,7 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
 PUBLIC :: AbstractMeshField_
 PUBLIC :: AbstractMeshFieldPointer_
 PUBLIC :: SetAbstractMeshFieldParam
-PUBLIC :: AbstractFieldCheckEssentialParam
+PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
 PUBLIC :: DEALLOCATE
@@ -172,11 +172,11 @@ END INTERFACE
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, prefix, param)
+  MODULE SUBROUTINE AbstractMeshFieldCheckEssentialParam(obj, prefix, param)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: prefix
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE AbstractFieldCheckEssentialParam
+  END SUBROUTINE AbstractMeshFieldCheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------

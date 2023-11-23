@@ -17,21 +17,40 @@
 
 SUBMODULE(VectorField_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       setVectorFieldParam
+!                                                       SetVectorFieldParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setVectorFieldParam
-INTEGER(I4B) :: ierr
-ierr = param%set(key=myprefix//"/name", VALUE=TRIM(name))
-ierr = param%set(key=myprefix//"/engine", VALUE=TRIM(engine))
-ierr = param%set(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
-ierr = param%set(key=myprefix//"/fieldType",  &
-  & VALUE=INPUT(default=FIELD_TYPE_NORMAL, option=fieldType))
-END PROCEDURE setVectorFieldParam
+MODULE PROCEDURE SetVectorFieldParam
+TYPE(ParameterList_), POINTER :: sublist
+
+CALL SetAbstractFieldParam( &
+  & param=param, &
+  & prefix=myprefix, &
+  & name=name, &
+  & engine=engine, &
+  & fieldType=fieldType, &
+  & comm=comm, &
+  & local_n=local_n, &
+  & global_n=global_n)
+
+sublist => NULL()
+sublist => param%NewSubList(key=myprefix)
+
+CALL Set( &
+  & obj=sublist, &
+  & datatype=TypeIntI4B, &
+  & prefix=myprefix, &
+  & key="spaceCompo", &
+  & VALUE=spaceCompo)
+
+sublist => NULL()
+
+END PROCEDURE SetVectorFieldParam
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
@@ -39,25 +58,71 @@ END PROCEDURE setVectorFieldParam
 
 MODULE PROCEDURE vField_checkEssentialParam
 CHARACTER(*), PARAMETER :: myName = "vField_checkEssentialParam"
-IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
+CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
+IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/name should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/engine")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/engine should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/spaceCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/spaceCompo should be present in param')
+    & 'spaceCompo should be present in param.')
 END IF
 END PROCEDURE vField_checkEssentialParam
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "vField_Initiate1()"
+TYPE(String) :: astr
+INTEGER(I4B) :: nsd, tdof, ierr, spaceCompo, tNodes
+TYPE(ParameterList_), POINTER :: sublist
+
+! main
+sublist => NULL()
+
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
+
+CALL obj%CheckEssentialParam(sublist)
+CALL obj%DEALLOCATE()
+
+CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
+CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", VALUE=spaceCompo)
+tNodes = dom%GetTotalNodes()
+tdof = tNodes * spaceCompo
+
+CALL AbstractNodeFieldSetParam(obj=obj,  &
+  & dof_tPhysicalVars=1_I4B,  &
+  & dof_storageFMT=NODES_FMT,  &
+  & dof_spaceCompo=[spaceCompo],  &
+  & dof_timeCompo=[1_I4B],  &
+  & dof_tNodes=[tNodes],  &
+  & dof_names_char=[astr%slice(1, 1)],  &
+  & tSize=tdof)
+
+nsd = dom%GetNSD()
+
+CALL AbstractNodeFieldInitiate( &
+  & obj=obj,  &
+  & param=param,  &
+  & dom=dom,  &
+  & prefix=myprefix)
+
+astr = ""
+sublist => NULL()
+END PROCEDURE vField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Initiate1
+MODULE PROCEDURE vField_Initiate1_old
 CHARACTER(*), PARAMETER :: myName = "vField_Initiate"
 INTEGER(I4B) :: ierr, storageFMT, tNodes(1), timeCompo(1), &
   & spaceCompo(1)
@@ -138,7 +203,7 @@ CALL Initiate(obj%realVec, obj%dof)
 obj%isInitiated = .TRUE.
 
 IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
-END PROCEDURE vField_Initiate1
+END PROCEDURE vField_Initiate1_old
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
@@ -179,7 +244,7 @@ END PROCEDURE vField_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE vField_Constructor1
-CALL ans%initiate(param, dom)
+CALL ans%Initiate(param, dom)
 END PROCEDURE vField_Constructor1
 
 !----------------------------------------------------------------------------
@@ -188,7 +253,7 @@ END PROCEDURE vField_Constructor1
 
 MODULE PROCEDURE vField_Constructor_1
 ALLOCATE (ans)
-CALL ans%initiate(param, dom)
+CALL ans%Initiate(param, dom)
 END PROCEDURE vField_Constructor_1
 
 !----------------------------------------------------------------------------

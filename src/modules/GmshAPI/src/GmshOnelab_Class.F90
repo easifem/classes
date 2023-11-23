@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#ifdef USE_GMSH_SDK
 MODULE GmshOnelab_Class
 USE GlobalData, ONLY: DFP, I4B
 USE Utility, ONLY: Reallocate
@@ -25,13 +24,15 @@ USE ExceptionHandler_Class, ONLY: e
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "GMSHONELAB_CLASS"
+CHARACTER(*), PARAMETER :: modName = "GmshOnelab_Class"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
+PUBLIC :: GmshOnelab_
+PUBLIC :: GmshOnelabPointer_
 
 !----------------------------------------------------------------------------
-!                                                            GmshOnelab_
+!                                                               GmshOnelab_
 !----------------------------------------------------------------------------
 
 TYPE :: GmshOnelab_
@@ -41,11 +42,23 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Set => onelab_Set
   PROCEDURE, PUBLIC, PASS(obj) :: Get => onelab_Get
   PROCEDURE, PUBLIC, PASS(obj) :: GetNumber => onelab_GetNumber
-  PROCEDURE, PUBLIC, PASS(obj) :: SetString => onelab_SetString
   PROCEDURE, PUBLIC, PASS(obj) :: GetString => onelab_GetString
+  PROCEDURE, PUBLIC, PASS(obj) :: SetString => onelab_SetString
+
+  ! TODO:
+  ! Following methods needs to be implemented in GmshOnelab_
+  ! procedure, public, pass(obj) :: getNames => onelab_getNames
+  ! procedure, public, pass(obj) :: setNumber => onelab_setNumber
+  ! procedure, public, pass(obj) :: getChanged => onelab_getChanged
+  ! procedure, public,  pass(obj) :: setChanged => onelab_setChanged
+  ! procedure, public, pass(obj) :: clear => onelab_clear
+  ! procedure, public, pass(obj) :: run => onelab_run
+
 END TYPE GmshOnelab_
 
-PUBLIC :: GmshOnelab_
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 TYPE(GmshOnelab_), PUBLIC, PARAMETER :: TypeGmshOnelab = GmshOnelab_()
 
@@ -57,8 +70,6 @@ TYPE :: GmshOnelabPointer_
   CLASS(GmshOnelab_), POINTER :: ptr => NULL()
 END TYPE GmshOnelabPointer_
 
-PUBLIC :: GmshOnelabPointer_
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -68,6 +79,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-03
+! summary:  Currently, this routine does nothing
 
 SUBROUTINE onelab_Initiate(obj)
   CLASS(GmshOnelab_), INTENT(INOUT) :: obj
@@ -80,34 +95,23 @@ END SUBROUTINE onelab_Initiate
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 Sept 2021
 ! summary: Set one or more parameters in the ONELAB database, encoded in `format'.
-!
-!# Introduction
-!
-! Set one or more parameters in the ONELAB database, encoded in `format'.
-!
-!
-!### Usage
-!
-!```fortran
-! To do
-!```
 
-FUNCTION onelab_Set(obj, data, format) RESULT(ans)
+FUNCTION onelab_Set(obj, DATA, FORMAT) RESULT(ans)
   CLASS(GmshOnelab_), INTENT(INOUT) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: data
-  CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: format
+  CHARACTER(*), INTENT(IN) :: DATA
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: FORMAT
   INTEGER(I4B) :: ans
   ! internal variables
-  CHARACTER(LEN=:), ALLOCATABLE, TARGET :: data_, format_
+  CHARACTER(:), ALLOCATABLE, TARGET :: data_, format_
   TYPE(C_PTR) :: format_ptr
   !> main
-  data_ = TRIM(data)//C_NULL_CHAR
-  IF (PRESENT(format)) THEN
-    format_ = TRIM(format)//C_NULL_CHAR
-    format_ptr = C_LOC(format_)
+  data_ = TRIM(DATA)//C_NULL_CHAR
+  IF (PRESENT(FORMAT)) THEN
+    format_ = TRIM(FORMAT)//C_NULL_CHAR
   ELSE
-    format_ptr = C_NULL_PTR
+    format_ = "json"//C_NULL_CHAR
   END IF
+  format_ptr = C_LOC(format_)
   CALL gmshOnelabSet(C_LOC(data_), format_ptr, ierr)
   ans = INT(ierr, I4B)
 END FUNCTION onelab_Set
@@ -119,33 +123,24 @@ END FUNCTION onelab_Set
 !> authors: Vikas Sharma, Ph. D.
 ! date: 23 Sept 2021
 ! summary: Get one or more parameters from the ONELAB database.
-!
-!# Introduction
-!
-!  Get all the parameters (or a single one if `name` is specified) from the
-!  ONELAB database, encoded in `format`.
-!
-!### Usage
-!
-!```fortran
-! To do
-!```
 
-FUNCTION onelab_Get(obj, data, name, format) RESULT(ans)
+FUNCTION onelab_Get(obj, DATA, name, FORMAT) RESULT(ans)
   CLASS(GmshOnelab_), INTENT(INOUT) :: obj
-  TYPE(C_PTR), TARGET, INTENT(IN) :: data(*)
-  CHARACTER(LEN=*), INTENT(IN) :: name
-  CHARACTER(LEN=*), INTENT(IN) :: format
+  TYPE(C_PTR), TARGET, INTENT(IN) :: DATA(*)
+  CHARACTER(*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: FORMAT
   INTEGER(I4B) :: ans
   ! !> internal variables
   ! CHARACTER( LEN = : ), ALLOCATABLE, TARGET :: name_, format_
-  CHARACTER(LEN=*), PARAMETER :: myName = "onelab_Get()"
+  CHARACTER(*), PARAMETER :: myName = "onelab_Get()"
   ! !> main
   ! name_ = TRIM( name ) // C_NULL_CHAR
   ! format_ = TRIM( format ) // C_NULL_CHAR
   ! CALL gmshOnelabGet( data, C_LOC( name_ ), C_LOC( format_) )
+  ! TODO: 
+  ! Implement onelab_Get method
   CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "This routine is under construction.")
+    & "[WIP ERROR] :: This routine is under construction.")
 END FUNCTION onelab_Get
 
 !----------------------------------------------------------------------------
@@ -161,22 +156,22 @@ END FUNCTION onelab_Get
 ! Get the value of the number parameter `name` from the ONELAB database.
 !  Return an empty vector if the parameter does not exist.
 
-FUNCTION onelab_GetNumber(obj, name, value, value_n) RESULT(ans)
+FUNCTION onelab_GetNumber(obj, name, VALUE, value_n) RESULT(ans)
   CLASS(GmshOnelab_), INTENT(IN) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: name
-  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: value(:)
+  CHARACTER(*), INTENT(IN) :: name
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
   INTEGER(I4B), OPTIONAL, INTENT(OUT) :: value_n
   INTEGER(I4B) :: ans
   !> Internal variables
   TYPE(C_PTR) :: cptr
   INTEGER(C_SIZE_T) :: value_n_
-  CHARACTER(LEN=:), ALLOCATABLE, TARGET :: name_
+  CHARACTER(:), ALLOCATABLE, TARGET :: name_
   !> main
   name_ = TRIM(name)//C_NULL_CHAR
   CALL gmshOnelabGetNumber(C_LOC(name_), cptr, value_n_, ierr)
-  CALL Reallocate(value, INT(value_n_, I4B))
+  CALL Reallocate(VALUE, INT(value_n_, I4B))
   IF (PRESENT(value_n)) value_n = value_n_
-  CALL C_PTR_TO_REAL_VEC(cptr=cptr, vec=value)
+  CALL C_PTR_TO_REAL_VEC(cptr=cptr, vec=VALUE)
   ans = INT(ierr, I4B)
 END FUNCTION onelab_GetNumber
 
@@ -201,16 +196,16 @@ END FUNCTION onelab_GetNumber
 !                                   int *ierr);
 !```
 
-FUNCTION onelab_SetString(obj, name, value) RESULT(ans)
+FUNCTION onelab_SetString(obj, name, VALUE) RESULT(ans)
   CLASS(GmshOnelab_), INTENT(INOUT) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: name
-  CHARACTER(LEN=*), INTENT(IN) :: value
+  CHARACTER(*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: VALUE
   INTEGER(I4B) :: ans
   !> internal variables
-  CHARACTER(LEN=:), ALLOCATABLE, TARGET :: name_
-  CHARACTER(LEN=:), ALLOCATABLE, TARGET :: value_
+  CHARACTER(:), ALLOCATABLE, TARGET :: name_
+  CHARACTER(:), ALLOCATABLE, TARGET :: value_
   name_ = TRIM(name)//C_NULL_CHAR
-  value_ = TRIM(value)//C_NULL_CHAR
+  value_ = TRIM(VALUE)//C_NULL_CHAR
   CALL gmshOnelabSetString(C_LOC(name_), C_LOC(value_), &
     & LEN(value_, C_SIZE_T), ierr)
   ans = INT(ierr, I4B)
@@ -237,27 +232,26 @@ END FUNCTION onelab_SetString
 !                                   int *ierr);
 !```
 
-FUNCTION onelab_GetString(obj, name, value, value_n) RESULT(ans)
+FUNCTION onelab_GetString(obj, name, VALUE, value_n) RESULT(ans)
   CLASS(GmshOnelab_), INTENT(IN) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: name
-  CHARACTER(LEN=:), ALLOCATABLE, INTENT(INOUT) :: value
+  CHARACTER(*), INTENT(IN) :: name
+  CHARACTER(:), ALLOCATABLE, INTENT(INOUT) :: VALUE
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: value_n
   INTEGER(I4B) :: ans
   !> internal variables
   TYPE(C_PTR) :: ptrValue
-  CHARACTER(LEN=:), ALLOCATABLE, TARGET :: name_
+  CHARACTER(:), ALLOCATABLE, TARGET :: name_
   INTEGER(C_SIZE_T) :: value_n_
   !> main
   name_ = TRIM(name)//C_NULL_CHAR
   CALL gmshOnelabGetString(C_LOC(name_), ptrValue, value_n_, ierr)
   IF (value_n_ .EQ. 0) THEN
-    value = ""
+    VALUE = ""
   ELSE
-    ALLOCATE (CHARACTER(LEN=value_n_) :: value)
-    CALL C2Fortran(C_String=ptrValue, F_STRING=value)
+    ALLOCATE (CHARACTER(value_n_) :: VALUE)
+    CALL C2Fortran(C_String=ptrValue, F_STRING=VALUE)
   END IF
   ans = INT(ierr, I4B)
 END FUNCTION onelab_GetString
 
 END MODULE GmshOnelab_Class
-#endif

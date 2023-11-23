@@ -28,43 +28,83 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Add
-CHARACTER(LEN=*), PARAMETER :: myName = "meshSelect_Add"
-IF (PRESENT(dim) .AND. PRESENT(meshID)) THEN
+CHARACTER(*), PARAMETER :: myName = "meshSelect_Add"
+LOGICAL(LGT) :: bool1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Add()')
+#endif
+
+bool1 = PRESENT(dim) .AND. PRESENT(meshID)
+IF (bool1) THEN
   obj%isSelectionByMeshID = .TRUE.
   SELECT CASE (dim)
   CASE (0)
-    CALL APPEND(obj%PointMeshID, meshID)
+    CALL Append(obj%pointMeshID, meshID)
   CASE (1)
-    CALL APPEND(obj%CurveMeshID, meshID)
+    CALL Append(obj%curveMeshID, meshID)
   CASE (2)
-    CALL APPEND(obj%SurfaceMeshID, meshID)
+    CALL Append(obj%surfaceMeshID, meshID)
   CASE (3)
-    CALL APPEND(obj%VolumeMeshID, meshID)
+    CALL Append(obj%volumeMeshID, meshID)
   END SELECT
-  RETURN
 END IF
-IF (PRESENT(dim) .AND. PRESENT(elemNum)) THEN
+
+bool1 = PRESENT(dim) .AND. PRESENT(elemNum)
+IF (bool1) THEN
   obj%isSelectionByElemNum = .TRUE.
   SELECT CASE (dim)
   CASE (0)
-    CALL APPEND(obj%PointElemNum, elemNum)
+    CALL Append(obj%pointElemNum, elemNum)
   CASE (1)
-    CALL APPEND(obj%CurveElemNum, elemNum)
+    CALL Append(obj%curveElemNum, elemNum)
   CASE (2)
-    CALL APPEND(obj%SurfaceElemNum, elemNum)
+    CALL Append(obj%surfaceElemNum, elemNum)
   CASE (3)
-    CALL APPEND(obj%VolumeElemNum, elemNum)
+    CALL Append(obj%volumeElemNum, elemNum)
   END SELECT
-  RETURN
 END IF
-IF (PRESENT(nodeNum)) THEN
+
+bool1 = PRESENT(nodeNum) .AND. (.NOT. PRESENT(dim))
+IF (bool1) THEN
   obj%isSelectionByNodeNum = .TRUE.
-  CALL APPEND(obj%NodeNum, nodeNum)
-  RETURN
+  CALL Append(obj%NodeNum, nodeNum)
 END IF
-CALL e%raiseError(modName//'::'//myName//'-'// &
-  & 'Currently mesh selection is possible through (xidim, meshID), &
-  & and (xidim, elemNum). We are working on it')
+
+bool1 = PRESENT(nodeNum) .AND. (PRESENT(dim))
+IF (bool1) THEN
+  obj%isSelectionByNodeNum = .TRUE.
+  SELECT CASE (dim)
+  CASE (0)
+    CALL Append(obj%pointNodeNum, nodeNum)
+  CASE (1)
+    CALL Append(obj%curveNodeNum, nodeNum)
+  CASE (2)
+    CALL Append(obj%surfaceNodeNum, nodeNum)
+  CASE (3)
+    CALL Append(obj%volumeNodeNum, nodeNum)
+  END SELECT
+END IF
+
+bool1 = PRESENT(dim) .AND. PRESENT(box)
+IF (bool1) THEN
+  SELECT CASE (dim)
+  CASE (0)
+    CALL Append(obj%pointBox, box)
+  CASE (1)
+    CALL Append(obj%curveBox, box)
+  CASE (2)
+    CALL Append(obj%surfaceBox, box)
+  CASE (3)
+    CALL Append(obj%volumeBox, box)
+  END SELECT
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Add()')
+#endif
 END PROCEDURE meshSelect_Add
 
 !----------------------------------------------------------------------------
@@ -72,29 +112,29 @@ END PROCEDURE meshSelect_Add
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Set
-IF (isAllocated(obj%PointMeshID)) THEN
-  CALL RemoveDuplicates(obj%PointMeshID)
+IF (isAllocated(obj%pointMeshID)) THEN
+  CALL RemoveDuplicates(obj%pointMeshID)
 END IF
-IF (isAllocated(obj%CurveMeshID)) THEN
-  CALL RemoveDuplicates(obj%CurveMeshID)
+IF (isAllocated(obj%curveMeshID)) THEN
+  CALL RemoveDuplicates(obj%curveMeshID)
 END IF
-IF (isAllocated(obj%SurfaceMeshID)) THEN
-  CALL RemoveDuplicates(obj%SurfaceMeshID)
+IF (isAllocated(obj%surfaceMeshID)) THEN
+  CALL RemoveDuplicates(obj%surfaceMeshID)
 END IF
-IF (isAllocated(obj%VolumeMeshID)) THEN
-  CALL RemoveDuplicates(obj%VolumeMeshID)
+IF (isAllocated(obj%volumeMeshID)) THEN
+  CALL RemoveDuplicates(obj%volumeMeshID)
 END IF
-IF (isAllocated(obj%PointElemNum)) THEN
-  CALL RemoveDuplicates(obj%PointElemNum)
+IF (isAllocated(obj%pointElemNum)) THEN
+  CALL RemoveDuplicates(obj%pointElemNum)
 END IF
-IF (isAllocated(obj%CurveElemNum)) THEN
-  CALL RemoveDuplicates(obj%CurveElemNum)
+IF (isAllocated(obj%curveElemNum)) THEN
+  CALL RemoveDuplicates(obj%curveElemNum)
 END IF
-IF (isAllocated(obj%SurfaceElemNum)) THEN
-  CALL RemoveDuplicates(obj%SurfaceElemNum)
+IF (isAllocated(obj%surfaceElemNum)) THEN
+  CALL RemoveDuplicates(obj%surfaceElemNum)
 END IF
-IF (isAllocated(obj%VolumeElemNum)) THEN
-  CALL RemoveDuplicates(obj%VolumeElemNum)
+IF (isAllocated(obj%volumeElemNum)) THEN
+  CALL RemoveDuplicates(obj%volumeElemNum)
 END IF
 IF (isAllocated(obj%NodeNum)) THEN
   CALL RemoveDuplicates(obj%NodeNum)

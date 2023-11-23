@@ -37,14 +37,14 @@ PUBLIC :: VectorFieldFactory
 PUBLIC :: STScalarFieldFactory
 PUBLIC :: STVectorFieldFactory
 PUBLIC :: Initiate
-public :: MeshFieldFactory
+PUBLIC :: MeshFieldFactory
 
 !----------------------------------------------------------------------------
 !                                                           MeshFieldFactory
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14 
+! date: 2023-09-14
 ! summary: This function returns child of AbstractMeshField
 
 INTERFACE
@@ -199,8 +199,8 @@ END INTERFACE
 ! NOTE: This is a module routine not a Method to VectorField_
 
 INTERFACE Initiate
-  MODULE SUBROUTINE VectorField_Initiate1(obj, names, spaceCompo, fieldType,  &
-    & engine, dom)
+  MODULE SUBROUTINE VectorField_Initiate1(obj, names, spaceCompo, &
+    &  fieldType, engine, dom)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to VectorField or subclass
     !! NOTE: It should be allocated
@@ -235,16 +235,16 @@ END INTERFACE Initiate
 ! Calling intiate methods on each vector field increases the
 ! code repeatition.
 ! Therefore, we can call this method  instead. This method
-! will create instances of vectorfield and its subclass. 
-! 
-! INFO: This routine is same as VectorField_Initiate1 but 
-! here, we can set different properties to each vector field. 
+! will create instances of vectorfield and its subclass.
+!
+! INFO: This routine is same as VectorField_Initiate1 but
+! here, we can set different properties to each vector field.
 !
 ! NOTE: This is a module routine not a Method to VectorField_
 
 INTERFACE Initiate
-  MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo, fieldType,  &
-    & engine, dom)
+ MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo,  &
+    & fieldType, engine, dom)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to VectorField or subclass
     !! NOTE: It should be allocated
@@ -261,6 +261,5 @@ INTERFACE Initiate
     !! pointer to the domain
   END SUBROUTINE VectorField_Initiate2
 END INTERFACE Initiate
-
 
 END MODULE FieldFactory

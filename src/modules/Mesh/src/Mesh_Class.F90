@@ -306,7 +306,7 @@ TYPE :: Mesh_
   TYPE(ElemshapeData_), PUBLIC :: spaceElemSD
     !! Element shape data on space element
   TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: stelemsd(:)
-    !! Element shape data on space element
+    !! Element shape data on space-time element
   TYPE(String) :: quadTypeForSpace
     !! quadrature type for space
   TYPE(String) :: continuityTypeForSpace
@@ -2609,7 +2609,7 @@ END INTERFACE
 !
 !# Introduction
 !
-! This routine Set the local shape data in space (linSpaceElemSD and
+! This routine sets the local shape data in space (linSpaceElemSD and
 ! spaceElemSD) for the mesh. It also creates the quadrature points in space.
 
 INTERFACE

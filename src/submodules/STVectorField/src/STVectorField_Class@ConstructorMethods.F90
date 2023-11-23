@@ -17,6 +17,7 @@
 
 SUBMODULE(STVectorField_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -25,34 +26,37 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSTVectorFieldParam
-INTEGER(I4B) :: ierr
-ierr = param%Set(key=myprefix//"/name", VALUE=TRIM(name))
-ierr = param%Set(key=myprefix//"/engine", VALUE=TRIM(engine))
-ierr = param%Set(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
-ierr = param%Set(key=myprefix//"/timeCompo", VALUE=timeCompo)
-IF (PRESENT(fieldType)) THEN
-  ierr = param%Set(key=myprefix//"/fieldType", VALUE=fieldType)
-ELSE
-  ierr = param%Set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
-END IF
+TYPE(ParameterList_), POINTER :: sublist
 
-IF (PRESENT(comm)) THEN
-  ierr = param%Set(key=myprefix//"/comm", VALUE=comm)
-ELSE
-  ierr = param%Set(key=myprefix//"/comm", VALUE=0_I4B)
-END IF
+CALL SetAbstractFieldParam( &
+  & param=param, &
+  & prefix=myprefix, &
+  & name=name, &
+  & engine=engine, &
+  & fieldType=fieldType, &
+  & comm=comm, &
+  & local_n=local_n, &
+  & global_n=global_n)
 
-IF (PRESENT(local_n)) THEN
-  ierr = param%Set(key=myprefix//"/local_n", VALUE=local_n)
-ELSE
-  ierr = param%Set(key=myprefix//"/local_n", VALUE=0_I4B)
-END IF
+sublist => NULL()
+sublist => param%NewSubList(key=myprefix)
 
-IF (PRESENT(global_n)) THEN
-  ierr = param%Set(key=myprefix//"/global_n", VALUE=global_n)
-ELSE
-  ierr = param%Set(key=myprefix//"/global_n", VALUE=0_I4B)
-END IF
+CALL Set( &
+  & obj=sublist, &
+  & datatype=TypeIntI4B, &
+  & prefix=myprefix, &
+  & key="spaceCompo", &
+  & VALUE=spaceCompo)
+
+CALL Set( &
+  & obj=sublist, &
+  & datatype=TypeIntI4B, &
+  & prefix=myprefix, &
+  & key="timeCompo", &
+  & VALUE=timeCompo)
+
+sublist => NULL()
+
 END PROCEDURE SetSTVectorFieldParam
 
 !----------------------------------------------------------------------------
@@ -60,42 +64,77 @@ END PROCEDURE SetSTVectorFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "stvField_CheckEssentialParam"
-IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
+CHARACTER(*), PARAMETER :: myName = "stvField_checkEssentialParam"
+CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
+IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/name should be present in param')
+    & 'spaceCompo should be present in param.')
 END IF
-IF (.NOT. param%isPresent(key=myprefix//"/engine")) THEN
+IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/engine should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/spaceCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/spaceCompo should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/timeCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/timeCompo should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/comm")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'comm should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/global_n")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'global_n should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/local_n")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'local_n should be present in param')
+    & 'timeCompo should be present in param.')
 END IF
 END PROCEDURE stvField_CheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                                               Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "stvField_Initiate1()"
+TYPE(String) :: astr
+INTEGER(I4B) :: nsd, tdof, ierr, spaceCompo, tNodes, timeCompo
+TYPE(ParameterList_), POINTER :: sublist
+
+! main
+sublist => NULL()
+
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
+
+CALL obj%CheckEssentialParam(sublist)
+CALL obj%DEALLOCATE()
+
+CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
+CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", VALUE=spaceCompo)
+CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", VALUE=timeCompo)
+tNodes = dom%GetTotalNodes()
+tdof = tNodes * spaceCompo * timeCompo
+
+CALL AbstractNodeFieldSetParam(obj=obj,  &
+  & dof_tPhysicalVars=1_I4B,  &
+  & dof_storageFMT=NODES_FMT,  &
+  & dof_spaceCompo=[spaceCompo],  &
+  & dof_timeCompo=[timeCompo],  &
+  & dof_tNodes=[tNodes],  &
+  & dof_names_char=[astr%slice(1, 1)],  &
+  & tSize=tdof)
+
+nsd = dom%GetNSD()
+
+CALL AbstractNodeFieldInitiate( &
+  & obj=obj,  &
+  & param=param,  &
+  & dom=dom,  &
+  & prefix=myprefix)
+
+astr = ""
+sublist => NULL()
+END PROCEDURE stvField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Initiate1
+MODULE PROCEDURE stvField_Initiate1_old
 CHARACTER(*), PARAMETER :: myName = "stvField_Initiate1"
 INTEGER(I4B) :: ierr, storageFMT, tNodes(1), spaceCompo(1), &
   & timeCompo(1)
@@ -180,7 +219,7 @@ CALL Initiate(obj%realVec, obj%dof)
 obj%isInitiated = .TRUE.
 
 IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
-END PROCEDURE stvField_Initiate1
+END PROCEDURE stvField_Initiate1_old
 
 !----------------------------------------------------------------------------
 !                                                             Initiate

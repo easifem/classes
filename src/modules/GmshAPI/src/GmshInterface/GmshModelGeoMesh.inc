@@ -28,14 +28,14 @@
 !                                       int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetSize(dimTags, dimTags_n, size, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetSize")
-  IMPORT
-  _ST_V_IN_ :: dimTags_n
-  _I_IN_ :: dimTags( dimTags_n )
-  _R_V_IN_ :: size
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetSize
+  SUBROUTINE gmshModelGeoMeshSetSize(dimTags, dimTags_n, size, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetSize")
+    IMPORT
+    _ST_V_IN_ :: dimTags_n
+    _I_IN_ :: dimTags(dimTags_n)
+    _R_V_IN_ :: size
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetSize
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetSize
@@ -57,15 +57,15 @@ PUBLIC :: gmshModelGeoMeshSetSize
 !                                                   int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetTransfiniteCurve(tag, nPoints, &
-  & meshType, coef, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteCurve")
-  IMPORT
-  _I_V_IN_ :: tag, nPoints
-  _CPTR_V_IN_ :: meshType
-  _R_V_IN_ :: coef
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetTransfiniteCurve
+  SUBROUTINE gmshModelGeoMeshSetTransfiniteCurve(tag, nPoints, &
+    & meshType, coef, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteCurve")
+    IMPORT
+    _I_V_IN_ :: tag, nPoints
+    _CPTR_V_IN_ :: meshType
+    _R_V_IN_ :: coef
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetTransfiniteCurve
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetTransfiniteCurve
@@ -88,16 +88,16 @@ PUBLIC :: gmshModelGeoMeshSetTransfiniteCurve
 !                                                     int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetTransfiniteSurface(tag, arrangement, &
-  & cornerTags, cornerTags_n, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteSurface")
-  IMPORT
-  _I_V_IN_ :: tag
-  _CPTR_V_IN_ :: arrangement
-  _ST_V_IN_ :: cornerTags_n
-  _I_IN_ :: cornerTags(cornerTags_n)
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetTransfiniteSurface
+  SUBROUTINE gmshModelGeoMeshSetTransfiniteSurface(tag, arrangement, &
+    & cornerTags, cornerTags_n, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteSurface")
+    IMPORT
+    _I_V_IN_ :: tag
+    _CPTR_V_IN_ :: arrangement
+    _ST_V_IN_ :: cornerTags_n
+    _I_IN_ :: cornerTags(cornerTags_n)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetTransfiniteSurface
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetTransfiniteSurface
@@ -115,18 +115,41 @@ PUBLIC :: gmshModelGeoMeshSetTransfiniteSurface
 !                                                    int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetTransfiniteVolume(tag, cornerTags, &
-  & cornerTags_n, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteVolume")
-  IMPORT
-  _I_V_IN_ :: tag
-  _ST_V_IN_ :: cornerTags_n
-  _I_IN_ :: cornerTags(cornerTags_n)
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetTransfiniteVolume
+  SUBROUTINE gmshModelGeoMeshSetTransfiniteVolume(tag, cornerTags, &
+    & cornerTags_n, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteVolume")
+    IMPORT
+    _I_V_IN_ :: tag
+    _ST_V_IN_ :: cornerTags_n
+    _I_IN_ :: cornerTags(cornerTags_n)
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetTransfiniteVolume
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetTransfiniteVolume
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> Set a recombination meshing constraint on the entity of dimension `dim' and
+  !! tag `tag' in the built-in CAD kernel representation. Currently only
+  !! entities of dimension 2 (to recombine triangles into quadrangles) are
+  !! supported; `angle' specifies the threshold angle for the simple
+  !! recombination algorithm.
+
+INTERFACE
+  SUBROUTINE gmshModelGeoMeshSetRecombine(dim, tag, angle, ierr) &
+    BIND(C, NAME="gmshModelGeoMeshSetRecombine")
+    IMPORT
+    _I_V_IN_ :: dim
+    _I_V_IN_ :: tag
+    _R_V_IN_ :: angle
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetRecombine
+END INTERFACE
+
+PUBLIC :: gmshModelGeoMeshSetRecombine
 
 !----------------------------------------------------------------------------
 !
@@ -142,12 +165,12 @@ PUBLIC :: gmshModelGeoMeshSetTransfiniteVolume
 !                                            int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetSmoothing(dim, tag, val, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetSmoothing")
-  IMPORT
-  _I_V_IN_ :: dim, tag, val
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetSmoothing
+  SUBROUTINE gmshModelGeoMeshSetSmoothing(dim, tag, val, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetSmoothing")
+    IMPORT
+    _I_V_IN_ :: dim, tag, val
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetSmoothing
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetSmoothing
@@ -168,12 +191,12 @@ PUBLIC :: gmshModelGeoMeshSetSmoothing
 !                                          int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetReverse(dim, tag, val, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetReverse")
-  IMPORT
-  _I_V_IN_ :: dim, tag, val
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetReverse
+  SUBROUTINE gmshModelGeoMeshSetReverse(dim, tag, val, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetReverse")
+    IMPORT
+    _I_V_IN_ :: dim, tag, val
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetReverse
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetReverse
@@ -188,12 +211,12 @@ PUBLIC :: gmshModelGeoMeshSetReverse
 !                                            int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetAlgorithm(dim, tag, val, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetAlgorithm")
-  IMPORT
-  _I_V_IN_ :: dim, tag, val
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetAlgorithm
+  SUBROUTINE gmshModelGeoMeshSetAlgorithm(dim, tag, val, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetAlgorithm")
+    IMPORT
+    _I_V_IN_ :: dim, tag, val
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetAlgorithm
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetAlgorithm
@@ -208,12 +231,12 @@ PUBLIC :: gmshModelGeoMeshSetAlgorithm
 !                                                   int *ierr);
 
 INTERFACE
-SUBROUTINE gmshModelGeoMeshSetSizeFromBoundary(dim, tag, val, ierr) &
-  & BIND(C, NAME="gmshModelGeoMeshSetSizeFromBoundary")
-  IMPORT
-  _I_V_IN_ :: dim, tag, val
-  _I_OUT_ :: ierr
-END SUBROUTINE gmshModelGeoMeshSetSizeFromBoundary
+  SUBROUTINE gmshModelGeoMeshSetSizeFromBoundary(dim, tag, val, ierr) &
+    & BIND(C, NAME="gmshModelGeoMeshSetSizeFromBoundary")
+    IMPORT
+    _I_V_IN_ :: dim, tag, val
+    _I_OUT_ :: ierr
+  END SUBROUTINE gmshModelGeoMeshSetSizeFromBoundary
 END INTERFACE
 
 PUBLIC :: gmshModelGeoMeshSetSizeFromBoundary

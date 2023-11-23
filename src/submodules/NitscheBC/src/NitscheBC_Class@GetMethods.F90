@@ -32,6 +32,10 @@ ELSE
 END IF
 END PROCEDURE bc_GetMinCellEntity
 
+!----------------------------------------------------------------------------
+!                                                           GetMaxCellEntity
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE bc_GetMaxCellEntity
 IF (ALLOCATED(obj%cellEntity)) THEN
   ans = UBOUND(obj%cellEntity, 1) - 1
@@ -40,7 +44,11 @@ ELSE
 END IF
 END PROCEDURE bc_GetMaxCellEntity
 
-MODULE PROCEDURE bc_isCellEntityPresent
+!----------------------------------------------------------------------------
+!                                                        IsCellEntityPresent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_IsCellEntityPresent
 INTEGER(I4B) :: ii
 
 IF (ALLOCATED(obj%cellEntity)) THEN
@@ -57,42 +65,42 @@ IF (ALLOCATED(obj%cellEntity)) THEN
 ELSE
   ans = .FALSE.
 END IF
-END PROCEDURE bc_isCellEntityPresent
+END PROCEDURE bc_IsCellEntityPresent
 
 !----------------------------------------------------------------------------
-!
+!                                                             GetStartIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_getStartIndex
+MODULE PROCEDURE bc_GetStartIndex
 ans = obj%cellEntity(entityNum)
-END PROCEDURE bc_getStartIndex
+END PROCEDURE bc_GetStartIndex
 
 !----------------------------------------------------------------------------
-!
+!                                                                GetEndIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_getEndIndex
+MODULE PROCEDURE bc_GetEndIndex
 ans = obj%cellEntity(entityNum + 1) - 1
-END PROCEDURE bc_getEndIndex
+END PROCEDURE bc_GetEndIndex
 
 !----------------------------------------------------------------------------
-!
+!                                                               GetCellElem
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_getCellElem
+MODULE PROCEDURE bc_GetCellElem
 ans = obj%cellElem(entityNum)
-END PROCEDURE bc_getCellElem
+END PROCEDURE bc_GetCellElem
 
 !----------------------------------------------------------------------------
-!
+!                                                            GetLocalFacetID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_getLocalFacetID
+MODULE PROCEDURE bc_GetLocalFacetID
 ans = obj%localFacetID(entityNum)
-END PROCEDURE bc_getLocalFacetID
+END PROCEDURE bc_GetLocalFacetID
 
 !----------------------------------------------------------------------------
-!                                                    GetNitscheBCPointer
+!                                                        GetNitscheBCPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_GetNitscheBCPointer
@@ -112,5 +120,13 @@ END IF
 ans => dbc(dbcNo)%ptr
 
 END PROCEDURE bc_GetNitscheBCPointer
+
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetPrefix
+ans = myprefix
+END PROCEDURE bc_GetPrefix
 
 END SUBMODULE GetMethods
