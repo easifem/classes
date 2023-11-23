@@ -56,16 +56,22 @@ END PROCEDURE AbstractFieldCheckEssentialParam
 MODULE PROCEDURE SetAbstractFieldParam
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
-CHARACTER(*), PARAMETER :: myName="SetAbstractFieldParam()"
+CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParam()"
+LOGICAL(LGT) :: isSublist
 
 sublist => NULL()
 
-ierr = param%GetSubList(key=prefix, sublist=sublist)
-sublist => param%NewSubList(key=prefix)
+! Create a new sublist
+isSublist = param%isSubList(prefix)
 
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
+IF (isSublist) THEN
+  ierr = param%GetSubList(key=prefix, sublist=sublist)
+  IF (ierr .NE. 0) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  END IF
+ELSE
+  sublist => param%NewSubList(key=prefix)
 END IF
 
 IF (.NOT. ASSOCIATED(sublist)) THEN
@@ -172,7 +178,7 @@ END IF
 ! NOTE: We should not call deallocate in abstract classes.
 ! This is because, in concrete classes we may set some
 ! parameters before calling this method.
-! All those parameters will be gone if we call deallocate 
+! All those parameters will be gone if we call deallocate
 ! here.
 ! CALL obj%DEALLOCATE()
 
