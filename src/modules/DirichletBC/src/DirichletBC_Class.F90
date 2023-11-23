@@ -22,6 +22,8 @@ USE MeshSelection_Class, ONLY: MeshSelection_
 USE Domain_Class, ONLY: Domain_
 USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
@@ -31,6 +33,7 @@ PUBLIC :: DirichletBC_
 PUBLIC :: DirichletBCPointer_
 PUBLIC :: AddDirichletBC
 PUBLIC :: GetDirichletBCPointer
+PUBLIC :: DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                               DirichletBC_
@@ -43,9 +46,7 @@ PUBLIC :: GetDirichletBCPointer
 TYPE, EXTENDS(AbstractBC_) :: DirichletBC_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & bc_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
   FINAL :: bc_Final
 END TYPE DirichletBC_
 
@@ -84,53 +85,6 @@ INTERFACE DEALLOCATE
     TYPE(DirichletBCPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Ptr_Vector
 END INTERFACE DEALLOCATE
-
-!----------------------------------------------------------------------------
-!                                    checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_checkEssentialParam(obj, param)
-    CLASS(DirichletBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE bc_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       setDirichletParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE SetDirichletBCParam(param, name, idof, nodalValueType, &
-    & useFunction, isNormal, isTangent)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: idof
-    INTEGER(I4B), INTENT(IN) :: nodalValueType
-    !! Space
-    !! Time
-    !! SpaceTime
-    !! Constant
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
-  END SUBROUTINE SetDirichletBCParam
-END INTERFACE
-
-PUBLIC :: SetDirichletBCParam
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
-    CLASS(DirichletBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Initiate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -182,6 +136,61 @@ INTERFACE GetDirichletBCPointer
     CLASS(DirichletBC_), POINTER :: ans
   END FUNCTION bc_GetDirichletBCPointer
 END INTERFACE GetDirichletBCPointer
+
+!----------------------------------------------------------------------------
+!                                                     GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-14
+! summary:  Get the prefix
+
+INTERFACE
+  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+    CLASS(DirichletBC_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION bc_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE DirichletBCImportFromToml
+  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom, tomlName)
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    !! domain
+    CHARACTER(*), INTENT(IN) :: tomlName
+  END SUBROUTINE bc_ImportFromToml1
+END INTERFACE DirichletBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE DirichletBCImportFromToml
+  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
+    & filename, printToml)
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE bc_ImportFromToml2
+END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
 !

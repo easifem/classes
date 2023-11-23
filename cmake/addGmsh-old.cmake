@@ -14,17 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
-#
-
-#....................................................................
-#
-#....................................................................
-
-FIND_PACKAGE( easifemBase REQUIRED )
-IF( easifemBase_FOUND )
-  MESSAGE(STATUS "FOUND easifemBase")
-ELSE()
-  MESSAGE(ERROR "NOT FOUND easifemBase")
+#GMSH SDK
+IF( ${PROJECT_NAME} MATCHES "easifemClasses" )
+  OPTION( USE_GMSH_SDK OFF )
+  IF( USE_GMSH_SDK )
+    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_GMSH_SDK" )
+    IF( UNIX )
+      IF(APPLE)
+        SET( GMSH_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/libgmsh.dylib"  )
+      ELSE()
+        # SET( GMSH_LIBRARIES "$ENV{HOME}/.local/lib/libgmsh.so"  )
+        SET( GMSH_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/libgmsh.so"  )
+      ENDIF()
+    ENDIF()
+    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${GMSH_LIBRARIES} )
+    MESSAGE( STATUS "GMSH_LIBRARIES : ${GMSH_LIBRARIES}" )
+  ELSE()
+    MESSAGE( STATUS "NOT USING GMSH SDK LIBRARIES" )
+  ENDIF()
 ENDIF()
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC easifemBase::easifemBase )
-
