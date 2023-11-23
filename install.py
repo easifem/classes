@@ -20,8 +20,8 @@ if _os == "Windows":
 else:
     cmake_def = ""
     cmake_def += '-G "Ninja"'
-    cmake_def += " -D USE_GMSH_SDK:BOOL=ON"
-    cmake_def += " -D CMAKE_BUILD_TYPE=Debug"
+    cmake_def += " -D USE_GMSH_SDK:BOOL=OFF"
+    cmake_def += " -D CMAKE_BUILD_TYPE:STRING=Release"
     cmake_def += " -D BUILD_SHARED_LIBS:BOOL=ON"
     cmake_def += " -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}"
     print("CMAKE DEF : ", cmake_def)

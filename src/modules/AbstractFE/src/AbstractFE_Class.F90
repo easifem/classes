@@ -766,8 +766,7 @@ INTERFACE
     !! GaussChebyshevRadau, GaussChebyshevRadauLeft
     !! GaussChebyshevRadauRight
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    !! Order of integrand 
-    !! either the order or the nips should be present
+    !! Order of integrand, either order or nips should be present
     !! Both nips and order should not be present
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(:)
     !! Number of integration points required

@@ -20,6 +20,45 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_checkEssentialParam
+CALL AbstractBCcheckEssentialParam(&
+  & obj=obj, &
+  & param=param, &
+  & prefix=myprefix)
+END PROCEDURE bc_checkEssentialParam
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetDirichletBCParam
+CALL SetAbstractBCParam(&
+  & param=param, &
+  & prefix=myprefix, &
+  & name=name, &
+  & idof=idof, &
+  & nodalValueType=nodalValueType, &
+  & useFunction=input(option=useFunction, default=.FALSE.), &
+  & isNormal=input(option=isNormal, default=.FALSE.), &
+  & isTangent=input(option=isTangent, default=.FALSE.))
+END PROCEDURE SetDirichletBCParam
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Initiate
+CALL AbstractBCInitiate(obj=obj, &
+& param=param, &
+& prefix=myprefix, &
+& boundary=boundary, &
+& dom=dom)
+END PROCEDURE bc_Initiate
+
+!----------------------------------------------------------------------------
 !                                                            Final
 !----------------------------------------------------------------------------
 
@@ -65,11 +104,6 @@ END PROCEDURE bc_Deallocate_Ptr_Vector
 MODULE PROCEDURE bc_AddDirichletBC
 CHARACTER(*), PARAMETER :: myName = "bc_AddDirichletBC"
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] AddDirichletBC()')
-#endif
-
 IF (dbcNo .GT. SIZE(dbc)) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & '[OUT OF BOUND ERROR] :: dbcNo [= '//TOSTRING(dbcNo)//  &
@@ -90,10 +124,6 @@ CALL dbc(dbcNo)%ptr%initiate( &
   & boundary=boundary, &
   & dom=dom)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] AddDirichletBC()')
-#endif
 END PROCEDURE bc_AddDirichletBC
 
 END SUBMODULE ConstructorMethods

@@ -28,6 +28,8 @@
 # find_package(easifemBase 1.0.0 CONFIG REQUIRED)
 #
 # The following variables can be set to guide the search for this package:
+#
+#
 
 @PACKAGE_INIT@
 

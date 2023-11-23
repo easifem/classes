@@ -20,7 +20,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
+!                                                             Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fe_Initiate
@@ -28,7 +28,7 @@ CALL AbstractFEInitiate(obj=obj, param=param, prefix=myprefix)
 END PROCEDURE fe_Initiate
 
 !----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
+!                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE fe_CheckEssentialParam
@@ -41,22 +41,22 @@ END PROCEDURE fe_CheckEssentialParam
 
 MODULE PROCEDURE SetFiniteElementParam
 CALL SetAbstractFEParam( &
-  & param=param,  &
-  & prefix=myprefix,  &
-  & nsd=nsd,  &
-  & elemType=elemType,  &
-  & baseContinuity=baseContinuity,  &
-  & baseInterpolation=baseInterpolation,  &
-  & ipType=ipType,  &
-  & basisType=basisType,  &
-  & alpha=alpha,  &
-  & beta=beta,  &
-  & lambda=lambda,  &
-  & order=order,  &
-  & anisoOrder=anisoOrder,  &
-  & edgeOrder=edgeOrder,  &
-  & faceOrder=faceOrder,  &
-  & cellOrder=cellOrder)
+& param=param,  &
+& prefix=myprefix,  &
+& nsd=nsd,  &
+& elemType=elemType,  &
+& baseContinuity=baseContinuity,  &
+& baseInterpolation=baseInterpolation,  &
+& ipType=ipType,  &
+& basisType=basisType,  &
+& alpha=alpha,  &
+& beta=beta,  &
+& lambda=lambda,  &
+& order=order,  &
+& anisoOrder=anisoOrder,  &
+& edgeOrder=edgeOrder,  &
+& faceOrder=faceOrder,  &
+& cellOrder=cellOrder)
 END PROCEDURE SetFiniteElementParam
 
 !----------------------------------------------------------------------------
@@ -97,73 +97,32 @@ END PROCEDURE Deallocate_Ptr_Vector
 MODULE PROCEDURE fe_Initiate1
 CHARACTER(*), PARAMETER :: myName = "fe_Initiate1()"
 TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr, ii, tsize
-INTEGER(I4B), ALLOCATABLE :: elemType(:), order(:)
+INTEGER(I4B) :: ierr, ii, tElemType
+INTEGER(I4B), ALLOCATABLE :: elemType(:)
 
 sublist => NULL()
 
-IF (.NOT. param%isSubList(key=myPrefix)) RETURN
+IF (.NOT. param%isSubList(key=myPrefix)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARGUMENT ERROR] :: '//myprefix//' should be a sublist')
+END IF
 
 ierr = param%GetSubList(key=myprefix, sublist=sublist)
 
-IF (ierr .NE. 0) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured while getting'//  &
-    & ' the sublist from param.')
-END IF
-
-elemType = dom%GetElemType(dim=dim)
-order = dom%GetOrder(dim=dim)
-tsize = SIZE(elemType)
+elemType = dom%GetElemType(dim=-1_I4B)
+tElemType = SIZE(elemType)
 
 CALL DEALLOCATE (obj)
-ALLOCATE (obj(tsize))
+ALLOCATE(obj(tElemType) )
 
-DO ii = 1, tsize
+DO ii = 1, SIZE(elemType)
   ierr = sublist%Set(key=myprefix//"/elemType", VALUE=elemType(ii))
-  ierr = sublist%Set(key=myprefix//"/order", VALUE=order(ii))
-  ALLOCATE (FiniteElement_ :: obj(ii)%ptr)
+  ALLOCATE(FiniteElement_::obj(ii)%ptr)
   CALL obj(ii)%ptr%Initiate(param=param)
 END DO
 
 sublist => NULL()
 IF (ALLOCATED(elemType)) DEALLOCATE (elemType)
-IF (ALLOCATED(order)) DEALLOCATE (order)
 END PROCEDURE fe_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                        InitiateLagrangeFE
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE fe_InitiateLagrangeFE
-TYPE(ParameterList_) :: param
-CHARACTER(*), PARAMETER :: myName="fe_InitiateLagrangeFE()"
-
-IF (baseInterpolation .NE. "LagrangePolynomial"  &
-  & .OR. baseInterpolation .NE. "LagrangeInterpolation") THEN
-  CALL e%RaiseError(modName //'::'//myName// ' - '// &
-    & '[ARG ERROR] :: This routine is valid for baseInterpolation = ' //  &
-    & 'LagrangePolynomial or LagrangeInterpolation ' //  &
-    & ' given value of baseInterpolation is ' // trim(baseInterpolation))
-END IF
-
-CALL param%Initiate()
-CALL SetFiniteElementParam( &
-  & param=param,  &
-  & nsd=nsd,  &
-  & elemType=elemType,  &
-  & baseContinuity=baseContinuity,  &
-  & baseInterpolation=baseInterpolation,  &
-  & ipType=ipType,  &
-  & basisType=[basisType],  &
-  & alpha=[alpha],  &
-  & beta=[beta],  &
-  & lambda=[lambda],  &
-  & order=order)
-
-CALL obj%Initiate(param)
-
-CALL param%DEALLOCATE()
-END PROCEDURE fe_InitiateLagrangeFE
 
 END SUBMODULE Methods
