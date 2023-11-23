@@ -16,7 +16,6 @@
 
 SUBMODULE(AbstractNodeField_Class) Methods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Method
 IMPLICIT NONE
 CONTAINS
