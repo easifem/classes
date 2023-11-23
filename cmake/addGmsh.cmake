@@ -19,15 +19,27 @@ IF( ${PROJECT_NAME} MATCHES "easifemClasses" )
   OPTION( USE_GMSH_SDK OFF )
   IF( USE_GMSH_SDK )
     LIST( APPEND TARGET_COMPILE_DEF "-DUSE_GMSH_SDK" )
-    IF( UNIX )
-      IF(APPLE)
-        SET( GMSH_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/libgmsh.dylib"  )
-      ELSE()
-        # SET( GMSH_LIBRARIES "$ENV{HOME}/.local/lib/libgmsh.so"  )
-        SET( GMSH_LIBRARIES "$ENV{EASIFEM_EXTPKGS}/lib/libgmsh.so"  )
-      ENDIF()
-    ENDIF()
-    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${GMSH_LIBRARIES} )
+    FIND_PACKAGE(PkgConfig REQUIRED)
+    FIND_LIBRARY(GMSH_LIBRARY
+      NAMES gmsh gmsh.4.12
+      PATHS "$ENV{CONDA_PREFIX}/lib" "/opt/homebrew/lib" )
+      # PATHS "/opt/homebrew/lib" )
+    SET(GMSH_LIBRARIES ${GMSH_LIBRARY})
+
+    INCLUDE(FindPackageHandleStandardArgs)
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(
+      GMSH DEFAULT_MSG
+      GMSH_LIBRARIES
+    )
+
+    # SET(GMSH_LIBRARIES "$ENV{CONDA_PREFIX}/lib/libgmsh.so")
+
+    TARGET_LINK_LIBRARIES(
+      ${PROJECT_NAME}
+      PUBLIC
+      ${GMSH_LIBRARIES}
+      )
+
     MESSAGE( STATUS "GMSH_LIBRARIES : ${GMSH_LIBRARIES}" )
   ELSE()
     MESSAGE( STATUS "NOT USING GMSH SDK LIBRARIES" )
