@@ -143,6 +143,24 @@ END IF
 END PROCEDURE bc_Get
 
 !----------------------------------------------------------------------------
+!                                                           bc_GetFEVar
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetFEVar
+CHARACTER(*), PARAMETER :: myName = "bc_GetFEVar()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development.')
+
+! If useFunction is true  then
+!    if constant
+!    if time
+!    if space
+!    if space-time
+
+! If useFunction is not true then
+END PROCEDURE bc_GetFEVar
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -265,7 +283,16 @@ IF (PRESENT(useFunction)) useFunction = obj%useFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
 IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
 IF (PRESENT(useExternal)) useExternal = obj%useExternal
-
 END PROCEDURE bc_GetQuery
+
+!----------------------------------------------------------------------------
+!                                                                GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "bc_GetPrefix()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine should be implemented by child class.')
+END PROCEDURE bc_GetPrefix
 
 END SUBMODULE GetMethods

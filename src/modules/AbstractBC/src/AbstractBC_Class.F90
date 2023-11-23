@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE AbstractBC_Class
 USE GlobalData
@@ -24,9 +23,28 @@ USE MeshSelection_Class
 USE Domain_Class
 USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
+CHARACTER(*), PARAMETER :: default_name = "AbstractBC"
+INTEGER(I4B), PARAMETER :: default_idof = 0_I4B
+INTEGER(I4B), PARAMETER :: default_nodalValueType = -1_I4B
+CHARACTER(*) , PARAMETER :: default_nodalValueType_char = "NONE"
+LOGICAL(LGT), PARAMETER :: default_useFunction = .FALSE.
+LOGICAL(LGT), PARAMETER :: default_isNormal = .FALSE.
+LOGICAL(LGT), PARAMETER :: default_isTangent = .FALSE.
+LOGICAL(LGT), PARAMETER :: default_useExternal = .FALSE.
+
+PUBLIC :: AbstractBC_
+PUBLIC :: AbstractBCPointer_
+PUBLIC :: AbstractBCDeallocate
+PUBLIC :: AbstractBCcheckEssentialParam
+PUBLIC :: SetAbstractBCParam
+PUBLIC :: AbstractBCInitiate
+PUBLIC :: AbstractBCImportFromToml
+PUBLIC :: AbstractBCImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                                AbstractBC_
@@ -38,23 +56,23 @@ CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 
 TYPE, ABSTRACT :: AbstractBC_
   LOGICAL(LGT) :: isInitiated = .FALSE.
-  !!
+  !! It is true if the object is initiated
   TYPE(String) :: name
   !! name of boundary condition
-  INTEGER(I4B) :: idof = 0
+  INTEGER(I4B) :: idof = default_idof
   !! degree of freedom number
-  INTEGER(I4B) :: nodalValueType = -1
+  INTEGER(I4B) :: nodalValueType = default_nodalValueType
   !! Constant
   !! Space
   !! Time
   !! SpaceTime
-  LOGICAL(LGT) :: useFunction = .FALSE.
+  LOGICAL(LGT) :: useFunction = default_useFunction
   !! True if the boundary condition is analytical
-  LOGICAL(LGT) :: isNormal = .FALSE.
+  LOGICAL(LGT) :: isNormal = default_isNormal
   !! True if the boundary condition is normal to the boundary
-  LOGICAL(LGT) :: isTangent = .FALSE.
+  LOGICAL(LGT) :: isTangent = default_isTangent
   !! True if the boundary condition is tangent to the boundary
-  LOGICAL(LGT) :: useExternal = .FALSE.
+  LOGICAL(LGT) :: useExternal = default_useExternal
   !! if true then nodal values are used externally
   !! depending upon the context.
   !! Basically we do not use the nodal value stored in the
@@ -77,24 +95,45 @@ TYPE, ABSTRACT :: AbstractBC_
   !! Domain
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => bc_GetMeshID
-  PROCEDURE, PUBLIC, PASS(obj) :: Get => bc_Get
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFromFunction => bc_GetFromFunction
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => bc_GetDOFNo
-  PROCEDURE, PUBLIC, PASS(obj) ::  &
-    & CheckEssentialParam => bc_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
+    & bc_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => bc_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => bc_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    & ImportFromToml2
+  !! Import abstract kernel from toml
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
+    & bc_ImportParamFromToml
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => bc_GetMeshID
+  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => bc_Get
+  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => bc_GetFEVar
+  GENERIC, PUBLIC :: Get => Get1, Get2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFromFunction => bc_GetFromFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => bc_GetDOFNo
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => bc_GetQuery
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => bc_GetQuery
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
   PROCEDURE, PUBLIC, PASS(obj) :: isUseFunction => bc_isUseFunction
   !! Returns true if the useFunction is true
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => bc_Set
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => bc_GetQuery
 END TYPE AbstractBC_
-
-PUBLIC :: AbstractBC_
 
 !----------------------------------------------------------------------------
 !
@@ -104,72 +143,32 @@ TYPE :: AbstractBCPointer_
   CLASS(AbstractBC_), POINTER :: ptr => NULL()
 END TYPE AbstractBCPointer_
 
-PUBLIC :: AbstractBCPointer_
-
 !----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE SUBROUTINE bc_CheckEssentialParam(obj, param)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE bc_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-02-12
-! summary: Deallocate data
+! date:  2023-11-14
+! summary:  Check essential parameters
 
-INTERFACE
-  MODULE SUBROUTINE bc_Deallocate(obj)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Deallocate
-END INTERFACE
-
-INTERFACE AbstractBCDeallocate
-  MODULE PROCEDURE bc_Deallocate
-END INTERFACE AbstractBCDeallocate
-
-PUBLIC :: AbstractBCDeallocate
-
-!----------------------------------------------------------------------------
-!                           AbstractBCcheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE AbstractBCcheckEssentialParam(obj, param, prefix)
+INTERFACE AbstractBCcheckEssentialParam
+  MODULE SUBROUTINE bc_CheckEssentialParam(obj, param, prefix)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractBCcheckEssentialParam
-END INTERFACE
-
-PUBLIC :: AbstractBCcheckEssentialParam
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
+  END SUBROUTINE bc_CheckEssentialParam
+END INTERFACE AbstractBCcheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                   SetAbstractBCParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-14
+! summary: Set abstract boundary condition parameters
+
 INTERFACE
-  MODULE SUBROUTINE setAbstractBCParam(param, prefix, &
+  MODULE SUBROUTINE SetAbstractBCParam(param, prefix, &
     & name, idof, nodalValueType, useFunction, isNormal, isTangent, &
     & useExternal)
     TYPE(ParameterList_), INTENT(INOUT) :: param
@@ -195,30 +194,47 @@ INTERFACE
     !! default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useExternal
     !! default is false
-  END SUBROUTINE setAbstractBCParam
+  END SUBROUTINE SetAbstractBCParam
 END INTERFACE
 
-PUBLIC :: setAbstractBCParam
-
 !----------------------------------------------------------------------------
-!                                    AbstractBCInitiate@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE SUBROUTINE AbstractBCInitiate(obj, param, prefix, boundary, dom)
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-14
+! summary:  Initiate abstract boundary condition
+
+INTERFACE AbstractBCInitiate
+  MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE AbstractBCInitiate
-END INTERFACE
+  END SUBROUTINE bc_Initiate
+END INTERFACE AbstractBCInitiate
 
-PUBLIC :: AbstractBCInitiate
+!----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Deallocate data
+
+INTERFACE AbstractBCDeallocate
+  MODULE SUBROUTINE bc_Deallocate(obj)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  END SUBROUTINE bc_Deallocate
+END INTERFACE AbstractBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         Import@IOMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-14
+! summary:  Import AbstractBC from HDF5File
 
 INTERFACE
   MODULE SUBROUTINE bc_Import(obj, hdf5, group, dom)
@@ -244,6 +260,58 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE bc_Export
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              ImportParamFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param by reading the toml table
+
+INTERFACE AbstractBCImportParamFromToml
+  MODULE SUBROUTINE bc_ImportParamFromToml(obj, param, table)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE bc_ImportParamFromToml
+END INTERFACE AbstractBCImportParamFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE AbstractBCImportFromToml
+  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE bc_ImportFromToml1
+END INTERFACE AbstractBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE AbstractBCImportFromToml
+  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
+    & filename, printToml)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE bc_ImportFromToml2
+END INTERFACE AbstractBCImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                        Display@IOMethods
@@ -295,6 +363,27 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-12
+! summary: Get the node number and nodal value
+
+INTERFACE
+  MODULE SUBROUTINE bc_GetFEVar(obj, fevar, globalNode,  &
+  & spaceQuadPoints, timeQuadPoints, atime, timeVec)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    TYPE(FEVariable_), INTENT(INOUT) :: fevar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceQuadPoints(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: timeQuadPoints(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atime
+    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+  END SUBROUTINE bc_GetFEVar
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                               GetFromFunction@GetMethods
 !----------------------------------------------------------------------------
 
@@ -327,10 +416,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_isUseFunction(obj) RESULT(ans)
+  MODULE PURE FUNCTION bc_IsUseFunction(obj) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION bc_isUseFunction
+  END FUNCTION bc_IsUseFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -338,20 +427,20 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Set(obj, ConstantNodalValue, SpaceNodalValue, &
-    & TimeNodalValue, SpaceTimeNodalValue, SpaceFunction, TimeFunction, &
-    & SpaceTimeFunction)
+  MODULE SUBROUTINE bc_Set(obj, constantNodalValue, spaceNodalValue, &
+    & timeNodalValue, spaceTimeNodalValue, spaceFunction, timeFunction, &
+    & spaceTimeFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: ConstantNodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: TimeNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: SpaceTimeNodalValue(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
     PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceTimeFunction
+      & spaceTimeFunction
     PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & SpaceFunction
+      & spaceFunction
     PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & TimeFunction
+      & timeFunction
   END SUBROUTINE bc_Set
 END INTERFACE
 
@@ -377,6 +466,21 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useExternal
   END SUBROUTINE bc_GetQuery
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-14
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION bc_GetPrefix
 END INTERFACE
 
 END MODULE AbstractBC_Class
