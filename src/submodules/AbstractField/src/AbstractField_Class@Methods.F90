@@ -16,9 +16,82 @@
 
 SUBMODULE(AbstractField_Class) Methods
 USE BaseMethod
-USE FPL_Method, ONLY: GetValue
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                       CheckEssentialParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldCheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldCheckEssentialParam()"
+TYPE(String) :: astr
+TYPE(String), ALLOCATABLE :: essentialParam(:)
+INTEGER(I4B) :: ii
+
+astr = "/name/engine/fieldType/comm/local_n/global_n"
+CALL astr%Split(essentialParam, sep="/")
+CALL CheckEssentialParam( &
+  & obj=param,  &
+  & keys=essentialParam,  &
+  & prefix=prefix,  &
+  & myName=myName,  &
+  & modName=modName)
+! INFO: CheckEssentialParam param is defined in easifemClasses FPL_Method
+
+IF (ALLOCATED(essentialParam)) THEN
+  DO ii = 1, SIZE(essentialParam)
+    essentialParam(ii) = ""
+  END DO
+  DEALLOCATE (essentialParam)
+END IF
+astr = ""
+END PROCEDURE AbstractFieldCheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                                       SetScalarFieldParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetAbstractFieldParam
+TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: ierr
+CHARACTER(*), PARAMETER :: myName="SetAbstractFieldParam()"
+
+sublist => NULL()
+
+ierr = param%GetSubList(key=prefix, sublist=sublist)
+sublist => param%NewSubList(key=prefix)
+
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
+
+CALL Set(obj=sublist, datatype="Char", prefix=prefix, key="name", VALUE=name)
+
+CALL Set(obj=sublist, datatype="Char", prefix=prefix, key="engine",  &
+  & VALUE=engine)
+
+CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="fieldType", &
+  & VALUE=input(option=fieldType, default=FIELD_TYPE_NORMAL))
+
+CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="comm", &
+  & VALUE=input(option=fieldType, default=0_I4B))
+
+CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="local_n", &
+  & VALUE=input(option=local_n, default=0_I4B))
+
+CALL Set(obj=sublist, datatype=TypeIntI4B, prefix=prefix, key="global_n", &
+  & VALUE=input(option=global_n, default=0_I4B))
+
+sublist => NULL()
+END PROCEDURE SetAbstractFieldParam
 
 !----------------------------------------------------------------------------
 !                                                                 Display
@@ -85,18 +158,38 @@ END PROCEDURE aField_Display
 
 MODULE PROCEDURE AbstractFieldInitiate
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This routine is under development')
-CALL obj%DEALLOCATE()
-CALL obj%CheckEssentialParam(param)
+TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: ierr
+
+! main
+sublist => NULL()
+ierr = param%GetSubList(key=prefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+! NOTE: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate 
+! here.
+! CALL obj%DEALLOCATE()
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
+
 obj%isInitiated = .TRUE.
-CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
-CALL GetValue(obj=param, prefix=prefix, key="name", VALUE=obj%name)
-CALL GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
-CALL GetValue(obj=param, prefix=prefix, key="comm", VALUE=obj%comm)
-CALL GetValue(obj=param, prefix=prefix, key="global_n", VALUE=obj%global_n)
-CALL GetValue(obj=param, prefix=prefix, key="local_n", VALUE=obj%local_n)
+CALL GetValue(obj=sublist, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
+CALL GetValue(obj=sublist, prefix=prefix, key="name", VALUE=obj%name)
+CALL GetValue(obj=sublist, prefix=prefix, key="engine", VALUE=obj%engine)
+CALL GetValue(obj=sublist, prefix=prefix, key="comm", VALUE=obj%comm)
+CALL GetValue(obj=sublist, prefix=prefix, key="global_n", VALUE=obj%global_n)
+CALL GetValue(obj=sublist, prefix=prefix, key="local_n", VALUE=obj%local_n)
 obj%domain => dom
+sublist => NULL()
 END PROCEDURE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -539,10 +632,10 @@ END PROCEDURE aField_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_GetTotalPhysicalVars
-  CHARACTER(*), PARAMETER :: myName="aField_GetTotalPhysicalVars()"
-  CALL e%RaiseError(modName //'::'//myName// ' - '// &
-    & '[IMPLEMENTATION ERROR] :: This routine should be implemented by ' //&
-    & 'child classes')
+CHARACTER(*), PARAMETER :: myName = "aField_GetTotalPhysicalVars()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
 END PROCEDURE aField_GetTotalPhysicalVars
 
 !----------------------------------------------------------------------------
@@ -596,7 +689,7 @@ END PROCEDURE aField_GetStorageFMT
 MODULE PROCEDURE aField_GetTotalDOF
 CHARACTER(*), PARAMETER :: myName = "aField_GetTotalDOF()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by ' //  &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//  &
   & ' child classes')
 END PROCEDURE aField_GetTotalDOF
 
@@ -606,8 +699,8 @@ END PROCEDURE aField_GetTotalDOF
 
 MODULE PROCEDURE aField_GetTotalVertexDOF
 CHARACTER(*), PARAMETER :: myName = "aField_GetTotalVertexDOF()"
-CALL e%RaiseError(modName //'::'//myName// ' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by ' //&
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
 END PROCEDURE aField_GetTotalVertexDOF
 
@@ -617,8 +710,8 @@ END PROCEDURE aField_GetTotalVertexDOF
 
 MODULE PROCEDURE aField_GetTotalEdgeDOF
 CHARACTER(*), PARAMETER :: myName = "aField_GetTotalEdgeDOF()"
-CALL e%RaiseError(modName //'::'//myName// ' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by ' //&
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
 END PROCEDURE aField_GetTotalEdgeDOF
 
@@ -628,8 +721,8 @@ END PROCEDURE aField_GetTotalEdgeDOF
 
 MODULE PROCEDURE aField_GetTotalFaceDOF
 CHARACTER(*), PARAMETER :: myName = "aField_GetTotalFaceDOF()"
-CALL e%RaiseError(modName //'::'//myName// ' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by ' //&
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
 END PROCEDURE aField_GetTotalFaceDOF
 
@@ -639,8 +732,8 @@ END PROCEDURE aField_GetTotalFaceDOF
 
 MODULE PROCEDURE aField_GetTotalCellDOF
 CHARACTER(*), PARAMETER :: myName = "aField_GetTotalCellDOF()"
-CALL e%RaiseError(modName //'::'//myName// ' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by ' //&
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
 END PROCEDURE aField_GetTotalCellDOF
 

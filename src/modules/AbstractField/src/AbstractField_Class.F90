@@ -53,6 +53,8 @@ PUBLIC :: AbstractFieldImport
 PUBLIC :: AbstractFieldExport
 PUBLIC :: AbstractFieldDeallocate
 PUBLIC :: FIELD_TYPE_NUMBER
+PUBLIC :: SetAbstractFieldParam
+PUBLIC :: AbstractFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -180,11 +182,11 @@ PUBLIC :: AbstractField_
 ! summary: This routine check the essential parameters in param.
 
 ABSTRACT INTERFACE
-  SUBROUTINE aField_checkEssentialParam(obj, param)
+  SUBROUTINE aField_CheckEssentialParam(obj, param)
     IMPORT :: AbstractField_, ParameterList_
     CLASS(AbstractField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
+  END SUBROUTINE aField_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -202,6 +204,50 @@ ABSTRACT INTERFACE
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE aField_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      CheckEssentialParam
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, param, prefix)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractFieldCheckEssentialParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetAbstractFieldParam
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-04
+! summary:  Set AbstractField_ parameters
+
+INTERFACE
+  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, fieldType,  &
+    & comm, local_n, global_n)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    !! prefix
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the variable
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of scalar field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of scalar field on distributed on processors
+    !! Only needed for parallel environment
+  END SUBROUTINE SetAbstractFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -614,7 +660,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetTotalCellDOF
+!                                                            GetTotalCellDOF
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -637,10 +683,10 @@ END INTERFACE
 ! date:  2023-09-22
 ! summary:  Returns true if the field is constant
 INTERFACE
-  MODULE FUNCTION aField_isConstant(obj) RESULT(ans)
+  MODULE FUNCTION aField_IsConstant(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION aField_isConstant
+  END FUNCTION aField_IsConstant
 END INTERFACE
 
 END MODULE AbstractField_Class
