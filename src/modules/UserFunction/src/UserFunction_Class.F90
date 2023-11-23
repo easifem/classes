@@ -67,6 +67,8 @@ PUBLIC :: UserFunctionPointer_
 
 TYPE :: UserFunction_
   PRIVATE
+  TYPE(String) :: name
+  !! name of the function
   LOGICAL(LGT) :: isInitiated = .FALSE.
   LOGICAL(LGT) :: isUserFunctionSet = .FALSE.
   LOGICAL(LGT) :: isLuaScript = .FALSE.
@@ -99,18 +101,30 @@ TYPE :: UserFunction_
     & NULL()
   !! matrix function pointer
 CONTAINS
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & auf_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => auf_Deallocate
   FINAL :: auf_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => auf_Initiate
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Set => auf_Set1
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => auf_GetScalarValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => auf_GetVectorValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => auf_GetMatrixValue
   GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue, GetMatrixValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => auf_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => auf_GetReturnType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetName => auf_GetName
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => auf_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => auf_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => auf_Export
@@ -185,9 +199,11 @@ END INTERFACE
 ! summary: Sets user funciton parameter
 
 INTERFACE
-  MODULE SUBROUTINE SetUserFunctionParam(param, returnType, argType,  &
+  MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType,  &
     & numArgs, numReturns, luaScript, luaFunctionName, returnShape)
     TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: name
+    !! name
     INTEGER(I4B), INTENT(IN) :: returnType
     !! Scalar, Vector, Matrix
     INTEGER(I4B), INTENT(IN) :: argType
@@ -325,6 +341,21 @@ INTERFACE
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION auf_GetReturnType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-23
+! summary:  Returns name of UserFunction
+
+INTERFACE
+  MODULE PURE FUNCTION auf_GetName(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION auf_GetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
