@@ -39,6 +39,12 @@ CHARACTER(*), PARAMETER :: modName = 'FortranFile_Class'
 CHARACTER(*), PARAMETER :: hash = "#"
 CHARACTER(*), PARAMETER :: comma = ","
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
+PUBLIC :: FortranFile_
+PUBLIC :: FortranFilePointer_
+PUBLIC :: FortranFileInitiate
+PUBLIC :: FortranFileDeallocate
+PUBLIC :: FortranFileBackspace
+PUBLIC :: FortranFileRewind
 
 !----------------------------------------------------------------------------
 !
@@ -49,85 +55,70 @@ INTEGER(I4B), PARAMETER :: maxStrLen = 256
 ! update: 2021-11-07
 ! summary: Datatype for handling fortran files
 !
-! {!pages/FortranFile_.md!}
-!
-! TODO
-!
-! Method-1
-!   - name: ReadLine(obj, aline)
-!   - spec: Read a line in string `aline`
-!
-! Method-2
-!   - name: ReadLines(obj, lines())
-!   - spec: Read lines in string vector lines()
-!
-! Reference:: [[String_Method.F90]]
+!{!pages/FortranFile_.md!}
 
 TYPE, EXTENDS(AbstractFile_) :: FortranFile_
   PRIVATE
   LOGICAL(LGT) :: initstat = .FALSE.
-    !! file initiated or not
+  !! file initiated or not
   INTEGER(I4B) :: unitno = -1
-    !! unit number
+  !! unit number
   INTEGER(I4B) :: reclval = -1
-    !! record length for direct access
+  !! record length for direct access
   LOGICAL(LGT) :: formatstat = .FALSE.
-    !! file is formatted or not
+  !! file is formatted or not
   LOGICAL(LGT) :: accessstat = .FALSE.
-    !! direct or sequential access
+  !! direct or sequential access
   LOGICAL(LGT) :: newstat = .FALSE.
-    !! the new status of a file
+  !! the new status of a file
   LOGICAL(LGT) :: overwrite = .FALSE.
-    !! replace or not
+  !! replace or not
   LOGICAL(LGT) :: padstat = .FALSE.
-    !! Whether or not the file is being padded
+  !! Whether or not the file is being padded
   LOGICAL(LGT) :: getNewUnit = .FALSE.
   CHARACTER(6) :: posopt = 'ASIS  '
   CHARACTER(1), PUBLIC :: comment = hash
   CHARACTER(1), PUBLIC :: separator = " "
   CHARACTER(2), PUBLIC :: delimiter = "\n"
-  !
+
 CONTAINS
   PRIVATE
-  !!
+
+  ! CONSTRUCTOR:
   !! @ConstructorMethods
-  !!
-  PROCEDURE, PUBLIC, PASS(Obj) :: initiate => ff_initiate
+  PROCEDURE, PUBLIC, PASS(Obj) :: Initiate => ff_Initiate
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => ff_Deallocate
   FINAL :: ff_final
-  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => ff_open
-  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => ff_close
-  PROCEDURE, PUBLIC, PASS(Obj) :: delete => ff_delete
-  PROCEDURE, PUBLIC, PASS(Obj) :: BACKSPACE => ff_backspace
-  PROCEDURE, PUBLIC, PASS(Obj) :: REWIND => ff_rewind
-  !!
-  !! @SetMethods
-  !!
-  PROCEDURE, PUBLIC, PASS(Obj) :: setStatus => ff_setStatus
-  !!
-  !! @GetMethods
-  !!
-  PROCEDURE, PUBLIC, PASS(Obj) :: getUnitNo => ff_getUnitNo
-  PROCEDURE, PUBLIC, PASS(Obj) :: getRecLen => ff_getRecLen
-  !!
-  !! @EnquireMethods
-  !!
-  PROCEDURE, PUBLIC, PASS(Obj) :: isFormatted => ff_isFormatted
-  PROCEDURE, PUBLIC, PASS(Obj) :: isDirect => ff_isDirect
-  PROCEDURE, PUBLIC, PASS(Obj) :: isPadded => ff_isPadded
-  PROCEDURE, PUBLIC, PASS(Obj) :: isNew => ff_isNew
-  PROCEDURE, PUBLIC, PASS(Obj) :: isOverwrite => ff_isOverwrite
-  PROCEDURE, PUBLIC, PASS(Obj) :: isInitiated => ff_isInitiated
+  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => ff_Open
+  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => ff_Close
+  PROCEDURE, PUBLIC, PASS(Obj) :: Delete => ff_Delete
+  PROCEDURE, PUBLIC, PASS(Obj) :: BACKSPACE => ff_Backspace
+  PROCEDURE, PUBLIC, PASS(Obj) :: REWIND => ff_Rewind
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(Obj) :: SetStatus => ff_SetStatus
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetUnitNo => ff_GetUnitNo
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetRecLen => ff_GetRecLen
+
+  ! GET:
+  ! @EnquireMethods
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsFormatted => ff_IsFormatted
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsDirect => ff_IsDirect
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsPadded => ff_IsPadded
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsNew => ff_IsNew
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsOverwrite => ff_IsOverwrite
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsInitiated => ff_IsInitiated
 END TYPE FortranFile_
 
-PUBLIC :: FortranFile_
 TYPE(FortranFile_), PUBLIC, PARAMETER :: TypeFortranFile = FortranFile_()
 
 TYPE :: FortranFilePointer_
   CLASS(FortranFile_), POINTER :: ptr => NULL()
 END TYPE
-
-PUBLIC :: FortranFilePointer_
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -137,7 +128,7 @@ PUBLIC :: FortranFilePointer_
 ! date: 19 July 2022
 ! summary: Initiate the fortran file
 
-INTERFACE
+INTERFACE FortranFileInitiate
   MODULE SUBROUTINE ff_initiate(obj, filename, unit, status, access, form, &
     & position, action, pad, recl, comment, separator, delimiter)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
@@ -168,13 +159,7 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: separator
     CHARACTER(*), OPTIONAL, INTENT(IN) :: delimiter
   END SUBROUTINE ff_initiate
-END INTERFACE
-
-INTERFACE FortranFileInitiate
-  MODULE PROCEDURE ff_initiate
 END INTERFACE FortranFileInitiate
-
-PUBLIC :: FortranFileInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -184,18 +169,12 @@ PUBLIC :: FortranFileInitiate
 ! date: 19 July, 2022
 ! summary:         Clear the content of fortran file
 
-INTERFACE
+INTERFACE FortranFileDeallocate
   MODULE SUBROUTINE ff_Deallocate(obj, delete)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: delete
   END SUBROUTINE ff_Deallocate
-END INTERFACE
-
-INTERFACE FortranFileDeallocate
-  MODULE PROCEDURE ff_Deallocate
 END INTERFACE FortranFileDeallocate
-
-PUBLIC :: FortranFileDeallocate
 
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods
@@ -261,17 +240,11 @@ END INTERFACE
 ! date: 19 July 2022
 ! summary: Move one line back
 
-INTERFACE
+INTERFACE FortranFileBackspace
   MODULE SUBROUTINE ff_backspace(obj)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
   END SUBROUTINE ff_backspace
-END INTERFACE
-
-INTERFACE FortranFileBackspace
-  MODULE PROCEDURE ff_backspace
 END INTERFACE FortranFileBackspace
-
-PUBLIC :: FortranFileBackspace
 
 !----------------------------------------------------------------------------
 !                                                  Rewind@ConstructorMethods
@@ -281,17 +254,11 @@ PUBLIC :: FortranFileBackspace
 ! date: 19 July 2022
 ! summary:         Move to the begining
 
-INTERFACE
+INTERFACE FortranFileRewind
   MODULE SUBROUTINE ff_rewind(obj)
     CLASS(FortranFile_), INTENT(INOUT) :: obj
   END SUBROUTINE ff_rewind
-END INTERFACE
-
-INTERFACE FortranFileRewind
-  MODULE PROCEDURE ff_rewind
 END INTERFACE FortranFileRewind
-
-PUBLIC :: FortranFileRewind
 
 !----------------------------------------------------------------------------
 !                                                   ff_setStatus@SetMethods
