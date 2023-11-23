@@ -101,8 +101,9 @@ TYPE :: UserFunction_
     & NULL()
   !! matrix function pointer
 CONTAINS
-  PRIVATE
 
+  PRIVATE
+  
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
