@@ -27,7 +27,7 @@ END MODULE Gmsh_Class
 !
 !----------------------------------------------------------------------------
 
-MODULE GmshStructuredGrid_Class
+MODULE GmshStructuredMesh_Class
 IMPLICIT NONE
-END MODULE GmshStructuredGrid_Class
+END MODULE GmshStructuredMesh_Class
 
