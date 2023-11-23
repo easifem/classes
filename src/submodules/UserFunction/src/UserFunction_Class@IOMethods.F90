@@ -39,6 +39,7 @@ IF (.NOT. obj%isInitiated) THEN
   RETURN
 END IF
 
+CALL Display("name: "//obj%name, unitNo=unitNo)
 CALL Display(obj%isUserFunctionSet, "isUserFunctionSet: ", unitNo=unitNo)
 CALL Display(obj%isLuaScript, "isLuaScript: ", unitNo=unitNo)
 IF (obj%isLuaScript) THEN
@@ -49,7 +50,7 @@ END IF
 CALL Display(NAME_RETURN_TYPE(obj%returnType), "returnType: ",  &
   & unitNo=unitNo)
 IF (obj%returnType .EQ. Matrix) THEN
-  CALL Display(obj%returnShape, "Shape of returnType: ", unitNo=unitNo)
+  CALL Display(obj%returnShape, "shape of returnType: ", unitNo=unitNo)
 END IF
 
 CALL Display(NAME_ARG_TYPE(obj%argType), "argType: ",  &
@@ -95,20 +96,31 @@ END PROCEDURE auf_Display
 MODULE PROCEDURE auf_Import
 CHARACTER(*), PARAMETER :: myName = "auf_Import"
 TYPE(String) :: dsetname, strval
-!> main
-!> info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "Importing the instance of UserFunction_ data")
-!> check
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Import()")
+#endif
+
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
-!> check
+
 IF (.NOT. hdf5%isRead()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have read permission')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
 END IF
+
+!> name
+dsetname = TRIM(group)//"/name"
+IF (hdf5%pathExists(dsetname%chars())) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: name should be present.')
+END IF
+
 !> isUserFunctionSet
 dsetname = TRIM(group)//"/isUserFunctionSet"
 IF (hdf5%pathExists(dsetname%chars())) THEN
@@ -116,6 +128,7 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
 ELSE
   obj%isUserFunctionSet = .FALSE.
 END IF
+
 !> isUserFunctionSet
 IF (obj%isUserFunctionSet) THEN
   ! dsetname = TRIM(group)//"/userFunction"
@@ -123,25 +136,29 @@ IF (obj%isUserFunctionSet) THEN
   ! CALL obj%userFunction%IMPORT(hdf5=hdf5, group=dsetname%chars())
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[WIP ERROR] :: currently import does not work for useFunction')
-ELSE
+END IF
+
+IF (.NOT. obj%isUserFunctionSet) THEN
   !> returnType
   dsetname = TRIM(group)//"/returnType"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
       & 'dsetname '//dsetname%chars()//'is not present in HDFFile_')
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
     obj%returnType = UserFunctionGetReturnType(strval%chars())
   END IF
+
   !> argType
   dsetname = TRIM(group)//"/argType"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
       & 'dsetname '//dsetname%chars()//'is not present in HDFFile_')
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
     obj%argType = UserFunctionGetArgType(strval%chars())
   END IF
+
   !> check the argType, and decide the importer
   IF (obj%argType .EQ. CONSTANT) THEN
     !> scalarValue, vectorValue, matrixValue
@@ -166,10 +183,15 @@ ELSE
       END IF
     END SELECT
   ELSE
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
       & 'Currently, EASIFEM Supports import of constant userFunction.')
   END IF
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Import()')
+#endif
 END PROCEDURE auf_Import
 
 !----------------------------------------------------------------------------
@@ -180,21 +202,26 @@ MODULE PROCEDURE auf_Export
 CHARACTER(*), PARAMETER :: myName = "auf_Export"
 TYPE(String) :: dsetname, strval
 
-!> info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "Exporting the instance of UserFunction_ data")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Export()')
+#endif
 
 !> check
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
 
 !> check
 IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have write permission')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file does not have write permission')
 END IF
+
+!> name
+dsetname = TRIM(group)//"/name"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 
 !> isUserFunctionSet
 IF (obj%isUserFunctionSet) THEN
@@ -207,14 +234,18 @@ IF (obj%isUserFunctionSet) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[WIP ERROR] :: Currently export function does not work '//  &
     & ' for UserFunction.')
-ELSE
+END IF
+
+IF (.NOT. obj%isUserFunctionSet) THEN
   !> isUserFunctionSet
   dsetname = TRIM(group)//"/isUserFunctionSet"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
+
   !> returnType
   dsetname = TRIM(group)//"/returnType"
   strval = NAME_RETURN_TYPE(obj%returnType)
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
+
   !> argType
   dsetname = TRIM(group)//"/argType"
   strval = NAME_ARG_TYPE(obj%argType)
@@ -238,10 +269,15 @@ ELSE
         & CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%matrixValue)
     END SELECT
   ELSE
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
       & 'Currently, EASIFEM Supports import of constant userFunction.')
   END IF
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Export()')
+#endif
 END PROCEDURE auf_Export
 
 !----------------------------------------------------------------------------
@@ -253,7 +289,7 @@ CHARACTER(*), PARAMETER :: myName = "auf_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: bool1, isLuaScript, isFound
 INTEGER(I4B) :: argType, returnType, numReturns, numArgs
-TYPE(String) :: astr, luaScript, luaFunctionName
+TYPE(String) :: astr, luaScript, luaFunctionName, name
 INTEGER(I4B), ALLOCATABLE :: returnShape(:)
 
 #ifdef DEBUG_VER
@@ -270,6 +306,17 @@ IF (bool1) THEN
   RETURN
 END IF
 returnType = UserFunctionGetReturnType(astr%chars())
+
+astr = ""
+CALL toml_get(table, "name", astr%raw, origin=origin, stat=stat)
+bool1 = stat .NE. toml_stat%success
+IF (bool1) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] ::  name should be present, and '//  &
+    & 'it is a string.')
+  RETURN
+END IF
+name = astr%chars()
 
 CALL Reallocate(returnShape, 2)
 returnShape = [0, 0]
@@ -330,7 +377,8 @@ IF (isLuaScript) THEN
 END IF
 
 IF (isLuaScript) THEN
-  CALL SetUserFunctionParam(param=param,  &
+  CALL SetUserFunctionParam(param=param,   &
+    & name=name%chars(), &
     & returnType=returnType,  &
     & returnShape=returnShape, &
     & argType=argType,  &
@@ -339,7 +387,8 @@ IF (isLuaScript) THEN
     & luaScript=luaScript%chars(),  &
     & luaFunctionName=luaFunctionName%chars())
 ELSE
-  CALL SetUserFunctionParam(param=param,  &
+  CALL SetUserFunctionParam(param=param,   &
+    & name=name%chars(), &
     & returnType=returnType,  &
     & returnShape=returnShape, &
     & argType=argType,  &
@@ -387,6 +436,7 @@ IF (.NOT. obj%isLuaScript) THEN
       RETURN
     END IF
     CALL obj%Set(scalarValue=scalarValue)
+
   CASE (Vector)
     CALL GetValue(table=table, key="vectorValue",  &
       & VALUE=vectorValue, origin=origin, stat=stat, isFound=isFound)

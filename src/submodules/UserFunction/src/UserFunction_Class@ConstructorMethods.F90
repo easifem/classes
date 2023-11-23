@@ -80,6 +80,8 @@ CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="returnType",  &
   & VALUE=returnType)
 CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="argType",  &
   & VALUE=argType)
+CALL Set(obj=param, dataType="char", prefix=myprefix, key="name",  &
+  & VALUE=name)
 
 IF (PRESENT(numArgs)) THEN
   numArgs0 = numArgs
@@ -222,7 +224,7 @@ TYPE(String), ALLOCATABLE :: essentialParam(:)
 TYPE(String) :: astr
 
 astr = "/isLuaScript/luaScript/numReturns/numArgs/returnType/argType"//  &
-  &"/luaFunctionName/returnShape"
+  &"/luaFunctionName/returnShape/name"
 
 CALL astr%Split(essentialParam, sep="/")
 CALL CheckEssentialParam(obj=param,  &
@@ -258,6 +260,7 @@ obj%argType = 0
 obj%numArgs = 0
 obj%numReturns = 0
 obj%scalarValue = 0.0_DFP
+obj%name = ""
 IF (ALLOCATED(obj%vectorValue)) DEALLOCATE (obj%vectorValue)
 IF (ALLOCATED(obj%matrixValue)) DEALLOCATE (obj%matrixValue)
 IF (ASSOCIATED(obj%scalarFunction)) obj%scalarFunction => NULL()
@@ -280,6 +283,9 @@ END PROCEDURE auf_Final
 MODULE PROCEDURE auf_Initiate
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
+
+CALL GetValue(obj=param, prefix=myprefix, key="name",  &
+  & VALUE=obj%name)
 
 CALL GetValue(obj=param, prefix=myprefix, key="returnType",  &
   & VALUE=obj%returnType)

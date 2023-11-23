@@ -101,6 +101,9 @@ TYPE :: UserFunction_
     & NULL()
   !! matrix function pointer
 CONTAINS
+
+  PRIVATE
+  
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
@@ -122,19 +125,26 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => auf_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => auf_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => auf_GetName
+  !! Get name of the function
 
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => auf_Display
+  !! Display the content
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => auf_Import
+  !! Import from HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Export => auf_Export
+  !! Export to HDF5File
   PROCEDURE, PASS(obj) :: ImportFromToml1 => auf_ImportFromToml1
+  !! Import from toml
   PROCEDURE, PASS(obj) :: ImportFromToml2 => auf_ImportFromToml2
+  !! Import from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     & ImportFromToml2
   !! Import abstract kernel from toml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
     & auf_ImportParamFromToml
+  !! Import param from toml
 END TYPE UserFunction_
 
 !----------------------------------------------------------------------------
@@ -202,8 +212,9 @@ INTERFACE
   MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType,  &
     & numArgs, numReturns, luaScript, luaFunctionName, returnShape)
     TYPE(ParameterList_), INTENT(INOUT) :: param
+    !! parameter to be constructed
     CHARACTER(*), INTENT(IN) :: name
-    !! name
+    !! name of the function
     INTEGER(I4B), INTENT(IN) :: returnType
     !! Scalar, Vector, Matrix
     INTEGER(I4B), INTENT(IN) :: argType
@@ -349,7 +360,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-23
-! summary:  Returns name of UserFunction
+! summary:  Get name of the function
 
 INTERFACE
   MODULE PURE FUNCTION auf_GetName(obj) RESULT(ans)
