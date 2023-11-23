@@ -17,28 +17,9 @@
 
 SUBMODULE(AbstractBC_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "bc_CheckEssentialParam"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This routine should be implemented by children of AbstractBC_')
-END PROCEDURE bc_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_Initiate
-CHARACTER(*), PARAMETER :: myName = "bc_Initiate"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This routine should be implemented by children of AbstractBC_')
-END PROCEDURE bc_Initiate
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
@@ -65,165 +46,153 @@ END PROCEDURE bc_Deallocate
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE AbstractBCcheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "AbstractBCcheckEssentialParam"
+MODULE PROCEDURE bc_checkessentialparam
+CHARACTER(*), PARAMETER :: myName = "bc_CheckEssentialParam"
 INTEGER(I4B) :: ii
-INTEGER(I4B), PARAMETER :: maxEssentialParam = 7
-TYPE(String) :: essentialParam(maxEssentialParam)
+TYPE(String), ALLOCATABLE :: essentialParam(:)
+TYPE(String) :: astr, prefix0
 
-essentialParam(1) = prefix//"/name"
-essentialParam(2) = prefix//"/idof"
-essentialParam(3) = prefix//"/nodalValueType"
-essentialParam(4) = prefix//"/useFunction"
-essentialParam(5) = prefix//"/isNormal"
-essentialParam(6) = prefix//"/isTangent"
-essentialParam(7) = prefix//"/useExternal"
+IF (PRESENT(prefix)) THEN
+  prefix0 = prefix
+ELSE
+  prefix0 = obj%GetPrefix()
+END IF
 
-DO ii = 1, maxEssentialParam
-  IF (.NOT. param%isPresent(key=TRIM(essentialParam(ii)%chars()))) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & TRIM(essentialParam(ii)%chars())//' should be present in param')
-  END IF
-END DO
+astr = "/name/idof/nodalValueType/useFunction/isNormal/isTangent/useExternal"
 
-END PROCEDURE AbstractBCcheckEssentialParam
+CALL astr%Split(essentialParam, sep="/")
+CALL CheckEssentialParam(obj=param,  &
+  & keys=essentialParam,  &
+  & prefix=prefix0%chars(),  &
+  & myName=myName,  &
+  & modName=modName)
+!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+
+IF (ALLOCATED(essentialParam)) THEN
+  DO ii = 1, SIZE(essentialParam)
+    essentialParam(ii) = ""
+  END DO
+  DEALLOCATE (essentialParam)
+END IF
+astr = ""
+prefix0 = ""
+END PROCEDURE bc_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setAbstractBCParam
-INTEGER(I4B) :: ierr
-CHARACTER(*), PARAMETER :: myName = "setAbstractBCParam"
+MODULE PROCEDURE SetAbstractBCParam
+CHARACTER(*), PARAMETER :: myName = "SetAbstractBCParam()"
 
-IF (PRESENT(name)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/name", VALUE=TRIM(name))
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/name", VALUE="AbstractBC")
-END IF
+CALL Set(param, datatype="char", prefix=prefix, key="name",  &
+  & VALUE=input(option=name, default=default_name))
 
-IF (PRESENT(idof)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/idof", VALUE=idof)
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/idof", VALUE=0_I4B)
-END IF
+CALL Set(param, datatype=0_I4B, prefix=prefix, key="idof",  &
+  & VALUE=input(option=idof, default=default_idof))
 
-IF (PRESENT(nodalValueType)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/nodalValueType", VALUE=nodalValueType)
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/nodalValueType", VALUE=-1_I4B)
-END IF
+CALL Set(param, datatype=0_I4B, prefix=prefix, key="nodalValueType",  &
+  & VALUE=input(option=nodalValueType, default=default_nodalValueType))
 
-IF (PRESENT(useFunction)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/useFunction", VALUE=useFunction)
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/useFunction", VALUE=.FALSE.)
-END IF
+CALL Set(param, datatype=.TRUE., prefix=prefix, key="useFunction",  &
+  & VALUE=input(option=useFunction, default=default_useFunction))
 
-IF (PRESENT(isNormal)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/isNormal", VALUE=isNormal)
-  IF (PRESENT(idof)) THEN
-    IF (idof .GT. 0 .AND. isNormal) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'When isNormal is true, idof cannot be greater than 0')
-    END IF
+CALL Set(param, datatype=.TRUE., prefix=prefix, key="isNormal",  &
+  & VALUE=input(option=isNormal, default=default_isNormal))
+
+CALL Set(param, datatype=.TRUE., prefix=prefix, key="isTangent",  &
+  & VALUE=input(option=isTangent, default=default_isTangent))
+
+CALL Set(param, datatype=.TRUE., prefix=prefix, key="useExternal",  &
+  & VALUE=input(option=useExternal, default=default_useExternal))
+
+IF (PRESENT(isNormal) .AND. PRESENT(idof)) THEN
+  IF (idof .GT. 0 .AND. isNormal) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: When isNormal is true, '//  &
+    & 'idof CANNOT be greater than 0.')
   END IF
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/isNormal", VALUE=.FALSE.)
 END IF
 
-IF (PRESENT(isTangent)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/isTangent", VALUE=isTangent)
-  IF (PRESENT(idof)) THEN
-    IF (idof .GT. 0 .AND. isTangent) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'When isTangent is true, idof cannot be greater than 0')
-    END IF
+IF (PRESENT(isTangent) .AND. PRESENT(idof)) THEN
+  IF (idof .GT. 0 .AND. isTangent) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: When isTangent is true, '//  &
+    & 'idof cannot be greater than 0.')
   END IF
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/isTangent", VALUE=.FALSE.)
 END IF
 
-IF (PRESENT(useExternal)) THEN
-  ierr = param%set(key=TRIM(prefix)//"/useExternal", VALUE=useExternal)
-ELSE
-  ierr = param%set(key=TRIM(prefix)//"/useExternal", VALUE=.FALSE.)
-END IF
-
-END PROCEDURE setAbstractBCParam
+END PROCEDURE SetAbstractBCParam
 
 !----------------------------------------------------------------------------
-!                                                     AbstractBCInitiate
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE AbstractBCInitiate
-CHARACTER(*), PARAMETER :: myName = "AbstractBCInitiate"
-CHARACTER(:), ALLOCATABLE :: char_var
-INTEGER(I4B) :: ierr
+MODULE PROCEDURE bc_Initiate
+CHARACTER(*), PARAMETER :: myName = "bc_Initiate()"
+LOGICAL(LGT) :: isSelectionByMeshID, abool
+TYPE(String) :: prefix
 
-IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'AbstractBC_ object is already initiated')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Initiate()')
+#endif
 
-CALL obj%checkEssentialParam(param=param)
+prefix = obj%GetPrefix()
+CALL obj%DEALLOCATE()
+
+CALL obj%CheckEssentialParam(param=param, prefix=prefix%chars())
 
 obj%isInitiated = .TRUE.
 obj%boundary = boundary
 obj%dom => dom
-!
+
 ! name
-!
-ALLOCATE (CHARACTER(param%DataSizeInBytes( &
-  & key=TRIM(prefix)//"/name")) :: char_var)
-ierr = param%get(key=TRIM(prefix)//"/name", VALUE=char_var)
-obj%name = char_var
-DEALLOCATE (char_var)
-!
+CALL GetValue(obj=param, prefix=prefix%chars(), key="name", VALUE=obj%name)
+
 ! idof
-!
-ierr = param%get(key=TRIM(prefix)//"/idof", VALUE=obj%idof)
-!
+CALL GetValue(obj=param, prefix=prefix%chars(), key="idof", VALUE=obj%idof)
+
 ! nodalValueType
-!
-ierr = param%get(key=TRIM(prefix)//"/nodalValueType", &
+CALL GetValue(obj=param, prefix=prefix%chars(), key="nodalValueType", &
   & VALUE=obj%nodalValueType)
-!
+
 ! useFunction
-!
-ierr = param%get(key=TRIM(prefix)//"/useFunction", &
+CALL GetValue(obj=param, prefix=prefix%chars(), key="useFunction", &
   & VALUE=obj%useFunction)
-!
+
 ! isNormal
-!
-ierr = param%get(key=TRIM(prefix)//"/isNormal", &
+CALL GetValue(obj=param, prefix=prefix%chars(), key="isNormal", &
   & VALUE=obj%isNormal)
-!
+
 ! isTangent
-!
-ierr = param%get(key=TRIM(prefix)//"/isTangent", &
+CALL GetValue(obj=param, prefix=prefix%chars(), key="isTangent", &
   & VALUE=obj%isTangent)
-!
+
 ! useExternal
-!
-ierr = param%get(key=TRIM(prefix)//"/useExternal", &
+CALL GetValue(obj=param, prefix=prefix%chars(), key="useExternal", &
   & VALUE=obj%useExternal)
-!
+
 ! check
-!
-IF (boundary%isSelectionByMeshID &
-    & .AND. (.NOT. obj%useFunction) &
-    & .AND. (.NOT. obj%useExternal)) THEN
-  IF (obj%nodalValueType .NE. Constant) THEN
-    CALL e%raiseWarning(modName//'::'//myName//" - "// &
-        & "When meshSelection is by MeshID &
-        & and `useFunction` is false, then &
-        & `nodalValueType` in `AbstractBC_` &
-        & object should be Constant.")
-  END IF
+CALL boundary%GetParam(isSelectionByMeshID=isSelectionByMeshID)
+abool = boundary%isSelectionByMeshID  &
+  & .AND. (.NOT. obj%useFunction) &
+  & .AND. (.NOT. obj%useExternal) &
+  & .AND. (obj%nodalValueType .NE. Constant)
+
+IF (abool) THEN
+  CALL e%RaiseWarning(modName//'::'//myName//" - "// &
+      & "When meshSelection is by MeshID"//CHAR_LF//  &
+      & " and `useFunction` is false, then"//CHAR_LF//  &
+      & " `nodalValueType` in `AbstractBC_`"//CHAR_LF//  &
+      & " object should be Constant.")
 END IF
 
-END PROCEDURE AbstractBCInitiate
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractBCInitiate()')
+#endif
+END PROCEDURE bc_Initiate
 
 !----------------------------------------------------------------------------
 !
