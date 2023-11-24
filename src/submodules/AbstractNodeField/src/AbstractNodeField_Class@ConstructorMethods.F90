@@ -61,15 +61,15 @@ END PROCEDURE anf_Initiate3
 
 MODULE PROCEDURE anf_Deallocate
 CALL AbstractFieldDeallocate(obj)
-obj%tSize = 0
-CALL DEALLOCATE (obj%realVec)
-CALL DEALLOCATE (obj%dof)
 obj%dof_tPhysicalVars = 0
 obj%dof_storageFMT = NODES_FMT
 IF (ALLOCATED(obj%dof_spaceCompo)) DEALLOCATE (obj%dof_spaceCompo)
 IF (ALLOCATED(obj%dof_timeCompo)) DEALLOCATE (obj%dof_timeCompo)
 IF (ALLOCATED(obj%dof_tNodes)) DEALLOCATE (obj%dof_tNodes)
 IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
+obj%tSize = 0
+CALL DEALLOCATE (obj%realVec)
+CALL DEALLOCATE (obj%dof)
 END PROCEDURE anf_Deallocate
 
 !----------------------------------------------------------------------------

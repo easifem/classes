@@ -97,7 +97,7 @@ CONTAINS
   !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => anf_Export
   !! Export AbstractNodeField to HDF5File_
-  ! PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => anf_WriteData_vtk
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => anf_WriteData_vtk
   !! Export data in VTKformat
 
   ! GET:
@@ -220,13 +220,13 @@ END INTERFACE AbstractNodeFieldExport
 ! date:  2023-11-24
 ! summary:  Export data in vrkfile
 
-! INTERFACE AbstractNodeWriteData
-!   MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk, group)
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-!     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-!     CHARACTER(*), INTENT(IN) :: group
-!   END SUBROUTINE anf_WriteData_vtk
-! END INTERFACE AbstractNodeWriteData
+INTERFACE AbstractNodeWriteData
+  MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk, group)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE anf_WriteData_vtk
+END INTERFACE AbstractNodeWriteData
 
 !----------------------------------------------------------------------------
 !                                                                GetPointer

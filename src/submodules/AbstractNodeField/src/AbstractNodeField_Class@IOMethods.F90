@@ -108,6 +108,76 @@ CALL e%raiseInformation(modName//"::"//myName//" - "// &
 END PROCEDURE anf_Export
 
 !----------------------------------------------------------------------------
+!                                                             WriteData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_WriteData
+CHARACTER(*), PARAMETER :: myName = "anf_WriteData()"
+LOGICAL(LGT) :: isOK
+TYPE(Domain_), POINTER :: dom
+TYPE(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: imesh, tMesh
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] WriteData()')
+#endif
+
+isOK = obj%isInitiated
+IF (.NOT. isOK) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj is not isInitiated.')
+  RETURN
+END IF
+
+isOK = vtk%isOpen()
+IF (.NOT. isOK) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: VTKFile_::vtk is not open.')
+  RETURN
+END IF
+
+isOK = vtk%isWrite()
+IF (isOK) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: VTKFile_::vtk does not have write access.')
+  RETURN
+END IF
+
+isOK = ASSOCIATED(obj%domain) .OR. ALLOCATED(obj%domains)
+IF (.NOT. isOK) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%domain, '// &
+    & ' or obj%domains not allocated.')
+  RETURN
+END IF
+
+dom => obj%domain
+tMesh = dom%GetTotalMesh()
+
+DO imesh = 1, tMesh
+
+  meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
+  CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
+  CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, openTag=.TRUE.,  &
+    & content=.TRUE., closeTag=.FALSE.)
+  CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
+  nptrs = meshPtr%GetNptrs()
+  ! CALL sol%Get(globalNode=nptrs, value=fe)
+  ! CALL vtk%WriteDataArray(name=String("sol"), x=fe, numberOfComponents=1)
+  CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
+  CALL vtk%WritePiece()
+
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] WriteData()')
+#endif
+END PROCEDURE anf_WriteData
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
