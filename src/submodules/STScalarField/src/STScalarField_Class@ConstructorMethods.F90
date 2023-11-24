@@ -27,6 +27,7 @@ CONTAINS
 
 MODULE PROCEDURE SetSTScalarFieldParam
 TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: ierr
 
 CALL SetAbstractFieldParam( &
   & param=param, &
@@ -39,7 +40,17 @@ CALL SetAbstractFieldParam( &
   & global_n=global_n)
 
 sublist => NULL()
-sublist => param%NewSubList(key=myprefix)
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
 
 CALL Set( &
   & obj=sublist, &
@@ -71,7 +82,7 @@ END PROCEDURE stsField_CheckEssentialParam
 MODULE PROCEDURE stsField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "stsField_Initiate1()"
 TYPE(String) :: astr
-INTEGER(I4B) :: nsd, tdof, ierr, timeCompo, tNodes 
+INTEGER(I4B) :: nsd, tdof, ierr, timeCompo, tNodes
 TYPE(ParameterList_), POINTER :: sublist
 
 ! main
@@ -93,7 +104,7 @@ CALL obj%DEALLOCATE()
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
 CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", VALUE=timeCompo)
-tNodes = dom%GetTotalNodes() 
+tNodes = dom%GetTotalNodes()
 tdof = tNodes * timeCompo
 
 CALL AbstractNodeFieldSetParam(obj=obj,  &
