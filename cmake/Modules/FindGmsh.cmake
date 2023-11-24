@@ -26,9 +26,8 @@ if(NOT DEFINED GMSH_LIB)
   endif()
 endif()
 
-if(NOT DEFINED GMSH_INC)
-  find_path(GMSH_INC "gmsh.h" HINTS $ENV{GMSH_INC} NO_CACHE)
-endif()
+# if(NOT DEFINED GMSH_INC) find_path(GMSH_INC "gmsh.h" HINTS $ENV{GMSH_INC}
+# NO_CACHE) endif()
 
 # CMake check and done ##
 # ##############################################################################
@@ -36,5 +35,5 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   Gmsh
   "Gmsh could not be found: be sure to set GMSH_LIB and GMSH_INC in your environment variables"
-  GMSH_LIB
-  GMSH_INC)
+  GMSH_LIB)
+# GMSH_INC)
