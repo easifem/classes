@@ -26,6 +26,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSTScalarFieldParam
+CHARACTER(*), PARAMETER :: myName = "SetSTScalarFieldParam()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
 
