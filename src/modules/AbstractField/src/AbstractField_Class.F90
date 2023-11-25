@@ -55,6 +55,9 @@ PUBLIC :: AbstractFieldDeallocate
 PUBLIC :: FIELD_TYPE_NUMBER
 PUBLIC :: SetAbstractFieldParam
 PUBLIC :: AbstractFieldCheckEssentialParam
+PUBLIC :: AbstractField_
+PUBLIC :: AbstractFieldInitiate2
+PUBLIC :: FIELD_TYPE_NAME
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -106,6 +109,9 @@ TYPE, ABSTRACT :: AbstractField_
   !! and BlockMatrixField
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
     & checkEssentialParam
   !! check essential parameters
@@ -120,6 +126,9 @@ CONTAINS
   GENERIC, PUBLIC :: Copy => Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
   !! Deallocate the field
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => aField_Display
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => aField_Import
@@ -129,8 +138,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => afield_WriteData_vtk
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => afield_WriteData_hdf5
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars  &
     & => aField_GetTotalPhysicalVars
   !! Returns the total number of physical variables
@@ -153,7 +164,8 @@ CONTAINS
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
   !! INFO: This routine should be implemented by child classes
- PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => aField_GetTotalVertexDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF =>  &
+   & aField_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
   !! INFO: This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => aField_GetTotalEdgeDOF
@@ -169,12 +181,15 @@ CONTAINS
     & => aField_isConstant
   !! It returns true if the field is constant field
   !! INFO: This routine should be implemented by child classes
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
+
 END TYPE AbstractField_
 
-PUBLIC :: AbstractField_
-
 !----------------------------------------------------------------------------
-!                                           checkEssentialParam@Constructor
+!                                   CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -190,7 +205,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -207,7 +222,7 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      CheckEssentialParam
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -219,7 +234,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetAbstractFieldParam
+!                                  SetAbstractFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -227,8 +242,8 @@ END INTERFACE
 ! summary:  Set AbstractField_ parameters
 
 INTERFACE
-  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine, fieldType,  &
-    & comm, local_n, global_n)
+  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine,  &
+    & fieldType, comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     !! prefix
@@ -251,7 +266,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -268,14 +283,14 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            InitiateByCopy
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
 ! summary: Initiate by copying other fields, and different options
 
-INTERFACE
+INTERFACE AbstractFieldInitiate2
   MODULE SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
@@ -284,16 +299,10 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE aField_Initiate2
-END INTERFACE
-
-INTERFACE AbstractFieldInitiate2
-  MODULE PROCEDURE aField_Initiate2
 END INTERFACE AbstractFieldInitiate2
 
-PUBLIC :: AbstractFieldInitiate2
-
 !----------------------------------------------------------------------------
-!                                                            InitiateByCopy
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -310,67 +319,13 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE aField_Display
-END INTERFACE
-
-INTERFACE AbstractFieldDisplay
-  MODULE PROCEDURE aField_Display
-END INTERFACE AbstractFieldDisplay
-
-!----------------------------------------------------------------------------
-!                                                                 IMPORT
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE aField_Import
-END INTERFACE
-
-INTERFACE AbstractFieldImport
-  MODULE PROCEDURE aField_Import
-END INTERFACE AbstractFieldImport
-
-!----------------------------------------------------------------------------
-!                                                                 Export
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE aField_Export(obj, hdf5, group)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_Export
-END INTERFACE
-
-INTERFACE AbstractFieldExport
-  MODULE PROCEDURE aField_Export
-END INTERFACE AbstractFieldExport
-
-!----------------------------------------------------------------------------
-!                                                                 Export
-!----------------------------------------------------------------------------
-
-INTERFACE
+INTERFACE AbstractFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate(obj)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
   END SUBROUTINE aField_Deallocate
-END INTERFACE
-
-INTERFACE AbstractFieldDeallocate
-  MODULE PROCEDURE aField_Deallocate
 END INTERFACE AbstractFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -395,39 +350,78 @@ INTERFACE
   END FUNCTION FIELD_TYPE_NAME
 END INTERFACE
 
-PUBLIC :: FIELD_TYPE_NAME
-
 !----------------------------------------------------------------------------
-!
+!                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
+INTERFACE AbstractFieldDisplay
+  MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE aField_Display
+END INTERFACE AbstractFieldDisplay
+
+!----------------------------------------------------------------------------
+!                                                         IMPORT@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE AbstractFieldImport
+  MODULE SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+  END SUBROUTINE aField_Import
+END INTERFACE AbstractFieldImport
+
+!----------------------------------------------------------------------------
+!                                                          Export@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE AbstractFieldExport
+  MODULE SUBROUTINE aField_Export(obj, hdf5, group)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE aField_Export
+END INTERFACE AbstractFieldExport
+
+!----------------------------------------------------------------------------
+!                                                     WriteData@IOMethods
+!----------------------------------------------------------------------------
+
+INTERFACE AbstractFieldWriteData
   MODULE SUBROUTINE aField_WriteData_hdf5(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE aField_WriteData_hdf5
-END INTERFACE
+END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
-!
+!                                                      WriteData@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-24
 ! summary:  Export data in vrkfile
 
-INTERFACE
-  MODULE SUBROUTINE aField_WriteData_vtk(obj, vtk, group)
+INTERFACE AbstractFieldWriteData
+  MODULE SUBROUTINE aField_WriteData_vtk(obj, vtk)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE aField_WriteData_vtk
-END INTERFACE
+END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
-!
+!                                                       SetParam@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-25
+! summary:  Set field variables of abstract field
 
 INTERFACE
   MODULE SUBROUTINE SetParam(obj, &
@@ -472,8 +466,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-25
+! summary:  Get the field variables
 
 INTERFACE
   MODULE SUBROUTINE GetParam(obj, &
@@ -518,7 +516,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetTotalPhysicalVars
+!                                           GetTotalPhysicalVars@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -533,7 +531,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           GetPhysicalNames
+!                                                GetPhysicalNames@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -548,7 +546,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             GetSpaceCompo
+!                                                   GetSpaceCompo@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -566,7 +564,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             GetTimeCompo
+!                                                    GetTimeCompo@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -582,7 +580,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              GetStorageFMT
+!                                                   GetStorageFMT@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -597,7 +595,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              GetTotalDOF
+!                                                    GetTotalDOF@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -616,7 +614,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetTotalVertexDOF
+!                                              GetTotalVertexDOF@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -632,7 +630,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetTotalEdgeDOF
+!                                                 GetTotalEdgeDOF@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -648,7 +646,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetTotalFaceDOF
+!                                                 GetTotalFaceDOF@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -664,7 +662,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            GetTotalCellDOF
+!                                                GetTotalCellDOF@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -680,7 +678,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               isConstant
+!                                                      isConstant@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
