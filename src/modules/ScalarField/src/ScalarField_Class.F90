@@ -201,29 +201,6 @@ END INTERFACE
 ! scalar field. There are essential and optional information.
 ! Essential information are described below.
 
-INTERFACE
-  MODULE SUBROUTINE sField_Initiate_old(obj, param, dom)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE sField_Initiate_old
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the ScalarField_ object
-!
-!# Introduction
-!
-! This routine initiate the [[ScalarField_]] object.
-! `param` contains the information of parameters required to initiate the
-! scalar field. There are essential and optional information.
-! Essential information are described below.
-
 INTERFACE ScalarFieldInitiate1
   MODULE SUBROUTINE sField_Initiate1(obj, param, dom)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
