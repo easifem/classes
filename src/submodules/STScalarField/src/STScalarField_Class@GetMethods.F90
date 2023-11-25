@@ -273,7 +273,15 @@ END PROCEDURE stsField_Get10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_GetTimeCompo
-  ans = obj%timeCompo
+ans = obj%timeCompo
 END PROCEDURE stsField_GetTimeCompo
+
+!----------------------------------------------------------------------------
+!                                                           GetFEVariable
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_GetFEVariable
+CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+END PROCEDURE stsField_GetFEVariable
 
 END SUBMODULE GetMethods

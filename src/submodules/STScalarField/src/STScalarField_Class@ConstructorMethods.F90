@@ -71,7 +71,7 @@ END PROCEDURE stsField_CheckEssentialParam
 MODULE PROCEDURE stsField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "stsField_Initiate1()"
 TYPE(String) :: astr
-INTEGER(I4B) :: nsd, tdof, ierr, timeCompo, tNodes 
+INTEGER(I4B) :: nsd, tdof, ierr, timeCompo, tNodes
 TYPE(ParameterList_), POINTER :: sublist
 
 ! main
@@ -93,7 +93,7 @@ CALL obj%DEALLOCATE()
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
 CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", VALUE=timeCompo)
-tNodes = dom%GetTotalNodes() 
+tNodes = dom%GetTotalNodes()
 tdof = tNodes * timeCompo
 
 CALL AbstractNodeFieldSetParam(obj=obj,  &
