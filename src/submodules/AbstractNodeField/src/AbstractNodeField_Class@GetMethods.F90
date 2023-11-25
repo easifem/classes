@@ -21,6 +21,38 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                         GetPhysicalNames
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetPhysicalNames
+CHARACTER(*), PARAMETER :: myName = "anf_GetPhysicalNames()"
+INTEGER(I4B) :: tnames, aint
+LOGICAL(LGT) :: isOK
+
+IF (ALLOCATED(obj%dof_names_char)) THEN
+  tnames = SIZE(obj%dof_names_char)
+  aint = SIZE(ans)
+  isOK = tnames .EQ. aint
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: The size of names ('//tostring(aint)//  &
+      & ') is not same as total physical variables = '//tostring(tnames))
+    RETURN
+  END IF
+
+  DO aint = 1, tnames
+    ans(aint) (:) = obj%dof_names_char(aint) (1:1)
+  END DO
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_names_char not'//  &
+    & ' not allocated.')
+  RETURN
+END IF
+
+END PROCEDURE anf_GetPhysicalNames
+
+!----------------------------------------------------------------------------
 !                                                                GetPointer
 !----------------------------------------------------------------------------
 
@@ -37,7 +69,7 @@ CHARACTER(*), PARAMETER :: myName = "anf_size"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
-! ans = obj%tSize
+ans = obj%tSize
 END PROCEDURE anf_size
 
 !----------------------------------------------------------------------------
