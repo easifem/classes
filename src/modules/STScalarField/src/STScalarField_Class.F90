@@ -62,15 +62,25 @@ TYPE, EXTENDS(AbstractNodeField_) :: STScalarField_
   INTEGER(I4B), PUBLIC :: timeCompo = 0_I4B
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & stsField_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => stsField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => stsField_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => stsField_Deallocate
+  FINAL :: stsField_Final
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => stsField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => stsField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => stsField_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => stsField_Deallocate
-  FINAL :: stsField_Final
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PASS(obj) :: Set1 => stsField_Set1
     !! Set single entry
   PROCEDURE, PASS(obj) :: Set2 => stsField_Set2
@@ -102,6 +112,9 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set15 => stsField_Set15
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     & Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PASS(obj) :: Get1 => stsField_Get1
   PROCEDURE, PASS(obj) :: Get2 => stsField_Get2
   PROCEDURE, PASS(obj) :: Get3 => stsField_Get3
@@ -114,14 +127,19 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Get10 => stsField_Get10
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
     & Get5, Get6, Get7, Get8, Get9
-  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC1
-  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC2
-  GENERIC, PUBLIC :: applyDirichletBC => &
-    & stsField_applyDirichletBC1, &
-    & stsField_applyDirichletBC2
-    !! Get the entries of STScalar field
   PROCEDURE, PASS(obj) :: GetPointerOfComponent => &
     & stsField_GetPointerOfComponent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => stsField_GetFeVariable
+  !! Get Finite Element variable
+
+  ! SET:
+  ! @DirichletBCMethods
+  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC1
+  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC2
+  GENERIC, PUBLIC :: applyDirichletBC => stsField_applyDirichletBC1, &
+    & stsField_applyDirichletBC2
+  !! Get the entries of STScalar field
+
 END TYPE STScalarField_
 
 !----------------------------------------------------------------------------
@@ -1021,6 +1039,24 @@ MODULE SUBROUTINE stsField_Get10(obj, ivar, idof, VALUE, ivar_value, idof_value)
     INTEGER(I4B), INTENT(IN) :: idof_value
   END SUBROUTINE stsField_Get10
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE STScalarFieldGetFEVariable
+  MODULE SUBROUTINE stsField_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! This argument is not used
+  END SUBROUTINE stsField_GetFeVariable
+END INTERFACE STScalarFieldGetFEVariable
 
 !----------------------------------------------------------------------------
 !                                               applyDirichletBC@DBCMethods
