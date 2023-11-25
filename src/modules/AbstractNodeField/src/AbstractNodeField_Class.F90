@@ -14,7 +14,7 @@
 
 MODULE AbstractNodeField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE RealVector_Method
 USE DOF_Method
 USE AbstractField_Class
@@ -37,8 +37,7 @@ PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
 PUBLIC :: AbstractNodeFieldSetParam
-
-CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
 
 !----------------------------------------------------------------------------
@@ -111,8 +110,10 @@ CONTAINS
   !! Returns the L2 norm
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => anf_GetSingle
   !! Get single entry
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => anf_GetPhysicalNames
+  !! Get physical names
 
-  ! SET:
+  ! Set:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => anf_SetSingle
   !! Set single entry
@@ -221,10 +222,9 @@ END INTERFACE AbstractNodeFieldExport
 ! summary:  Export data in vrkfile
 
 INTERFACE AbstractNodeWriteData
-  MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk, group)
+  MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE anf_WriteData_vtk
 END INTERFACE AbstractNodeWriteData
 
@@ -244,7 +244,7 @@ INTERFACE AbstractNodeFieldGetPointer
 END INTERFACE AbstractNodeFieldGetPointer
 
 !----------------------------------------------------------------------------
-!                                                            anf_Initiate3
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -281,7 +281,7 @@ INTERFACE AbstractNodeFieldInitiate2
 END INTERFACE AbstractNodeFieldInitiate2
 
 !----------------------------------------------------------------------------
-!                                                            anf_Initiate3
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -297,7 +297,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Deallocate
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -315,7 +315,7 @@ INTERFACE AbstractNodeFieldDeallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                                                    Norm2
+!                                                          Norm2@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -338,22 +338,22 @@ END INTERFACE
 ! summary: Set single entry
 
 INTERFACE
-  MODULE SUBROUTINE anf_setSingle(obj, indx, VALUE, scale, &
+  MODULE SUBROUTINE anf_SetSingle(obj, indx, VALUE, scale, &
     & addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE anf_setSingle
+  END SUBROUTINE anf_SetSingle
 END INTERFACE
 
 INTERFACE AbstractNodeFieldSetSingle
-  MODULE PROCEDURE anf_setSingle
+  MODULE PROCEDURE anf_SetSingle
 END INTERFACE AbstractNodeFieldSetSingle
 
 !----------------------------------------------------------------------------
-!                                                          GetSingle@Methods
+!                                                       GetSingle@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -371,6 +371,21 @@ END INTERFACE
 INTERFACE AbstractNodeFieldGetSingle
   MODULE PROCEDURE anf_GetSingle
 END INTERFACE AbstractNodeFieldGetSingle
+
+!----------------------------------------------------------------------------
+!                                                GetPhysicalNames@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns the names of physical variables
+
+INTERFACE
+  MODULE SUBROUTINE anf_GetPhysicalNames(obj, ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(INOUT) :: ans(:)
+  END SUBROUTINE anf_GetPhysicalNames
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                       Size
