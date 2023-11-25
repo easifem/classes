@@ -21,12 +21,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get1
+MODULE PROCEDURE vField_Get1
 INTEGER(I4B) :: localNode
-CHARACTER(*), PARAMETER :: myName = "vField_get1"
+CHARACTER(*), PARAMETER :: myName = "vField_Get1"
 
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -40,58 +40,58 @@ END IF
 IF (PRESENT(globalNode)) THEN
   SELECT CASE (obj%fieldType)
   CASE (FIELD_TYPE_CONSTANT)
-    CALL getValue( &
+    CALL GetValue( &
       & obj=obj%realvec, &
       & dofobj=obj%dof, &
       & idof=arange(1, obj%spaceCompo), &
       & VALUE=VALUE, &
       & nodenum=[1])
   CASE (FIELD_TYPE_NORMAL)
-    CALL getValue( &
+    CALL GetValue( &
       & obj=obj%realvec, &
       & dofobj=obj%dof, &
       & idof=arange(1, obj%spaceCompo), &
       & VALUE=VALUE, &
-      & nodenum=obj%domain%getLocalNodeNumber([globalNode]))
+      & nodenum=obj%domain%GetLocalNodeNumber([globalNode]))
   END SELECT
 END IF
 
 IF (PRESENT(spaceCompo)) THEN
-  CALL getValue( &
+  CALL GetValue( &
     & obj=obj%realvec, &
     & dofobj=obj%dof, &
     & idof=spaceCompo, &
     & VALUE=VALUE)
 END IF
 
-END PROCEDURE vField_get1
+END PROCEDURE vField_Get1
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get2
-CALL getValue( &
+MODULE PROCEDURE vField_Get2
+CALL GetValue( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
   & idof=arange(1, obj%spaceCompo), &
   & VALUE=VALUE, &
   & force3D=force3D)
-END PROCEDURE vField_get2
+END PROCEDURE vField_Get2
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get3
+MODULE PROCEDURE vField_Get3
 REAL(DFP), ALLOCATABLE :: v(:)
 
-CALL getValue( &
+CALL GetValue( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
   & idof=arange(1, obj%spaceCompo), &
   & VALUE=v, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
 
 IF (PRESENT(force3D)) THEN
   CALL Reallocate(VALUE, 3, SIZE(globalNode))
@@ -102,88 +102,88 @@ ELSE
 END IF
 
 DEALLOCATE (v)
-END PROCEDURE vField_get3
+END PROCEDURE vField_Get3
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get4
-CALL getValue( &
+MODULE PROCEDURE vField_Get4
+CALL GetValue( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
   & ivar=1, &
   & idof=spaceCompo, &
   & VALUE=VALUE, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-END PROCEDURE vField_get4
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
+END PROCEDURE vField_Get4
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get5
-CALL getValue( &
+MODULE PROCEDURE vField_Get5
+CALL GetValue( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
   & ivar=1, &
   & idof=spaceCompo, &
   & VALUE=VALUE, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-END PROCEDURE vField_get5
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
+END PROCEDURE vField_Get5
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get6
+MODULE PROCEDURE vField_Get6
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE vField_get6
+CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+END PROCEDURE vField_Get6
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get7
+MODULE PROCEDURE vField_Get7
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get(globalNode=globalNode, VALUE=VALUE, spaceCompo=spaceCompo)
-END PROCEDURE vField_get7
+CALL obj%Get(globalNode=globalNode, VALUE=VALUE, spaceCompo=spaceCompo)
+END PROCEDURE vField_Get7
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get8
+MODULE PROCEDURE vField_Get8
 REAL(DFP), ALLOCATABLE :: v(:)
-CALL getValue( &
+CALL GetValue( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
   & idof=arange(1, obj%spaceCompo), &
   & VALUE=v, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
 VALUE = NodalVariable( &
   & RESHAPE(v, [obj%spaceCompo, SIZE(globalNode)]), &
   & TypeFEVariableVector, TypeFEVariableSpace)
 DEALLOCATE (v)
-END PROCEDURE vField_get8
+END PROCEDURE vField_Get8
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get9
-CHARACTER(*), PARAMETER :: myName = "vField_get9"
+MODULE PROCEDURE vField_Get9
+CHARACTER(*), PARAMETER :: myName = "vField_Get9"
 INTEGER(I4B) :: n
 n = obj%spaceCompo
 
@@ -206,24 +206,24 @@ CLASS DEFAULT
   CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'No case found for the type of value')
 END SELECT
-END PROCEDURE vField_get9
+END PROCEDURE vField_Get9
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get10
+MODULE PROCEDURE vField_Get10
 CALL GetValue( &
   & obj=obj%realvec, &
   & VALUE=VALUE%realvec)
-END PROCEDURE vField_get10
+END PROCEDURE vField_Get10
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get11
-CHARACTER(*), PARAMETER :: myName = "vField_get11"
+MODULE PROCEDURE vField_Get11
+CHARACTER(*), PARAMETER :: myName = "vField_Get11"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -263,21 +263,29 @@ DO ii = 1, tsize
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
 
-END PROCEDURE vField_get11
+END PROCEDURE vField_Get11
 
 !----------------------------------------------------------------------------
-!                                                     getPointerOfComponent
+!                                                           GetFEVariable
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "vField_getPointerOfComponent"
+MODULE PROCEDURE vField_GetFEVariable
+CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
+END PROCEDURE vField_GetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                     GetPointerOfComponent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_GetPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "vField_GetPointerOfComponent"
 IF (spaceCompo .GT. obj%spaceCompo) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'given spaceCompo should be less than or equal to obj%spaceCompo')
-ans => getPointer( &
+ans => GetPointer( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
   & idof=spaceCompo)
-END PROCEDURE vField_getPointerOfComponent
+END PROCEDURE vField_GetPointerOfComponent
 
 END SUBMODULE GetMethods

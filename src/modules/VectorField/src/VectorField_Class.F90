@@ -44,6 +44,7 @@ PUBLIC :: VectorField
 PUBLIC :: VectorField_Pointer
 PUBLIC :: VectorFieldDisplay
 PUBLIC :: VectorFieldExport
+PUBLIC :: TypeVectorField
 
 !----------------------------------------------------------------------------
 !                                                              VectorField_
@@ -53,24 +54,33 @@ PUBLIC :: VectorFieldExport
 ! date: 25 June 2021
 ! summary: Vector field
 !
-!{!pages/docs-api/VectorField/VectorField_.md}
+!{!pages/docs-api/VectorField/VectorField_.md!}
 
 TYPE, EXTENDS(AbstractNodeField_) :: VectorField_
   INTEGER(I4B) :: spaceCompo = 0_I4B
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & vField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => vField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => vField_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => vField_Deallocate
+  FINAL :: vField_Final
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent => &
     & vField_GetPointerOfComponent
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => vField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => vField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export
-  FINAL :: vField_Final
-  !! SetMethods
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PASS(obj) :: Set1 => vField_Set1
   !! Set single entry
   PROCEDURE, PASS(obj) :: Set2 => vField_Set2
@@ -104,6 +114,8 @@ CONTAINS
     & Set7, Set8, Set9, Set10, Set11, Set12, &
     & Set13, Set14, Set15
 
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PASS(obj) :: Get1 => vField_Get1
   !! returns the single entry
   PROCEDURE, PASS(obj) :: Get2 => vField_Get2
@@ -121,14 +133,21 @@ CONTAINS
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
     & Get5, Get6, Get7, Get8, Get9, Get10, Get11
   !! Get the entries of Vector field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => vField_GetFeVariable
+
+  ! SET:
+  ! @DirichletBCMethods
   PROCEDURE, PASS(obj) :: vField_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: vField_ApplyDirichletBC2
-  GENERIC, PUBLIC :: ApplyDirichletBC => &
-    & vField_ApplyDirichletBC1, &
+  GENERIC, PUBLIC :: ApplyDirichletBC => vField_ApplyDirichletBC1, &
     & vField_ApplyDirichletBC2
 END TYPE VectorField_
 
-TYPE(VectorField_), PARAMETER, PUBLIC :: TypeVectorField =  &
+!----------------------------------------------------------------------------
+!                                                         TypeVectorField
+!----------------------------------------------------------------------------
+
+TYPE(VectorField_), PARAMETER :: TypeVectorField =  &
   & VectorField_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -207,31 +226,6 @@ INTERFACE VectorFieldInitiate1
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE vField_Initiate1
 END INTERFACE VectorFieldInitiate1
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the VectorField_ object
-!
-!# Introduction
-! This routine initiate the vector field object.
-! `param` contains the information of parameters required to initiate the
-! vector. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of vector field
-! - `spaceCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE vField_Initiate1_old(obj, param, dom)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE vField_Initiate1_old
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -996,6 +990,23 @@ MODULE SUBROUTINE vField_Get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
     INTEGER(I4B), INTENT(IN) :: idof_value
   END SUBROUTINE vField_Get11
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE VectorFieldGetFEVariable
+  MODULE SUBROUTINE vField_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(VectorField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE vField_GetFeVariable
+END INTERFACE VectorFieldGetFEVariable
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods

@@ -44,6 +44,7 @@ PUBLIC :: ScalarField
 PUBLIC :: ScalarField_Pointer
 PUBLIC :: ScalarFieldImport
 PUBLIC :: ScalarFieldDeallocate
+PUBLIC :: TypeScalarField
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -130,8 +131,8 @@ END TYPE ScalarField_
 !
 !----------------------------------------------------------------------------
 
-TYPE(ScalarField_), PARAMETER, PUBLIC ::  &
-  & TypeScalarField = ScalarField_(domains=NULL())
+TYPE(ScalarField_), PARAMETER :: TypeScalarField =  &
+  & ScalarField_(domains=NULL())
 
 !----------------------------------------------------------------------------
 !                                                       ScalarFieldPointer_
@@ -237,16 +238,12 @@ END INTERFACE ScalarFieldDeallocate
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[ScalarField_]]
 
-INTERFACE
+INTERFACE ScalarField
   MODULE FUNCTION sField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(ScalarField_) :: ans
   END FUNCTION sField_Constructor1
-END INTERFACE
-
-INTERFACE ScalarField
-  MODULE PROCEDURE sField_Constructor1
 END INTERFACE ScalarField
 
 !----------------------------------------------------------------------------
@@ -257,16 +254,12 @@ END INTERFACE ScalarField
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[ScalarField_]]
 
-INTERFACE
+INTERFACE ScalarField_Pointer
   MODULE FUNCTION sField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(ScalarField_), POINTER :: ans
   END FUNCTION sField_Constructor_1
-END INTERFACE
-
-INTERFACE ScalarField_Pointer
-  MODULE PROCEDURE sField_Constructor_1
 END INTERFACE ScalarField_Pointer
 
 !----------------------------------------------------------------------------
