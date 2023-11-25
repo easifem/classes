@@ -218,31 +218,6 @@ END INTERFACE
 ! - `timeCompo` is the total degree of freedom or components
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
-INTERFACE
-  MODULE SUBROUTINE stsField_Initiate1_old(obj, param, dom)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE stsField_Initiate1_old
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the STScalarField_ object
-!
-!# Introduction
-! This routine initiate the STScalar field object.
-! `param` contains the information of parameters required to initiate the
-! STScalar. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STScalar field
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
 INTERFACE STScalarFieldInitiate1
   MODULE SUBROUTINE stsField_Initiate1(obj, param, dom)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
