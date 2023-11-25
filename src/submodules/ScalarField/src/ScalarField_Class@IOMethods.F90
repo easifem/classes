@@ -18,6 +18,7 @@
 SUBMODULE(ScalarField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
+USE Mesh_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -67,5 +68,81 @@ CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
 END PROCEDURE sField_Import
+
+!----------------------------------------------------------------------------
+!                                                                 WriteData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_WriteData_vtk
+CHARACTER(*), PARAMETER :: myName = "sField_WriteData_vtk()"
+LOGICAL(LGT) :: isOK
+TYPE(Domain_), POINTER :: dom
+TYPE(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: imesh, tMesh, nsd
+INTEGER(I4B), PARAMETER :: tPhysicalVars = 1
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+REAL(DFP), ALLOCATABLE :: nodalval(:), xij(:, :)
+CHARACTER(1) :: names(tPhysicalVars)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] WriteData()')
+#endif
+
+isOK = obj%isInitiated
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: ScalarNodeField_::obj is not isInitiated.')
+  RETURN
+END IF
+
+isOK = vtk%isOpen()
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: VTKFile_::vtk is not open.')
+  RETURN
+END IF
+
+isOK = ASSOCIATED(obj%domain)
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%domain, '// &
+    & ' not allocated.')
+  RETURN
+END IF
+
+CALL obj%GetPhysicalNames(names)
+
+dom => obj%domain
+nsd = dom%GetNSD()
+tMesh = dom%GetTotalMesh(dim=nsd)
+
+DO imesh = 1, tMesh
+  meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
+
+  CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
+
+  CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij,  &
+    & openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
+
+  CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
+
+  nptrs = meshPtr%GetNptrs()
+
+  CALL obj%Get(globalNode=nptrs, VALUE=nodalval)
+
+  CALL vtk%WriteDataArray(name=String(names(1)), x=nodalval,  &
+    & numberOfComponents=1)
+
+  CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
+
+  CALL vtk%WritePiece()
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] WriteData()')
+#endif
+END PROCEDURE sField_WriteData_vtk
 
 END SUBMODULE IOMethods
