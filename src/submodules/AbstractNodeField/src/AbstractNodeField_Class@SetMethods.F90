@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_SetParam
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, tsize1
 
 IF (PRESENT(dof_tPhysicalVars)) THEN
   obj%dof_tPhysicalVars = dof_tPhysicalVars
@@ -47,11 +47,17 @@ IF (PRESENT(dof_tNodes)) THEN
   obj%dof_tNodes = dof_tNodes
 END IF
 
+IF (PRESENT(tSize)) THEN
+  obj%tsize = tsize
+END IF
+
 IF (PRESENT(dof_names_char)) THEN
   IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
-  ALLOCATE (obj%dof_names_char(SIZE(dof_names_char)))
-  DO ii = 1, SIZE(dof_names_char)
-    obj%dof_names_char(ii) = obj%dof_names_char(ii)
+  tsize1 = SIZE(dof_names_char)
+  ALLOCATE (obj%dof_names_char(tsize1))
+
+  DO ii = 1, tsize1
+    obj%dof_names_char(ii) (1:1) = dof_names_char(ii) (1:1)
   END DO
 END IF
 
