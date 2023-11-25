@@ -46,11 +46,13 @@ ierr = param%GetSubList(key=myprefix, sublist=sublist)
 IF (ierr .NE. 0_I4B) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
 END IF
 
 IF (.NOT. ASSOCIATED(sublist)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
 END IF
 
 CALL Set( &
@@ -82,8 +84,9 @@ END PROCEDURE stsField_CheckEssentialParam
 
 MODULE PROCEDURE stsField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "stsField_Initiate1()"
+CHARACTER(1) :: names(1)
 TYPE(String) :: astr
-INTEGER(I4B) :: nsd, tdof, ierr, timeCompo, tNodes
+INTEGER(I4B) :: nsd, tdof, ierr, tNodes
 TYPE(ParameterList_), POINTER :: sublist
 
 ! main
@@ -104,17 +107,19 @@ CALL obj%CheckEssentialParam(sublist)
 CALL obj%DEALLOCATE()
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
-CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", VALUE=timeCompo)
+CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo",  &
+  & VALUE=obj%timeCompo)
 tNodes = dom%GetTotalNodes()
-tdof = tNodes * timeCompo
+tdof = tNodes * obj%timeCompo
+names(1) (:) = astr%slice(1, 1)
 
 CALL AbstractNodeFieldSetParam(obj=obj,  &
   & dof_tPhysicalVars=1_I4B,  &
   & dof_storageFMT=NODES_FMT,  &
   & dof_spaceCompo=[1_I4B],  &
-  & dof_timeCompo=[timeCompo],  &
+  & dof_timeCompo=[obj%timeCompo],  &
   & dof_tNodes=[tNodes],  &
-  & dof_names_char=[astr%slice(1, 1)],  &
+  & dof_names_char=names,  &
   & tSize=tdof)
 
 nsd = dom%GetNSD()
