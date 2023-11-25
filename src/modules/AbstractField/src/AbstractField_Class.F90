@@ -541,7 +541,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE aField_GetPhysicalNames(obj, ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
-    CHARACTER(*) :: ans(:)
+    CHARACTER(*), INTENT(INOUT) :: ans(:)
   END SUBROUTINE aField_GetPhysicalNames
 END INTERFACE
 
