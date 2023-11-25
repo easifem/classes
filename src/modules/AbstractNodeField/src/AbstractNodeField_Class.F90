@@ -14,7 +14,7 @@
 
 MODULE AbstractNodeField_Class
 USE GlobalData
-USE BaSetype
+USE Basetype
 USE RealVector_Method
 USE DOF_Method
 USE AbstractField_Class
@@ -37,6 +37,8 @@ PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
 PUBLIC :: AbstractNodeFieldSetParam
+PUBLIC :: AbstractNodeFieldGetFEVariable
+
 CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
 
@@ -110,8 +112,17 @@ CONTAINS
   !! Returns the L2 norm
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => anf_GetSingle
   !! Get single entry
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => anf_GetFeVariable
+  !! Get Finite Element variable
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => anf_GetPhysicalNames
   !! Get physical names
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars =>  &
+    & anf_GetTotalPhysicalVars
+  !! Get total physical variables
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => anf_GetSpaceCompo
+  !! Get GetSpaceCompo
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => anf_GetTimeCompo
+  !! Get the time components
 
   ! Set:
   ! @SetMethods
@@ -264,7 +275,7 @@ END INTERFACE AbstractNodeFieldGetPointer
 !
 ! Currently, copyStructure and usePointer is not used
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate2
   MODULE SUBROUTINE anf_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -274,10 +285,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE anf_Initiate2
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate2
-  MODULE PROCEDURE anf_Initiate2
 END INTERFACE AbstractNodeFieldInitiate2
 
 !----------------------------------------------------------------------------
@@ -304,14 +311,10 @@ END INTERFACE
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractNodeField_]]
 
-INTERFACE
+INTERFACE AbstractNodeFieldDeallocate
   MODULE SUBROUTINE anf_Deallocate(obj)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   END SUBROUTINE anf_Deallocate
-END INTERFACE
-
-INTERFACE AbstractNodeFieldDeallocate
-  MODULE PROCEDURE anf_Deallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -337,7 +340,7 @@ END INTERFACE
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE
+INTERFACE AbstractNodeFieldSetSingle
   MODULE SUBROUTINE anf_SetSingle(obj, indx, VALUE, scale, &
     & addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -346,10 +349,6 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE anf_SetSingle
-END INTERFACE
-
-INTERFACE AbstractNodeFieldSetSingle
-  MODULE PROCEDURE anf_SetSingle
 END INTERFACE AbstractNodeFieldSetSingle
 
 !----------------------------------------------------------------------------
@@ -360,17 +359,30 @@ END INTERFACE AbstractNodeFieldSetSingle
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE
+INTERFACE AbstractNodeFieldGetSingle
   MODULE SUBROUTINE anf_GetSingle(obj, indx, VALUE)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE anf_GetSingle
-END INTERFACE
-
-INTERFACE AbstractNodeFieldGetSingle
-  MODULE PROCEDURE anf_GetSingle
 END INTERFACE AbstractNodeFieldGetSingle
+
+!----------------------------------------------------------------------------
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE AbstractNodeFieldGetFEVariable
+  MODULE SUBROUTINE anf_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE anf_GetFeVariable
+END INTERFACE AbstractNodeFieldGetFEVariable
 
 !----------------------------------------------------------------------------
 !                                                GetPhysicalNames@GetMethods
@@ -385,6 +397,55 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(INOUT) :: ans(:)
   END SUBROUTINE anf_GetPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetTotalPhysicalVars@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-03
+! summary:  Returns the total number of physical variables
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalPhysicalVars(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalPhysicalVars
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetSpaceCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns space components
+
+INTERFACE
+  MODULE FUNCTION anf_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+      !! Total number of physical variables
+      !! This can be obtained from GetTotalPhysicalVars method
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION anf_GetSpaceCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTimeCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns Time components
+
+INTERFACE
+  MODULE FUNCTION anf_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION anf_GetTimeCompo
 END INTERFACE
 
 !----------------------------------------------------------------------------

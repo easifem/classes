@@ -21,6 +21,16 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                       GetFEVariable
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetFEVariable
+CHARACTER(*), PARAMETER :: myName = "anf_GetFEVariable()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+ & '[WIP ERROR] :: This routine should be implemented by child class.')
+END PROCEDURE anf_GetFEVariable
+
+!----------------------------------------------------------------------------
 !                                                         GetPhysicalNames
 !----------------------------------------------------------------------------
 
@@ -51,6 +61,94 @@ ELSE
 END IF
 
 END PROCEDURE anf_GetPhysicalNames
+
+!----------------------------------------------------------------------------
+!                                                       GetTotalPhysicalVars
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetTotalPhysicalVars
+CHARACTER(*), PARAMETER :: myName = "anf_GetTotalPhysicalVars()"
+INTEGER(I4B) :: tnames, aint
+LOGICAL(LGT) :: isOK
+
+ans = 0
+IF (ALLOCATED(obj%dof_names_char)) THEN
+  tnames = SIZE(obj%dof_names_char)
+  aint = obj%dof_tPhysicalVars
+  isOK = tnames .EQ. aint
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: The size of names ('//tostring(tnames)//  &
+      & ') is not same as total physical variables = '//tostring(aint))
+    RETURN
+  END IF
+  ans = aint
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_names_char not'//  &
+    & ' not allocated.')
+  RETURN
+END IF
+
+END PROCEDURE anf_GetTotalPhysicalVars
+
+!----------------------------------------------------------------------------
+!                                                           GetSpaceCompo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetSpaceCompo
+CHARACTER(*), PARAMETER :: myName = "anf_GetTotalPhysicalVars()"
+INTEGER(I4B) :: tnames, aint
+LOGICAL(LGT) :: isOK
+
+ans = 0
+IF (ALLOCATED(obj%dof_spaceCompo)) THEN
+  tnames = SIZE(obj%dof_spaceCompo)
+  aint = tPhysicalVars
+  isOK = tnames .EQ. aint
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: The size of spaceCompo ('//tostring(tnames)//  &
+      & ') is not same as total physical variables = '//tostring(aint))
+    RETURN
+  END IF
+  ans(1:aint) = obj%dof_spaceCompo(1:aint)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%spaceCompo not'//  &
+    & ' not allocated.')
+  RETURN
+END IF
+END PROCEDURE anf_GetSpaceCompo
+
+!----------------------------------------------------------------------------
+!                                                           GetTimeCompo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetTimeCompo
+CHARACTER(*), PARAMETER :: myName = "anf_GetTimeCompo()"
+INTEGER(I4B) :: tnames, aint
+LOGICAL(LGT) :: isOK
+
+ans = 0
+IF (ALLOCATED(obj%dof_timeCompo)) THEN
+  tnames = SIZE(obj%dof_timeCompo)
+  aint = tPhysicalVars
+  isOK = tnames .EQ. aint
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: The size of timeCompo ('//tostring(tnames)//  &
+      & ') is not same as total physical variables = '//tostring(aint))
+    RETURN
+  END IF
+  ans(1:aint) = obj%dof_timeCompo(1:aint)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%timeCompo not'//  &
+    & ' not allocated.')
+  RETURN
+END IF
+END PROCEDURE anf_GetTimeCompo
 
 !----------------------------------------------------------------------------
 !                                                                GetPointer

@@ -17,6 +17,7 @@
 SUBMODULE(AbstractNodeField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
+USE Mesh_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -112,71 +113,147 @@ END PROCEDURE anf_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_WriteData_vtk
-CHARACTER(*), PARAMETER :: myName = "anf_WriteData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR]')
-! LOGICAL(LGT) :: isOK
-! TYPE(Domain_), POINTER :: dom
-! TYPE(Mesh_), POINTER :: meshPtr
-! INTEGER(I4B) :: imesh, tMesh
-! INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[START] WriteData()')
-! #endif
-!
-! isOK = obj%isInitiated
-! IF (.NOT. isOK) THEN
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: AbstractNodeField_::obj is not isInitiated.')
-!   RETURN
-! END IF
-!
-! isOK = vtk%isOpen()
-! IF (.NOT. isOK) THEN
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: VTKFile_::vtk is not open.')
-!   RETURN
-! END IF
-!
-! isOK = vtk%isWrite()
-! IF (isOK) THEN
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: VTKFile_::vtk does not have write access.')
-!   RETURN
-! END IF
-!
-! isOK = ASSOCIATED(obj%domain) .OR. ALLOCATED(obj%domains)
-! IF (.NOT. isOK) THEN
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%domain, '// &
-!     & ' or obj%domains not allocated.')
-!   RETURN
-! END IF
-!
-! dom => obj%domain
-! tMesh = dom%GetTotalMesh()
-!
-! DO imesh = 1, tMesh
-!
-!   meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
-!   CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
-!   CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij, openTag=.TRUE.,  &
-!     & content=.TRUE., closeTag=.FALSE.)
-!   CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
-!   nptrs = meshPtr%GetNptrs()
-!   ! CALL sol%Get(globalNode=nptrs, value=fe)
-!   ! CALL vtk%WriteDataArray(name=String("sol"), x=fe, numberOfComponents=1)
-!   CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
-!   CALL vtk%WritePiece()
-!
-! END DO
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!   & '[END] WriteData()')
-! #endif
+CHARACTER(*), PARAMETER :: myName = "anf_WriteData_vtk()"
+LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
+TYPE(Domain_), POINTER :: dom
+TYPE(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: imesh, tMesh, nsd, tPhysicalVars, tComponents, ivar, &
+& tnodes, var_rank, var_vartype, itime
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
+REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
+CHARACTER(1), ALLOCATABLE :: names(:)
+TYPE(FEVariable_) :: fevar
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] WriteData()')
+#endif
+
+NULLIFY (dom, meshPtr)
+
+isOK = obj%isInitiated
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj is not isInitiated.')
+  RETURN
+END IF
+
+isOK = vtk%isOpen()
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: VTKFile_::vtk is not open.')
+  RETURN
+END IF
+
+isSingleDomain = ASSOCIATED(obj%domain)
+isMultiDomain = ALLOCATED(obj%domains)
+isOK = isSingleDomain .OR. isMultiDomain
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Either AbstractNodeField_::obj%domain, '// &
+    & ' ot AbstractNodeField_::obj%domains not allocated.')
+  RETURN
+END IF
+
+tPhysicalVars = obj%GetTotalPhysicalVars()
+ALLOCATE (names(tPhysicalVars), spaceCompo(tPhysicalVars),  &
+  & timeCompo(tPhysicalVars))
+CALL obj%GetPhysicalNames(names)
+spaceCompo = obj%GetSpaceCompo(tPhysicalVars)
+timeCompo = obj%GetTimeCompo(tPhysicalVars)
+
+IF (isSingleDomain) THEN
+  dom => obj%domain
+  nsd = dom%GetNSD()
+  tMesh = dom%GetTotalMesh(dim=nsd)
+
+  DO imesh = 1, tMesh
+    meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
+
+    CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
+
+    CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij,  &
+      & openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
+
+    CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
+
+    nptrs = meshPtr%GetNptrs()
+    tnodes = meshPtr%GetTotalNodes()
+
+    DO ivar = 1, tPhysicalVars
+      CALL obj%GetFEVariable(globalNode=nptrs, VALUE=fevar, ivar=ivar)
+
+      var_rank = .RANK.fevar
+      var_vartype = .vartype.fevar
+
+      SELECT CASE (var_rank)
+      CASE (Scalar)
+        IF (var_vartype .EQ. Space) THEN
+          r1 = Get(fevar, TypeFEVariableScalar, TypeFEVariableSpace)
+          CALL vtk%WriteDataArray( &
+            & name=String(names(ivar)),  &
+            & x=r1,  &
+            & numberOfComponents=spaceCompo(ivar))
+        END IF
+
+        IF (var_vartype .EQ. SpaceTime) THEN
+          r2 = Get(fevar, TypeFEVariableScalar, TypeFEVariableSpaceTime)
+          DO itime = 1, timeCompo(ivar)
+            CALL vtk%WriteDataArray( &
+              & name=String(names(ivar)//"_t"//tostring(itime)),  &
+              & x=r2(itime, :),  &
+              & numberOfComponents=spaceCompo(ivar))
+          END DO
+        END IF
+
+      CASE (Vector)
+        IF (var_vartype .EQ. Space) THEN
+          r2 = Get(fevar, TypeFEVariableVector, TypeFEVariableSpace)
+          CALL vtk%WriteDataArray( &
+            & name=String(names(ivar)),  &
+            & x=r2,  &
+            & numberOfComponents=spaceCompo(ivar))
+        END IF
+
+        IF (var_vartype .EQ. SpaceTime) THEN
+          r3 = Get(fevar, TypeFEVariableVector, TypeFEVariableSpaceTime)
+          DO itime = 1, timeCompo(ivar)
+            CALL vtk%WriteDataArray( &
+              & name=String(names(ivar)//"_t"//tostring(itime)),  &
+              & x=r3(:, :, itime),  &
+              & numberOfComponents=spaceCompo(ivar))
+          END DO
+        END IF
+
+      CASE DEFAULT
+        CALL e%RaiseError(modName//'::'//myName//' - '// &
+          & '[INTERNAL ERROR] :: No case found for fevar')
+      END SELECT
+
+    END DO
+
+    CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
+
+    CALL vtk%WritePiece()
+  END DO
+
+  CALL DEALLOCATE (fevar)
+  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+  IF (ALLOCATED(xij)) DEALLOCATE (xij)
+  IF (ALLOCATED(r1)) DEALLOCATE (r1)
+  IF (ALLOCATED(r2)) DEALLOCATE (r2)
+  IF (ALLOCATED(r3)) DEALLOCATE (r3)
+  IF (ALLOCATED(names)) DEALLOCATE (names)
+  IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
+  IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+  NULLIFY (meshPtr, dom)
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] WriteData()')
+#endif
 END PROCEDURE anf_WriteData_vtk
 
 !----------------------------------------------------------------------------
