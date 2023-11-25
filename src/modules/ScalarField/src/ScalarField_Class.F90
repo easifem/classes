@@ -94,7 +94,7 @@ CONTAINS
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set8
     !! Set values to a vector
 
-  ! GET:
+  ! Get:
   ! @GetMethods
   PROCEDURE, PASS(obj) :: Get1 => sField_Get1
     !! Get single entry
@@ -110,21 +110,20 @@ CONTAINS
     !! Get selected values in FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7
   !! Get the entries of scalar field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => sField_GetFeVariable
+  !! Get Finite Element variable
 
   ! SET:
   ! @DirichletBCMethods
   PROCEDURE, PASS(obj) :: sField_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: sField_ApplyDirichletBC2
-  GENERIC, PUBLIC :: ApplyDirichletBC => &
-    & sField_ApplyDirichletBC1, &
+  GENERIC, PUBLIC :: ApplyDirichletBC => sField_ApplyDirichletBC1, &
     & sField_ApplyDirichletBC2
 
   ! IO:
   ! @IOMethods
   !! Apply Dirichlet Boundary Condition
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => sField_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => sField_WriteData_vtk
-  !! Export data in VTKformat
 END TYPE ScalarField_
 
 !----------------------------------------------------------------------------
@@ -310,21 +309,6 @@ INTERFACE ScalarFieldImport
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE sField_Import
 END INTERFACE ScalarFieldImport
-
-!----------------------------------------------------------------------------
-!                                                       WriteData@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-24
-! summary:  Export data in vrkfile
-
-INTERFACE ScalarFieldWriteData
-  MODULE SUBROUTINE sField_WriteData_vtk(obj, vtk)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE sField_WriteData_vtk
-END INTERFACE ScalarFieldWriteData
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
@@ -639,7 +623,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE ScalarFieldGetFEVariable
+  MODULE SUBROUTINE sField_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(ScalarField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE sField_GetFeVariable
+END INTERFACE ScalarFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -647,14 +648,14 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE sField_applyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE sField_ApplyDirichletBC1(obj, dbc)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
-  END SUBROUTINE sField_applyDirichletBC1
+  END SUBROUTINE sField_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -662,10 +663,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE sField_applyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE sField_ApplyDirichletBC2(obj, dbc)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-  END SUBROUTINE sField_applyDirichletBC2
+  END SUBROUTINE sField_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -21,31 +21,31 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   get
+!                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get1
+MODULE PROCEDURE sField_Get1
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  VALUE = get( &
+  VALUE = Get( &
     & obj=obj%realVec, &
     & nodenum=1, &
     & dataType=1.0_DFP)
 ELSE
-  VALUE = get( &
+  VALUE = Get( &
     & obj=obj%realVec, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
     & dataType=1.0_DFP)
 END IF
-END PROCEDURE sField_get1
+END PROCEDURE sField_Get1
 
 !----------------------------------------------------------------------------
-!                                                                   get
+!                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get2
+MODULE PROCEDURE sField_Get2
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   CALL reallocate(VALUE, obj%tsize)
-  VALUE = get( &
+  VALUE = Get( &
     & obj=obj%realVec, &
     & nodenum=1, &
     & dataType=1.0_DFP)
@@ -56,61 +56,61 @@ ELSE
     & VALUE=VALUE, &
     & idof=1)
 END IF
-END PROCEDURE sField_get2
+END PROCEDURE sField_Get2
 
 !----------------------------------------------------------------------------
-!                                                                   get
+!                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get3
-VALUE = get( &
+MODULE PROCEDURE sField_Get3
+VALUE = Get( &
   & obj=obj%realVec, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
   & dataType=1.0_DFP)
-END PROCEDURE sField_get3
+END PROCEDURE sField_Get3
 
 !----------------------------------------------------------------------------
-!                                                                   get
+!                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get4
+MODULE PROCEDURE sField_Get4
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE sField_get4
-
-!----------------------------------------------------------------------------
-!                                                                       get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE sField_get5
-VALUE = NodalVariable( &
-  & get( &
-  & obj=obj%realVec, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-  & dataType=1.0_DFP), &
-  & TypeFEVariableScalar, &
-  & TypeFEVariableSpace)
-END PROCEDURE sField_get5
-
-!----------------------------------------------------------------------------
-!                                                                       get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE sField_get6
-CALL getValue(obj=obj%realVec, VALUE=VALUE%realVec)
-END PROCEDURE sField_get6
+CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+END PROCEDURE sField_Get4
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get7
-CHARACTER(*), PARAMETER :: myName = "sField_get7"
+MODULE PROCEDURE sField_Get5
+VALUE = NodalVariable( &
+  & Get( &
+  & obj=obj%realVec, &
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
+  & dataType=1.0_DFP), &
+  & TypeFEVariableScalar, &
+  & TypeFEVariableSpace)
+END PROCEDURE sField_Get5
+
+!----------------------------------------------------------------------------
+!                                                                       Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_Get6
+CALL GetValue(obj=obj%realVec, VALUE=VALUE%realVec)
+END PROCEDURE sField_Get6
+
+!----------------------------------------------------------------------------
+!                                                                       Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_Get7
+CHARACTER(*), PARAMETER :: myName = "sField_Get7"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -150,6 +150,15 @@ DO ii = 1, tsize
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
 
-END PROCEDURE sField_get7
+END PROCEDURE sField_Get7
+
+!----------------------------------------------------------------------------
+!                                                              GetFeVariable
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_GetFEVariable
+CHARACTER(*), PARAMETER :: myName = "sField_GetFEVariable()"
+CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
+END PROCEDURE sField_GetFEVariable
 
 END SUBMODULE GetMethods
