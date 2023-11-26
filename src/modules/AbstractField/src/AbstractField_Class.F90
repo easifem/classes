@@ -112,14 +112,14 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE(aField_checkEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
-    & checkEssentialParam
-  !! check essential parameters
-  PROCEDURE(aField_Initiate1), DEFERRED, PUBLIC, PASS(obj) :: Initiate1
+  PROCEDURE(aField_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
+    & CheckEssentialParam
+  !! Check essential parameters
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => aField_Initiate1
   !! Initiate the field by reading param and given domain
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => aField_Initiate2
   !! Initiate by copying other fields, and different options
-  PROCEDURE(aField_Initiate3), DEFERRED, PUBLIC, PASS(obj) :: Initiate3
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => aField_Initiate3
   !! Initiate  block fields (different physical variables) defined
   !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
@@ -181,6 +181,7 @@ CONTAINS
     & => aField_isConstant
   !! It returns true if the field is constant field
   !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => aField_GetPrefix
 
   ! SET:
   ! @SetMethods
@@ -194,7 +195,7 @@ END TYPE AbstractField_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 ABSTRACT INTERFACE
   SUBROUTINE aField_CheckEssentialParam(obj, param)
@@ -202,35 +203,6 @@ ABSTRACT INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE aField_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 29 Sept 2021
-! summary: Initiate the field by reading param and given domain
-
-ABSTRACT INTERFACE
-  SUBROUTINE aField_Initiate1(obj, param, dom)
-    IMPORT :: AbstractField_, ParameterList_, Domain_
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE aField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, param, prefix)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFieldCheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -266,37 +238,35 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                     CheckEssentialParam@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Check essential param
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, param, prefix)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractFieldCheckEssentialParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-22
+! date: 29 Sept 2021
 ! summary: Initiate the field by reading param and given domain
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE AbstractFieldInitiate_1(obj, param, dom, prefix)
+  MODULE SUBROUTINE aField_Initiate1(obj, param, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFieldInitiate_1
-END INTERFACE AbstractFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE AbstractFieldInitiate_2(obj, param, dom, prefix)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFieldInitiate_2
+  END SUBROUTINE aField_Initiate1
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -326,14 +296,13 @@ END INTERFACE AbstractFieldInitiate2
 ! date: 29 Sept 2021
 ! summary: Initiate by reading options from [[ParameterList_]]
 
-ABSTRACT INTERFACE
-  SUBROUTINE aField_Initiate3(obj, param, dom)
-    IMPORT :: AbstractField_, ParameterList_, DomainPointer_
+INTERFACE AbstractFieldInitiate
+  MODULE SUBROUTINE aField_Initiate3(obj, param, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE aField_Initiate3
-END INTERFACE
+END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -706,6 +675,21 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION aField_IsConstant
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION aField_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION aField_GetPrefix
 END INTERFACE
 
 END MODULE AbstractField_Class

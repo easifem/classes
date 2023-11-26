@@ -288,4 +288,12 @@ ans => GetPointer( &
   & idof=spaceCompo)
 END PROCEDURE vField_GetPointerOfComponent
 
+!----------------------------------------------------------------------------
+!                                                                  GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vField_GetPrefix
+ans = myprefix
+END PROCEDURE vField_GetPrefix
+
 END SUBMODULE GetMethods

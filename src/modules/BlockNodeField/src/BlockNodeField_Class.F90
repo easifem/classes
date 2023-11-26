@@ -112,6 +112,7 @@ CONTAINS
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
     & Get5, Get6, Get7, Get8, Get9
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => bnField_GetFEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bnField_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
@@ -879,6 +880,21 @@ INTERFACE BlockFieldGetFEVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE bnField_GetFeVariable
 END INTERFACE BlockFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION bnField_GetPrefix(obj) RESULT(ans)
+    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION bnField_GetPrefix
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods

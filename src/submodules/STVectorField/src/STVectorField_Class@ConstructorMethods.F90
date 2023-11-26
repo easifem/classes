@@ -135,11 +135,7 @@ CALL AbstractNodeFieldSetParam(obj=obj,  &
 
 nsd = dom%GetNSD()
 
-CALL AbstractNodeFieldInitiate( &
-  & obj=obj,  &
-  & param=param,  &
-  & dom=dom,  &
-  & prefix=myprefix)
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, dom=dom)
 
 astr = ""
 sublist => NULL()

@@ -83,6 +83,8 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => anf_Initiate1
+  !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => anf_Initiate2
   !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => anf_Initiate3
@@ -139,64 +141,7 @@ TYPE :: AbstractNodeFieldPointer_
 END TYPE AbstractNodeFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                                                 SetParam
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-25
-! summary:  Set parameters of AbstractNodeField_
-
-INTERFACE AbstractNodeFieldSetParam
-  MODULE SUBROUTINE anf_SetParam(obj, dof_tPhysicalVars,  &
-      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
-      & dof_tNodes, dof_names_char, tSize)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
-  END SUBROUTINE anf_SetParam
-END INTERFACE AbstractNodeFieldSetParam
-
-!----------------------------------------------------------------------------
-!                                                             Initiate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Initiate an instance of AbstractNodeField
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE AbstractNodeFieldInitiate1(obj, param, dom, prefix)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractNodeFieldInitiate1
-END INTERFACE AbstractNodeFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                             Initiate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Initiate an instance of AbstractNodeField
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE AbstractNodeFieldInitiate2(obj, param, dom, prefix)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractNodeFieldInitiate2
-END INTERFACE AbstractNodeFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                           CheckError
+!                                               CheckError@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -206,8 +151,91 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE SUBROUTINE anf_Initiate1(obj, param, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE anf_Initiate1
+END INTERFACE AbstractNodeFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: Initiate AbstractNodeField_ from another instance
+!
+!# Introduction
+!
+! This method initiates an AbstractNodeField_ instance
+! by copying all or some contents from another instance of AbstractNodeField_
+!
+! If obj is not initiated then we copy everything
+! For domain and domains we always use pointers
+!
+! If obj is initiated then we only copy the data stored in realvec
+!
+!
+! Currently, copyStructure and usePointer is not used
+
+INTERFACE AbstractNodeFieldInitiate2
+  MODULE SUBROUTINE anf_Initiate2(obj, obj2, copyFull, copyStructure, &
+    & usePointer)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be a child of AbstractNodeField_
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE anf_Initiate2
+END INTERFACE AbstractNodeFieldInitiate2
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 25 Sept 2021
+! summary: Initiates AbstractNodeField_ from parameters and domain
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE SUBROUTINE anf_Initiate3(obj, param, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+  END SUBROUTINE anf_Initiate3
+END INTERFACE AbstractNodeFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Oct 2021
+! summary: Deallocates data in [[AbstractNodeField_]]
+
+INTERFACE AbstractNodeFieldDeallocate
+  MODULE SUBROUTINE anf_Deallocate(obj)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+  END SUBROUTINE anf_Deallocate
+END INTERFACE AbstractNodeFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Display the content of AbstractNodeField
 
 INTERFACE AbstractNodeFieldDisplay
   MODULE SUBROUTINE anf_Display(obj, msg, unitNo)
@@ -218,7 +246,7 @@ INTERFACE AbstractNodeFieldDisplay
 END INTERFACE AbstractNodeFieldDisplay
 
 !----------------------------------------------------------------------------
-!                                                                 IMPORT
+!                                                         IMPORT@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -267,7 +295,7 @@ INTERFACE AbstractNodeWriteData
 END INTERFACE AbstractNodeWriteData
 
 !----------------------------------------------------------------------------
-!                                                                GetPointer
+!                                                     GetPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -280,69 +308,6 @@ INTERFACE AbstractNodeFieldGetPointer
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION anf_GetPointer
 END INTERFACE AbstractNodeFieldGetPointer
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Sept 2021
-! summary: Initiate AbstractNodeField_ from another instance
-!
-!# Introduction
-!
-! This method initiates an AbstractNodeField_ instance
-! by copying all or some contents from another instance of AbstractNodeField_
-!
-! If obj is not initiated then we copy everything
-! For domain and domains we always use pointers
-!
-! If obj is initiated then we only copy the data stored in realvec
-!
-!
-! Currently, copyStructure and usePointer is not used
-
-INTERFACE AbstractNodeFieldInitiate2
-  MODULE SUBROUTINE anf_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CLASS(AbstractField_), INTENT(INOUT) :: obj2
-    !! It should be a child of AbstractNodeField_
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE anf_Initiate2
-END INTERFACE AbstractNodeFieldInitiate2
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 Sept 2021
-! summary: Initiates AbstractNodeField_ from parameters and domain
-
-INTERFACE
-  MODULE SUBROUTINE anf_Initiate3(obj, param, dom)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-  END SUBROUTINE anf_Initiate3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Oct 2021
-! summary: Deallocates data in [[AbstractNodeField_]]
-
-INTERFACE AbstractNodeFieldDeallocate
-  MODULE SUBROUTINE anf_Deallocate(obj)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-  END SUBROUTINE anf_Deallocate
-END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                          Norm2@GetMethods
@@ -358,6 +323,29 @@ INTERFACE
     REAL(DFP) :: ans
   END FUNCTION anf_Norm2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetParam@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-25
+! summary:  Set parameters of AbstractNodeField_
+
+INTERFACE AbstractNodeFieldSetParam
+  MODULE SUBROUTINE anf_SetParam(obj, dof_tPhysicalVars,  &
+      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
+      & dof_tNodes, dof_names_char, tSize)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+  END SUBROUTINE anf_SetParam
+END INTERFACE AbstractNodeFieldSetParam
 
 !----------------------------------------------------------------------------
 !                                                       SetSingle@SetMethods
@@ -476,7 +464,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                       Size
+!                                                            Size@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

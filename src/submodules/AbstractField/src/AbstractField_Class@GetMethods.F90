@@ -193,4 +193,15 @@ ELSE
 END IF
 END PROCEDURE aField_isConstant
 
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "aField_GetPrefix()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This method should be implemented by child class.')
+ans = ""
+END PROCEDURE aField_GetPrefix
+
 END SUBMODULE GetMethods
