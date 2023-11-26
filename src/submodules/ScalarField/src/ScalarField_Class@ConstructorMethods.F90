@@ -92,8 +92,7 @@ nsd = dom%GetNSD()
 CALL AbstractNodeFieldInitiate( &
   & obj=obj,  &
   & param=param,  &
-  & dom=dom,  &
-  & prefix=myprefix)
+  & dom=dom)
 
 astr = ""
 sublist => NULL()
