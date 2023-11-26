@@ -105,7 +105,7 @@ END PROCEDURE aField_WriteData_vtk
 
 MODULE PROCEDURE aField_Export
 CHARACTER(*), PARAMETER :: myName = "aField_Export"
-TYPE(String) :: dname, matprop
+TYPE(String) :: dname
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -182,7 +182,7 @@ END PROCEDURE aField_Export
 
 MODULE PROCEDURE aField_Import
 CHARACTER(*), PARAMETER :: myName = "aField_Import"
-TYPE(String) :: strval, dsetname, matrixProp
+TYPE(String) :: strval, dsetname
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START] Import()')

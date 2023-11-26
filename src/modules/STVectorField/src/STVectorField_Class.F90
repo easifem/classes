@@ -33,6 +33,9 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STVectorField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "STVectorField"
+
+PUBLIC :: STVectorField_
+PUBLIC :: TypeSTVectorField
 PUBLIC :: STVectorFieldPointer_
 PUBLIC :: SetSTVectorFieldParam
 PUBLIC :: STVectorFieldInitiate1
@@ -140,8 +143,11 @@ CONTAINS
     & stvField_ApplyDirichletBC2
 END TYPE STVectorField_
 
-PUBLIC :: STVectorField_
-TYPE(STVectorField_), PARAMETER, PUBLIC :: TypeSTVectorField =  &
+!----------------------------------------------------------------------------
+!                                                         TypeSTVectorField
+!----------------------------------------------------------------------------
+
+TYPE(STVectorField_), PARAMETER :: TypeSTVectorField =  &
   & STVectorField_(domains=NULL())
 
 !---------------------------------------------------------------------------

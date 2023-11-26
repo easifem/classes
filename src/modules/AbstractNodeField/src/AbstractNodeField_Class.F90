@@ -169,13 +169,40 @@ END INTERFACE AbstractNodeFieldSetParam
 ! date:  2023-09-22
 ! summary:  Initiate an instance of AbstractNodeField
 
-INTERFACE
-  MODULE SUBROUTINE AbstractNodeFieldInitiate(obj, param, dom, prefix)
+INTERFACE AbstractNodeFieldInitiate
+  MODULE SUBROUTINE AbstractNodeFieldInitiate1(obj, param, dom, prefix)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractNodeFieldInitiate
+  END SUBROUTINE AbstractNodeFieldInitiate1
+END INTERFACE AbstractNodeFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                             Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Initiate an instance of AbstractNodeField
+
+INTERFACE AbstractNodeFieldInitiate
+  MODULE SUBROUTINE AbstractNodeFieldInitiate2(obj, param, dom, prefix)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractNodeFieldInitiate2
+END INTERFACE AbstractNodeFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                           CheckError
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE AbstractNodeFieldCheckError(obj)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+  END SUBROUTINE AbstractNodeFieldCheckError
 END INTERFACE
 
 !----------------------------------------------------------------------------

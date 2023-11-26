@@ -103,10 +103,15 @@ END PROCEDURE SetAbstractFieldParam
 !                                                                Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE AbstractFieldInitiate
-CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate()"
+MODULE PROCEDURE AbstractFieldInitiate_1
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate_1()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] AbstractFieldInitiate()')
+#endif
 
 ! main
 sublist => NULL()
@@ -128,16 +133,92 @@ IF (.NOT. ASSOCIATED(sublist)) THEN
     & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
 END IF
 
-obj%isInitiated = .TRUE.
-CALL GetValue(obj=sublist, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
-CALL GetValue(obj=sublist, prefix=prefix, key="name", VALUE=obj%name)
-CALL GetValue(obj=sublist, prefix=prefix, key="engine", VALUE=obj%engine)
-CALL GetValue(obj=sublist, prefix=prefix, key="comm", VALUE=obj%comm)
-CALL GetValue(obj=sublist, prefix=prefix, key="global_n", VALUE=obj%global_n)
-CALL GetValue(obj=sublist, prefix=prefix, key="local_n", VALUE=obj%local_n)
+CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
 obj%domain => dom
 sublist => NULL()
-END PROCEDURE AbstractFieldInitiate
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractFieldInitiate()')
+#endif
+END PROCEDURE AbstractFieldInitiate_1
+
+!----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractFieldInitiate_2
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate_2()"
+TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: ierr, ii, tsize
+LOGICAL(LGT) :: isOK
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] AbstractFieldInitiate()')
+#endif
+
+! main
+sublist => NULL()
+ierr = param%GetSubList(key=prefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
+END IF
+
+! NOTE: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
+END IF
+
+CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
+
+tsize = SIZE(dom)
+ALLOCATE (obj%domains(tsize))
+DO ii = 1, tsize
+  isOK = ASSOCIATED(dom(ii)%ptr)
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: dom('//tostring(ii)//') is not ASSOCIATED.')
+    RETURN
+  END IF
+  obj%domains(ii)%ptr => dom(ii)%ptr
+END DO
+
+sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractFieldInitiate()')
+#endif
+END PROCEDURE AbstractFieldInitiate_2
+
+!----------------------------------------------------------------------------
+!                                               AbstractFieldInitiate_Help1
+!----------------------------------------------------------------------------
+
+SUBROUTINE AbstractFieldInitiate_Help1(obj, param, prefix)
+  CLASS(AbstractField_), INTENT(INOUT) :: obj
+  TYPE(ParameterList_), INTENT(IN) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+
+  obj%isInitiated = .TRUE.
+ CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
+  CALL GetValue(obj=param, prefix=prefix, key="name", VALUE=obj%name)
+  CALL GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
+  CALL GetValue(obj=param, prefix=prefix, key="comm", VALUE=obj%comm)
+  CALL GetValue(obj=param, prefix=prefix, key="global_n", VALUE=obj%global_n)
+  CALL GetValue(obj=param, prefix=prefix, key="local_n", VALUE=obj%local_n)
+END SUBROUTINE AbstractFieldInitiate_Help1
 
 !----------------------------------------------------------------------------
 !
@@ -147,9 +228,15 @@ MODULE PROCEDURE aField_Initiate2
 CHARACTER(*), PARAMETER :: myName = "aField_Initiate2"
 INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Initiate()')
+#endif
+
 IF (.NOT. obj2%isInitiated .OR. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either obj is already initiated or obj2 is not initiated!')
+    & '[INTERNAL ERROR] :: Either obj is already initiated or '//  &
+    & ' obj2 is not initiated.')
 END IF
 obj%isInitiated = obj2%isInitiated
 obj%fieldType = obj2%fieldType
@@ -171,6 +258,11 @@ IF (ALLOCATED(obj2%domains)) THEN
     obj%domains(ii)%ptr => obj2%domains(ii)%ptr
   END DO
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Initiate()')
+#endif
 END PROCEDURE aField_Initiate2
 
 !----------------------------------------------------------------------------
