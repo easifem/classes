@@ -22,35 +22,35 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get1
+MODULE PROCEDURE stvField_Get1
 IF (PRESENT(globalnode)) THEN
   SELECT CASE (obj%fieldType)
   CASE (FIELD_TYPE_CONSTANT)
-    CALL getValue( &
+    CALL GetValue( &
       & obj=obj%realvec, &
       & dofobj=obj%dof, &
-      & idof=getIDOF(obj=obj%dof, ivar=1), &
+      & idof=GetIDOF(obj=obj%dof, ivar=1), &
       & VALUE=VALUE, &
       & storageFMT=NODES_FMT, &
       & nodenum=[1])
     RETURN
   CASE (FIELD_TYPE_NORMAL)
-    CALL getValue( &
+    CALL GetValue( &
       & obj=obj%realvec, &
       & dofobj=obj%dof, &
-      & idof=getIDOF(obj=obj%dof, ivar=1), &
+      & idof=GetIDOF(obj=obj%dof, ivar=1), &
       & VALUE=VALUE, &
       & storageFMT=NODES_FMT, &
-      & nodenum=obj%domain%getLocalNodeNumber([globalnode]))
+      & nodenum=obj%domain%GetLocalNodeNumber([globalnode]))
     RETURN
   END SELECT
 END IF
 
 IF (PRESENT(spacecompo) .AND. PRESENT(timecompo)) THEN
-  CALL getValue( &
+  CALL GetValue( &
     & obj=obj%realvec, &
     & dofobj=obj%dof, &
     & ivar=1, &
@@ -61,10 +61,10 @@ IF (PRESENT(spacecompo) .AND. PRESENT(timecompo)) THEN
 END IF
 
 IF (PRESENT(spacecompo)) THEN
-  CALL getValue( &
+  CALL GetValue( &
     & obj=obj%realvec, &
     & dofobj=obj%dof, &
-    & idof=getIDOF( &
+    & idof=GetIDOF( &
     & obj=obj%dof, &
     & ivar=1, &
     & spacecompo=spacecompo, &
@@ -75,10 +75,10 @@ IF (PRESENT(spacecompo)) THEN
 END IF
 
 IF (PRESENT(timecompo)) THEN
-  CALL getValue( &
+  CALL GetValue( &
     & obj=obj%realvec, &
     & dofobj=obj%dof, &
-    & idof=getIDOF( &
+    & idof=GetIDOF( &
     & obj=obj%dof, &
     & ivar=1, &
     & timecompo=timecompo, &
@@ -88,58 +88,58 @@ IF (PRESENT(timecompo)) THEN
   RETURN
 END IF
 
-END PROCEDURE stvField_get1
+END PROCEDURE stvField_Get1
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get2
+MODULE PROCEDURE stvField_Get2
 VALUE = RESHAPE( &
-  & get( &
+  & Get( &
   & obj=obj%realVec, &
   & datatype=1.0_DFP), &
-  & [obj%spaceCompo, obj%timeCompo, obj%domain%getTotalNodes()])
-END PROCEDURE stvField_get2
+  & [obj%spaceCompo, obj%timeCompo, obj%domain%GetTotalNodes()])
+END PROCEDURE stvField_Get2
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get3
+MODULE PROCEDURE stvField_Get3
 REAL(DFP), ALLOCATABLE :: v(:)
-CALL getValue( &
+CALL GetValue( &
   & obj=obj%realVec, &
   & dofobj=obj%dof, &
-  & idof=getIDOF(obj=obj%dof, ivar=1), &
+  & idof=GetIDOF(obj=obj%dof, ivar=1), &
   & VALUE=v, &
   & storageFMT=NODES_FMT, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
 VALUE = RESHAPE(v, [obj%spaceCompo, obj%timeCompo, SIZE(globalNode)])
 DEALLOCATE (v)
-END PROCEDURE stvField_get3
+END PROCEDURE stvField_Get3
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get4
-CALL getValue( &
+MODULE PROCEDURE stvField_Get4
+CALL GetValue( &
   & obj=obj%realVec, &
   & dofobj=obj%dof, &
   & ivar=1, &
   & spacecompo=spacecompo, &
   & timecompo=timecompo, &
   & VALUE=VALUE, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-END PROCEDURE stvField_get4
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
+END PROCEDURE stvField_Get4
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get5
-CALL getValue( &
+MODULE PROCEDURE stvField_Get5
+CALL GetValue( &
   & obj=obj%realVec, &
   & dofobj=obj%dof, &
   & ivar=1, &
@@ -149,59 +149,59 @@ CALL getValue( &
   & spacecompo=spacecompo, &
   & timecompo=timecompo), &
   & VALUE=VALUE, &
-  & nodenum=obj%domain%getLocalNodeNumber(globalNode))
-END PROCEDURE stvField_get5
+  & nodenum=obj%domain%GetLocalNodeNumber(globalNode))
+END PROCEDURE stvField_Get5
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get6
+MODULE PROCEDURE stvField_Get6
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE stvField_get6
+CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+END PROCEDURE stvField_Get6
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get7
+MODULE PROCEDURE stvField_Get7
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get( &
+CALL obj%Get( &
   & globalNode=globalNode, &
   & VALUE=VALUE, &
   & spaceCompo=spaceCompo, &
   & timeCompo=timeCompo)
-END PROCEDURE stvField_get7
+END PROCEDURE stvField_Get7
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get8
+MODULE PROCEDURE stvField_Get8
 REAL(DFP), ALLOCATABLE :: val(:, :, :)
-CALL obj%get(VALUE=val, globalNode=[globalNode])
+CALL obj%Get(VALUE=val, globalNode=[globalNode])
 VALUE = val(:, :, 1)
 DEALLOCATE (val)
-END PROCEDURE stvField_get8
+END PROCEDURE stvField_Get8
 
 !----------------------------------------------------------------------------
-!                                                                      get
+!                                                                      Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get9
+MODULE PROCEDURE stvField_Get9
 REAL(DFP), ALLOCATABLE :: m3a(:, :, :), m3b(:, :, :)
-CALL obj%get(VALUE=m3b, globalNode=globalNode)
+CALL obj%Get(VALUE=m3b, globalNode=globalNode)
 
 ! Here m3b is in (i, a, J) format,
 ! so we have to swap the dimensions to (i,J,a)
@@ -211,14 +211,14 @@ VALUE = NodalVariable(m3a, TypeFEVariableVector, &
   & TypeFEVariableSpacetime)
 
 DEALLOCATE (m3a, m3b)
-END PROCEDURE stvField_get9
+END PROCEDURE stvField_Get9
 
 !----------------------------------------------------------------------------
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get10
-CHARACTER(*), PARAMETER :: myName = "stvField_get10"
+MODULE PROCEDURE stvField_Get10
+CHARACTER(*), PARAMETER :: myName = "stvField_Get10"
 INTEGER(I4B) :: case_id
 INTEGER(I4B) :: tNodes
 INTEGER(I4B) :: ii
@@ -239,9 +239,9 @@ IF (.NOT. VALUE%isInitiated) THEN
   & "")
 END IF
 
-tNodes = obj%domain%getTotalNodes()
+tNodes = obj%domain%GetTotalNodes()
 
-IF (tNodes .NE. VALUE%domain%getTotalNodes()) THEN
+IF (tNodes .NE. VALUE%domain%GetTotalNodes()) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'tNodes of STVectorFieldLis_::obj and'// &
     & ' tNodes of AbstractNodeField_::value are not same')
@@ -283,32 +283,32 @@ CASE (1)
   SELECT TYPE (VALUE)
   CLASS IS (ScalarField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
         & spaceCompo=spaceCompo, timeCompo=timeCompo)
       CALL VALUE%set(VALUE=avar, globalnode=globalnode)
     END DO
 
   CLASS IS (STScalarField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
         & spaceCompo=spaceCompo, timeCompo=timeCompo)
       CALL VALUE%set(VALUE=avar, globalnode=globalnode, timeCompo=timeCompo)
     END DO
 
   CLASS IS (VectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
         & spaceCompo=spaceCompo, timeCompo=timeCompo)
       CALL VALUE%set(VALUE=avar, globalnode=globalnode, spaceCompo=spaceCompo)
     END DO
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
         & spaceCompo=spaceCompo, timeCompo=timeCompo)
       CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
         & spaceCompo=spaceCompo, timeCompo=timeCompo)
@@ -326,9 +326,9 @@ CASE (2)
 
   CLASS IS (STScalarField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
       DO jj = 1, obj%timeCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
           & spaceCompo=spaceCompo, timeCompo=jj)
         CALL VALUE%set(VALUE=avar, globalnode=globalnode, timeCompo=jj)
       END DO
@@ -336,9 +336,9 @@ CASE (2)
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
       DO jj = 1, obj%timeCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
           & spaceCompo=spaceCompo, timeCompo=jj)
         CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
           & spaceCompo=spaceCompo, timeCompo=jj)
@@ -357,9 +357,9 @@ CASE (3)
 
   CLASS IS (VectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
       DO jj = 1, obj%spaceCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
           & spaceCompo=jj, timeCompo=timeCompo)
         CALL VALUE%set(VALUE=avar, globalnode=globalnode, spaceCompo=jj)
       END DO
@@ -367,9 +367,9 @@ CASE (3)
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
       DO jj = 1, obj%spaceCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
           & spaceCompo=jj, timeCompo=timeCompo)
         CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
           & spaceCompo=jj, timeCompo=timeCompo)
@@ -388,10 +388,10 @@ CASE (4)
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
       DO jj = 1, obj%timeCompo
         DO kk = 1, obj%spaceCompo
-          CALL obj%get(VALUE=avar, globalnode=globalnode, &
+          CALL obj%Get(VALUE=avar, globalnode=globalnode, &
             & spaceCompo=kk, timeCompo=jj)
           CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
             & spaceCompo=kk, timeCompo=jj)
@@ -410,14 +410,14 @@ CASE default
   & 'No case found for given arguments')
 END SELECT
 
-END PROCEDURE stvField_get10
+END PROCEDURE stvField_Get10
 
 !----------------------------------------------------------------------------
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get11
-CHARACTER(*), PARAMETER :: myName = "stvField_get11"
+MODULE PROCEDURE stvField_Get11
+CHARACTER(*), PARAMETER :: myName = "stvField_Get11"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -457,14 +457,14 @@ DO ii = 1, tsize
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
 
-END PROCEDURE stvField_get11
+END PROCEDURE stvField_Get11
 
 !----------------------------------------------------------------------------
-!                                                     getPointerOfComponent
+!                                                     GetPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "stvField_getPointerOfComponent"
+MODULE PROCEDURE stvField_GetPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "stvField_GetPointerOfComponent"
 
 IF (spaceCompo .GT. obj%spaceCompo .OR. timeCompo .GT. obj%timeCompo) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -472,7 +472,7 @@ IF (spaceCompo .GT. obj%spaceCompo .OR. timeCompo .GT. obj%timeCompo) THEN
     & ' or equal to obj%spaceCompo or obj%timeCompo')
 END IF
 
-ans => getPointer( &
+ans => GetPointer( &
   & obj=obj%realVec, &
   & dofobj=obj%dof, &
   & idof=GetIDOF( &
@@ -481,7 +481,15 @@ ans => getPointer( &
   & spacecompo=spacecompo, &
   & timecompo=timecompo))
 
-END PROCEDURE stvField_getPointerOfComponent
+END PROCEDURE stvField_GetPointerOfComponent
+
+!----------------------------------------------------------------------------
+!                                                       GetFEVariable
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_GetFEVariable
+CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
+END PROCEDURE stvField_GetFEVariable
 
 !----------------------------------------------------------------------------
 !

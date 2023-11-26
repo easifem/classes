@@ -61,16 +61,10 @@ CALL STScalarFieldInitiate1(obj=obj, param=param, dom=dom)
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 
-CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-& obj%global_n, ierr)
+CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
 CALL CHKERR(ierr)
 
-CALL lis_vector_get_range( &
-& obj%lis_ptr, &
-& obj%is, &
-& obj%ie, &
-& ierr &
-& )
+CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
 
 END PROCEDURE stsField_Initiate1

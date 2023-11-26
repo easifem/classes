@@ -26,6 +26,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetVectorFieldParam
+CHARACTER(*), PARAMETER :: myName = "SetVectorFieldParam()"
+INTEGER(I4B) :: ierr
 TYPE(ParameterList_), POINTER :: sublist
 
 CALL SetAbstractFieldParam( &
@@ -39,7 +41,16 @@ CALL SetAbstractFieldParam( &
   & global_n=global_n)
 
 sublist => NULL()
-sublist => param%NewSubList(key=myprefix)
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
 
 CALL Set( &
   & obj=sublist, &
@@ -71,8 +82,9 @@ END PROCEDURE vField_checkEssentialParam
 
 MODULE PROCEDURE vField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "vField_Initiate1()"
+CHARACTER(1) :: names(1)
 TYPE(String) :: astr
-INTEGER(I4B) :: nsd, tdof, ierr, spaceCompo, tNodes
+INTEGER(I4B) :: nsd, tdof, ierr, tNodes
 TYPE(ParameterList_), POINTER :: sublist
 
 ! main
@@ -93,17 +105,20 @@ CALL obj%CheckEssentialParam(sublist)
 CALL obj%DEALLOCATE()
 
 CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
-CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", VALUE=spaceCompo)
+CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo",  &
+  & VALUE=obj%spaceCompo)
+
 tNodes = dom%GetTotalNodes()
-tdof = tNodes * spaceCompo
+tdof = tNodes * obj%spaceCompo
+names(1) (:) = astr%slice(1, 1)
 
 CALL AbstractNodeFieldSetParam(obj=obj,  &
   & dof_tPhysicalVars=1_I4B,  &
   & dof_storageFMT=NODES_FMT,  &
-  & dof_spaceCompo=[spaceCompo],  &
+  & dof_spaceCompo=[obj%spaceCompo],  &
   & dof_timeCompo=[1_I4B],  &
   & dof_tNodes=[tNodes],  &
-  & dof_names_char=[astr%slice(1, 1)],  &
+  & dof_names_char=names,  &
   & tSize=tdof)
 
 nsd = dom%GetNSD()
@@ -117,93 +132,6 @@ CALL AbstractNodeFieldInitiate( &
 astr = ""
 sublist => NULL()
 END PROCEDURE vField_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE vField_Initiate1_old
-CHARACTER(*), PARAMETER :: myName = "vField_Initiate"
-INTEGER(I4B) :: ierr, storageFMT, tNodes(1), timeCompo(1), &
-  & spaceCompo(1)
-CHARACTER(:), ALLOCATABLE :: char_var
-CHARACTER(1) :: names_char(1)
-
-IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'VectorField_::obj is already initiated')
-END IF
-
-CALL obj%checkEssentialParam(param)
-
-! engine
-ALLOCATE (CHARACTER( &
-  & param%DataSizeInBytes(key=myprefix//"/engine")) :: char_var)
-ierr = param%get(key=myprefix//"/engine", VALUE=char_var)
-obj%engine = char_var
-DEALLOCATE (char_var)
-
-! name
-ALLOCATE (CHARACTER( &
-  & param%DataSizeInBytes(key=myprefix//"/name")) :: char_var)
-ierr = param%get(key=myprefix//"/name", VALUE=char_var)
-obj%name = char_var
-names_char(1) (1:1) = char_var(1:1)
-DEALLOCATE (char_var)
-
-! spaceCompo
-ierr = param%get(key=myprefix//"/spaceCompo", VALUE=obj%spaceCompo)
-
-! fieldType
-IF (param%isPresent(key=myprefix//"/fieldType")) THEN
-  ierr = param%get(key=myprefix//"/fieldType", VALUE=obj%fieldType)
-ELSE
-  obj%fieldType = FIELD_TYPE_NORMAL
-END IF
-
-! comm
-ierr = param%get(key=myprefix//"/comm", VALUE=obj%comm)
-ierr = param%get(key=myprefix//"/global_n", VALUE=obj%global_n)
-ierr = param%get(key=myprefix//"/local_n", VALUE=obj%local_n)
-
-spaceCompo = obj%spaceCompo
-timeCompo = 1
-storageFMT = FMT_NODES
-obj%domain => dom
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  tNodes = 1
-  obj%tSize = obj%domain%getTotalNodes() * obj%spaceCompo
-  IF (obj%local_n .EQ. 0) THEN
-    obj%local_n = obj%spaceCompo
-  END IF
-  IF (obj%global_n .EQ. 0) THEN
-    obj%global_n = obj%spaceCompo
-  END IF
-ELSE
-  tNodes = obj%domain%getTotalNodes()
-  obj%tSize = tNodes(1) * obj%spaceCompo
-  IF (obj%local_n .EQ. 0) THEN
-    obj%local_n = obj%tSize
-  END IF
-  IF (obj%global_n .EQ. 0) THEN
-    obj%global_n = obj%tSize
-  END IF
-END IF
-
-CALL Initiate( &
-  & obj=obj%dof, &
-  & tNodes=tNodes, &
-  & names=names_char, &
-  & spaceCompo=spaceCompo, &
-  & timeCompo=timeCompo, &
-  & storageFMT=storageFMT)
-
-CALL Initiate(obj%realVec, obj%dof)
-
-obj%isInitiated = .TRUE.
-
-IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
-END PROCEDURE vField_Initiate1_old
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate

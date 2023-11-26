@@ -38,6 +38,8 @@ PUBLIC :: STScalarFieldLis_
 PUBLIC :: STScalarFieldLisPointer_
 PUBLIC :: STScalarFieldLis
 PUBLIC :: STScalarFieldLis_Pointer
+PUBLIC :: TypeSTScalarField
+PUBLIC :: STScalarFieldLisDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         STScalarFieldLis_
@@ -53,19 +55,21 @@ TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
 #ifdef USE_LIS
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => stsField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Display => stsField_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => stsField_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => stsField_Export
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => stsField_Deallocate
   FINAL :: stsField_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => stsField_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => stsField_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => stsField_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => stsField_Size
-  !
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => stsField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => stsField_Export
+
+  ! SET:
   ! @SetMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => stsField_SetSingle
   PROCEDURE, PASS(obj) :: SetAll => stsField_SetAll
   PROCEDURE, PASS(obj) :: SetMultiple => stsField_SetMultiple
@@ -97,9 +101,16 @@ CONTAINS
     !! Set values using FEVariable
   PROCEDURE, PASS(obj) :: Set14 => stsField_Set14
     !! Set values using FEVariable
-  !
+
+  ! GET:
+  ! @BlasMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => stsField_Norm2
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => stsField_Norm1
+  PROCEDURE, PUBLIC, PASS(obj) :: Normi => stsField_Normi
+
+  ! GET:
   ! @GetMethods
-  !
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => stsField_Size
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => stsField_GetSingle
   PROCEDURE, PASS(obj) :: Get1 => stsField_Get1
   PROCEDURE, PASS(obj) :: Get2 => stsField_Get2
@@ -121,10 +132,10 @@ CONTAINS
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
-TYPE(STScalarFieldLis_), PARAMETER, PUBLIC :: TypeSTScalarField = &
+TYPE(STScalarFieldLis_), PARAMETER :: TypeSTScalarField = &
   & STScalarFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -134,7 +145,6 @@ TYPE(STScalarFieldLis_), PARAMETER, PUBLIC :: TypeSTScalarField = &
 TYPE :: STScalarFieldLisPointer_
   CLASS(STScalarFieldLis_), POINTER :: ptr => NULL()
 END TYPE STScalarFieldLisPointer_
-
 
 !----------------------------------------------------------------------------
 !                                                       STScalar@Constructor
@@ -147,7 +157,7 @@ END TYPE STScalarFieldLisPointer_
 INTERFACE STScalarFieldLis
   MODULE FUNCTION stsField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(STScalarFieldLis_) :: ans
   END FUNCTION stsField_Constructor1
 END INTERFACE STScalarFieldLis
@@ -163,7 +173,7 @@ END INTERFACE STScalarFieldLis
 INTERFACE STScalarFieldLis_Pointer
   MODULE FUNCTION stsField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(STScalarFieldLis_), POINTER :: ans
   END FUNCTION stsField_Constructor_1
 END INTERFACE STScalarFieldLis_Pointer
@@ -201,7 +211,7 @@ INTERFACE
   MODULE SUBROUTINE stsField_Initiate1(obj, param, dom)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE stsField_Initiate1
 END INTERFACE
 
@@ -218,8 +228,6 @@ INTERFACE STScalarFieldLisDeallocate
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE stsField_Deallocate
 END INTERFACE STScalarFieldLisDeallocate
-
-PUBLIC :: STScalarFieldLisDeallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Display@IO
@@ -250,8 +258,8 @@ INTERFACE
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGet, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGet, OPTIONAL, INTENT(IN) :: domains(:)
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE stsField_Import
 END INTERFACE
 
@@ -416,7 +424,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE stsField_Set2(obj, VALUE, scale, addContribution)
-    CLASS(STScalarFieldLis_), TARGet, INTENT(INOUT) :: obj
+    CLASS(STScalarFieldLis_), TARGET, INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -974,7 +982,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION stsField_GetPointer(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), TARGet, INTENT(IN) :: obj
+    CLASS(STScalarFieldLis_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION stsField_GetPointer
 END INTERFACE

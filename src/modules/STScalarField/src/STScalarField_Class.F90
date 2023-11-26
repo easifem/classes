@@ -37,7 +37,7 @@ CHARACTER(*), PARAMETER :: myprefix = "STScalarField"
 PUBLIC :: STScalarField_
 PUBLIC :: STScalarFieldPointer_
 PUBLIC :: SetSTScalarFieldParam
-PUBLIC :: stsField_checkEssentialParam
+PUBLIC :: stsField_CheckEssentialParam
 PUBLIC :: STScalarFieldInitiate1
 PUBLIC :: STScalarFieldInitiate2
 PUBLIC :: STScalarFieldDeallocate
@@ -134,10 +134,10 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC1
-  PROCEDURE, PASS(obj) :: stsField_applyDirichletBC2
-  GENERIC, PUBLIC :: applyDirichletBC => stsField_applyDirichletBC1, &
-    & stsField_applyDirichletBC2
+  PROCEDURE, PASS(obj) :: stsField_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: stsField_ApplyDirichletBC2
+  GENERIC, PUBLIC :: ApplyDirichletBC => stsField_ApplyDirichletBC1, &
+    & stsField_ApplyDirichletBC2
   !! Get the entries of STScalar field
 
 END TYPE STScalarField_
@@ -180,50 +180,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           checkEssentialParam@Constructor
+!                                           CheckEssentialParam@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 !
 !# Introduction
-! This routine check the essential parameters required to the initiate the
+! This routine Check the essential parameters required to the initiate the
 ! [[STScalarField_]] data type. We need following parameters
 !
 ! - CHARACTER(  * ) :: name
 ! - INTEGER( I4B ) :: tdof
 
 INTERFACE
-  MODULE SUBROUTINE stsField_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE stsField_CheckEssentialParam(obj, param)
     CLASS(STScalarField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE stsField_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      Initiate@Constructor
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the STScalarField_ object
-!
-!# Introduction
-! This routine initiate the STScalar field object.
-! `param` contains the information of parameters required to initiate the
-! STScalar. There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STScalar field
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE stsField_Initiate1_old(obj, param, dom)
-    CLASS(STScalarField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE stsField_Initiate1_old
+  END SUBROUTINE stsField_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -259,7 +234,7 @@ END INTERFACE STScalarFieldInitiate1
 ! date:  2023-03-29
 ! summary: Initiate2
 
-INTERFACE
+INTERFACE STScalarFieldInitiate2
   MODULE SUBROUTINE stsField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
@@ -269,10 +244,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE stsField_Initiate2
-END INTERFACE
-
-INTERFACE STScalarFieldInitiate2
-  MODULE PROCEDURE stsField_Initiate2
 END INTERFACE STScalarFieldInitiate2
 
 !----------------------------------------------------------------------------
@@ -283,14 +254,10 @@ END INTERFACE STScalarFieldInitiate2
 ! date: 25 June 2021
 ! summary: This routine deallocates the data stored inside the STScalarField_ obj
 
-INTERFACE
+INTERFACE STScalarFieldDeallocate
   MODULE SUBROUTINE stsField_Deallocate(obj)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
   END SUBROUTINE stsField_Deallocate
-END INTERFACE
-
-INTERFACE STScalarFieldDeallocate
-  MODULE PROCEDURE stsField_Deallocate
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -311,16 +278,12 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[STScalarField_]]
 
-INTERFACE
+INTERFACE STScalarField
   MODULE FUNCTION stsField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(STScalarField_) :: ans
   END FUNCTION stsField_Constructor1
-END INTERFACE
-
-INTERFACE STScalarField
-  MODULE PROCEDURE stsField_Constructor1
 END INTERFACE STScalarField
 
 !----------------------------------------------------------------------------
@@ -331,16 +294,12 @@ END INTERFACE STScalarField
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[STScalarField_]]
 
-INTERFACE
+INTERFACE STScalarField_Pointer
   MODULE FUNCTION stsField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(STScalarField_), POINTER :: ans
   END FUNCTION stsField_Constructor_1
-END INTERFACE
-
-INTERFACE STScalarField_Pointer
-  MODULE PROCEDURE stsField_Constructor_1
 END INTERFACE STScalarField_Pointer
 
 !----------------------------------------------------------------------------
@@ -351,16 +310,12 @@ END INTERFACE STScalarField_Pointer
 ! date: 26 June 2021
 ! summary: Display the content of [[STScalarField_]]
 
-INTERFACE
+INTERFACE STScalarFieldDisplay
   MODULE SUBROUTINE stsField_Display(obj, msg, unitNo)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE stsField_Display
-END INTERFACE
-
-INTERFACE STScalarFieldDisplay
-  MODULE PROCEDURE stsField_Display
 END INTERFACE STScalarFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -371,7 +326,7 @@ END INTERFACE STScalarFieldDisplay
 ! date: 16 July 2021
 ! summary: This routine Imports the content
 
-INTERFACE
+INTERFACE STScalarFieldImport
   MODULE SUBROUTINE stsField_Import(obj, hdf5, group, dom, domains)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
@@ -379,10 +334,6 @@ INTERFACE
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE stsField_Import
-END INTERFACE
-
-INTERFACE STScalarFieldImport
-  MODULE PROCEDURE stsField_Import
 END INTERFACE STScalarFieldImport
 
 !----------------------------------------------------------------------------
@@ -393,16 +344,12 @@ END INTERFACE STScalarFieldImport
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE
+INTERFACE STScalarFieldExport
   MODULE SUBROUTINE stsField_Export(obj, hdf5, group)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE stsField_Export
-END INTERFACE
-
-INTERFACE STScalarFieldExport
-  MODULE PROCEDURE stsField_Export
 END INTERFACE STScalarFieldExport
 
 !----------------------------------------------------------------------------
@@ -1030,7 +977,8 @@ END INTERFACE
 ! summary: Get values
 
 INTERFACE
-MODULE SUBROUTINE stsField_Get10(obj, ivar, idof, VALUE, ivar_value, idof_value)
+  MODULE SUBROUTINE stsField_Get10(obj, ivar, idof, VALUE, ivar_value,  &
+    & idof_value)
     CLASS(STScalarField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -1059,7 +1007,7 @@ INTERFACE STScalarFieldGetFEVariable
 END INTERFACE STScalarFieldGetFEVariable
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1067,14 +1015,14 @@ END INTERFACE STScalarFieldGetFEVariable
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stsField_applyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE stsField_ApplyDirichletBC1(obj, dbc)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
-  END SUBROUTINE stsField_applyDirichletBC1
+  END SUBROUTINE stsField_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1082,10 +1030,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stsField_applyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE stsField_ApplyDirichletBC2(obj, dbc)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-  END SUBROUTINE stsField_applyDirichletBC2
+  END SUBROUTINE stsField_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
