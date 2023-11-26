@@ -60,15 +60,24 @@ TYPE, EXTENDS(AbstractNodeField_) :: STVectorField_
   INTEGER(I4B) :: timeCompo = 0_I4B
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & stvField_checkEssentialParam
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & stvField_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => stvField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => stvField_Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => stvField_Deallocate
   FINAL :: stvField_Final
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => stvField_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => stvField_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => stvField_Export
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PASS(obj) :: Set1 => stvField_Set1
     !! Set single entry
   PROCEDURE, PASS(obj) :: Set2 => stvField_Set2
@@ -101,6 +110,9 @@ CONTAINS
     & Set1, Set2, Set3, Set4, Set5, Set6, &
     & Set7, Set8, Set9, Set10, Set11, &
     & Set12, Set13, Set14, Set15
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PASS(obj) :: Get1 => stvField_Get1
   PROCEDURE, PASS(obj) :: Get2 => stvField_Get2
   PROCEDURE, PASS(obj) :: Get3 => stvField_Get3
@@ -117,10 +129,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent =>  &
     & stvField_GetPointerOfComponent
     !! Get the entries of STVector field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable =>  &
+    & stvField_GetFeVariable
+
+  ! SET:
+  ! @DirichletBCMethods
   PROCEDURE, PASS(obj) :: stvField_ApplyDirichletBC1
   PROCEDURE, PASS(obj) :: stvField_ApplyDirichletBC2
-  GENERIC, PUBLIC :: ApplyDirichletBC => &
-    & stvField_ApplyDirichletBC1, &
+  GENERIC, PUBLIC :: ApplyDirichletBC => stvField_ApplyDirichletBC1, &
     & stvField_ApplyDirichletBC2
 END TYPE STVectorField_
 
@@ -160,18 +176,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE stvField_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE stvField_CheckEssentialParam(obj, param)
     CLASS(STVectorField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE stvField_checkEssentialParam
+  END SUBROUTINE stvField_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -198,37 +214,9 @@ INTERFACE STVectorFieldInitiate1
   MODULE SUBROUTINE stvField_Initiate1(obj, param, dom)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE stvField_Initiate1
 END INTERFACE STVectorFieldInitiate1
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This subroutine initiates the space-time vector field
-!
-!# Introduction
-!
-! This routine initiate the space-time vector field object.
-! `param` contains the information of parameters required to initiate the
-! this field.
-! There are essential and optional information.
-! Essential information are described below.
-! - `name`  character defining the name of STvector field
-! - `spaceCompo` is the total degree of freedom or components
-! - `timeCompo` is the total degree of freedom or components
-! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE stvField_Initiate1_old(obj, param, dom)
-    CLASS(STVectorField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
-  END SUBROUTINE stvField_Initiate1_old
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -256,7 +244,7 @@ END INTERFACE STVectorFieldInitiate2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: This routine deallocates the data stored inside the STVectorField_ obj
+! summary: Deallocates the data stored inside the STVectorField_ obj
 
 INTERFACE STVectorFieldDeallocate
   MODULE SUBROUTINE stvField_Deallocate(obj)
@@ -285,7 +273,7 @@ END INTERFACE
 INTERFACE STVectorField
   MODULE FUNCTION stvField_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(STVectorField_) :: ans
   END FUNCTION stvField_Constructor1
 END INTERFACE STVectorField
@@ -301,7 +289,7 @@ END INTERFACE STVectorField
 INTERFACE STVectorField_Pointer
   MODULE FUNCTION stvField_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGet, INTENT(IN) :: dom
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(STVectorField_), POINTER :: ans
   END FUNCTION stvField_Constructor_1
 END INTERFACE STVectorField_Pointer
@@ -335,8 +323,8 @@ INTERFACE STVectorFieldImport
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGet, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGet, OPTIONAL, INTENT(IN) :: domains(:)
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE stvField_Import
 END INTERFACE STVectorFieldImport
 
@@ -405,7 +393,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE stvField_Set2(obj, VALUE, scale, addContribution)
-    CLASS(STVectorField_), TARGet, INTENT(INOUT) :: obj
+    CLASS(STVectorField_), TARGET, INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -535,7 +523,7 @@ END INTERFACE
 ! This soubroutine Sets the selected enties in space-time vector to a
 ! constant space-time nodal values. Here globalNode is the list of global
 ! node number. `value` is a rank2 array of real numbers. Its first index
-! denotes the space component and second component denotes the time component.
+! denotes the space component and second component denotes time component.
 !
 !Effectively it does the following:
 !
@@ -595,7 +583,7 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 !
 !# Introduction
-! This routine Sets the selected components of selected nodes to a given value
+! This routine Sets the selected components of selected nodes to given value
 !
 ! STvector( spaceCompo, globalNode ) = value( : )
 
@@ -775,7 +763,7 @@ END INTERFACE
 ! summary: This routine Get all the entries of the space-time vector field
 !
 !# Introduction
-! This routine returns all the nodal values of a space-time nodal vector field.
+! This routine returns all the nodal values of space-time nodal vector field.
 ! Here value is a rank3 array of reals.
 !
 ! - Its first index denotes the spatial component
@@ -805,7 +793,7 @@ END INTERFACE
 ! - The third index corresponds to the node number.
 !
 !@note
-! The size of third dimension of value should be equal to the size of globalNode.
+! The size of third dimension of value should be equal to size of globalNode.
 !@endnote
 
 INTERFACE
@@ -958,7 +946,8 @@ END INTERFACE
 ! summary: REturns the value
 
 INTERFACE
-MODULE SUBROUTINE stvField_Get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
+  MODULE SUBROUTINE stvField_Get11(obj, ivar, idof, VALUE, ivar_value,  &
+    & idof_value)
     CLASS(STVectorField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -967,6 +956,23 @@ MODULE SUBROUTINE stvField_Get11(obj, ivar, idof, VALUE, ivar_value, idof_value)
     INTEGER(I4B), INTENT(IN) :: idof_value
   END SUBROUTINE stvField_Get11
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE STVectorFieldGetFEVariable
+  MODULE SUBROUTINE stvField_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(STVectorField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE stvField_GetFeVariable
+END INTERFACE STVectorFieldGetFEVariable
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods
@@ -1007,8 +1013,8 @@ END INTERFACE
 ! summary: This routine returns pointer to a specific component
 
 INTERFACE
-  MODULE FUNCTION stvField_GetPointerOfComponent(obj, spaceCompo, timeCompo) &
-    & RESULT(ans)
+  MODULE FUNCTION stvField_GetPointerOfComponent(obj, spaceCompo,  &
+    & timeCompo) RESULT(ans)
     CLASS(STVectorField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
