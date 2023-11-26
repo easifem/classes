@@ -83,6 +83,8 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => anf_Initiate1
+  !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => anf_Initiate2
   !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => anf_Initiate3
@@ -139,30 +141,7 @@ TYPE :: AbstractNodeFieldPointer_
 END TYPE AbstractNodeFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                                                 SetParam
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-25
-! summary:  Set parameters of AbstractNodeField_
-
-INTERFACE AbstractNodeFieldSetParam
-  MODULE SUBROUTINE anf_SetParam(obj, dof_tPhysicalVars,  &
-      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
-      & dof_tNodes, dof_names_char, tSize)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
-  END SUBROUTINE anf_SetParam
-END INTERFACE AbstractNodeFieldSetParam
-
-!----------------------------------------------------------------------------
-!                                                             Initiate
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -179,7 +158,7 @@ INTERFACE AbstractNodeFieldInitiate
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                             Initiate
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -196,7 +175,7 @@ INTERFACE AbstractNodeFieldInitiate
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                           CheckError
+!                                               CheckError@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -206,80 +185,20 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Display
-!----------------------------------------------------------------------------
-
-INTERFACE AbstractNodeFieldDisplay
-  MODULE SUBROUTINE anf_Display(obj, msg, unitNo)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE anf_Display
-END INTERFACE AbstractNodeFieldDisplay
-
-!----------------------------------------------------------------------------
-!                                                                 IMPORT
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-24
-! summary:  Import data into HDF5File_
-
-INTERFACE AbstractNodeFieldImport
-  MODULE SUBROUTINE anf_Import(obj, hdf5, group, dom, domains)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE anf_Import
-END INTERFACE AbstractNodeFieldImport
-
-!----------------------------------------------------------------------------
-!                                                         Export@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-24
-! summary:  Export data into HDF5File_
-
-INTERFACE AbstractNodeFieldExport
-  MODULE SUBROUTINE anf_Export(obj, hdf5, group)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE anf_Export
-END INTERFACE AbstractNodeFieldExport
-
-!----------------------------------------------------------------------------
-!                                                       WriteData@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-24
-! summary:  Export data in vrkfile
-
-INTERFACE AbstractNodeWriteData
-  MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE anf_WriteData_vtk
-END INTERFACE AbstractNodeWriteData
-
-!----------------------------------------------------------------------------
-!                                                                GetPointer
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 20 Jul 2021
-! summary: Returns the pointer to a fortran real vector stored inside realVec
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
 
-INTERFACE AbstractNodeFieldGetPointer
-  MODULE FUNCTION anf_GetPointer(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: obj
-    REAL(DFP), POINTER :: ans(:)
-  END FUNCTION anf_GetPointer
-END INTERFACE AbstractNodeFieldGetPointer
+INTERFACE
+  MODULE SUBROUTINE anf_Initiate1(obj, param, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE anf_Initiate1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -345,6 +264,86 @@ INTERFACE AbstractNodeFieldDeallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Display the content of AbstractNodeField
+
+INTERFACE AbstractNodeFieldDisplay
+  MODULE SUBROUTINE anf_Display(obj, msg, unitNo)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE anf_Display
+END INTERFACE AbstractNodeFieldDisplay
+
+!----------------------------------------------------------------------------
+!                                                         IMPORT@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Import data into HDF5File_
+
+INTERFACE AbstractNodeFieldImport
+  MODULE SUBROUTINE anf_Import(obj, hdf5, group, dom, domains)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+  END SUBROUTINE anf_Import
+END INTERFACE AbstractNodeFieldImport
+
+!----------------------------------------------------------------------------
+!                                                         Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data into HDF5File_
+
+INTERFACE AbstractNodeFieldExport
+  MODULE SUBROUTINE anf_Export(obj, hdf5, group)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE anf_Export
+END INTERFACE AbstractNodeFieldExport
+
+!----------------------------------------------------------------------------
+!                                                       WriteData@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data in vrkfile
+
+INTERFACE AbstractNodeWriteData
+  MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+  END SUBROUTINE anf_WriteData_vtk
+END INTERFACE AbstractNodeWriteData
+
+!----------------------------------------------------------------------------
+!                                                     GetPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 Jul 2021
+! summary: Returns the pointer to a fortran real vector stored inside realVec
+
+INTERFACE AbstractNodeFieldGetPointer
+  MODULE FUNCTION anf_GetPointer(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: obj
+    REAL(DFP), POINTER :: ans(:)
+  END FUNCTION anf_GetPointer
+END INTERFACE AbstractNodeFieldGetPointer
+
+!----------------------------------------------------------------------------
 !                                                          Norm2@GetMethods
 !----------------------------------------------------------------------------
 
@@ -358,6 +357,29 @@ INTERFACE
     REAL(DFP) :: ans
   END FUNCTION anf_Norm2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetParam@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-25
+! summary:  Set parameters of AbstractNodeField_
+
+INTERFACE AbstractNodeFieldSetParam
+  MODULE SUBROUTINE anf_SetParam(obj, dof_tPhysicalVars,  &
+      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
+      & dof_tNodes, dof_names_char, tSize)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+  END SUBROUTINE anf_SetParam
+END INTERFACE AbstractNodeFieldSetParam
 
 !----------------------------------------------------------------------------
 !                                                       SetSingle@SetMethods
@@ -476,7 +498,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                       Size
+!                                                            Size@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
