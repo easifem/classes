@@ -24,39 +24,22 @@ CONTAINS
 !                                                 AbstractNodeFieldInitiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE AbstractNodeFieldInitiate
-CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate()"
+MODULE PROCEDURE AbstractNodeFieldInitiate1
+CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate1()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] AbstractNodeFieldInitiate()')
+#endif
 
 CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
 
-IF (obj%dof_tPhysicalVars .EQ. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_tPhysicalVars is 0')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & 'Calling AbstractNodeFieldCheckError()')
+#endif
 
-IF (.NOT. ALLOCATED(obj%dof_spaceCompo)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_spaceCompo '// &
-    & ' is NOT ALLOCATED')
-END IF
-
-IF (.NOT. ALLOCATED(obj%dof_timeCompo)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_timeCompo '// &
-    & ' is NOT ALLOCATED')
-END IF
-
-IF (.NOT. ALLOCATED(obj%dof_tNodes)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_tNodes '// &
-    & ' is NOT ALLOCATED')
-END IF
-
-IF (.NOT. ALLOCATED(obj%dof_names_char)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_names_char '// &
-    & ' is NOT ALLOCATED')
-END IF
+CALL AbstractNodeFieldCheckError(obj)
 
 CALL Initiate( &
   & obj=obj%dof, &
@@ -78,7 +61,149 @@ IF (obj%global_n .EQ. 0) THEN
   obj%global_n = obj%tSize
 END IF
 
-END PROCEDURE AbstractNodeFieldInitiate
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractNodeFieldInitiate()')
+#endif
+END PROCEDURE AbstractNodeFieldInitiate1
+
+!----------------------------------------------------------------------------
+!                                                 AbstractNodeFieldInitiate2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractNodeFieldInitiate2
+CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate2()"
+INTEGER(I4B) :: ivar, tvar
+LOGICAL(LGT) :: isNOTOK
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] AbstractNodeFieldInitiate()')
+#endif
+
+CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & 'Calling AbstractNodeFieldCheckError()')
+#endif
+
+CALL AbstractNodeFieldCheckError(obj)
+
+CALL Initiate( &
+  & obj=obj%dof, &
+  & tNodes=obj%dof_tNodes, &
+  & names=obj%dof_names_char, &
+  & spaceCompo=obj%dof_spaceCompo, &
+  & timeCompo=obj%dof_timeCompo, &
+  & storageFMT=obj%dof_storageFMT)
+
+CALL Initiate(obj=obj%realVec, dofobj=obj%dof)
+
+obj%tSize = SIZE(obj%realVec)
+
+IF (obj%local_n .EQ. 0) THEN
+  obj%local_n = obj%tSize
+END IF
+
+IF (obj%global_n .EQ. 0) THEN
+  obj%global_n = obj%tSize
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractNodeFieldInitiate()')
+#endif
+END PROCEDURE AbstractNodeFieldInitiate2
+
+!----------------------------------------------------------------------------
+!                                               AbstractNodeFieldCheckError
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE AbstractNodeFieldCheckError
+CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldCheckError()"
+INTEGER(I4B) :: ivar, tvar
+LOGICAL(LGT) :: isNOTOK
+
+! CALL AbstractFieldInitiate(obj=obj, param=param, prefix=prefix, dom=dom)
+
+isNOTOK = obj%dof_tPhysicalVars .EQ. 0_I4B
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_tPhysicalVars is 0')
+  RETURN
+END IF
+
+isNOTOK = .NOT. ALLOCATED(obj%dof_spaceCompo)
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_spaceCompo '// &
+    & ' is NOT ALLOCATED')
+  RETURN
+END IF
+
+tvar = SIZE(obj%dof_spaceCompo)
+isNOTOK = tvar .NE. obj%dof_tPhysicalVars
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of dof_spaceCompo ('//tostring(tvar)//  &
+    & ') is not same as dof_tPhysicalVars ('//  &
+    & tostring(obj%dof_tPhysicalVars)//')')
+  RETURN
+END IF
+
+isNOTOK = .NOT. ALLOCATED(obj%dof_timeCompo)
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_timeCompo '// &
+    & ' is NOT ALLOCATED')
+  RETURN
+END IF
+
+tvar = SIZE(obj%dof_timeCompo)
+isNOTOK = tvar .NE. obj%dof_tPhysicalVars
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of dof_timeCompo ('//tostring(tvar)//  &
+    & ') is not same as dof_tPhysicalVars ('//  &
+    & tostring(obj%dof_tPhysicalVars)//')')
+  RETURN
+END IF
+
+IF (.NOT. ALLOCATED(obj%dof_tNodes)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%dof_tNodes '// &
+    & ' is NOT ALLOCATED')
+  RETURN
+END IF
+
+tvar = SIZE(obj%dof_tNodes)
+isNOTOK = tvar .NE. obj%dof_tPhysicalVars
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of dof_tNodes ('//tostring(tvar)//  &
+    & ') is not same as dof_tPhysicalVars ('//  &
+    & tostring(obj%dof_tPhysicalVars)//')')
+  RETURN
+END IF
+
+IF (.NOT. ALLOCATED(obj%dof_names_char)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[InitIATE ERROR] :: AbstractNodeField_::obj%dof_names_char '// &
+    & ' is NOT ALLOCATED')
+  RETURN
+END IF
+
+tvar = SIZE(obj%dof_names_char)
+isNOTOK = tvar .NE. obj%dof_tPhysicalVars
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of dof_names_char ('//tostring(tvar)//  &
+    & ') is not same as dof_tPhysicalVars ('//  &
+    & tostring(obj%dof_tPhysicalVars)//')')
+  RETURN
+END IF
+END PROCEDURE AbstractNodeFieldCheckError
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate2
