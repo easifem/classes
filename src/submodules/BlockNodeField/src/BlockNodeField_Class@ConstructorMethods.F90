@@ -16,6 +16,7 @@
 
 SUBMODULE(BlockNodeField_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -24,109 +25,155 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetBlockNodeFieldParam
-CHARACTER(*), PARAMETER :: myName = "SetBlockNodeFieldParam"
-INTEGER(I4B) :: ierr0, ii
-IF (ANY([SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
-  & .NE. SIZE(physicalVarNames))) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of physicalVarNames, spaceCompo, and timeCompo should be &
-  & same')
+CHARACTER(*), PARAMETER :: myName = "SetBlockNodeFieldParam()"
+INTEGER(I4B) :: ierr, ii, intvec(3)
+LOGICAL(LGT) :: isNOTOK
+TYPE(ParameterList_), POINTER :: sublist
+
+intvec = [SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]
+isNOTOK = ANY(intvec .NE. SIZE(physicalVarNames))
+
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: Size of physicalVarNames, spaceCompo, '//  &
+  & 'and timeCompo should be same.')
+  RETURN
 END IF
-ierr0 = param%set(key=myprefix//"/name", VALUE=TRIM(name))
-ierr0 = param%set(key=myprefix//"/engine", VALUE=TRIM(engine))
-ii = SIZE(physicalVarNames)
-ierr0 = param%set(key=myprefix//"/tPhysicalVarNames", VALUE=ii)
+
+CALL SetAbstractFieldParam( &
+  & param=param, &
+  & prefix=myprefix, &
+  & name=name, &
+  & engine=engine, &
+  & fieldType=fieldType, &
+  & comm=comm, &
+  & local_n=local_n, &
+  & global_n=global_n)
+
+sublist => NULL()
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in Getting sublist(1)')
+  RETURN
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in Getting sublist(2)')
+END IF
+
+CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, &
+  & key="tPhysicalVarNames", VALUE=intvec(1))
+
 DO ii = 1, SIZE(physicalVarNames)
-  ierr0 = param%set(key=myprefix//"/physicalVarName"//TOSTRING(ii),  &
-    & VALUE=physicalVarNames(ii))
+  CALL Set(obj=sublist, datatype="char", prefix=myprefix,  &
+    & key="physicalVarName"//tostring(ii), VALUE=physicalVarNames(ii))
 END DO
-ierr0 = param%set(key=myprefix//"/spaceCompo",  &
-  &  VALUE=spaceCompo)
-ierr0 = param%set(key=myprefix//"/timeCompo",  &
+
+CALL Set(obj=sublist, datatype=[1_I4B], prefix=myprefix, key="spaceCompo",  &
+  & VALUE=spaceCompo)
+
+CALL Set(obj=sublist, datatype=[1_I4B], prefix=myprefix, key="timeCompo",  &
   & VALUE=timeCompo)
-ierr0 = param%set(key=myprefix//"/fieldType", VALUE=INPUT( &
-  & option=fieldType, default=FIELD_TYPE_NORMAL))
-IF (PRESENT(comm)) THEN
-  ierr0 = param%set(key=myprefix//"/comm", VALUE=comm)
-ELSE
-  ierr0 = param%set(key=myprefix//"/comm", VALUE=0_I4B)
-END IF
-IF (PRESENT(local_n)) THEN
-  ierr0 = param%set(key=myprefix//"/local_n", VALUE=local_n)
-ELSE
-  ierr0 = param%set(key=myprefix//"/local_n", VALUE=0_I4B)
-END IF
-IF (PRESENT(global_n)) THEN
-  ierr0 = param%set(key=myprefix//"/global_n", VALUE=global_n)
-ELSE
-  ierr0 = param%set(key=myprefix//"/global_n", VALUE=0_I4B)
-END IF
+
+sublist => NULL()
 END PROCEDURE SetBlockNodeFieldParam
 
 !----------------------------------------------------------------------------
-!                                                       checkEssentialParam
+!                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "bnField_checkEssentialParam"
+MODULE PROCEDURE bnField_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "bnField_CheckEssentialParam"
 INTEGER(I4B) :: ii, n
 
-IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/name should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/engine")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/engine should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/tPhysicalVarNames")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/tPhysicalVarNames should be present in param')
-ELSE
-  ii = param%get(key=myprefix//'/tPhysicalVarNames', VALUE=n)
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/spaceCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
+
+IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & myprefix//'/spaceCompo should be present in param')
+  RETURN
 END IF
-IF (.NOT. param%isPresent(key=myprefix//"/timeCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+
+IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & myprefix//'/timeCompo should be present in param')
+  RETURN
 END IF
-IF (.NOT. param%isPresent(key=myprefix//"/fieldType")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/fieldType should be present in param')
+
+n = 0
+IF (.NOT. param%IsPresent(key=myprefix//"/tPhysicalVarNames")) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & myprefix//'/tPhysicalVarNames should be present in param')
+  RETURN
+ELSE
+  ii = param%Get(key=myprefix//'/tPhysicalVarNames', VALUE=n)
 END IF
+
 DO ii = 1, n
-  IF (.NOT. param%isPresent(key=myprefix//"/physicalVarName" &
+  IF (.NOT. param%IsPresent(key=myprefix//"/physicalVarName" &
     & //TOSTRING(ii))) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/physicalVarName' &
-    & //TOSTRING(ii) &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & myprefix//'/physicalVarName'//TOSTRING(ii) &
     & //' should be present in param')
   END IF
 END DO
-END PROCEDURE bnField_checkEssentialParam
+
+END PROCEDURE bnField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bnField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "bnField_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "bnField_Initiate1()"
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
-INTEGER(I4B) :: tPhysicalVarNames, ii
-ii = param%get(key=myprefix//"/tPhysicalVarNames", &
+INTEGER(I4B) :: tPhysicalVarNames, ii, ierr
+TYPE(ParameterList_), POINTER :: sublist
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Initiate()')
+#endif
+
+! main
+sublist => NULL()
+
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
+END IF
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
+END IF
+
+CALL GetValue(obj=sublist, prefix=myprefix, key="tPhysicalVarNames",  &
   & VALUE=tPhysicalVarNames)
+
 ALLOCATE (domains(tPhysicalVarNames))
 DO ii = 1, tPhysicalVarNames
   domains(ii)%ptr => dom
 END DO
+
 CALL obj%Initiate(param=param, dom=domains)
+
 DO ii = 1, tPhysicalVarNames
   domains(ii)%ptr => NULL()
 END DO
 DEALLOCATE (domains)
+
+sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Initiate()')
+#endif
 END PROCEDURE bnField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -136,115 +183,118 @@ END PROCEDURE bnField_Initiate1
 MODULE PROCEDURE bnField_Initiate3
 CHARACTER(*), PARAMETER :: myName = "bnField_Initiate3"
 CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
-CHARACTER(:), ALLOCATABLE :: char_var
-INTEGER(I4B) :: tVar, ii, ierror, storageFMT
+TYPE(String) :: astr
+INTEGER(I4B) :: tPhysicalVarNames, ii, ierr, storageFMT, tSize
 INTEGER(I4B), ALLOCATABLE :: timeCompo(:), spaceCompo(:), tNodes(:)
+TYPE(ParameterList_), POINTER :: sublist
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Initiate()')
+#endif
 
 IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockNodeField_::obj is already initiated')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: BlockNodeField_::obj is already initiated.')
+  RETURN
 END IF
 
-CALL obj%checkEssentialParam(param)
+! main
+sublist => NULL()
 
-! engine
-obj%engine = "NATIVE_SERIAL"
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
+END IF
 
-! engine
-ALLOCATE (CHARACTER( &
-  & param%DataSizeInBytes(key=myprefix//"/engine")) :: char_var)
-ierror = param%get(key=myprefix//"/engine", VALUE=char_var)
-obj%engine = char_var
-DEALLOCATE (char_var)
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
+END IF
 
-! name
-ALLOCATE (CHARACTER(param%DataSizeInBytes(  &
-  & key=myprefix//"/name")) :: char_var)
-ierror = param%get(key=myprefix//"/name", VALUE=char_var)
-obj%name = char_var
-DEALLOCATE (char_var)
-
-! fieldType
-ierror = param%get(key=myprefix//"/fieldType",  &
-  & VALUE=obj%fieldType)
+CALL obj%CheckEssentialParam(sublist)
+CALL obj%DEALLOCATE()
 
 ! tPhysicalVarNames
-ierror = param%get(key=myprefix//'/tPhysicalVarNames', VALUE=tVar)
+CALL GetValue(obj=sublist, prefix=myprefix, key='tPhysicalVarNames',  &
+  & VALUE=tPhysicalVarNames)
 
-! check
-IF (SIZE(dom) .NE. tVar) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of dom not equal to the total number of physical variables')
+! Check
+ii = SIZE(dom)
+IF (ii .NE. tPhysicalVarNames) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERRPR] :: Size of dom ('//tostring(ii)//  &
+    & ') not equal to total number of physical variables ('//  &
+    & tostring(tPhysicalVarNames)//')')
+  RETURN
+END IF
 
-! check
-DO ii = 1, tVar
+! Check
+DO ii = 1, tPhysicalVarNames
   IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'dom( '//TOSTRING(ii)//')%ptr is NOT ASSOCIATED!')
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR] :: dom( '//TOSTRING(ii)//  &
+      & ')%ptr is NOT ASSOCIATED!')
+    RETURN
   END IF
 END DO
 
 ! allocate
-CALL Reallocate(tNodes, tVar)
-CALL Reallocate(timeCompo, tVar)
-CALL Reallocate(spaceCompo, tVar)
-ALLOCATE (physicalVarNames(tVar))
+CALL Reallocate(tNodes, tPhysicalVarNames)
+CALL Reallocate(timeCompo, tPhysicalVarNames)
+CALL Reallocate(spaceCompo, tPhysicalVarNames)
+ALLOCATE (physicalVarNames(tPhysicalVarNames))
 
 ! physicalVarName
-DO ii = 1, tVar
-  ALLOCATE (CHARACTER(param%DataSizeInBytes( &
-    & key=myprefix//"/physicalVarName"//TOSTRING(ii))) :: char_var)
-  ierror = param%get(key=myprefix//"/physicalVarName" &
-    & //TOSTRING(ii), VALUE=char_var)
-  physicalVarNames(ii) (1:1) = char_var(1:1); DEALLOCATE (char_var)
+DO ii = 1, tPhysicalVarNames
+  astr = ""
+  CALL GetValue(obj=sublist, prefix=myprefix,  &
+    & key="physicalVarName"//tostring(ii), VALUE=astr)
+  physicalVarNames(ii) (1:1) = astr%slice(1, 1)
 END DO
 
 ! spaceCompo
-IF (param%isPresent(key=myprefix//"/spaceCompo")) THEN
-  ierror = param%get(key=myprefix//"/spaceCompo", VALUE=spaceCompo)
-END IF
+CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo",  &
+  & VALUE=spaceCompo)
 
 ! timeCompo
-IF (param%isPresent(key=myprefix//"/timeCompo")) THEN
-  ierror = param%get(key=myprefix//"/timeCompo", VALUE=timeCompo)
-ELSE
-  timeCompo = 1
-END IF
+timeCompo = 1_I4B
+CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo",  &
+  & VALUE=timeCompo)
 
-! storage format
-storageFMT = FMT_DOF
+storageFMT = DOF_FMT
 
-! domains, tNodes
-ALLOCATE (obj%domains(tvar))
-obj%tSize = 0
-
-DO ii = 1, tVar
-  obj%domains(ii)%ptr => dom(ii)%ptr
-  tNodes(ii) = obj%domains(ii)%ptr%getTotalNodes()
-  obj%tSize = obj%tSize + tNodes(ii) * timeCompo(ii) * spaceCompo(ii)
+tSize = 0
+DO ii = 1, tPhysicalVarNames
+  tNodes(ii) = dom(ii)%ptr%GetTotalNodes()
+  tSize = tSize + tNodes(ii) * timeCompo(ii) * spaceCompo(ii)
 END DO
 
-IF (obj%local_n .EQ. 0) THEN
-  obj%local_n = obj%tSize
-END IF
-IF (obj%global_n .EQ. 0) THEN
-  obj%global_n = obj%tSize
-END IF
+CALL AbstractNodeFieldSetParam( &
+  & obj=obj,  &
+  & dof_tPhysicalVars=tPhysicalVarNames,  &
+  & dof_storageFMT=storageFMT,  &
+  & dof_spaceCompo=spaceCompo,  &
+  & dof_timeCompo=timeCompo,  &
+  & dof_tNodes=tNodes,  &
+  & dof_names_char=physicalVarNames,  &
+  & tSize=tSize)
 
-! tNodes for constant field
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  tNodes(:) = 1
-END IF
+CALL AbstractNodeFieldInitiate( &
+  & obj=obj,  &
+  & param=param,  &
+  & dom=dom,  &
+  & prefix=myprefix)
 
-! DOF_
-CALL Initiate(obj=obj%dof, tNodes=tNodes, names=physicalVarNames, &
-  & spaceCompo=spaceCompo, timeCompo=timeCompo, storageFMT=storageFMT)
-
-! realVec
-CALL Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%isInitiated = .TRUE.
-DEALLOCATE (tNodes, spaceCompo, timeCompo, physicalVarNames)
+astr = ""
+IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
+IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
+IF (ALLOCATED(tNodes)) DEALLOCATE (tNodes)
+sublist => NULL()
 END PROCEDURE bnField_Initiate3
 
 !----------------------------------------------------------------------------
