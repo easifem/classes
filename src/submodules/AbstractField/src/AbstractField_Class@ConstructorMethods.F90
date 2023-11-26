@@ -221,6 +221,53 @@ SUBROUTINE AbstractFieldInitiate_Help1(obj, param, prefix)
 END SUBROUTINE AbstractFieldInitiate_Help1
 
 !----------------------------------------------------------------------------
+!                                                                Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "aField_Initiate1()"
+TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: ierr
+CHARACTER(:), ALLOCATABLE :: prefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] AbstractFieldInitiate()')
+#endif
+
+prefix = obj%GetPrefix()
+
+! main
+sublist => NULL()
+ierr = param%GetSubList(key=prefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+END IF
+
+! NOTE: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+END IF
+
+CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
+obj%domain => dom
+sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractFieldInitiate()')
+#endif
+END PROCEDURE aField_Initiate1
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -264,6 +311,68 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
 END PROCEDURE aField_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE aField_Initiate3
+CHARACTER(*), PARAMETER :: myName = "AbstractFieldInitiate_2()"
+TYPE(ParameterList_), POINTER :: sublist
+INTEGER(I4B) :: ierr, ii, tsize
+LOGICAL(LGT) :: isOK
+CHARACTER(:), ALLOCATABLE :: prefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] AbstractFieldInitiate()')
+#endif
+
+prefix = obj%GetPrefix()
+
+! main
+sublist => NULL()
+ierr = param%GetSubList(key=prefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
+  RETURN
+END IF
+
+! NOTE: We should not call deallocate in abstract classes.
+! This is because, in concrete classes we may set some
+! parameters before calling this method.
+! All those parameters will be gone if we call deallocate
+! here.
+! CALL obj%DEALLOCATE()
+
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
+  RETURN
+END IF
+
+CALL AbstractFieldInitiate_Help1(obj, sublist, prefix)
+
+tsize = SIZE(dom)
+ALLOCATE (obj%domains(tsize))
+DO ii = 1, tsize
+  isOK = ASSOCIATED(dom(ii)%ptr)
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: dom('//tostring(ii)//') is not ASSOCIATED.')
+    RETURN
+  END IF
+  obj%domains(ii)%ptr => dom(ii)%ptr
+END DO
+
+sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] AbstractFieldInitiate()')
+#endif
+END PROCEDURE aField_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
