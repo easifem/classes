@@ -52,18 +52,10 @@ IF (.NOT. ASSOCIATED(sublist)) THEN
     & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
 END IF
 
-CALL Set( &
-  & obj=sublist, &
-  & datatype=TypeIntI4B, &
-  & prefix=myprefix, &
-  & key="spaceCompo", &
+CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, key="spaceCompo", &
   & VALUE=spaceCompo)
 
-CALL Set( &
-  & obj=sublist, &
-  & datatype=TypeIntI4B, &
-  & prefix=myprefix, &
-  & key="timeCompo", &
+CALL Set(obj=sublist, datatype=1_I4B, prefix=myprefix, key="timeCompo", &
   & VALUE=timeCompo)
 
 sublist => NULL()
@@ -97,6 +89,11 @@ CHARACTER(1) :: names(1)
 TYPE(String) :: astr
 INTEGER(I4B) :: nsd, tdof, ierr, tNodes
 TYPE(ParameterList_), POINTER :: sublist
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Initiate()')
+#endif
 
 ! main
 sublist => NULL()
@@ -146,6 +143,11 @@ CALL AbstractNodeFieldInitiate( &
 
 astr = ""
 sublist => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Initiate()')
+#endif
 END PROCEDURE stvField_Initiate1
 
 !----------------------------------------------------------------------------
