@@ -283,11 +283,7 @@ CALL AbstractNodeFieldSetParam( &
   & dof_names_char=physicalVarNames,  &
   & tSize=tSize)
 
-CALL AbstractNodeFieldInitiate( &
-  & obj=obj,  &
-  & param=param,  &
-  & dom=dom,  &
-  & prefix=myprefix)
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, dom=dom)
 
 astr = ""
 IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
