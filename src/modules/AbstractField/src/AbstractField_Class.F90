@@ -273,14 +273,31 @@ END INTERFACE
 ! date: 2023-09-22
 ! summary: Initiate the field by reading param and given domain
 
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldInitiate(obj, param, dom, prefix)
+INTERFACE AbstractFieldInitiate
+  MODULE SUBROUTINE AbstractFieldInitiate_1(obj, param, dom, prefix)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFieldInitiate
-END INTERFACE
+  END SUBROUTINE AbstractFieldInitiate_1
+END INTERFACE AbstractFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary: Initiate the field by reading param and given domain
+
+INTERFACE AbstractFieldInitiate
+  MODULE SUBROUTINE AbstractFieldInitiate_2(obj, param, dom, prefix)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    CHARACTER(*), INTENT(IN) :: prefix
+  END SUBROUTINE AbstractFieldInitiate_2
+END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
