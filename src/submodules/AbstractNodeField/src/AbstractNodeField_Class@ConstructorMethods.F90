@@ -21,102 +21,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                 AbstractNodeFieldInitiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE AbstractNodeFieldInitiate1
-CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate1()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] AbstractNodeFieldInitiate()')
-#endif
-
-CALL AbstractFieldInitiate(obj=obj, param=param, dom=dom)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'Calling AbstractNodeFieldCheckError()')
-#endif
-
-CALL AbstractNodeFieldCheckError(obj)
-
-CALL Initiate( &
-  & obj=obj%dof, &
-  & tNodes=obj%dof_tNodes, &
-  & names=obj%dof_names_char, &
-  & spaceCompo=obj%dof_spaceCompo, &
-  & timeCompo=obj%dof_timeCompo, &
-  & storageFMT=obj%dof_storageFMT)
-
-CALL Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%tSize = SIZE(obj%realVec)
-
-IF (obj%local_n .EQ. 0) THEN
-  obj%local_n = obj%tSize
-END IF
-
-IF (obj%global_n .EQ. 0) THEN
-  obj%global_n = obj%tSize
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] AbstractNodeFieldInitiate()')
-#endif
-END PROCEDURE AbstractNodeFieldInitiate1
-
-!----------------------------------------------------------------------------
-!                                                 AbstractNodeFieldInitiate2
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE AbstractNodeFieldInitiate2
-CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate2()"
-INTEGER(I4B) :: ivar, tvar
-LOGICAL(LGT) :: isNOTOK
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] AbstractNodeFieldInitiate()')
-#endif
-
-CALL AbstractFieldInitiate(obj=obj, param=param, dom=dom)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & 'Calling AbstractNodeFieldCheckError()')
-#endif
-
-CALL AbstractNodeFieldCheckError(obj)
-
-CALL Initiate( &
-  & obj=obj%dof, &
-  & tNodes=obj%dof_tNodes, &
-  & names=obj%dof_names_char, &
-  & spaceCompo=obj%dof_spaceCompo, &
-  & timeCompo=obj%dof_timeCompo, &
-  & storageFMT=obj%dof_storageFMT)
-
-CALL Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%tSize = SIZE(obj%realVec)
-
-IF (obj%local_n .EQ. 0) THEN
-  obj%local_n = obj%tSize
-END IF
-
-IF (obj%global_n .EQ. 0) THEN
-  obj%global_n = obj%tSize
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] AbstractNodeFieldInitiate()')
-#endif
-END PROCEDURE AbstractNodeFieldInitiate2
-
-!----------------------------------------------------------------------------
 !                                               AbstractNodeFieldCheckError
 !----------------------------------------------------------------------------
 
@@ -276,7 +180,6 @@ SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
   obj%realVec = obj2%realVec
   obj%dof = obj2%dof
 END SELECT
-
 END PROCEDURE anf_Initiate2
 
 !----------------------------------------------------------------------------

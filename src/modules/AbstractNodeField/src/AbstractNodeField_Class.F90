@@ -141,40 +141,6 @@ TYPE :: AbstractNodeFieldPointer_
 END TYPE AbstractNodeFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Initiate an instance of AbstractNodeField
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE AbstractNodeFieldInitiate1(obj, param, dom, prefix)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractNodeFieldInitiate1
-END INTERFACE AbstractNodeFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Initiate an instance of AbstractNodeField
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE AbstractNodeFieldInitiate2(obj, param, dom, prefix)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractNodeFieldInitiate2
-END INTERFACE AbstractNodeFieldInitiate
-
-!----------------------------------------------------------------------------
 !                                               CheckError@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -192,13 +158,13 @@ END INTERFACE
 ! date: 29 Sept 2021
 ! summary: Initiate the field by reading param and given domain
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE anf_Initiate1(obj, param, dom)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE anf_Initiate1
-END INTERFACE
+END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -241,13 +207,13 @@ END INTERFACE AbstractNodeFieldInitiate2
 ! date: 25 Sept 2021
 ! summary: Initiates AbstractNodeField_ from parameters and domain
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE anf_Initiate3(obj, param, dom)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE anf_Initiate3
-END INTERFACE
+END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
