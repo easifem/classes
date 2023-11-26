@@ -284,4 +284,12 @@ MODULE PROCEDURE stsField_GetFEVariable
 CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
 END PROCEDURE stsField_GetFEVariable
 
+!----------------------------------------------------------------------------
+!                                                                GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stsField_GetPrefix
+ans = myprefix
+END PROCEDURE stsField_GetPrefix
+
 END SUBMODULE GetMethods

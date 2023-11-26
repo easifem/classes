@@ -161,4 +161,12 @@ CHARACTER(*), PARAMETER :: myName = "sField_GetFEVariable()"
 CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
 END PROCEDURE sField_GetFEVariable
 
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_GetPrefix
+ans = myprefix
+END PROCEDURE sField_GetPrefix
+
 END SUBMODULE GetMethods

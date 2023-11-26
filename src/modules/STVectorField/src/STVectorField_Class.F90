@@ -134,6 +134,9 @@ CONTAINS
     !! Get the entries of STVector field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable =>  &
     & stvField_GetFeVariable
+  !! Get multiple values in FEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => stvField_GetPrefix
+  !! Get prefix
 
   ! SET:
   ! @DirichletBCMethods
@@ -979,6 +982,21 @@ INTERFACE STVectorFieldGetFEVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE stvField_GetFeVariable
 END INTERFACE STVectorFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION stvField_GetPrefix(obj) RESULT(ans)
+    CLASS(STVectorField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION stvField_GetPrefix
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods

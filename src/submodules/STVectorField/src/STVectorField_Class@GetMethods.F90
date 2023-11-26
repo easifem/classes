@@ -484,12 +484,20 @@ ans => GetPointer( &
 END PROCEDURE stvField_GetPointerOfComponent
 
 !----------------------------------------------------------------------------
-!                                                       GetFEVariable
+!                                                              GetFEVariable
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stvField_GetFEVariable
 CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
 END PROCEDURE stvField_GetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                                  GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_GetPrefix
+ans = myprefix
+END PROCEDURE stvField_GetPrefix
 
 !----------------------------------------------------------------------------
 !

@@ -181,6 +181,7 @@ CONTAINS
     & => aField_isConstant
   !! It returns true if the field is constant field
   !! INFO: This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => aField_GetPrefix
 
   ! SET:
   ! @SetMethods
@@ -706,6 +707,21 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION aField_IsConstant
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION aField_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION aField_GetPrefix
 END INTERFACE
 
 END MODULE AbstractField_Class

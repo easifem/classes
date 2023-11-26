@@ -131,6 +131,7 @@ CONTAINS
     & stsField_GetPointerOfComponent
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => stsField_GetFeVariable
   !! Get Finite Element variable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => stsField_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
@@ -1005,6 +1006,21 @@ INTERFACE STScalarFieldGetFEVariable
     !! This argument is not used
   END SUBROUTINE stsField_GetFeVariable
 END INTERFACE STScalarFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION stsField_GetPrefix(obj) RESULT(ans)
+    CLASS(STScalarField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION stsField_GetPrefix
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods

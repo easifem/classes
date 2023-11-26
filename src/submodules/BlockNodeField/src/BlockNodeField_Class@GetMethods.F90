@@ -270,6 +270,14 @@ CALL obj%Get(globalNode=globalNode, VALUE=VALUE, ivar=ivar0)
 END PROCEDURE bnField_GetFEVariable
 
 !----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bnField_GetPrefix
+ans = myprefix
+END PROCEDURE bnField_GetPrefix
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

@@ -113,6 +113,7 @@ CONTAINS
   !! Get the entries of scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => sField_GetFeVariable
   !! Get Finite Element variable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => sField_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
@@ -608,6 +609,21 @@ INTERFACE ScalarFieldGetFEVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE sField_GetFeVariable
 END INTERFACE ScalarFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION sField_GetPrefix(obj) RESULT(ans)
+    CLASS(ScalarField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION sField_GetPrefix
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods

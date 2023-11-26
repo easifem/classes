@@ -134,6 +134,8 @@ CONTAINS
     & Get5, Get6, Get7, Get8, Get9, Get10, Get11
   !! Get the entries of Vector field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => vField_GetFeVariable
+  !! Get multiple values in FEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => vField_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
@@ -1007,6 +1009,21 @@ INTERFACE VectorFieldGetFEVariable
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE vField_GetFeVariable
 END INTERFACE VectorFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION vField_GetPrefix(obj) RESULT(ans)
+    CLASS(VectorField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION vField_GetPrefix
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods
