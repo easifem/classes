@@ -103,7 +103,7 @@ TYPE :: UserFunction_
 CONTAINS
 
   PRIVATE
-  
+
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
@@ -516,10 +516,10 @@ SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
   END IF
 
   IF (PRESENT(scalarValue)) THEN
-    isNotOK = (obj%argType .NE. Constant) .OR. (obj%returnType .NE. Scalar)
+    isNotOK = obj%returnType .NE. Scalar
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: UserFunction_::obj%argType is NOT Constant '//  &
+      & '[INTERNAL ERROR] :: UserFunction_::obj%argType is NOT Constant '// &
       & ' or UserFunction_::obj%returnType is not Scalar')
       RETURN
     END IF
@@ -527,7 +527,7 @@ SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
   END IF
 
   IF (PRESENT(vectorValue)) THEN
-    isNotOK = (obj%argType .NE. Constant) .OR. (obj%returnType .NE. Vector)
+    isNotOK = obj%returnType .NE. Vector
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[INTERNAL ERROR] :: UserFunction_::obj%argType '//  &
@@ -549,7 +549,7 @@ SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
   END IF
 
   IF (PRESENT(matrixValue)) THEN
-    isNotOK = (obj%argType .NE. Constant) .OR. (obj%returnType .NE. Matrix)
+    isNotOK = obj%returnType .NE. Matrix
     IF (isNotOK) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[INTERNAL ERROR] :: UserFunction_::obj%argType '//  &
