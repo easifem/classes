@@ -22,6 +22,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class
 USE Domain_Class
 USE HDF5File_Class
+USE UserFunction_Class
 USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class
@@ -31,8 +32,9 @@ CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 CHARACTER(*), PARAMETER :: default_name = "AbstractBC"
 INTEGER(I4B), PARAMETER :: default_idof = 0_I4B
 INTEGER(I4B), PARAMETER :: default_nodalValueType = -1_I4B
-CHARACTER(*) , PARAMETER :: default_nodalValueType_char = "NONE"
+CHARACTER(*), PARAMETER :: default_nodalValueType_char = "NONE"
 LOGICAL(LGT), PARAMETER :: default_useFunction = .FALSE.
+LOGICAL(LGT), PARAMETER :: default_isUserFunction = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_isNormal = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_isTangent = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_useExternal = .FALSE.
@@ -62,10 +64,7 @@ TYPE, ABSTRACT :: AbstractBC_
   INTEGER(I4B) :: idof = default_idof
   !! degree of freedom number
   INTEGER(I4B) :: nodalValueType = default_nodalValueType
-  !! Constant
-  !! Space
-  !! Time
-  !! SpaceTime
+  !! Constant, Space, SpaceTime, Time
   LOGICAL(LGT) :: useFunction = default_useFunction
   !! True if the boundary condition is analytical
   LOGICAL(LGT) :: isNormal = default_isNormal
@@ -77,6 +76,8 @@ TYPE, ABSTRACT :: AbstractBC_
   !! depending upon the context.
   !! Basically we do not use the nodal value stored in the
   !! instance of AbstractBC_
+  LOGICAL(LGT) :: isUserFunction = default_isUserFunction
+  !! True if userFunction is set
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
@@ -88,7 +89,9 @@ TYPE, ABSTRACT :: AbstractBC_
   !! Space Function
   PROCEDURE(iface_TimeFunction), POINTER, NOPASS :: &
     & timeFunction => NULL()
-  !! Time Function
+  !! Time function
+  CLASS(UserFunction_), POINTER :: func => NULL()
+  !! User function
   TYPE(MeshSelection_) :: boundary
   !! Boundary
   CLASS(Domain_), POINTER :: dom => NULL()
@@ -99,17 +102,25 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => bc_Deallocate
+  !! Deallocate memory occupied by AbstractBC
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
     & bc_CheckEssentialParam
+  !! Check essential parameter
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
+  !! Initiate an instance of AbstractBC
 
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bc_Import
+  !! Import data from HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Export => bc_Export
+  !! Export data to HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Display => bc_Display
+  !! Display content of AbstractBC
   PROCEDURE, PASS(obj) :: ImportFromToml1 => bc_ImportFromToml1
+  !! Initiate from toml
   PROCEDURE, PASS(obj) :: ImportFromToml2 => bc_ImportFromToml2
+  !! Initiate from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     & ImportFromToml2
   !! Import abstract kernel from toml
@@ -123,15 +134,24 @@ CONTAINS
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => bc_GetMeshID
+  !! Get MeshID
   PROCEDURE, PUBLIC, PASS(obj) :: Get1 => bc_Get
+  !! Get value of boundary condition
   PROCEDURE, PUBLIC, PASS(obj) :: Get2 => bc_GetFEVar
+  !! Get value of boundary condition in FEVariable_
   GENERIC, PUBLIC :: Get => Get1, Get2
+  !! Generic method to get the boundary condition
   PROCEDURE, PUBLIC, PASS(obj) :: GetFromFunction => bc_GetFromFunction
+  !! Get value from function
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFromUserFunction =>  &
+    & bc_GetFromUserFunction
+  !! Get value from userfunction
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFNo => bc_GetDOFNo
+  !! Get degree of freedom number
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuery => bc_GetQuery
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => bc_GetQuery
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: isUseFunction => bc_isUseFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: IsUseFunction => bc_IsUseFunction
   !! Returns true if the useFunction is true
 END TYPE AbstractBC_
 
@@ -170,7 +190,7 @@ END INTERFACE AbstractBCcheckEssentialParam
 INTERFACE
   MODULE SUBROUTINE SetAbstractBCParam(param, prefix, &
     & name, idof, nodalValueType, useFunction, isNormal, isTangent, &
-    & useExternal)
+    & useExternal, isUserFunction)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: name
@@ -180,14 +200,12 @@ INTERFACE
     !! degree of freedom number
     !! default is 0
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodalValueType
-    !! Space
-    !! Time
-    !! SpaceTime
-    !! Constant
+    !! Space, Time, SpaceTime, Constant
     !! default is -1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
-    !! use fucntion
-    !! default is false
+    !! use fucntion; default is false
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUserFunction
+    !! set true when userfucntion is used; default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
     !! default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
@@ -372,7 +390,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE bc_GetFEVar(obj, fevar, globalNode,  &
-  & spaceQuadPoints, timeQuadPoints, atime, timeVec)
+    & spaceQuadPoints, timeQuadPoints, atime, timeVec)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
@@ -387,6 +405,10 @@ END INTERFACE
 !                                               GetFromFunction@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get value from function
+
 INTERFACE
   MODULE SUBROUTINE bc_GetFromFunction(obj, nodeNum, nodalValue, times)
     CLASS(AbstractBC_), INTENT(IN) :: obj
@@ -394,6 +416,23 @@ INTERFACE
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE bc_GetFromFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetFromFunction@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get value from function
+
+INTERFACE
+  MODULE SUBROUTINE bc_GetFromUserFunction(obj, nodeNum, nodalValue, times)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE bc_GetFromUserFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -412,41 +451,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   isUseFunction@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION bc_IsUseFunction(obj) RESULT(ans)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    LOGICAL(LGT) :: ans
-  END FUNCTION bc_IsUseFunction
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Set@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Set(obj, constantNodalValue, spaceNodalValue, &
-    & timeNodalValue, spaceTimeNodalValue, spaceFunction, timeFunction, &
-    & spaceTimeFunction)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
-    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & spaceTimeFunction
-    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & spaceFunction
-    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & timeFunction
-  END SUBROUTINE bc_Set
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                        GetQuery@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get field values of abstract boundary condition
 
 INTERFACE
   MODULE PURE SUBROUTINE bc_GetQuery(obj, isInitiated, &
@@ -481,6 +491,48 @@ INTERFACE
     CLASS(AbstractBC_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION bc_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   IsUseFunction@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Returns true if useFunction is true
+
+INTERFACE
+  MODULE PURE FUNCTION bc_IsUseFunction(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION bc_IsUseFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Set fields of abstract boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE bc_Set(obj, constantNodalValue, spaceNodalValue, &
+    & timeNodalValue, spaceTimeNodalValue, spaceFunction, timeFunction, &
+    & spaceTimeFunction, userFunction)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
+    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+      & spaceTimeFunction
+    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+      & spaceFunction
+    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
+      & timeFunction
+    TYPE(UserFunction_), POINTER, OPTIONAL, INTENT(IN) :: userFunction
+  END SUBROUTINE bc_Set
 END INTERFACE
 
 END MODULE AbstractBC_Class

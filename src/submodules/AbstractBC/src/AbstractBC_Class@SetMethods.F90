@@ -24,10 +24,15 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_set
-CHARACTER(*), PARAMETER :: myName = "bc_set"
+MODULE PROCEDURE bc_Set
+CHARACTER(*), PARAMETER :: myName = "bc_Set"
 LOGICAL(LGT) :: notFunc_notExt, isTimeFunc, isSpaceFunc, isSTFunc, isFunc,  &
-  & isConstVal, isSpaceVal, isSTVal, isTimeVal, bool1, bool2
+  & isConstVal, isSpaceVal, isSTVal, isTimeVal, bool1, bool2, isUserFunction
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Set()')
+#endif
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -37,6 +42,7 @@ END IF
 notFunc_notExt = (.NOT. obj%useFunction) .AND.  &
 & (.NOT. obj%useExternal)
 
+isUserFunction = PRESENT(userFunction)
 isTimeFunc = PRESENT(timeFunction)
 isSpaceFunc = PRESENT(spaceFunction)
 isSTFunc = PRESENT(spaceTimeFunction)
@@ -120,14 +126,27 @@ IF (bool1) THEN
   RETURN
 END IF
 
+! userFunction
+bool1 = isUserFunction .AND. obj%isUserFunction
+IF (.NOT. bool1) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[CONFIG ERROR] :: AbstractBC_::obj is not correctly initiated"// &
+    & " for userFunction")
+  RETURN
+END IF
+
+IF (isUserFunction) THEN
+  obj%func => userFunction
+  RETURN
+END IF
+
 ! spaceFunction
 bool1 = isSpaceFunc .AND. (obj%nodalValueType .NE. Space)
 IF (bool1) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
   & "with nodalValueType=Space"// &
-  & CHAR_LF// &
-  & 'So, spaceFunction cannot be present')
+  & CHAR_LF//'So, spaceFunction cannot be present')
   RETURN
 END IF
 
@@ -178,6 +197,11 @@ IF (obj%useFunction .AND. (.NOT. isFunc)) THEN
   RETURN
 END IF
 
-END PROCEDURE bc_set
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Set()')
+#endif
+
+END PROCEDURE bc_Set
 
 END SUBMODULE SetMethods

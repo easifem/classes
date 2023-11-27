@@ -31,22 +31,29 @@ obj%name = ''
 obj%idof = 0
 obj%nodalValueType = -1
 obj%useFunction = .FALSE.
+obj%isUserFunction = .FALSE.
 obj%isNormal = .FALSE.
 obj%isTangent = .FALSE.
 obj%useExternal = .FALSE.
 IF (ALLOCATED(obj%nodalValue)) DEALLOCATE (obj%nodalValue)
+
+CALL obj%boundary%DEALLOCATE()
+IF (ASSOCIATED(obj%dom)) obj%dom => NULL()
+IF (ASSOCIATED(obj%func)) THEN
+  CALL obj%func%DEALLOCATE()
+END IF
+obj%func => NULL()
+
 IF (ASSOCIATED(obj%SpaceTimeFunction)) obj%SpaceTimeFunction => NULL()
 IF (ASSOCIATED(obj%SpaceFunction)) obj%SpaceFunction => NULL()
 IF (ASSOCIATED(obj%TimeFunction)) obj%TimeFunction => NULL()
-CALL obj%boundary%DEALLOCATE()
-IF (ASSOCIATED(obj%dom)) obj%dom => NULL()
 END PROCEDURE bc_Deallocate
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_checkessentialparam
+MODULE PROCEDURE bc_Checkessentialparam
 CHARACTER(*), PARAMETER :: myName = "bc_CheckEssentialParam"
 INTEGER(I4B) :: ii
 TYPE(String), ALLOCATABLE :: essentialParam(:)
@@ -58,7 +65,8 @@ ELSE
   prefix0 = obj%GetPrefix()
 END IF
 
-astr = "/name/idof/nodalValueType/useFunction/isNormal/isTangent/useExternal"
+astr = "/name/idof/nodalValueType/useFunction/isNormal/isTangent/"//  &
+& "useExternal/isUserFunction"
 
 CALL astr%Split(essentialParam, sep="/")
 CALL CheckEssentialParam(obj=param,  &
@@ -105,6 +113,9 @@ CALL Set(param, datatype=.TRUE., prefix=prefix, key="isTangent",  &
 
 CALL Set(param, datatype=.TRUE., prefix=prefix, key="useExternal",  &
   & VALUE=input(option=useExternal, default=default_useExternal))
+
+CALL Set(param, datatype=.TRUE., prefix=prefix, key="isUserFunction",  &
+  & VALUE=input(option=isUserFunction, default=default_useFunction))
 
 IF (PRESENT(isNormal) .AND. PRESENT(idof)) THEN
   IF (idof .GT. 0 .AND. isNormal) THEN
@@ -161,6 +172,10 @@ CALL GetValue(obj=param, prefix=prefix%chars(), key="nodalValueType", &
 CALL GetValue(obj=param, prefix=prefix%chars(), key="useFunction", &
   & VALUE=obj%useFunction)
 
+! isUserFunction
+CALL GetValue(obj=param, prefix=prefix%chars(), key="isUserFunction", &
+  & VALUE=obj%isUserFunction)
+
 ! isNormal
 CALL GetValue(obj=param, prefix=prefix%chars(), key="isNormal", &
   & VALUE=obj%isNormal)
@@ -173,7 +188,7 @@ CALL GetValue(obj=param, prefix=prefix%chars(), key="isTangent", &
 CALL GetValue(obj=param, prefix=prefix%chars(), key="useExternal", &
   & VALUE=obj%useExternal)
 
-! check
+! Check
 CALL boundary%GetParam(isSelectionByMeshID=isSelectionByMeshID)
 abool = boundary%isSelectionByMeshID  &
   & .AND. (.NOT. obj%useFunction) &

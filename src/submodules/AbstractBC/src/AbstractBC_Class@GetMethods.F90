@@ -40,106 +40,115 @@ END PROCEDURE bc_GetDOFNo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Get
-INTEGER(I4B) :: ii, tsize
-CHARACTER(*), PARAMETER :: myName = "bc_Get"
+CHARACTER(*), PARAMETER :: myName = "bc_Get()"
+INTEGER(I4B) :: ii, tsize, tNodes, tTimes
+LOGICAL(LGT) :: isNodalValuePresent, isNOTOK
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Get()')
+#endif
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'AbstractBC_ object is not initiated, initiate it first.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: AbstractBC_ object is not initiated'//  &
+  & ', initiate it first.')
+  RETURN
 END IF
 
 ! get node numbers
-
 IF (.NOT. ASSOCIATED(obj%dom)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'AbstractBC_::obj%dom is not associated!')
-ELSE
-  nodeNum = obj%boundary%getNodeNum(domain=obj%dom)
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: AbstractBC_::obj%dom is not associated!')
+  RETURN
 END IF
 
+nodeNum = obj%boundary%GetNodeNum(domain=obj%dom)
+tNodes = SIZE(nodeNum)
+
+tTimes = 1
+IF (PRESENT(times)) tTimes = SIZE(times)
+
+isNodalValuePresent = PRESENT(nodalValue)
+
+IF (isNodalValuePresent .AND. obj%useFunction) THEN
+  CALL obj%GetFromFunction(nodeNum=nodeNum, nodalValue=nodalValue,  &
+    & times=times)
+  RETURN
+END IF
+
+IF (isNodalValuePresent .AND. obj%isUserFunction) THEN
+  CALL obj%GetFromUserFunction(nodeNum=nodeNum, nodalValue=nodalValue,  &
+    & times=times)
+  RETURN
+END IF
+
+isNOTOK = isNodalValuePresent .AND. (.NOT. ALLOCATED(obj%nodalValue))
+
+IF (isNOTOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: AbstractBC_::obj%nodalValue is not allocated!')
+  RETURN
+END IF
+
+IF (.NOT. isNodalValuePresent) RETURN
+
 ! get nodal values
+SELECT CASE (obj%nodalValueType)
 
-IF (PRESENT(nodalValue)) THEN
+! Constant
+CASE (CONSTANT)
+  CALL Reallocate(nodalValue, tNodes, tTimes)
+  nodalValue = obj%nodalValue(1, 1)
 
-  ! Use function case
-
-  IF (obj%useFunction) THEN
-    CALL obj%GetFromFunction(nodeNum=nodeNum, &
-      & nodalValue=nodalValue, times=times)
+! Space
+CASE (SPACE)
+  isNOTOK = SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)
+  IF (isNOTOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+     & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
     RETURN
   END IF
 
-  IF (.NOT. ALLOCATED(obj%nodalValue)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'nodalValue is not allocated!')
+  nodalValue = obj%nodalValue
+
+! Time
+CASE (TIME)
+  tsize = SIZE(obj%nodalValue, 1)
+  IF (PRESENT(times)) THEN
+    IF (tsize .NE. SIZE(times)) THEN
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
+       & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
+    END IF
   END IF
 
-  ! Getting nodal values
+  CALL Reallocate(nodalValue, SIZE(nodeNum), tsize)
 
-  SELECT CASE (obj%nodalValueType)
+  DO ii = 1, tsize
+    nodalValue(:, ii) = obj%nodalValue(ii, 1)
+  END DO
 
-    ! Constant
+! SpaceTime
+CASE (SpaceTime)
+  IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+     & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
+  END IF
 
-  CASE (CONSTANT)
-
-    IF (PRESENT(times)) THEN
-      CALL Reallocate(nodalValue, SIZE(nodeNum), SIZE(times))
-    ELSE
-      CALL Reallocate(nodalValue, SIZE(nodeNum), 1)
+  IF (PRESENT(times)) THEN
+    IF (SIZE(obj%nodalValue, 2) .NE. SIZE(times)) THEN
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
+        & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
     END IF
+  END IF
 
-    nodalValue = obj%nodalValue(1, 1)
+  nodalValue = obj%nodalValue
+END SELECT
 
-    ! Space
-
-  CASE (SPACE)
-
-    IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) THEN
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-       & 'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
-    END IF
-
-    nodalValue = obj%nodalValue
-
-    ! Time
-
-  CASE (TIME)
-
-    tsize = SIZE(obj%nodalValue, 1)
-    IF (PRESENT(times)) THEN
-      IF (tsize .NE. SIZE(times)) THEN
-        CALL e%raiseError(modName//'::'//myName//" - "// &
-         & 'SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
-      END IF
-    END IF
-
-    CALL Reallocate(nodalValue, SIZE(nodeNum), tsize)
-
-    DO ii = 1, tsize
-      nodalValue(:, ii) = obj%nodalValue(ii, 1)
-    END DO
-
-    ! SpaceTime
-
-  CASE (SpaceTime)
-
-    IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) THEN
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-       & 'SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
-    END IF
-
-    IF (PRESENT(times)) THEN
-      IF (SIZE(obj%nodalValue, 2) .NE. SIZE(times)) THEN
-        CALL e%raiseError(modName//'::'//myName//" - "// &
-          & 'SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
-      END IF
-    END IF
-
-    nodalValue = obj%nodalValue
-
-  END SELECT
-END IF
-
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Get()')
+#endif
 END PROCEDURE bc_Get
 
 !----------------------------------------------------------------------------
@@ -175,12 +184,11 @@ xij => obj%dom%getNodeCoordPointer()
 
 SELECT CASE (obj%nodalValueType)
 
-  ! space function
-
+! Space
 CASE (Space)
 
   IF (.NOT. ASSOCIATED(obj%SpaceFunction)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
     & "When nodalValueType is &
     & Space and useFunction is specified, &
     & then SpaceFunction is needed, &
@@ -194,12 +202,11 @@ CASE (Space)
       & x=xij(:, obj%dom%getLocalNodeNumber(globalNode=nodeNum(ii))))
   END DO
 
-  ! Time
-
+! Time
 CASE (Time)
 
   IF (.NOT. ASSOCIATED(obj%TimeFunction)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
     & "When nodalValueType is Time &
     & and useFunction is specified, &
     & then TimeFunction is needed, &
@@ -207,7 +214,7 @@ CASE (Time)
   END IF
 
   IF (.NOT. PRESENT(times)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
     & "When `nodalValueType` is Time &
     & and `useFunction` is TRUE, &
     & then `times` is needed in the passing argument, &
@@ -220,12 +227,11 @@ CASE (Time)
     nodalValue(:, ii) = obj%TimeFunction(t=times(ii))
   END DO
 
-  ! SpaceTime
-
+! SpaceTime
 CASE (SpaceTime)
 
   IF (.NOT. ASSOCIATED(obj%SpaceTimeFunction)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
       & "When `nodalValueType` is `SpaceTime` and &
       & `useFunction` is specified, &
       & then `SpaceTimeFunction` is needed, &
@@ -233,7 +239,7 @@ CASE (SpaceTime)
   END IF
 
   IF (.NOT. PRESENT(times)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
       & "When `nodalValueType` is `SpaceTime` &
       & and `useFunction` is True, &
       & then `times` is needed as argument, &
@@ -294,5 +300,120 @@ CHARACTER(*), PARAMETER :: myName = "bc_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child class.')
 END PROCEDURE bc_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                       GetFromUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetFromUserFunction
+CHARACTER(*), PARAMETER :: myName = "bc_GetFromUserFunction()"
+INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes
+REAL(DFP) :: xij(4, 1), ans
+LOGICAL(LGT) :: problem
+
+! get pointer to nodecoord
+
+IF (.NOT. ASSOCIATED(obj%func)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & "[INTERNAL ERROR] :: When nodalValueType is "//  &
+  & CHAR_LF//"Space and useFunction is specified, "//  &
+  & CHAR_LF//"then SpaceFunction is needed, "//  &
+  & CHAR_LF//"but it is not associated")
+  RETURN
+END IF
+
+retType = obj%func%GetReturnType()
+
+IF (retType .NE. Scalar) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Return type of user function should be '//  &
+    & 'scalar.')
+  RETURN
+END IF
+
+problem = (obj%nodalValueType .EQ. Time) .AND. (.NOT. PRESENT(times))
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[INTERNAL ERROR] :: When `nodalValueType` is Time "//  &
+    & " and `IsUserFunction` is TRUE, "//  &
+    & " then `times` is needed in the passing argument,"//  &
+    & " but it is not present")
+  RETURN
+END IF
+
+problem = (obj%nodalValueType .EQ. SpaceTime) .AND. (.NOT. PRESENT(times))
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[INTERNAL ERROR] :: When `nodalValueType` is SpaceTime "//  &
+    & " and `IsUserFunction` is TRUE, "//  &
+    & " then `times` is needed in the passing argument,"//  &
+    & " but it is not present")
+  RETURN
+END IF
+
+tNodes = SIZE(nodeNum)
+nsd = obj%dom%GetNSD()
+
+SELECT CASE (obj%nodalValueType)
+
+! Constant
+CASE (Constant)
+  CALL Reallocate(nodalValue, tNodes, 1)
+
+  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+    & globalNode=nodeNum(1:1))
+
+  CALL obj%func%Get(val=ans, args=xij(1:nsd, 1))
+
+  nodalValue(:, 1) = ans
+
+! Space
+CASE (Space)
+  CALL Reallocate(nodalValue, tNodes, 1)
+
+  DO ii = 1, tNodes
+    CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+      & globalNode=nodeNum(ii:ii))
+
+    CALL obj%func%Get(val=ans, args=xij(1:nsd, 1))
+
+    nodalValue(ii, 1) = ans
+  END DO
+
+! Time
+CASE (Time)
+
+  tTimes = SIZE(times)
+
+  CALL Reallocate(nodalValue, tNodes, tTimes)
+
+  DO ii = 1, tTimes
+    CALL obj%func%Get(val=ans, args=times(ii:ii))
+
+    nodalValue(:, ii) = ans
+  END DO
+
+! SpaceTime
+CASE (SpaceTime)
+  tTimes = SIZE(times)
+
+  CALL Reallocate(nodalValue, tNodes, tTimes)
+
+  DO kk = 1, tTimes
+    xij(nsd + 1, 1) = times(kk)
+
+    DO ii = 1, tNodes
+      CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+        & globalNode=nodeNum(ii:ii))
+
+      CALL obj%func%Get(val=ans, args=xij(1:nsd + 1, 1))
+
+      nodalValue(ii, kk) = ans
+    END DO
+  END DO
+
+END SELECT
+
+END PROCEDURE bc_GetFromUserFunction
 
 END SUBMODULE GetMethods
