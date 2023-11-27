@@ -396,7 +396,7 @@ INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: nsd
 localNode = obj%GetLocalNodeNumber(globalNode=globalNode)
 nsd = SIZE(nodeCoord, 1)
-nodeCoord = nodeCoord(1:nsd, localNode)
+nodeCoord = obj%nodeCoord(1:nsd, localNode)
 END PROCEDURE Domain_GetNodeCoord2
 
 !----------------------------------------------------------------------------
