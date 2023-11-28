@@ -139,7 +139,7 @@ IF (returnType .EQ. Scalar) THEN
 END IF
 
 IF (argType .EQ. Constant) THEN
-  IF (numArgs .NE. 0) THEN
+  IF (numArgs0 .NE. 0) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[CONFIG ERROR] :: When argType is Constant, then '//  &
       & 'numArgs should be 0.')
@@ -148,7 +148,7 @@ IF (argType .EQ. Constant) THEN
 END IF
 
 IF (argType .EQ. Time) THEN
-  IF (numArgs .NE. 1) THEN
+  IF (numArgs0 .NE. 1) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[CONFIG ERROR] :: When argType is Time, then '//  &
       & 'numArgs should be 1.')
@@ -157,7 +157,7 @@ IF (argType .EQ. Time) THEN
 END IF
 
 IF (argType .EQ. Space) THEN
-  IF (numArgs .NE. 3) THEN
+  IF (numArgs0 .NE. 3) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[CONFIG ERROR] :: When argType is Space, then '//  &
       & 'numArgs should be 3.')
@@ -166,7 +166,7 @@ IF (argType .EQ. Space) THEN
 END IF
 
 IF (argType .EQ. SpaceTime) THEN
-  IF (numArgs .NE. SpaceTime) THEN
+  IF (numArgs0 .NE. 4) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
       & '[CONFIG ERROR] :: When argType is SpaceTime, then '//  &
       & 'numArgs should be 4.')

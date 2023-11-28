@@ -346,19 +346,47 @@ argType = UserFunctionGetArgType(astr%chars())
 CALL toml_get(table, "numArgs", numArgs, origin=origin, stat=stat)
 bool1 = stat .NE. toml_stat%success
 IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: numArgs should be present, and '//  &
-    & 'it is a scalar integer number.')
-  RETURN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'If numArgs should not present, '//  &
+    & 'the default values are used')
+
+  SELECT CASE (argType)
+  CASE (Constant)
+    numArgs = DEFAULT_NUM_ARG_CONSTANT
+  CASE (Space)
+    numArgs = DEFAULT_NUM_ARG_SPACE
+  CASE (Time)
+    numArgs = DEFAULT_NUM_ARG_TIME
+  CASE (SpaceTime)
+    numArgs = DEFAULT_NUM_ARG_SPACETIME
+  CASE default
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[Config Error]:: No case found for argType')
+    RETURN
+  END SELECT
 END IF
 
 CALL toml_get(table, "numReturns", numReturns, origin=origin, stat=stat)
 bool1 = stat .NE. toml_stat%success
 IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] ::  numReturns should be present, and '//  &
-    & 'it is a scalar integer number.')
-  RETURN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'numReturns should is not present, and '//  &
+    & 'using default value for numReturns.')
+
+  SELECT CASE (returnType)
+  CASE (Scalar)
+    numReturns = DEFAULT_NUM_ARG_SCALAR
+  CASE (Vector)
+    numReturns = DEFAULT_NUM_ARG_VECTOR
+  CASE (Matrix)
+    numReturns = DEFAULT_NUM_ARG_MATRIX
+  CASE default
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: no case found for returnType, and '//  &
+      & 'numReturns should be present, and '//  &
+      & 'it is a scalar integer number.')
+    RETURN
+  END SELECT
 END IF
 
 CALL toml_get(table, "luaScript", luaScript%raw, origin=origin, stat=stat)
@@ -426,19 +454,19 @@ CALL obj%Initiate(param=param)
 IF (.NOT. obj%isLuaScript) THEN
   SELECT CASE (obj%returnType)
   CASE (Scalar)
-    CALL toml_get(table, "scalarValue", scalarValue,  &
+    CALL toml_get(table, "value", scalarValue,  &
     & origin=origin, stat=stat)
     IF (stat .NE. toml_stat%success) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '[CONFIG ERROR] :: returnType is Scalar, and '//  &
         & CHAR_LF//'argType is Constant. '//  &
-        & CHAR_LF//'Therefore, scalarValue should be present.')
+        & CHAR_LF//'Therefore, value should be present.')
       RETURN
     END IF
     CALL obj%Set(scalarValue=scalarValue)
 
   CASE (Vector)
-    CALL GetValue(table=table, key="vectorValue",  &
+    CALL GetValue(table=table, key="value",  &
       & VALUE=vectorValue, origin=origin, stat=stat, isFound=isFound)
 
     bool1 = (.NOT. isFound) .OR. (stat .NE. toml_stat%success)
@@ -446,7 +474,7 @@ IF (.NOT. obj%isLuaScript) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '[CONFIG ERROR] :: returnType is Vector, and '//  &
         & CHAR_LF//'argType is Constant. '//  &
-        & CHAR_LF//'Therefore, vectorValue should be present.')
+        & CHAR_LF//'Therefore, value should be present.')
       RETURN
     END IF
 
@@ -454,7 +482,7 @@ IF (.NOT. obj%isLuaScript) THEN
     IF (ALLOCATED(vectorValue)) DEALLOCATE (vectorValue)
 
   CASE (Matrix)
-    CALL GetValue(table=table, key="matrixValue",  &
+    CALL GetValue(table=table, key="value",  &
       & VALUE=matrixValue, origin=origin, stat=stat, isFound=isFound)
 
     bool1 = (.NOT. isFound) .OR. (stat .NE. toml_stat%success)
@@ -462,7 +490,7 @@ IF (.NOT. obj%isLuaScript) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '[CONFIG ERROR] :: returnType is Matrix, and '//  &
         & CHAR_LF//'argType is Constant. '//  &
-        & CHAR_LF//'Therefore, matrixValue should be present.')
+        & CHAR_LF//'Therefore, value should be present.')
       RETURN
     END IF
 
