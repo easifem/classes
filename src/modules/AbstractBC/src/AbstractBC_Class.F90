@@ -30,10 +30,9 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 CHARACTER(*), PARAMETER :: default_name = "AbstractBC"
-INTEGER(I4B), PARAMETER :: default_idof = 0_I4B
-INTEGER(I4B), PARAMETER :: default_nodalValueType = -1_I4B
+INTEGER(I4B), PARAMETER :: default_idof = 1_I4B
+INTEGER(I4B), PARAMETER :: default_nodalValueType = Constant
 CHARACTER(*), PARAMETER :: default_nodalValueType_char = "NONE"
-LOGICAL(LGT), PARAMETER :: default_useFunction = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_isUserFunction = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_isNormal = .FALSE.
 LOGICAL(LGT), PARAMETER :: default_isTangent = .FALSE.
@@ -65,8 +64,6 @@ TYPE, ABSTRACT :: AbstractBC_
   !! degree of freedom number
   INTEGER(I4B) :: nodalValueType = default_nodalValueType
   !! Constant, Space, SpaceTime, Time
-  LOGICAL(LGT) :: useFunction = default_useFunction
-  !! True if the boundary condition is analytical
   LOGICAL(LGT) :: isNormal = default_isNormal
   !! True if the boundary condition is normal to the boundary
   LOGICAL(LGT) :: isTangent = default_isTangent
@@ -81,15 +78,6 @@ TYPE, ABSTRACT :: AbstractBC_
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
-  PROCEDURE(iface_SpaceTimeFunction), POINTER, NOPASS :: &
-    & spaceTimeFunction => NULL()
-  !! SpaceTime Functions
-  PROCEDURE(iface_SpaceFunction), POINTER, NOPASS :: &
-    & spaceFunction => NULL()
-  !! Space Function
-  PROCEDURE(iface_TimeFunction), POINTER, NOPASS :: &
-    & timeFunction => NULL()
-  !! Time function
   CLASS(UserFunction_), POINTER :: func => NULL()
   !! User function
   TYPE(MeshSelection_) :: boundary
@@ -141,8 +129,6 @@ CONTAINS
   !! Get value of boundary condition in FEVariable_
   GENERIC, PUBLIC :: Get => Get1, Get2
   !! Generic method to get the boundary condition
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFromFunction => bc_GetFromFunction
-  !! Get value from function
   PROCEDURE, PUBLIC, PASS(obj) :: GetFromUserFunction =>  &
     & bc_GetFromUserFunction
   !! Get value from userfunction
@@ -189,7 +175,7 @@ END INTERFACE AbstractBCcheckEssentialParam
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractBCParam(param, prefix, &
-    & name, idof, nodalValueType, useFunction, isNormal, isTangent, &
+    & name, idof, nodalValueType, isNormal, isTangent, &
     & useExternal, isUserFunction)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: prefix
@@ -202,8 +188,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodalValueType
     !! Space, Time, SpaceTime, Constant
     !! default is -1
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
-    !! use fucntion; default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUserFunction
     !! set true when userfucntion is used; default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
@@ -410,23 +394,6 @@ END INTERFACE
 ! summary:  Get value from function
 
 INTERFACE
-  MODULE SUBROUTINE bc_GetFromFunction(obj, nodeNum, nodalValue, times)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: nodeNum(:)
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodalValue(:, :)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-  END SUBROUTINE bc_GetFromFunction
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetFromFunction@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get value from function
-
-INTERFACE
   MODULE SUBROUTINE bc_GetFromUserFunction(obj, nodeNum, nodalValue, times)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: nodeNum(:)
@@ -462,7 +429,7 @@ INTERFACE
   MODULE PURE SUBROUTINE bc_GetQuery(obj, isInitiated, &
     & isSelectionByBox, isSelectionByMeshID, isSelectionByElemNum, &
     & isSelectionByNodeNum, idof, isTangent, isNormal, useFunction, &
-    & nodalValueType, useExternal)
+    & nodalValueType, useExternal, isUserFunction)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
@@ -475,6 +442,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: idof
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useExternal
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUserFunction
   END SUBROUTINE bc_GetQuery
 END INTERFACE
 
@@ -518,19 +486,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE bc_Set(obj, constantNodalValue, spaceNodalValue, &
-    & timeNodalValue, spaceTimeNodalValue, spaceFunction, timeFunction, &
-    & spaceTimeFunction, userFunction)
+    & timeNodalValue, spaceTimeNodalValue, userFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
-    PROCEDURE(iface_SpaceTimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & spaceTimeFunction
-    PROCEDURE(iface_SpaceFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & spaceFunction
-    PROCEDURE(iface_TimeFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-      & timeFunction
     TYPE(UserFunction_), POINTER, OPTIONAL, INTENT(IN) :: userFunction
   END SUBROUTINE bc_Set
 END INTERFACE

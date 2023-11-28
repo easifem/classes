@@ -108,16 +108,8 @@ END IF
 
 IF (obj%isUserFunction) THEN
   ALLOCATE (obj%func)
-  CALL obj%func%IMPORT(hdf5=hdf5,  &
-    & group=TRIM(group)//"/userFunction")
-END IF
-
-dsetname = TRIM(group)//"/useFunction"
-IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataset useFunction should be present')
-ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%useFunction)
+  dsetname = TRIM(group)//"/userFunction"
+  CALL obj%func%IMPORT(hdf5=hdf5, group=dsetname%chars())
 END IF
 
 dsetname = TRIM(group)//"/useExternal"
@@ -136,7 +128,7 @@ ELSE
   CALL obj%boundary%IMPORT(hdf5=hdf5, group=dsetname%chars())
 END IF
 
-IF (.NOT. obj%useFunction) THEN
+IF (.NOT. obj%isUserFunction) THEN
   dsetname = TRIM(group)//"/nodalValue"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -221,9 +213,14 @@ CASE (SpaceTime)
 END SELECT
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
-! WRITE useFunction
-dsetname = TRIM(group)//"/useFunction"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%useFunction)
+! WRITE isUserFunction
+dsetname = TRIM(group)//"/isUserFunction"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunction)
+
+IF (ASSOCIATED(obj%func)) THEN
+  dsetname = TRIM(group)//"/userFunction"
+  CALL obj%func%Export(hdf5=hdf5, group=dsetname%chars())
+END IF
 
 ! WRITE useExternal
 dsetname = TRIM(group)//"/useExternal"
@@ -234,7 +231,7 @@ dsetname = TRIM(group)//"/boundary"
 CALL obj%boundary%export(hdf5=hdf5, group=dsetname%chars())
 
 ! Read nodalValue
-IF (.NOT. obj%UseFunction) THEN
+IF (.NOT. obj%isUserFunction) THEN
 
   dsetname = TRIM(group)//"/nodalValue"
   IF (.NOT. ALLOCATED(obj%nodalValue)) THEN
@@ -294,11 +291,10 @@ END SELECT
 CALL Display("nodalValueType : "//TRIM(strval%chars()), unitNo=unitNo)
 
 CALL Display(obj%isUserFunction, "isUserFunction : ", unitNo=unitNo)
-CALL Display(obj%useFunction, "useFunction : ", unitNo=unitNo)
 CALL Display(obj%useExternal, "useExternal : ", unitNo=unitNo)
 CALL obj%Boundary%Display(msg="Boundary : ", unitNo=unitNo)
 
-IF (.NOT. obj%UseFunction) THEN
+IF (.NOT. obj%isUserFunction) THEN
   IF (.NOT. ALLOCATED(obj%nodalValue)) THEN
     CALL Display("nodalValue : NOT ALLOCATED", unitNo=unitNo)
   ELSE
@@ -336,8 +332,7 @@ END PROCEDURE bc_Display
 MODULE PROCEDURE bc_ImportParamFromToml
 CHARACTER(*), PARAMETER :: myName = "bc_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat, nodalValueType, idof
-LOGICAL(LGT) :: useFunction, isNormal, isTangent, useExternal,  &
-& isUserFunction
+LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, useExternal
 TYPE(String) :: nodalValueType_string, name, astr
 
 #ifdef DEBUG_VER
@@ -345,11 +340,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ImportParamFromToml()')
 #endif
 
-CALL toml_get(table, "useFunction", useFunction,  &
-  & default_useFunction, origin=origin, stat=stat)
-
 CALL toml_get(table, "isUserFunction", isUserFunction,  &
-  & default_useFunction, origin=origin, stat=stat)
+  & default_isUserFunction, origin=origin, stat=stat)
 
 CALL toml_get(table, "isTangent", isTangent,  &
   & default_isTangent, origin=origin, stat=stat)
@@ -389,7 +381,6 @@ CALL SetAbstractBCParam( &
   & name=name%chars(),  &
   & idof=idof,  &
   & nodalValueType=nodalValueType,  &
-  & useFunction=useFunction,  &
   & isUserFunction=isUserFunction,  &
   & isNormal=isNormal,  &
   & isTangent=isTangent,  &
@@ -454,22 +445,18 @@ IF (obj%isUserFunction) THEN
 
   ALLOCATE (obj%func)
   CALL obj%func%ImportFromToml(table=node)
-END IF
-
-IF (obj%useFunction) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[WIP ERROR] :: useFunction = .TRUE., currently you cannot '// &
-    & 'specify the function.')
   RETURN
 END IF
 
 SELECT CASE (obj%nodalValueType)
 CASE (Constant)
   CALL toml_get(table, "value", constantValue, origin=origin, stat=stat)
-  IF (stat .NE. toml_stat%success) THEN
+  bool1 = stat .NE. toml_stat%success
+  IF (bool1) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: nodalValueType is Constant. So, '//  &
-      & 'value should be a constant (scalar real value).')
+      & '[CONFIG ERROR] :: nodalValueType is Constant. '//  &
+      & 'obj%isUserFunction is False. So, '// &
+      & 'value should be a present (scalar real value).')
     RETURN
   END IF
   CALL obj%Set(constantnodalValue=constantValue)
@@ -482,7 +469,8 @@ CASE (Space, Time)
 
   IF (bool1) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: nodalValueType is Space or Time. So '//  &
+      & '[CONFIG ERROR] :: nodalValueType is Space or Time.'//  &
+      & 'obj%isUserFunction is False. So, '// &
       & 'value should be a vector of real numbers.'//CHAR_LF// &
       & 'You can specify a vector by directly giving the vector values.'// &
       & 'Otherwise, specify filename which contains the vector'//  &
@@ -504,7 +492,8 @@ CASE (SpaceTime)
 
   IF (bool1) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: nodalValueType is Space or Time. So '//  &
+      & '[CONFIG ERROR] :: nodalValueType is Space or Time.'//  &
+      & 'obj%isUserFunction is False. So, '// &
       & 'value should be a vector of real numbers.'//CHAR_LF// &
       & 'You can specify a vector by directly giving the vector values.'// &
       & 'Otherwise, specify filename which contains the vector'//  &

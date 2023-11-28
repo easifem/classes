@@ -30,7 +30,6 @@ obj%isInitiated = .FALSE.
 obj%name = ''
 obj%idof = 0
 obj%nodalValueType = -1
-obj%useFunction = .FALSE.
 obj%isUserFunction = .FALSE.
 obj%isNormal = .FALSE.
 obj%isTangent = .FALSE.
@@ -44,9 +43,6 @@ IF (ASSOCIATED(obj%func)) THEN
 END IF
 obj%func => NULL()
 
-IF (ASSOCIATED(obj%SpaceTimeFunction)) obj%SpaceTimeFunction => NULL()
-IF (ASSOCIATED(obj%SpaceFunction)) obj%SpaceFunction => NULL()
-IF (ASSOCIATED(obj%TimeFunction)) obj%TimeFunction => NULL()
 END PROCEDURE bc_Deallocate
 
 !----------------------------------------------------------------------------
@@ -65,7 +61,7 @@ ELSE
   prefix0 = obj%GetPrefix()
 END IF
 
-astr = "/name/idof/nodalValueType/useFunction/isNormal/isTangent/"//  &
+astr = "/name/idof/nodalValueType/isNormal/isTangent/"//  &
 & "useExternal/isUserFunction"
 
 CALL astr%Split(essentialParam, sep="/")
@@ -102,9 +98,6 @@ CALL Set(param, datatype=0_I4B, prefix=prefix, key="idof",  &
 CALL Set(param, datatype=0_I4B, prefix=prefix, key="nodalValueType",  &
   & VALUE=input(option=nodalValueType, default=default_nodalValueType))
 
-CALL Set(param, datatype=.TRUE., prefix=prefix, key="useFunction",  &
-  & VALUE=input(option=useFunction, default=default_useFunction))
-
 CALL Set(param, datatype=.TRUE., prefix=prefix, key="isNormal",  &
   & VALUE=input(option=isNormal, default=default_isNormal))
 
@@ -114,8 +107,13 @@ CALL Set(param, datatype=.TRUE., prefix=prefix, key="isTangent",  &
 CALL Set(param, datatype=.TRUE., prefix=prefix, key="useExternal",  &
   & VALUE=input(option=useExternal, default=default_useExternal))
 
-CALL Set(param, datatype=.TRUE., prefix=prefix, key="isUserFunction",  &
-  & VALUE=input(option=isUserFunction, default=default_useFunction))
+IF (PRESENT(isUserFunction)) THEN
+  CALL Set(param, datatype=.TRUE., prefix=prefix, key="isUserFunction",  &
+    & VALUE=isUserFunction)
+ELSE
+  CALL Set(param, datatype=.TRUE., prefix=prefix, key="isUserFunction",  &
+    & VALUE=default_isUserFunction)
+END IF
 
 IF (PRESENT(isNormal) .AND. PRESENT(idof)) THEN
   IF (idof .GT. 0 .AND. isNormal) THEN
@@ -168,10 +166,6 @@ CALL GetValue(obj=param, prefix=prefix%chars(), key="idof", VALUE=obj%idof)
 CALL GetValue(obj=param, prefix=prefix%chars(), key="nodalValueType", &
   & VALUE=obj%nodalValueType)
 
-! useFunction
-CALL GetValue(obj=param, prefix=prefix%chars(), key="useFunction", &
-  & VALUE=obj%useFunction)
-
 ! isUserFunction
 CALL GetValue(obj=param, prefix=prefix%chars(), key="isUserFunction", &
   & VALUE=obj%isUserFunction)
@@ -191,14 +185,14 @@ CALL GetValue(obj=param, prefix=prefix%chars(), key="useExternal", &
 ! Check
 CALL boundary%GetParam(isSelectionByMeshID=isSelectionByMeshID)
 abool = boundary%isSelectionByMeshID  &
-  & .AND. (.NOT. obj%useFunction) &
+  & .AND. (.NOT. obj%isUserFunction) &
   & .AND. (.NOT. obj%useExternal) &
   & .AND. (obj%nodalValueType .NE. Constant)
 
 IF (abool) THEN
   CALL e%RaiseWarning(modName//'::'//myName//" - "// &
       & "When meshSelection is by MeshID"//CHAR_LF//  &
-      & " and `useFunction` is false, then"//CHAR_LF//  &
+      & " and `isUserFunction` is false, then"//CHAR_LF//  &
       & " `nodalValueType` in `AbstractBC_`"//CHAR_LF//  &
       & " object should be Constant.")
 END IF
