@@ -68,4 +68,6 @@ USE Plot_Method
 ! USE ogpf
 
 USE TomlUtility
+
+USE easifemMaterials
 END MODULE easifemClasses
