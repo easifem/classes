@@ -1,0 +1,42 @@
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: Abstract class for Material behavior of porous media
+
+MODULE AbstractPoroMechanicsModel_Class
+USE AbstractSolidMechanicsModel_Class
+IMPLICIT NONE
+PRIVATE
+CHARACTER(*), PARAMETER :: modName = "AbstractPoroMechanicsModel_Class"
+
+PUBLIC :: IsoLinearElasticModel
+PUBLIC :: AnisoLinearElasticModel
+PUBLIC :: OrthoLinearElasticModel
+PUBLIC :: TransLinearElasticModel
+PUBLIC :: AbstractPoroMechanicsModel_
+
+!----------------------------------------------------------------------------
+!                                                      SolidMechanicsModel_
+!----------------------------------------------------------------------------
+
+TYPE, ABSTRACT, EXTENDS(AbstractSolidMechanicsModel_) :: &
+  & AbstractPoroMechanicsModel_
+END TYPE AbstractPoroMechanicsModel_
+
+END MODULE AbstractPoroMechanicsModel_Class
