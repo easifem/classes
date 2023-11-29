@@ -318,6 +318,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 # Plot
 include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 
+# easifemClasses
+include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
+
+# Materials library here
+
 # AbstractMaterialModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
 
@@ -356,6 +361,3 @@ include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
 
 # easifemMaterials
 include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
-
-# easifemClasses
-include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)

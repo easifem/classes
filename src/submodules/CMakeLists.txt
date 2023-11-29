@@ -258,6 +258,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
 # PLPlot
 include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 
+# materials here
+
 # AbstractSolidMechanicsModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
 

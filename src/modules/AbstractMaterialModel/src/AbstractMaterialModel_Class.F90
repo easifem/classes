@@ -25,7 +25,9 @@ USE BaseType
 USE String_Class
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
+USE TxtFile_Class
 USE FPL, ONLY: ParameterList_
+USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractMaterialModel_Class"
@@ -168,6 +170,40 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE am_ImportFromToml1(obj, table)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE am_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE am_ImportFromToml3(obj, tomlName, afile, filename,  &
+    & printToml)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE am_ImportFromToml3
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                                 Contains
 !----------------------------------------------------------------------------
 
@@ -219,39 +255,5 @@ SUBROUTINE amb_SetName(obj, VALUE)
   CHARACTER(*), INTENT(IN) :: VALUE
   obj%name = VALUE
 END SUBROUTINE amb_SetName
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param from the toml file
-
-INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE am_ImportFromToml1(obj, table)
-    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE am_ImportFromToml1
-END INTERFACE AbstractMaterialImportFromToml
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
-
-INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE am_ImportFromToml3(obj, tomlName, afile, filename,  &
-    & printToml)
-    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE am_ImportFromToml3
-END INTERFACE AbstractMaterialImportFromToml
 
 END MODULE AbstractMaterialModel_Class
