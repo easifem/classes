@@ -41,9 +41,6 @@ IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & myprefix//'/name should be present in param')
 END IF
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  CALL obj%stressStrainModel%CheckEssentialParam(param)
-END IF
 END PROCEDURE solid_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -67,13 +64,6 @@ ELSE
   prefix0 = obj%GetPrefix()
 END IF
 
-CALL AbstractMaterialInitiate(obj=obj, param=param, prefix=prefix0%chars())
-
-! stressStrainModel
-
-CALL GetValue(obj=param, prefix=prefix0%chars(), key="stressStrainModel",  &
-  & VALUE=stressStrainModel)
-
 IF (ASSOCIATED(obj%stressStrainModel)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & "[CONFIG ERROR] :: The "//prefix0//"/stressStrainModel is "//  &
@@ -82,10 +72,18 @@ IF (ASSOCIATED(obj%stressStrainModel)) THEN
   RETURN
 END IF
 
+CALL AbstractMaterialInitiate(obj=obj, param=param, prefix=prefix0%chars())
+
 bool1 = param%isPresent(key=prefix0//"/stressStrainModel")
 IF (bool1) THEN
+  ! stressStrainModel
+  CALL GetValue(obj=param, prefix=prefix0%chars(),  &
+    & key="stressStrainModel", VALUE=stressStrainModel)
+
+  obj%stressStrainModel => NULL()
   obj%stressStrainModel => SolidMechanicsModelFactory( &
     & stressStrainModel%chars())
+
   CALL obj%stressStrainModel%Initiate(param)
 END IF
 
@@ -102,8 +100,8 @@ END PROCEDURE solid_Initiate
 MODULE PROCEDURE solid_Deallocate
 CALL AbstractMaterialDeallocate(obj)
 IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  DEALLOCATE (obj%stressStrainModel)
-  NULLIFY (obj%stressStrainModel)
+  CALL obj%stressStrainModel%DEALLOCATE()
+  obj%stressStrainModel => NULL()
 END IF
 END PROCEDURE solid_Deallocate
 
@@ -145,63 +143,5 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 END PROCEDURE Deallocate_Ptr_Vector
-
-!----------------------------------------------------------------------------
-!                                                    solid_AddSolidMaterial
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE solid_AddSolidMaterial
-CHARACTER(*), PARAMETER :: myName = "solid_AddSolidMaterial"
-
-IF (materialNo .GT. tMaterials) THEN
-
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[OUT OF BOUND ERROR] :: Given MaterialNo [='//TOSTRING(materialNo)// &
-    & '] is greater than total number of solidMaterials [='//  &
-    & TOSTRING(tMaterials)//']!')
-
-END IF
-
-IF (PRESENT(region) .AND. PRESENT(solidMaterialToMesh)) THEN
-
-  IF (materialNo .GT. SIZE(solidMaterialToMesh)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[OUT OF BOUND ERROR] :: Given MaterialNo [='//TOSTRING(materialNo)// &
-      & '] is greater than the size of solidMaterialToMesh [='//  &
-      & TOSTRING(SIZE(solidMaterialToMesh))//']!')
-  END IF
-  solidMaterialToMesh(materialNo) = region
-
-END IF
-
-IF (PRESENT(param)) THEN
-
-  IF (materialNo .GT. SIZE(obj)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[OUT OF BOUND ERROR] :: Given MaterialNo [='//TOSTRING(materialNo)// &
-      & '] is greater than the size of solidMaterial[='//  &
-      & TOSTRING(SIZE(obj))//']!')
-  END IF
-
-  IF (ASSOCIATED(obj(materialNo)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[POINTER ERROR] :: solidMaterial('//TOSTRING(materialNo)// &
-      & ')%ptr is already associated.')
-  END IF
-
-  IF (.NOT. PRESENT(materialName)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[ARG MISSING] :: materialName should be present.')
-  END IF
-
-  obj(materialNo)%ptr => &
-    & SolidMaterialFactory(TRIM(materialName))
-  !! INFO: Solid material factory is defined in MaterialFactory.
-
-  CALL obj(materialNo)%ptr%initiate(param)
-
-END IF
-
-END PROCEDURE solid_AddSolidMaterial
 
 END SUBMODULE ConstructorMethods

@@ -46,17 +46,29 @@ TYPE, ABSTRACT :: AbstractMaterialModel_
   TYPE(String) :: name
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE(amb_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
     & CheckEssentialParam
   PROCEDURE(amb_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
   PROCEDURE(amb_Deallocate), DEFERRED, PUBLIC, PASS(obj) :: &
     & DEALLOCATE
+  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => amb_isInitiated
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE(amb_Import), DEFERRED, PUBLIC, PASS(obj) :: IMPORT
   PROCEDURE(amb_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
   PROCEDURE(amb_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE(amb_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => amb_isInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => amb_GetName
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetIsInitiated => amb_SetIsInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => amb_SetName
 END TYPE AbstractMaterialModel_
@@ -207,5 +219,39 @@ SUBROUTINE amb_SetName(obj, VALUE)
   CHARACTER(*), INTENT(IN) :: VALUE
   obj%name = VALUE
 END SUBROUTINE amb_SetName
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE AbstractMaterialImportFromToml
+  MODULE SUBROUTINE am_ImportFromToml1(obj, table)
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE am_ImportFromToml1
+END INTERFACE AbstractMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE AbstractMaterialImportFromToml
+  MODULE SUBROUTINE am_ImportFromToml3(obj, tomlName, afile, filename,  &
+    & printToml)
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE am_ImportFromToml3
+END INTERFACE AbstractMaterialImportFromToml
 
 END MODULE AbstractMaterialModel_Class
