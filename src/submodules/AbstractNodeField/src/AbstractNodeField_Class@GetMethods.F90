@@ -204,6 +204,36 @@ END IF
 END PROCEDURE anf_GetSingle
 
 !----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetNodeLoc1
+CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc1()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development.')
+END PROCEDURE anf_GetNodeLoc1
+
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetNodeLoc2
+CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc2()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development.')
+END PROCEDURE anf_GetNodeLoc2
+
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetNodeLoc3
+CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc3()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development.')
+END PROCEDURE anf_GetNodeLoc3
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
