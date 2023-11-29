@@ -492,7 +492,7 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
-    TYPE(UserFunction_), POINTER, OPTIONAL, INTENT(IN) :: userFunction
+    TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
   END SUBROUTINE bc_Set
 END INTERFACE
 
