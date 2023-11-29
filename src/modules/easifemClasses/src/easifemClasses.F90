@@ -69,5 +69,4 @@ USE Plot_Method
 
 USE TomlUtility
 
-USE easifemMaterials
 END MODULE easifemClasses

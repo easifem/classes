@@ -29,6 +29,7 @@ USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
 USE TxtFile_Class
 USE tomlf, ONLY: toml_table
+USE tomlf, ONLY: toml_array
 USE Fhash, ONLY: FhashTable_ => fhash_tbl_t
 IMPLICIT NONE
 PRIVATE
@@ -104,10 +105,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => am_Import
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 =>  &
     & am_ImportFromToml1
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 =>  &
-    & am_ImportFromToml2
-  GENERIC, PUBLIC :: ImportFromTom => ImportFromToml1,  &
-    & ImportFromToml2
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => am_ImportFromToml2
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml3 => am_ImportFromToml3
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2,  &
+    & ImportFromToml3
 
   ! GET:
   ! @GetMethods
@@ -338,17 +339,32 @@ END INTERFACE AbstractMaterialImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE AbstractMaterialImportFromToml
+  MODULE SUBROUTINE am_ImportFromToml2(obj, array)
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+    TYPE(toml_array), POINTER, INTENT(INOUT) :: array
+  END SUBROUTINE am_ImportFromToml2
+END INTERFACE AbstractMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE am_ImportFromToml2(obj, tomlName, afile, filename,  &
+  MODULE SUBROUTINE am_ImportFromToml3(obj, tomlName, afile, filename,  &
     & printToml)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE am_ImportFromToml2
+  END SUBROUTINE am_ImportFromToml3
 END INTERFACE AbstractMaterialImportFromToml
 
 END MODULE AbstractMaterial_Class
