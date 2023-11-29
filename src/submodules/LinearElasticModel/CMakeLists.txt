@@ -20,5 +20,5 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/LinearElasticModel_Class@ConstructorMethods.F90
           ${src_path}/LinearElasticModel_Class@IOMethods.F90
-          ${src_path}/LinearElasticModel_Class@GetMethod.F90
+          ${src_path}/LinearElasticModel_Class@GetMethods.F90
           ${src_path}/LinearElasticModel_Class@SetMethods.F90)
