@@ -510,6 +510,7 @@ INTERFACE
     !! list of space components
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
     !! list of time components
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION anf_GetNodeLoc1
 END INTERFACE
 
@@ -527,6 +528,7 @@ INTERFACE
     CLASS(AbstractBC_), INTENT(INOUT) :: dbc
     !! Global node number
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION anf_GetNodeLoc2
 END INTERFACE
 
@@ -544,6 +546,7 @@ INTERFACE
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     !! Global node number
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION anf_GetNodeLoc3
 END INTERFACE
 
