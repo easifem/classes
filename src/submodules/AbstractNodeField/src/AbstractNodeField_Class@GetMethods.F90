@@ -204,6 +204,157 @@ END IF
 END PROCEDURE anf_GetSingle
 
 !----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetNodeLoc1
+CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc1()"
+INTEGER(I4B), ALLOCATABLE :: spaceCompo0(:), timeCompo0(:), localNode(:)
+INTEGER(I4B) :: ivar0, tsize, itime, ttime
+TYPE(IntVector_), ALLOCATABLE :: int_vec_list(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GetNodeLoc1()')
+#endif
+
+IF (PRESENT(spaceCompo)) THEN
+  tsize = SIZE(spaceCompo)
+  CALL Reallocate(spaceCompo0, tsize)
+  spaceCompo0 = spaceCompo
+ELSE
+  CALL Reallocate(spaceCompo0, 1)
+  spaceCompo0 = 1
+END IF
+
+IF (PRESENT(timeCompo)) THEN
+  tsize = SIZE(timeCompo)
+  CALL Reallocate(timeCompo0, tsize)
+  timeCompo0 = timeCompo
+ELSE
+  CALL Reallocate(timeCompo0, 1)
+  timeCompo0 = 1
+END IF
+ttime = SIZE(timeCompo0)
+
+IF (PRESENT(ivar)) THEN
+  ivar0 = ivar
+ELSE
+  ivar0 = 1
+END IF
+
+ALLOCATE (int_vec_list(ttime))
+CALL Reallocate(localNode, SIZE(globalNode))
+
+IF (ASSOCIATED(obj%domain)) THEN
+
+  localNode = obj%domain%GetLocalNodeNumber(globalNode=globalNode)
+
+ELSEIF (ALLOCATED(obj%domains)) THEN
+  tsize = SIZE(obj%domains)
+  IF (ivar0 .GT. tsize) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: ivar is greater than size of '//  &
+      & ' AbstractNodeField_::obj%domains.')
+    RETURN
+  END IF
+  localNode = obj%domains(ivar0)%ptr%GetLocalNodeNumber(globalNode)
+
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_::obj%domain '//  &
+    & ' obj%domains are not allocated.')
+  RETURN
+END IF
+
+DO itime = 1, ttime
+  int_vec_list(itime) = GetNodeLoc(obj=obj%dof, nodenum=localNode,  &
+    & ivar=ivar0, spaceCompo=spaceCompo0, timeCompo=timeCompo0(itime))
+END DO
+
+ans = Get(obj=int_vec_list, dataType=1_I4B)
+
+IF (ALLOCATED(int_vec_list)) THEN
+  DO itime = 1, ttime
+    CALL DEALLOCATE (int_vec_list(itime))
+  END DO
+  DEALLOCATE (int_vec_list)
+END IF
+
+IF (ALLOCATED(spaceCompo0)) DEALLOCATE (spaceCompo0)
+IF (ALLOCATED(timeCompo0)) DEALLOCATE (timeCompo0)
+IF (ALLOCATED(localNode)) DEALLOCATE (localNode)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GetNodeLoc1()')
+#endif
+END PROCEDURE anf_GetNodeLoc1
+
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetNodeLoc2
+CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc2()"
+INTEGER(I4B), ALLOCATABLE :: globalNode(:), timeCompo(:)
+INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GetNodeLoc2()')
+#endif
+
+tPhysicalVars = obj%GetTotalPhysicalVars()
+CALL Reallocate(timeCompo, tPhysicalVars)
+timeCompo = obj%GetTimeCompo(tPhysicalVars)
+spaceCompo(1) = dbc%GetDOFNo()
+ivar0 = input(default=1_I4B, option=ivar)
+
+CALL dbc%Get(nodeNum=globalNode)
+ans = obj%GetNodeLoc(globalNode=globalNode, ivar=ivar,  &
+  & spaceCompo=spaceCompo, timeCompo=arange(1_I4B, timeCompo(ivar0)))
+
+IF (ALLOCATED(globalNode)) DEALLOCATE (globalNode)
+IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GetNodeLoc2()')
+#endif
+END PROCEDURE anf_GetNodeLoc2
+
+!----------------------------------------------------------------------------
+!                                                                GetNodeLoc
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE anf_GetNodeLoc3
+CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc3()"
+INTEGER(I4B) :: ii, tsize
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GetNodeLoc3()')
+#endif
+
+tsize = SIZE(dbc)
+
+DO ii = 1, tsize
+  nptrs = obj%GetNodeLoc(dbc=dbc(ii)%ptr, ivar=ivar)
+  CALL Append(ans, nptrs)
+END DO
+
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GetNodeLoc3()')
+#endif
+
+END PROCEDURE anf_GetNodeLoc3
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

@@ -23,6 +23,8 @@ USE Domain_Class, ONLY: DomainPointer_, Domain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
+USE AbstractBC_Class, ONLY: AbstractBC_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractNodeFieldDisplay
@@ -125,8 +127,17 @@ CONTAINS
   !! Get GetSpaceCompo
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => anf_GetTimeCompo
   !! Get the time components
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc1 => anf_GetNodeLoc1
+  !! Get location of global node number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc2 => anf_GetNodeLoc2
+  !! Get location of global node number from AbstractBC
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc3 => anf_GetNodeLoc3
+  !! Get location of global node number from DirichletBCPointer
+  GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2,  &
+    & GetNodeLoc3
+  !! Generic method for getting location of nodes
 
-  ! Set:
+  ! SET:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => anf_SetSingle
   !! Set single entry
@@ -477,6 +488,66 @@ INTERFACE
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION anf_Size
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode
+
+INTERFACE
+  MODULE FUNCTION anf_GetNodeLoc1(obj, globalNode, ivar, spaceCompo,  &
+    & timeCompo) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION anf_GetNodeLoc1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION anf_GetNodeLoc2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION anf_GetNodeLoc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION anf_GetNodeLoc3(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION anf_GetNodeLoc3
 END INTERFACE
 
 !----------------------------------------------------------------------------
