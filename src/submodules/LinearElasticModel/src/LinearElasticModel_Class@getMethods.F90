@@ -17,6 +17,7 @@
 
 SUBMODULE(LinearElasticModel_Class) GetMethods
 IMPLICIT NONE
+!!
 CONTAINS
 
 !----------------------------------------------------------------------------
