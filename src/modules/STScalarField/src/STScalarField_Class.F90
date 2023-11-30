@@ -1031,9 +1031,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stsField_ApplyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE stsField_ApplyDirichletBC1(obj, dbc, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE stsField_ApplyDirichletBC1
 END INTERFACE
 
@@ -1046,9 +1047,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stsField_ApplyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE stsField_ApplyDirichletBC2(obj, dbc, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE stsField_ApplyDirichletBC2
 END INTERFACE
 
