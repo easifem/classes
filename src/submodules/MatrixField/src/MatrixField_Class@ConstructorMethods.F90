@@ -570,7 +570,7 @@ MODULE PROCEDURE mField_Deallocate
 INTEGER(I4B) :: ierr
 CALL AbstractMatrixFieldDeallocate(obj)
 CALL DEALLOCATE (obj%mat)
-CALL DEALLOCATE (obj%Pmat)
+CALL Pmat_Deallocate(obj%Pmat)
 obj%isRectangle = .FALSE.
 END PROCEDURE mField_Deallocate
 
