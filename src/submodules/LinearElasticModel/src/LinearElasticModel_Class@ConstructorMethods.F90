@@ -141,8 +141,8 @@ END PROCEDURE SetLinearElasticModelParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "lem_CheckEssentialParam()"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr, cc
 INTEGER(I4B), ALLOCATABLE :: shapeOfC(:)
@@ -227,14 +227,14 @@ END IF
 
 IF (ALLOCATED(shapeOfC)) DEALLOCATE (shapeOfC)
 
-END PROCEDURE lem_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Initiate
-CHARACTER(*), PARAMETER :: myName = "lem_Initiate()"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isPlaneStress
@@ -287,13 +287,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
 
-END PROCEDURE lem_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractSolidMechanicsModelDeallocate(obj)
 obj%elasticityType = -1
 obj%nu = 0.0
@@ -303,14 +303,14 @@ obj%lambda = 0.0
 obj%C = 0.0_DFP
 obj%invC = 0.0_DFP
 obj%stiffnessPower = 0.0_DFP
-END PROCEDURE lem_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE lem_Final
+END PROCEDURE obj_Final
 
 END SUBMODULE ConstructorMethods

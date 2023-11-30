@@ -23,7 +23,7 @@ CONTAINS
 !                                                               SetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_SetParam
+MODULE PROCEDURE obj_SetParam
 IF (PRESENT(elasticityType)) obj%elasticityType = elasticityType
 IF (PRESENT(nu)) obj%nu = nu
 IF (PRESENT(G)) obj%G = G
@@ -32,6 +32,26 @@ IF (PRESENT(lambda)) obj%lambda = lambda
 IF (PRESENT(C)) obj%C = C
 IF (PRESENT(invC)) obj%invC = invC
 IF (PRESENT(stiffnessPower)) obj%stiffnessPower = stiffnessPower
-END PROCEDURE lem_SetParam
+END PROCEDURE obj_SetParam
+
+!----------------------------------------------------------------------------
+!                                                                 SetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetData
+CHARACTER(*), PARAMETER :: myName = "obj_SetData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine should be implemented by subclass.')
+END PROCEDURE obj_SetData
+
+!----------------------------------------------------------------------------
+!                                                                 UpdateData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_UpdateData
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine should be implemented by subclass.')
+END PROCEDURE obj_UpdateData
 
 END SUBMODULE SetMethods

@@ -17,7 +17,6 @@
 
 SUBMODULE(LinearElasticModel_Class) GetMethods
 IMPLICIT NONE
-!!
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -164,51 +163,51 @@ END PROCEDURE Get_3D_C_invC
 !                                                            GetElasticParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetElasticParam
+MODULE PROCEDURE obj_GetElasticParam
 IF (PRESENT(poissonRatio)) poissonRatio = obj%nu
 IF (PRESENT(shearModulus)) shearModulus = obj%G
 IF (PRESENT(youngsModulus)) youngsModulus = obj%E
 IF (PRESENT(lambda)) lambda = obj%lambda
 IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
-END PROCEDURE lem_GetElasticParam
+END PROCEDURE obj_GetElasticParam
 
 !----------------------------------------------------------------------------
 !                                                                       GetC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetC
+MODULE PROCEDURE obj_GetC
 C = obj%C
-END PROCEDURE lem_GetC
+END PROCEDURE obj_GetC
 
 !----------------------------------------------------------------------------
 !                                                                    GetinvC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetinvC
+MODULE PROCEDURE obj_GetinvC
 invC = obj%invC
-END PROCEDURE lem_GetinvC
+END PROCEDURE obj_GetinvC
 
 !----------------------------------------------------------------------------
 !                                                         GetElasticityType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetElasticityType
+MODULE PROCEDURE obj_GetElasticityType
 ans = obj%elasticityType
-END PROCEDURE lem_GetElasticityType
+END PROCEDURE obj_GetElasticityType
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myPrefix
-END PROCEDURE lem_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                               GetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetParam
+MODULE PROCEDURE obj_GetParam
 IF (PRESENT(elasticityType)) elasticityType = obj%elasticityType
 IF (PRESENT(nu)) nu = obj%nu
 IF (PRESENT(G)) G = obj%G
@@ -217,6 +216,27 @@ IF (PRESENT(lambda)) lambda = obj%lambda
 IF (PRESENT(C)) C = obj%C
 IF (PRESENT(invC)) invC = obj%invC
 IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
-END PROCEDURE lem_GetParam
+END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                               GetDataSize
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDataSize
+CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+END PROCEDURE obj_GetDataSize
+
+!----------------------------------------------------------------------------
+!                                                                    GetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetData
+CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+END PROCEDURE obj_GetData
 
 END SUBMODULE GetMethods
