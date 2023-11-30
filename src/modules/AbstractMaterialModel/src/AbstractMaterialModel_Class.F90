@@ -228,6 +228,10 @@ END INTERFACE
 !                                                 SetIsInitiated@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set initiate status
+
 INTERFACE
   MODULE SUBROUTINE obj_SetIsInitiated(obj, VALUE)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
@@ -298,6 +302,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                         GetName@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the name of model
 
 INTERFACE
   MODULE FUNCTION obj_GetName(obj) RESULT(ans)
