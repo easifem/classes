@@ -47,4 +47,25 @@ MODULE PROCEDURE obj_isInitiated
 ans = obj%isInit
 END PROCEDURE obj_isInitiated
 
+!----------------------------------------------------------------------------
+!                                                               GetDataSize
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDataSize
+CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+END PROCEDURE obj_GetDataSize
+
+!----------------------------------------------------------------------------
+!                                                                    GetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetData
+CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+END PROCEDURE obj_GetData
+
 END SUBMODULE GetMethods

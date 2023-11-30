@@ -68,13 +68,26 @@ CONTAINS
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  !! Get the prefix
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
+  !! Returns the name
   PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => obj_isInitiated
+  !! Returns the init status
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDataSize => obj_GetDataSize
+  !! Get size of data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetData => obj_GetData
+  !! Get the data
 
   ! SET:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetIsInitiated => obj_SetIsInitiated
+  !! Set the status of AbstractMaterialModel
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  !! Set name of AbstractMaterialModel_
+  PROCEDURE, PUBLIC, PASS(obj) :: SetData => obj_SetData
+  !! Set data
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateData => obj_UpdateData
+  !! Get updated data
 END TYPE AbstractMaterialModel_
 
 !----------------------------------------------------------------------------
@@ -223,8 +236,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           SetName
+!                                                         SetName@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set the name of material model
 
 INTERFACE
   MODULE SUBROUTINE obj_SetName(obj, VALUE)
@@ -234,7 +251,37 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetData(obj, DATA)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE obj_SetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     UpdateData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Update data
+
+INTERFACE
+  MODULE SUBROUTINE obj_UpdateData(obj, DATA)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE obj_UpdateData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -249,7 +296,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 GetName
+!                                                         GetName@GetMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -260,14 +307,48 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           isInitiated
+!                                                      isInitiated@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Returns the init status of obj
 
 INTERFACE
   MODULE FUNCTION obj_isInitiated(obj) RESULT(ans)
     CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_isInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetDataSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the size of data needed by obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetDataSize(obj) RESULT(ans)
+    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetDataSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetData(obj, DATA)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE obj_GetData
 END INTERFACE
 
 END MODULE AbstractMaterialModel_Class

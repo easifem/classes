@@ -35,4 +35,24 @@ MODULE PROCEDURE obj_SetName
 obj%name = VALUE
 END PROCEDURE obj_SetName
 
+!----------------------------------------------------------------------------
+!                                                                 SetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetData
+CHARACTER(*), PARAMETER :: myName = "obj_SetData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine should be implemented by subclass.')
+END PROCEDURE obj_SetData
+
+!----------------------------------------------------------------------------
+!                                                                 UpdateData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_UpdateData
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateData()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine should be implemented by subclass.')
+END PROCEDURE obj_UpdateData
+
 END SUBMODULE SetMethods
