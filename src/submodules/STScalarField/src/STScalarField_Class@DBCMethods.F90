@@ -25,42 +25,33 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_applyDirichletBC1
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_applyDirichletBC1"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: idof
-  !!
-  !! main
-  !!
-  CALL dbc%get( nodalvalue=nodalvalue, nodenum=nodenum )
-  !!
-  IF( size( nodalvalue, 2 ) .EQ. 1 ) THEN
-    !!
-    DO idof = 1, obj%timecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & value=nodalvalue(:,1), &
-        & timecompo=idof )
-    END DO
-    !!
-  ELSE
-    !!
-    !! check
-    !!
-    IF( SIZE( nodalvalue, 2 ) .NE. obj%timeCompo ) &
-      & CALL e%raiseError(modName//'::'//myName// " - "// &
-      & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
-    !!
-    CALL obj%Set( &
-      & globalNode=nodenum, &
-      & value=nodalvalue )
-    !!
+CHARACTER(*), PARAMETER :: myName = "stsField_applyDirichletBC1()"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: idof, aint
+
+CALL dbc%get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
+
+IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
+  DO idof = 1, obj%timecompo
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
+      & timecompo=idof)
+  END DO
+
+ELSE
+  aint = SIZE(nodalvalue, 2)
+  IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & '[INERNAL ERROR] :: SIZE( nodalvalue, 2 ) is '//  &
+      & tostring(aint)//' which is not equal to obj%timeCompo '//  &
+      & ' which is '//tostring(obj%timeCompo))
   END IF
-  !!
-  !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue)
+
+END IF
+
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 END PROCEDURE stsField_applyDirichletBC1
 
 !----------------------------------------------------------------------------
@@ -68,45 +59,38 @@ END PROCEDURE stsField_applyDirichletBC1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE stsField_applyDirichletBC2
-  CHARACTER( LEN = * ), PARAMETER :: myName = "stsField_applyDirichletBC2"
-  REAL( DFP ), ALLOCATABLE :: nodalvalue(:,:)
-  INTEGER( I4B ), ALLOCATABLE :: nodenum( : )
-  INTEGER( I4B ) :: idof, ii
-  !!
-  !! main
-  !!
-  DO ii = 1, SIZE( dbc )
-    !!
-    CALL dbc(ii)%ptr%get( nodalvalue=nodalvalue, nodenum=nodenum )
-    !!
-    IF( SIZE( nodalvalue, 2 ) .EQ. 1 ) THEN
-      !!
-      DO idof = 1, obj%timecompo
-        CALL obj%Set( &
-          & globalNode=nodenum, &
-          & value=nodalvalue(:,1), &
-          & timecompo=idof )
-      END DO
-      !!
-    ELSE
-      !!
-      !! check
-      !!
-      IF( SIZE( nodalvalue, 2 ) .NE. obj%timeCompo ) &
-        & CALL e%raiseError(modName//'::'//myName// " - "// &
-        & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
-      !!
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & value=nodalvalue )
-      !!
+CHARACTER(*), PARAMETER :: myName = "stsField_applyDirichletBC2"
+REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
+INTEGER(I4B), ALLOCATABLE :: nodenum(:)
+INTEGER(I4B) :: idof, ii, aint
+
+DO ii = 1, SIZE(dbc)
+  CALL dbc(ii)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum,  &
+    & times=times)
+
+  IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
+    DO idof = 1, obj%timecompo
+      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
+        & timecompo=idof)
+    END DO
+
+  ELSE
+
+    aint = SIZE(nodalvalue, 2)
+
+    IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) THEN
+      CALL e%raiseError(modName//'::'//myName//" - "// &
+        & '[INERNAL ERROR] :: SIZE( nodalvalue, 2 ) is '//  &
+        & tostring(aint)//' which is not equal to obj%timeCompo '//  &
+        & ' which is '//tostring(obj%timeCompo))
     END IF
-    !!
-  END DO
-  !!
-  IF( ALLOCATED( nodalvalue ) ) DEALLOCATE( nodalvalue )
-  IF( ALLOCATED( nodenum ) ) DEALLOCATE( nodenum )
-  !!
+
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue)
+  END IF
+END DO
+
+IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 END PROCEDURE stsField_applyDirichletBC2
 
 !----------------------------------------------------------------------------
