@@ -260,6 +260,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 
 # materials here
 
+# AbstractMaterialModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
+
 # AbstractSolidMechanicsModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
 

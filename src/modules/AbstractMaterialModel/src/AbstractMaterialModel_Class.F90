@@ -51,28 +51,30 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE(amb_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
-    & CheckEssentialParam
-  PROCEDURE(amb_Initiate), DEFERRED, PUBLIC, PASS(obj) :: Initiate
-  PROCEDURE(amb_Deallocate), DEFERRED, PUBLIC, PASS(obj) :: &
-    & DEALLOCATE
-  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => amb_isInitiated
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
-  PROCEDURE(amb_Import), DEFERRED, PUBLIC, PASS(obj) :: IMPORT
-  PROCEDURE(amb_Export), DEFERRED, PUBLIC, PASS(obj) :: Export
-  PROCEDURE(amb_Display), DEFERRED, PUBLIC, PASS(obj) :: Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
   ! GET:
   ! @GetMethods
-  PROCEDURE(amb_GetPrefix), DEFERRED, PUBLIC, PASS(obj) :: GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetName => amb_GetName
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
+  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => obj_isInitiated
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetIsInitiated => amb_SetIsInitiated
-  PROCEDURE, PUBLIC, PASS(obj) :: SetName => amb_SetName
+  PROCEDURE, PUBLIC, PASS(obj) :: SetIsInitiated => obj_SetIsInitiated
+  PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
 END TYPE AbstractMaterialModel_
 
 !----------------------------------------------------------------------------
@@ -84,89 +86,95 @@ TYPE :: AbstractMaterialModelPointer_
 END TYPE AbstractMaterialModelPointer_
 
 !----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE amb_CheckEssentialParam(obj, param)
-    IMPORT :: AbstractMaterialModel_, ParameterList_
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Check the essential parameters
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE amb_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                               Initiate
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE amb_Initiate(obj, param)
-    IMPORT :: AbstractMaterialModel_, ParameterList_
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Initiate an instance of AbstractMaterialModel_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate(obj, param)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE amb_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE amb_Deallocate(obj)
-    IMPORT :: AbstractMaterialModel_
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Deallocate the data stored in AbstractMaterialModel_
+
+INTERFACE AbstractMaterialModelDeallocate
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE amb_Deallocate
-END INTERFACE
+  END SUBROUTINE obj_Deallocate
+END INTERFACE AbstractMaterialModelDeallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE amb_Import(obj, hdf5, group)
-    IMPORT :: AbstractMaterialModel_, HDF5File_
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary: Import data from the HDF5File
+
+INTERFACE
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE amb_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE amb_Export(obj, hdf5, group)
-    IMPORT :: AbstractMaterialModel_, HDF5File_
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Export the data into HDF5File
+
+INTERFACE
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE amb_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-ABSTRACT INTERFACE
-  SUBROUTINE amb_Display(obj, msg, unitNo)
-    IMPORT :: AbstractMaterialModel_, I4B
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Display the content
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE amb_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-ABSTRACT INTERFACE
-  FUNCTION amb_GetPrefix(obj) RESULT(ans)
-    IMPORT :: AbstractMaterialModel_
-    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION amb_GetPrefix
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -178,10 +186,10 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE am_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE am_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -193,67 +201,73 @@ END INTERFACE
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE am_ImportFromToml3(obj, tomlName, afile, filename,  &
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename,  &
     & printToml)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE am_ImportFromToml3
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Contains
+!                                                 SetIsInitiated@SetMethods
 !----------------------------------------------------------------------------
 
-CONTAINS
-
-SUBROUTINE AbstractMaterialModelDeallocate(obj)
-  CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
-  obj%name = ""
-  obj%isInit = .FALSE.
-END SUBROUTINE AbstractMaterialModelDeallocate
-
-!----------------------------------------------------------------------------
-!                                                                 GetName
-!----------------------------------------------------------------------------
-
-FUNCTION amb_GetName(obj) RESULT(ans)
-  CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
-  CHARACTER(:), ALLOCATABLE :: ans
-  ans = ""
-  ans = obj%name%chars()
-END FUNCTION amb_GetName
-
-!----------------------------------------------------------------------------
-!                                                           isInitiated
-!----------------------------------------------------------------------------
-
-FUNCTION amb_isInitiated(obj) RESULT(ans)
-  CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
-  LOGICAL(LGT) :: ans
-  ans = obj%isInit
-END FUNCTION amb_isInitiated
-
-!----------------------------------------------------------------------------
-!                                                           isInitiated
-!----------------------------------------------------------------------------
-
-SUBROUTINE amb_SetIsInitiated(obj, VALUE)
-  CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
-  LOGICAL(LGT), INTENT(IN) :: VALUE
-  obj%isInit = VALUE
-END SUBROUTINE amb_SetIsInitiated
+INTERFACE
+  MODULE SUBROUTINE obj_SetIsInitiated(obj, VALUE)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetIsInitiated
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           SetName
 !----------------------------------------------------------------------------
 
-SUBROUTINE amb_SetName(obj, VALUE)
-  CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
-  CHARACTER(*), INTENT(IN) :: VALUE
-  obj%name = VALUE
-END SUBROUTINE amb_SetName
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, VALUE)
+    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 GetName
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetName(obj) RESULT(ans)
+    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           isInitiated
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_isInitiated(obj) RESULT(ans)
+    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_isInitiated
+END INTERFACE
 
 END MODULE AbstractMaterialModel_Class
