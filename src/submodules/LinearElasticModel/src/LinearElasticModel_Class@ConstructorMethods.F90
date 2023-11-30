@@ -16,17 +16,67 @@
 !
 
 SUBMODULE(LinearElasticModel_Class) ConstructorMethods
-USE BaseMethod, ONLY: Input
+USE BaseMethod, ONLY: Input, UpperCase, ToString
 USE FPL_Method
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                   ElasticityType_tonumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ElasticityType_tonumber
+CHARACTER(*), PARAMETER :: myName = "ElasticityType_tonumber"
+TYPE(String) :: name0
+
+name0 = UpperCase(name)
+SELECT CASE (name0%chars())
+CASE ("ISO")
+  ans = TypeElasticity%Isotropic
+CASE ("ANISO")
+  ans = TypeElasticity%Anisotropic
+CASE ("ORTHO")
+  ans = TypeElasticity%Orthotropic
+CASE ("TRANS")
+  ans = TypeElasticity%TransIsotropic
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & 'NO CASE FOUND for name = '//name0)
+  RETURN
+END SELECT
+
+name0 = ""
+END PROCEDURE ElasticityType_tonumber
+
+!----------------------------------------------------------------------------
+!                                                 ElasticityType_char
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ElasticityType_char
+CHARACTER(*), PARAMETER :: myName = "ElasticityType_char"
+SELECT CASE (num)
+CASE (IsoLinearElasticModel)
+  ans = TypeElasticity%Isotropic_char
+CASE (AnisoLinearElasticModel)
+  ans = TypeElasticity%Anisotropic_char
+CASE (OrthoLinearElasticModel)
+  ans = TypeElasticity%Orthotropic_char
+CASE (TransLinearElasticModel)
+  ans = TypeElasticity%TransIsotropic_chars
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] No case found for elasticityType = '//   &
+    & tostring(num))
+  RETURN
+END SELECT
+END PROCEDURE ElasticityType_char
 
 !----------------------------------------------------------------------------
 !                                                setLinearElasticModelParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetLinearElasticModelParam
-CHARACTER(*), PARAMETER :: myName = "SetLinearElasticModelParam"
+CHARACTER(*), PARAMETER :: myName = "SetLinearElasticModelParam()"
 INTEGER(I4B) :: ierr
 REAL(DFP) :: lam, EE, nu, G
 TYPE(String) :: astr
@@ -35,27 +85,18 @@ LOGICAL(LGT) :: isIsotropic
 CALL Set(obj=param, datatype="char", prefix=myprefix, key="name",  &
   & VALUE=myprefix)
 
-SELECT CASE (elasticityType)
-CASE (IsoLinearElasticModel)
-  astr = "ISO"
-CASE (AnisoLinearElasticModel)
-  astr = "ANISO"
-CASE (OrthoLinearElasticModel)
-  astr = "ORTHO"
-CASE (TransLinearElasticModel)
-  astr = "TRANS"
-END SELECT
+astr = ElasticityType_char(elasticityType)
 
 CALL Set(obj=param, datatype="char", prefix=myprefix,  &
   & key="elasticityType", VALUE=astr%chars())
 
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStrain",  &
-  & VALUE=input(option=isPlaneStrain, default=.FALSE.))
+  & VALUE=INPUT(option=isPlaneStrain, default=.FALSE.))
 
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStress",  &
   & VALUE=input(option=isPlaneStress, default=.FALSE.))
 
-isIsotropic = elasticityType .EQ. IsoLinearElasticModel
+isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
 
 IF (isIsotropic) THEN
   CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
@@ -91,8 +132,7 @@ IF (.NOT. isIsotropic) THEN
   ierr = param%Set(key=myprefix//"/invC", VALUE=invC)
 END IF
 
-CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
-  & key="stiffnessPower",   &
+CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix, key="stiffnessPower",&
   & VALUE=INPUT(option=stiffnessPower, default=0.0_DFP))
 
 END PROCEDURE SetLinearElasticModelParam
@@ -102,7 +142,7 @@ END PROCEDURE SetLinearElasticModelParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE lem_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "lem_CheckEssentialParam"
+CHARACTER(*), PARAMETER :: myName = "lem_CheckEssentialParam()"
 CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr, cc
 INTEGER(I4B), ALLOCATABLE :: shapeOfC(:)
@@ -138,7 +178,7 @@ END IF
 ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 cc = 0
 
-IF (TRIM(charVar) .EQ. "ISO") THEN
+IF (TRIM(charVar) .EQ. TypeElasticity%Isotropic_char) THEN
   IF (.NOT. param%IsPresent(key=myprefix//"/lambda")) &
     & CALL e%RaiseError(modName//'::'//myName//" - "// &
     & myprefix//'/lambda should be present in param')
@@ -185,6 +225,8 @@ ELSE
 
 END IF
 
+IF (ALLOCATED(shapeOfC)) DEALLOCATE (shapeOfC)
+
 END PROCEDURE lem_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -192,7 +234,7 @@ END PROCEDURE lem_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE lem_Initiate
-CHARACTER(*), PARAMETER :: myName = "lem_Initiate"
+CHARACTER(*), PARAMETER :: myName = "lem_Initiate()"
 CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isPlaneStress
@@ -203,24 +245,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] Initiate()')
 #endif
 
+CALL obj%DEALLOCATE()
+
 CALL obj%CheckEssentialParam(param)
 CALL obj%SetIsInitiated(.TRUE.)
 CALL obj%SetName(myprefix)
+
 ierr = param%get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
 CALL obj%SetPlaneStress(isPlaneStress)
+
 ierr = param%get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 CALL obj%SetPlaneStrain(isPlaneStrain)
-ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 
-IF (TRIM(charVar) .EQ. "ISO") THEN
-  obj%elasticityType = IsoLinearElasticModel
-ELSE IF (TRIM(charVar) .EQ. "ANISO") THEN
-  obj%elasticityType = AnisoLinearElasticModel
-ELSE IF (TRIM(charVar) .EQ. "ORTHO") THEN
-  obj%elasticityType = OrthoLinearElasticModel
-ELSE IF (TRIM(charVar) .EQ. "TRANS") THEN
-  obj%elasticityType = TransLinearElasticModel
-END IF
+ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
+obj%elasticityType = elasticityType_tonumber(charVar)
 
 IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
   ierr = param%get(key=myprefix//"/lambda", VALUE=obj%lambda)
@@ -228,13 +266,13 @@ IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
   ierr = param%get(key=myprefix//"/youngsModulus", VALUE=obj%E)
   ierr = param%get(key=myprefix//"/poissonRatio", VALUE=obj%nu)
   IF (isPlaneStress) THEN
-    CALL get_PlaneStress_C_InvC(C=obj%C, invC=obj%invC,  &
+    CALL Get_PlaneStress_C_InvC(C=obj%C, invC=obj%invC,  &
       & youngsModulus=obj%E, nu=obj%nu)
   ELSEIF (isPlaneStrain) THEN
-    CALL get_PlaneStrain_C_InvC(C=obj%C, invC=obj%invC,  &
+    CALL Get_PlaneStrain_C_InvC(C=obj%C, invC=obj%invC,  &
       & youngsModulus=obj%E, nu=obj%nu)
   ELSE
-    CALL get_3D_C_InvC(C=obj%C, invC=obj%invC,  &
+    CALL Get_3D_C_InvC(C=obj%C, invC=obj%invC,  &
       & youngsModulus=obj%E, nu=obj%nu)
   END IF
 ELSE
