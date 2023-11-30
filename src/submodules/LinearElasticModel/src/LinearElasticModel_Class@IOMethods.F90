@@ -32,7 +32,7 @@ MODULE PROCEDURE lem_Import
 CHARACTER(*), PARAMETER :: myName = "lem_Import"
 INTEGER(I4B) :: elasticityType
 TYPE(String) :: dsetname, strval
-LOGICAL(LGT) :: isPlaneStrain, isPlaneStress
+LOGICAL(LGT) :: isPlaneStrain, isPlaneStress, isIsotropic
 REAL(DFP) :: poissonRatio, youngsModulus, shearModulus, lambda, stiffnessPower
 REAL(DFP), ALLOCATABLE :: C(:, :), invC(:, :)
 TYPE(ParameterList_) :: param
@@ -58,7 +58,6 @@ IF (.NOT. hdf5%isRead()) THEN
 END IF
 
 ! READ name
-
 dsetname = TRIM(group)//"/name"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -73,17 +72,7 @@ IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   & '[CONFIG ERROR] :: The dataset elasticityType should be present')
 END IF
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-
-SELECT CASE (TRIM(strval%chars()))
-CASE ("ISO")
-  elasticityType = IsoLinearElasticModel
-CASE ("ANISO")
-  elasticityType = AnisoLinearElasticModel
-CASE ("ORTHO")
-  elasticityType = OrthoLinearElasticModel
-CASE ("TRANS")
-  elasticityType = TransLinearElasticModel
-END SELECT
+elasticityType = ElasticityType_tonumber(strval%chars())
 
 ! READ isPlaneStrain
 dsetname = TRIM(group)//"/isPlaneStrain"
@@ -101,7 +90,9 @@ ELSE
   isPlaneStress = .FALSE.
 END IF
 
-IF (elasticityType .EQ. IsoLinearElasticModel) THEN
+isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+
+IF (isIsotropic) THEN
   dsetname = TRIM(group)//"/poissonRatio"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -109,6 +100,7 @@ IF (elasticityType .EQ. IsoLinearElasticModel) THEN
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=poissonRatio)
   END IF
+
   dsetname = TRIM(group)//"/youngsModulus"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &

@@ -38,6 +38,31 @@ PUBLIC :: GetElasticParam
 PUBLIC :: Get_PlaneStress_C_InvC
 PUBLIC :: Get_PlaneStrain_C_InvC
 PUBLIC :: Get_3D_C_InvC
+PUBLIC :: TypeElasticity
+PUBLIC :: ElasticityType_char
+PUBLIC :: ElasticityType_tonumber
+
+INTEGER(I4B), PARAMETER, PUBLIC :: IsoLinearElasticModel = 1
+INTEGER(I4B), PARAMETER, PUBLIC :: AnisoLinearElasticModel = 2
+INTEGER(I4B), PARAMETER, PUBLIC :: OrthoLinearElasticModel = 3
+INTEGER(I4B), PARAMETER, PUBLIC :: TransLinearElasticModel = 4
+
+!----------------------------------------------------------------------------
+!                                                           ElasticityType_
+!----------------------------------------------------------------------------
+
+TYPE :: ElasticityType_
+  INTEGER(I4B) :: Isotropic = IsoLinearElasticModel
+  INTEGER(I4B) :: Anisotropic = AnisoLinearElasticModel
+  INTEGER(I4B) :: Orthotropic = OrthoLinearElasticModel
+  INTEGER(I4B) :: TransIsotropic = TransLinearElasticModel
+  CHARACTER(3) :: Isotropic_char = "ISO"
+  CHARACTER(5) :: Anisotropic_char = "ANISO"
+  CHARACTER(5) :: Orthotropic_char = "ORTHO"
+  CHARACTER(5) :: TransIsotropic_chars = "TRANS"
+END TYPE ElasticityType_
+
+TYPE(ElasticityType_), PARAMETER :: TypeElasticity = ElasticityType_()
 
 !----------------------------------------------------------------------------
 !                                                       LinearElasticModel_
@@ -57,27 +82,36 @@ TYPE, EXTENDS(AbstractSolidMechanicsModel_) :: LinearElasticModel_
   REAL(DFP) :: C(6, 6) = 0.0_DFP
   REAL(DFP) :: invC(6, 6) = 0.0_DFP
   REAL(DFP) :: stiffnessPower = 0.0_DFP
+
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & lem_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => lem_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => lem_Deallocate
   FINAL :: lem_FINAL
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => lem_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => lem_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => lem_Display
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => lem_GetElasticParam
   PROCEDURE, PUBLIC, PASS(obj) :: GetC => lem_GetC
   PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => lem_GetInvC
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => &
-    & lem_GetElasticityType
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix =>  &
-    & lem_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam =>  &
-    & lem_GetParam
-  PROCEDURE, PUBLIC, PASS(obj) :: SetParam =>  &
-    & lem_SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => lem_GetElasticityType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => lem_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => lem_GetParam
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => lem_SetParam
 END TYPE LinearElasticModel_
 
 TYPE(LinearElasticModel_), PARAMETER :: TypeLinearElasticModel = &
@@ -92,12 +126,42 @@ TYPE :: LinearElasticModelPointer_
 END TYPE LinearElasticModelPointer_
 
 !----------------------------------------------------------------------------
+!                               ElasticityType_tonumber@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Returns the elasticity number
+
+INTERFACE
+  MODULE FUNCTION ElasticityType_tonumber(name) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    INTEGER(I4B) :: ans
+  END FUNCTION ElasticityType_tonumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               ElasticityType_tonumber@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Returns the elasticity number
+
+INTERFACE
+  MODULE FUNCTION ElasticityType_char(num) RESULT(ans)
+    INTEGER(I4B), INTENT(IN) :: num
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION ElasticityType_char
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                             SetLinearElasticModelParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2021
-! summary: Check the essential parameter
+! summary: Set the essential parameter
 
 INTERFACE
   MODULE SUBROUTINE SetLinearElasticModelParam(param, elasticityType, &
