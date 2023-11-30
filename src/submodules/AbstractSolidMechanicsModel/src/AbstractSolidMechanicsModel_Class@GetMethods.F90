@@ -15,75 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(AbstractSolidMechanicsModel_Class) Methods
+SUBMODULE(AbstractSolidMechanicsModel_Class) GetMethods
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "lem_CheckEssentialParam"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of'//  &
-  & CHAR_LF//'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_Initiate
-CHARACTER(*), PARAMETER :: myName = "lem_Initiate"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & CHAR_LF//'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Initiate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_Deallocate
-CHARACTER(*), PARAMETER :: myName = "lem_Deallocate"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Deallocate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_Import
-CHARACTER(*), PARAMETER :: myName = "lem_Import"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Import
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_Export
-CHARACTER(*), PARAMETER :: myName = "lem_Export"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Export
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_Display
-CHARACTER(*), PARAMETER :: myName = "lem_Display"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Display
 
 !----------------------------------------------------------------------------
 !
@@ -144,4 +78,20 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ans = ""
 END PROCEDURE lem_GetPrefix
 
-END SUBMODULE Methods
+!----------------------------------------------------------------------------
+!                                                             isPlaneStress
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE lem_isPlaneStress
+ans = obj%isPStress
+END PROCEDURE lem_isPlaneStress
+
+!----------------------------------------------------------------------------
+!                                                            isPlaneStrain
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE lem_isPlaneStrain
+ans = obj%isPStrain
+END PROCEDURE lem_isPlaneStrain
+
+END SUBMODULE GetMethods
