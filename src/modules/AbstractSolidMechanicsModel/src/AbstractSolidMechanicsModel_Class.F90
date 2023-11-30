@@ -35,11 +35,6 @@ CHARACTER(*), PARAMETER :: modName = "AbstractSolidMechanicsModel_Class"
 PUBLIC :: AbstractSolidMechanicsModel_
 PUBLIC :: AbstractSolidMechanicsModelDeallocate
 
-INTEGER(I4B), PARAMETER, PUBLIC :: IsoLinearElasticModel = 1
-INTEGER(I4B), PARAMETER, PUBLIC :: AnisoLinearElasticModel = 2
-INTEGER(I4B), PARAMETER, PUBLIC :: OrthoLinearElasticModel = 3
-INTEGER(I4B), PARAMETER, PUBLIC :: TransLinearElasticModel = 4
-
 !----------------------------------------------------------------------------
 !                                              AbstractSolidMechanicsModel_
 !----------------------------------------------------------------------------
