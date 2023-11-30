@@ -21,6 +21,9 @@
 
 SUBMODULE(LinearPoroElasticModel_Class) IOMethods
 USE BaseMethod
+USE LinearElasticModel_Class, ONLY: TypeElasticity,  &
+& ElasticityType_tonumber,  &
+& ElasticityType_char
 IMPLICIT NONE
 CONTAINS
 
@@ -32,7 +35,7 @@ MODULE PROCEDURE lpem_Import
 CHARACTER(*), PARAMETER :: myName = "lpem_Import"
 INTEGER(I4B) :: elasticityType
 TYPE(String) :: dsetname, strval
-LOGICAL(LGT) :: isPlaneStrain, isPlaneStress
+LOGICAL(LGT) :: isPlaneStrain, isPlaneStress, isIsotropic
 REAL(DFP) :: PoissonRatio, YoungsModulus, ShearModulus, lambda
 REAL(DFP), ALLOCATABLE :: C(:, :), invC(:, :)
 TYPE(ParameterList_) :: param
@@ -75,16 +78,7 @@ IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
 END IF
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-SELECT CASE (TRIM(strval%chars()))
-CASE ("ISO")
-  elasticityType = IsoLinearElasticModel
-CASE ("ANISO")
-  elasticityType = AnisoLinearElasticModel
-CASE ("ORTHO")
-  elasticityType = OrthoLinearElasticModel
-CASE ("TRANS")
-  elasticityType = TransLinearElasticModel
-END SELECT
+elasticityType = ElasticityType_tonumber(strval%chars())
 
 !> READ isPlaneStrain
 dsetname = TRIM(group)//"/isPlaneStrain"
@@ -102,7 +96,8 @@ ELSE
   isPlaneStress = .FALSE.
 END IF
 
-IF (elasticityType .EQ. IsoLinearElasticModel) THEN
+isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+IF (isIsotropic) THEN
   dsetname = TRIM(group)//"/PoissonRatio"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -205,16 +200,7 @@ strval = ""
 
 !> WRITE elasticityType
 dsetname = TRIM(group)//"/elasticityType"
-SELECT CASE (obj%elasticityType)
-CASE (IsoLinearElasticModel)
-  strval = "ISO"
-CASE (AnisoLinearElasticModel)
-  strval = "ANISO"
-CASE (OrthoLinearElasticModel)
-  strval = "ORTHO"
-CASE (TransLinearElasticModel)
-  strval = "TRANS"
-END SELECT
+strval = ElasticityType_char(obj%elasticityType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
 !> WRITE isPlaneStrain
@@ -226,7 +212,7 @@ dsetname = TRIM(group)//"/isPlaneStress"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isPlaneStress())
 
 !> C and invC
-IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
+IF (obj%elasticityType .EQ. TypeElasticity%Isotropic) THEN
   dsetname = TRIM(group)//"/PoissonRatio"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%nu)
   dsetname = TRIM(group)//"/YoungsModulus"
@@ -257,8 +243,8 @@ END PROCEDURE lpem_Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE lpem_Display
-  LOGICAL( LGT ) :: isPlaneStrain
-  LOGICAL( LGT ) :: isPlaneStress
+LOGICAL(LGT) :: isPlaneStrain
+LOGICAL(LGT) :: isPlaneStress
 
 CALL Display(TRIM(msg), unitNo=unitNo)
 CALL Display(obj%isInitiated(), "isInitiated: ", unitNo=unitNo)
@@ -267,13 +253,13 @@ IF (.NOT. obj%isInitiated()) THEN
 END IF
 
 CALL Display("name: "//myPrefix, unitNo=unitNo)
-IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
+IF (obj%elasticityType .EQ. TypeElasticity%Isotropic) THEN
   CALL Display("elasticityType: IsoLinearElasticModel", unitNo=unitNo)
-ELSE IF (obj%elasticityType .EQ. AnisoLinearElasticModel) THEN
+ELSE IF (obj%elasticityType .EQ. TypeElasticity%Anisotropic) THEN
   CALL Display("elasticityType: AnisoLinearElasticModel", unitNo=unitNo)
-ELSE IF (obj%elasticityType .EQ. OrthoLinearElasticModel) THEN
+ELSE IF (obj%elasticityType .EQ. TypeElasticity%Orthotropic) THEN
   CALL Display("elasticityType: OrthoLinearElasticModel", unitNo=unitNo)
-ELSE IF (obj%elasticityType .EQ. TransLinearElasticModel) THEN
+ELSE IF (obj%elasticityType .EQ. TypeElasticity%TransIsotropic) THEN
   CALL Display("elasticityType: TransLinearElasticModel", unitNo=unitNo)
 ELSE
   CALL Display("elasticityType: Unknown", unitNo=unitNo)
@@ -285,7 +271,7 @@ isPlaneStress = obj%isPlaneStress()
 CALL Display(isPlaneStress, "isPlaneStress: ", unitNo=unitNo)
 CALL Display(isPlaneStrain, "isPlaneStrain: ", unitNo=unitNo)
 
-IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
+IF (obj%elasticityType .EQ. TypeElasticity%Isotropic) THEN
 
   CALL Display(obj%nu, "Poisson ratio: ", unitNo=unitNo)
   CALL Display(obj%G, "Shear modulus: ", unitNo=unitNo)

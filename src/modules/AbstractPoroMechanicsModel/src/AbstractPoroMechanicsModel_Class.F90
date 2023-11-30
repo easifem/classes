@@ -24,11 +24,6 @@ USE AbstractSolidMechanicsModel_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractPoroMechanicsModel_Class"
-
-PUBLIC :: IsoLinearElasticModel
-PUBLIC :: AnisoLinearElasticModel
-PUBLIC :: OrthoLinearElasticModel
-PUBLIC :: TransLinearElasticModel
 PUBLIC :: AbstractPoroMechanicsModel_
 
 !----------------------------------------------------------------------------

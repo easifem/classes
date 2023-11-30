@@ -17,8 +17,16 @@
 
 SUBMODULE(LinearPoroElasticModel_Class) ConstructorMethods
 USE BaseMethod, ONLY: Input
-USE easifemMaterials
 USE FPL_Method
+USE AbstractSolidMechanicsModel_Class, ONLY:  &
+  & AbstractSolidMechanicsModelDeallocate
+USE LinearElasticModel_Class, ONLY: ElasticityType_char,  &
+  & ElasticityType_tonumber,  &
+  & TypeElasticity,  &
+  & Get_PlaneStress_C_InvC, &
+  & Get_PlaneStrain_C_InvC,  &
+  & Get_3D_C_InvC,  &
+  & GetElasticParam
 IMPLICIT NONE
 CONTAINS
 
@@ -36,16 +44,7 @@ LOGICAL(LGT) :: isIsotropic
 CALL Set(obj=param, datatype="char", prefix=myprefix, key="name",  &
   & VALUE=myprefix)
 
-SELECT CASE (elasticityType)
-CASE (IsoLinearElasticModel)
-  astr = "ISO"
-CASE (AnisoLinearElasticModel)
-  astr = "ANISO"
-CASE (OrthoLinearElasticModel)
-  astr = "ORTHO"
-CASE (TransLinearElasticModel)
-  astr = "TRANS"
-END SELECT
+astr = ElasticityType_char(elasticityType)
 
 CALL Set(obj=param, datatype="char", prefix=myprefix,  &
   & key="elasticityType", VALUE=astr%chars())
@@ -56,7 +55,7 @@ CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStrain",  &
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStress",  &
   & VALUE=input(option=isPlaneStress, default=.FALSE.))
 
-isIsotropic = elasticityType .EQ. IsoLinearElasticModel
+isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
 
 IF (isIsotropic) THEN
   CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
@@ -193,6 +192,7 @@ CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isPlaneStrain
 LOGICAL(LGT) :: isPlaneStress
+LOGICAL(LGT) :: isIsotropic
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -208,17 +208,10 @@ CALL obj%SetPlaneStress(isPlaneStress)
 CALL obj%SetPlaneStrain(isPlaneStrain)
 ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 
-IF (TRIM(charVar) .EQ. "ISO") THEN
-  obj%elasticityType = IsoLinearElasticModel
-ELSE IF (TRIM(charVar) .EQ. "ANISO") THEN
-  obj%elasticityType = AnIsoLinearElasticModel
-ELSE IF (TRIM(charVar) .EQ. "ORTHO") THEN
-  obj%elasticityType = OrthoLinearElasticModel
-ELSE IF (TRIM(charVar) .EQ. "TRANS") THEN
-  obj%elasticityType = TransLinearElasticModel
-END IF
+obj%elasticityType = ElasticityType_tonumber(charVar)
 
-IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
+isIsotropic = obj%elasticityType .EQ. TypeElasticity%Isotropic
+IF (isIsotropic) THEN
   ierr = param%get(key=myprefix//"/lambda", VALUE=obj%lambda)
   ierr = param%get(key=myprefix//"/shearModulus", VALUE=obj%G)
   ierr = param%get(key=myprefix//"/youngsModulus", VALUE=obj%E)
