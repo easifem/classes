@@ -32,23 +32,28 @@ INTEGER(I4B) :: idof, aint
 
 CALL dbc%get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
 
-IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
-  DO idof = 1, obj%timecompo
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
-      & timecompo=idof)
-  END DO
-
-ELSE
-  aint = SIZE(nodalvalue, 2)
-  IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) THEN
+IF (PRESENT(times)) THEN
+  aint = SIZE(times)
+  IF (aint .NE. obj%timeCompo) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-      & '[INERNAL ERROR] :: SIZE( nodalvalue, 2 ) is '//  &
+      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
       & tostring(aint)//' which is not equal to obj%timeCompo '//  &
       & ' which is '//tostring(obj%timeCompo))
+    RETURN
   END IF
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue)
+  DO idof = 1, obj%timecompo
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
+        & timecompo=idof)
+  END DO
 
+  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+  RETURN
 END IF
+
+DO idof = 1, obj%timecompo
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), timecompo=idof)
+END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
@@ -64,29 +69,37 @@ REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: idof, ii, aint
 
-DO ii = 1, SIZE(dbc)
-  CALL dbc(ii)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum,  &
-    & times=times)
+IF (PRESENT(times)) THEN
+  aint = SIZE(times)
+  IF (aint .NE. obj%timeCompo) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+      & tostring(aint)//' which is not equal to obj%timeCompo '//  &
+      & ' which is '//tostring(obj%timeCompo))
+    RETURN
+  END IF
 
-  IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
+  DO ii = 1, SIZE(dbc)
+    CALL dbc(ii)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum,  &
+      & times=times)
+
     DO idof = 1, obj%timecompo
-      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
+      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
         & timecompo=idof)
     END DO
+  END DO
 
-  ELSE
+  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+  RETURN
+END IF
 
-    aint = SIZE(nodalvalue, 2)
-
-    IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) THEN
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-        & '[INERNAL ERROR] :: SIZE( nodalvalue, 2 ) is '//  &
-        & tostring(aint)//' which is not equal to obj%timeCompo '//  &
-        & ' which is '//tostring(obj%timeCompo))
-    END IF
-
-    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue)
-  END IF
+DO ii = 1, SIZE(dbc)
+  CALL dbc(ii)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum)
+  DO idof = 1, obj%timecompo
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
+      & timecompo=idof)
+  END DO
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
