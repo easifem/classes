@@ -221,13 +221,15 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE SUBROUTINE lpem_GetElasticParam(obj, PoissonRatio, &
-    & ShearModulus, lambda, YoungsModulus, stiffnessPower)
+    & ShearModulus, lambda, YoungsModulus, stiffnessPower, C, invC)
     CLASS(LinearPoroElasticModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: PoissonRatio
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: ShearModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: YoungsModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(:, :)
   END SUBROUTINE lpem_GetElasticParam
 END INTERFACE
 
