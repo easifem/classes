@@ -68,19 +68,25 @@ END PROCEDURE anf_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE anf_SetSingle
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=1, VALUE=VALUE, scale=scale)
+  IF (abool) THEN
+    CALL add(obj%realVec, nodenum=1, VALUE=VALUE, scale=areal)
   ELSE
     CALL set(obj%realVec, nodenum=1, VALUE=VALUE)
   END IF
-ELSE
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=scale)
-  ELSE
-    CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
-  END IF
+  RETURN
 END IF
+
+IF (abool) THEN
+  CALL add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
+ELSE
+  CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
+END IF
+
 END PROCEDURE anf_SetSingle
 
 !----------------------------------------------------------------------------
