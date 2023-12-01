@@ -23,16 +23,16 @@ CONTAINS
 !                                                             SetPlaneStress
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_SetPlaneStress
+MODULE PROCEDURE obj_SetPlaneStress
 obj%isPStress = VALUE
-END PROCEDURE lem_SetPlaneStress
+END PROCEDURE obj_SetPlaneStress
 
 !----------------------------------------------------------------------------
 !                                                             SetPlaneStrain
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_SetPlaneStrain
+MODULE PROCEDURE obj_SetPlaneStrain
 obj%isPStrain = VALUE
-END PROCEDURE lem_SetPlaneStrain
+END PROCEDURE obj_SetPlaneStrain
 
 END SUBMODULE SetMethods

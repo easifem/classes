@@ -23,32 +23,32 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "lem_CheckEssentialParam"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of'//  &
   & CHAR_LF//'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Initiate
-CHARACTER(*), PARAMETER :: myName = "lem_Initiate"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & CHAR_LF//'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractMaterialModelDeallocate(obj)
 obj%isPStress = .FALSE.
 obj%isPStrain = .FALSE.
-END PROCEDURE lem_Deallocate
+END PROCEDURE obj_Deallocate
 
 END SUBMODULE ConstructorMethods
