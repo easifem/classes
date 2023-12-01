@@ -28,8 +28,8 @@ CONTAINS
 !                                                                   Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Import
-CHARACTER(*), PARAMETER :: myName = "lem_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 INTEGER(I4B) :: elasticityType
 TYPE(String) :: dsetname, strval
 LOGICAL(LGT) :: isPlaneStrain, isPlaneStress, isIsotropic
@@ -148,7 +148,7 @@ END IF
 
 CALL param%initiate()
 
-CALL setLinearElasticModelParam( &
+CALL SetLinearElasticModelParam( &
   & param=param, &
   & elasticityType=elasticityType, &
   & isPlaneStrain=isPlaneStrain, &
@@ -161,7 +161,7 @@ CALL setLinearElasticModelParam( &
   & C=C, &
   & invC=invC)
 
-CALL obj%initiate(param)
+CALL obj%Initiate(param)
 
 CALL param%DEALLOCATE()
 
@@ -169,14 +169,14 @@ CALL param%DEALLOCATE()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE lem_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Export
-CHARACTER(*), PARAMETER :: myName = "lem_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
@@ -254,13 +254,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Export()')
 #endif
 
-END PROCEDURE lem_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Display
+MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: isPlaneStress
 LOGICAL(LGT) :: isPlaneStrain
 
@@ -329,7 +329,7 @@ END IF
 
 CALL Display(obj%stiffnessPower, "stiffnessPower: ", unitNo=unitNo)
 
-END PROCEDURE lem_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !

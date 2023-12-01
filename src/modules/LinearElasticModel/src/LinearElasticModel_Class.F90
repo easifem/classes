@@ -89,29 +89,37 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & lem_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => lem_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => lem_Deallocate
-  FINAL :: lem_FINAL
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_FINAL
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => lem_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => lem_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => lem_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => lem_GetElasticParam
-  PROCEDURE, PUBLIC, PASS(obj) :: GetC => lem_GetC
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => lem_GetInvC
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => lem_GetElasticityType
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => lem_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => lem_GetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => obj_GetElasticParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetC => obj_GetC
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => obj_GetInvC
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => obj_GetElasticityType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDataSize => obj_GetDataSize
+  !! Get size of data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetData => obj_GetData
+  !! Get the data
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => lem_SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetData => obj_SetData
+  !! Set data
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateData => obj_UpdateData
+  !! Get updated data
 END TYPE LinearElasticModel_
 
 TYPE(LinearElasticModel_), PARAMETER :: TypeLinearElasticModel = &
@@ -190,10 +198,10 @@ END INTERFACE
 ! summary: Check the essential parameter
 
 INTERFACE
-  MODULE SUBROUTINE lem_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE lem_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -205,10 +213,10 @@ END INTERFACE
 ! summary: This routine initiates the the Linear elastic model
 
 INTERFACE
-  MODULE SUBROUTINE lem_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj, param)
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE lem_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -220,9 +228,9 @@ END INTERFACE
 ! summary:  Deallocate data
 
 INTERFACE
-  MODULE SUBROUTINE lem_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE lem_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -234,9 +242,9 @@ END INTERFACE
 ! summary:  Deallocate data
 
 INTERFACE
-  MODULE SUBROUTINE lem_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(LinearElasticModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE lem_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -248,11 +256,11 @@ END INTERFACE
 ! summary: Initiate the linear elastic model by import
 
 INTERFACE
-  MODULE SUBROUTINE lem_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE lem_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -264,11 +272,11 @@ END INTERFACE
 ! summary: Export the linear elastic model
 
 INTERFACE
-  MODULE SUBROUTINE lem_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE lem_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -280,11 +288,11 @@ END INTERFACE
 ! summary: Displays the content of linear elastic model
 
 INTERFACE
-  MODULE SUBROUTINE lem_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE lem_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -353,7 +361,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetElasticParam(obj, poissonRatio, &
+  MODULE SUBROUTINE obj_GetElasticParam(obj, poissonRatio, &
      & shearModulus, lambda, youngsModulus, stiffnessPower)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: poissonRatio
@@ -361,7 +369,7 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: youngsModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
-  END SUBROUTINE lem_GetElasticParam
+  END SUBROUTINE obj_GetElasticParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -369,10 +377,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetC(obj, C)
+  MODULE SUBROUTINE obj_GetC(obj, C)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: C(:, :)
-  END SUBROUTINE lem_GetC
+  END SUBROUTINE obj_GetC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -380,10 +388,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetInvC(obj, InvC)
+  MODULE SUBROUTINE obj_GetInvC(obj, InvC)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: InvC(:, :)
-  END SUBROUTINE lem_GetInvC
+  END SUBROUTINE obj_GetInvC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -391,10 +399,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION lem_GetElasticityType(obj) RESULT(Ans)
+  MODULE FUNCTION obj_GetElasticityType(obj) RESULT(Ans)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION lem_GetElasticityType
+  END FUNCTION obj_GetElasticityType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -402,37 +410,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION lem_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION lem_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetParam
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-22
-! summary:  Set param
-
-INTERFACE
-  MODULE SUBROUTINE lem_SetParam(obj, elasticityType,  &
-  & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
-    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elasticityType
-    REAL(DFP), OPTIONAL, INTENT(IN) :: nu
-    REAL(DFP), OPTIONAL, INTENT(IN) :: G
-    REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    REAL(DFP), OPTIONAL, INTENT(IN) :: C(6, 6)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: invC(6, 6)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: stiffnessPower
-  END SUBROUTINE lem_SetParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetParam
+!                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -440,7 +425,7 @@ END INTERFACE
 ! summary:  Get param
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetParam(obj, elasticityType,  &
+  MODULE SUBROUTINE obj_GetParam(obj, elasticityType,  &
     & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: elasticityType
@@ -451,7 +436,216 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(6, 6)
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(6, 6)
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
-  END SUBROUTINE lem_GetParam
+  END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetDataSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the size of data needed by obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetDataSize(obj) RESULT(ans)
+    CLASS(LinearElasticModel_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetDataSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetData(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE obj_GetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Isotropic elasticity
+!
+!# Introduction
+!  This routine returns the data for Isotropic linear elasticity
+! Data(1) contains the lambda
+! Data(2) contains the G
+!
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Iso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Iso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for anisotropic elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Aniso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Aniso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Orthotropic elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Ortho(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Ortho
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Trans Isotropic elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Trans(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Trans
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetParam@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-22
+! summary:  Set param
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetParam(obj, elasticityType,  &
+  & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elasticityType
+    REAL(DFP), OPTIONAL, INTENT(IN) :: nu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: G
+    REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+    REAL(DFP), OPTIONAL, INTENT(IN) :: C(6, 6)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: invC(6, 6)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: stiffnessPower
+  END SUBROUTINE obj_SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetData(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE obj_SetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Isotropic linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Iso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Iso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Aniso linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Aniso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Aniso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Orthotropic linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Ortho(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Ortho
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Transverse Isotropic linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Trans(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Trans
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     UpdateData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Update data
+
+INTERFACE
+  MODULE SUBROUTINE obj_UpdateData(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE obj_UpdateData
 END INTERFACE
 
 !----------------------------------------------------------------------------
