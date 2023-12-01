@@ -388,6 +388,18 @@ END IF
 END PROCEDURE Domain_GetNodeCoord
 
 !----------------------------------------------------------------------------
+!                                                       getNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_GetNodeCoord2
+INTEGER(I4B) :: localNode(SIZE(globalNode))
+INTEGER(I4B) :: nsd
+localNode = obj%GetLocalNodeNumber(globalNode=globalNode)
+nsd = SIZE(nodeCoord, 1)
+nodeCoord = obj%nodeCoord(1:nsd, localNode)
+END PROCEDURE Domain_GetNodeCoord2
+
+!----------------------------------------------------------------------------
 !                                                        getNodeCoordPointer
 !----------------------------------------------------------------------------
 
@@ -553,7 +565,7 @@ INTEGER(I4B) :: ii, tMesh, idim, nsd, jj
 
 IF (dim .GT. 3) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "[ARG ERROR] Dim of the mesh should be in [0,1,2,3]"//  &
+    & "[ARG ERROR] :: Dim of the mesh should be in [0,1,2,3]"//  &
     & " given dim is equal to "//tostring(dim))
   RETURN
 END IF

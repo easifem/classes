@@ -18,6 +18,7 @@
 SUBMODULE(ScalarField_Class) IOMethods
 USE BaseMethod
 USE HDF5File_Method
+USE Mesh_Class
 IMPLICIT NONE
 CONTAINS
 

@@ -123,7 +123,6 @@ END SUBROUTINE DisplayConvergence
 MODULE PROCEDURE ls_Solve
 #include "lisf.h"
 CHARACTER(*), PARAMETER :: myName = "ls_Solve"
-INTEGER(I4B) :: ii
 INTEGER(I4B) :: ierr
 
 IF (.NOT. obj%isInitiated) THEN
@@ -153,6 +152,7 @@ IF (.NOT. ASSOCIATED(obj%Amat)) THEN
 END IF
 
 CALL lis_solve(obj%Amat%lis_ptr, rhs%lis_ptr, sol%lis_ptr, obj%lis_solver, ierr)
+
 CALL chkerr(ierr)
 
 END PROCEDURE ls_Solve

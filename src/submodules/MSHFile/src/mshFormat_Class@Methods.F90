@@ -114,7 +114,7 @@ IF (error .EQ. 0) THEN
 
 ELSE
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Could not read mesh format from mshFile !')
+    & '[INTERNAL ERROR] :: Could not read mesh format from mshFile !')
 END IF
 END PROCEDURE fmt_Read
 
@@ -163,25 +163,49 @@ MODULE PROCEDURE fmt_GotoTag
 INTEGER(I4B) :: IOSTAT, Reopen, unitNo
 CHARACTER(100) :: Dummy
 CHARACTER(*), PARAMETER :: myName = "fmt_GotoTag"
-!
+LOGICAL(LGT) :: isNotOpen, isNotRead
 ! Find $meshFormat
 
-IF (.NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead()) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GotoTag()')
+#endif
+
+isNotOpen = .NOT. mshFile%isOpen()
+isNotRead = .NOT. mshFile%isRead()
+
+IF (isNotOpen .OR. isNotRead) THEN
+
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'mshFile is either not opened or does not have read access!')
+    & '[INTERNAL ERROR] :: mshFile is either not opened or '//  &
+    & 'does not have read access!')
   error = -1
+
 ELSE
-  Reopen = 0; error = 0; CALL mshFile%REWIND()
+
+  Reopen = 0
+  error = 0
+
+#ifndef Darwin_SYSTEM
+  CALL mshFile%REWIND()
+#endif
+
   DO
-    unitNo = mshFile%getUnitNo()
+    unitNo = mshFile%GetUnitNo()
     READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
     IF (IS_IOSTAT_END(IOSTAT)) THEN
-      CALL mshFile%setEOFStat(.TRUE.)
+      CALL mshFile%SetEOFStat(.TRUE.)
+
+#ifdef Darwin_SYSTEM
+    CALL mshFile%Close()
+    CALL mshFile%Open()
+#endif
+
       Reopen = Reopen + 1
     END IF
     IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not find $MeshFormat!')
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: Could not find $MeshFormat!')
       error = -2
       EXIT
     ELSE IF (TRIM(Dummy) .EQ. '$MeshFormat') THEN
@@ -189,6 +213,12 @@ ELSE
     END IF
   END DO
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GotoTag()')
+#endif
+
 END PROCEDURE fmt_GotoTag
 
 !----------------------------------------------------------------------------

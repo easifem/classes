@@ -56,7 +56,7 @@ END PROCEDURE SetScalarMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractFieldCheckEssentialParam( &
+CALL AbstractMeshFieldCheckEssentialParam( &
   & obj=obj, &
   & prefix="ScalarMeshField", &
   & param=param)

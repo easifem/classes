@@ -20,27 +20,46 @@ USE GlobalData
 IMPLICIT NONE
 PRIVATE
 
+CHARACTER(*), PARAMETER, PUBLIC :: default_engine = "NATIVE_SERIAL"
+CHARACTER(*), PARAMETER, PUBLIC :: default_solverName_char = "CG"
+INTEGER(I4B), PARAMETER, PUBLIC :: default_solverName = lis_cg
+CHARACTER(*), PARAMETER, PUBLIC :: default_preconditionOption_char = &
+  & "NO_PRECONDITION"
+INTEGER(I4B), PARAMETER, PUBLIC :: default_preconditionOption =  &
+  & NO_PRECONDITION
+CHARACTER(*), PARAMETER, PUBLIC :: default_p_name_char = &
+  & "ILU"
+INTEGER(I4B), PARAMETER, PUBLIC :: default_p_name = PRECOND_ILU
+
 INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceIn = convergenceInRes
+CHARACTER(*) , PARAMETER, PUBLIC :: default_convergenceIn_char="RESIDUAL"
+
 INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceType &
-& = relativeConvergence
+  & = relativeConvergence
+CHARACTER(*), PARAMETER, PUBLIC :: default_convergenceType_char =  &
+  & "RELATIVE"
+
 INTEGER(I4B), PARAMETER, PUBLIC :: default_maxIter &
-& = 1000
+  & = 1000
 LOGICAL(LGT), PARAMETER, PUBLIC :: default_relativeToRHS &
-& = .FALSE.
+  & = .FALSE.
 INTEGER(I4B), PARAMETER, PUBLIC :: default_KrylovSubspaceSize &
-& = 50
+  & = 50
 REAL(DFP), PARAMETER, PUBLIC :: default_rtol &
-& = 1.0E-8
+  & = 1.0E-8
 REAL(DFP), PARAMETER, PUBLIC :: default_atol &
-& = 1.0E-8
+  & = 1.0E-8
 REAL(DFP), PARAMETER, PUBLIC :: default_sor_omega &
-& = 1.9_DFP
+  & = 1.9_DFP
 INTEGER(I4B), PARAMETER, PUBLIC :: default_bicgstab_ell = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_none = 0
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_jacobi = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_symm_diag = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: default_scale = scale_none
+CHARACTER(*) , PARAMETER, PUBLIC :: default_scale_char = "NONE"
+
 LOGICAL(LGT), PARAMETER, PUBLIC :: default_initx_zeros = .TRUE.
+
 INTEGER(I4B), PARAMETER, PUBLIC :: default_ilu_lfil = 5
 INTEGER(I4B), PARAMETER, PUBLIC :: default_ilu_mbloc = 10
 REAL(DFP), PARAMETER, PUBLIC :: default_ilu_droptol = 0.005_DFP
@@ -49,19 +68,27 @@ REAL(DFP), PARAMETER, PUBLIC :: default_ilu_alpha = 1.0_DFP
 
 INTEGER(I4B), PARAMETER, PUBLIC :: default_ilu_fill = 5
 REAL(DFP), PARAMETER, PUBLIC :: default_ssor_omega = 1.0
+
 INTEGER(I4B), PARAMETER, PUBLIC :: default_hybrid_i = LIS_SOR
+CHARACTER(*) , PARAMETER, PUBLIC :: default_hybrid_i_char = "SOR"
 INTEGER(I4B), PARAMETER, PUBLIC :: default_hybrid_maxiter = 25
 REAL(DFP), PARAMETER, PUBLIC :: default_hybrid_tol = 1.0E-3
 REAL(DFP), PARAMETER, PUBLIC :: default_hybrid_omega = 1.5
 INTEGER(I4B), PARAMETER, PUBLIC :: default_hybrid_ell = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: default_hybrid_restart = 40
+
 REAL(DFP), PARAMETER, PUBLIC :: default_is_alpha = 1.0
 INTEGER(I4B), PARAMETER, PUBLIC :: default_is_m = 3
+
 REAL(DFP), PARAMETER, PUBLIC :: default_sainv_drop = 0.05
+
 LOGICAL(LGT), PARAMETER, PUBLIC :: default_saamg_unsym = .FALSE.
+
 REAL(DFP), PARAMETER, PUBLIC :: default_saamg_theta = 0.05
+
 REAL(DFP), PARAMETER, PUBLIC :: default_iluc_drop = 0.05
 REAL(DFP), PARAMETER, PUBLIC :: default_iluc_rate = 5.0
+
 LOGICAL(LGT), PARAMETER, PUBLIC :: default_adds = .TRUE.
 INTEGER(I4B), PARAMETER, PUBLIC :: default_adds_iter = 1
 END MODULE AbstractLinSolverParam

@@ -25,7 +25,9 @@ USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class
 USE NeumannBC_Class
 USE DomainConnectivity_Class, ONLY: DomainConnectivity_, &
-& DomainConnectivityPointer_
+  & DomainConnectivityPointer_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "NitscheBC_Class"
@@ -35,6 +37,7 @@ PUBLIC :: NitscheBCPointer_
 PUBLIC :: NitscheBC_
 PUBLIC :: AddNitscheBC
 PUBLIC :: GetNitscheBCPointer
+PUBLIC :: NitscheBCImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                               NitscheBC_
@@ -50,18 +53,16 @@ TYPE, EXTENDS(NeumannBC_) :: NitscheBC_
   INTEGER(I4B), ALLOCATABLE :: cellEntity(:)
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & bc_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => bc_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: SetCellData => bc_SetCellData
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinCellEntity => bc_GetMinCellEntity
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxCellEntity => bc_GetMaxCellEntity
-  PROCEDURE, PUBLIC, PASS(obj) :: isCellEntityPresent &
-   & => bc_isCellEntityPresent
-  PROCEDURE, PUBLIC, PASS(obj) :: getStartIndex => bc_getStartIndex
-  PROCEDURE, PUBLIC, PASS(obj) :: getEndIndex => bc_getEndIndex
-  PROCEDURE, PUBLIC, PASS(obj) :: getCellElem => bc_getCellElem
-  PROCEDURE, PUBLIC, PASS(obj) :: getLocalFacetID => bc_getLocalFacetID
+  PROCEDURE, PUBLIC, PASS(obj) :: IsCellEntityPresent &
+   & => bc_IsCellEntityPresent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStartIndex => bc_GetStartIndex
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEndIndex => bc_GetEndIndex
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellElem => bc_GetCellElem
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => bc_GetLocalFacetID
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
   FINAL :: bc_Final
 END TYPE NitscheBC_
 
@@ -102,58 +103,6 @@ INTERFACE DEALLOCATE
 END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
-!                                      checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 4 Feb 2022
-! summary: Check essential parameters
-
-INTERFACE
-  MODULE SUBROUTINE bc_checkEssentialParam(obj, param)
-    CLASS(NitscheBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE bc_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      setNitscheBCParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE setNitscheBCParam(param, name, idof, nodalValueType, &
-  & useFunction, isNormal, isTangent, useExternal)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: idof
-    INTEGER(I4B), INTENT(IN) :: nodalValueType
-    !! Space
-    !! Time
-    !! SpaceTime
-    !! Constant
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useFunction
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: useExternal
-  END SUBROUTINE setNitscheBCParam
-END INTERFACE
-
-PUBLIC :: setNitscheBCParam
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE bc_Initiate(obj, param, boundary, dom)
-    CLASS(NitscheBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE bc_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -189,6 +138,10 @@ INTERFACE
   END FUNCTION bc_GetMinCellEntity
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                               GetMaxCellEntity@GetMethods
+!----------------------------------------------------------------------------
+
 INTERFACE
   MODULE PURE FUNCTION bc_GetMaxCellEntity(obj) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
@@ -196,12 +149,16 @@ INTERFACE
   END FUNCTION bc_GetMaxCellEntity
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                           IsCellEntityPresent@GetMethods
+!----------------------------------------------------------------------------
+
 INTERFACE
-  MODULE PURE FUNCTION bc_isCellEntityPresent(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION bc_IsCellEntityPresent(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     LOGICAL(LGT) :: ans
-  END FUNCTION bc_isCellEntityPresent
+  END FUNCTION bc_IsCellEntityPresent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -209,11 +166,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_getStartIndex(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION bc_GetStartIndex(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_getStartIndex
+  END FUNCTION bc_GetStartIndex
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -221,11 +178,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_getEndIndex(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION bc_GetEndIndex(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_getEndIndex
+  END FUNCTION bc_GetEndIndex
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -233,11 +190,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_getCellElem(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION bc_GetCellElem(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_getCellElem
+  END FUNCTION bc_GetCellElem
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -245,11 +202,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_getLocalFacetID(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION bc_GetLocalFacetID(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_getLocalFacetID
+  END FUNCTION bc_GetLocalFacetID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -292,6 +249,61 @@ INTERFACE GetNitscheBCPointer
     CLASS(NitscheBC_), POINTER :: ans
   END FUNCTION bc_GetNitscheBCPointer
 END INTERFACE GetNitscheBCPointer
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-14
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+    CLASS(NitscheBC_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION bc_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE NitscheBCImportFromToml
+  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom, tomlName)
+    TYPE(NitscheBCPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    !! domain
+    CHARACTER(*), INTENT(IN) :: tomlName
+  END SUBROUTINE bc_ImportFromToml1
+END INTERFACE NitscheBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE NitscheBCImportFromToml
+  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
+    & filename, printToml)
+    TYPE(NitscheBCPointer_), INTENT(INOUT) :: obj(:)
+    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE bc_ImportFromToml2
+END INTERFACE NitscheBCImportFromToml
 
 !----------------------------------------------------------------------------
 !

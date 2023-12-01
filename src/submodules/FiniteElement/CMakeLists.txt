@@ -17,14 +17,5 @@
 SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 TARGET_SOURCES(
   ${PROJECT_NAME} PRIVATE
-  ${src_path}/AbstractFE_Class@ConstructorMethods.F90
-  ${src_path}/AbstractFE_Class@IOMethods.F90
-  ${src_path}/AbstractFE_Class@GetMethods.F90
-  ${src_path}/AbstractFE_Class@SetMethods.F90
-  ${src_path}/AbstractFE_Class@H1Methods.F90
-  ${src_path}/AbstractFE_Class@HDivMethods.F90
-  ${src_path}/AbstractFE_Class@HCurlMethods.F90
-  ${src_path}/AbstractFE_Class@DGMethods.F90
-  ${src_path}/AbstractFE_Class@QuadratureMethods.F90
   ${src_path}/FiniteElement_Class@Methods.F90
 )

@@ -42,6 +42,7 @@ INTERFACE Set
   MODULE PROCEDURE fpl_Set_Int_R1
   MODULE PROCEDURE fpl_Set_Real
   MODULE PROCEDURE fpl_Set_Real_R1
+  MODULE PROCEDURE fpl_Set_Real_R2
   MODULE PROCEDURE fpl_Set_String
   MODULE PROCEDURE fpl_Set_Char
   MODULE PROCEDURE fpl_Set_Bool
@@ -56,8 +57,12 @@ INTERFACE GetValue
   MODULE PROCEDURE fpl_GetValue2
   MODULE PROCEDURE fpl_Get_Int
   MODULE PROCEDURE fpl_Get_Int_R1
+  MODULE PROCEDURE fpl_Get_Int_IntVec
   MODULE PROCEDURE fpl_Get_Real
   MODULE PROCEDURE fpl_Get_Real_R1
+  MODULE PROCEDURE fpl_Get_Real_RealVec
+  MODULE PROCEDURE fpl_Get_Real_R2
+  MODULE PROCEDURE fpl_Get_Real_RealMatrix
   MODULE PROCEDURE fpl_Get_Bool
   MODULE PROCEDURE fpl_Get_Bool_R1
   MODULE PROCEDURE fpl_Get_String
@@ -226,6 +231,30 @@ SUBROUTINE fpl_Set_Real_R1(obj, datatype, prefix, key, VALUE)
     ierr = obj%Set(key=TRIM(prefix)//"/"//TRIM(key), VALUE=VALUE)
   END IF
 END SUBROUTINE fpl_Set_Real_R1
+
+!----------------------------------------------------------------------------
+!                                                                 fpl_Set
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Set the real vector parameter
+!
+!TODO: Implement fpl_Set for Real32 and Real64
+SUBROUTINE fpl_Set_Real_R2(obj, datatype, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  REAL(DFP), INTENT(IN) :: datatype(1, 1)
+  !! This argument is only to create unique interface
+  REAL(DFP), OPTIONAL, INTENT(IN) :: VALUE(:, :)
+  ! Internal variable
+  INTEGER(I4B) :: ierr
+  IF (PRESENT(VALUE)) THEN
+    ierr = obj%Set(key=TRIM(prefix)//"/"//TRIM(key), VALUE=VALUE)
+  END IF
+END SUBROUTINE fpl_Set_Real_R2
 
 !----------------------------------------------------------------------------
 !                                                                 fpl_Set
@@ -403,6 +432,32 @@ END SUBROUTINE fpl_Get_Int_R1
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
+! summary:  Get the real vector parameter
+
+SUBROUTINE fpl_Get_Int_IntVec(obj, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  TYPE(IntVector_), INTENT(INOUT) :: VALUE
+
+  ! internal variables
+  INTEGER(I4B), ALLOCATABLE :: value_(:)
+  INTEGER(I4B) :: tsize
+
+  tsize = SIZE(VALUE)
+  CALL Reallocate(value_, tsize)
+  CALL GetValue(obj=obj, prefix=prefix, key=key, VALUE=value_)
+  value = IntVector(value_)
+  DEALLOCATE (value_)
+END SUBROUTINE fpl_Get_Int_IntVec
+
+!----------------------------------------------------------------------------
+!                                                                  GetValue
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
 ! summary:  Get the real scalar parameter
 !
 !TODO: Implement fpl_Set for Real32, Real64
@@ -448,6 +503,84 @@ SUBROUTINE fpl_Get_Real_R1(obj, prefix, key, VALUE)
   END IF
   varname = ""
 END SUBROUTINE fpl_Get_Real_R1
+
+!----------------------------------------------------------------------------
+!                                                                  GetValue
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Get the real vector parameter
+!
+!TODO: Implement fpl_Set for Real32, Real64
+
+SUBROUTINE fpl_Get_Real_RealVec(obj, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  TYPE(RealVector_), INTENT(INOUT) :: VALUE
+
+  ! internal variables
+  REAL(DFP), ALLOCATABLE :: value_(:)
+  INTEGER(I4B) :: tsize
+
+  tsize = SIZE(VALUE)
+  CALL Reallocate(value_, tsize)
+  CALL GetValue(obj=obj, prefix=prefix, key=key, VALUE=value_)
+  value = RealVector(value_)
+  DEALLOCATE (value_)
+END SUBROUTINE fpl_Get_Real_RealVec
+
+!----------------------------------------------------------------------------
+!                                                                  GetValue
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Get the real vector parameter
+
+SUBROUTINE fpl_Get_Real_R2(obj, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  REAL(DFP), INTENT(OUT) :: VALUE(:, :)
+  ! Internal variable
+  INTEGER(I4B) :: ierr
+  TYPE(String) :: varname
+  varname = TRIM(prefix)//"/"//TRIM(key)
+  IF (obj%isPresent(key=varname%chars())) THEN
+    ierr = obj%Get(key=varname%chars(), VALUE=VALUE)
+  END IF
+  varname = ""
+END SUBROUTINE fpl_Get_Real_R2
+
+!----------------------------------------------------------------------------
+!                                                                  GetValue
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Get the real matrix parameter
+
+SUBROUTINE fpl_Get_Real_RealMatrix(obj, prefix, key, VALUE)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  CHARACTER(*), INTENT(IN) :: key
+  TYPE(RealMatrix_), INTENT(INOUT) :: VALUE
+
+  ! internal variables
+  REAL(DFP), ALLOCATABLE :: value_(:, :)
+  INTEGER(I4B) :: tsize(2)
+
+  tsize = Shape(VALUE)
+  CALL Reallocate(value_, tsize(1), tsize(2) )
+  CALL GetValue(obj=obj, prefix=prefix, key=key, VALUE=value_)
+  CALL Convert(From=value_, To=VALUE)
+  DEALLOCATE (value_)
+END SUBROUTINE fpl_Get_Real_RealMatrix
 
 !----------------------------------------------------------------------------
 !                                                                  GetValue

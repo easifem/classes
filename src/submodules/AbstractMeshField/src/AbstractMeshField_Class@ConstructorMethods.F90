@@ -50,10 +50,10 @@ END PROCEDURE aField_checkEssentialParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE AbstractFieldCheckEssentialParam
+MODULE PROCEDURE AbstractMeshFieldCheckEssentialParam
 !
 CHARACTER(*), PARAMETER :: myName = &
-  & "AbstractFieldCheckEssentialParam"
+  & "AbstractMeshFieldCheckEssentialParam"
 !
 ! fieldType
 !
@@ -103,7 +103,7 @@ IF (.NOT. param%isPresent(key=TRIM(prefix)//"/rank")) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'rank should be present in param')
 !
-END PROCEDURE AbstractFieldCheckEssentialParam
+END PROCEDURE AbstractMeshFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate

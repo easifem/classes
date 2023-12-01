@@ -24,176 +24,122 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_set
-CHARACTER(*), PARAMETER :: myName = "bc_set"
+MODULE PROCEDURE bc_Set
+CHARACTER(*), PARAMETER :: myName = "bc_Set"
+LOGICAL(LGT) :: notFunc_notExt, isConstVal, isSpaceVal, isSTVal,  &
+  & isTimeVal, bool1, bool2, isUserFunction
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Set()')
+#endif
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'AbstractBC_ object is not initiated, initiate it first.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[CONFIG ERROR ] :: AbstractBC_ object is not initiated.')
 END IF
 
-IF (.NOT. obj%UseFunction .AND. .NOT. obj%useExternal) THEN
+notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%useExternal)
 
-  IF (PRESENT(TimeFunction) .OR. PRESENT(SpaceFunction) &
-    & .OR. PRESENT(SpaceTimeFunction)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & "AbstractBC_::obj is initiated with useFunction=.FALSE."//CHAR_LF// &
-    & " and useExternal=.FALSE."//CHAR_LF// &
-    & "So you cannot provide TimeFunction, SpaceFunction, SpaceTimeFunction")
-  END IF
+isUserFunction = PRESENT(userFunction)
+isConstVal = PRESENT(constantNodalValue)
+isSpaceVal = PRESENT(spaceNodalValue)
+isTimeVal = PRESENT(timeNodalValue)
+isSTVal = PRESENT(spaceTimeNodalValue)
 
-  ! constant
-
-  IF (PRESENT(ConstantNodalValue)) THEN
-
-    IF (obj%nodalValueType .NE. Constant) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-       & "AbstractBC_::obj is not initiated with nodalValueType=Constant"// &
-       & CHAR_LF// &
-       & 'So, ConstantNodalValue cannot be present')
-
-    ELSE
-
-      CALL Reallocate(obj%NodalValue, 1, 1)
-      obj%NodalValue = ConstantNodalValue
-      RETURN
-
-    END IF
-
-  END IF
-
-  ! SpaceNodalValue
-
-  IF (PRESENT(SpaceNodalValue)) THEN
-
-    IF (obj%nodalValueType .NE. Space) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-        & "AbstractBC_::obj is not initiated with nodalValueType=Space"// &
-        & CHAR_LF// &
-        & 'So, SpaceNodalValue cannot be present')
-
-    ELSE
-
-      CALL Reallocate(obj%NodalValue, SIZE(SpaceNodalValue), 1)
-      obj%NodalValue(:, 1) = SpaceNodalValue
-      RETURN
-
-    END IF
-
-  END IF
-
-  ! TimeNodalValue
-
-  IF (PRESENT(TimeNodalValue)) THEN
-
-    IF (obj%nodalValueType .NE. Time) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-        & "AbstractBC_::obj is not initiated with nodalValueType=Time"// &
-        & CHAR_LF// &
-        & 'So, TimeNodalValue cannot be present')
-
-    ELSE
-
-      CALL Reallocate(obj%NodalValue, SIZE(TimeNodalValue), 1)
-      obj%NodalValue(:, 1) = TimeNodalValue
-      RETURN
-
-    END IF
-
-  END IF
-
-  ! SpaceTimeNodalValue
-
-  IF (PRESENT(SpaceTimeNodalValue)) THEN
-
-    IF (obj%nodalValueType .NE. SpaceTime) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "AbstractBC_::obj is not initiated with nodalValueType=SpaceTime"// &
-      & CHAR_LF// &
-      & 'So, SpaceTimeNodalValue cannot be present')
-
-    ELSE
-
-      obj%NodalValue = SpaceTimeNodalValue
-      RETURN
-
-    END IF
-
-  END IF
-
-ELSE
-
-  ! SpaceFunction
-
-  IF (PRESENT(SpaceFunction)) THEN
-
-    IF (obj%nodalValueType .NE. Space) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "AbstractBC_::obj is not initiated with nodalValueType=Space"// &
-      & CHAR_LF// &
-      & 'So, SpaceFunction cannot be present')
-
-    ELSE
-
-      obj%SpaceFunction => SpaceFunction
-      RETURN
-
-    END IF
-
-  END IF
-
-  ! TimeNodalValue
-
-  IF (PRESENT(TimeFunction)) THEN
-
-    IF (obj%nodalValueType .NE. Time) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "AbstractBC_::obj is not initiated with nodalValueType=Time"// &
-      & CHAR_LF// &
-      & 'So, TimeFunction cannot be present')
-
-    ELSE
-
-      obj%TimeFunction => TimeFunction
-      RETURN
-
-    END IF
-
-  END IF
-
-  ! SpaceTimeNodalValue
-
-  IF (PRESENT(SpaceTimeFunction)) THEN
-
-    IF (obj%nodalValueType .NE. SpaceTime) THEN
-
-      CALL e%raiseError(modName//'::'//myName//" - "// &
-      & "AbstractBC_::obj is not initiated with nodalValueType=SpaceTime"// &
-      & CHAR_LF// &
-      & 'So, SpaceTimeFunction cannot be present')
-
-    ELSE
-
-      obj%SpaceTimeFunction => SpaceTimeFunction
-      RETURN
-
-    END IF
-
-  END IF
-
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & "AbstractBC_::obj is initiated with useFunction=TRUE"// &
-    & CHAR_LF// &
-  & 'So, SpaceFunction, TimeFunction, or SpaceTimeFunction should be present')
-
+IF (notFunc_notExt .AND. isUserFunction) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & "[CONFIG ERROR] :: AbstractBC_::obj is initiated "//CHAR_LF// &
+  & "with useFunction=.FALSE. and useExternal=.FALSE."//CHAR_LF// &
+  & "So you cannot provide userFunction.")
 END IF
 
-END PROCEDURE bc_set
+bool1 = notFunc_notExt .AND. isConstVal
+bool2 = bool1 .AND. obj%nodalValueType .NE. Constant
+IF (bool2) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
+    & "with nodalValueType=Constant "//CHAR_LF// &
+    & 'So, constantNodalValue cannot be present.')
+  RETURN
+END IF
+
+! constant
+IF (bool1) THEN
+  CALL Reallocate(obj%NodalValue, 1, 1)
+  obj%NodalValue = constantNodalValue
+  RETURN
+END IF
+
+! spaceNodalValue
+bool1 = notFunc_notExt .AND. isSpaceVal
+bool2 = bool1 .AND. (obj%nodalValueType .NE. Space)
+IF (bool2) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
+    & "with nodalValueType=Space"//CHAR_LF// &
+    & 'So, spaceNodalValue cannot be present.')
+  RETURN
+END IF
+
+IF (bool1) THEN
+  CALL Reallocate(obj%NodalValue, SIZE(spaceNodalValue), 1)
+  obj%NodalValue(:, 1) = spaceNodalValue
+  RETURN
+END IF
+
+! timeNodalValue
+bool1 = notFunc_notExt .AND. isTimeVal
+bool2 = bool1 .AND. (obj%nodalValueType .NE. Time)
+IF (bool2) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
+    & "with nodalValueType=Time"//CHAR_LF// &
+    & 'So, timeNodalValue cannot be present.')
+  RETURN
+END IF
+
+IF (bool1) THEN
+  CALL Reallocate(obj%NodalValue, SIZE(timeNodalValue), 1)
+  obj%NodalValue(:, 1) = timeNodalValue
+  RETURN
+END IF
+
+! spaceTimeNodalValue
+bool1 = notFunc_notExt .AND. isSTVal
+bool2 = bool1 .AND. (obj%nodalValueType .NE. SpaceTime)
+IF (bool2) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated with "//  &
+  & " nodalValueType=SpaceTime"// &
+  & CHAR_LF// &
+  & 'So, spaceTimeNodalValue cannot be present')
+  RETURN
+END IF
+IF (bool1) THEN
+  obj%NodalValue = spaceTimeNodalValue
+  RETURN
+END IF
+
+! userFunction
+bool1 = isUserFunction .AND. obj%isUserFunction
+IF (.NOT. bool1) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & "[CONFIG ERROR] :: AbstractBC_::obj is not correctly initiated"// &
+    & " for userFunction")
+  RETURN
+END IF
+
+IF (isUserFunction) THEN
+  obj%func => userFunction
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Set()')
+#endif
+
+END PROCEDURE bc_Set
 
 END SUBMODULE SetMethods

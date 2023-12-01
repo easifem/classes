@@ -13,7 +13,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE MSHFile_Class
 USE BaseType
@@ -23,13 +22,16 @@ USE TxtFile_Class
 USE ExceptionHandler_Class, ONLY: e
 USE mshFormat_Class
 USE mshPhysicalNames_Class
-USE mshEntity_Class, only: mshEntity_, TypeMshEntity
+USE mshEntity_Class, ONLY: mshEntity_, TypeMshEntity
 USE mshNodes_Class
 USE mshElements_Class
 USE HDF5File_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "MSHFile_CLASS"
+PUBLIC :: DEALLOCATE
+PUBLIC :: MSHPointer_
+PUBLIC :: MSHFile_
 
 !----------------------------------------------------------------------------
 !                                                                 MSHFile_
@@ -98,8 +100,6 @@ END TYPE MSHFile_
 !
 !----------------------------------------------------------------------------
 
-PUBLIC :: MSHFile_
-
 ! TYPE( MSHFile_ ), PUBLIC, PARAMETER :: TypeMSH = MSHFile_( )
 
 !----------------------------------------------------------------------------
@@ -109,8 +109,6 @@ PUBLIC :: MSHFile_
 TYPE :: MSHPointer_
   CLASS(MSHFile_), POINTER :: Ptr => NULL()
 END TYPE MSHPointer_
-
-PUBLIC :: MSHPointer_
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -130,18 +128,12 @@ END INTERFACE
 ! date:         11 June 2021
 ! summary:  This will deallocate data
 
-INTERFACE
+INTERFACE DEALLOCATE
   MODULE SUBROUTINE msh_Deallocate(obj, Delete)
     CLASS(MSHFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Delete
   END SUBROUTINE msh_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE msh_Deallocate
 END INTERFACE DEALLOCATE
-
-PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods

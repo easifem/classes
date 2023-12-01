@@ -29,7 +29,7 @@ USE GmshModelOcc_Class
 USE GmshModelMesh_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "GmshModel_Class"
+CHARACTER(*), PARAMETER :: modName = "GmshModel_Class"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
 INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
@@ -151,7 +151,7 @@ SUBROUTINE model_initiate(obj)
   !!
   !! internal var
   !!
-  CHARACTER(LEN=*), PARAMETER :: myName = "model_initiate"
+  CHARACTER(*), PARAMETER :: myName = "model_initiate"
   !!
   !! main program
   !!
@@ -183,10 +183,10 @@ END SUBROUTINE model_initiate
 !----------------------------------------------------------------------------
 
 FUNCTION model_add(name) RESULT(ans)
-  CHARACTER(LEN=*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   ! Internal variables
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !
   name_ = gmsh_CString(name)
   CALL gmshModelAdd(name=C_LOC(name_), ierr=ierr)
@@ -215,10 +215,10 @@ FUNCTION model_list(names) RESULT(ans)
   !!
   !! internal variables
   !!
-  CHARACTER(LEN=*), PARAMETER :: myName = "model_list()"
+  CHARACTER(*), PARAMETER :: myName = "model_list()"
   TYPE(C_PTR) :: names_
   INTEGER(C_SIZE_T) :: names_n_
-  CHARACTER(LEN=maxStrLen), ALLOCATABLE :: names0(:)
+  CHARACTER(maxStrLen), ALLOCATABLE :: names0(:)
   INTEGER(I4B) :: ii
   !!
   CALL gmshModelList( &
@@ -247,7 +247,7 @@ END FUNCTION model_list
 !----------------------------------------------------------------------------
 
 FUNCTION model_GetCurrent(name) RESULT(ans)
-  CHARACTER(LEN=*), INTENT(OUT) :: name
+  CHARACTER(*), INTENT(OUT) :: name
   INTEGER(I4B) :: ans
   ! Internal variables
   TYPE(C_PTR) :: cstring
@@ -261,10 +261,10 @@ END FUNCTION model_GetCurrent
 !----------------------------------------------------------------------------
 
 FUNCTION model_SetCurrent(name) RESULT(ans)
-  CHARACTER(LEN=*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   !! Internal variables
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !!
   name_ = TRIM(name)//C_NULL_CHAR
   CALL gmshModelSetCurrent(name=C_LOC(name_), ierr=ierr)
@@ -276,7 +276,7 @@ END FUNCTION model_SetCurrent
 !----------------------------------------------------------------------------
 
 FUNCTION model_GetFileName(fileName) RESULT(ans)
-  CHARACTER(LEN=*), INTENT(OUT) :: fileName
+  CHARACTER(*), INTENT(OUT) :: fileName
   INTEGER(I4B) :: ans
   ! Internal variables
   TYPE(C_PTR) :: cstring
@@ -291,10 +291,10 @@ END FUNCTION model_GetFileName
 !----------------------------------------------------------------------------
 
 FUNCTION model_SetFileName(fileName) RESULT(ans)
-  CHARACTER(LEN=*), INTENT(IN) :: fileName
+  CHARACTER(*), INTENT(IN) :: fileName
   INTEGER(I4B) :: ans
   ! Internal variables
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !!
   name_ = TRIM(fileName)//C_NULL_CHAR
   CALL gmshModelSetFileName(fileName=C_LOC(name_), ierr=ierr)
@@ -356,12 +356,12 @@ END FUNCTION model_GetEntities
 FUNCTION model_SetEntityName(dim, tag, name) &
   & RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: dim, tag
-  CHARACTER(LEN=*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   !!
   !! Internal
   !!
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !!
   name_ = TRIM(name)//C_NULL_CHAR
   !!
@@ -380,7 +380,7 @@ END FUNCTION model_SetEntityName
 FUNCTION model_GetEntityName(dim, tag, name) &
   & RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: dim, tag
-  CHARACTER(LEN=*), INTENT(OUT) :: name
+  CHARACTER(*), INTENT(OUT) :: name
   INTEGER(I4B) :: ans
   !!
   !! Internal
@@ -521,13 +521,13 @@ FUNCTION model_AddPhysicalGroup(dim, tags, &
   INTEGER(I4B), INTENT(IN) :: dim
   INTEGER(I4B), INTENT(IN) :: tags(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
-  CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: name
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: name
   INTEGER(I4B) :: ans
   !
   ! Internal
   !
   INTEGER(C_SIZE_T) :: tags_n
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !!
   name_ = TRIM(input(option="", default=name))//C_NULL_CHAR
   !!
@@ -580,12 +580,12 @@ FUNCTION model_SetPhysicalName(dim, tag, name) &
   & RESULT(ans)
 
   INTEGER(I4B), INTENT(IN) :: dim, tag
-  CHARACTER(LEN=*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   !
   ! internal
   !
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !!
   name_ = TRIM(name)//C_NULL_CHAR
   !!
@@ -608,12 +608,12 @@ END FUNCTION model_SetPhysicalName
 FUNCTION model_RemovePhysicalName(name) &
   & RESULT(ans)
 
-  CHARACTER(LEN=*), INTENT(IN) :: name
+  CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   !
   ! internal
   !
-  CHARACTER(LEN=maxStrLen), TARGET :: name_
+  CHARACTER(maxStrLen), TARGET :: name_
   !!
   name_ = TRIM(name)//C_NULL_CHAR
   !!
@@ -634,23 +634,22 @@ FUNCTION model_GetPhysicalName(dim, tag, name) &
   & RESULT(ans)
 
   INTEGER(I4B), INTENT(IN) :: dim, tag
-  CHARACTER(LEN=*), INTENT(OUT) :: name
+  CHARACTER(*), INTENT(OUT) :: name
   INTEGER(I4B) :: ans
-  !
+  
   ! internal
-  !
   TYPE(C_PTR) :: cptr
-  !!
+ 
   CALL gmshModelGetPhysicalName( &
     & dim=gmsh_cint(dim), &
     & tag=gmsh_cint(tag), &
     & name=cptr, &
     & ierr=ierr)
-  !!
+
   ans = INT(ierr, i4b)
-  !!
+
   CALL C2Fortran(C_STRING=cptr, F_STRING=name)
-  !!
+
 END FUNCTION model_GetPhysicalName
 
 !----------------------------------------------------------------------------

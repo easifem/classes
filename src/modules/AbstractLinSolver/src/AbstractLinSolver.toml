@@ -1,0 +1,57 @@
+[linSolver]
+engine = "NATIVE_SERIAL"
+solverName = "CG"
+convergenceIn = "RESIDUAL"
+convergenceType = "RELATIVE"
+scale = "NONE"
+maxIter = 1000
+krylovSubspaceSize = 50
+bicgstab_ell = 2
+atol = 0.0000000099999999
+rtol = 0.0000000099999999
+relativeToRHS = false
+initx_zeros = true
+sor_omega = 1.8999999999999999
+
+[linSolver.precondition]
+option = "NO_PRECONDITION"
+name = "ILU"
+
+[linSolver.precondition.ilu]
+lfil = 5
+mbloc = 10
+fill = 5
+droptol = 0.0050000000000000
+permtol = 0.1000000000000000
+alpha = 1.0000000000000000
+
+[linSolver.precondition.hybrid]
+name = "SOR"
+maxIter = 25
+ell = 2
+restart = 40
+tol = 0.0010000000474975
+omega = 1.5000000000000000
+
+[linSolver.precondition.is]
+m = 3
+p_is_alpha = 1.0000000000000000
+
+[linSolver.precondition.adds]
+iter = 1
+isAdditiveSchwarz = true
+
+[linSolver.precondition.ssor]
+omega = 1.0000000000000000
+
+[linSolver.precondition.sainv]
+drop = 0.0500000007450581
+
+[linSolver.precondition.saamg]
+theta = 0.0500000007450581
+unsym = false
+
+[linSolver.precondition.iluc]
+drop = 0.0500000007450581
+rate = 5.0000000000000000
+

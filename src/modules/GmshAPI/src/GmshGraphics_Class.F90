@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#ifdef USE_GMSH_SDK
 MODULE GmshGraphics_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE GmshInterface
@@ -79,4 +78,3 @@ FUNCTION graphics_Draw(obj) RESULT( ans )
 END FUNCTION graphics_Draw
 
 END MODULE GmshGraphics_Class
-#endif

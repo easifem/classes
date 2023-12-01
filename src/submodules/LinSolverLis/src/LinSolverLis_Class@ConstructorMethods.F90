@@ -27,7 +27,7 @@ CONTAINS
 MODULE PROCEDURE ls_Initiate
 #include "lisf.h"
 CHARACTER(*), PARAMETER :: myName = "ls_Initiate"
-INTEGER(I4B) :: comm, ierr
+INTEGER(I4B) :: ierr
 INTEGER(I4B) :: solverName
 INTEGER(I4B) :: preconditionOption
 INTEGER(I4B) :: convergenceIn

@@ -25,31 +25,30 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_initiateElemSD1
-!
+
 ! main
-!
 obj%quadTypeForSpace = TRIM(quadTypeForSpace)
 obj%continuityTypeForSpace = TRIM(continuityTypeForSpace)
 obj%interpolTypeForSpace = TRIM(interpolTypeForSpace)
 obj%orderSpace = orderSpace
-!
+
 CALL Initiate(obj=obj%quadForSpace, &
   & refelem=spaceElem, &
   & order=orderSpace, &
   & QuadratureType=quadTypeForSpace)
-!
+
 CALL Initiate(obj=obj%linSpaceElemSD, &
   & quad=obj%quadForSpace, &
   & refelem=linSpaceElem, &
   & ContinuityType=continuityTypeForSpace, &
   & InterpolType=interpolTypeForSpace)
-!
+
 CALL Initiate(obj=obj%spaceElemSD, &
   & quad=obj%quadForSpace, &
   & refelem=spaceElem, &
   & ContinuityType=continuityTypeForSpace, &
   & InterpolType=interpolTypeForSpace)
-!
+
 END PROCEDURE mesh_initiateElemSD1
 
 !----------------------------------------------------------------------------
@@ -144,85 +143,84 @@ END PROCEDURE mesh_initiateElemSD4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_initiateFacetElemSD1
-!
+CHARACTER(*), PARAMETER :: myName = "mesh_initiateFacetElemSD1"
 INTEGER(I4B) :: nn, ii
 INTEGER(I4B), ALLOCATABLE :: faceNptrs(:)
 REAL(DFP), ALLOCATABLE :: xijCell(:, :), quadPointsCell(:, :), &
   & points(:, :)
-CHARACTER(*), PARAMETER :: myName = "mesh_initiateFacetElemSD1"
-!
+
 IF (.NOT. ALLOCATED(obj%facetElements)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In Mesh_ object facetElements are not allocated!')
 END IF
-!
+
 nn = SIZE(obj%facetElements)
-!
+
 IF (.NOT. ALLOCATED(obj%quadForFacet)) &
   & ALLOCATE (obj%quadForFacet(nn))
-!
+
 IF (.NOT. ALLOCATED(obj%quadForFacetCell)) &
   & ALLOCATE (obj%quadForFacetCell(nn))
-!
+
 IF (.NOT. ALLOCATED(obj%linFacetElemSD)) &
   & ALLOCATE (obj%linFacetElemSD(nn))
-!
+
 IF (.NOT. ALLOCATED(obj%linFacetCellElemSD)) &
   & ALLOCATE (obj%linFacetCellElemSD(nn))
-!
+
 IF (.NOT. ALLOCATED(obj%facetElemSD)) &
   & ALLOCATE (obj%facetElemSD(nn))
-!
+
 IF (.NOT. ALLOCATED(obj%facetCellElemSD)) &
   & ALLOCATE (obj%facetCellElemSD(nn))
-!
+
 obj%quadTypeForFacet = TRIM(quadTypeForSpace)
 obj%continuityTypeForFacet = TRIM(continuityTypeForSpace)
 obj%interpolTypeForFacet = TRIM(interpolTypeForSpace)
 obj%orderFacet = orderSpace
-!
+
 DO ii = 1, nn
-  !
+ 
   CALL Initiate(obj=obj%quadForFacet(ii), &
     & refelem=spaceElem(ii), &
     & order=orderSpace, &
     & QuadratureType=quadTypeForSpace)
-  !
+  
   CALL Initiate(obj=obj%linFacetElemSD(ii), &
     & quad=obj%quadForFacet(ii), &
     & refelem=linSpaceElem(ii), &
     & ContinuityType=continuityTypeForSpace, &
     & InterpolType=interpolTypeForSpace)
-  !
+  
   CALL Initiate(obj=obj%facetElemSD(ii), &
     & quad=obj%quadForFacet(ii), &
     & refelem=spaceElem(ii), &
     & ContinuityType=continuityTypeForSpace, &
     & InterpolType=interpolTypeForSpace)
-  !
+  
   faceNptrs = getConnectivity(obj%facetElements(ii))
   xijCell = LocalNodeCoord(obj%refelem)
   CALL getInterpolation(obj=obj%facetElemSD(ii), &
     & interpol=quadPointsCell, val=xijCell(:, faceNptrs))
-  !
+  
   CALL Reallocate(points, obj%nsd + 1, SIZE(quadPointsCell, 2))
   points(1:obj%nsd, :) = quadPointsCell(1:obj%nsd, :)
   CALL Initiate(obj%quadForFacetCell(ii), points=points)
-  !
+  
   CALL Initiate(obj=obj%linFacetCellElemSD(ii), &
     & quad=obj%quadForFacetCell(ii), &
     & refelem=obj%linSpaceElemSD%refelem, &
     & ContinuityType=continuityTypeForSpace, &
     & InterpolType=interpolTypeForSpace)
-  !
+  
   CALL Initiate(obj=obj%facetCellElemSD(ii), &
     & quad=obj%quadForFacetCell(ii), &
     & refelem=obj%spaceElemSD%refelem, &
     & ContinuityType=continuityTypeForSpace, &
     & InterpolType=interpolTypeForSpace)
-  !
+  
 END DO
-!
+
 END PROCEDURE mesh_initiateFacetElemSD1
 
 !----------------------------------------------------------------------------

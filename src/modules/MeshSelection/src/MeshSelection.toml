@@ -1,0 +1,44 @@
+[region]
+isSelectionByMeshID = false
+isSelectionByElemNum = false
+isSelectionByBox = false
+isSelectionByNodeNum = false 
+
+[region.meshID]
+point = [1,2,3] # "filename.txt"
+line = [1,2,3,4] # "filename.txt"
+surface = [1,2,3] # "filename.txt"
+volume = [1,2,3] # "filename.txt"
+
+[region.box]
+point = [
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=0.0, zmax=1.0},
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=2.0, zmax=3.0}
+]
+
+line = [
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=0.0, zmax=1.0},
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=2.0, zmax=3.0}
+]
+
+surface = [
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=0.0, zmax=1.0},
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=2.0, zmax=3.0}
+]
+
+volume = [
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=0.0, zmax=1.0},
+{xmin=0.0, xmax=1.0, ymin=0.0, ymax=1.0, zmin=2.0, zmax=3.0}
+]
+
+[region.elemNum]
+point = [1,2,3]
+line = [1,2,3]
+surface=[1,2,3]
+volume=[1,2,3]
+
+[region.nodeNum]
+point = [1,2,3]
+line = [1,2,3]
+surface=[1,2,3]
+volume=[1,2,3]

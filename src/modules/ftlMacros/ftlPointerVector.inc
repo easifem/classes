@@ -610,7 +610,8 @@ SUBROUTINE T_SetSingleAtIndex(obj, pos, val)
       & "While setting the value pos is greater than the length of list")
   ELSE
     IF( ASSOCIATED( obj%storage(pos)%ptr ) ) THEN
-      DEALLOCATE( obj%storage(pos)%ptr )
+      CALL obj%storage(pos)%ptr%Deallocate()
+      NULLIFY(obj%storage(pos)%ptr)
     END IF
     obj%storage(pos)%ptr => val%ptr
   END IF
@@ -653,7 +654,8 @@ SUBROUTINE T_SetFillAtIndex(obj, pos, n, val)
         & "While setting the value pos0 is greater than the length of list")
     ELSE
       IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
-        DEALLOCATE( obj%storage(pos0)%ptr )
+        CALL obj%storage(pos0)%ptr%Deallocate()
+        obj%storage(pos0)%ptr => NULL()
       END IF
       obj%storage(pos0)%ptr => val%ptr
     END IF
@@ -695,7 +697,8 @@ SUBROUTINE T_SetArrayAtIndex( obj, pos, array )
         & "While setting the value pos0 is greater than the length of list")
     ELSE
       IF( ASSOCIATED( obj%storage(pos0)%ptr ) ) THEN
-        DEALLOCATE( obj%storage(pos0)%ptr )
+        CALL obj%storage(pos0)%ptr%Deallocate()
+        obj%storage(pos0)%ptr => NULL()
       END IF
       obj%storage(pos0)%ptr => array(ii)%ptr
     END IF
@@ -929,7 +932,7 @@ SUBROUTINE TriggerFinalizer(obj, freeMem)
   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: freeMem
   IF( PRESENT(freeMem) )THEN
     IF( freeMem ) THEN
-      DEALLOCATE(obj%ptr)
+      CALL obj%ptr%Deallocate()
       NULLIFY(obj%ptr)
     ELSE
       NULLIFY(obj%ptr)

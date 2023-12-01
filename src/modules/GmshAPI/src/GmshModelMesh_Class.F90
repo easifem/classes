@@ -23,7 +23,7 @@ USE CInterface, ONLY: C_PTR_TO_INT_VEC
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "GMSHMODELMESH_CLASS"
+CHARACTER(*), PARAMETER :: modName = "GmshModelMesh_Class"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
@@ -117,12 +117,12 @@ END FUNCTION mesh_Unpartition
 FUNCTION mesh_Optimize(obj, method, force, niter, dimTags) &
   & RESULT(ans)
   CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  CHARACTER(LEN=*), INTENT(IN) :: method
+  CHARACTER(*), INTENT(IN) :: method
   INTEGER(I4B), INTENT(IN) :: force, niter
   INTEGER(I4B), INTENT(IN) :: dimTags(:)
   INTEGER(I4B) :: ans
   !
-  CHARACTER(LEN=maxStrLen), TARGET :: method_
+  CHARACTER(maxStrLen), TARGET :: method_
   method_ = TRIM(method)//C_NULL_CHAR
   CALL gmshModelMeshOptimize(C_LOC(method_), force, niter, &
     & dimTags, SIZE(dimTags, KIND=C_SIZE_T), ierr)

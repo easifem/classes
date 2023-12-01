@@ -33,6 +33,11 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, ierr, myName)
   !
   ! main
   !
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] PERFORM_TASK()')
+#endif
+
   SELECT CASE (ierr)
   CASE (1)
     CALL Amat%Matvec(y=y, x=x, isTranspose=.FALSE.)
@@ -47,6 +52,11 @@ SUBROUTINE PERFORM_TASK(Amat, y, x, ierr, myName)
     ! The preconditioners are inside the Amat
     CALL Amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.TRUE.)
   END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] PERFORM_TASK()')
+#endif
 END SUBROUTINE PERFORM_TASK
 
 !----------------------------------------------------------------------------
@@ -153,7 +163,7 @@ MODULE PROCEDURE ls_Solve
 !
 CHARACTER(*), PARAMETER :: myName = "ls_Solve"
 REAL(DFP), POINTER :: rhsvar(:), solvar(:)
-INTEGER(I4B) :: ii, info
+INTEGER(I4B) :: info
 INTEGER(I4B) :: solverName
 LOGICAL(LGT) :: isInitiated0
 CLASS(AbstractMatrixField_), POINTER :: Amat

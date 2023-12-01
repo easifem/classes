@@ -23,7 +23,7 @@ SUBROUTINE _SUBROUTINE_NAME(obj, sol, rhs)
   ! Internal variables
   !
   CHARACTER(*), PARAMETER :: myName = _MY_NAME
-  INTEGER(I4B) :: n, ii
+  INTEGER(I4B) :: n
   REAL(DFP), ALLOCATABLE :: diag(:)
   CLASS(AbstractMatrixField_), POINTER :: Amat
 

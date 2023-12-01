@@ -1,0 +1,56 @@
+[userFunction]
+name = "boundaryFunction"
+# name of the function
+
+returnType = "Scalar"
+# Return type of function, it can take following values
+# "Scalar"
+# "Vector"
+# "Matrix"
+
+numReturns = 1
+# number of returns, its value depends upon the returnType
+# It is 1, when returnType is "Scalar"
+# It is 3, when returnType is "Vector"
+# It is 9, when returnType is "Matrix"
+
+argType = "Space"
+# argumen type of function, It can take following values
+# "Constant", when the user function is constant
+# "Space", when the user function is space dependent only.
+# "Time", when the user function is time dependent only.
+# "SpaceTime", when the user function is space-time dependent.
+
+numArgs = 3
+# number of arguments
+# number of arguments should be 0, when argType is "Constant"
+# number of arguments should be 1, when argType is "Time"
+# number of arguments should be 3, when argType is "Space"
+# number of arguments should be 4, when argType is "SpaceTime"
+
+scalarValue = 1.0
+# if lua script and luaFunctionName are absent then this
+# variable must be given.
+# When this is given, then argType must be Constant, and
+# numArgs should be 0.
+
+vectorValue = [1.0, 2.0, 3.0]
+# if lua script and luaFunctionName are absent then this
+# variable must be given.
+# When this is given, then
+# - returnType must be Vector
+# - number of returns must 3
+# - argType must be Constant, and
+# - numArgs should be 0.
+
+matrixValue = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+# if lua script and luaFunctionName are absent then this
+# variable must be given.
+# When this is given, then
+# - returnType must be Matrix
+# - number of returns must 9
+# - argType must be Constant, and
+# - numArgs should be 0.
+# In this case returnShape must be given
+
+returnShape = [3, 3]

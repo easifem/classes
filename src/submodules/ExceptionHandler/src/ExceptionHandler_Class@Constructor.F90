@@ -158,13 +158,13 @@ tmpE => obj%surrogate
 NULLIFY (obj%surrogate)
 obj%stopOnError = tmpE%stopOnError
 obj%logFileActive = tmpE%logFileActive
-obj%quiet = tmpE%quiet
 obj%logFileUnit = tmpE%logFileUnit
 obj%nInfo = tmpE%nInfo
 obj%nWarn = tmpE%nWarn
+obj%nDebug = tmpE%nDebug
 obj%nError = tmpE%nError
 obj%nFatal = tmpE%nFatal
-obj%nDebug = tmpE%nDebug
+obj%quiet = tmpE%quiet
 obj%verbose = tmpE%verbose
 obj%lastMesg = tmpE%lastMesg
 NULLIFY (tmpE)

@@ -106,4 +106,12 @@ IF (PRESENT(isSelectionByNodeNum)) THEN
 END IF
 END PROCEDURE meshSelect_GetQuery
 
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshSelect_GetPrefix
+ans = myprefix
+END PROCEDURE meshSelect_GetPrefix
+
 END SUBMODULE GetMethods

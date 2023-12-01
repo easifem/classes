@@ -26,7 +26,7 @@ USE CInterface
 USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "GMSHOPTION_CLASS"
+CHARACTER(*), PARAMETER :: modName = "GMSHOPTION_CLASS"
 INTEGER(C_INT) :: ierr
 !$OMP THREADPRIVATE(ierr)
 INTEGER(C_INT) :: cintvar
@@ -37,8 +37,6 @@ INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-#define _DT_ GmshModelGeo_
 
 TYPE :: GmshModelGeo_
   TYPE(GmshModelGeoMesh_), POINTER :: mesh => NULL()
@@ -113,7 +111,7 @@ CONTAINS
 SUBROUTINE geo_Initiate(obj)
   CLASS(GmshModelGeo_), INTENT(INOUT) :: obj
   !> internal var
-  CHARACTER(LEN=*), PARAMETER :: myName = "geo_Initiate"
+  CHARACTER(*), PARAMETER :: myName = "geo_Initiate"
   !> main program
   IF (ASSOCIATED(obj%Mesh)) THEN
     CALL e%raiseError(modName//"::"//myName//" - "// &
@@ -143,10 +141,10 @@ FUNCTION geo_AddPoint(x, y, z, meshSize, tag) RESULT(ans)
     & y=gmsh_cdouble(y), &
     & z=gmsh_cdouble(z), &
     & meshSize=gmsh_cdouble(meshSize), &
-    & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+    & tag=gmsh_cint(INPUT(default=-1_I4B, option=tag)), &
     & ierr=ierr)
   !
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !
 END FUNCTION geo_AddPoint
 
@@ -170,7 +168,7 @@ FUNCTION geo_AddLine(startTag, endTag, tag) RESULT(ans)
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
   !
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddLine
 
 !----------------------------------------------------------------------------
@@ -201,7 +199,7 @@ FUNCTION geo_AddCircleArc(startTag, centerTag, endTag, tag, nx, ny, &
     & nz=gmsh_opt_cdouble(0.0_DFP, nz), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
 END FUNCTION geo_AddCircleArc
 
@@ -234,7 +232,7 @@ FUNCTION geo_AddEllipseArc(startTag, centerTag, majorTag, endTag, &
     & nz=gmsh_cdouble(nz), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
 END FUNCTION geo_AddEllipseArc
 
@@ -260,7 +258,7 @@ FUNCTION geo_AddSpline(pointTags, tag) &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddSpline
 
 !----------------------------------------------------------------------------
@@ -285,7 +283,7 @@ FUNCTION geo_AddBSpline(pointTags, tag) &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
 END FUNCTION geo_AddBSpline
 
@@ -309,7 +307,7 @@ FUNCTION geo_AddBezier(pointTags, tag) &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
 END FUNCTION geo_AddBezier
 
@@ -334,7 +332,7 @@ FUNCTION geo_AddPolyline(pointTags, tag) &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddPolyline
 
 !----------------------------------------------------------------------------
@@ -360,7 +358,7 @@ FUNCTION geo_AddCompoundSpline(curveTags, &
     & numIntervals=gmsh_cint(numIntervals), &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddCompoundSpline
 
 !----------------------------------------------------------------------------
@@ -387,7 +385,7 @@ FUNCTION geo_AddCompoundBSpline(curveTags, &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddCompoundBSpline
 
 !----------------------------------------------------------------------------
@@ -413,10 +411,10 @@ FUNCTION geo_AddCurveLoop(curveTags, tag, reorient) &
     & curveTags=gmsh_cint(curveTags), &
     & curveTags_n=INT(SIZE(curveTags), C_SIZE_T),  &
     & tag=gmsh_cint(INPUT(default=-1, option=tag)), &
-    & reorient=optval_c_bool(.false., reorient), &
+    & reorient=optval_c_bool(.FALSE., reorient), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddCurveLoop
 
 !----------------------------------------------------------------------------
@@ -470,7 +468,7 @@ FUNCTION geo_AddPlaneSurface(wireTags, tag) &
     & tag=gmsh_cint(input(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddPlaneSurface
 
 !----------------------------------------------------------------------------
@@ -497,7 +495,7 @@ FUNCTION geo_AddSurfaceFilling(wireTags, tag, &
     & sphereCenterTag=gmsh_cint(sphereCenterTag), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
 END FUNCTION geo_AddSurfaceFilling
 
@@ -514,15 +512,14 @@ FUNCTION geo_AddSurfaceLoop(surfaceTags, tag) &
   INTEGER(I4B), INTENT(IN) :: surfaceTags(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
   INTEGER(I4B) :: ans
-  !
+  
   cintvar = gmshModelGeoAddSurfaceLoop( &
     & surfaceTags=gmsh_cint(surfaceTags),  &
     & surfaceTags_n=INT(SIZE(surfaceTags), C_SIZE_T), &
     & tag=gmsh_cint(input(default=-1, option=tag)), &
     & ierr=ierr)
-  !!
-  ans = int(cintvar, i4b)
-  !!
+ 
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddsurfaceLoop
 
 !----------------------------------------------------------------------------
@@ -547,7 +544,7 @@ FUNCTION geo_AddVolume(shellTags, tag) &
     & tag=gmsh_cint(input(default=-1, option=tag)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
 END FUNCTION geo_AddVolume
 
@@ -563,39 +560,39 @@ END FUNCTION geo_AddVolume
 !! geometry explicitly; otherwise a new tag is selected automatically. Return
 !! the tag of the geometry.
 
-function geo_AddGeometry(geometry, numbers, &
-  & strings, tag) result(ans)
+FUNCTION geo_AddGeometry(geometry, numbers, &
+  & strings, tag) RESULT(ans)
   !!
-  character(len=*), intent(in) :: geometry
-  class(*), intent(in), optional :: numbers(:)
-  character(len=*), intent(in), optional :: strings(:)
-  integer(i4b), intent(in), optional :: tag
-  integer(i4b) :: ans
+  CHARACTER(*), INTENT(in) :: geometry
+  CLASS(*), INTENT(in), OPTIONAL :: numbers(:)
+  CHARACTER(*), INTENT(in), OPTIONAL :: strings(:)
+  INTEGER(i4b), INTENT(in), OPTIONAL :: tag
+  INTEGER(i4b) :: ans
   !!
-  character(len=maxStrLen, kind=c_char), allocatable :: strings_strs(:)
-  type(c_ptr), allocatable :: strings_(:)
-  real(c_double), allocatable :: numbers0(:)
+  CHARACTER(maxStrLen, kind=C_CHAR), ALLOCATABLE :: strings_strs(:)
+  TYPE(C_PTR), ALLOCATABLE :: strings_(:)
+  REAL(C_DOUBLE), ALLOCATABLE :: numbers0(:)
   !!
-  call gmsh_GetCharArray_cPtr(strings, strings_strs, strings_)
+  CALL gmsh_GetCharArray_cPtr(strings, strings_strs, strings_)
   !
-  if (present(numbers)) then
+  IF (PRESENT(numbers)) THEN
     numbers0 = gmsh_cdouble(numbers)
-  else
-    allocate (numbers0(0))
-  end if
+  ELSE
+    ALLOCATE (numbers0(0))
+  END IF
   !
   cintvar = gmshModelGeoAddGeometry( &
     & geometry=gmsh_CString(geometry), &
     & numbers=numbers0, &
-    & numbers_n=size(numbers0, kind=c_size_t), &
+    & numbers_n=SIZE(numbers0, kind=C_SIZE_T), &
     & strings=strings_, &
     & strings_n=gmsh_size_str(strings), &
     & tag=gmsh_cint(input(default=-1, option=tag)), &
     & ierr=ierr)
   !
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !
-end function geo_AddGeometry
+END FUNCTION geo_AddGeometry
 
 !----------------------------------------------------------------------------
 !
@@ -607,15 +604,15 @@ end function geo_AddGeometry
 !! otherwise a new tag is selected automatically. Return the tag of the point.
 !! For surface geometries, only the `x' and `y' coordinates are used.
 
-function geo_AddPointOnGeometry(geometryTag, x, y, z, meshSize, &
-  & tag) result(ans)
-  integer(i4b), intent(in) :: geometryTag
-  class(*), intent(in) :: x
-  class(*), intent(in) :: y
-  class(*), intent(in), optional :: z
-  class(*), intent(in), optional :: meshSize
-  integer(i4b), intent(in), optional :: tag
-  integer(i4b) :: ans
+FUNCTION geo_AddPointOnGeometry(geometryTag, x, y, z, meshSize, &
+  & tag) RESULT(ans)
+  INTEGER(i4b), INTENT(in) :: geometryTag
+  CLASS(*), INTENT(in) :: x
+  CLASS(*), INTENT(in) :: y
+  CLASS(*), INTENT(in), OPTIONAL :: z
+  CLASS(*), INTENT(in), OPTIONAL :: meshSize
+  INTEGER(i4b), INTENT(in), OPTIONAL :: tag
+  INTEGER(i4b) :: ans
   !!
   cintvar = gmshModelGeoAddPointOnGeometry( &
     & geometryTag=gmsh_cint(geometryTag), &
@@ -626,9 +623,9 @@ function geo_AddPointOnGeometry(geometryTag, x, y, z, meshSize, &
     & tag=gmsh_opt_cint(default=-1_I4B, option=tag), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
   !!
-end function geo_AddPointOnGeometry
+END FUNCTION geo_AddPointOnGeometry
 
 !----------------------------------------------------------------------------
 !
@@ -666,7 +663,7 @@ FUNCTION geo_Extrude(dimTags, dx, dy, dz, &
     & numElements_n=SIZE(numElements, KIND=C_SIZE_T), &
     & heights=gmsh_cdouble(heights), &
     & heights_n=SIZE(heights, KIND=C_SIZE_T), &
-    & recombine=optval_c_bool(.false., recombine), &
+    & recombine=optval_c_bool(.FALSE., recombine), &
     & ierr=ierr)
   !!
   outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
@@ -730,7 +727,7 @@ FUNCTION geo_GeoRevolve(dimTags, x, y, z, ax, ay, az, &
     & numElements_n=SIZE(numElements0, KIND=C_SIZE_T), &
     & heights=heights0, &
     & heights_n=SIZE(heights0, KIND=C_SIZE_T), &
-    & recombine=optval_c_bool(.false., recombine), &
+    & recombine=optval_c_bool(.FALSE., recombine), &
     & ierr=ierr)
   !!
   outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
@@ -800,7 +797,7 @@ FUNCTION geo_Twist(dimTags, x, y, z, dx, dy, dz, ax, &
     & numElements_n=SIZE(numElements0, KIND=C_SIZE_T), &
     & heights=heights0, &
     & heights_n=SIZE(heights0, KIND=C_SIZE_T), &
-    & recombine=optval_c_bool(.false., recombine), &
+    & recombine=optval_c_bool(.FALSE., recombine), &
     & ierr=ierr)
   !!
   outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
@@ -852,16 +849,16 @@ FUNCTION geo_ExtrudeBoundaryLayer(dimTags, &
   !!
   CALL gmshModelGeoExtrudeBoundaryLayer( &
     & dimTags=gmsh_cint(dimTags), &
-    & dimTags_n=SIZE(dimTags, kind=c_size_t), &
+    & dimTags_n=SIZE(dimTags, kind=C_SIZE_T), &
     & outDimTags=cptr, &
     & outDimTags_n=outDimTags_n, &
     & numElements=numElements0, &
-    & numElements_n=SIZE(numElements0, kind=c_size_t), &
+    & numElements_n=SIZE(numElements0, kind=C_SIZE_T), &
     & heights=heights0, &
-    & heights_n=SIZE(heights0, kind=c_size_t), &
-    & recombine=optval_c_bool(.false., recombine), &
-    & second=optval_c_bool(.false., second), &
-    & viewIndex=optval_c_bool(.false., viewIndex), &
+    & heights_n=SIZE(heights0, kind=C_SIZE_T), &
+    & recombine=optval_c_bool(.FALSE., recombine), &
+    & second=optval_c_bool(.FALSE., second), &
+    & viewIndex=optval_c_bool(.FALSE., viewIndex), &
     & ierr=ierr)
   !!
   outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
@@ -1038,15 +1035,15 @@ END FUNCTION geo_Copy
 !! of higher-dimensional entities. If `recursive' is true, remove all the
 !! entities on their boundaries, down to dimension 0.
 
-FUNCTION geo_Remove(dimTags, recursive) RESULT(ans)
+FUNCTION geo_Remove(dimTags, RECURSIVE) RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recursive
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: RECURSIVE
   INTEGER(I4B) :: ans
   !!
   CALL gmshModelGeoRemove( &
     & dimTags=dimTags, &
     & dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-    & recursive=optval_c_bool(.false., recursive), &
+    & RECURSIVE=optval_c_bool(.FALSE., RECURSIVE), &
     & ierr=ierr)
   !!
   ans = INT(ierr, I4B)
@@ -1084,7 +1081,7 @@ FUNCTION geo_SplitCurve(tag, pointTags) &
   CALL gmshModelGeoSplitCurve( &
     & tag=gmsh_cint(tag), &
     & pointTags=gmsh_cint(pointTags), &
-    & pointTags_n=size(pointTags, kind=c_size_t), &
+    & pointTags_n=SIZE(pointTags, kind=C_SIZE_T), &
     & curveTags=cptr, &
     & curveTags_n=curveTags_n, &
     & ierr=ierr)
@@ -1104,7 +1101,7 @@ FUNCTION geo_GetMaxTag(dim) RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: dim
   INTEGER(I4B) :: ans
   cintvar = gmshModelGeoGetMaxTag(dim=gmsh_cint(dim), ierr=ierr)
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_GetMaxTag
 
 !----------------------------------------------------------------------------
@@ -1136,18 +1133,18 @@ FUNCTION geo_AddPhysicalGroup(dim, tags, tag, name) &
   INTEGER(I4B), INTENT(IN) :: dim
   INTEGER(I4B), INTENT(IN) :: tags(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
-  CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: name
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: name
   INTEGER(I4B) :: ans
   !!
   cintvar = gmshModelGeoAddPhysicalGroup( &
     & dim=gmsh_cint(dim), &
     & tags=gmsh_cint(tags), &
-    & tags_n=size(tags, kind=c_size_t), &
+    & tags_n=SIZE(tags, kind=C_SIZE_T), &
     & tag=gmsh_opt_cint(default=-1_I4B, option=tag), &
     & name=gmsh_CString(input(default="", option=name)), &
     & ierr=ierr)
   !!
-  ans = int(cintvar, i4b)
+  ans = INT(cintvar, i4b)
 END FUNCTION geo_AddPhysicalGroup
 
 !----------------------------------------------------------------------------
@@ -1174,7 +1171,7 @@ FUNCTION geo_RemovePhysicalGroups(dimTags) &
   !!
   CALL gmshModelGeoRemovePhysicalGroups( &
     & dimTags=dimTags0, &
-    & dimTags_n=SIZE(dimTags0, KIND=c_size_t), &
+    & dimTags_n=SIZE(dimTags0, KIND=C_SIZE_T), &
     & ierr=ierr)
   !!
   ans = INT(ierr, I4B)
@@ -1198,7 +1195,3 @@ FUNCTION geo_Synchronize() RESULT(ans)
 END FUNCTION geo_Synchronize
 
 END MODULE GmshModelGeo_Class
-
-#ifdef _DT_
-#undef _DT_
-#endif

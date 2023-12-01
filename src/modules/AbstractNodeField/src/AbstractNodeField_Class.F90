@@ -14,7 +14,7 @@
 
 MODULE AbstractNodeField_Class
 USE GlobalData
-USE BaseType
+USE Basetype
 USE RealVector_Method
 USE DOF_Method
 USE AbstractField_Class
@@ -22,7 +22,9 @@ USE FPL, ONLY: ParameterList_
 USE Domain_Class, ONLY: DomainPointer_, Domain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
-USE FiniteElement_Class, ONLY: FiniteElementPointer_
+USE ExceptionHandler_Class, ONLY: e
+USE AbstractBC_Class, ONLY: AbstractBC_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractNodeFieldDisplay
@@ -36,8 +38,11 @@ PUBLIC :: AbstractNodeFieldDeallocate
 PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
+PUBLIC :: AbstractNodeFieldSetParam
+PUBLIC :: AbstractNodeFieldGetFEVariable
 
-CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
 
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
@@ -48,50 +53,94 @@ CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
 ! summary: Abstract node field
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
+  INTEGER(I4B) :: dof_tPhysicalVars = 0_I4B
+  !! Total number of physical variables
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B) :: dof_storageFMT = NODES_FMT
+  !! Storage format
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
+  !! Spatial components
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: dof_timeCompo(:)
+  !! NOTE: This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: dof_tNodes(:)
+  !! Total number of nodes
+  !! NOTE: This variable is only for internal use
+  CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
+  !! Single character name of physical variable
+  !! NOTE: This variable is only for internal use
   INTEGER(I4B) :: tSize = 0
   !! Total length of the nodal field = tdof * tNodes
+  !! NOTE: This variable is only for internal use
   TYPE(RealVector_) :: realVec
   !! Vector of reals to contains the nodes
+  !! NOTE: This variable is only for internal use
   TYPE(DOF_) :: dof
   !! Degree of freedom object, which contains the information about
   !! how the different components are stored inside the realVec
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: fe(:)
-  !! Finite element
+  !! NOTE: This variable is only for internal use
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => anf_Display
-  !! Display the content of AbstractNodeField
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => anf_Import
-  !! Import AbstractNodeField from HDF5File_
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => anf_Export
-  !! Export AbstractNodeField to HDF5File_
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => anf_GetPointer
-  !! GetPointer to the fortran vector stored inside the realvec
-  !! This function should be called for Native engine only
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => anf_Size
-  !! Returns the length of data stored inside the fortran vector
+  PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => anf_Initiate1
+  !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => anf_Initiate2
   !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => anf_Initiate3
   !! Initiate an instance of AbstrtactNodeField
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => anf_Deallocate
   !! Deallocate the data stored inside
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => anf_Display
+  !! Display the content of AbstractNodeField
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => anf_Import
+  !! Import AbstractNodeField from HDF5File_
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => anf_Export
+  !! Export AbstractNodeField to HDF5File_
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => anf_WriteData_vtk
+  !! Export data in VTKformat
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => anf_GetPointer
+  !! GetPointer to the fortran vector stored inside the realvec
+  !! This function should be called for Native engine only
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => anf_Size
+  !! Returns the length of data stored inside the fortran vector
   PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => anf_Norm2
   !! Returns the L2 norm
-  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => anf_SetSingle
-  !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => anf_GetSingle
   !! Get single entry
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => anf_GetTotalDOF
-  !! Returns the total number of degree of freedoms
-  !! This is same as calling Size
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => anf_GetTotalVertexDOF
-  !! Returns the total number of vertex degree of freedoms
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => anf_GetTotalEdgeDOF
-  !! Returns the total number of edge degree of freedoms
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => anf_GetTotalFaceDOF
-  !! Returns the total number of face degree of freedoms
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => anf_GetTotalCellDOF
-  !! Returns the total number of cell degree of freedoms
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => anf_GetFeVariable
+  !! Get Finite Element variable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => anf_GetPhysicalNames
+  !! Get physical names
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars =>  &
+    & anf_GetTotalPhysicalVars
+  !! Get total physical variables
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => anf_GetSpaceCompo
+  !! Get GetSpaceCompo
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => anf_GetTimeCompo
+  !! Get the time components
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc1 => anf_GetNodeLoc1
+  !! Get location of global node number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc2 => anf_GetNodeLoc2
+  !! Get location of global node number from AbstractBC
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeLoc3 => anf_GetNodeLoc3
+  !! Get location of global node number from DirichletBCPointer
+  GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2,  &
+    & GetNodeLoc3
+  !! Generic method for getting location of nodes
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => anf_SetSingle
+  !! Set single entry
 END TYPE AbstractNodeField_
 
 !----------------------------------------------------------------------------
@@ -103,93 +152,33 @@ TYPE :: AbstractNodeFieldPointer_
 END TYPE AbstractNodeFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                                             Initiate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Initiate an instance of AbstractNodeField
-
-INTERFACE
-  MODULE SUBROUTINE AbstractNodeFieldInitiate(obj, param, dom, prefix)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractNodeFieldInitiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 Display
+!                                               CheckError@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE anf_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE AbstractNodeFieldCheckError(obj)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE anf_Display
+  END SUBROUTINE AbstractNodeFieldCheckError
 END INTERFACE
 
-INTERFACE AbstractNodeFieldDisplay
-  MODULE PROCEDURE anf_Display
-END INTERFACE AbstractNodeFieldDisplay
-
 !----------------------------------------------------------------------------
-!                                                                 IMPORT
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE anf_Import(obj, hdf5, group, dom, domains)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE anf_Import
-END INTERFACE
-
-INTERFACE AbstractNodeFieldImport
-  MODULE PROCEDURE anf_Import
-END INTERFACE AbstractNodeFieldImport
-
-!----------------------------------------------------------------------------
-!                                                                 Export
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE anf_Export(obj, hdf5, group)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE anf_Export
-END INTERFACE
-
-INTERFACE AbstractNodeFieldExport
-  MODULE PROCEDURE anf_Export
-END INTERFACE AbstractNodeFieldExport
-
-!----------------------------------------------------------------------------
-!                                                                GetPointer
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 20 Jul 2021
-! summary: Returns the pointer to a fortran real vector stored inside realVec
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
 
-INTERFACE
-  MODULE FUNCTION anf_GetPointer(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: obj
-    REAL(DFP), POINTER :: ans(:)
-  END FUNCTION anf_GetPointer
-END INTERFACE
-
-INTERFACE AbstractNodeFieldGetPointer
-  MODULE PROCEDURE anf_GetPointer
-END INTERFACE AbstractNodeFieldGetPointer
+INTERFACE AbstractNodeFieldInitiate
+  MODULE SUBROUTINE anf_Initiate1(obj, param, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE anf_Initiate1
+END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                            anf_Initiate3
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -209,7 +198,7 @@ END INTERFACE AbstractNodeFieldGetPointer
 !
 ! Currently, copyStructure and usePointer is not used
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate2
   MODULE SUBROUTINE anf_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -219,48 +208,120 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE anf_Initiate2
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate2
-  MODULE PROCEDURE anf_Initiate2
 END INTERFACE AbstractNodeFieldInitiate2
 
 !----------------------------------------------------------------------------
-!                                                            anf_Initiate3
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 Sept 2021
 ! summary: Initiates AbstractNodeField_ from parameters and domain
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE anf_Initiate3(obj, param, dom)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE anf_Initiate3
-END INTERFACE
+END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
-!                                                            Deallocate
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractNodeField_]]
 
-INTERFACE
+INTERFACE AbstractNodeFieldDeallocate
   MODULE SUBROUTINE anf_Deallocate(obj)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   END SUBROUTINE anf_Deallocate
-END INTERFACE
-
-INTERFACE AbstractNodeFieldDeallocate
-  MODULE PROCEDURE anf_Deallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                                                    Norm2
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Display the content of AbstractNodeField
+
+INTERFACE AbstractNodeFieldDisplay
+  MODULE SUBROUTINE anf_Display(obj, msg, unitNo)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE anf_Display
+END INTERFACE AbstractNodeFieldDisplay
+
+!----------------------------------------------------------------------------
+!                                                         IMPORT@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Import data into HDF5File_
+
+INTERFACE AbstractNodeFieldImport
+  MODULE SUBROUTINE anf_Import(obj, hdf5, group, dom, domains)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
+    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+  END SUBROUTINE anf_Import
+END INTERFACE AbstractNodeFieldImport
+
+!----------------------------------------------------------------------------
+!                                                         Export@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data into HDF5File_
+
+INTERFACE AbstractNodeFieldExport
+  MODULE SUBROUTINE anf_Export(obj, hdf5, group)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE anf_Export
+END INTERFACE AbstractNodeFieldExport
+
+!----------------------------------------------------------------------------
+!                                                       WriteData@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data in vrkfile
+
+INTERFACE AbstractNodeWriteData
+  MODULE SUBROUTINE anf_WriteData_vtk(obj, vtk)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+  END SUBROUTINE anf_WriteData_vtk
+END INTERFACE AbstractNodeWriteData
+
+!----------------------------------------------------------------------------
+!                                                     GetPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 Jul 2021
+! summary: Returns the pointer to a fortran real vector stored inside realVec
+
+INTERFACE AbstractNodeFieldGetPointer
+  MODULE FUNCTION anf_GetPointer(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: obj
+    REAL(DFP), POINTER :: ans(:)
+  END FUNCTION anf_GetPointer
+END INTERFACE AbstractNodeFieldGetPointer
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -275,6 +336,29 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       SetParam@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-25
+! summary:  Set parameters of AbstractNodeField_
+
+INTERFACE AbstractNodeFieldSetParam
+  MODULE SUBROUTINE anf_SetParam(obj, dof_tPhysicalVars,  &
+      & dof_storageFMT, dof_spaceCompo, dof_timeCompo,  &
+      & dof_tNodes, dof_names_char, tSize)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+  END SUBROUTINE anf_SetParam
+END INTERFACE AbstractNodeFieldSetParam
+
+!----------------------------------------------------------------------------
 !                                                       SetSingle@SetMethods
 !----------------------------------------------------------------------------
 
@@ -282,43 +366,116 @@ END INTERFACE
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE
-  MODULE SUBROUTINE anf_setSingle(obj, indx, VALUE, scale, &
+INTERFACE AbstractNodeFieldSetSingle
+  MODULE SUBROUTINE anf_SetSingle(obj, indx, VALUE, scale, &
     & addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE anf_setSingle
-END INTERFACE
-
-INTERFACE AbstractNodeFieldSetSingle
-  MODULE PROCEDURE anf_setSingle
+  END SUBROUTINE anf_SetSingle
 END INTERFACE AbstractNodeFieldSetSingle
 
 !----------------------------------------------------------------------------
-!                                                          GetSingle@Methods
+!                                                       GetSingle@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-28
 ! summary: Set single entry
 
-INTERFACE
+INTERFACE AbstractNodeFieldGetSingle
   MODULE SUBROUTINE anf_GetSingle(obj, indx, VALUE)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE anf_GetSingle
-END INTERFACE
-
-INTERFACE AbstractNodeFieldGetSingle
-  MODULE PROCEDURE anf_GetSingle
 END INTERFACE AbstractNodeFieldGetSingle
 
 !----------------------------------------------------------------------------
-!                                                                       Size
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE AbstractNodeFieldGetFEVariable
+  MODULE SUBROUTINE anf_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE anf_GetFeVariable
+END INTERFACE AbstractNodeFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                GetPhysicalNames@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns the names of physical variables
+
+INTERFACE
+  MODULE SUBROUTINE anf_GetPhysicalNames(obj, ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(INOUT) :: ans(:)
+  END SUBROUTINE anf_GetPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetTotalPhysicalVars@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-03
+! summary:  Returns the total number of physical variables
+
+INTERFACE
+  MODULE FUNCTION anf_GetTotalPhysicalVars(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION anf_GetTotalPhysicalVars
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetSpaceCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns space components
+
+INTERFACE
+  MODULE FUNCTION anf_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+      !! Total number of physical variables
+      !! This can be obtained from GetTotalPhysicalVars method
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION anf_GetSpaceCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTimeCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns Time components
+
+INTERFACE
+  MODULE FUNCTION anf_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION anf_GetTimeCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Size@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -334,81 +491,63 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              GetTotalDOF
+!                                                      GetNodeLoc@GeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of degree of freedoms
-!
-!# Introduction
-! This method is same as calling the size function.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode
 
 INTERFACE
-  MODULE FUNCTION anf_GetTotalDOF(obj) RESULT(ans)
+  MODULE FUNCTION anf_GetNodeLoc1(obj, globalNode, ivar, spaceCompo,  &
+    & timeCompo) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalDOF
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION anf_GetNodeLoc1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetTotalVertexDOF
+!                                                      GetNodeLoc@GeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of vertex degree of freedoms
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
 
 INTERFACE
-  MODULE FUNCTION anf_GetTotalVertexDOF(obj) RESULT(ans)
+  MODULE FUNCTION anf_GetNodeLoc2(obj, dbc, ivar) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalVertexDOF
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION anf_GetNodeLoc2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetTotalEdgeDOF
+!                                                      GetNodeLoc@GeMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Edge degree of freedoms
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
 
 INTERFACE
-  MODULE FUNCTION anf_GetTotalEdgeDOF(obj) RESULT(ans)
+  MODULE FUNCTION anf_GetNodeLoc3(obj, dbc, ivar) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalEdgeDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetTotalFaceDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Face degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalFaceDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalFaceDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetTotalCellDOF
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Cell degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION anf_GetTotalCellDOF(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION anf_GetTotalCellDOF
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION anf_GetNodeLoc3
 END INTERFACE
 
 !----------------------------------------------------------------------------

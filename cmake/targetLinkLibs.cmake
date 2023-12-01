@@ -16,49 +16,6 @@
 #
 #
 
-# Link libs to the project
-
-#....................................................................
-#
-#....................................................................
-
-FUNCTION(FIND_EASIFEM_DEPENDENCY EXT_PKG_LIST)
-  FOREACH(p ${EXT_PKG_LIST})
-    FIND_PACKAGE( ${p} REQUIRED )
-    IF( ${p}_FOUND )
-      MESSAGE(STATUS "FOUND ${p}")
-    ELSE()
-      MESSAGE(ERROR "NOT FOUND ${p}")
-    ENDIF()
-  ENDFOREACH()
-ENDFUNCTION(FIND_EASIFEM_DEPENDENCY)
-
-#....................................................................
-#
-#....................................................................
-
-FUNCTION(LINK_EASIFEM_DEPENDENCY EXT_PKG_LIST PROJECT_NAME)
-  FOREACH(p ${EXT_PKG_LIST})
-    TARGET_LINK_LIBRARIES( ${PROJECT_NAME} PUBLIC ${p}::${p} )
-  ENDFOREACH()
-ENDFUNCTION(LINK_EASIFEM_DEPENDENCY)
-
-#....................................................................
-#
-#....................................................................
-
-IF( ${PROJECT_NAME} MATCHES "easifemBase" )
-  IF( USE_LAPACK95 )
-    LIST(APPEND EXT_PKGS LAPACK95)
-    LIST( APPEND TARGET_COMPILE_DEF "-DUSE_LAPACK95" )
-  ENDIF()
-
-  LIST(APPEND EXT_PKGS Sparsekit)
-
-  FIND_EASIFEM_DEPENDENCY( "${EXT_PKGS}" )
-  LINK_EASIFEM_DEPENDENCY( "${EXT_PKGS}" "${PROJECT_NAME}" )
-ENDIF()
-
 #....................................................................
 #
 #....................................................................

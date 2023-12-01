@@ -29,65 +29,60 @@ MODULE PROCEDURE txt_read_Line
 CHARACTER(*), PARAMETER :: myName = 'txt_read_Line'
 CHARACTER(maxStrLen) :: buffer
 INTEGER(I4B) :: buffer_size, eioerr, ioerr
-!
+
 ioerr = 0
 val = ""
-!
+
 IF (obj%isOpen() .AND. .NOT. obj%isEOF()) THEN
-  !
+
   DO WHILE (ioerr .NE. IOSTAT_EOR .AND. ioerr .NE. IOSTAT_END)
-    !
+
     ! Repeatedly read chunks of current input
     ! file line into buffer
-    !
     READ ( &
       & UNIT=obj%getUnitNo(), &
       & FMT='(a)', &
       & SIZE=buffer_size, &
       & ADVANCE='NO', &
       & IOSTAT=ioerr) buffer
-    !
+
     IF (ioerr .EQ. IOSTAT_END) THEN
-      !
       ! end of file
-      !
       CALL obj%setEOFstat(.TRUE.)
-      !
       ! Done reading line. Append last buffer to line.
-      !
+
     ELSEIF (ioerr .EQ. IOSTAT_EOR) THEN
-      !
       val = val//TRIM(buffer)
-      !
+
       IF (obj%echostat) THEN
-        !
+
         WRITE (UNIT=obj%echounit, FMT='(a)', IOSTAT=eioerr) &
           & TRIM(val%chars())
-        !
+
         IF (eioerr .NE. 0) THEN
           CALL e%raiseError(modName//'::'//myName//" - "// &
             &' - Error echoing line to UNIT='//tostring(obj%echounit)//&
             & ' (IOSTAT='//tostring(eioerr)//')!')
         END IF
-        !
+
       END IF
-      !
+
       val = TRIM(val)
-      !
+
     ELSEIF (ioerr .LT. IOSTAT_EOR) THEN
-      !
+
       ! Error reading line from input file
-      !
+
       CALL e%raiseError(modName//'::'//myName//" - "// &
         & ' - Error reading one line from input file (IOSTAT='// &
         & tostring(ioerr)//')!')
-      !
+
     ELSE
-      !
+
       ! Still reading current line. Append buffer to line
-      !
+
       val = val//buffer
-      !
+
     END IF
   END DO
 END IF

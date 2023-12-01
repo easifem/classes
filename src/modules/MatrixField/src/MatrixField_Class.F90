@@ -46,6 +46,21 @@ CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
 CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
+PUBLIC :: SetMatrixFieldParam
+PUBLIC :: TypeMatrixField
+PUBLIC :: MatrixField_
+PUBLIC :: SetMatrixFieldPrecondParam
+PUBLIC :: SetRectangleMatrixFieldParam
+PUBLIC :: DEALLOCATE
+PUBLIC :: MatrixFieldCheckEssentialParam
+PUBLIC :: RectangleMatrixFieldCheckEssentialParam
+PUBLIC :: MatrixFieldInitiate1
+PUBLIC :: MatrixFieldInitiate2
+PUBLIC :: MatrixFieldInitiate3
+PUBLIC :: MatrixFieldDeallocate
+PUBLIC :: MatrixFieldDisplay
+PUBLIC :: MatrixFieldImport
+PUBLIC :: MatrixFieldExport
 
 !----------------------------------------------------------------------------
 !                                                               MSRSparsity_
@@ -111,7 +126,7 @@ END TYPE MatrixFieldPrecondition_
 ! date: 15 July 2021
 ! summary: This is native implementation of finite element tangent matrices.
 !
-!{!pages/MatrixField_.md!}
+!{!pages/docs-api/MatrixField/MatrixField_.md!}
 
 TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   LOGICAL(LGT) :: isRectangle = .FALSE.
@@ -255,9 +270,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => mField_ApplyDBC
 END TYPE MatrixField_
 
-PUBLIC :: MatrixField_
-
-TYPE(MatrixField_), PARAMETER, PUBLIC :: TypeMatrixField = &
+TYPE(MatrixField_), PARAMETER :: TypeMatrixField =  &
   & MatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -306,8 +319,6 @@ INTERFACE
   END SUBROUTINE SetMatrixFieldParam
 END INTERFACE
 
-PUBLIC :: SetMatrixFieldParam
-
 !----------------------------------------------------------------------------
 !                           SetMatrixFieldPrecondParam@sConstructorMethods
 !----------------------------------------------------------------------------
@@ -343,8 +354,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
   END SUBROUTINE SetMatrixFieldPrecondParam
 END INTERFACE
-
-PUBLIC :: SetMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !                            SetRectangleMatrixFieldParam@ConstructorMethods
@@ -407,8 +416,6 @@ INTERFACE
   END SUBROUTINE SetRectangleMatrixFieldParam
 END INTERFACE
 
-PUBLIC :: SetRectangleMatrixFieldParam
-
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -417,17 +424,11 @@ PUBLIC :: SetRectangleMatrixFieldParam
 ! date: 9 Oct 2021
 ! summary: Deallocates the data stored inside [[MatrixFieldPrecondition_]]
 
-INTERFACE
+INTERFACE DEALLOCATE
   MODULE SUBROUTINE Pmat_Deallocate(obj)
     TYPE(MatrixFieldPrecondition_), INTENT(INOUT) :: obj
   END SUBROUTINE Pmat_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE Pmat_Deallocate
 END INTERFACE DEALLOCATE
-
-PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -459,8 +460,6 @@ INTERFACE
   END SUBROUTINE MatrixFieldCheckEssentialParam
 END INTERFACE
 
-PUBLIC :: MatrixFieldCheckEssentialParam
-
 !----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -480,8 +479,6 @@ INTERFACE
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE RectangleMatrixFieldCheckEssentialParam
 END INTERFACE
-
-PUBLIC :: RectangleMatrixFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -515,19 +512,13 @@ PUBLIC :: RectangleMatrixFieldCheckEssentialParam
 ! - `timeCompo`, INT, default is 1
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
-INTERFACE
+INTERFACE MatrixFieldInitiate1
   MODULE SUBROUTINE mField_Initiate1(obj, param, dom)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE mField_Initiate1
-END INTERFACE
-
-INTERFACE MatrixFieldInitiate1
-  MODULE PROCEDURE mField_Initiate1
 END INTERFACE MatrixFieldInitiate1
-
-PUBLIC :: MatrixFieldInitiate1
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -564,7 +555,7 @@ PUBLIC :: MatrixFieldInitiate1
 ! Add functionality for other options too.
 !@endtodo
 
-INTERFACE
+INTERFACE MatrixFieldInitiate2
   MODULE SUBROUTINE mField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
@@ -574,13 +565,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE mField_Initiate2
-END INTERFACE
-
-INTERFACE MatrixFieldInitiate2
-  MODULE PROCEDURE mField_Initiate2
 END INTERFACE MatrixFieldInitiate2
-
-PUBLIC :: MatrixFieldInitiate2
 
 !----------------------------------------------------------------------------
 !                                               Initiate@sConstructorMethods
@@ -590,19 +575,13 @@ PUBLIC :: MatrixFieldInitiate2
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 
-INTERFACE
+INTERFACE MatrixFieldInitiate3
   MODULE SUBROUTINE mField_Initiate3(obj, param, dom)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE mField_Initiate3
-END INTERFACE
-
-INTERFACE MatrixFieldInitiate3
-  MODULE PROCEDURE mField_Initiate3
 END INTERFACE MatrixFieldInitiate3
-
-PUBLIC :: MatrixFieldInitiate3
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -612,17 +591,11 @@ PUBLIC :: MatrixFieldInitiate3
 ! date: 16 July 2021
 ! summary: This routine deallocates the data stored inside the matrix
 
-INTERFACE
+INTERFACE MatrixFieldDeallocate
   MODULE SUBROUTINE mField_Deallocate(obj)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
   END SUBROUTINE mField_Deallocate
-END INTERFACE
-
-INTERFACE MatrixFieldDeallocate
-  MODULE PROCEDURE mField_Deallocate
 END INTERFACE MatrixFieldDeallocate
-
-PUBLIC :: MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
@@ -632,19 +605,13 @@ PUBLIC :: MatrixFieldDeallocate
 ! date: 16 July 2021
 ! summary: This routine displays the content
 
-INTERFACE
+INTERFACE MatrixFieldDisplay
   MODULE SUBROUTINE mField_Display(obj, msg, unitNo)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE mField_Display
-END INTERFACE
-
-INTERFACE MatrixFieldDisplay
-  MODULE PROCEDURE mField_Display
 END INTERFACE MatrixFieldDisplay
-
-PUBLIC :: MatrixFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                          Import@IOMethods
@@ -654,7 +621,7 @@ PUBLIC :: MatrixFieldDisplay
 ! date: 16 July 2021
 ! summary: This routine Imports the content of matrix field from hdf5file
 
-INTERFACE
+INTERFACE MatrixFieldImport
   MODULE SUBROUTINE mField_Import(obj, hdf5, group, dom, domains)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
@@ -662,13 +629,7 @@ INTERFACE
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
   END SUBROUTINE mField_Import
-END INTERFACE
-
-INTERFACE MatrixFieldImport
-  MODULE PROCEDURE mField_Import
 END INTERFACE MatrixFieldImport
-
-PUBLIC :: MatrixFieldImport
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -696,19 +657,13 @@ END INTERFACE
 ! date: 16 July 2021
 ! summary: This routine Exports the content of matrixfield_ to hdf5 file
 
-INTERFACE
+INTERFACE MatrixFieldExport
   MODULE SUBROUTINE mField_Export(obj, hdf5, group)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE mField_Export
-END INTERFACE
-
-INTERFACE MatrixFieldExport
-  MODULE PROCEDURE mField_Export
 END INTERFACE MatrixFieldExport
-
-PUBLIC :: MatrixFieldExport
 
 !----------------------------------------------------------------------------
 !                                                       ExportPmat@IOMethods

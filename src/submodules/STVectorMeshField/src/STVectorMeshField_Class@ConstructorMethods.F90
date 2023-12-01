@@ -56,7 +56,7 @@ END PROCEDURE SetSTVectorMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractFieldCheckEssentialParam( &
+CALL AbstractMeshFieldCheckEssentialParam( &
   & obj=obj, &
   & prefix="STVectorMeshField", &
   & param=param)

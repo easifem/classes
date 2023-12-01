@@ -18,93 +18,100 @@
 ! date: 28 Aug 2021
 ! summary: This module defines a data type for mesh selection
 
-SUBMODULE(MeshSelection_Class) GetNodeNumMethods
+SUBMODULE(MeshSelection_Class) GetnodeNumMethods
 USE BaseMethod
 USE Mesh_Class, ONLY: Mesh_
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                getNodeNum
+!                                                                GetnodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_getNodeNum1
-IF (isAllocated(obj%NodeNum)) ans = obj%NodeNum
-END PROCEDURE meshSelect_getNodeNum1
+MODULE PROCEDURE meshSelect_GetnodeNum1
+IF (isAllocated(obj%nodeNum)) THEN
+  CALL Reallocate(ans, SIZE(obj%nodeNum))
+  ans = obj%nodeNum
+ELSE
+  CALL reallocate(ans, 0_I4B)
+END IF
+END PROCEDURE meshSelect_GetnodeNum1
 
 !----------------------------------------------------------------------------
-!                                                                getNodeNum
+!                                                                GetnodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_getNodeNum2
+MODULE PROCEDURE meshSelect_GetnodeNum2
+CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum2()"
 TYPE(IntVector_) :: aintvec
 INTEGER(I4B), ALLOCATABLE :: indx(:)
 INTEGER(I4B) :: ii
-!
-! isSelectionByNodeNum
-!
-IF (obj%isSelectionByNodeNum) THEN
-  CALL APPEND(aintvec, obj%getNodeNum())
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GetnodeNum()')
+#endif
+
+! isSelectionBynodeNum
+IF (obj%isSelectionBynodeNum) THEN
+  CALL APPEND(aintvec, obj%GetnodeNum())
 END IF
-!
+
 ! isSelectionByMeshID
-!
 IF (obj%isSelectionByMeshID) THEN
-  !
   IF (obj%isMeshIDAllocated(dim=dim)) THEN
-    !
-    indx = obj%getMeshID(dim=dim)
-    !
+    indx = obj%GetMeshID(dim=dim)
     CALL APPEND( &
       & aintvec, &
-      & domain%getNptrs(dim=dim, entityNum=indx))
-    !
+      & domain%GetNptrs(dim=dim, entityNum=indx))
     IF (ALLOCATED(indx)) DEALLOCATE (indx)
-    !
   END IF
-  !
 END IF
-!
+
 ! isSelectionByElemNum
-!
 IF (obj%isSelectionByElemNum) THEN
-  !
-  indx = obj%getElemNum(dim=dim)
-  !
+  indx = obj%GetElemNum(dim=dim)
   DO ii = 1, SIZE(indx)
-    !
     CALL APPEND( &
       & aintvec, &
-      & domain%getConnectivity(globalElement=indx(ii)))
-    !
+      & domain%GetConnectivity(globalElement=indx(ii)))
   END DO
-  !
   IF (ALLOCATED(indx)) DEALLOCATE (indx)
-  !
 END IF
-!
+
 IF (isAllocated(aIntVec)) THEN
   CALL RemoveDuplicates(aIntVec)
+  CALL Reallocate(ans, SIZE(aintvec))
   ans = aIntVec
   CALL DEALLOCATE (aIntVec)
+ELSE
+  CALL Reallocate(ans, 0_I4B)
 END IF
-!
-END PROCEDURE meshSelect_getNodeNum2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GetnodeNum()')
+#endif
+END PROCEDURE meshSelect_GetnodeNum2
 
 !----------------------------------------------------------------------------
-!                                                                getNodeNum
+!                                                                GetnodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE meshSelect_getNodeNum3
-CHARACTER(*), PARAMETER :: myName = "meshSelect_getNodeNum3"
+MODULE PROCEDURE meshSelect_GetnodeNum3
+CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum3"
 TYPE(IntVector_) :: aintvec
 INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
 INTEGER(I4B) :: ii, dim, nsd
 
-! isSelectionByNodeNum
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GetnodeNum()')
+#endif
 
-IF (obj%isSelectionByNodeNum) THEN
-  nptrs = obj%getNodeNum()
+! isSelectionBynodeNum
+IF (obj%isSelectionBynodeNum) THEN
+  nptrs = obj%GetnodeNum()
   IF (ALLOCATED(nptrs)) THEN
     CALL APPEND(aintvec, nptrs)
     DEALLOCATE (nptrs)
@@ -112,55 +119,45 @@ IF (obj%isSelectionByNodeNum) THEN
 END IF
 
 ! isSelectionByMeshID
-
 IF (obj%isSelectionByMeshID) THEN
-
-  nsd = domain%getNSD()
-
+  nsd = domain%GetNSD()
   DO dim = 0, nsd
-
     IF (obj%isMeshIDAllocated(dim=dim)) THEN
-
-      indx = obj%getMeshID(dim=dim)
-
-      nptrs = domain%getNptrs(dim=dim, entityNum=indx)
+      indx = obj%GetMeshID(dim=dim)
+      nptrs = domain%GetNptrs(dim=dim, entityNum=indx)
       IF (ALLOCATED(nptrs)) THEN
         CALL APPEND(aintvec, nptrs)
         DEALLOCATE (nptrs)
       END IF
-
       IF (ALLOCATED(indx)) DEALLOCATE (indx)
-
     END IF
-
   END DO
-
 END IF
 
 ! isSelectionByElemNum
-
 IF (obj%isSelectionByElemNum) THEN
-  !
-  indx = obj%getElemNum()
-  !
+  indx = obj%GetElemNum()
   DO ii = 1, SIZE(indx)
-    !
     CALL APPEND( &
       & aintvec, &
-      & domain%getConnectivity(globalElement=indx(ii)))
-    !
+      & domain%GetConnectivity(globalElement=indx(ii)))
   END DO
-  !
   IF (ALLOCATED(indx)) DEALLOCATE (indx)
-  !
 END IF
-!
+
 IF (isAllocated(aIntVec)) THEN
   CALL RemoveDuplicates(aIntVec)
+  CALL Reallocate(ans, SIZE(aIntVec))
   ans = aIntVec
   CALL DEALLOCATE (aIntVec)
+ELSE
+  CALL Reallocate(ans, 0_I4B)
 END IF
-!
-END PROCEDURE meshSelect_getNodeNum3
 
-END SUBMODULE GetNodeNumMethods
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GetnodeNum()')
+#endif
+END PROCEDURE meshSelect_GetnodeNum3
+
+END SUBMODULE GetnodeNumMethods

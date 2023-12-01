@@ -20,7 +20,7 @@
 
 MODULE BlockNodeField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
@@ -33,6 +33,12 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
+PUBLIC :: BlockNodeFieldPointer_
+PUBLIC :: BlockNodeField_
+PUBLIC :: TypeBlockNodeField
+PUBLIC :: SetBlockNodeFieldParam
+PUBLIC :: BlockNodeFieldInitiate1
+PUBLIC :: BlockNodeFieldInitiate3
 
 !----------------------------------------------------------------------------
 !                                                           BlockNodeField_
@@ -47,77 +53,85 @@ CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
 TYPE, EXTENDS(AbstractNodeField_) :: BlockNodeField_
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethod
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
     & bnField_checkEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => bnField_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => bnField_Initiate3
   FINAL :: bnField_Final
-  !
-  ! @IOMethods
-  !
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bnField_Import
-  !
-  ! @SetMethods
-  !
-  PROCEDURE, PASS(obj) :: set1 => bnField_set1
-    !! set single entry
-  PROCEDURE, PASS(obj) :: set2 => bnField_set2
-    !! set all values to a scalar values
-  PROCEDURE, PASS(obj) :: ASSIGN => bnField_assign
-    !! set all values to a scalar values
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => ASSIGN
-    !! Assignment, obj = scalar
-  PROCEDURE, PASS(obj) :: set3 => bnField_set3
-    !! set all values to a given vector
-  PROCEDURE, PASS(obj) :: set4 => bnField_set4
-    !! set selected values to given scalar
-  PROCEDURE, PASS(obj) :: set5 => bnField_set5
-  PROCEDURE, PASS(obj) :: set6 => bnField_set6
-  PROCEDURE, PASS(obj) :: set7 => bnField_set7
-  PROCEDURE, PASS(obj) :: set8 => bnField_set8
-  PROCEDURE, PASS(obj) :: set9 => bnField_set9
-  PROCEDURE, PASS(obj) :: set10 => bnField_set10
-  PROCEDURE, PASS(obj) :: set11 => bnField_set11
-  PROCEDURE, PASS(obj) :: set12 => bnField_set12
-  PROCEDURE, PASS(obj) :: set13 => bnField_set13
-  PROCEDURE, PASS(obj) :: set14 => bnField_set14
-  PROCEDURE, PASS(obj) :: set15 => bnField_set15
-  PROCEDURE, PASS(obj) :: set16 => bnField_set16
-  PROCEDURE, PASS(obj) :: set17 => bnField_set17
-  PROCEDURE, PASS(obj) :: set18 => bnField_set18
-  GENERIC, PUBLIC :: set => set1, set2, set3, set4, &
-    & set5, set6, set7, set8, set9, set10, set11, &
-    & set12, set13, set14, set15, set16, set17, set18
-  !
-  ! @GetMethods
-  !
-  PROCEDURE, PASS(obj) :: get1 => bnField_get1
-  PROCEDURE, PASS(obj) :: get2 => bnField_get2
-  PROCEDURE, PASS(obj) :: get3 => bnField_get3
-  PROCEDURE, PASS(obj) :: get4 => bnField_get4
-  PROCEDURE, PASS(obj) :: get5 => bnField_get5
-  PROCEDURE, PASS(obj) :: get6 => bnField_get6
-  PROCEDURE, PASS(obj) :: get7 => bnField_get7
-  PROCEDURE, PASS(obj) :: get8 => bnField_get8
-  PROCEDURE, PASS(obj) :: get9 => bnField_get9
-  GENERIC, PUBLIC :: get => get1, get2, get3, get4, &
-    & get5, get6, get7, get8, get9
 
-  PROCEDURE, PASS(obj) :: bnField_applyDirichletBC1
-  PROCEDURE, PASS(obj) :: bnField_applyDirichletBC2
-  GENERIC, PUBLIC :: applyDirichletBC => &
-    & bnField_applyDirichletBC1, &
-    & bnField_applyDirichletBC2
-  !
-  ! @Operator
-  !
-  PROCEDURE, PASS(obj) :: isEqual => bnField_isEqual
-  GENERIC, PUBLIC :: OPERATOR(.EQ.) => isEqual
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => bnField_Import
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PASS(obj) :: Set1 => bnField_Set1
+  !! Set single entry
+  PROCEDURE, PASS(obj) :: Set2 => bnField_Set2
+  !! Set all values to a scalar values
+  PROCEDURE, PASS(obj) :: ASSIGN => bnField_Assign
+  !! Set all values to a scalar values
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => ASSIGN
+  !! Assignment, obj = scalar
+  PROCEDURE, PASS(obj) :: Set3 => bnField_Set3
+  !! Set all values to a given vector
+  PROCEDURE, PASS(obj) :: Set4 => bnField_Set4
+  !! Set selected values to given scalar
+  PROCEDURE, PASS(obj) :: Set5 => bnField_Set5
+  PROCEDURE, PASS(obj) :: Set6 => bnField_Set6
+  PROCEDURE, PASS(obj) :: Set7 => bnField_Set7
+  PROCEDURE, PASS(obj) :: Set8 => bnField_Set8
+  PROCEDURE, PASS(obj) :: Set9 => bnField_Set9
+  PROCEDURE, PASS(obj) :: Set10 => bnField_Set10
+  PROCEDURE, PASS(obj) :: Set11 => bnField_Set11
+  PROCEDURE, PASS(obj) :: Set12 => bnField_Set12
+  PROCEDURE, PASS(obj) :: Set13 => bnField_Set13
+  PROCEDURE, PASS(obj) :: Set14 => bnField_Set14
+  PROCEDURE, PASS(obj) :: Set15 => bnField_Set15
+  PROCEDURE, PASS(obj) :: Set16 => bnField_Set16
+  PROCEDURE, PASS(obj) :: Set17 => bnField_Set17
+  PROCEDURE, PASS(obj) :: Set18 => bnField_Set18
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
+    & Set5, Set6, Set7, Set8, Set9, Set10, Set11, &
+    & Set12, Set13, Set14, Set15, Set16, Set17, Set18
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PASS(obj) :: Get1 => bnField_Get1
+  PROCEDURE, PASS(obj) :: Get2 => bnField_Get2
+  PROCEDURE, PASS(obj) :: Get3 => bnField_Get3
+  PROCEDURE, PASS(obj) :: Get4 => bnField_Get4
+  PROCEDURE, PASS(obj) :: Get5 => bnField_Get5
+  PROCEDURE, PASS(obj) :: Get6 => bnField_Get6
+  PROCEDURE, PASS(obj) :: Get7 => bnField_Get7
+  PROCEDURE, PASS(obj) :: Get8 => bnField_Get8
+  PROCEDURE, PASS(obj) :: Get9 => bnField_Get9
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
+    & Get5, Get6, Get7, Get8, Get9
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => bnField_GetFEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bnField_GetPrefix
+
+  ! SET:
+  ! @DirichletBCMethods
+  PROCEDURE, PASS(obj) :: bnField_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: bnField_ApplyDirichletBC2
+  GENERIC, PUBLIC :: ApplyDirichletBC => bnField_ApplyDirichletBC1, &
+    & bnField_ApplyDirichletBC2
+
+  ! GET:
+  ! @OperatorMethods
+  PROCEDURE, PASS(obj) :: IsEqual => bnField_IsEqual
+  GENERIC, PUBLIC :: OPERATOR(.EQ.) => IsEqual
 END TYPE BlockNodeField_
 
-PUBLIC :: BlockNodeField_
+!----------------------------------------------------------------------------
+!                                                       TypeBlockNodeField
+!----------------------------------------------------------------------------
 
-TYPE(BlockNodeField_), PARAMETER, PUBLIC :: TypeBlockNodeField = &
+TYPE(BlockNodeField_), PARAMETER :: TypeBlockNodeField =  &
   & BlockNodeField_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -128,10 +142,8 @@ TYPE :: BlockNodeFieldPointer_
   CLASS(BlockNodeField_), POINTER :: ptr => NULL()
 END TYPE BlockNodeFieldPointer_
 
-PUBLIC :: BlockNodeFieldPointer_
-
 !----------------------------------------------------------------------------
-!                                 setBlockNodeFieldParam@ConstructorMethod
+!                                 SetBlockNodeFieldParam@ConstructorMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -177,8 +189,6 @@ INTERFACE
   END SUBROUTINE SetBlockNodeFieldParam
 END INTERFACE
 
-PUBLIC :: SetBlockNodeFieldParam
-
 !----------------------------------------------------------------------------
 !                                      checkEssentialParam@ConstructorMethod
 !----------------------------------------------------------------------------
@@ -213,22 +223,21 @@ END INTERFACE
 !
 !@note
 ! `param` should be constructed by calling
-! [[BlockNodeField_Class::setBloclNodeFieldParam]] routine.
+! [[BlockNodeField_Class::SetBloclNodeFieldParam]] routine.
+!@endnote
+!
+!!@note
+! This routine calls [[BlockNodeField_Class::BlockNodeFieldInitiate3]]
+! routine.
 !@endnote
 
-INTERFACE
+INTERFACE BlockNodeFieldInitiate1
   MODULE SUBROUTINE bnField_Initiate1(obj, param, dom)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE bnField_Initiate1
-END INTERFACE
-
-INTERFACE BlockNodeFieldInitiate1
-  MODULE PROCEDURE bnField_Initiate1
 END INTERFACE BlockNodeFieldInitiate1
-
-PUBLIC :: BlockNodeFieldInitiate1
 
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethod
@@ -245,24 +254,18 @@ PUBLIC :: BlockNodeFieldInitiate1
 ! instance of BlockNodeField_ .
 !
 ! - It is better to make `param` by calling
-! [[BlockNodeField_::setBlockNodeFieldParam]]
+! [[BlockNodeField_::SetBlockNodeFieldParam]]
 ! - The size of `dom` should be equal to the number of physical variables
 ! present in the block node field.
 ! - `dom` contains the pointer to [[Domain_]] class.
 
-INTERFACE
+INTERFACE BlockNodeFieldInitiate3
   MODULE SUBROUTINE bnField_Initiate3(obj, param, dom)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE bnField_Initiate3
-END INTERFACE
-
-INTERFACE BlockNodeFieldInitiate3
-  MODULE PROCEDURE bnField_Initiate3
 END INTERFACE BlockNodeFieldInitiate3
-
-PUBLIC :: BlockNodeFieldInitiate3
 
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethod
@@ -298,15 +301,15 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets all values to a scalar
+! summary: This routine Sets all values to a scalar
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set1(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE bnField_Set1(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set1
+  END SUBROUTINE bnField_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -315,15 +318,15 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets all values to val
+! summary: This routine Sets all values to val
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set2(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE bnField_Set2(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set2
+  END SUBROUTINE bnField_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -332,10 +335,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the single value
+! summary: This routine Sets the single value
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set3(obj, globalNode, VALUE, ivar, idof, &
+  MODULE SUBROUTINE bnField_Set3(obj, globalNode, VALUE, ivar, idof, &
     & scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -344,7 +347,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set3
+  END SUBROUTINE bnField_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -353,10 +356,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets selected values to a scalar value
+! summary: This routine Sets selected values to a scalar value
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set4(obj, globalNode, VALUE, ivar, scale, &
+  MODULE SUBROUTINE bnField_Set4(obj, globalNode, VALUE, ivar, scale, &
     & addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -364,7 +367,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set4
+  END SUBROUTINE bnField_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -373,10 +376,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets selected values to a scalar value
+! summary: This routine Sets selected values to a scalar value
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set5(obj, globalNode, VALUE, ivar, scale, &
+  MODULE SUBROUTINE bnField_Set5(obj, globalNode, VALUE, ivar, scale, &
     & addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -384,7 +387,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set5
+  END SUBROUTINE bnField_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -393,10 +396,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set6(obj, globalNode, VALUE, ivar, idof, &
+  MODULE SUBROUTINE bnField_Set6(obj, globalNode, VALUE, ivar, idof, &
     & scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -405,7 +408,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set6
+  END SUBROUTINE bnField_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -414,10 +417,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set7(obj, globalNode, VALUE, ivar, idof, &
+  MODULE SUBROUTINE bnField_Set7(obj, globalNode, VALUE, ivar, idof, &
     & scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -426,7 +429,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set7
+  END SUBROUTINE bnField_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -435,10 +438,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set8(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set8(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -448,7 +451,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set8
+  END SUBROUTINE bnField_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -457,10 +460,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set9(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set9(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -470,7 +473,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set9
+  END SUBROUTINE bnField_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -479,64 +482,20 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set10(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
-    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: VALUE(:)
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set10
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
-! summary: This routine sets the selected values
-
-INTERFACE
-  MODULE SUBROUTINE bnField_set11(obj, globalNode, VALUE, ivar, &
-    & spaceCompo, timeCompo, scale, addContribution)
-    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
-    REAL(DFP), INTENT(IN) :: VALUE
-    INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set11
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
-! summary: This routine sets the selected values
-
-INTERFACE
-  MODULE SUBROUTINE bnField_set12(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set10(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: ivar
-    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
-    INTEGER(I4B), INTENT(IN) :: timeCompo
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set12
+  END SUBROUTINE bnField_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -545,10 +504,54 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set13(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set11(obj, globalNode, VALUE, ivar, &
+    & spaceCompo, timeCompo, scale, addContribution)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE bnField_Set11
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 06 Jan 2022
+! summary: This routine Sets the selected values
+
+INTERFACE
+  MODULE SUBROUTINE bnField_Set12(obj, globalNode, VALUE, ivar, &
+    & spaceCompo, timeCompo, scale, addContribution)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE bnField_Set12
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 06 Jan 2022
+! summary: This routine Sets the selected values
+
+INTERFACE
+  MODULE SUBROUTINE bnField_Set13(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -558,7 +561,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set13
+  END SUBROUTINE bnField_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -567,10 +570,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set14(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set14(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -580,7 +583,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set14
+  END SUBROUTINE bnField_Set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -589,10 +592,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set15(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set15(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -602,7 +605,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set15
+  END SUBROUTINE bnField_Set15
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -611,10 +614,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected values
+! summary: This routine Sets the selected values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set16(obj, globalNode, VALUE, ivar, &
+  MODULE SUBROUTINE bnField_Set16(obj, globalNode, VALUE, ivar, &
     & spaceCompo, timeCompo, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -624,7 +627,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set16
+  END SUBROUTINE bnField_Set16
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -633,15 +636,15 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets the selected entries
+! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set17(obj, obj2, scale, addContribution)
+  MODULE SUBROUTINE bnField_Set17(obj, obj2, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     CLASS(BlockNodeField_), INTENT(IN) :: obj2
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set17
+  END SUBROUTINE bnField_Set17
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -653,7 +656,7 @@ END INTERFACE
 ! summary: Setvalues
 
 INTERFACE
-  MODULE SUBROUTINE bnField_set18(obj, ivar, idof, VALUE, ivar_value, &
+  MODULE SUBROUTINE bnField_Set18(obj, ivar, idof, VALUE, ivar_value, &
     & idof_value, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -663,7 +666,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof_value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE bnField_set18
+  END SUBROUTINE bnField_Set18
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -672,17 +675,17 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
-! summary: This routine sets all values to a scalar
+! summary: This routine Sets all values to a scalar
 
 INTERFACE
-  MODULE SUBROUTINE bnField_assign(obj, VALUE)
+  MODULE SUBROUTINE bnField_Assign(obj, VALUE)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
-  END SUBROUTINE bnField_assign
+  END SUBROUTINE bnField_Assign
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -690,7 +693,7 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get1(obj, VALUE, globalNode, ivar, idof)
+  MODULE SUBROUTINE bnField_Get1(obj, VALUE, globalNode, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -698,11 +701,11 @@ INTERFACE
   !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
   !! degree of freedom number
-  END SUBROUTINE bnField_get1
+  END SUBROUTINE bnField_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -710,14 +713,14 @@ END INTERFACE
 ! summary: returns all the values
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get2(obj, VALUE)
+  MODULE SUBROUTINE bnField_Get2(obj, VALUE)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-  END SUBROUTINE bnField_get2
+  END SUBROUTINE bnField_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -725,17 +728,17 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get3(obj, VALUE, globalNode, ivar, idof)
+  MODULE SUBROUTINE bnField_Get3(obj, VALUE, globalNode, ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-  END SUBROUTINE bnField_get3
+  END SUBROUTINE bnField_Get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -743,7 +746,7 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get4(obj, VALUE, istart, iend, stride,  &
+  MODULE SUBROUTINE bnField_Get4(obj, VALUE, istart, iend, stride,  &
     & ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
@@ -752,11 +755,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: stride
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-  END SUBROUTINE bnField_get4
+  END SUBROUTINE bnField_Get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -764,7 +767,7 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get5(obj, VALUE, globalNode, &
+  MODULE SUBROUTINE bnField_Get5(obj, VALUE, globalNode, &
     & ivar, idof)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
@@ -774,11 +777,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
-  END SUBROUTINE bnField_get5
+  END SUBROUTINE bnField_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -786,7 +789,7 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get6(obj, VALUE, globalNode, ivar)
+  MODULE SUBROUTINE bnField_Get6(obj, VALUE, globalNode, ivar)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! NodalVariable
@@ -796,11 +799,11 @@ INTERFACE
     !! If timeCompo is greater than 1, then FETypeSpaceTime
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: ivar
-  END SUBROUTINE bnField_get6
+  END SUBROUTINE bnField_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -808,7 +811,7 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get7(obj, VALUE, globalNode, ivar, &
+  MODULE SUBROUTINE bnField_Get7(obj, VALUE, globalNode, ivar, &
     & spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
@@ -816,11 +819,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-  END SUBROUTINE bnField_get7
+  END SUBROUTINE bnField_Get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -828,7 +831,7 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE bnField_get8(obj, VALUE, globalNode, ivar, &
+  MODULE SUBROUTINE bnField_Get8(obj, VALUE, globalNode, ivar, &
     & spaceCompo, timeCompo)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
@@ -839,11 +842,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: timeCompo
-  END SUBROUTINE bnField_get8
+  END SUBROUTINE bnField_Get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           get@GetMethods
+!                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -851,18 +854,50 @@ END INTERFACE
 ! summary: Returns values
 
 INTERFACE
-MODULE SUBROUTINE bnField_get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
+MODULE SUBROUTINE bnField_Get9(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: ivar_value
     INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE bnField_get9
+  END SUBROUTINE bnField_Get9
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                                   GetFEVariable@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-28
+! summary: Set single entry
+
+INTERFACE BlockFieldGetFEVariable
+  MODULE SUBROUTINE bnField_GetFeVariable(obj, globalNode, VALUE, ivar)
+    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE bnField_GetFeVariable
+END INTERFACE BlockFieldGetFEVariable
+
+!----------------------------------------------------------------------------
+!                                                   GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION bnField_GetPrefix(obj) RESULT(ans)
+    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION bnField_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -870,15 +905,15 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE bnField_applyDirichletBC1(obj, dbc, ivar)
+  MODULE SUBROUTINE bnField_ApplyDirichletBC1(obj, dbc, ivar)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
     INTEGER(I4B), INTENT(IN) :: ivar
-  END SUBROUTINE bnField_applyDirichletBC1
+  END SUBROUTINE bnField_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               applyDirichletBC@DBCMethods
+!                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -886,11 +921,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE bnField_applyDirichletBC2(obj, dbc, ivar)
+  MODULE SUBROUTINE bnField_ApplyDirichletBC2(obj, dbc, ivar)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
     INTEGER(I4B), INTENT(IN) :: ivar
-  END SUBROUTINE bnField_applyDirichletBC2
+  END SUBROUTINE bnField_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -898,11 +933,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION bnField_isEqual(obj, obj2) RESULT(Ans)
+  MODULE FUNCTION bnField_IsEqual(obj, obj2) RESULT(Ans)
     CLASS(BlockNodeField_), INTENT(IN) :: obj
     CLASS(BlockNodeField_), INTENT(IN) :: obj2
     LOGICAL(LGT) :: ans
-  END FUNCTION bnField_isEqual
+  END FUNCTION bnField_IsEqual
 END INTERFACE
 
 !----------------------------------------------------------------------------

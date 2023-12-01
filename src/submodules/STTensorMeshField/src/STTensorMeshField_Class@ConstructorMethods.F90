@@ -54,7 +54,7 @@ END PROCEDURE SetSTTensorMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractFieldCheckEssentialParam( &
+CALL AbstractMeshFieldCheckEssentialParam( &
   & obj=obj, &
   & prefix="STTensorMeshField", &
   & param=param)

@@ -15,33 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(UserFunction_Class) SetMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                       SET
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_Set1
-  !> main
-  obj%isUserFunctionSet = .TRUE.
-  obj%userFunction => anotherobj
-END PROCEDURE auf_Set1
-
-!----------------------------------------------------------------------------
-!                                                                       SET
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_Set2
-  IF( PRESENT( scalarValue ) ) obj%scalarValue=scalarValue
-  IF( PRESENT( vectorValue ) ) obj%vectorValue=vectorValue
-  IF( PRESENT( matrixValue ) ) obj%matrixValue=matrixValue
-END PROCEDURE auf_Set2
-
-!----------------------------------------------------------------------------
+! SUBMODULE(UserFunction_Class) SetMethods
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
 !
-!----------------------------------------------------------------------------
-
-END SUBMODULE SetMethods
+! !----------------------------------------------------------------------------
+! !
+! !----------------------------------------------------------------------------
+!
+! END SUBMODULE SetMethods

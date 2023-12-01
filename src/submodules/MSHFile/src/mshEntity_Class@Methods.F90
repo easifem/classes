@@ -62,34 +62,67 @@ MODULE PROCEDURE ent_GotoTag
 INTEGER(I4B) :: IOSTAT, Reopen, unitNo
 CHARACTER(100) :: Dummy, IOMSG
 CHARACTER(*), PARAMETER :: myName = "ent_GotoTag"
-!
-! Find $meshFormat
+LOGICAL(LGT) :: isNotOpen, isNotRead, isNotInit
 
-  IF( .NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead() .OR. .NOT. mshFile%isInitiated() ) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GotoTag()')
+#endif
+
+isNotOpen = .NOT. mshFile%isOpen()
+isNotRead = .NOT. mshFile%isRead()
+isNotInit = .NOT. mshFile%isInitiated()
+
+IF (isNotOpen .OR. isNotRead .OR. isNotInit) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'mshFile is either not opened or does not have read access!')
+    & '[INTERNAL ERROR] :: mshFile is either not opened or '//  &
+    & 'does not have read access!')
   error = -1
-ELSE
-  Reopen = 0; error = 0; CALL mshFile%REWIND()
-  DO
-    unitNo = mshFile%getUnitNo(); Dummy = ""
-    READ (unitNo, "(A)", IOSTAT=IOSTAT, IOMSG=IOMSG) Dummy
-    IF (IS_IOSTAT_END(IOSTAT)) THEN
-      CALL mshFile%setEOFStat(.TRUE.)
-      Reopen = Reopen + 1
-    END IF
-    IF (IOSTAT .GT. 0 .AND. Reopen .GT. 1) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not find $Entities !'//' :: Reopen='// &
-      & TOSTRING(Reopen)//' :: IOSTAT='//TOSTRING(IOSTAT) &
-      & //" :: IOMSG="//TRIM(IOMSG))
-      error = -2
-      EXIT
-    ELSE IF (TRIM(Dummy) .EQ. '$Entities') THEN
-      EXIT
-    END IF
-  END DO
+  RETURN
 END IF
+
+Reopen = 0; error = 0
+
+#ifndef Darwin_SYSTEM
+CALL mshFile%REWIND()
+#endif
+
+DO
+
+  unitNo = mshFile%getUnitNo(); Dummy = ""
+  READ (unitNo, "(A)", IOSTAT=IOSTAT, IOMSG=IOMSG) Dummy
+
+  IF (IS_IOSTAT_END(IOSTAT)) THEN
+    CALL mshFile%setEOFStat(.TRUE.)
+
+#ifdef Darwin_SYSTEM
+    CALL mshFile%CLOSE()
+    CALL mshFile%OPEN()
+#endif
+
+    Reopen = Reopen + 1
+  END IF
+
+  IF (IOSTAT .GT. 0 .AND. Reopen .GT. 1) THEN
+
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Could not find $Entities !'//' :: Reopen='// &
+    & TOSTRING(Reopen)//' :: IOSTAT='//TOSTRING(IOSTAT) &
+    & //" :: IOMSG="//TRIM(IOMSG))
+    error = -2
+    EXIT
+
+  ELSE IF (TRIM(Dummy) .EQ. '$Entities') THEN
+
+    EXIT
+
+  END IF
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GotoTag()')
+#endif
 END PROCEDURE ent_GotoTag
 
 !----------------------------------------------------------------------------
@@ -97,6 +130,13 @@ END PROCEDURE ent_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Write
+CHARACTER(*), PARAMETER :: myName = "ent_Write()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Write()')
+#endif
+
 SELECT CASE (dim)
 CASE (0)
   CALL WritePointEntity(obj, afile)
@@ -107,6 +147,11 @@ CASE (2)
 CASE (3)
   CALL WriteVolumeEntity(obj, afile)
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Write()')
+#endif
 END PROCEDURE ent_Write
 
 !----------------------------------------------------------------------------
@@ -432,6 +477,13 @@ END PROCEDURE ent_display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ent_Read
+CHARACTER(*), PARAMETER :: myName = "ent_Read"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Read()')
+#endif
+
 SELECT CASE (dim)
 CASE (0)
   CALL ReadPointEntity(obj, mshFile, readTag, error)
@@ -442,6 +494,11 @@ CASE (2)
 CASE (3)
   CALL ReadVolumeEntity(obj, mshFile, readTag, error)
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Read()')
+#endif
 END PROCEDURE ent_Read
 
 !----------------------------------------------------------------------------
@@ -518,60 +575,114 @@ INTEGER(I4B), ALLOCATABLE :: Intvec1(:), Intvec2(:)
 INTEGER(I4B) :: n, i, m
 TYPE(String) :: aline
 TYPE(String), ALLOCATABLE :: entries(:)
-!
+CHARACTER(*), PARAMETER :: myName = "ReadSurfaceEntity()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ReadSurfaceEntity()')
+#endif
+
 IF (ReadTag) THEN
   CALL obj%GotoTag(mshFile, error)
 ELSE
   error = 0
 END IF
 
-IF (error .EQ. 0) THEN
-  obj%XiDim = 2
-  CALL aline%read_line(unit=mshFile%getUnitno())
-  CALL aline%split(tokens=entries, sep=' ')
-  obj%Uid = entries(1)%to_number(kind=1_I4B)
+IF (error .NE. 0) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+   & '[INTERNAL ERROR] :: Some error occured while finding tag')
+END IF
 
-  obj%minX = entries(2)%to_number(kind=1.0_DFP)
-  obj%minY = entries(3)%to_number(kind=1.0_DFP)
-  obj%minZ = entries(4)%to_number(kind=1.0_DFP)
+obj%XiDim = 2
+! CALL aline%read_line(unit=mshFile%getUnitno())
+CALL mshFile%ReadLine(val=aline, iostat=error)
 
-  obj%maxX = entries(5)%to_number(kind=1.0_DFP)
-  obj%maxY = entries(6)%to_number(kind=1.0_DFP)
-  obj%maxZ = entries(7)%to_number(kind=1.0_DFP)
+IF (error .GT. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Error occured in reading the line '// &
+    & ' error = '//tostring(error))
+END IF
 
-  n = entries(8)%to_number(kind=I4B)
-  IF (n .NE. 0) THEN
-    ALLOCATE (IntVec1(n))
-    DO i = 1, n
-      IntVec1(i) = entries(8 + i)%to_number(kind=I4B)
-    END DO
+CALL aline%split(tokens=entries, sep=' ')
+
+IF (ALLOCATED(entries)) THEN
+  IF (SIZE(entries) .LT. 8) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR 1] :: Error reading surface entities!')
+    error = -1
+    RETURN
   END IF
+END IF
+
+obj%uid = entries(1)%to_number(kind=1_I4B)
+
+obj%minX = entries(2)%to_number(kind=1.0_DFP)
+obj%minY = entries(3)%to_number(kind=1.0_DFP)
+obj%minZ = entries(4)%to_number(kind=1.0_DFP)
+
+obj%maxX = entries(5)%to_number(kind=1.0_DFP)
+obj%maxY = entries(6)%to_number(kind=1.0_DFP)
+obj%maxZ = entries(7)%to_number(kind=1.0_DFP)
+
+n = 0
+n = entries(8)%to_number(kind=I4B)
+
+IF (ALLOCATED(entries)) THEN
+  IF (SIZE(entries) .LT. 8 + n) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR 2] :: Error reading surface entities!')
+    error = -2
+    RETURN
+  END IF
+END IF
+
+IF (n .NE. 0) THEN
+  ALLOCATE (IntVec1(n))
+  DO i = 1, n
+    IntVec1(i) = entries(8 + i)%to_number(kind=I4B)
+  END DO
+END IF
+
     !! check total length here
-  m = entries(9 + n)%to_number(kind=I4B)
-  IF (m .NE. 0) THEN
-    ALLOCATE (IntVec2(m))
-    DO i = 1, m
-      IntVec2(i) = entries(9 + n + i)%to_number(kind=I4B)
-    END DO
-  END IF
+m = entries(9 + n)%to_number(kind=I4B)
 
-  IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
-  IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
-
-  IF (n .NE. 0) THEN
-    ALLOCATE (obj%physicalTag(n))
-    obj%physicalTag(1:n) = Intvec1(1:n)
+IF (ALLOCATED(entries)) THEN
+  IF (SIZE(entries) .LT. 9 + n + m) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR 3] :: Error reading surface entities!')
+    error = -3
+    RETURN
   END IF
+END IF
 
-  IF (m .NE. 0) THEN
-    ALLOCATE (obj%BoundingEntity(m))
-    obj%BoundingEntity(1:m) = Intvec2(1:m)
-  END IF
+IF (m .NE. 0) THEN
+  ALLOCATE (IntVec2(m))
+  DO i = 1, m
+    IntVec2(i) = entries(9 + n + i)%to_number(kind=I4B)
+  END DO
+END IF
+
+IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
+
+IF (n .NE. 0) THEN
+  ALLOCATE (obj%physicalTag(n))
+  obj%physicalTag(1:n) = Intvec1(1:n)
+END IF
+
+IF (m .NE. 0) THEN
+  ALLOCATE (obj%BoundingEntity(m))
+  obj%BoundingEntity(1:m) = Intvec2(1:m)
 END IF
 
 IF (ALLOCATED(IntVec1)) DEALLOCATE (IntVec1)
 IF (ALLOCATED(IntVec2)) DEALLOCATE (IntVec2)
 IF (ALLOCATED(entries)) DEALLOCATE (entries)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ReadSurfaceEntity()')
+#endif
 END PROCEDURE ReadSurfaceEntity
 
 !----------------------------------------------------------------------------
@@ -584,62 +695,111 @@ INTEGER(I4B), ALLOCATABLE :: Intvec1(:), Intvec2(:)
 INTEGER(I4B) :: n, i, m
 TYPE(String) :: aline
 TYPE(String), ALLOCATABLE :: entries(:)
+CHARACTER(*), PARAMETER :: myName = "ReadVolumeEntity()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ReadVolumeEntity()')
+#endif
 
 IF (ReadTag) THEN
   CALL obj%GotoTag(mshFile, error)
 ELSE
   error = 0
 END IF
-!
-IF (error .EQ. 0) THEN
-  obj%XiDim = 3
 
-  CALL aline%read_line(unit=mshFile%getUnitno())
-  CALL aline%split(tokens=entries, sep=' ')
-  obj%Uid = entries(1)%to_number(kind=I4B)
+IF (error .NE. 0) THEN
+  RETURN
+END IF
 
-  obj%minX = entries(2)%to_number(kind=1.0_DFP)
-  obj%minY = entries(3)%to_number(kind=1.0_DFP)
-  obj%minZ = entries(4)%to_number(kind=1.0_DFP)
+obj%XiDim = 3
 
-  obj%maxX = entries(5)%to_number(kind=1.0_DFP)
-  obj%maxY = entries(6)%to_number(kind=1.0_DFP)
-  obj%maxZ = entries(7)%to_number(kind=1.0_DFP)
+CALL mshFile%readLine(val=aline, iostat=error)
 
-  n = entries(8)%to_number(kind=I4B)
-  IF (n .NE. 0) THEN
-    ALLOCATE (IntVec1(n))
-    DO i = 1, n
-      IntVec1(i) = entries(8 + i)%to_number(kind=I4B)
-    END DO
+IF (error .GT. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: error in reading a line.')
+END IF
+
+CALL aline%split(tokens=entries, sep=' ')
+
+IF (ALLOCATED(entries)) THEN
+  IF (SIZE(entries) .LT. 8) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR 1] :: Error reading volume entities!')
+    error = -1
+    RETURN
   END IF
+END IF
+
+obj%Uid = entries(1)%to_number(kind=I4B)
+
+obj%minX = entries(2)%to_number(kind=1.0_DFP)
+obj%minY = entries(3)%to_number(kind=1.0_DFP)
+obj%minZ = entries(4)%to_number(kind=1.0_DFP)
+
+obj%maxX = entries(5)%to_number(kind=1.0_DFP)
+obj%maxY = entries(6)%to_number(kind=1.0_DFP)
+obj%maxZ = entries(7)%to_number(kind=1.0_DFP)
+
+n = 0
+n = entries(8)%to_number(kind=I4B)
+
+IF (ALLOCATED(entries)) THEN
+  IF (SIZE(entries) .LT. 8 + n) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR 2] :: Error reading volume entities!')
+    error = -2
+    RETURN
+  END IF
+END IF
+
+IF (n .NE. 0) THEN
+  ALLOCATE (IntVec1(n))
+  DO i = 1, n
+    IntVec1(i) = entries(8 + i)%to_number(kind=I4B)
+  END DO
+END IF
     !! check total length here
-  m = entries(9 + n)%to_number(kind=I4B)
-  IF (m .NE. 0) THEN
-    ALLOCATE (IntVec2(m))
-    DO i = 1, m
-      IntVec2(i) = entries(9 + n + i)%to_number(kind=I4B)
-    END DO
-  END IF
+m = entries(9 + n)%to_number(kind=I4B)
 
-  IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
-  IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
-  !
-  IF (n .NE. 0) THEN
-    ALLOCATE (obj%physicalTag(n))
-    obj%physicalTag(1:n) = Intvec1(1:n)
+IF (ALLOCATED(entries)) THEN
+  IF (SIZE(entries) .LT. 9 + n + m) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR 3] :: Error reading volume entities!')
+    error = -3
+    RETURN
   END IF
-  !
-  IF (m .NE. 0) THEN
-    ALLOCATE (obj%BoundingEntity(m))
-    obj%BoundingEntity(1:m) = Intvec2(1:m)
-  END IF
+END IF
+
+IF (m .NE. 0) THEN
+  ALLOCATE (IntVec2(m))
+  DO i = 1, m
+    IntVec2(i) = entries(9 + n + i)%to_number(kind=I4B)
+  END DO
+END IF
+
+IF (ALLOCATED(obj%physicalTag)) DEALLOCATE (obj%physicalTag)
+IF (ALLOCATED(obj%BoundingEntity)) DEALLOCATE (obj%BoundingEntity)
+
+IF (n .NE. 0) THEN
+  ALLOCATE (obj%physicalTag(n))
+  obj%physicalTag(1:n) = Intvec1(1:n)
+END IF
+
+IF (m .NE. 0) THEN
+  ALLOCATE (obj%BoundingEntity(m))
+  obj%BoundingEntity(1:m) = Intvec2(1:m)
 END IF
 
 IF (ALLOCATED(IntVec1)) DEALLOCATE (IntVec1)
 IF (ALLOCATED(IntVec2)) DEALLOCATE (IntVec2)
 IF (ALLOCATED(entries)) DEALLOCATE (Entries)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ReadVolumeEntity()')
+#endif
 END PROCEDURE ReadVolumeEntity
 
 !----------------------------------------------------------------------------
@@ -652,7 +812,7 @@ INTEGER(I4B) :: j, tSize
 ans = 0
 tSize = SIZE(mshEntities)
 DO j = 1, tSize
-  IF (mshEntities(j)%UiD .EQ. UiD) THEN
+  IF (mshEntities(j)%UiD .EQ. uid) THEN
     ans = j
     EXIT
   END IF

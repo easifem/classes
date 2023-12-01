@@ -17,6 +17,7 @@
 
 SUBMODULE(ScalarField_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -25,33 +26,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetScalarFieldParam
-INTEGER(I4B) :: ierr
-ierr = param%Set(key=myprefix//"/name", VALUE=name)
-ierr = param%Set(key=myprefix//"/engine", VALUE=engine)
-IF (PRESENT(fieldType)) THEN
-  ierr = param%Set(key=myprefix//"/fieldType", VALUE=fieldType)
-ELSE
-  ierr = param%Set(key=myprefix//"/fieldType", VALUE=FIELD_TYPE_NORMAL)
-END IF
-
-IF (PRESENT(comm)) THEN
-  ierr = param%Set(key=myprefix//"/comm", VALUE=comm)
-ELSE
-  ierr = param%Set(key=myprefix//"/comm", VALUE=0_I4B)
-END IF
-
-IF (PRESENT(local_n)) THEN
-  ierr = param%Set(key=myprefix//"/local_n", VALUE=local_n)
-ELSE
-  ierr = param%Set(key=myprefix//"/local_n", VALUE=0_I4B)
-END IF
-
-IF (PRESENT(global_n)) THEN
-  ierr = param%Set(key=myprefix//"/global_n", VALUE=global_n)
-ELSE
-  ierr = param%Set(key=myprefix//"/global_n", VALUE=0_I4B)
-END IF
-
+CALL SetAbstractFieldParam( &
+  & param=param, &
+  & prefix=myprefix,  &
+  & name=name,  &
+  & engine=engine,  &
+  & fieldType=fieldType, &
+  & comm=comm, &
+  & local_n=local_n, &
+  & global_n=global_n)
 END PROCEDURE SetScalarFieldParam
 
 !----------------------------------------------------------------------------
@@ -59,113 +42,60 @@ END PROCEDURE SetScalarFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "sField_CheckEssentialParam"
-IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'names should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/engine")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'engine should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/fieldType")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'fieldType should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/comm")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'comm should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/global_n")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'global_n should be present in param')
-END IF
-IF (.NOT. param%isPresent(key=myprefix//"/local_n")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'local_n should be present in param')
-END IF
+CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 END PROCEDURE sField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE sField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "sField_Initiate1"
-INTEGER(I4B) :: ierr, storageFMT
-INTEGER(I4B) :: tNodes(1), spaceCompo(1), timeCompo(1)
-CHARACTER(:), ALLOCATABLE :: char_var
-CHARACTER(1) :: names_char(1)
+CHARACTER(*), PARAMETER :: myName = "sField_Initiate1()"
+CHARACTER(1) :: names(1)
+TYPE(String) :: astr
+INTEGER(I4B) :: nsd, tdof, ierr, tNodes
+TYPE(ParameterList_), POINTER :: sublist
 
-! main program
-CALL obj%Deallocate()
-CALL obj%CheckEssentialParam(param)
+! main
+sublist => NULL()
 
-! engine
-ALLOCATE (CHARACTER( &
-  & param%DataSizeInBytes(key=myprefix//"/engine")) :: char_var)
-ierr = param%Get(key=myprefix//"/engine", VALUE=char_var)
-obj%engine = char_var
-DEALLOCATE (char_var)
-
-! name
-ALLOCATE (CHARACTER( &
-  & param%DataSizeInBytes(key=myprefix//"/name")) :: char_var)
-ierr = param%Get(key=myprefix//"/name", VALUE=char_var)
-obj%name = char_var
-names_char(1) (1:1) = char_var(1:1)
-DEALLOCATE (char_var)
-
-! fieldType
-IF (param%isPresent(key=myprefix//"/fieldType")) THEN
-  ierr = param%Get(key=myprefix//"/fieldType", VALUE=obj%fieldType)
-ELSE
-  obj%fieldType = FIELD_TYPE_NORMAL
+ierr = param%GetSubList(key=myprefix, sublist=sublist)
+IF (ierr .NE. 0_I4B) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
 END IF
 
-! comm
-ierr = param%Get(key=myprefix//"/comm", VALUE=obj%comm)
-ierr = param%Get(key=myprefix//"/global_n", VALUE=obj%global_n)
-ierr = param%Get(key=myprefix//"/local_n", VALUE=obj%local_n)
-
-spaceCompo = [1]
-timeCompo = [1]
-storageFMT = FMT_NODES
-obj%domain => dom
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  tNodes = 1
-  obj%tSize = obj%domain%GetTotalNodes()
-  IF (obj%local_n .EQ. 0) THEN
-    obj%local_n = tNodes(1)
-  END IF
-  IF (obj%global_n .EQ. 0) THEN
-    obj%global_n = tNodes(1)
-  END IF
-ELSE
-  tNodes = obj%domain%GetTotalNodes()
-  obj%tSize = tNodes(1)
-  IF (obj%local_n .EQ. 0) THEN
-    obj%local_n = obj%tSize
-  END IF
-  IF (obj%global_n .EQ. 0) THEN
-    obj%global_n = obj%tSize
-  END IF
+IF (.NOT. ASSOCIATED(sublist)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
 END IF
 
-CALL Initiate( &
-  & obj=obj%dof, &
-  & tNodes=tNodes, &
-  & names=names_char, &
-  & spaceCompo=spaceCompo, &
-  & timeCompo=timeCompo, &
-  & storageFMT=storageFMT)
+CALL obj%CheckEssentialParam(sublist)
 
-CALL Initiate(obj%realVec, obj%dof)
+CALL obj%DEALLOCATE()
+CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
+tNodes = dom%GetTotalNodes()
+tdof = tNodes
+names(1) (:) = astr%slice(1, 1)
 
-obj%isInitiated = .TRUE.
+CALL AbstractNodeFieldSetParam(obj=obj,  &
+  & dof_tPhysicalVars=1_I4B,  &
+  & dof_storageFMT=NODES_FMT,  &
+  & dof_spaceCompo=[1_I4B],  &
+  & dof_timeCompo=[1_I4B],  &
+  & dof_tNodes=[tNodes],  &
+  & dof_names_char=names,  &
+  & tSize=tdof)
 
-IF (ALLOCATED(char_var)) DEALLOCATE (char_var)
+nsd = dom%GetNSD()
 
+CALL AbstractNodeFieldInitiate( &
+  & obj=obj,  &
+  & param=param,  &
+  & dom=dom)
+
+astr = ""
+sublist => NULL()
 END PROCEDURE sField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -175,6 +105,14 @@ END PROCEDURE sField_Initiate1
 MODULE PROCEDURE sField_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE sField_Final
+
+!----------------------------------------------------------------------------
+!                                                               Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE sField_Deallocate
+CALL AbstractNodeFieldDeallocate(obj)
+END PROCEDURE sField_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                ScalarField

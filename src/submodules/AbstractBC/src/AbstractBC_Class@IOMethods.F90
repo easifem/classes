@@ -17,67 +17,77 @@
 
 SUBMODULE(AbstractBC_Class) IOMethods
 USE BaseMethod
+USE TomlUtility
+USE tomlf, ONLY:  &
+  & toml_serialize,  &
+  & toml_get => get_value, &
+  & toml_len => len, &
+  & toml_array,  &
+  & toml_stat
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                                    Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Import
 CHARACTER(*), PARAMETER :: myName = "bc_Import"
 TYPE(String) :: dsetname, strval
-INTEGER(I4B) :: ierr
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Import()")
+#endif
+
 IF (obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The object is already initiated, deallocate first!')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: AbstractBC_::obj is already initiated'//  &
+  & ', deallocate first')
+  RETURN
 END IF
 obj%isInitiated = .TRUE.
 obj%dom => dom
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-& "Importing Boundary condition")
-
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file is not opened')
+  RETURN
 END IF
 
 IF (.NOT. hdf5%isRead()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have read permission')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+  RETURN
 END IF
 
 dsetname = TRIM(group)//"/name"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset name should be present')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: The dataset name should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=obj%name)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
 END IF
 
 dsetname = TRIM(group)//"/idof"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset idof should be present')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: The dataset idof should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=obj%idof)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%idof)
 END IF
 
 dsetname = TRIM(group)//"/nodalValueType"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset nodalValueType should be present')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: The dataset nodalValueType should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=strval)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
 END IF
-SELECT CASE (TRIM(strval%chars()))
+
+SELECT CASE (strval%chars())
 CASE ("CONSTANT")
   obj%nodalValueType = Constant
 CASE ("SPACE")
@@ -88,98 +98,106 @@ CASE ("SPACETIME")
   obj%nodalValueType = SpaceTime
 END SELECT
 
-dsetname = TRIM(group)//"/useFunction"
+dsetname = TRIM(group)//"/isUserFunction"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset useFunction should be present')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & 'The dataset isUserFunction should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=obj%useFunction)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isUserFunction)
+END IF
+
+IF (obj%isUserFunction) THEN
+  ALLOCATE (obj%func)
+  dsetname = TRIM(group)//"/userFunction"
+  CALL obj%func%IMPORT(hdf5=hdf5, group=dsetname%chars())
 END IF
 
 dsetname = TRIM(group)//"/useExternal"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'The dataset useExternal should be present')
 ELSE
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=obj%useExternal)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%useExternal)
 END IF
 
-dsetname = TRIM(group)//"/Boundary"
+dsetname = TRIM(group)//"/boundary"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'The dataset Boundary, which is a group, should be present')
 ELSE
   CALL obj%boundary%IMPORT(hdf5=hdf5, group=dsetname%chars())
 END IF
 
-IF (.NOT. obj%UseFunction) THEN
-  dsetname = TRIM(group)//"/NodalValue"
+IF (.NOT. obj%isUserFunction) THEN
+  dsetname = TRIM(group)//"/nodalValue"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'The dataset NodalValue should be present')
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & 'The dataset nodalValue should be present')
   END IF
   SELECT CASE (obj%nodalValueType)
   CASE (Constant)
-    CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=real0)
-    CALL Reallocate(obj%NodalValue, 1, 1)
-    obj%NodalValue = real0
+    CALL hdf5%READ(dsetname=dsetname%chars(), vals=real0)
+    CALL Reallocate(obj%nodalValue, 1, 1)
+    obj%nodalValue = real0
   CASE (Space, Time)
-    CALL hdf5%READ(dsetname=dsetname%chars(), &
-      & vals=real1)
+    CALL hdf5%READ(dsetname=dsetname%chars(), vals=real1)
     CALL Reallocate(obj%nodalValue, SIZE(real1), 1)
-    obj%NodalValue(:, 1) = real1
+    obj%nodalValue(:, 1) = real1
   CASE (SpaceTime)
-    CALL hdf5%READ(dsetname=dsetname%chars(), &
-    & vals=real2)
-    obj%NodalValue = real2
+    CALL hdf5%READ(dsetname=dsetname%chars(), vals=real2)
+    obj%nodalValue = real2
   END SELECT
 END IF
 
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
 IF (ALLOCATED(real2)) DEALLOCATE (real2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Import()')
+#endif
 END PROCEDURE bc_Import
 
 !----------------------------------------------------------------------------
-!
+!                                                                    Export
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Export
 CHARACTER(*), PARAMETER :: myName = "bc_Export"
 TYPE(String) :: dsetname, strval
-INTEGER(I4B) :: ierr
 REAL(DFP) :: real0
 REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Export()')
+#endif
+
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The object is not initiated, initiate it first!')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: The object is not initiated, initiate it first!')
+  RETURN
 END IF
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "Exporting Dirichlet Boundary Condition")
-
 IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'HDF5 file is not opened')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file is not opened')
+  RETURN
 END IF
 
 IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'HDF5 file does not have write permission')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file does not have write permission')
+  RETURN
 END IF
 
 ! WRITE name
 dsetname = TRIM(group)//"/name"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%name)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 
 ! WRITE idof
 dsetname = TRIM(group)//"/idof"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%idof)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%idof)
 
 ! WRITE nodalValueType
 dsetname = TRIM(group)//"/nodalValueType"
@@ -193,44 +211,48 @@ CASE (Time)
 CASE (SpaceTime)
   strval = "SPACETIME"
 END SELECT
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=strval)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
-! WRITE useFunction
-dsetname = TRIM(group)//"/useFunction"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%useFunction)
+! WRITE isUserFunction
+dsetname = TRIM(group)//"/isUserFunction"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunction)
+
+IF (ASSOCIATED(obj%func)) THEN
+  dsetname = TRIM(group)//"/userFunction"
+  CALL obj%func%Export(hdf5=hdf5, group=dsetname%chars())
+END IF
 
 ! WRITE useExternal
 dsetname = TRIM(group)//"/useExternal"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%useExternal)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%useExternal)
 
 ! WRITE Boundary
-dsetname = TRIM(group)//"/Boundary"
+dsetname = TRIM(group)//"/boundary"
 CALL obj%boundary%export(hdf5=hdf5, group=dsetname%chars())
 
 ! Read nodalValue
-IF (.NOT. obj%UseFunction) THEN
-  dsetname = TRIM(group)//"/NodalValue"
-  IF (.NOT. ALLOCATED(obj%NodalValue)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'NodalValue is not allocated, it seems NodalValue is not set')
+IF (.NOT. obj%isUserFunction) THEN
+
+  dsetname = TRIM(group)//"/nodalValue"
+  IF (.NOT. ALLOCATED(obj%nodalValue)) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR] :: nodalValue is not allocated, '//  &
+      & 'it seems nodalValue is not set')
+    RETURN
   END IF
+
   SELECT CASE (obj%nodalValueType)
   CASE (Constant)
-    real0 = obj%NodalValue(1, 1)
-    CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-      & vals=real0)
+    real0 = obj%nodalValue(1, 1)
+    CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=real0)
   CASE (Space, Time)
-    real1 = obj%NodalValue(:, 1)
-    CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-      & vals=real1)
+    real1 = obj%nodalValue(:, 1)
+    CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=real1)
   CASE (SpaceTime)
-    real2 = obj%NodalValue
-    CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-      & vals=real2)
+    real2 = obj%nodalValue
+    CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=real2)
   END SELECT
+
 END IF
 
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
@@ -238,7 +260,7 @@ IF (ALLOCATED(real2)) DEALLOCATE (real2)
 END PROCEDURE bc_Export
 
 !----------------------------------------------------------------------------
-!
+!                                                                   Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_Display
@@ -250,10 +272,11 @@ REAL(DFP), ALLOCATABLE :: real1(:), real2(:, :)
 IF (.NOT. obj%isInitiated) THEN
   CALL Display("AbstractBC_::obj is not initiated, nothing to display", &
     & unitNo=unitNo)
+  RETURN
 END IF
 
-CALL Display("# name : "//TRIM(obj%name%chars()), unitNo=unitNo)
-CALL Display(obj%idof, "# idof : ", unitNo=unitNo)
+CALL Display("name : "//TRIM(obj%name%chars()), unitNo=unitNo)
+CALL Display(obj%idof, "idof : ", unitNo=unitNo)
 
 SELECT CASE (obj%nodalValueType)
 CASE (Constant)
@@ -265,33 +288,279 @@ CASE (Time)
 CASE (SpaceTime)
   strval = "SPACETIME"
 END SELECT
-CALL Display("# nodalValueType : "//TRIM(strval%chars()), unitNo=unitNo)
+CALL Display("nodalValueType : "//TRIM(strval%chars()), unitNo=unitNo)
 
-CALL Display(obj%useFunction, "# useFunction : ", unitNo=unitNo)
-CALL Display(obj%useExternal, "# useExternal : ", unitNo=unitNo)
+CALL Display(obj%isUserFunction, "isUserFunction : ", unitNo=unitNo)
+CALL Display(obj%useExternal, "useExternal : ", unitNo=unitNo)
 CALL obj%Boundary%Display(msg="Boundary : ", unitNo=unitNo)
 
-IF (.NOT. obj%UseFunction) THEN
-  IF (.NOT. ALLOCATED(obj%NodalValue)) THEN
-    CALL Display("# NodalValue : NOT ALLOCATED", unitNo=unitNo)
+IF (.NOT. obj%isUserFunction) THEN
+  IF (.NOT. ALLOCATED(obj%nodalValue)) THEN
+    CALL Display("nodalValue : NOT ALLOCATED", unitNo=unitNo)
   ELSE
     SELECT CASE (obj%nodalValueType)
     CASE (Constant)
-      real0 = obj%NodalValue(1, 1)
-      CALL Display(real0, "# NodalValue : ", unitNo=unitNo)
+      real0 = obj%nodalValue(1, 1)
+      CALL Display(real0, "nodalValue : ", unitNo=unitNo)
     CASE (Space, Time)
-      real1 = obj%NodalValue(:, 1)
-      CALL Display(real1, "# NodalValue : ", unitNo=unitNo, orient="col")
+      real1 = obj%nodalValue(:, 1)
+      CALL Display(real1, "nodalValue : ", unitNo=unitNo, orient="col")
     CASE (SpaceTime)
-      real2 = obj%NodalValue(:, :)
-      CALL Display(real2, "# NodalValue : ", unitNo=unitNo)
+      real2 = obj%nodalValue(:, :)
+      CALL Display(real2, "nodalValue : ", unitNo=unitNo)
     END SELECT
+  END IF
+END IF
+
+IF (obj%isUserFunction) THEN
+  IF (ASSOCIATED(obj%func)) THEN
+    CALL obj%func%Display("userFunction", unitNo=unitNo)
+  ELSE
+    CALL Display("userFunction :: NOT ASSOCIATEDS", unitNo=unitNo)
   END IF
 END IF
 
 IF (ALLOCATED(real1)) DEALLOCATE (real1)
 IF (ALLOCATED(real2)) DEALLOCATE (real2)
+
 END PROCEDURE bc_Display
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_ImportParamFromToml
+CHARACTER(*), PARAMETER :: myName = "bc_ImportParamFromToml()"
+INTEGER(I4B) :: origin, stat, nodalValueType, idof
+LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, useExternal
+TYPE(String) :: nodalValueType_string, name, astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ImportParamFromToml()')
+#endif
+
+CALL toml_get(table, "isUserFunction", isUserFunction,  &
+  & default_isUserFunction, origin=origin, stat=stat)
+
+CALL toml_get(table, "isTangent", isTangent,  &
+  & default_isTangent, origin=origin, stat=stat)
+
+CALL toml_get(table, "isNormal", isNormal,  &
+  & default_isNormal, origin=origin, stat=stat)
+
+CALL toml_get(table, "useExternal", useExternal,  &
+  & default_useExternal, origin=origin, stat=stat)
+
+CALL toml_get(table, "nodalValueType", nodalValueType_string%raw,  &
+  & default_nodalValueType_char, origin=origin, stat=stat)
+
+CALL toml_get(table, "idof", idof, default_idof, origin=origin, stat=stat)
+
+CALL toml_get(table, "name", name%raw,  &
+  & obj%GetPrefix(), origin=origin, stat=stat)
+
+astr = nodalValueType_string%Upper()
+SELECT CASE (astr%chars())
+CASE ("CONSTANT")
+  nodalValueType = Constant
+CASE ("TIME")
+  nodalValueType = Time
+CASE ("SPACE")
+  nodalValueType = Space
+CASE ("SPACETIME")
+  nodalValueType = SpaceTime
+CASE DEFAULT
+  nodalValueType = default_nodalValueType
+END SELECT
+astr = ""
+
+CALL SetAbstractBCParam( &
+  & param=param,  &
+  & prefix=obj%GetPrefix(),  &
+  & name=name%chars(),  &
+  & idof=idof,  &
+  & nodalValueType=nodalValueType,  &
+  & isUserFunction=isUserFunction,  &
+  & isNormal=isNormal,  &
+  & isTangent=isTangent,  &
+  & useExternal=useExternal &
+  & )
+
+name = ""
+nodalValueType_string = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ImportParamFromToml()')
+#endif
+END PROCEDURE bc_ImportParamFromToml
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "meshSelect_ImportFromToml1()"
+TYPE(ParameterList_) :: param
+TYPE(toml_table), POINTER :: node
+TYPE(MeshSelection_) :: boundary
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: bool1, isFound
+REAL(DFP), ALLOCATABLE :: value_r1(:), value_r2(:, :)
+REAL(DFP) :: constantValue
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ImportFromToml()')
+#endif
+CALL param%Initiate()
+
+CALL obj%ImportParamFromToml(param=param, table=table)
+
+node => NULL()
+CALL toml_get(table, "boundary", node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+IF (.NOT. ASSOCIATED(node)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: following error occured while reading '//  &
+    & 'the toml file :: cannot find [boundary] table in config.')
+END IF
+
+CALL boundary%ImportFromToml(table=node, dom=dom)
+CALL obj%Initiate(param=param, boundary=boundary, dom=dom)
+
+IF (obj%isUserFunction) THEN
+  node => NULL()
+  CALL toml_get(table, "function", node, origin=origin, requested=.FALSE.,  &
+    & stat=stat)
+
+  IF (.NOT. ASSOCIATED(node)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: following error occured while reading '//  &
+      & 'the toml file :: cannot find [function] table in config.')
+    RETURN
+  END IF
+
+  ALLOCATE (obj%func)
+  CALL obj%func%ImportFromToml(table=node)
+  RETURN
+END IF
+
+SELECT CASE (obj%nodalValueType)
+CASE (Constant)
+  CALL toml_get(table, "value", constantValue, origin=origin, stat=stat)
+  bool1 = stat .NE. toml_stat%success
+  IF (bool1) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: nodalValueType is Constant. '//  &
+      & 'obj%isUserFunction is False. So, '// &
+      & 'value should be a present (scalar real value).')
+    RETURN
+  END IF
+  CALL obj%Set(constantnodalValue=constantValue)
+
+CASE (Space, Time)
+  CALL GetValue(table=table, key="value", VALUE=value_r1,  &
+    & isFound=isFound, origin=origin, stat=stat)
+
+  bool1 = (.NOT. isFound) .OR. (stat .NE. toml_stat%success)
+
+  IF (bool1) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: nodalValueType is Space or Time.'//  &
+      & 'obj%isUserFunction is False. So, '// &
+      & 'value should be a vector of real numbers.'//CHAR_LF// &
+      & 'You can specify a vector by directly giving the vector values.'// &
+      & 'Otherwise, specify filename which contains the vector'//  &
+      & 'values.')
+    RETURN
+  END IF
+
+  IF (obj%nodalValueType .EQ. Space) THEN
+    CALL obj%Set(spacenodalValue=value_r1)
+  ELSE
+    CALL obj%Set(timenodalValue=value_r1)
+  END IF
+
+CASE (SpaceTime)
+  CALL GetValue(table=table, key="value", VALUE=value_r2,  &
+    & isFound=isFound, origin=origin, stat=stat)
+
+  bool1 = (.NOT. isFound) .OR. (stat .NE. toml_stat%success)
+
+  IF (bool1) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: nodalValueType is Space or Time.'//  &
+      & 'obj%isUserFunction is False. So, '// &
+      & 'value should be a vector of real numbers.'//CHAR_LF// &
+      & 'You can specify a vector by directly giving the vector values.'// &
+      & 'Otherwise, specify filename which contains the vector'//  &
+      & 'values.')
+    RETURN
+  END IF
+
+  CALL obj%Set(spaceTimenodalValue=value_r2)
+
+END SELECT
+
+CALL param%DEALLOCATE()
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ImportFromToml()')
+#endif
+END PROCEDURE bc_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml2()"
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ImportFromToml()')
+#endif
+
+IF (PRESENT(afile)) THEN
+  CALL GetValue(table=table, afile=afile)
+ELSEIF (PRESENT(filename)) THEN
+  CALL GetValue(table=table, filename=filename)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: either filename or afile should be present!')
+  RETURN
+END IF
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+IF (.NOT. ASSOCIATED(node)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: following error occured while reading '//  &
+    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
+END IF
+
+CALL obj%ImportFromToml(table=node, dom=dom)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
+    & unitNo=stdout)
+END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ImportParamFromToml()')
+#endif
+END PROCEDURE bc_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !

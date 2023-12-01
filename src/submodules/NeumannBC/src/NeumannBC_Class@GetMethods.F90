@@ -40,4 +40,12 @@ END IF
 ans => nbc(nbcNo)%ptr
 END PROCEDURE bc_GetNeumannBCPointer
 
+!----------------------------------------------------------------------------
+!                                                               GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_GetPrefix
+ans = myprefix
+END PROCEDURE bc_GetPrefix
+
 END SUBMODULE GetMethods

@@ -18,8 +18,8 @@
 SUBMODULE(FortranFile_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
-CHARACTER(maxStrLen) :: emesg, iomsg
-INTEGER(I4B) :: ioerr
+! CHARACTER(maxStrLen) :: emesg, iomsg
+! INTEGER(I4B) :: ioerr
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -36,6 +36,9 @@ CHARACTER(3) :: padval
 TYPE(String) :: fpath, fname, fext, file_
 LOGICAL(LGT) :: ostat
 INTEGER(I4B) :: oldcnt, ierr
+
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
 !
 ! Initialize data
 !
@@ -317,6 +320,9 @@ END PROCEDURE ff_initiate
 MODULE PROCEDURE ff_Deallocate
 LOGICAL(LGT) :: bool
 
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
+
 !Close the file
 bool = .FALSE.
 IF (PRESENT(delete)) bool = delete
@@ -366,6 +372,8 @@ CHARACTER(9) :: actionvar
 CHARACTER(3) :: padvar
 INTEGER(I4B) :: reclval
 TYPE(String) :: path, filename, ext
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
 
 !Get the appropriate clause values for the OPEN statement
 IF (obj%initstat) THEN
@@ -510,6 +518,8 @@ END PROCEDURE ff_open
 
 MODULE PROCEDURE ff_close
 CHARACTER(*), PARAMETER :: myName = 'ff_close'
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
 !
 IF (obj%initstat) THEN
   IF (obj%isOpen()) THEN
@@ -539,6 +549,8 @@ END PROCEDURE ff_close
 MODULE PROCEDURE ff_delete
 CHARACTER(*), PARAMETER :: myName = 'ff_delete'
 TYPE(String) :: path, filename, ext
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
 
 IF (obj%initstat) THEN
   IF (obj%isOpen()) THEN
@@ -590,6 +602,9 @@ END PROCEDURE ff_delete
 MODULE PROCEDURE ff_backspace
 CHARACTER(*), PARAMETER :: myName = 'ff_backspace'
 
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
+
 IF (obj%initstat) THEN
   IF (obj%isOpen()) THEN
     BACKSPACE (UNIT=obj%unitno, IOSTAT=ioerr, IOMSG=iomsg)
@@ -617,15 +632,37 @@ END PROCEDURE ff_backspace
 
 MODULE PROCEDURE ff_rewind
 CHARACTER(*), PARAMETER :: myName = 'ff_rewind'
+CHARACTER(maxStrLen) :: emesg, iomsg
+INTEGER(I4B) :: ioerr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+  & '[START] Rewind()')
+#endif
+
+#ifdef Darwin_SYSTEM 
+CALL e%RaiseError(modName //'::'//myName// ' - '// &
+  & '[BUG] :: REWIND() function does not work with GNU Fortran. ' // &
+  & 'We are working on this issue. ')
+#else 
+
 IF (obj%initstat) THEN
   IF (obj%isOpen()) THEN
+    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
+      & '[1] ' // tostring(obj%unitno) )
     REWIND (UNIT=obj%unitno, IOSTAT=ioerr, IOMSG=iomsg)
+    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
+      & '[2]')
     CALL obj%setEOFstat(.FALSE.)
+    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
+      & '[3]')
     IF (ioerr /= 0) THEN
       WRITE (emesg, '(a,i4,a,i4,a)') 'Error rewinding file (UNIT=', &
         & obj%unitno, ') IOSTAT=', ioerr, ' IOMSG='//TRIM(iomsg)
       CALL e%raiseError(modName//'::'//myName//' - '//emesg)
     END IF
+    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
+      & '[4]')
   ELSE
     WRITE (emesg, '(a,i4,a)') 'Cannot rewind file (UNIT=', obj%unitno, &
       & '). File not is not open!'
@@ -635,6 +672,14 @@ ELSE
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Cannot rewind file! File object has not been initialized!')
 END IF
+
+#endif
+
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
+  & '[END] Rewind()')
+#endif
 END PROCEDURE ff_rewind
 
 !----------------------------------------------------------------------------

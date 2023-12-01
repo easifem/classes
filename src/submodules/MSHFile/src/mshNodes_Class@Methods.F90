@@ -34,10 +34,11 @@ END PROCEDURE n_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_Deallocate
-SELECT TYPE (obj)
-TYPE IS (mshNodes_)
-  obj = TypeMSHNodes
-END SELECT
+obj%numNodes = 0
+obj%numEntityBlocks = 0
+obj%minNodeTag = 0
+obj%maxNodeTag = 0
+obj%isSparse = .FALSE.
 END PROCEDURE n_Deallocate
 
 !----------------------------------------------------------------------------
@@ -49,32 +50,59 @@ MODULE PROCEDURE n_GotoTag
 INTEGER(I4B) :: IOSTAT, Reopen, unitNo
 CHARACTER(100) :: Dummy
 CHARACTER(*), PARAMETER :: myName = "n_GotoTag"
-!
-! Find $meshFormat
+LOGICAL(LGT) :: isNotOpen, isNotRead
 
-IF (.NOT. mshFile%isOpen() .OR. .NOT. mshFile%isRead()) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] GotoTag()')
+#endif
+
+isNotOpen = .NOT. mshFile%isOpen()
+isNotRead = .NOT. mshFile%isRead()
+
+! Find $meshFormat
+IF (isNotOpen .OR. isNotRead) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'mshFile is either not opened or does not have read access!')
+    & '[INTERNAL ERROR] :: mshFile is either not opened '// &
+    & 'or does not have read access!')
   error = -1
-ELSE
-  Reopen = 0; error = 0; CALL mshFile%REWIND()
-  DO
-    unitNo = mshFile%getUnitNo()
-    READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
-    IF (IS_IOSTAT_END(IOSTAT)) THEN
-      CALL mshFile%setEOFStat(.TRUE.)
-      Reopen = Reopen + 1
-    END IF
-    IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Could not find $Nodes !')
-      error = -2
-      EXIT
-    ELSE IF (TRIM(Dummy) .EQ. '$Nodes') THEN
-      EXIT
-    END IF
-  END DO
+  RETURN
 END IF
+
+Reopen = 0; error = 0; 
+#ifndef Darwin_SYSTEM
+CALL mshFile%REWIND()
+#endif
+
+DO
+  unitNo = mshFile%getUnitNo()
+  READ (unitNo, "(A)", IOSTAT=IOSTAT) Dummy
+
+  IF (IS_IOSTAT_END(IOSTAT)) THEN
+    CALL mshFile%setEOFStat(.TRUE.)
+
+#ifdef Darwin_SYSTEM
+    CALL mshFile%CLOSE()
+    CALL mshFile%OPEN()
+#endif
+
+    Reopen = Reopen + 1
+  END IF
+
+  IF (IOSTAT .GT. 0 .OR. Reopen .GT. 1) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Could not find $Nodes !')
+    error = -2
+    EXIT
+  ELSE IF (TRIM(Dummy) .EQ. '$Nodes') THEN
+    EXIT
+  END IF
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] GotoTag()')
+#endif
 END PROCEDURE n_GotoTag
 
 !----------------------------------------------------------------------------
@@ -82,21 +110,37 @@ END PROCEDURE n_GotoTag
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE n_Read
+CHARACTER(*), PARAMETER :: myName = "n_Read()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Read()')
+#endif
+
 CALL obj%GotoTag(mshFile, error)
-IF (error .EQ. 0) THEN
-  IF (mshFormat%getMajorVersion() .GT. 2) THEN
-    READ (mshFile%getUnitNo(), *) obj%numEntityBlocks, obj%numNodes, &
-      & obj%minNodeTag, obj%maxNodeTag
-    IF ((obj%maxNodeTag - obj%minNodeTag) &
-      & .EQ. (obj%numNodes - 1)) THEN
-      obj%isSparse = .FALSE.
-    ELSE
-      obj%isSparse = .TRUE.
-    END IF
-  ELSE
-    READ (mshFile%getUnitNo(), *) obj%numNodes
-  END IF
+
+IF (error .NE. 0) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Error occured while finding the tag.')
 END IF
+
+IF (mshFormat%getMajorVersion() .GT. 2) THEN
+  READ (mshFile%getUnitNo(), *) obj%numEntityBlocks, obj%numNodes, &
+    & obj%minNodeTag, obj%maxNodeTag
+  IF ((obj%maxNodeTag - obj%minNodeTag) &
+    & .EQ. (obj%numNodes - 1)) THEN
+    obj%isSparse = .FALSE.
+  ELSE
+    obj%isSparse = .TRUE.
+  END IF
+ELSE
+  READ (mshFile%getUnitNo(), *) obj%numNodes
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Read()')
+#endif
 END PROCEDURE n_Read
 
 !----------------------------------------------------------------------------
