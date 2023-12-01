@@ -27,34 +27,39 @@ CONTAINS
 MODULE PROCEDURE sField_set1
 CHARACTER(*), PARAMETER :: myName = "sField_set1"
 INTEGER(I4B) :: localNode
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Scalar field object is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Scalar field object is not initiated')
+  RETURN
+END IF
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=[1], VALUE=[VALUE], &
-    & scale=Input(option=scale, default=1.0_DFP))
-  ELSE
-    CALL set(obj%realVec, nodenum=[1], VALUE=[VALUE])
-  END IF
-ELSE
-
-  localNode = obj%domain%getLocalNodeNumber(globalNode)
-
-  IF (localNode .NE. 0) THEN
-
-    IF (PRESENT(addContribution)) THEN
-      CALL add(obj%realVec, nodenum=[localNode], VALUE=[VALUE], &
-        & scale=Input(option=scale, default=1.0_DFP))
-    ELSE
-      CALL set(obj%realVec, nodenum=[localNode], VALUE=[VALUE])
-    END IF
-
+  IF (abool) THEN
+    CALL add(obj%realVec, nodenum=[1], VALUE=[VALUE], scale=areal)
+    RETURN
   END IF
 
+  CALL set(obj%realVec, nodenum=[1], VALUE=[VALUE])
+  RETURN
 END IF
+
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
+
+IF (localNode .NE. 0) THEN
+  IF (abool) THEN
+    CALL add(obj%realVec, nodenum=[localNode], VALUE=[VALUE], scale=areal)
+    RETURN
+  END IF
+
+  CALL set(obj%realVec, nodenum=[localNode], VALUE=[VALUE])
+  RETURN
+END IF
+
 END PROCEDURE sField_set1
 
 !----------------------------------------------------------------------------
@@ -63,21 +68,21 @@ END PROCEDURE sField_set1
 
 MODULE PROCEDURE sField_set2
 CHARACTER(*), PARAMETER :: myName = "sField_set2"
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (.NOT. obj%isInitiated) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Scalar field object is not initiated')
+  RETURN
+END IF
 
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Scalar field object is not initiated')
-
+IF (abool) THEN
+  CALL add(obj%realVec, VALUE=VALUE, scale=areal)
 ELSE
-
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, VALUE=VALUE, &
-    & scale=Input(option=scale, default=1.0_DFP))
-  ELSE
-    CALL set(obj%realVec, VALUE=VALUE)
-  END IF
-
+  CALL set(obj%realVec, VALUE=VALUE)
 END IF
 
 END PROCEDURE sField_set2
@@ -88,27 +93,35 @@ END PROCEDURE sField_set2
 
 MODULE PROCEDURE sField_set3
 CHARACTER(*), PARAMETER :: myName = "sField_set3"
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'Scalar field object is not initiated')
 END IF
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'This routine should not be called for constant field type.')
-ELSE
-  IF (obj%tSize .NE. SIZE(VALUE)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Size of value is not equal to size of scalarfield')
-  END IF
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: This routine should not be '//  &
+    & 'called for constant field type.')
+  RETURN
+END IF
 
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, VALUE=VALUE, &
-    & scale=Input(option=scale, default=1.0_DFP))
-  ELSE
-    CALL set(obj%realVec, VALUE=VALUE)
-  END IF
+IF (obj%tSize .NE. SIZE(VALUE)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: Size of value ('//tostring(SIZE(VALUE))//  &
+  & ') is not equal to size of scalarfield ('//  &
+  & tostring(obj%tSize)//')')
+  RETURN
+END IF
+
+IF (abool) THEN
+  CALL add(obj%realVec, VALUE=VALUE, scale=areal)
+ELSE
+  CALL set(obj%realVec, VALUE=VALUE)
 END IF
 
 END PROCEDURE sField_set3
@@ -120,27 +133,34 @@ END PROCEDURE sField_set3
 MODULE PROCEDURE sField_set4
 CHARACTER(*), PARAMETER :: myName = "sField_set4"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Scalar field object is not initiated')
+  RETURN
 END IF
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'This routine should not be called for constant field type.')
-ELSE
-  localNode = obj%domain%getLocalNodeNumber(globalNode)
-  IF (ANY(localNode .GT. obj%tSize)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+  RETURN
+END IF
+
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
+IF (ANY(localNode .GT. obj%tSize)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Some of the globalNode are out of bound')
-  END IF
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=localNode, VALUE=VALUE, &
-    & scale=Input(option=scale, default=1.0_DFP))
-  ELSE
-    CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
-  END IF
+  RETURN
+END IF
+
+IF (abool) THEN
+  CALL add(obj%realVec, nodenum=localNode, VALUE=VALUE, scale=areal)
+ELSE
+  CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
 END IF
 END PROCEDURE sField_set4
 
@@ -151,31 +171,41 @@ END PROCEDURE sField_set4
 MODULE PROCEDURE sField_set5
 CHARACTER(*), PARAMETER :: myName = "sField_set5"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Scalar field object is not initiated')
+  RETURN
 END IF
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'This routine should not be called for constant field type.')
-ELSE
-  localNode = obj%domain%getLocalNodeNumber(globalNode)
-  IF (ANY(localNode .GT. obj%tSize)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
+  RETURN
+END IF
+
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
+
+IF (ANY(localNode .GT. obj%tSize)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Some of the globalNode are out of bound')
-  END IF
-  IF (PRESENT(addContribution)) THEN
-    CALL add( &
+  RETURN
+END IF
+
+IF (abool) THEN
+  CALL add( &
     & obj=obj%realVec, &
     & nodenum=localNode, &
     & VALUE=VALUE, &
-    & scale=Input(option=scale, default=1.0_DFP))
-  ELSE
-    CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
-  END IF
+    & scale=areal)
+ELSE
+  CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
 END IF
+
 END PROCEDURE sField_set5
 
 !----------------------------------------------------------------------------
@@ -241,7 +271,7 @@ CASE (Space)
     & scale=scale, &
     & addContribution=addContribution)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
   & 'No case found for Value%vartype, only [Constant and Space is allowed]')
 END SELECT
 END PROCEDURE sField_set9
@@ -268,19 +298,19 @@ INTEGER(I4B) :: indx2
 REAL(DFP) :: avar
 
 IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'ScalarNodeField_::obj is not initiated')
 END IF
 
 IF (.NOT. VALUE%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'AbstractNodeField_ ::value is not initiated')
 END IF
 
 tsize = obj%dof.tNodes. [ivar, idof]
 tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
 IF (tsize .NE. tsize_value) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
 END IF
 
