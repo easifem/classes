@@ -29,7 +29,9 @@ USE AbstractSolidMechanicsModel_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "LinearElasticModel_Class"
-CHARACTER(*), PARAMETER :: myprefix = "LinearElasticModel"
+CHARACTER(*), PARAMETER :: myPrefix = "LinearElasticModel"
+CHARACTER(*), PUBLIC, PARAMETER :: LinearElasticModel_Prefix = myPrefix
+
 PUBLIC :: LinearElasticModel_
 PUBLIC :: TypeLinearElasticModel
 PUBLIC :: LinearElasticModelPointer_
@@ -46,6 +48,8 @@ INTEGER(I4B), PARAMETER, PUBLIC :: IsoLinearElasticModel = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: AnisoLinearElasticModel = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: OrthoLinearElasticModel = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: TransLinearElasticModel = 4
+INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRESS = 3
+INTEGER(I4B), PARAMETER :: SIZE_C_PLANE_STRAIN = 3
 
 !----------------------------------------------------------------------------
 !                                                           ElasticityType_
@@ -75,12 +79,22 @@ TYPE(ElasticityType_), PARAMETER :: TypeElasticity = ElasticityType_()
 TYPE, EXTENDS(AbstractSolidMechanicsModel_) :: LinearElasticModel_
   PRIVATE
   INTEGER(I4B) :: elasticityType = 0
+  INTEGER(I4B) :: nc = 6
+  !! actual size of C
+  !! in case of plane-stress and plane-strain, nc is 4
+  !! otherwise C is 6
   REAL(DFP) :: nu = 0.0_DFP
+  !! poissonRatio
   REAL(DFP) :: G = 0.0_DFP
+  !! shearModulus
   REAL(DFP) :: E = 0.0_DFP
+  !! youngsModulus
   REAL(DFP) :: lambda = 0.0_DFP
+  !! lame parameter
   REAL(DFP) :: C(6, 6) = 0.0_DFP
+  !! elastic tensor
   REAL(DFP) :: invC(6, 6) = 0.0_DFP
+  !! inverse of elastic tensor
   REAL(DFP) :: stiffnessPower = 0.0_DFP
 
 CONTAINS
@@ -220,7 +234,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -387,6 +401,29 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                       GetParam@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-22
+! summary:  Get param
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetParam(obj, elasticityType,  &
+    & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
+    CLASS(LinearElasticModel_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: elasticityType
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: nu
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: G
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: youngsModulus
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(6, 6)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(6, 6)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
+  END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            GetC@GetMethods
 !----------------------------------------------------------------------------
 
@@ -428,29 +465,6 @@ INTERFACE
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetParam@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-22
-! summary:  Get param
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetParam(obj, elasticityType,  &
-    & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
-    CLASS(LinearElasticModel_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: elasticityType
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: nu
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: G
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: youngsModulus
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(6, 6)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(6, 6)
-    REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
-  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -559,7 +573,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, elasticityType,  &
-  & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
+    & nu, G, youngsModulus, lambda, C, invC, stiffnessPower)
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elasticityType
     REAL(DFP), OPTIONAL, INTENT(IN) :: nu

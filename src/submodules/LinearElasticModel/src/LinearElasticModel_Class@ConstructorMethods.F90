@@ -255,9 +255,11 @@ CALL obj%SetName(myprefix)
 
 ierr = param%get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
 CALL obj%SetPlaneStress(isPlaneStress)
+IF (isPlaneStress) obj%nc = SIZE_C_PLANE_STRESS
 
 ierr = param%get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 CALL obj%SetPlaneStrain(isPlaneStrain)
+IF (isPlaneStrain) obj%nc = SIZE_C_PLANE_STRAIN
 
 ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 obj%elasticityType = elasticityType_tonumber(charVar)
@@ -305,6 +307,7 @@ obj%lambda = 0.0
 obj%C = 0.0_DFP
 obj%invC = 0.0_DFP
 obj%stiffnessPower = 0.0_DFP
+obj%nc = 6
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

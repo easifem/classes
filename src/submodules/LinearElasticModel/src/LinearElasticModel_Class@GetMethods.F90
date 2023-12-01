@@ -169,21 +169,40 @@ END PROCEDURE Get_3D_C_invC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElasticParam
-IF (PRESENT(poissonRatio)) poissonRatio = obj%nu
-IF (PRESENT(shearModulus)) shearModulus = obj%G
+CALL obj%GetParam(nu=poissonRatio, G=shearModulus,  &
+  & youngsModulus=youngsModulus, lambda=lambda, C=C, invC=invC,  &
+  & stiffnessPower=stiffnessPower)
+END PROCEDURE obj_GetElasticParam
+
+!----------------------------------------------------------------------------
+!                                                               GetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetParam
+IF (PRESENT(elasticityType)) elasticityType = obj%elasticityType
+IF (PRESENT(nu)) nu = obj%nu
+IF (PRESENT(G)) G = obj%G
 IF (PRESENT(youngsModulus)) youngsModulus = obj%E
 IF (PRESENT(lambda)) lambda = obj%lambda
+IF (PRESENT(C)) THEN
+  C(1:obj%nc, 1:obj%nc) = obj%C(1:obj%nc, 1:obj%nc)
+END IF
+
+IF (PRESENT(invC)) THEN
+  invC(1:obj%nc, 1:obj%nc) = obj%invC(1:obj%nc, 1:obj%nc)
+END IF
+
 IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
-IF (PRESENT(C)) C = obj%C
-IF (PRESENT(invC)) invC = invC
-END PROCEDURE obj_GetElasticParam
+END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
 !                                                                       GetC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetC
-C = obj%C
+INTEGER(I4B) :: n
+n = obj%nc
+C(1:n, 1:n) = obj%C(1:n, 1:n)
 END PROCEDURE obj_GetC
 
 !----------------------------------------------------------------------------
@@ -191,7 +210,9 @@ END PROCEDURE obj_GetC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetinvC
-invC = obj%invC
+INTEGER(I4B) :: n
+n = obj%nc
+invC(1:n, 1:n) = obj%invC(1:n, 1:n)
 END PROCEDURE obj_GetinvC
 
 !----------------------------------------------------------------------------
@@ -209,21 +230,6 @@ END PROCEDURE obj_GetElasticityType
 MODULE PROCEDURE obj_GetPrefix
 ans = myPrefix
 END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
-!                                                               GetParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetParam
-IF (PRESENT(elasticityType)) elasticityType = obj%elasticityType
-IF (PRESENT(nu)) nu = obj%nu
-IF (PRESENT(G)) G = obj%G
-IF (PRESENT(youngsModulus)) youngsModulus = obj%E
-IF (PRESENT(lambda)) lambda = obj%lambda
-IF (PRESENT(C)) C = obj%C
-IF (PRESENT(invC)) invC = obj%invC
-IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
-END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
 !                                                               GetDataSize

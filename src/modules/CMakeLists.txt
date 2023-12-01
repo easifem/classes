@@ -359,5 +359,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
 # porousMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
 
+# SolidMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
+
 # easifemMaterials
 include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
