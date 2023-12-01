@@ -470,6 +470,72 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Isotropic elasticity
+!
+!# Introduction
+!  This routine returns the data for Isotropic linear elasticity
+! Data(1) contains the lambda
+! Data(2) contains the G
+!
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Iso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Iso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for anisotropic elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Aniso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Aniso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Orthotropic elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Ortho(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Ortho
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Trans Isotropic elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelGetData_Trans(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+  END SUBROUTINE LinearElasticModelGetData_Trans
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                        SetParam@SetMethods
 !----------------------------------------------------------------------------
 
@@ -505,6 +571,66 @@ INTERFACE
     CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: DATA(:)
   END SUBROUTINE obj_SetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Isotropic linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Iso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Iso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Aniso linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Aniso(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Aniso
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Orthotropic linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Ortho(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Ortho
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Transverse Isotropic linear elasticity
+
+INTERFACE
+  MODULE SUBROUTINE LinearElasticModelSetData_Trans(obj, DATA)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE LinearElasticModelSetData_Trans
 END INTERFACE
 
 !----------------------------------------------------------------------------

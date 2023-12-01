@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(LinearElasticModel_Class) GetMethods
+USE BaseMethod, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -225,8 +226,21 @@ END PROCEDURE obj_GetParam
 MODULE PROCEDURE obj_GetDataSize
 CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
 ans = 0
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+SELECT CASE (obj%elasticityType)
+CASE (IsoLinearElasticModel)
+  ans = 2
+CASE (AnisoLinearElasticModel)
+  ans = 21
+CASE (TransLinearElasticModel)
+  ans = 5
+CASE (OrthoLinearElasticModel)
+  ans = 9
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found for elasticityType = '//  &
+    & tostring(obj%elasticityType))
+  RETURN
+END SELECT
 END PROCEDURE obj_GetDataSize
 
 !----------------------------------------------------------------------------
@@ -235,8 +249,107 @@ END PROCEDURE obj_GetDataSize
 
 MODULE PROCEDURE obj_GetData
 CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+SELECT CASE (obj%elasticityType)
+CASE (IsoLinearElasticModel)
+  CALL LinearElasticModelGetData_Iso(obj, DATA)
+CASE (AnisoLinearElasticModel)
+  CALL LinearElasticModelGetData_Aniso(obj, DATA)
+CASE (TransLinearElasticModel)
+  CALL LinearElasticModelGetData_Trans(obj, DATA)
+CASE (OrthoLinearElasticModel)
+  CALL LinearElasticModelGetData_Ortho(obj, DATA)
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found for elasticityType = '//  &
+    & tostring(obj%elasticityType))
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE obj_GetData
+
+!----------------------------------------------------------------------------
+!                                             LinearElasticModelGetData_Iso
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LinearElasticModelGetData_Iso
+CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Iso()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+DATA(1) = obj%lambda
+DATA(2) = obj%G
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE LinearElasticModelGetData_Iso
+
+!----------------------------------------------------------------------------
+!                                            LinearElasticModelGetData_Aniso
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LinearElasticModelGetData_Aniso
+CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Aniso()"
+INTEGER(I4B) :: ii, jj, kk
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+kk = 0
+DO jj = 1, 6
+  DO ii = jj, 6
+    kk = kk + 1
+    DATA(kk) = obj%C(ii, jj)
+  END DO
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE LinearElasticModelGetData_Aniso
+
+!----------------------------------------------------------------------------
+!                                           LinearElasticModelGetData_Ortho
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LinearElasticModelGetData_Ortho
+CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Ortho()"
+INTEGER(I4B) :: ii
+DO ii = 1, 6
+  DATA(ii) = obj%C(ii, ii)
+END DO
+DATA(7) = obj%C(1, 2)
+DATA(8) = obj%C(2, 3)
+DATA(9) = obj%C(1, 3)
+END PROCEDURE LinearElasticModelGetData_Ortho
+
+!----------------------------------------------------------------------------
+!                                           LinearElasticModelGetData_Trans
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE LinearElasticModelGetData_Trans
+CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Trans()"
+DATA(1) = obj%C(1, 1)
+DATA(2) = obj%C(3, 3)
+DATA(3) = obj%C(5, 5)
+DATA(4) = obj%C(1, 2)
+DATA(5) = obj%C(1, 3)
+END PROCEDURE LinearElasticModelGetData_Trans
 
 END SUBMODULE GetMethods

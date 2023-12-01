@@ -146,7 +146,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr, cc
 INTEGER(I4B), ALLOCATABLE :: shapeOfC(:)
-LOGICAL(LGT) :: isPlaneStress, isPlaneStrain
+LOGICAL(LGT) :: isPlaneStress, isPlaneStrain, isIso
 
 IF (.NOT. param%IsPresent(key=myprefix//"/name")) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -178,7 +178,9 @@ END IF
 ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
 cc = 0
 
-IF (TRIM(charVar) .EQ. TypeElasticity%Isotropic_char) THEN
+isIso = charVar .EQ. TypeElasticity%Isotropic_char
+
+IF (isIso) THEN
   IF (.NOT. param%IsPresent(key=myprefix//"/lambda")) &
     & CALL e%RaiseError(modName//'::'//myName//" - "// &
     & myprefix//'/lambda should be present in param')
