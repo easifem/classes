@@ -34,24 +34,28 @@ IF (PRESENT(shearModulus)) THEN
 ELSE
   isG = .FALSE.
 END IF
+
 IF (PRESENT(youngsModulus)) THEN
   isE = .TRUE.
   EE = youngsModulus
 ELSE
   isE = .FALSE.
 END IF
+
 IF (PRESENT(poissonRatio)) THEN
   isNu = .TRUE.
   Nu = poissonRatio
 ELSE
   isNu = .FALSE.
 END IF
+
 IF (PRESENT(lambda)) THEN
   isLam = .TRUE.
   lam = lambda
 ELSE
   isLam = .FALSE.
 END IF
+
 !1
 IF (isNu .AND. isE) THEN
   lam = EE * nu / (1.0 + nu) / (1.0 - 2.0 * nu)
@@ -170,6 +174,8 @@ IF (PRESENT(shearModulus)) shearModulus = obj%G
 IF (PRESENT(youngsModulus)) youngsModulus = obj%E
 IF (PRESENT(lambda)) lambda = obj%lambda
 IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
+IF (PRESENT(C)) C = obj%C
+IF (PRESENT(invC)) invC = invC
 END PROCEDURE obj_GetElasticParam
 
 !----------------------------------------------------------------------------
@@ -225,6 +231,11 @@ END PROCEDURE obj_GetParam
 
 MODULE PROCEDURE obj_GetDataSize
 CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 ans = 0
 SELECT CASE (obj%elasticityType)
 CASE (IsoLinearElasticModel)
@@ -241,6 +252,12 @@ CASE default
     & tostring(obj%elasticityType))
   RETURN
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_GetDataSize
 
 !----------------------------------------------------------------------------
@@ -331,12 +348,24 @@ END PROCEDURE LinearElasticModelGetData_Aniso
 MODULE PROCEDURE LinearElasticModelGetData_Ortho
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Ortho()"
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 DO ii = 1, 6
   DATA(ii) = obj%C(ii, ii)
 END DO
 DATA(7) = obj%C(1, 2)
 DATA(8) = obj%C(2, 3)
 DATA(9) = obj%C(1, 3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE LinearElasticModelGetData_Ortho
 
 !----------------------------------------------------------------------------
@@ -345,11 +374,22 @@ END PROCEDURE LinearElasticModelGetData_Ortho
 
 MODULE PROCEDURE LinearElasticModelGetData_Trans
 CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Trans()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 DATA(1) = obj%C(1, 1)
 DATA(2) = obj%C(3, 3)
 DATA(3) = obj%C(5, 5)
 DATA(4) = obj%C(1, 2)
 DATA(5) = obj%C(1, 3)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE LinearElasticModelGetData_Trans
 
 END SUBMODULE GetMethods

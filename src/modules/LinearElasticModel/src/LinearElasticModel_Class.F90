@@ -321,6 +321,10 @@ END INTERFACE
 !                                          Get_PlaneStress_C_InvC@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-01
+! summary:  This routine returns C and invC from E and nu
+
 INTERFACE
   MODULE SUBROUTINE Get_PlaneStress_C_InvC(C, invC, youngsModulus, nu)
     REAL(DFP), INTENT(INOUT) :: C(:, :)
@@ -334,6 +338,10 @@ END INTERFACE
 !                                          Get_PlaneStrain_C_InvC@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-01
+! summary:  This routine returns C and invC from E and nu
+
 INTERFACE
   MODULE SUBROUTINE Get_PlaneStrain_C_InvC(C, invC, youngsModulus, nu)
     REAL(DFP), INTENT(INOUT) :: C(:, :)
@@ -346,6 +354,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                  Get_3D_C_InvC@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-01
+! summary:  This routine returns C and invC from E and nu
 
 INTERFACE
   MODULE SUBROUTINE Get_3D_C_InvC(C, invC, youngsModulus, nu)
@@ -362,13 +374,15 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetElasticParam(obj, poissonRatio, &
-     & shearModulus, lambda, youngsModulus, stiffnessPower)
+     & shearModulus, lambda, youngsModulus, stiffnessPower, C, invC)
     CLASS(LinearElasticModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: poissonRatio
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: shearModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: youngsModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(:, :)
   END SUBROUTINE obj_GetElasticParam
 END INTERFACE
 

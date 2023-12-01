@@ -217,13 +217,15 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE lem_GetElasticParam(obj, poissonRatio, &
-     & shearModulus, lambda, youngsModulus, stiffnessPower)
+     & shearModulus, lambda, youngsModulus, stiffnessPower, C, invC)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: poissonRatio
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: shearModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: youngsModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(:, :)
   END SUBROUTINE lem_GetElasticParam
 END INTERFACE
 
