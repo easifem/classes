@@ -30,6 +30,8 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "LinearPoroElasticModel_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "LinearPoroElasticModel"
+CHARACTER(*), PARAMETER, PUBLIC :: LinearPoroElasticModel_Prefix  &
+  & = myPrefix
 PUBLIC :: LinearPoroElasticModel_
 PUBLIC :: TypeLinearPoroElasticModel
 PUBLIC :: LinearPoroElasticModelPointer_
