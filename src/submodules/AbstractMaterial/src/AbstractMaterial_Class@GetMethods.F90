@@ -26,16 +26,16 @@ CONTAINS
 !                                                           GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE am_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                           GetMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_GetMaterialPointer
-CHARACTER(*), PARAMETER :: myName = "am_GetMaterialPointer()"
+MODULE PROCEDURE obj_GetMaterialPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaterialPointer()"
 LOGICAL(LGT) :: isOK
 INTEGER(I4B) :: indx
 
@@ -62,13 +62,13 @@ END IF
 
 matPtr => obj%matProps(indx)%ptr
 
-END PROCEDURE am_GetMaterialPointer
+END PROCEDURE obj_GetMaterialPointer
 
 !----------------------------------------------------------------------------
 !                                                       IsMaterialPresent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_IsMaterialPresent
+MODULE PROCEDURE obj_IsMaterialPresent
 INTEGER(I4B) :: stat
 CALL obj%tbl%check_key(key=key(name), stat=stat)
 IF (stat .EQ. 0_I4B) THEN
@@ -76,5 +76,5 @@ IF (stat .EQ. 0_I4B) THEN
 ELSE
   ans = .FALSE.
 END IF
-END PROCEDURE am_IsMaterialPresent
+END PROCEDURE obj_IsMaterialPresent
 END SUBMODULE GetMethods
