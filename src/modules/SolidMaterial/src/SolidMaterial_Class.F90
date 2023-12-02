@@ -69,22 +69,22 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & solid_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => solid_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => solid_Deallocate
-  FINAL :: solid_Final
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => solid_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => solid_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => solid_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
-    & solid_GetStressStrainModelPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => solid_GetPrefix
+    & obj_GetStressStrainModelPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE SolidMaterial_
 
 !----------------------------------------------------------------------------
@@ -146,10 +146,10 @@ END INTERFACE
 ! - `SolidMaterial/stresStrainModel`
 
 INTERFACE
-  MODULE SUBROUTINE solid_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE solid_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -177,11 +177,11 @@ END INTERFACE
 !@endwarning
 
 INTERFACE
-  MODULE SUBROUTINE solid_Initiate(obj, param, prefix)
+  MODULE SUBROUTINE obj_Initiate(obj, param, prefix)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE solid_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -193,7 +193,7 @@ END INTERFACE
 ! summary:  Add a solid material to the vector of SolidMaterialPointer_
 
 INTERFACE AddSolidMaterial
-  MODULE SUBROUTINE solid_AddSolidMaterial( &
+  MODULE SUBROUTINE obj_AddSolidMaterial( &
     & obj, &
     & tMaterials,   &
     & materialNo, &
@@ -208,7 +208,7 @@ INTERFACE AddSolidMaterial
     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
     TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
     TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: solidMaterialToMesh(:)
-  END SUBROUTINE solid_AddSolidMaterial
+  END SUBROUTINE obj_AddSolidMaterial
 END INTERFACE AddSolidMaterial
 
 !----------------------------------------------------------------------------
@@ -230,9 +230,9 @@ END INTERFACE AddSolidMaterial
 !@endwarning
 
 INTERFACE
-  MODULE SUBROUTINE solid_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE solid_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -272,9 +272,9 @@ END INTERFACE DEALLOCATE
 ! summary: This routine deallocates the instance
 
 INTERFACE
-  MODULE SUBROUTINE solid_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(SolidMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE solid_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -291,11 +291,11 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE SUBROUTINE solid_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE solid_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -307,11 +307,11 @@ END INTERFACE
 ! summary: This routine exports the information to external hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE solid_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE solid_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -323,11 +323,11 @@ END INTERFACE
 ! summary: This routine displays the content of the instance
 
 INTERFACE
-  MODULE SUBROUTINE solid_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE solid_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -339,10 +339,10 @@ END INTERFACE
 ! summary: Get stressStrainModel pointer
 
 INTERFACE
-  MODULE FUNCTION solid_GetStressStrainModelPointer(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
-  END FUNCTION solid_GetStressStrainModelPointer
+  END FUNCTION obj_GetStressStrainModelPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -350,10 +350,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION solid_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION solid_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

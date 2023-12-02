@@ -24,22 +24,22 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_Display
-! CHARACTER(*), PARAMETER :: myName = "solid_Display"
+MODULE PROCEDURE obj_Display
+! CHARACTER(*), PARAMETER :: myName = "obj_Display"
 ! main
 CALL AbstractMaterialDisplay(obj=obj, msg=msg, unitNo=unitNo)
 IF (ASSOCIATED(obj%stressStrainModel)) THEN
   CALL obj%stressStrainModel%Display(msg="# stressStrainModel :", &
   & unitNo=unitNo)
 END IF
-END PROCEDURE solid_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_Import
-CHARACTER(*), PARAMETER :: myName = "solid_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
@@ -72,14 +72,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE solid_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_Export
-CHARACTER(*), PARAMETER :: myName = "solid_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
@@ -98,6 +98,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Export()')
 #endif
 
-END PROCEDURE solid_Export
+END PROCEDURE obj_Export
 
 END SUBMODULE IOMethods

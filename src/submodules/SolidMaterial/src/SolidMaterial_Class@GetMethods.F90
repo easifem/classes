@@ -23,16 +23,16 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_GetStressStrainModelPointer
+MODULE PROCEDURE obj_GetStressStrainModelPointer
 ans => obj%stressStrainModel
-END PROCEDURE solid_GetStressStrainModelPointer
+END PROCEDURE obj_GetStressStrainModelPointer
 
 !----------------------------------------------------------------------------
 !                                                             GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE solid_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods
