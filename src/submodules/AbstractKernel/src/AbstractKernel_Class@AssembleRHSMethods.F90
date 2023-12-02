@@ -24,10 +24,10 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_AssembleRHS
-CHARACTER(*), PARAMETER :: myName = "ak_AssembleRHS"
+MODULE PROCEDURE obj_AssembleRHS
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleRHS"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is not available or has not been implemented')
-END PROCEDURE ak_AssembleRHS
+END PROCEDURE obj_AssembleRHS
 
 END SUBMODULE AssembleRHSMethods

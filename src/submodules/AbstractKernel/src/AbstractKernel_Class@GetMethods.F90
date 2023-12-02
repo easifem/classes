@@ -24,12 +24,12 @@ CONTAINS
 !                                                                GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "ak_GetPrefix"
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This method should be implemented by the '//  &
   & ' children classes of AbstractKernel_')
-END PROCEDURE ak_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                            KernelGetCoordinateSystemName

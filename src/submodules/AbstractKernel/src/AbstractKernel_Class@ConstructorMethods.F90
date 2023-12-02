@@ -135,8 +135,8 @@ END PROCEDURE SetAbstractKernelParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "ak_CheckEssentialParam"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
 INTEGER(I4B) :: ii
 TYPE(String), ALLOCATABLE :: essentialParam(:)
 TYPE(String) :: astr
@@ -177,18 +177,18 @@ IF (ASSOCIATED(obj%linsol)) &
 IF (ASSOCIATED(obj%tanmat)) &
   & CALL obj%tanmat%CheckEssentialParam(param=param)
 
-END PROCEDURE ak_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Initiate
-CHARACTER(*), PARAMETER :: myName = "ak_Initiate"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
 & '[INTERFACE ONLY]: this  routine should be implemented by subclass. '// &
 & myName//" is just an header. You can use KernelInitiateFromParam")
-END PROCEDURE ak_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
@@ -319,7 +319,7 @@ END PROCEDURE KernelInitiateFromParam
 !                                                       KernelDeallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii, jj
 obj%IsInitiated = .FALSE.
 obj%name = ""
@@ -417,7 +417,7 @@ IF (ALLOCATED(obj%stelemsd)) THEN
   DEALLOCATE (obj%stelemsd)
 END IF
 
-END PROCEDURE ak_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !

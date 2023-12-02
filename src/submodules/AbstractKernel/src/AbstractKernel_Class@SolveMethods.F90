@@ -24,10 +24,10 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Solve
-CHARACTER(*), PARAMETER :: myName = "ak_Solve"
+MODULE PROCEDURE obj_Solve
+CHARACTER(*), PARAMETER :: myName = "obj_Solve"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is not available or has not been implemented')
-END PROCEDURE ak_Solve
+END PROCEDURE obj_Solve
 
 END SUBMODULE SolveMethods

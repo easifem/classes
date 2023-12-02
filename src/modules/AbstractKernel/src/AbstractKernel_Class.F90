@@ -262,124 +262,124 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & ak_CheckEssentialParam
+    & obj_CheckEssentialParam
   !! Check the essential parameter of the kernel
   !! NOTE: When you want to add or remove a param from
   !! essential param, then just modify the
-  !! astr variable in ak_CheckEssentialParam method.
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => ak_Initiate
+  !! astr variable in obj_CheckEssentialParam method.
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the kernel. This is a constructor method.
   !! WARN: This routine is an interface only. It means
   !! it should be implemented by the subclass.
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => ak_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the memory occupied by the kernel
 
   ! CONSTRUCTOR:
   ! @InitiateFieldsMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFields => ak_InitiateFields
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFields => obj_InitiateFields
   !! Initiate the fields
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => ak_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Returns the prefix of the kernel
   !! This method should be implemented by the specific kernel
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => ak_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Perform final check, before starting the actual computations
   PROCEDURE, PUBLIC, PASS(obj) :: SetCurrentTimeStep => &
-    & ak_SetCurrentTimeStep
+    & obj_SetCurrentTimeStep
   !! Sets the current time step of the kernel
   PROCEDURE, PUBLIC, PASS(obj) :: SetIterationNumber => &
-    & ak_SetIterationNumber
+    & obj_SetIterationNumber
   !! Sets the current time step of the kernel
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshData => kernel_SetMeshData
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshData => obj_SetMeshData
   !! This method is called from Set method.
   !! It Sets the mesh data.
   PROCEDURE, PUBLIC, PASS(obj) :: SetFiniteElements =>  &
-    & kernel_SetFiniteElements
+    & obj_SetFiniteElements
   !! Set finite elements
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInSpace =>  &
-    & kernel_SetQuadPointsInSpace
+    & obj_SetQuadPointsInSpace
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInTime =>  &
-    & kernel_SetQuadPointsInTime
+    & obj_SetQuadPointsInTime
   PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInSpace =>  &
-    & kernel_SetLocalElemShapeDataInSpace
+    & obj_SetLocalElemShapeDataInSpace
   PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInTime =>  &
-    & kernel_SetLocalElemShapeDataInTime
+    & obj_SetLocalElemShapeDataInTime
   PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInSpace =>  &
-    & kernel_SetGlobalElemShapeDataInSpace
+    & obj_SetGlobalElemShapeDataInSpace
   !! Set global element shape data in space
   ! NOTE: Currently this method has not been implemented.
   ! TODO: Implement SetGlobalElemShapeDataInSpace
   PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInTime =>  &
-    & kernel_SetGlobalElemShapeDataInTime
+    & obj_SetGlobalElemShapeDataInTime
   !! Set global element shape data in time
   ! NOTE: Currently this method has not been implemented.
   ! TODO: Implement SetGlobalElemShapeDataInTime
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetFiniteElements =>  &
-    & kernel_SetFacetFiniteElements
+    & obj_SetFacetFiniteElements
   !! Set Facet Finite Elements
   !! NOTE: Currently this method has not been implemented
   !! TODO: Implement SetFacetFiniteElements method
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => ak_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from the input file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => ak_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data to an external file
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => ak_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Displays the content of kernel
-  PROCEDURE, PASS(obj) :: WriteData_hdf5 => ak_WriteData_hdf5
+  PROCEDURE, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
   !! Write simulation results in hdf5 file format
-  PROCEDURE, PASS(obj) :: WriteData_vtk => ak_WriteData_vtk
+  PROCEDURE, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
   !! Write simulation data in vtk file format
-  ! PROCEDURE, PASS( obj ) :: WriteData_xdmf => ak_WriteData_xdmf
+  ! PROCEDURE, PASS( obj ) :: WriteData_xdmf => obj_WriteData_xdmf
   GENERIC, PUBLIC :: WriteData => WriteData_hdf5, WriteData_vtk
   !! Export data to an external file
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml => ak_ImportFromToml
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml => obj_ImportFromToml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
-    & ak_ImportParamFromToml
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToToml => ak_ExportToToml
+    & obj_ImportParamFromToml
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportToToml => obj_ExportToToml
   ! GET:
   ! @RunMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Run => ak_Run
+  PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
   !! Run the kernel
 
   ! SET:
   ! @AssembleMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Assemble => ak_Assemble
+  PROCEDURE, PUBLIC, PASS(obj) :: Assemble => obj_Assemble
   !! This procedure pointer assembles the problem
 
   ! SET:
   ! @AssembleTanmatMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => ak_AssembleTanmat
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => obj_AssembleTanmat
   !! This procedure pointer assembles the global tangent matrix
 
   ! SET:
   ! @AssembleRHSMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => ak_AssembleRHS
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
   !! This procedure pointer assembles the right-hand-side vector
 
   ! GET:
   ! @SolveMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Solve => ak_Solve
+  PROCEDURE, PUBLIC, PASS(obj) :: Solve => obj_Solve
   !! This procedure pointer solves the problem
 
   ! SET:
   ! @UpdateMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Update => ak_Update
+  PROCEDURE, PUBLIC, PASS(obj) :: Update => obj_Update
   !! This procedure pointer update the problem
   PROCEDURE, PUBLIC, PASS(obj) :: &
-    & UpdateIteration => ak_UpdateIteration
+    & UpdateIteration => obj_UpdateIteration
   !! This procedure pointer update the problem
 
   ! GET:
   ! @ConvergenceMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IsConverged => ak_IsConverged
+  PROCEDURE, PUBLIC, PASS(obj) :: IsConverged => obj_IsConverged
   !! This procedure pointer checks the convergence
 END TYPE AbstractKernel_
 
@@ -528,11 +528,11 @@ END INTERFACE
 ! summary: Checks the essential parameters in the param of kernels
 
 INTERFACE AbstractKernelCheckEssentialParam
-  MODULE SUBROUTINE ak_CheckEssentialParam(obj, param, prefix)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param, prefix)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE ak_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE AbstractKernelCheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -552,7 +552,7 @@ END INTERFACE AbstractKernelCheckEssentialParam
 !WARN: This routine should be implemented by the subclass
 
 INTERFACE
-  MODULE SUBROUTINE ak_Initiate(obj, param, dom, domains)
+  MODULE SUBROUTINE obj_Initiate(obj, param, dom, domains)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Kernel object
     TYPE(ParameterList_), INTENT(IN) :: param
@@ -561,7 +561,7 @@ INTERFACE
     !! Domain of computation
     TYPE(DomainPointer_), OPTIONAL, TARGET, INTENT(INOUT) :: domains(:)
     !! multiple domains is necessary when isCommonDomain is false
-  END SUBROUTINE ak_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -580,7 +580,7 @@ END INTERFACE
 ! AbstractKernel_. This routine is called by Subclass internally
 ! to initiates the fields defined in the abstract class.
 !
-! NOTE: The arguments are same as the one defined in ak_Initiate
+! NOTE: The arguments are same as the one defined in obj_Initiate
 !
 ! TODO: Reduce the code repeatition see AbstractElasticity_ kernel
 
@@ -610,13 +610,13 @@ END INTERFACE
 ! - This subroutine should be defined by specific Kernel
 
 INTERFACE
-  MODULE SUBROUTINE ak_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 INTERFACE KernelDeallocate
-  MODULE PROCEDURE ak_Deallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE KernelDeallocate
 
 !----------------------------------------------------------------------------
@@ -628,9 +628,9 @@ END INTERFACE KernelDeallocate
 ! summary: This routine initiates the matrix and vector fields
 
 INTERFACE
-  MODULE SUBROUTINE ak_InitiateFields(obj)
+  MODULE SUBROUTINE obj_InitiateFields(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_InitiateFields
+  END SUBROUTINE obj_InitiateFields
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -645,9 +645,9 @@ END INTERFACE
 ! This subroutine assembles the system of linear equation.
 
 INTERFACE
-  MODULE SUBROUTINE ak_Assemble(obj)
+  MODULE SUBROUTINE obj_Assemble(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_Assemble
+  END SUBROUTINE obj_Assemble
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -662,9 +662,9 @@ END INTERFACE
 ! This subroutine assembles the system of linear equation.
 
 INTERFACE
-  MODULE SUBROUTINE ak_AssembleTanmat(obj)
+  MODULE SUBROUTINE obj_AssembleTanmat(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_AssembleTanmat
+  END SUBROUTINE obj_AssembleTanmat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -679,9 +679,9 @@ END INTERFACE
 ! This subroutine assembles the system of linear equation.
 
 INTERFACE
-  MODULE SUBROUTINE ak_AssembleRHS(obj)
+  MODULE SUBROUTINE obj_AssembleRHS(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_AssembleRHS
+  END SUBROUTINE obj_AssembleRHS
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -693,9 +693,9 @@ END INTERFACE
 ! summary: This subroutine solves the system of linear equation
 
 INTERFACE
-  MODULE SUBROUTINE ak_Solve(obj)
+  MODULE SUBROUTINE obj_Solve(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_Solve
+  END SUBROUTINE obj_Solve
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -707,10 +707,10 @@ END INTERFACE
 ! summary: This subroutine update the state of the kernel
 
 INTERFACE
-  MODULE SUBROUTINE ak_Update(obj, reSet)
+  MODULE SUBROUTINE obj_Update(obj, reSet)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(IN) :: reSet
-  END SUBROUTINE ak_Update
+  END SUBROUTINE obj_Update
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -722,10 +722,10 @@ END INTERFACE
 ! summary: This subroutine update the state of the kernel after an iteration
 
 INTERFACE
-  MODULE SUBROUTINE ak_UpdateIteration(obj, reSet)
+  MODULE SUBROUTINE obj_UpdateIteration(obj, reSet)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(IN) :: reSet
-  END SUBROUTINE ak_UpdateIteration
+  END SUBROUTINE obj_UpdateIteration
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -740,10 +740,10 @@ END INTERFACE
 ! This subroutine returns true if the iteration in the kernel is converged
 
 INTERFACE
-  MODULE FUNCTION ak_IsConverged(obj) RESULT(Ans)
+  MODULE FUNCTION obj_IsConverged(obj) RESULT(Ans)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     LOGICAL(LGT) :: Ans
-  END FUNCTION ak_IsConverged
+  END FUNCTION obj_IsConverged
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -755,15 +755,15 @@ END INTERFACE
 ! summary: This routine displays the content of kernel
 
 INTERFACE
-  MODULE SUBROUTINE ak_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE ak_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 INTERFACE KernelDisplay
-  MODULE PROCEDURE ak_Display
+  MODULE PROCEDURE obj_Display
 END INTERFACE KernelDisplay
 
 !----------------------------------------------------------------------------
@@ -775,17 +775,17 @@ END INTERFACE KernelDisplay
 ! summary: This routine exports the kernel
 
 INTERFACE
-  MODULE SUBROUTINE ak_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Kernel object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! Parameter list
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE ak_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 INTERFACE KernelExport
-  MODULE PROCEDURE ak_Export
+  MODULE PROCEDURE obj_Export
 END INTERFACE KernelExport
 
 !----------------------------------------------------------------------------
@@ -807,7 +807,7 @@ END INTERFACE KernelExport
 ! in the hdf5 file to generate that domain.
 
 INTERFACE KernelImport
-  MODULE SUBROUTINE ak_Import(obj, hdf5, group, dom)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Kernel object
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
@@ -816,7 +816,7 @@ INTERFACE KernelImport
     !! group or directory
     CLASS(Domain_), TARGET, INTENT(INOUT) :: dom
     !! Domain of computation
-  END SUBROUTINE ak_Import
+  END SUBROUTINE obj_Import
 END INTERFACE KernelImport
 
 !----------------------------------------------------------------------------
@@ -828,14 +828,14 @@ END INTERFACE KernelImport
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractKernelImportParamFromToml
-  MODULE SUBROUTINE ak_ImportParamFromToml(obj, param, tomlName,  &
+  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, tomlName,  &
     & afile, filename)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-  END SUBROUTINE ak_ImportParamFromToml
+  END SUBROUTINE obj_ImportParamFromToml
 END INTERFACE AbstractKernelImportParamFromToml
 
 !----------------------------------------------------------------------------
@@ -847,12 +847,12 @@ END INTERFACE AbstractKernelImportParamFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractKernelImportParamFromToml
-  MODULE SUBROUTINE ak_ImportParamFromToml2(obj, param, table, tomlName)
+  MODULE SUBROUTINE obj_ImportParamFromToml2(obj, param, table, tomlName)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: tomlName
-  END SUBROUTINE ak_ImportParamFromToml2
+  END SUBROUTINE obj_ImportParamFromToml2
 END INTERFACE AbstractKernelImportParamFromToml
 
 !----------------------------------------------------------------------------
@@ -864,7 +864,7 @@ END INTERFACE AbstractKernelImportParamFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractKernelImportParamFromToml
-  MODULE SUBROUTINE ak_ImportParamFromToml3(obj, param, table, child,  &
+  MODULE SUBROUTINE obj_ImportParamFromToml3(obj, param, table, child,  &
     & tomlName, filename, afile)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
@@ -873,7 +873,7 @@ INTERFACE AbstractKernelImportParamFromToml
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-  END SUBROUTINE ak_ImportParamFromToml3
+  END SUBROUTINE obj_ImportParamFromToml3
 END INTERFACE AbstractKernelImportParamFromToml
 
 !----------------------------------------------------------------------------
@@ -885,12 +885,12 @@ END INTERFACE AbstractKernelImportParamFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE ak_ImportFromToml(obj, tomlName, afile, filename)
+  MODULE SUBROUTINE obj_ImportFromToml(obj, tomlName, afile, filename)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-  END SUBROUTINE ak_ImportFromToml
+  END SUBROUTINE obj_ImportFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -902,10 +902,10 @@ END INTERFACE
 ! summary:  Export kernel to the toml file
 
 INTERFACE
-  MODULE SUBROUTINE ak_ExportToToml(obj, afile)
+  MODULE SUBROUTINE obj_ExportToToml(obj, afile)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(TxtFile_), INTENT(INOUT) :: afile
-  END SUBROUTINE ak_ExportToToml
+  END SUBROUTINE obj_ExportToToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -920,11 +920,11 @@ END INTERFACE
 ! This routine write the data in the hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE ak_WriteData_hdf5(obj, hdf5, group)
+  MODULE SUBROUTINE obj_WriteData_hdf5(obj, hdf5, group)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE ak_WriteData_hdf5
+  END SUBROUTINE obj_WriteData_hdf5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -939,11 +939,11 @@ END INTERFACE
 ! This routine write the data in the hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE ak_WriteData_vtk(obj, vtk, group)
+  MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk, group)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE ak_WriteData_vtk
+  END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -958,12 +958,12 @@ END INTERFACE
 ! This routine write the data in the xdmf3 file
 
 ! INTERFACE
-!   MODULE SUBROUTINE ak_WriteData_xdmf(obj, xdmf, group)
+!   MODULE SUBROUTINE obj_WriteData_xdmf(obj, xdmf, group)
 !     IMPORT :: AbstractKernel_, XDMFFile_, I4B
 !     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
 !     TYPE(XDMFFile_), INTENT(INOUT) :: xdmf
 !     CHARACTER(len=*), INTENT(IN) :: group
-!   END SUBROUTINE ak_WriteData_xdmf
+!   END SUBROUTINE obj_WriteData_xdmf
 ! END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -975,10 +975,10 @@ END INTERFACE
 ! summary: Run the simulation
 
 INTERFACE
-  MODULE SUBROUTINE ak_Run(obj, param)
+  MODULE SUBROUTINE obj_Run(obj, param)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE ak_Run
+  END SUBROUTINE obj_Run
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -996,9 +996,9 @@ END INTERFACE
 ! Set to the kernel, and it is ready to be used.
 
 INTERFACE
-  MODULE SUBROUTINE ak_Set(obj)
+  MODULE SUBROUTINE obj_Set(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE ak_Set
+  END SUBROUTINE obj_Set
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1010,10 +1010,10 @@ END INTERFACE
 ! summary:         Set the current time step number of kernel
 
 INTERFACE
-  MODULE SUBROUTINE ak_SetCurrentTimeStep(obj, its)
+  MODULE SUBROUTINE obj_SetCurrentTimeStep(obj, its)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: its
-  END SUBROUTINE ak_SetCurrentTimeStep
+  END SUBROUTINE obj_SetCurrentTimeStep
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1025,10 +1025,10 @@ END INTERFACE
 ! summary: Set the current iteration number of kernel
 
 INTERFACE
-  MODULE SUBROUTINE ak_SetIterationNumber(obj, iter)
+  MODULE SUBROUTINE obj_SetIterationNumber(obj, iter)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iter
-  END SUBROUTINE ak_SetIterationNumber
+  END SUBROUTINE obj_SetIterationNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1040,9 +1040,9 @@ END INTERFACE
 ! summary: Set mesh data
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetMeshData(obj)
+  MODULE SUBROUTINE obj_SetMeshData(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetMeshData
+  END SUBROUTINE obj_SetMeshData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1054,9 +1054,9 @@ END INTERFACE
 ! summary: Set mesh data
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetFiniteElements(obj)
+  MODULE SUBROUTINE obj_SetFiniteElements(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetFiniteElements
+  END SUBROUTINE obj_SetFiniteElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1068,9 +1068,9 @@ END INTERFACE
 ! summary:  Set quadrature points in space
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetQuadPointsInSpace(obj)
+  MODULE SUBROUTINE obj_SetQuadPointsInSpace(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetQuadPointsInSpace
+  END SUBROUTINE obj_SetQuadPointsInSpace
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1082,9 +1082,9 @@ END INTERFACE
 ! summary:  Set quadrature points in space
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetQuadPointsInTime(obj)
+  MODULE SUBROUTINE obj_SetQuadPointsInTime(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetQuadPointsInTime
+  END SUBROUTINE obj_SetQuadPointsInTime
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1096,9 +1096,9 @@ END INTERFACE
 ! summary:  Set Local element shape data in space
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetLocalElemShapeDataInSpace(obj)
+  MODULE SUBROUTINE obj_SetLocalElemShapeDataInSpace(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetLocalElemShapeDataInSpace
+  END SUBROUTINE obj_SetLocalElemShapeDataInSpace
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1110,9 +1110,9 @@ END INTERFACE
 ! summary:  Set Local element shape data in time
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetLocalElemShapeDataInTime(obj)
+  MODULE SUBROUTINE obj_SetLocalElemShapeDataInTime(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetLocalElemShapeDataInTime
+  END SUBROUTINE obj_SetLocalElemShapeDataInTime
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1124,9 +1124,9 @@ END INTERFACE
 ! summary:  Set Global element shape data in time
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetGlobalElemShapeDataInTime(obj)
+  MODULE SUBROUTINE obj_SetGlobalElemShapeDataInTime(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetGlobalElemShapeDataInTime
+  END SUBROUTINE obj_SetGlobalElemShapeDataInTime
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1138,9 +1138,9 @@ END INTERFACE
 ! summary:  Set Global element shape data in time
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetGlobalElemShapeDataInSpace(obj)
+  MODULE SUBROUTINE obj_SetGlobalElemShapeDataInSpace(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetGlobalElemShapeDataInSpace
+  END SUBROUTINE obj_SetGlobalElemShapeDataInSpace
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1152,9 +1152,9 @@ END INTERFACE
 ! summary: Set mesh data
 
 INTERFACE
-  MODULE SUBROUTINE kernel_SetFacetFiniteElements(obj)
+  MODULE SUBROUTINE obj_SetFacetFiniteElements(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE kernel_SetFacetFiniteElements
+  END SUBROUTINE obj_SetFacetFiniteElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1166,10 +1166,10 @@ END INTERFACE
 ! summary:  Get the prefix
 
 INTERFACE
-  MODULE FUNCTION ak_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(AbstractKernel_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION ak_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

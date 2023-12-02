@@ -36,7 +36,7 @@ CONTAINS
 !                                                             KernelDisplay
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Display
+MODULE PROCEDURE obj_Display
 IF (.NOT. obj%isInitiated) THEN
   CALL Display("The Kernel is not initiated, &
     & There if nothing to display")
@@ -219,14 +219,14 @@ ELSE
   CALL Display("edgeFE: NOT ALLOCATED", unitNo=unitNo)
 END IF
 
-END PROCEDURE ak_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Export
-CHARACTER(*), PARAMETER :: myName = "ak_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname, strval
 
 ! check
@@ -385,14 +385,14 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), &
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
   & "[END] Exporting Kernel [OK!]")
 
-END PROCEDURE ak_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Import
-CHARACTER(*), PARAMETER :: myName = "ak_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 
 ! Check
@@ -569,44 +569,44 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%postProcessOpt)
 END IF
 
-END PROCEDURE ak_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                               WriteData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_WriteData_hdf5
-CHARACTER(*), PARAMETER :: myName = "ak_WriteData_hdf5"
+MODULE PROCEDURE obj_WriteData_hdf5
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & 'WIP: The kernel which you are using cannot writeData hdf5 format')
-END PROCEDURE ak_WriteData_hdf5
+END PROCEDURE obj_WriteData_hdf5
 
 !----------------------------------------------------------------------------
 !                                                               WriteData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_WriteData_vtk
-CHARACTER(*), PARAMETER :: myName = "ak_WriteData_vtk"
+MODULE PROCEDURE obj_WriteData_vtk
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & 'WIP: The kernel which you are using cannot writeData vtk format')
-END PROCEDURE ak_WriteData_vtk
+END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------
 !                                                               WriteData
 !----------------------------------------------------------------------------
 
-! MODULE PROCEDURE ak_WriteData_xdmf
-!   CHARACTER( LEN = * ), PARAMETER :: myName="ak_WriteData_xdmf"
+! MODULE PROCEDURE obj_WriteData_xdmf
+!   CHARACTER( LEN = * ), PARAMETER :: myName="obj_WriteData_xdmf"
 !   CALL e%RaiseError(modName //'::'//myName// ' - '// &
 !     & 'WIP: The kernel which you are using cannot writeData xdmf format')
-! END PROCEDURE ak_WriteData_xdmf
+! END PROCEDURE obj_WriteData_xdmf
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "ak_ImportParamFromToml()"
+MODULE PROCEDURE obj_ImportParamFromToml
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: child1
 
@@ -615,7 +615,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ImportParamFromToml()')
 #endif
 
-CALL ak_ImportParamFromToml3( &
+CALL obj_ImportParamFromToml3( &
   & obj=obj,  &
   & param=param,  &
   & table=table,  &
@@ -624,21 +624,21 @@ CALL ak_ImportParamFromToml3( &
   & afile=afile,  &
   & tomlName=tomlName)
 
-CALL ak_ImportParamFromToml2(obj=obj, param=param, table=child1,  &
+CALL obj_ImportParamFromToml2(obj=obj, param=param, table=child1,  &
   & tomlName=tomlName)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
-END PROCEDURE ak_ImportParamFromToml
+END PROCEDURE obj_ImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_ImportParamFromToml3
-CHARACTER(*), PARAMETER :: myName = "ak_ImportParamFromToml3()"
+MODULE PROCEDURE obj_ImportParamFromToml3
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml3()"
 LOGICAL(LGT) :: isNotOpen, isNotRead
 LOGICAL(LGT), PARAMETER :: color = .TRUE.
 INTEGER(I4B), PARAMETER :: detail = 1
@@ -704,14 +704,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml3()')
 #endif
-END PROCEDURE ak_ImportParamFromToml3
+END PROCEDURE obj_ImportParamFromToml3
 
 !----------------------------------------------------------------------------
 !                                                         ImportParamFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_ImportParamFromToml2
-CHARACTER(*), PARAMETER :: myName = "ak_ImportParamFromToml2"
+MODULE PROCEDURE obj_ImportParamFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml2"
 TYPE(toml_array), POINTER :: array
 TYPE(toml_table), POINTER :: linsolve_toml
 CLASS(AbstractLinSolver_), POINTER :: temp_linsolve_ptr
@@ -1078,27 +1078,27 @@ NULLIFY (temp_linsolve_ptr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
-END PROCEDURE ak_ImportParamFromToml2
+END PROCEDURE obj_ImportParamFromToml2
 
 !----------------------------------------------------------------------------
 !                                                         ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_ImportFromToml
-CHARACTER(*), PARAMETER :: myName = "ak_ImportFromToml()"
+MODULE PROCEDURE obj_ImportFromToml
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE ak_ImportFromToml
+END PROCEDURE obj_ImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                            ExportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_ExportToToml
-CHARACTER(*), PARAMETER :: myName = "ak_ExportToToml"
+MODULE PROCEDURE obj_ExportToToml
+CHARACTER(*), PARAMETER :: myName = "obj_ExportToToml"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE ak_ExportToToml
+END PROCEDURE obj_ExportToToml
 
 !----------------------------------------------------------------------------
 !
