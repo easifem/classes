@@ -29,7 +29,6 @@ USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
 USE TxtFile_Class
 USE tomlf, ONLY: toml_table
-USE tomlf, ONLY: toml_array
 USE Fhash, ONLY: FhashTable_ => fhash_tbl_t
 IMPLICIT NONE
 PRIVATE
@@ -88,9 +87,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
-  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2,  &
-    & ImportFromToml3
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
   ! GET:
   ! @GetMethods
@@ -321,12 +318,16 @@ END INTERFACE AbstractMaterialImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate param from the toml file
+! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, array)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename,  &
+    & printToml)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-    TYPE(toml_array), POINTER, INTENT(INOUT) :: array
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE AbstractMaterialImportFromToml
 
@@ -336,17 +337,13 @@ END INTERFACE AbstractMaterialImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
+! summary:  Initiate param from the toml file
 
-INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename,  &
-    & printToml)
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml_table(obj, table)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE obj_ImportFromToml3
-END INTERFACE AbstractMaterialImportFromToml
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml_table
+END INTERFACE
 
 END MODULE AbstractMaterial_Class

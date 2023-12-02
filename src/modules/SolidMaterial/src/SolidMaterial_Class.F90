@@ -83,8 +83,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
 
   ! GET:
   ! @GetMethods
@@ -375,40 +373,6 @@ INTERFACE
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, array)
-    CLASS(SolidMaterial_), INTENT(INOUT) :: obj
-    TYPE(toml_array), POINTER, INTENT(INOUT) :: array
-  END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename,  &
-    & printToml)
-    CLASS(SolidMaterial_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE obj_ImportFromToml3
 END INTERFACE
 
 !----------------------------------------------------------------------------
