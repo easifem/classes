@@ -27,6 +27,7 @@ PUBLIC :: FiniteElementPointer_
 PUBLIC :: SetFiniteElementParam
 PUBLIC :: DEALLOCATE
 PUBLIC :: Initiate
+PUBLIC :: FiniteElementDeallocate
 CHARACTER(*), PARAMETER :: modName = "FiniteElement_Class"
 CHARACTER(*), PARAMETER :: myprefix = "FiniteElement"
 
@@ -46,7 +47,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fe_Initiate
   !! Constructor method for AbstractFE element
   !! This method can be overloaded by Subclass of this abstract class.
-  PROCEDURE, PUBLIC, PASS( obj ) :: InitiateLagrangeFE =>  &
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateLagrangeFE =>  &
     & fe_InitiateLagrangeFE
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & fe_CheckEssentialParam
@@ -148,6 +149,10 @@ INTERFACE DEALLOCATE
   END SUBROUTINE Deallocate_Vector
 END INTERFACE DEALLOCATE
 
+INTERFACE FiniteElementDeallocate
+  MODULE PROCEDURE Deallocate_Vector
+END INTERFACE FiniteElementDeallocate
+
 !----------------------------------------------------------------------------
 !                                                         Deallocate@Methods
 !----------------------------------------------------------------------------
@@ -161,6 +166,10 @@ INTERFACE DEALLOCATE
     TYPE(FiniteElementPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE DEALLOCATE
+
+INTERFACE FiniteElementDeallocate
+  MODULE PROCEDURE Deallocate_Ptr_Vector
+END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                                SetAbstractFEParam@Methods

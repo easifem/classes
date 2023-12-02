@@ -108,6 +108,7 @@ CASE DEFAULT
     & '[INTERNAL ERROR] :: Cannot find the material name. '//  &
     & 'Currently, only SolidMaterial is avaiable, '//  &
     & 'we are working on others.')
+  ALLOCATE (SolidMaterial_ :: ans)
   RETURN
 END SELECT
 astr = ""

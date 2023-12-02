@@ -289,3 +289,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
 
 # porousMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# KERNELS
+# ----------------------------------------------------------------------------
+
+# AbstractKernel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
