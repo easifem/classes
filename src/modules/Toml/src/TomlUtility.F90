@@ -273,12 +273,12 @@ END INTERFACE GetValue
 ! date:  2023-11-08
 ! summary:  Initiate table from toml file
 
-INTERFACE GetValue
+INTERFACE
   MODULE SUBROUTINE toml_get_from_file(table, afile)
     TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
     TYPE(TxtFile_), INTENT(INOUT) :: afile
   END SUBROUTINE toml_get_from_file
-END INTERFACE GetValue
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                         GetValue@IOMethods
@@ -288,11 +288,27 @@ END INTERFACE GetValue
 ! date:  2023-11-08
 ! summary:  Initiate table from toml file
 
-INTERFACE GetValue
+INTERFACE
   MODULE SUBROUTINE toml_get_from_filename(table, filename)
     TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE toml_get_from_filename
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetValue@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate table from toml file
+
+INTERFACE GetValue
+  MODULE SUBROUTINE toml_get_from_file_master(table, afile, filename)
+    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  END SUBROUTINE toml_get_from_file_master
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------

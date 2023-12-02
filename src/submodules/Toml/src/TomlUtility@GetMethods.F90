@@ -143,6 +143,11 @@ TYPE(toml_error), ALLOCATABLE :: error
 TYPE(toml_context) :: context
 TYPE(toml_terminal) :: terminal
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 terminal = toml_terminal(color)
 isNotOpen = .NOT. afile%IsOpen()
 isNotRead = .NOT. afile%IsRead()
@@ -166,6 +171,11 @@ IF (ALLOCATED(error)) THEN
     & ' with following message: '//CHAR_LF//error%message)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE toml_get_from_file
 
 !----------------------------------------------------------------------------
@@ -179,6 +189,11 @@ INTEGER(I4B), PARAMETER :: detail = 1
 TYPE(toml_error), ALLOCATABLE :: error
 TYPE(toml_context) :: context
 TYPE(toml_terminal) :: terminal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 terminal = toml_terminal(color)
 CALL toml_load(table,  &
@@ -194,6 +209,38 @@ IF (ALLOCATED(error)) THEN
     & ' with following message: '//CHAR_LF//error%message)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE toml_get_from_filename
+
+!----------------------------------------------------------------------------
+!                                                                GetValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE toml_get_from_file_master
+CHARACTER(*), PARAMETER :: myName = "toml_get_from_file_master"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+IF (PRESENT(afile)) THEN
+  CALL toml_get_from_file(table=table, afile=afile)
+ELSEIF (PRESENT(filename)) THEN
+  CALL toml_get_from_filename(table=table, filename=filename)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: either filename or afile should be present!')
+  RETURN
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE toml_get_from_file_master
 
 END SUBMODULE GetMethods

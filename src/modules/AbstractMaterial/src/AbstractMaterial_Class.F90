@@ -33,12 +33,6 @@ USE tomlf, ONLY: toml_array
 USE Fhash, ONLY: FhashTable_ => fhash_tbl_t
 IMPLICIT NONE
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class"
-CHARACTER(*), PARAMETER :: myprefix = "AbstractMaterial"
-REAL(DFP), PARAMETER :: expandScale1 = 2
-REAL(DFP), PARAMETER :: expandScale2 = 1.2
-INTEGER(I4B), PARAMETER :: thresholdSize = 20
-
 PUBLIC :: AbstractMaterial_
 PUBLIC :: AbstractMaterialPointer_
 PUBLIC :: SetAbstractMaterialParam
@@ -48,6 +42,15 @@ PUBLIC :: AbstractMaterialImport
 PUBLIC :: AbstractMaterialExport
 PUBLIC :: AbstractMaterialDisplay
 PUBLIC :: AbstractMaterialImportFromToml
+
+CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class"
+CHARACTER(*), PARAMETER :: myprefix = "AbstractMaterial"
+REAL(DFP), PARAMETER :: expandScale1 = 2
+REAL(DFP), PARAMETER :: expandScale2 = 1.2
+INTEGER(I4B), PARAMETER :: thresholdSize = 20
+CHARACTER(*), PARAMETER :: toml_mat_prop_name = "property"
+!! tomlName.property is the table of table or table which
+!! contains the file name, see ImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMaterial_
