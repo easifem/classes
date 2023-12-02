@@ -24,10 +24,10 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Assemble
-CHARACTER(*), PARAMETER :: myName = "ak_Assemble"
+MODULE PROCEDURE obj_Assemble
+CHARACTER(*), PARAMETER :: myName = "obj_Assemble"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is not available or has not been implemented')
-END PROCEDURE ak_Assemble
+END PROCEDURE obj_Assemble
 
 END SUBMODULE AssembleMethods

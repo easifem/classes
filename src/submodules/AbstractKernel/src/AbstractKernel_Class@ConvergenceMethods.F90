@@ -24,11 +24,11 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_IsConverged
-CHARACTER(*), PARAMETER :: myName = "ak_IsConverged"
+MODULE PROCEDURE obj_IsConverged
+CHARACTER(*), PARAMETER :: myName = "obj_IsConverged"
 ans = .FALSE.
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is not available or has not been implemented')
-END PROCEDURE ak_IsConverged
+END PROCEDURE obj_IsConverged
 
 END SUBMODULE ConvergenceMethods

@@ -24,20 +24,20 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Update
-CHARACTER(*), PARAMETER :: myName = "ak_Update"
+MODULE PROCEDURE obj_Update
+CHARACTER(*), PARAMETER :: myName = "obj_Update"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is not available or has not been implemented')
-END PROCEDURE ak_Update
+END PROCEDURE obj_Update
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_UpdateIteration
-CHARACTER(*), PARAMETER :: myName = "ak_UpdateIteration"
+MODULE PROCEDURE obj_UpdateIteration
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateIteration"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is not available or has not been implemented')
-END PROCEDURE ak_UpdateIteration
+END PROCEDURE obj_UpdateIteration
 
 END SUBMODULE UpdateMethods

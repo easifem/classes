@@ -24,11 +24,11 @@ CONTAINS
 !                                                                       Run
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Run
-CHARACTER(*), PARAMETER :: myName = "ak_Run"
+MODULE PROCEDURE obj_Run
+CHARACTER(*), PARAMETER :: myName = "obj_Run"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'The kernel that you are using does not support this routine')
-END PROCEDURE ak_Run
+END PROCEDURE obj_Run
 
 !----------------------------------------------------------------------------
 !

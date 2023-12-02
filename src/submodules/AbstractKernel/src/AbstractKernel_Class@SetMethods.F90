@@ -24,34 +24,34 @@ CONTAINS
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_Set
-CHARACTER(*), PARAMETER :: myName = "ak_Set"
+MODULE PROCEDURE obj_Set
+CHARACTER(*), PARAMETER :: myName = "obj_Set"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WIP] :: This routine has not been implemented yet')
-END PROCEDURE ak_Set
+END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
 !                                                         SetCurrentTimeStep
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_SetCurrentTimeStep
+MODULE PROCEDURE obj_SetCurrentTimeStep
 obj%currentTimeStep = its
-END PROCEDURE ak_SetCurrentTimeStep
+END PROCEDURE obj_SetCurrentTimeStep
 
 !----------------------------------------------------------------------------
 !                                                       SetIterationNumber
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_SetIterationNumber
+MODULE PROCEDURE obj_SetIterationNumber
 obj%iterData%iterationNumber = iter
-END PROCEDURE ak_SetIterationNumber
+END PROCEDURE obj_SetIterationNumber
 
 !----------------------------------------------------------------------------
 !                                                              SetMeshData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetMeshData
-CHARACTER(*), PARAMETER :: myName = "kernel_SetMeshData"
+MODULE PROCEDURE obj_SetMeshData
+CHARACTER(*), PARAMETER :: myName = "obj_SetMeshData"
 IF (ASSOCIATED(obj%dom)) THEN
   CALL obj%dom%InitiateNodeToElements()
   CALL obj%dom%InitiateNodeToNodes()
@@ -66,13 +66,13 @@ IF (ALLOCATED(obj%domains)) THEN
     & '[WIP] :: AbstractKernel_::obj%domains  case todo.')
 END IF
 ! TODO: Implement SetMeshData when isCommonDomain is false.
-END PROCEDURE kernel_SetMeshData
+END PROCEDURE obj_SetMeshData
 
 !----------------------------------------------------------------------------
 !                                                         SetFiniteElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetFiniteElements
+MODULE PROCEDURE obj_SetFiniteElements
 CHARACTER(*), PARAMETER :: myName = "kernel_SetFiniteElements"
 INTEGER(I4B), ALLOCATABLE :: order(:), elemType(:)
 INTEGER(I4B) :: tsize, ii, nsd
@@ -245,14 +245,14 @@ END IF
 
 IF (ALLOCATED(elemType)) DEALLOCATE (elemType)
 IF (ALLOCATED(order)) DEALLOCATE (order)
-END PROCEDURE kernel_SetFiniteElements
+END PROCEDURE obj_SetFiniteElements
 
 !----------------------------------------------------------------------------
 !                                                     SetQuadPointsInSpace
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetQuadPointsInSpace
-CHARACTER(*), PARAMETER :: myName = "kernel_SetQuadPointsInSpace"
+MODULE PROCEDURE obj_SetQuadPointsInSpace
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInSpace"
 INTEGER(I4B) :: ii, tCell, order
 CLASS(FiniteElement_), POINTER :: fe
 
@@ -292,14 +292,14 @@ NULLIFY (fe)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] SetQuadPointsInSpace')
 #endif
-END PROCEDURE kernel_SetQuadPointsInSpace
+END PROCEDURE obj_SetQuadPointsInSpace
 
 !----------------------------------------------------------------------------
 !                                                     SetQuadPointsInTime
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetQuadPointsInTime
-CHARACTER(*), PARAMETER :: myName = "kernel_SetQuadPointsInTime"
+MODULE PROCEDURE obj_SetQuadPointsInTime
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInTime"
 INTEGER(I4B) :: order
 
 #ifdef DEBUG_VER
@@ -323,7 +323,7 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] SetQuadPointsInTime')
 #endif
-END PROCEDURE kernel_SetQuadPointsInTime
+END PROCEDURE obj_SetQuadPointsInTime
 
 !----------------------------------------------------------------------------
 !                                               SetLocalElemShapeDataInSpace
@@ -332,8 +332,8 @@ END PROCEDURE kernel_SetQuadPointsInTime
 ! This routine Sets the local shape data in space (linSpaceElemSD and
 ! spaceElemSD) for the mesh.
 ! The quadrature points should be initiated before calling this routine.
-MODULE PROCEDURE kernel_SetLocalElemShapeDataInSpace
-CHARACTER(*), PARAMETER :: myName = "kernel_SetLocalElemShapeDataInSpace()"
+MODULE PROCEDURE obj_SetLocalElemShapeDataInSpace
+CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInSpace()"
 INTEGER(I4B) :: ii, tCell
 CLASS(FiniteElement_), POINTER :: fe
 
@@ -386,7 +386,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] SetQuadPointsInTime')
 #endif
 
-END PROCEDURE kernel_SetLocalElemShapeDataInSpace
+END PROCEDURE obj_SetLocalElemShapeDataInSpace
 
 !----------------------------------------------------------------------------
 !                                               SetLocalElemShapeDataInTime
@@ -395,8 +395,8 @@ END PROCEDURE kernel_SetLocalElemShapeDataInSpace
 ! This routine Sets the local shape data in time (linTimeElemSD and
 ! timeElemSD) for the mesh.
 ! The quadrature points should be initiated before calling this routine.
-MODULE PROCEDURE kernel_SetLocalElemShapeDataInTime
-CHARACTER(*), PARAMETER :: myName = "kernel_SetLocalElemShapeDataInTime()"
+MODULE PROCEDURE obj_SetLocalElemShapeDataInTime
+CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInTime()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -415,37 +415,37 @@ CALL obj%linTimeFE%GetLocalElemShapeData( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] SetQuadPointsInTime')
 #endif
-END PROCEDURE kernel_SetLocalElemShapeDataInTime
+END PROCEDURE obj_SetLocalElemShapeDataInTime
 
 !----------------------------------------------------------------------------
 !                                             SetGlobalElemShapeDataInSpace
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetGlobalElemShapeDataInSpace
-CHARACTER(*), PARAMETER :: myName = " kernel_SetGlobalElemShapeDataInSpace()"
+MODULE PROCEDURE obj_SetGlobalElemShapeDataInSpace
+CHARACTER(*), PARAMETER :: myName = " obj_SetGlobalElemShapeDataInSpace()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine has not been implemented yet.')
-END PROCEDURE kernel_SetGlobalElemShapeDataInSpace
+END PROCEDURE obj_SetGlobalElemShapeDataInSpace
 
 !----------------------------------------------------------------------------
 !                                              SetGlobalElemShapeDataInTime
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetGlobalElemShapeDataInTime
-CHARACTER(*), PARAMETER :: myName = " kernel_SetGlobalElemShapeDataInTime()"
+MODULE PROCEDURE obj_SetGlobalElemShapeDataInTime
+CHARACTER(*), PARAMETER :: myName = " obj_SetGlobalElemShapeDataInTime()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine has not been implemented yet.')
-END PROCEDURE kernel_SetGlobalElemShapeDataInTime
+END PROCEDURE obj_SetGlobalElemShapeDataInTime
 
 !----------------------------------------------------------------------------
 !                                                    SetFacetFiniteElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE kernel_SetFacetFiniteElements
-CHARACTER(*), PARAMETER :: myName = "kernel_SetFacetFiniteElements()"
+MODULE PROCEDURE obj_SetFacetFiniteElements
+CHARACTER(*), PARAMETER :: myName = "obj_SetFacetFiniteElements()"
 CALL e%RaiseWarning(modName//'::'//myName//' - '// &
   & '[WIP WARNING] :: This routine has been implemented yet.')
-END PROCEDURE kernel_SetFacetFiniteElements
+END PROCEDURE obj_SetFacetFiniteElements
 
 !----------------------------------------------------------------------------
 !

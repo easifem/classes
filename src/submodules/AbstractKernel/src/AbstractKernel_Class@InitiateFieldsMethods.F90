@@ -23,10 +23,10 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ak_InitiateFields
-CHARACTER(*), PARAMETER :: myName = "ak_InitiateFields"
+MODULE PROCEDURE obj_InitiateFields
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFields"
 CALL e%RaiseError(modName//'::'//myName//" - "// &
 & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
-END PROCEDURE ak_InitiateFields
+END PROCEDURE obj_InitiateFields
 
 END SUBMODULE InitiateFieldsMethods
