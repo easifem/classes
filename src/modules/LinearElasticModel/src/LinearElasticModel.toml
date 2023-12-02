@@ -1,0 +1,50 @@
+[linearElasticModel]
+name = "linearElasticModel"
+# name of the model
+
+isPlaneStress = true
+# set it to true for plane-stress formulation
+# the default is false
+
+isPlaneStrain = true
+# set it to true for plane-strain formulation
+# the default is false
+
+elasticityType = "ISO"
+# elasticity type, default is "ISO".
+# following options are possible:
+#
+# - ISO: Isotropic elasticity
+# - ANISO: Anisotropic elasticity
+# - ORTHO: Orthotropic elasticity
+# - TRANS: Transverse isotropic elasticity
+
+poissonRatio = 0.1
+# Poisson's Ratio, it is necessary when elasticityType is ISO
+
+youngsModulus = 1.0
+# Young's Modulus, it is necessary when elasticityType is ISO
+
+stiffnessPower = 1.0
+# It is only needed in case of moving mesh algorithms
+
+c = [
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+]
+# C elasticity tensor
+# It should be 6 by 6
+# For plane-stress and plane-strain case, it can be 3 by 3
+
+invC = [
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+  [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+]

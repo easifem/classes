@@ -46,8 +46,7 @@ CONTAINS
 
 SUBROUTINE SetSolidMechanicsModelParam(param, prefix,  &
   & elasticityType, isPlaneStrain, isPlaneStress, poissonRatio,  &
-  & youngsModulus, shearModulus, lambda, C, invC, stiffnessPower,  &
-  & stress, strain)
+  & youngsModulus, shearModulus, lambda, C, invC, stiffnessPower)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   CHARACTER(*), INTENT(IN) :: prefix
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: elasticityType
@@ -60,8 +59,6 @@ SUBROUTINE SetSolidMechanicsModelParam(param, prefix,  &
   REAL(DFP), OPTIONAL, INTENT(IN) :: C(:, :)
   REAL(DFP), OPTIONAL, INTENT(IN) :: invC(:, :)
   REAL(DFP), OPTIONAL, INTENT(IN) :: stiffnessPower
-  REAL(DFP), OPTIONAL, INTENT(IN) :: stress(:)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: strain(:)
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "SetSolidMechanicsModelData()"
