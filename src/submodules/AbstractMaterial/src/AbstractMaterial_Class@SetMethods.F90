@@ -26,8 +26,8 @@ CONTAINS
 !                                                               AddMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_AddMaterial1
-CHARACTER(*), PARAMETER :: myName = "am_AddMaterial1()"
+MODULE PROCEDURE obj_AddMaterial1
+CHARACTER(*), PARAMETER :: myName = "obj_AddMaterial1()"
 LOGICAL(LGT) :: isMatPresent, matPropsAlloc, sizeOK
 INTEGER(I4B) :: matPropSize
 
@@ -65,25 +65,25 @@ END IF
 
 ALLOCATE (obj%matProps(obj%tProperties)%ptr)
 
-END PROCEDURE am_AddMaterial1
+END PROCEDURE obj_AddMaterial1
 
 !----------------------------------------------------------------------------
 !                                                                AddMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_AddMaterial2
+MODULE PROCEDURE obj_AddMaterial2
 INTEGER(I4B) :: ii, tsize
 tsize = SIZE(name)
 DO ii = 1, tsize
   CALL obj%AddMaterial(name=name(ii)%chars())
 END DO
-END PROCEDURE am_AddMaterial2
+END PROCEDURE obj_AddMaterial2
 
 !----------------------------------------------------------------------------
 !                                                           ExpandMatProps
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_ExpandMatProps
+MODULE PROCEDURE obj_ExpandMatProps
 TYPE(UserFunctionPointer_), ALLOCATABLE :: temp(:)
 INTEGER(I4B) :: oldSize, newSize, ii
 LOGICAL(LGT) :: matPropsAlloc
@@ -120,6 +120,6 @@ END DO
 
 DEALLOCATE (temp)
 
-END PROCEDURE am_ExpandMatProps
+END PROCEDURE obj_ExpandMatProps
 
 END SUBMODULE SetMethods

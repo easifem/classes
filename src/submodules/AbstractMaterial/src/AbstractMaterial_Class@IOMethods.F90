@@ -31,7 +31,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_Display
+MODULE PROCEDURE obj_Display
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: matalloc, isOK
 TYPE(fhash_iter_t) :: iter
@@ -79,14 +79,14 @@ IF (matalloc) THEN
 
 END IF
 
-END PROCEDURE am_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_Export
-CHARACTER(*), PARAMETER :: myName = "am_Export()"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
@@ -125,14 +125,14 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Export()')
 #endif
-END PROCEDURE am_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_Import
-CHARACTER(*), PARAMETER :: myName = "am_Import()"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
@@ -173,14 +173,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
 
-END PROCEDURE am_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "am_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: isOK
 TYPE(ParameterList_) :: param
@@ -223,14 +223,14 @@ CALL afunc%ImportFromToml(table=table)
 afunc => NULL()
 name = ""
 
-END PROCEDURE am_ImportFromToml1
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                           ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "am_ImportFromToml2()"
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat, tsize, ii
 LOGICAL(LGT) :: isOK
@@ -298,14 +298,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportFromToml()')
 #endif
 
-END PROCEDURE am_ImportFromToml2
+END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_ImportFromToml3
-CHARACTER(*), PARAMETER :: myName = "am_ImportFromToml3()"
+MODULE PROCEDURE obj_ImportFromToml3
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 TYPE(toml_array), POINTER :: array
@@ -364,6 +364,6 @@ array => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportFromToml()')
 #endif
-END PROCEDURE am_ImportFromToml3
+END PROCEDURE obj_ImportFromToml3
 
 END SUBMODULE IOMethods

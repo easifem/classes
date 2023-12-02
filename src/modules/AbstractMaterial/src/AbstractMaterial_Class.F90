@@ -54,28 +54,8 @@ PUBLIC :: AbstractMaterialImportFromToml
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 1 Oct 2021
+! date: 2023-12-02
 ! summary: Abstract Material class
-!
-!# Introduction
-!
-! Abstract class for defining material and material behavior
-!
-!@todo
-! Add following routines
-! - setMaterialParam( prefix, param, ... )
-! - Import( hdf5, group ), import if present
-! are not present in hdf5, then report error
-! - Export( hdf5, group ), export all
-! - setMaterialParameters(obj, param)
-! - getMaterialParameters(obj, param)
-!@endtodo
-!
-!@todo
-! Currently there is a lot of code repreatation while implementing the
-! [[AbstractMaterial_]] class. Try to minimize it by putting routines
-! in [[AbstractMaterial_Class]] module.
-!@endtodo
 
 TYPE, ABSTRACT :: AbstractMaterial_
   PRIVATE
@@ -94,35 +74,34 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
-    & am_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => am_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => am_Deallocate
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => am_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => am_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => am_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 =>  &
-    & am_ImportFromToml1
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => am_ImportFromToml2
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml3 => am_ImportFromToml3
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2,  &
     & ImportFromToml3
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => am_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaterialPointer =>  &
-    & am_GetMaterialPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: IsMaterialPresent => am_IsMaterialPresent
+    & obj_GetMaterialPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: IsMaterialPresent => obj_IsMaterialPresent
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: AddMaterial1 => am_AddMaterial1
-  PROCEDURE, PASS(obj) :: AddMaterial2 => am_AddMaterial2
+  PROCEDURE, PASS(obj) :: AddMaterial1 => obj_AddMaterial1
+  PROCEDURE, PASS(obj) :: AddMaterial2 => obj_AddMaterial2
   GENERIC, PUBLIC :: AddMaterial => AddMaterial1, AddMaterial2
-  PROCEDURE, PUBLIC, PASS(obj) :: ExpandMatProps => am_ExpandMatProps
+  PROCEDURE, PUBLIC, PASS(obj) :: ExpandMatProps => obj_ExpandMatProps
 END TYPE AbstractMaterial_
 
 !----------------------------------------------------------------------------
@@ -159,10 +138,10 @@ END INTERFACE
 ! summary:  Check essential parameters
 
 INTERFACE
-  MODULE SUBROUTINE am_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractMaterial_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE am_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -174,11 +153,11 @@ END INTERFACE
 ! summary: Initiate the material
 
 INTERFACE AbstractMaterialInitiate
-  MODULE SUBROUTINE am_Initiate(obj, param, prefix)
+  MODULE SUBROUTINE obj_Initiate(obj, param, prefix)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE am_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE AbstractMaterialInitiate
 
 !----------------------------------------------------------------------------
@@ -190,9 +169,9 @@ END INTERFACE AbstractMaterialInitiate
 ! summary: Deallocate data
 
 INTERFACE AbstractMaterialDeallocate
-  MODULE SUBROUTINE am_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE am_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -204,10 +183,10 @@ END INTERFACE AbstractMaterialDeallocate
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION am_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(AbstractMaterial_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION am_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -219,10 +198,10 @@ END INTERFACE
 ! summary:  Add material
 
 INTERFACE
-  MODULE SUBROUTINE am_AddMaterial1(obj, name)
+  MODULE SUBROUTINE obj_AddMaterial1(obj, name)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
-  END SUBROUTINE am_AddMaterial1
+  END SUBROUTINE obj_AddMaterial1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -234,10 +213,10 @@ END INTERFACE
 ! summary:  Add material
 
 INTERFACE
-  MODULE SUBROUTINE am_AddMaterial2(obj, name)
+  MODULE SUBROUTINE obj_AddMaterial2(obj, name)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name(:)
-  END SUBROUTINE am_AddMaterial2
+  END SUBROUTINE obj_AddMaterial2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -245,9 +224,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE am_ExpandMatProps(obj)
+  MODULE SUBROUTINE obj_ExpandMatProps(obj)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE am_ExpandMatProps
+  END SUBROUTINE obj_ExpandMatProps
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -259,11 +238,11 @@ END INTERFACE
 ! summary:  Add material
 
 INTERFACE
-  MODULE FUNCTION am_IsMaterialPresent(obj, name) RESULT(ans)
+  MODULE FUNCTION obj_IsMaterialPresent(obj, name) RESULT(ans)
     CLASS(AbstractMaterial_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: name
     LOGICAL(LGT) :: ans
-  END FUNCTION am_IsMaterialPresent
+  END FUNCTION obj_IsMaterialPresent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -275,11 +254,11 @@ END INTERFACE
 ! summary:  Get material
 
 INTERFACE
-  MODULE FUNCTION am_GetMaterialPointer(obj, name) RESULT(matPtr)
+  MODULE FUNCTION obj_GetMaterialPointer(obj, name) RESULT(matPtr)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     TYPE(UserFunction_), POINTER :: matPtr
-  END FUNCTION am_GetMaterialPointer
+  END FUNCTION obj_GetMaterialPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -287,11 +266,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMaterialImport
-  MODULE SUBROUTINE am_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE am_Import
+  END SUBROUTINE obj_Import
 END INTERFACE AbstractMaterialImport
 
 !----------------------------------------------------------------------------
@@ -299,11 +278,11 @@ END INTERFACE AbstractMaterialImport
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMaterialExport
-  MODULE SUBROUTINE am_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractMaterial_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE am_Export
+  END SUBROUTINE obj_Export
 END INTERFACE AbstractMaterialExport
 
 !----------------------------------------------------------------------------
@@ -311,11 +290,11 @@ END INTERFACE AbstractMaterialExport
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMaterialDisplay
-  MODULE SUBROUTINE am_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE am_Display
+  END SUBROUTINE obj_Display
 END INTERFACE AbstractMaterialDisplay
 
 !----------------------------------------------------------------------------
@@ -327,10 +306,10 @@ END INTERFACE AbstractMaterialDisplay
 ! summary:  Initiate param from the toml file
 
 INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE am_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE am_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------
@@ -342,10 +321,10 @@ END INTERFACE AbstractMaterialImportFromToml
 ! summary:  Initiate param from the toml file
 
 INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE am_ImportFromToml2(obj, array)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, array)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_array), POINTER, INTENT(INOUT) :: array
-  END SUBROUTINE am_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------
@@ -357,14 +336,14 @@ END INTERFACE AbstractMaterialImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractMaterialImportFromToml
-  MODULE SUBROUTINE am_ImportFromToml3(obj, tomlName, afile, filename,  &
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename,  &
     & printToml)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE am_ImportFromToml3
+  END SUBROUTINE obj_ImportFromToml3
 END INTERFACE AbstractMaterialImportFromToml
 
 END MODULE AbstractMaterial_Class
