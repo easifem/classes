@@ -100,4 +100,85 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 END PROCEDURE obj_Export
 
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL AbstractMaterialImportFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL AbstractMaterialImportFromToml(obj=obj, array=array)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml3
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
+! TYPE(toml_table), ALLOCATABLE :: table
+! TYPE(toml_table), POINTER :: node
+! INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL AbstractMaterialImportFromToml(obj=obj, tomlName=tomlName,  &
+  & afile=afile, filename=filename, printToml=printToml)
+
+! ! Get the entire file in table
+! IF (PRESENT(afile)) THEN
+!   CALL GetValue(table=table, afile=afile)
+! ELSEIF (PRESENT(filename)) THEN
+!   CALL GetValue(table=table, filename=filename)
+! ELSE
+!   CALL e%RaiseError(modName//'::'//myName//' - '// &
+!     & '[ARGUMENT ERROR] :: either filename or afile should be present!')
+!   RETURN
+! END IF
+!
+! ! get tomlName from the table
+! node => NULL()
+! array => NULL()
+! CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+!   & stat=stat)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_ImportFromToml3
+
 END SUBMODULE IOMethods
