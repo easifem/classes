@@ -74,7 +74,7 @@ END INTERFACE GetValue
 !----------------------------------------------------------------------------
 
 INTERFACE CheckEssentialParam
-  MODULE PROCEDURE fpl_CheckEssentialParam
+  MODULE PROCEDURE fpl_CheckEssentialParam_1, fpl_CheckEssentialParam_2
 END INTERFACE CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ CONTAINS
 !                                                     CheckEssentialParam
 !----------------------------------------------------------------------------
 
-SUBROUTINE fpl_CheckEssentialParam(obj, keys, prefix, myName, modName)
+SUBROUTINE fpl_CheckEssentialParam_1(obj, keys, prefix, myName, modName)
   ! Define dummy variables
   TYPE(ParameterList_), INTENT(IN) :: obj
   TYPE(String), INTENT(IN) :: keys(:)
@@ -112,7 +112,42 @@ SUBROUTINE fpl_CheckEssentialParam(obj, keys, prefix, myName, modName)
         & modName_//" module in the file "//__FILE__)
     END IF
   END DO
-END SUBROUTINE fpl_CheckEssentialParam
+END SUBROUTINE fpl_CheckEssentialParam_1
+
+!----------------------------------------------------------------------------
+!                                                     CheckEssentialParam
+!----------------------------------------------------------------------------
+
+SUBROUTINE fpl_CheckEssentialParam_2(obj, keys, prefix, myName, modName)
+  ! Define dummy variables
+  TYPE(ParameterList_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: keys
+  !! String keys to be check in obj
+  CHARACTER(*), INTENT(IN) :: prefix
+  !! Prefix
+  CHARACTER(*), INTENT(IN) :: myName
+  !! myName
+  CHARACTER(*), INTENT(IN) :: modName
+  ! internal variables
+
+  ! internal error
+  INTEGER(I4B) :: ii
+  TYPE(String) :: astr
+  TYPE(String), ALLOCATABLE :: essentialParam(:)
+
+  astr = keys
+  CALL astr%Split(essentialParam, sep="/")
+  CALL CheckEssentialParam(obj=obj, keys=essentialParam,  &
+    & prefix=prefix, myName=myName, modName=modName)
+
+  IF (ALLOCATED(essentialParam)) THEN
+    DO ii = 1, SIZE(essentialParam)
+      essentialParam(ii) = ""
+    END DO
+    DEALLOCATE (essentialParam)
+  END IF
+  astr = ""
+END SUBROUTINE fpl_CheckEssentialParam_2
 
 !----------------------------------------------------------------------------
 !                                                                 fpl_Set1
@@ -448,7 +483,7 @@ SUBROUTINE fpl_Get_Int_IntVec(obj, prefix, key, VALUE)
   tsize = SIZE(VALUE)
   CALL Reallocate(value_, tsize)
   CALL GetValue(obj=obj, prefix=prefix, key=key, VALUE=value_)
-  value = IntVector(value_)
+  VALUE = IntVector(value_)
   DEALLOCATE (value_)
 END SUBROUTINE fpl_Get_Int_IntVec
 
@@ -528,7 +563,7 @@ SUBROUTINE fpl_Get_Real_RealVec(obj, prefix, key, VALUE)
   tsize = SIZE(VALUE)
   CALL Reallocate(value_, tsize)
   CALL GetValue(obj=obj, prefix=prefix, key=key, VALUE=value_)
-  value = RealVector(value_)
+  VALUE = RealVector(value_)
   DEALLOCATE (value_)
 END SUBROUTINE fpl_Get_Real_RealVec
 
@@ -575,8 +610,8 @@ SUBROUTINE fpl_Get_Real_RealMatrix(obj, prefix, key, VALUE)
   REAL(DFP), ALLOCATABLE :: value_(:, :)
   INTEGER(I4B) :: tsize(2)
 
-  tsize = Shape(VALUE)
-  CALL Reallocate(value_, tsize(1), tsize(2) )
+  tsize = SHAPE(VALUE)
+  CALL Reallocate(value_, tsize(1), tsize(2))
   CALL GetValue(obj=obj, prefix=prefix, key=key, VALUE=value_)
   CALL Convert(From=value_, To=VALUE)
   DEALLOCATE (value_)

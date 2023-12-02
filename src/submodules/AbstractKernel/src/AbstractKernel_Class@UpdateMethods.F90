@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractKernel_Class) UpdateMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -26,8 +26,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_Update
 CHARACTER(*), PARAMETER :: myName = "obj_Update"
-CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+CALL e%RaiseError(modName//'::'//myName//" - "// &
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_Update
 
 !----------------------------------------------------------------------------
@@ -36,8 +36,8 @@ END PROCEDURE obj_Update
 
 MODULE PROCEDURE obj_UpdateIteration
 CHARACTER(*), PARAMETER :: myName = "obj_UpdateIteration"
-CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+CALL e%RaiseError(modName//'::'//myName//" - "// &
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_UpdateIteration
 
 END SUBMODULE UpdateMethods

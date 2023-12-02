@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractKernel_Class) AssembleTanmatMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -27,7 +27,7 @@ CONTAINS
 MODULE PROCEDURE obj_AssembleTanmat
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleTanmat"
 CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_AssembleTanmat
 
 END SUBMODULE AssembleTanmatMethods

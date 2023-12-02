@@ -42,13 +42,20 @@ USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractKernel_Class"
+CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
+  & "/name/engine/coordinateSystem/domainFile/isCommonDomain/gravity/"// &
+  & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
+  & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
+  & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
+  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"
+
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
 PUBLIC :: SetAbstractKernelParam
 PUBLIC :: AbstractKernelCheckEssentialParam
-PUBLIC :: KernelInitiateFromParam
-PUBLIC :: KernelDeallocate
-PUBLIC :: KernelDisplay
+PUBLIC :: AbstractKernelInitiate
+PUBLIC :: AbstractKernelDeallocate
+PUBLIC :: AbstractKernelDisplay
 PUBLIC :: KernelExport
 PUBLIC :: KernelImport
 PUBLIC :: KernelGetCoordinateSystemName
@@ -64,10 +71,6 @@ PUBLIC :: AbstractKernelImportParamFromToml
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 April 2022
 ! summary: Abstract class for kernel
-!
-!# Introduction
-!
-! AbstractKernel_ is an abstract class for designing the kernel.
 
 TYPE, ABSTRACT :: AbstractKernel_
   LOGICAL(LGT) :: isInitiated = .FALSE.
@@ -298,8 +301,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetMeshData => obj_SetMeshData
   !! This method is called from Set method.
   !! It Sets the mesh data.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetFiniteElements =>  &
-    & obj_SetFiniteElements
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFiniteElements => obj_SetFiniteElements
   !! Set finite elements
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadPointsInSpace =>  &
     & obj_SetQuadPointsInSpace
@@ -551,7 +553,7 @@ END INTERFACE AbstractKernelCheckEssentialParam
 !
 !WARN: This routine should be implemented by the subclass
 
-INTERFACE
+INTERFACE AbstractKernelInitiate
   MODULE SUBROUTINE obj_Initiate(obj, param, dom, domains)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Kernel object
@@ -562,40 +564,7 @@ INTERFACE
     TYPE(DomainPointer_), OPTIONAL, TARGET, INTENT(INOUT) :: domains(:)
     !! multiple domains is necessary when isCommonDomain is false
   END SUBROUTINE obj_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                InitiateKernelFromParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Aug 2021
-! update:
-!  - 2023-09-09
-! summary: This initiates the Kernel
-!
-!# Introduction
-!
-! This is a helper routine for Initiating an instance of
-! AbstractKernel_. This routine is called by Subclass internally
-! to initiates the fields defined in the abstract class.
-!
-! NOTE: The arguments are same as the one defined in obj_Initiate
-!
-! TODO: Reduce the code repeatition see AbstractElasticity_ kernel
-
-INTERFACE
-  MODULE SUBROUTINE KernelInitiateFromParam(obj, param, prefix, dom, domains)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    !! Kernel object
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! Parameter list
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix to add to the field of [[AbstractKernel_]]
-    CLASS(Domain_), OPTIONAL, TARGET, INTENT(INOUT) :: dom
-    TYPE(DomainPointer_), OPTIONAL, TARGET, INTENT(INOUT) :: domains(:)
-  END SUBROUTINE KernelInitiateFromParam
-END INTERFACE
+END INTERFACE AbstractKernelInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -609,15 +578,11 @@ END INTERFACE
 ! - This subroutine deallocates the data stored inside the Kernel
 ! - This subroutine should be defined by specific Kernel
 
-INTERFACE
+INTERFACE AbstractKernelDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE KernelDeallocate
-  MODULE PROCEDURE obj_Deallocate
-END INTERFACE KernelDeallocate
+END INTERFACE AbstractKernelDeallocate
 
 !----------------------------------------------------------------------------
 !                                       InitiateFields@InitiateFieldsMethods
@@ -626,6 +591,10 @@ END INTERFACE KernelDeallocate
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Oct 2022
 ! summary: This routine initiates the matrix and vector fields
+!
+!# Introduction
+!
+! This routine should be implemented by subclass.
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateFields(obj)
@@ -651,7 +620,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             AssembleTanmat@AssembleMethods
+!                                       AssembleTanmat@AssembleTanmatMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -754,17 +723,13 @@ END INTERFACE
 ! date: 21 Aug 2021
 ! summary: This routine displays the content of kernel
 
-INTERFACE
+INTERFACE AbstractKernelDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
-END INTERFACE
-
-INTERFACE KernelDisplay
-  MODULE PROCEDURE obj_Display
-END INTERFACE KernelDisplay
+END INTERFACE AbstractKernelDisplay
 
 !----------------------------------------------------------------------------
 !                                                          Export@IOMethods
@@ -885,11 +850,13 @@ END INTERFACE AbstractKernelImportParamFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml(obj, tomlName, afile, filename)
+  MODULE SUBROUTINE obj_ImportFromToml(obj, tomlName, afile, filename,  &
+    & printToml)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml
 END INTERFACE
 

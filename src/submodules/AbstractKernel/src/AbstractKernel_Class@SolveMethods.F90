@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractKernel_Class) SolveMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -27,7 +27,7 @@ CONTAINS
 MODULE PROCEDURE obj_Solve
 CHARACTER(*), PARAMETER :: myName = "obj_Solve"
 CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_Solve
 
 END SUBMODULE SolveMethods

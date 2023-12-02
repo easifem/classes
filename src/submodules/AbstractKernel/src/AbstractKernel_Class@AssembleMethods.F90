@@ -26,8 +26,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_Assemble
 CHARACTER(*), PARAMETER :: myName = "obj_Assemble"
-CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+CALL e%RaiseError(modName//'::'//myName//" - "// &
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_Assemble
 
 END SUBMODULE AssembleMethods

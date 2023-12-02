@@ -137,45 +137,36 @@ END PROCEDURE SetAbstractKernelParam
 
 MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
-INTEGER(I4B) :: ii
-TYPE(String), ALLOCATABLE :: essentialParam(:)
-TYPE(String) :: astr
+CHARACTER(:), ALLOCATABLE :: prefix0
 
-IF (.NOT. PRESENT(prefix)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & 'Prefix should be present')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
-astr = &
-  & "/name/engine/coordinateSystem/domainFile/isCommonDomain/gravity/"// &
-  & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
-  & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
-  & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
-  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"
+prefix0 = input(default=obj%GetPrefix(), option=prefix)
 
-CALL astr%Split(essentialParam, sep="/")
 CALL CheckEssentialParam(obj=param,  &
-  & keys=essentialParam,  &
-  & prefix=prefix,  &
+  & keys=AbstractKernelEssentialParam,  &
+  & prefix=prefix0,  &
   & myName=myName,  &
   & modName=modName)
 !NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
-IF (ALLOCATED(essentialParam)) THEN
-  DO ii = 1, SIZE(essentialParam)
-    essentialParam(ii) = ""
-  END DO
-  DEALLOCATE (essentialParam)
-END IF
-astr = ""
-
 ! linsol
-IF (ASSOCIATED(obj%linsol)) &
-  & CALL obj%linsol%CheckEssentialParam(param=param)
+IF (ASSOCIATED(obj%linsol)) THEN
+  CALL obj%linsol%CheckEssentialParam(param=param)
+END IF
 
 ! tanmat
-IF (ASSOCIATED(obj%tanmat)) &
-  & CALL obj%tanmat%CheckEssentialParam(param=param)
+IF (ASSOCIATED(obj%tanmat)) THEN
+  CALL obj%tanmat%CheckEssentialParam(param=param)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE obj_CheckEssentialParam
 
@@ -184,39 +175,25 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-& '[INTERFACE ONLY]: this  routine should be implemented by subclass. '// &
-& myName//" is just an header. You can use KernelInitiateFromParam")
-END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE KernelInitiateFromParam
-CHARACTER(*), PARAMETER :: myName = "KernelInitiateFromParam"
-TYPE(String) :: varname
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 INTEGER(I4B) :: ii
+CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] KernelInitiateFromParam()')
-CALL e%RaiseInformation(modName//'::'//myName//" - "// &
-  & 'Getting base parameters for : '//TRIM(prefix)//' Kernel')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
 ! check
-IF (obj%IsInitiated) THEN
+IF (obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[CONFIG ERROR] :: The object is already initiated, deallocate first!')
+    & '[CONFIG ERROR] :: The object is already initiated, deallocate first!')
+  RETURN
 END IF
 
-obj%IsInitiated = .TRUE.
-
-! check
-varname = obj%GetPrefix()
-CALL obj%CheckEssentialParam(param, varname%chars())
+obj%isInitiated = .TRUE.
+prefix = obj%GetPrefix()
+CALL obj%CheckEssentialParam(param, prefix)
 
 CALL GetValue(param, prefix, "isCommonDomain", obj%isCommonDomain)
 CALL GetValue(param, prefix, "name", obj%name)
@@ -304,16 +281,17 @@ IF (PRESENT(domains)) THEN
 END IF
 
 IF (.NOT. PRESENT(domains) .AND. .NOT. PRESENT(dom)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[WRONG ARGS] Either dom or domains should be present.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[ARGUMENT ERROR] :: Either dom or domains should be present.')
+  RETURN
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] KernelInitiateFromParam()')
+  & '[END]')
 #endif
 
-END PROCEDURE KernelInitiateFromParam
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                       KernelDeallocate

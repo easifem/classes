@@ -37,187 +37,138 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-IF (.NOT. obj%isInitiated) THEN
-  CALL Display("The Kernel is not initiated, &
-    & There if nothing to display")
-  RETURN
-END IF
+LOGICAL(LGT) :: bool1
 
-CALL Display(TRIM(msg), unitno=unitno)
-IF (LEN_TRIM(msg) .NE. 0) THEN
-  CALL Display(TRIM(msg), unitno=unitno)
-END IF
+CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInitiated, "Kernel initiated: ", unitNo=unitNo)
+IF (.NOT. obj%isInitiated) RETURN
 
 ! name
-CALL Display(obj%name, "name : ", unitno=unitno)
-
-! isInitiated
-CALL Display("isInitiated : TRUE", unitno=unitno)
+CALL Display(obj%name, "name: ", unitno=unitno)
 
 ! isCommonDomain
-IF (obj%isCommonDomain) THEN
-  CALL Display("isCommonDomain : TRUE", unitno=unitno)
-ELSE
-  CALL Display("isCommonDomain : FALSE", unitno=unitno)
-END IF
+CALL Display(obj%isCommonDomain, "isCommonDomain: ", unitNo=unitNo)
 
 ! engine
-CALL Display(obj%engine, "engine : ", unitno=unitno)
+CALL Display(obj%engine, "engine: ", unitno=unitno)
 
 ! coordinateSystem
-CALL Display(obj%coordinateSystem, "coordinateSystem : ", unitno=unitno)
+CALL Display(obj%coordinateSystem, "coordinateSystem: ", unitno=unitno)
 
 ! maxIter
-CALL Display(obj%maxIter, "maxIter : ", unitno=unitno)
+CALL Display(obj%maxIter, "maxIter: ", unitno=unitno)
 
 ! timeDependency
-CALL Display(obj%timeDependency, "timeDependency : ", unitno=unitno)
+CALL Display(obj%timeDependency, "timeDependency: ", unitno=unitno)
 
 ! nsd
-CALL Display(obj%nsd, "nsd : ", unitno=unitno)
+CALL Display(obj%nsd, "nsd: ", unitno=unitno)
 
 ! nnt
-CALL Display(obj%nnt, "nnt : ", unitno=unitno)
+CALL Display(obj%nnt, "nnt: ", unitno=unitno)
 
 ! tdof
-CALL Display(obj%tdof, "tdof : ", unitno=unitno)
+CALL Display(obj%tdof, "tdof: ", unitno=unitno)
 
 ! normRHS
-CALL Display(obj%normRHS, "normRHS : ", unitno=unitno)
+CALL Display(obj%normRHS, "normRHS: ", unitno=unitno)
 
 ! dt
-CALL Display(obj%dt, "dt : ", unitno=unitno)
+CALL Display(obj%dt, "dt: ", unitno=unitno)
 
 ! startTime
-CALL Display(obj%startTime, "startTime : ", unitno=unitno)
+CALL Display(obj%startTime, "startTime: ", unitno=unitno)
 
 ! endTime
-CALL Display(obj%endTime, "endTime : ", unitno=unitno)
+CALL Display(obj%endTime, "endTime: ", unitno=unitno)
 
 ! currentTime
-CALL Display(obj%currentTime, "currentTime : ", unitno=unitno)
+CALL Display(obj%currentTime, "currentTime: ", unitno=unitno)
 
 ! lengthScale
-CALL Display(obj%lengthScale, "lengthScale : ", unitno=unitno)
+CALL Display(obj%lengthScale, "lengthScale: ", unitno=unitno)
 
 ! currentTimeStep
-CALL Display(obj%currentTimeStep, "currentTimeStep : ", unitno=unitno)
+CALL Display(obj%currentTimeStep, "currentTimeStep: ", unitno=unitno)
 
 ! totalTimeStep
-CALL Display(obj%totalTimeStep, "totalTimeStep : ", unitno=unitno)
+CALL Display(obj%totalTimeStep, "totalTimeStep: ", unitno=unitno)
 
 ! postProcessOpt
-CALL Display(obj%postProcessOpt, "postProcessOpt : ", unitno=unitno)
+CALL Display(obj%postProcessOpt, "postProcessOpt: ", unitno=unitno)
 
 ! gravity
-CALL Display(obj%gravity, "gravity : ", unitno=unitno)
+CALL Display(obj%gravity, "gravity: ", unitno=unitno)
 
 ! iterData
-CALL Display(obj%iterData, "iterData : ", unitno=unitno)
+CALL Display(obj%iterData, "iterData: ", unitno=unitno)
 
 ! elemToMatId
-IF (ALLOCATED(obj%elemToMatId)) THEN
-  CALL Display("elemToMatID : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("elemToMatID : NOT ALLOCATED", unitno=unitno)
-END IF
+bool1 = ALLOCATED(obj%elemToMatId)
+CALL Display(bool1, "elemToMatID ALLOCATED: ", unitno=unitno)
 
 ! linsol
-IF (ASSOCIATED(obj%linsol)) THEN
-  CALL Display("Linear Solver : ASSOCIATED", unitno=unitno)
-ELSE
-  CALL Display("Linear Solver : NOT ASSOCIATED", unitno=unitno)
-END IF
+bool1 = ASSOCIATED(obj%linsol)
+CALL Display(bool1, "linsol ASSOCIATED: ", unitno=unitno)
 
 ! tanmat
-IF (ASSOCIATED(obj%tanmat)) THEN
-  CALL Display("Tangent matrix : ASSOCIATED", unitno=unitno)
-  CALL obj%tanmat%Display("Tanmat", unitNo=unitNo)
-ELSE
-  CALL Display("Tangent matrix : NOT ASSOCIATED", unitno=unitno)
+bool1 = ASSOCIATED(obj%tanmat)
+CALL Display(bool1, "tanmat ASSOCIATED: ", unitno=unitno)
+
+IF (bool1) THEN
+  CALL obj%tanmat%Display("tanmat: ", unitNo=unitNo)
 END IF
 
 ! baseContinuityForSpace
-CALL Display( &
-  & obj%baseContinuityForSpace%chars(), &
-  & "baseContinuityForSpace : ", &
+CALL Display(obj%baseContinuityForSpace, "baseContinuityForSpace: ", &
   & unitNo=unitNo)
 
 ! baseInterpolationForSpace
-CALL Display( &
-  & obj%baseInterpolationForSpace%chars(), &
-  & "baseInterpolationForSpace : ", &
+CALL Display(obj%baseInterpolationForSpace, "baseInterpolationForSpace: ", &
   & unitNo=unitNo)
 
 ! quadratureTypeForSpace
-CALL Display( &
-  & obj%quadratureTypeForSpace%chars(), &
-  & "quadratureTypeForSpace : ", &
+CALL Display(obj%quadratureTypeForSpace, "quadratureTypeForSpace: ", &
   & unitNo=unitNo)
 
 ! baseContinuityForTime
-CALL Display( &
-  & obj%baseContinuityForTime%chars(), &
-  & "baseContinuityForTime : ", &
+CALL Display(obj%baseContinuityForTime, "baseContinuityForTime: ", &
   & unitNo=unitNo)
 
 ! baseInterpolationForTime
-CALL Display( &
-  & obj%baseInterpolationForTime%chars(), &
-  & "baseInterpolationForTime : ", &
+CALL Display(obj%baseInterpolationForTime, "baseInterpolationForTime: ", &
   & unitNo=unitNo)
 
 ! quadratureTypeForTime
-CALL Display( &
-  & obj%quadratureTypeForTime%chars(), &
-  & "quadratureTypeForTime : ", &
+CALL Display(obj%quadratureTypeForTime, "quadratureTypeForTime: ", &
   & unitNo=unitNo)
 
 ! domainFile
-CALL Display(obj%domainFile, &
-  & "domainFile : ", unitNo=unitNo)
+CALL Display(obj%domainFile, "domainFile: ", unitNo=unitNo)
 
 ! dom
-IF (ASSOCIATED(obj%dom)) THEN
-  CALL Display("dom : ASSOCIATED", unitNo=unitNo)
-ELSE
-  CALL Display("dom : NOT ASSOCIATED", unitNo=unitNo)
-END IF
+bool1 = ASSOCIATED(obj%dom)
+CALL Display(bool1, "dom ASSOCIATED: ", unitNo=unitNo)
 
 ! domains
-IF (ALLOCATED(obj%domains)) THEN
-  CALL Display("domains : ALLOCATED", unitNo=unitNo)
-ELSE
-  CALL Display("domains : NOT ALLOCATED", unitNo=unitNo)
-END IF
+bool1 = ALLOCATED(obj%domains)
+CALL Display(bool1, "domains ALLOCATED: ", unitNo=unitNo)
 
 ! quadratureForSpace
-IF (ALLOCATED(obj%quadratureForSpace)) THEN
-  CALL Display("quadratureForSpace : ALLOCATED", unitNo=unitNo)
-ELSE
-  CALL Display("quadratureForSpace: NOT ALLOCATED", unitNo=unitNo)
-END IF
+bool1 = ALLOCATED(obj%quadratureForSpace)
+CALL Display(bool1, "quadratureForSpace ALLOCATED: ", unitNo=unitNo)
 
 ! cellFE
-IF (ALLOCATED(obj%cellFE)) THEN
-  CALL Display("cellFE: ALLOCATED", unitNo=unitNo)
-ELSE
-  CALL Display("cellFE: NOT ALLOCATED", unitNo=unitNo)
-END IF
+bool1 = ALLOCATED(obj%cellFE)
+CALL Display(bool1, "cellFE ALLOCATED: ", unitNo=unitNo)
 
 ! facetFE
-IF (ALLOCATED(obj%facetFE)) THEN
-  CALL Display("facetFE: ALLOCATED", unitNo=unitNo)
-ELSE
-  CALL Display("facetFE: NOT ALLOCATED", unitNo=unitNo)
-END IF
+bool1 = ALLOCATED(obj%facetFE)
+CALL Display(bool1, "facetFE ALLOCATED: ", unitNo=unitNo)
 
 ! edgeFE
-IF (ALLOCATED(obj%edgeFE)) THEN
-  CALL Display("edgeFE: ALLOCATED", unitNo=unitNo)
-ELSE
-  CALL Display("edgeFE: NOT ALLOCATED", unitNo=unitNo)
-END IF
+bool1 = ALLOCATED(obj%edgeFE)
+CALL Display(bool1, "edgeFE ALLOCATED: ", unitNo=unitNo)
 
 END PROCEDURE obj_Display
 
@@ -226,29 +177,33 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: dsetname, strval
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 ! check
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The object is not initiated, initiate it first!')
+  & '[INTERNAL ERROR] :: The object is not initiated, initiate it first!')
+  RETURN
 END IF
-
-! print info
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Exporting Kernel")
 
 ! check
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  & '[INTERNAL ERROR] :: HDF5 file is not opened')
+  RETURN
 END IF
 
 ! check
 IF (.NOT. hdf5%isWrite()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have Write permission')
+  & '[INTERNAL ERROR] :: HDF5 file does not have Write permission')
+  RETURN
 END IF
 
 ! isCommonDomain
@@ -382,8 +337,10 @@ dsetname = TRIM(group)//"/quadratureTypeForTime"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), &
   & vals=obj%quadratureTypeForTime)
 
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Exporting Kernel [OK!]")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE obj_Export
 
@@ -395,46 +352,50 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 ! Check
 IF (obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The object is already initiated, deallocate first!')
+  & '[INTERNAL ERROR] :: The object is already initiated, deallocate first!')
+  RETURN
 END IF
 
 obj%isInitiated = .TRUE.
 
-! Info
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-  & "IMPORTING KERNEL")
-
 ! Check
 IF (.NOT. hdf5%isOpen()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file is not opened')
+  & '[INTERNAL ERROR] :: HDF5 file is not opened')
 END IF
 
 ! Check
 IF (.NOT. hdf5%isRead()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'HDF5 file does not have read permission')
+  & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
 END IF
 
 ! name
 dsetname = TRIM(group)//"/name"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataSet name should be present')
+  & '[INTERNAL ERROR] :: The dataSet name should be present')
+  RETURN
 END IF
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
 
-! CoordinateSystem
-dsetname = TRIM(group)//"/CoordinateSystem"
+! coordinateSystem
+dsetname = TRIM(group)//"/coordinateSystem"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataSet CoordinateSystem should be present')
+  & '[INTERNAL ERROR] :: dataSet coordinateSystem should be present')
+  RETURN
 END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%CoordinateSystem)
-SELECT CASE (obj%CoordinateSystem)
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%coordinateSystem)
+SELECT CASE (obj%coordinateSystem)
 CASE (KERNEL_1D_H, KERNEL_1D_V)
   obj%NSD = 1
 CASE (KERNEL_2D, KERNEL_2D_AXISYM, KERNEL_PLANE_STRAIN, &
@@ -445,16 +406,18 @@ CASE DEFAULT
 END SELECT
 
 ! TimeDependency
-dsetname = TRIM(group)//"/TimeDependency"
+dsetname = TRIM(group)//"/timeDependency"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataSet TimeDependency should be present')
+  & '[INTERNAL ERROR] :: dataSet timeDependency should be present')
+  RETURN
 END IF
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%TimeDependency)
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeDependency)
 dsetname = TRIM(group)//"/tDOF"
 IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & 'The dataSet tDOF should be present')
+  & '[INTERNAL ERROR] :: dataSet tDOF should be present')
+  RETURN
 END IF
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDOF)
 
@@ -481,7 +444,8 @@ CASE (KERNEL_TRANSIENT)
   dsetname = TRIM(group)//"/dt"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The dataSet dt should be present')
+    & '[INTERNAL ERROR] :: dataSet dt should be present')
+    RETURN
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%dt)
   END IF
@@ -490,7 +454,8 @@ CASE (KERNEL_TRANSIENT)
   dsetname = TRIM(group)//"/startTime"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The dataSet startTime should be present')
+    & '[INTERNAL ERROR] :: dataSet startTime should be present')
+    RETURN
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%startTime)
   END IF
@@ -499,7 +464,8 @@ CASE (KERNEL_TRANSIENT)
   dsetname = TRIM(group)//"/endTime"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The dataSet endTime should be present')
+    & '[INTERNAL ERROR] :: dataSet endTime should be present')
+    RETURN
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%endTime)
   END IF
@@ -508,7 +474,8 @@ CASE (KERNEL_TRANSIENT)
   dsetname = TRIM(group)//"/totalTimeStep"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The dataSet totalTimeStep should be present')
+    & '[INTERNAL ERROR] :: dataSet totalTimeStep should be present')
+    RETURN
   ELSE
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%totalTimeStep)
   END IF
@@ -569,6 +536,11 @@ IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%postProcessOpt)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -578,7 +550,7 @@ END PROCEDURE obj_Import
 MODULE PROCEDURE obj_WriteData_hdf5
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & 'WIP: The kernel which you are using cannot writeData hdf5 format')
+  & '[WIP ERROR] :: kernel which you are using cannot writeData hdf5 format')
 END PROCEDURE obj_WriteData_hdf5
 
 !----------------------------------------------------------------------------
@@ -588,7 +560,7 @@ END PROCEDURE obj_WriteData_hdf5
 MODULE PROCEDURE obj_WriteData_vtk
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & 'WIP: The kernel which you are using cannot writeData vtk format')
+  & '[WIP ERROR] :: kernel which you are using cannot writeData vtk format')
 END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------
@@ -612,7 +584,7 @@ TYPE(toml_table), POINTER :: child1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportParamFromToml()')
+  & '[START]')
 #endif
 
 CALL obj_ImportParamFromToml3( &
@@ -629,7 +601,7 @@ CALL obj_ImportParamFromToml2(obj=obj, param=param, table=child1,  &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE obj_ImportParamFromToml
 
@@ -649,7 +621,7 @@ INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportParamFromToml3()')
+  & '[START]')
 #endif
 
 terminal = toml_terminal(color)
@@ -702,7 +674,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml3()')
+  & '[END]')
 #endif
 END PROCEDURE obj_ImportParamFromToml3
 
@@ -733,7 +705,7 @@ LOGICAL(LGT) :: isCommonDomain
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportParamFromToml2()')
+  & '[START]')
 #endif
 
 CALL toml_get(table, "baseContinuityForSpace", baseContinuityForSpace%raw,  &
@@ -1076,7 +1048,7 @@ NULLIFY (temp_linsolve_ptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE obj_ImportParamFromToml2
 
