@@ -43,6 +43,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "SolidMaterial_Class"
 CHARACTER(*), PARAMETER :: myprefix = "SolidMaterial"
+CHARACTER(*), PARAMETER :: default_stress_strain_toml = "stressStrainModel"
 PUBLIC :: SolidMaterial_
 PUBLIC :: SolidMaterialPointer_
 PUBLIC :: DEALLOCATE

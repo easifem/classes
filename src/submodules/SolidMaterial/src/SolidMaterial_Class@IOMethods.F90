@@ -17,6 +17,12 @@
 
 SUBMODULE(SolidMaterial_Class) IOMethods
 USE MaterialFactory
+USE TomlUtility
+USE tomlf, ONLY:  &
+  & toml_serialize,  &
+  & toml_get => get_value, &
+  & toml_len => len, &
+  & toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -146,9 +152,12 @@ END PROCEDURE obj_ImportFromToml2
 
 MODULE PROCEDURE obj_ImportFromToml3
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
-! TYPE(toml_table), ALLOCATABLE :: table
-! TYPE(toml_table), POINTER :: node
-! INTEGER(I4B) :: origin, stat
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+TYPE(toml_table), POINTER :: stress_strain_node
+INTEGER(I4B) :: origin, stat
+CHARACTER(:), ALLOCATABLE :: stressStrainModel
+LOGICAL(LGT) :: isok, isFound
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -158,22 +167,40 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL AbstractMaterialImportFromToml(obj=obj, tomlName=tomlName,  &
   & afile=afile, filename=filename, printToml=printToml)
 
-! ! Get the entire file in table
-! IF (PRESENT(afile)) THEN
-!   CALL GetValue(table=table, afile=afile)
-! ELSEIF (PRESENT(filename)) THEN
-!   CALL GetValue(table=table, filename=filename)
-! ELSE
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!     & '[ARGUMENT ERROR] :: either filename or afile should be present!')
-!   RETURN
-! END IF
-!
-! ! get tomlName from the table
-! node => NULL()
-! array => NULL()
-! CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
-!   & stat=stat)
+! Get the entire file in table
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+! get tomlName from the table
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+CALL toml_get(node, default_stress_strain_toml, stressStrainModel,  &
+  & origin=origin, stat=stat)
+isFound = ALLOCATED(stressStrainModel) .AND. (stat .EQ. toml_stat%success)
+
+IF (isFound) THEN
+  stress_strain_node => NULL()
+  CALL toml_get(node, stressStrainModel, stress_strain_node,  &
+    & origin=origin, requested=.FALSE., stat=stat)
+
+  isok = ASSOCIATED(stress_strain_node) .AND. (stat .EQ. toml_stat%success)
+
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: '//default_stress_strain_toml//  &
+      & '='//TRIM(stressStrainModel)//', but table '//  &
+      & stressStrainModel//' not found.')
+    RETURN
+  END IF
+
+  obj%stressStrainModel => SolidMechanicsModelFactory(stressStrainModel)
+  CALL obj%stressStrainModel%ImportFromToml(table=stress_strain_node)
+END IF
+
+node => NULL()
+stress_strain_node => NULL()
+stressStrainModel = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
