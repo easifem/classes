@@ -364,3 +364,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
 
 # easifemMaterials
 include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# KERNELS
+# ----------------------------------------------------------------------------
+
+# AbstractKernel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+# easifemKernels
+include(${CMAKE_CURRENT_LIST_DIR}/easifemKernels/CMakeLists.txt)
