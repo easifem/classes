@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(SolidMaterial_Class) IOMethods
+USE BaseMethod
 USE MaterialFactory
 USE TomlUtility
 USE tomlf, ONLY:  &
@@ -32,11 +33,14 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 ! CHARACTER(*), PARAMETER :: myName = "obj_Display"
+LOGICAL(LGT) :: isAss
 ! main
+isAss = ASSOCIATED(obj%stressStrainModel)
 CALL AbstractMaterialDisplay(obj=obj, msg=msg, unitNo=unitNo)
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
+CALL Display(isAss, "stressStrainModel ASSOCIATED: ", unitNo=unitNo)
+IF (isAss) THEN
   CALL obj%stressStrainModel%Display(msg="# stressStrainModel :", &
-  & unitNo=unitNo)
+    & unitNo=unitNo)
 END IF
 END PROCEDURE obj_Display
 
@@ -112,48 +116,6 @@ END PROCEDURE obj_Export
 
 MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-CALL AbstractMaterialImportFromToml(obj=obj, table=table)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-CALL AbstractMaterialImportFromToml(obj=obj, array=array)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-END PROCEDURE obj_ImportFromToml2
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml3
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
 TYPE(toml_table), POINTER :: stress_strain_node
 INTEGER(I4B) :: origin, stat
 CHARACTER(:), ALLOCATABLE :: stressStrainModel
@@ -164,24 +126,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-CALL AbstractMaterialImportFromToml(obj=obj, tomlName=tomlName,  &
-  & afile=afile, filename=filename, printToml=printToml)
+CALL AbstractMaterialImportFromToml(obj=obj, table=table)
 
-! Get the entire file in table
-CALL GetValue(table=table, afile=afile, filename=filename)
-
-! get tomlName from the table
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
-  & stat=stat)
-
-CALL toml_get(node, default_stress_strain_toml, stressStrainModel,  &
+CALL toml_get(table, default_stress_strain_toml, stressStrainModel,  &
   & origin=origin, stat=stat)
-isFound = ALLOCATED(stressStrainModel) .AND. (stat .EQ. toml_stat%success)
+isFound = ALLOCATED(stressStrainModel)
 
 IF (isFound) THEN
   stress_strain_node => NULL()
-  CALL toml_get(node, stressStrainModel, stress_strain_node,  &
+  CALL toml_get(table, stressStrainModel, stress_strain_node,  &
     & origin=origin, requested=.FALSE., stat=stat)
 
   isok = ASSOCIATED(stress_strain_node) .AND. (stat .EQ. toml_stat%success)
@@ -198,7 +151,6 @@ IF (isFound) THEN
   CALL obj%stressStrainModel%ImportFromToml(table=stress_strain_node)
 END IF
 
-node => NULL()
 stress_strain_node => NULL()
 stressStrainModel = ""
 
@@ -206,6 +158,6 @@ stressStrainModel = ""
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE obj_ImportFromToml3
+END PROCEDURE obj_ImportFromToml1
 
 END SUBMODULE IOMethods

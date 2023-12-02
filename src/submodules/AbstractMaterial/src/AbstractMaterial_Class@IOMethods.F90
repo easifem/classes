@@ -21,6 +21,7 @@ USE fhash, ONLY: fhash_tbl_t, key => fhash_key, fhash_iter_t, fhash_key_t
 USE TomlUtility
 USE tomlf, ONLY:  &
   & toml_serialize,  &
+  & toml_array, &
   & toml_get => get_value, &
   & toml_len => len, &
   & toml_stat
@@ -176,11 +177,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                            ImportFromToml
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml_table
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml_table"
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: isOK
 TYPE(ParameterList_) :: param
@@ -189,7 +190,7 @@ CLASS(UserFunction_), POINTER :: afunc
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
 CALL param%Initiate()
@@ -223,100 +224,157 @@ CALL afunc%ImportFromToml(table=table)
 afunc => NULL()
 name = ""
 
-END PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_ImportFromToml_table
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_ImportFromToml_array(obj, array)
+  CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
+  TYPE(toml_array), POINTER, INTENT(INOUT) :: array
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml_array()"
+  TYPE(toml_table), POINTER :: node
+  INTEGER(I4B) :: origin, stat, tsize, ii
+  LOGICAL(LGT) :: isOK
+  TYPE(ParameterList_) :: param
+  CHARACTER(:), ALLOCATABLE :: name
+  CLASS(UserFunction_), POINTER :: afunc
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START]')
+#endif
+
+  tsize = toml_len(array)
+
+  CALL param%Initiate()
+  CALL SetAbstractMaterialParam(param=param, prefix=obj%GetPrefix(),  &
+    & name=obj%GetPrefix())
+  CALL obj%Initiate(param=param)
+  CALL param%DEALLOCATE()
+
+  DO ii = 1, tsize
+    node => NULL()
+    CALL toml_get(array, ii, node)
+    isOK = ASSOCIATED(node)
+
+    IF (.NOT. isOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: In toml file '//tostring(ii)//  &
+        & 'th material cannot be read.')
+      RETURN
+    END IF
+
+    ! get name of the property from the node (table)
+    name = ""
+    CALL toml_get(node, "name", name, origin=origin, stat=stat)
+
+    isOK = ALLOCATED(name) .AND. (stat .EQ. toml_stat%success)
+    IF (.NOT. isOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+       & '[INTERNAL ERROR] :: cannot find/read "name" from material number ' &
+        & //tostring(ii)//' in the config file.')
+      RETURN
+    END IF
+
+    CALL obj%AddMaterial(name=name)
+    afunc => NULL()
+    afunc => obj%GetMaterialPointer(name=name)
+    isOK = ASSOCIATED(afunc)
+
+    IF (.NOT. isOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: Error while adding material name='//  &
+        & name//' to list. This is '//tostring(ii)//'th material.')
+      RETURN
+    END IF
+
+    CALL afunc%ImportFromToml(table=node)
+  END DO
+
+  afunc => NULL()
+  node => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END]')
+#endif
+
+END SUBROUTINE obj_ImportFromToml_array
 
 !----------------------------------------------------------------------------
 !                                                           ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat, tsize, ii
-LOGICAL(LGT) :: isOK
+TYPE(toml_array), POINTER :: array
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isTable, isArray
 TYPE(ParameterList_) :: param
-CHARACTER(:), ALLOCATABLE :: name
-CLASS(UserFunction_), POINTER :: afunc
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ImportFromToml()')
 #endif
 
-tsize = toml_len(array)
-
-CALL param%Initiate()
-CALL SetAbstractMaterialParam(param=param, prefix=obj%GetPrefix(),  &
-  & name=obj%GetPrefix())
-CALL obj%Initiate(param=param)
-CALL param%DEALLOCATE()
-
-DO ii = 1, tsize
-  node => NULL()
-  CALL toml_get(array, ii, node)
-  isOK = ASSOCIATED(node)
-
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: In toml file '//tostring(ii)//  &
-      & 'th material cannot be read.')
-    RETURN
-  END IF
-
-  ! get name of the property from the node (table)
-  name = ""
-  CALL toml_get(node, "name", name, origin=origin, stat=stat)
-
-  isOK = ALLOCATED(name) .AND. (stat .EQ. toml_stat%success)
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: cannot find/read "name" from material number ' &
-      & //tostring(ii)//' in the config file.')
-    RETURN
-  END IF
-
-  CALL obj%AddMaterial(name=name)
-  afunc => NULL()
-  afunc => obj%GetMaterialPointer(name=name)
-  isOK = ASSOCIATED(afunc)
-
-  IF (.NOT. isOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Error while adding material name='//  &
-      & name//' to list. This is '//tostring(ii)//'th material.')
-    RETURN
-  END IF
-
-  CALL afunc%ImportFromToml(table=node)
-END DO
-
-afunc => NULL()
+! get tomlName from the table
 node => NULL()
+CALL toml_get(table, toml_mat_prop_name, node, origin=origin,  &
+  & requested=.FALSE., stat=stat)
+
+! The node can be a table or array of table; first thing first.
+isTable = ASSOCIATED(node) .AND. (stat .EQ. toml_stat%success)
+
+IF (isTable) THEN
+  CALL obj_ImportFromToml_table(obj=obj, table=node)
+  NULLIFY (node, array)
+  RETURN
+END IF
+
+array => NULL()
+! Try for an array of material tables
+CALL toml_get(table, toml_mat_prop_name, array, origin=origin,  &
+  & requested=.FALSE., stat=stat)
+
+isArray = ASSOCIATED(array) .AND. (stat .EQ. toml_stat%success)
+IF (.NOT. isArray) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[INTERNAL ERROR] :: Cannot found the array from the toml config.')
+  RETURN
+END IF
+
+CALL obj_ImportFromToml_array(obj=obj, array=array)
+NULLIFY (node, array)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportFromToml()')
 #endif
-
-END PROCEDURE obj_ImportFromToml2
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml3
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table0
 TYPE(toml_table), POINTER :: table
-TYPE(toml_table), POINTER :: node
-TYPE(toml_array), POINTER :: array
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isTable, isArray, isok
+LOGICAL(LGT) :: isok
 TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
 CALL GetValue(table=table0, afile=afile, filename=filename)
@@ -332,42 +390,14 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-! get tomlName from the table
-node => NULL()
-CALL toml_get(table, toml_mat_prop_name, node, origin=origin, requested=.FALSE.,  &
-  & stat=stat)
+CALL obj%ImportFromToml(table=table)
 
-! The node can be a table or array of table; first thing first.
-isTable = ASSOCIATED(node) .AND. (stat .EQ. toml_stat%success)
-
-IF (isTable) THEN
-  CALL obj%ImportFromToml(table=node)
-
-ELSE
-  array => NULL()
-  ! Try for an array of material tables
-  CALL toml_get(table, toml_mat_prop_name, array, origin=origin,  &
-    & requested=.FALSE., stat=stat)
-
-  isArray = ASSOCIATED(array) .AND. (stat .EQ. toml_stat%success)
-  IF (.NOT. isArray) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Cannot found the array from the toml config.')
-    RETURN
-  END IF
-
-  CALL obj%ImportFromToml(array=array)
-
-END IF
-
-node => NULL()
-array => NULL()
-table => NULL()
+NULLIFY (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportFromToml()')
+  & '[END]')
 #endif
-END PROCEDURE obj_ImportFromToml3
+END PROCEDURE obj_ImportFromToml2
 
 END SUBMODULE IOMethods

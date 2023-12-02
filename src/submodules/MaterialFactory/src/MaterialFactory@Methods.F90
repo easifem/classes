@@ -20,6 +20,8 @@
 ! summary: This module is a factory modules for the material module
 
 SUBMODULE(MaterialFactory) Methods
+USE String_Class
+USE BaseMethod
 USE easifemMaterials
 IMPLICIT NONE
 CONTAINS
@@ -30,14 +32,20 @@ CONTAINS
 
 MODULE PROCEDURE SolidMechanicsModelFactory
 CHARACTER(*), PARAMETER :: myName = "SolidMechanicsModelFactory"
-SELECT CASE (TRIM(name))
-CASE ("LinearElasticModel", "linearElasticModel")
+TYPE(String) :: astr
+astr = uppercase(name)
+SELECT CASE (astr%chars())
+CASE ("LINEARELASTICMODEL")
   ALLOCATE (LinearElasticModel_ :: ans)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Currently LinearElasticModel as SolidMechanicsModel is &
-    & avaiable, we are working on others.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Currently LinearElasticModel as '//  &
+    & 'SolidMechanicsModel is avaiable, '//  &
+    & 'we are working on others.')
+  ALLOCATE (LinearElasticModel_ :: ans)
+  RETURN
 END SELECT
+astr = ""
 END PROCEDURE SolidMechanicsModelFactory
 
 !----------------------------------------------------------------------------
@@ -46,14 +54,20 @@ END PROCEDURE SolidMechanicsModelFactory
 
 MODULE PROCEDURE FluidMechanicsModelFactory
 CHARACTER(*), PARAMETER :: myName = "FluidMechanicsModelFactory"
-SELECT CASE (TRIM(name))
-CASE ("NewtonianFluidModel", "newtonianFluidModel")
+TYPE(String) :: astr
+astr = uppercase(name)
+SELECT CASE (astr%chars())
+CASE ("NEWTONIANFLUIDMODEL")
   ALLOCATE (NewtonianFluidModel_ :: ans)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Unknown fluid mechanica model, currently, easifemMaterials &
-    & supports only the NewtonianFluidModel,we are working on others.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Unknown fluid mechanica model, '//  &
+    & 'currently, easifemMaterials supports only the '//  &
+    & 'NewtonianFluidModel,we are working on others.')
+  ALLOCATE (NewtonianFluidModel_ :: ans)
+  RETURN
 END SELECT
+astr = ""
 END PROCEDURE FluidMechanicsModelFactory
 
 !----------------------------------------------------------------------------
@@ -62,14 +76,20 @@ END PROCEDURE FluidMechanicsModelFactory
 
 MODULE PROCEDURE PoroMechanicsModelFactory
 CHARACTER(*), PARAMETER :: myName = "PoroMechanicsModelFactory"
-SELECT CASE (TRIM(name))
-CASE ("LinearPoroElasticModel", "linearPoroElasticModel")
+TYPE(String) :: astr
+astr = uppercase(name)
+SELECT CASE (astr%chars())
+CASE ("LINEARPOROELASTICMODEL")
   ALLOCATE (LinearPoroElasticModel_ :: ans)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Currently LinearPoroElasticModel as PoroMechanicsModel_ is &
-    & avaiable, we are working on others.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Currently LinearPoroElasticModel '//  &
+    & 'as PoroMechanicsModel_ is avaiable, '//  &
+    & ' we are working on others.')
+  ALLOCATE (LinearPoroElasticModel_ :: ans)
+  RETURN
 END SELECT
+astr = ""
 END PROCEDURE PoroMechanicsModelFactory
 
 !----------------------------------------------------------------------------
@@ -78,14 +98,19 @@ END PROCEDURE PoroMechanicsModelFactory
 
 MODULE PROCEDURE SolidMaterialFactory
 CHARACTER(*), PARAMETER :: myName = "SolidMaterialFactory"
-SELECT CASE (TRIM(name))
-CASE ("SolidMaterial", "solidMaterial")
+TYPE(String) :: astr
+astr = uppercase(name)
+SELECT CASE (astr%chars())
+CASE ("SOLIDMATERIAL")
   ALLOCATE (SolidMaterial_ :: ans)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Cannot find the material name. Currently, only SolidMaterial is &
-    & avaiable, we are working on others.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Cannot find the material name. '//  &
+    & 'Currently, only SolidMaterial is avaiable, '//  &
+    & 'we are working on others.')
+  RETURN
 END SELECT
+astr = ""
 END PROCEDURE SolidMaterialFactory
 
 !----------------------------------------------------------------------------
@@ -94,14 +119,20 @@ END PROCEDURE SolidMaterialFactory
 
 MODULE PROCEDURE FluidMaterialFactory
 CHARACTER(*), PARAMETER :: myName = "FluidMaterialFactory"
-SELECT CASE (TRIM(name))
-CASE ("FluidMaterial", "fluidMaterial")
+TYPE(String) :: astr
+astr = uppercase(name)
+SELECT CASE (astr%chars())
+CASE ("FLUIDMATERIAL")
   ALLOCATE (FluidMaterial_ :: ans)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Cannot find the material name. Currently, only fluidMaterial is &
-    & avaiable, we are working on others.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Cannot find the material name. '//  &
+    & 'Currently, only fluidMaterial is avaiable, '// &
+    & ' we are working on others.')
+  ALLOCATE (FluidMaterial_ :: ans)
+  RETURN
 END SELECT
+astr = ""
 END PROCEDURE FluidMaterialFactory
 
 !----------------------------------------------------------------------------
@@ -110,13 +141,18 @@ END PROCEDURE FluidMaterialFactory
 
 MODULE PROCEDURE PorousMaterialFactory
 CHARACTER(*), PARAMETER :: myName = "PorousMaterialFactory"
-SELECT CASE (TRIM(name))
-CASE ("PorousMaterial", "porousMaterial")
+TYPE(String) :: astr
+astr = uppercase(name)
+SELECT CASE (astr%chars())
+CASE ("POROUSMATERIAL")
   ALLOCATE (PorousMaterial_ :: ans)
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Cannot find the material name. Currently, only porousMaterial is &
-    & avaiable, we are working on others.')
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Cannot find the material name. '// &
+    & 'Currently, only porousMaterial is avaiable, '// &
+    & 'we are working on others.')
+  ALLOCATE (PorousMaterial_ :: ans)
+  RETURN
 END SELECT
 END PROCEDURE PorousMaterialFactory
 
