@@ -37,6 +37,8 @@ USE FPL, ONLY: ParameterList_
 USE AbstractMaterial_Class
 USE AbstractSolidMechanicsModel_Class
 USE MeshSelection_Class
+USE tomlf, ONLY: toml_table, toml_array
+USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "SolidMaterial_Class"
@@ -79,6 +81,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
 
   ! GET:
   ! @GetMethods
@@ -278,6 +283,32 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                    GetStressStrainModelPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-10
+! summary: Get stressStrainModel pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
+    CLASS(SolidMaterial_), INTENT(IN) :: obj
+    CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
+  END FUNCTION obj_GetStressStrainModelPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(SolidMaterial_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                          Import@IOMethods
 !----------------------------------------------------------------------------
 
@@ -331,29 +362,52 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                    GetStressStrainModelPointer@GetMethods
+!                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-02-10
-! summary: Get stressStrainModel pointer
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
-    CLASS(SolidMaterial_), INTENT(IN) :: obj
-    CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
-  END FUNCTION obj_GetStressStrainModelPointer
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(SolidMaterial_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
+!                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
 INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(SolidMaterial_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, array)
+    CLASS(SolidMaterial_), INTENT(INOUT) :: obj
+    TYPE(toml_array), POINTER, INTENT(INOUT) :: array
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename,  &
+    & printToml)
+    CLASS(SolidMaterial_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml3
 END INTERFACE
 
 !----------------------------------------------------------------------------
