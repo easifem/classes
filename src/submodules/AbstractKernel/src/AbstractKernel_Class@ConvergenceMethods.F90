@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractKernel_Class) ConvergenceMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -28,7 +28,7 @@ MODULE PROCEDURE obj_IsConverged
 CHARACTER(*), PARAMETER :: myName = "obj_IsConverged"
 ans = .FALSE.
 CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_IsConverged
 
 END SUBMODULE ConvergenceMethods

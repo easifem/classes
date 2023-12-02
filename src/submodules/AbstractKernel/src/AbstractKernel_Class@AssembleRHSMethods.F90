@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractKernel_Class) AssembleRHSMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -27,7 +27,7 @@ CONTAINS
 MODULE PROCEDURE obj_AssembleRHS
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleRHS"
 CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'This routine is not available or has not been implemented')
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_AssembleRHS
 
 END SUBMODULE AssembleRHSMethods
