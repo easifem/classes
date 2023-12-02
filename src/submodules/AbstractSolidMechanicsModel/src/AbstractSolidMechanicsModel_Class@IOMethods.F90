@@ -62,14 +62,4 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This method is under development.')
 END PROCEDURE obj_ImportFromToml1
 
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This method is under development.')
-END PROCEDURE obj_ImportFromToml2
-
 END SUBMODULE IOMethods

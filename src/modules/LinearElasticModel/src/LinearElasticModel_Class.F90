@@ -25,6 +25,8 @@ USE BaseType
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
 USE FPL, ONLY: ParameterList_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 USE AbstractSolidMechanicsModel_Class
 IMPLICIT NONE
 PRIVATE
@@ -113,6 +115,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
 
   ! GET:
   ! @GetMethods
@@ -197,8 +200,14 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
     REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-    REAL(DFP), OPTIONAL, INTENT(IN) :: C(6, 6)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: invC(6, 6)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: C(:, :)
+    !! In the case of plane-stress and plane-strain
+    !! c should be at least 3-by-3. Otherwise, it should
+    !! 6-by-6
+    REAL(DFP), OPTIONAL, INTENT(IN) :: invC(:, :)
+    !! In the case of plane-stress and plane-strain
+    !! invC should be at least 3-by-3. Otherwise, it should
+    !! 6-by-6
     REAL(DFP), OPTIONAL, INTENT(IN) :: stiffnessPower
   END SUBROUTINE SetLinearElasticModelParam
 END INTERFACE
@@ -307,6 +316,21 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -16,6 +16,12 @@
 !
 
 SUBMODULE(AbstractMaterialModel_Class) IOMethods
+USE BaseMethod
+USE TomlUtility
+USE tomlf, ONLY:  &
+  & toml_serialize,  &
+  & toml_get => get_value, &
+  & toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -68,8 +74,50 @@ END PROCEDURE obj_ImportFromToml1
 
 MODULE PROCEDURE obj_ImportFromToml2
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This method is under development.')
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+IF (PRESENT(afile)) THEN
+  CALL GetValue(table=table, afile=afile)
+ELSEIF (PRESENT(filename)) THEN
+  CALL GetValue(table=table, filename=filename)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: either filename or afile should be present!')
+  RETURN
+END IF
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+IF (.NOT. ASSOCIATED(node)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: following error occured while reading '//  &
+    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
+END IF
+
+CALL obj%ImportFromToml(table=node)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
+    & unitNo=stdout)
+END IF
+#endif
+
+NULLIFY (node)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ImportParamFromToml()')
+#endif
 END PROCEDURE obj_ImportFromToml2
 
 END SUBMODULE IOMethods

@@ -21,6 +21,13 @@
 
 SUBMODULE(LinearElasticModel_Class) IOMethods
 USE BaseMethod
+USE TomlUtility
+USE tomlf, ONLY:  &
+  & toml_serialize,  &
+  & toml_get => get_value, &
+  & toml_len => len, &
+  & toml_array,  &
+  & toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -290,46 +297,153 @@ ELSE IF (obj%elasticityType .EQ. TransLinearElasticModel) THEN
   & unitNo=unitNo)
 END IF
 
-IF (isPlaneStress) THEN
-  CALL Display("isPlaneStress: True", unitNo=unitNo)
-ELSE
-  CALL Display("isPlaneStress: False", unitNo=unitNo)
-END IF
-
-IF (isPlaneStrain) THEN
-  CALL Display("isPlaneStrain: True", unitNo=unitNo)
-ELSE
-  CALL Display("isPlaneStrain: False", unitNo=unitNo)
-END IF
-
-IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
-  CALL Display(obj%nu, "poisson ratio: ", unitNo=unitNo)
-  CALL Display(obj%G, "shear modulus: ", unitNo=unitNo)
-  CALL Display(obj%E, "youngs modulus: ", unitNo=unitNo)
-  CALL Display(obj%lambda, "lambda: ", unitNo=unitNo)
-
-  IF (isPlaneStress .OR. isPlaneStrain) THEN
-    CALL Display(obj%C(1:3, 1:3), "tangent matrix: ", &
-      & unitNo=unitNo)
-    CALL Display(obj%invC(1:3, 1:3), "compliance matrix: ", &
-      & unitNo=unitNo)
-  ELSE
-    CALL Display(obj%C, "tangent matrix: ", &
-      & unitNo=unitNo)
-    CALL Display(obj%invC, "compliance matrix: ", &
-      & unitNo=unitNo)
-  END IF
-
-ELSE
-
-  CALL Display(obj%C, "tangent matrix: ", unitNo=unitNo)
-  CALL Display(obj%invC, "compliance matrix: ", unitNo=unitNo)
-
-END IF
-
+CALL Display(isPlaneStress, "isPlaneStress: ", unitNo=unitNo)
+CALL Display(isPlaneStrain, "isPlaneStrain: ", unitNo=unitNo)
 CALL Display(obj%stiffnessPower, "stiffnessPower: ", unitNo=unitNo)
 
+IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
+  CALL Display(obj%nu, "Poisson's ratio: ", unitNo=unitNo)
+  CALL Display(obj%G, "Shear modulus: ", unitNo=unitNo)
+  CALL Display(obj%E, "Young's modulus: ", unitNo=unitNo)
+  CALL Display(obj%lambda, "Lambda: ", unitNo=unitNo)
+END IF
+
+CALL Display(obj%C(1:obj%nc, 1:obj%nc), "tangent matrix: ", &
+  & unitNo=unitNo)
+CALL Display(obj%invC(1:obj%nc, 1:obj%nc), "compliance matrix: ", &
+  & unitNo=unitNo)
+
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+CHARACTER(:), ALLOCATABLE :: name, elas_type_char
+INTEGER(I4B) :: origin, stat, elasticityType
+LOGICAL(LGT) :: bool1, isPlaneStress, isPlaneStrain, isFound_c,  &
+& isFound_invc, isIsotropic
+REAL(DFP) :: poissonRatio, youngsModulus, stiffnessPower
+REAL(DFP), ALLOCATABLE :: c(:, :), invc(:, :)
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL toml_get(table, "name", name, origin=origin, stat=stat)
+bool1 = (stat .NE. toml_stat%success) .OR. (.NOT. ALLOCATED(name))
+IF (bool1) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'name field not found in toml file, so using name = '//  &
+    & LinearElasticModel_Prefix)
+  name = LinearElasticModel_Prefix
+END IF
+
+isPlaneStrain = .FALSE.
+CALL toml_get(table, "isPlaneStrain", isPlaneStrain, .FALSE., &
+  & origin=origin, stat=stat)
+
+isPlaneStress = .FALSE.
+CALL toml_get(table, "isPlaneStress", isPlaneStress, .FALSE., &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "elasticityType", elas_type_char, origin=origin,  &
+  & stat=stat)
+bool1 = (stat .NE. toml_stat%success) .OR. (.NOT. ALLOCATED(elas_type_char))
+IF (bool1) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'elasticityType field not found in toml file, so using  '//  &
+    & 'elasticityType ='//TypeElasticity%Isotropic_char)
+  elas_type_char = TypeElasticity%Isotropic_char
+END IF
+
+elasticityType = ElasticityType_tonumber(elas_type_char)
+
+CALL toml_get(table, "poissonRatio", poissonRatio, origin=origin, stat=stat)
+bool1 = stat .NE. toml_stat%success
+IF (bool1) THEN
+  IF (elasticityType .EQ. TypeElasticity%Isotropic) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: In case of Isotropic elasticity '//  &
+      & 'poissonRatio (missing) and youngsModulus should be present.')
+    RETURN
+  END IF
+END IF
+
+isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+
+CALL toml_get(table, "youngsModulus", youngsModulus, origin=origin,  &
+  & stat=stat)
+bool1 = (stat .NE. toml_stat%success) .AND. isIsotropic
+IF (bool1) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: In case of Isotropic elasticity '//  &
+    & 'poissonRatio and youngsModulus (missing) should be present.')
+  RETURN
+END IF
+
+CALL toml_get(table, "stiffnessPower", stiffnessPower, 0.0_DFP,  &
+  & origin=origin, stat=stat)
+
+isFound_c = .TRUE.
+CALL GetValue(table=table, key="c", VALUE=c, origin=origin, stat=stat,  &
+  & isFound=isFound_c)
+bool1 = ((stat .NE. toml_stat%success) .OR. (.NOT. isFound_c)  &
+      & .OR. (.NOT. ALLOCATED(c))) .AND. (.NOT. isIsotropic)
+
+IF (bool1) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: In case of Anisotropic elasticity '//  &
+    & 'c should be present. c should be a 3 by 3 matrix for '//  &
+    & 'plane-stress and plane-strain case. c should be 6 by c '//  &
+    & 'in other cases.')
+  RETURN
+END IF
+
+isFound_invc = .TRUE.
+CALL GetValue(table=table, key="invC", VALUE=invC, origin=origin,  &
+  & stat=stat, isFound=isFound_invc)
+bool1 = ((stat .NE. toml_stat%success) .OR. (.NOT. isFound_invc) .OR.  &
+      & (.NOT. ALLOCATED(invC))) .AND. (.NOT. isIsotropic)
+
+IF (bool1) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: In case of Anisotropic elasticity '//  &
+    & 'invC should be present. invC should be a 3 by 3 matrix for '//  &
+    & 'plane-stress and plane-strain case. invC should be 6 by invC '//  &
+    & 'in other cases.')
+  RETURN
+END IF
+
+CALL param%Initiate()
+IF (isIsotropic) THEN
+  CALL SetLinearElasticModelParam(param=param,  &
+    & elasticityType=elasticityType, isPlaneStrain=isPlaneStrain,  &
+    & isPlaneStress=isPlaneStress, poissonRatio=poissonRatio,  &
+    & youngsModulus=youngsModulus, stiffnessPower=stiffnessPower)
+ELSE
+  CALL SetLinearElasticModelParam(param=param,  &
+    & elasticityType=elasticityType, isPlaneStrain=isPlaneStrain,  &
+    & isPlaneStress=isPlaneStress, stiffnessPower=stiffnessPower,  &
+    & C=c, invC=invC)
+END IF
+
+CALL obj%Initiate(param)
+CALL param%DEALLOCATE()
+
+IF (ALLOCATED(c)) DEALLOCATE (c)
+IF (ALLOCATED(invC)) DEALLOCATE (invC)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !
