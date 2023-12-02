@@ -22,11 +22,11 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    solid_AddSolidMaterial
+!                                                    obj_AddSolidMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_AddSolidMaterial
-CHARACTER(*), PARAMETER :: myName = "solid_AddSolidMaterial"
+MODULE PROCEDURE obj_AddSolidMaterial
+CHARACTER(*), PARAMETER :: myName = "obj_AddSolidMaterial"
 
 IF (materialNo .GT. tMaterials) THEN
 
@@ -77,6 +77,6 @@ IF (PRESENT(param)) THEN
 
 END IF
 
-END PROCEDURE solid_AddSolidMaterial
+END PROCEDURE obj_AddSolidMaterial
 
 END SUBMODULE SetMethods
