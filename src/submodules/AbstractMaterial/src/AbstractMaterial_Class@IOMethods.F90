@@ -306,11 +306,12 @@ END PROCEDURE obj_ImportFromToml2
 
 MODULE PROCEDURE obj_ImportFromToml3
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
-TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), ALLOCATABLE :: table0
+TYPE(toml_table), POINTER :: table
 TYPE(toml_table), POINTER :: node
 TYPE(toml_array), POINTER :: array
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isTable, isArray
+LOGICAL(LGT) :: isTable, isArray, isok
 TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
@@ -318,21 +319,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ImportFromToml()')
 #endif
 
-! Get the entire file in table
-IF (PRESENT(afile)) THEN
-  CALL GetValue(table=table, afile=afile)
-ELSEIF (PRESENT(filename)) THEN
-  CALL GetValue(table=table, filename=filename)
-ELSE
+CALL GetValue(table=table0, afile=afile, filename=filename)
+
+table => NULL()
+CALL toml_get(table0, tomlName, table, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+isok = ASSOCIATED(table) .AND. (stat .EQ. toml_stat%success)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: either filename or afile should be present!')
+    & '[INTERNAL ERROR] :: Cannot found tomlName = '//tomlName//  &
+    & ' from the toml config.')
   RETURN
 END IF
 
 ! get tomlName from the table
 node => NULL()
-array => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+CALL toml_get(table, toml_mat_prop_name, node, origin=origin, requested=.FALSE.,  &
   & stat=stat)
 
 ! The node can be a table or array of table; first thing first.
@@ -342,9 +344,10 @@ IF (isTable) THEN
   CALL obj%ImportFromToml(table=node)
 
 ELSE
+  array => NULL()
   ! Try for an array of material tables
-  CALL toml_get(table, tomlName, array, origin=origin, requested=.FALSE.,  &
-    & stat=stat)
+  CALL toml_get(table, toml_mat_prop_name, array, origin=origin,  &
+    & requested=.FALSE., stat=stat)
 
   isArray = ASSOCIATED(array) .AND. (stat .EQ. toml_stat%success)
   IF (.NOT. isArray) THEN
@@ -359,6 +362,7 @@ END IF
 
 node => NULL()
 array => NULL()
+table => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

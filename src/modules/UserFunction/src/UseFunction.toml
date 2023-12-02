@@ -28,13 +28,13 @@ numArgs = 3
 # number of arguments should be 3, when argType is "Space"
 # number of arguments should be 4, when argType is "SpaceTime"
 
-scalarValue = 1.0
+value = 1.0
 # if lua script and luaFunctionName are absent then this
 # variable must be given.
 # When this is given, then argType must be Constant, and
 # numArgs should be 0.
 
-vectorValue = [1.0, 2.0, 3.0]
+# value = [1.0, 2.0, 3.0]
 # if lua script and luaFunctionName are absent then this
 # variable must be given.
 # When this is given, then
@@ -43,7 +43,11 @@ vectorValue = [1.0, 2.0, 3.0]
 # - argType must be Constant, and
 # - numArgs should be 0.
 
-matrixValue = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+# value = [
+# [1.0, 2.0, 3.0],
+# [4.0, 5.0, 6.0],
+# [7.0, 8.0, 9.0]
+# ]
 # if lua script and luaFunctionName are absent then this
 # variable must be given.
 # When this is given, then
