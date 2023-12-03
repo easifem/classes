@@ -29,6 +29,7 @@ PUBLIC :: BasisType_ToInteger
 !----------------------------------------------------------------------------
 
 CHARACTER(*), PUBLIC, PARAMETER :: toml_linsolver_name = "linSolver"
+CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
 
 !----------------------------------------------------------------------------
 !

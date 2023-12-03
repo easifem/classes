@@ -1,33 +1,35 @@
-# This program is a part of EASIFEM library
-# Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+# This program is a part of EASIFEM library Copyright (C) 2020-2021  Vikas
+# Sharma, Ph.D
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https: //www.gnu.org/licenses/>
+# You should have received a copy of the GNU General Public License along with
+# this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/AbstractKernel_Class@ConstructorMethods.F90
-  ${src_path}/AbstractKernel_Class@GetMethods.F90
-  ${src_path}/AbstractKernel_Class@InitiateFieldsMethods.F90
-  ${src_path}/AbstractKernel_Class@SetMethods.F90
-  ${src_path}/AbstractKernel_Class@IOMethods.F90
-  ${src_path}/AbstractKernel_Class@RunMethods.F90
-  ${src_path}/AbstractKernel_Class@AssembleMethods.F90
-  ${src_path}/AbstractKernel_Class@AssembleTanmatMethods.F90
-  ${src_path}/AbstractKernel_Class@AssembleRHSMethods.F90
-  ${src_path}/AbstractKernel_Class@SolveMethods.F90
-  ${src_path}/AbstractKernel_Class@UpdateMethods.F90
-  ${src_path}/AbstractKernel_Class@ConvergenceMethods.F90
-)
+set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+target_sources(
+  ${PROJECT_NAME}
+  PRIVATE ${src_path}/AbstractKernel_Class@ConstructorMethods.F90
+          ${src_path}/AbstractKernel_Class@GetMethods.F90
+          ${src_path}/AbstractKernel_Class@InitiateFieldsMethods.F90
+          ${src_path}/AbstractKernel_Class@SetMethods.F90
+          ${src_path}/AbstractKernel_Class@IOMethods.F90
+          ${src_path}/AbstractKernel_Class@ImportHDFMethods.F90
+          ${src_path}/AbstractKernel_Class@ExportHDFMethods.F90
+          ${src_path}/AbstractKernel_Class@ImportTomlMethods.F90
+          ${src_path}/AbstractKernel_Class@RunMethods.F90
+          ${src_path}/AbstractKernel_Class@AssembleMethods.F90
+          ${src_path}/AbstractKernel_Class@AssembleTanmatMethods.F90
+          ${src_path}/AbstractKernel_Class@AssembleRHSMethods.F90
+          ${src_path}/AbstractKernel_Class@SolveMethods.F90
+          ${src_path}/AbstractKernel_Class@UpdateMethods.F90
+          ${src_path}/AbstractKernel_Class@ConvergenceMethods.F90)
