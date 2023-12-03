@@ -23,7 +23,7 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Display
+MODULE PROCEDURE obj_Display
 IF (.NOT. obj%isInitiated) THEN
   CALL Display('Object is not initiated', unitNo=unitNo)
   RETURN
@@ -98,24 +98,24 @@ IF (ASSOCIATED(obj%mesh)) THEN
 ELSE
   CALL Display('# mesh: NOT ASSOCIATED', unitNo=unitNo)
 END IF
-END PROCEDURE aField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                     Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Import
-CHARACTER(*), PARAMETER :: myName = "aField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine is under development!!')
-END PROCEDURE aField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Export
-CHARACTER(*), PARAMETER :: myName = "aField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: strval, dsetname
 !
 ! main program
@@ -196,17 +196,17 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "Exporting AbstractMeshField_")
 !
-END PROCEDURE aField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_ExportInVTK
-CHARACTER(*), PARAMETER :: myName = "aField_ExportInVTK"
+MODULE PROCEDURE obj_ExportInVTK
+CHARACTER(*), PARAMETER :: myName = "obj_ExportInVTK"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This routine is under development.')
-END PROCEDURE aField_ExportInVTK
+END PROCEDURE obj_ExportInVTK
 
 !----------------------------------------------------------------------------
 !

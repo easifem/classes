@@ -39,12 +39,12 @@ END PROCEDURE SetAbstractMeshFieldParam
 !                                                       checkEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_checkEssentialParam
+MODULE PROCEDURE obj_checkEssentialParam
 CHARACTER(*), PARAMETER :: myName = &
-  & "aField_checkEssentialParam"
+  & "obj_checkEssentialParam"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method should be implemented by the children subclass')
-END PROCEDURE aField_checkEssentialParam
+END PROCEDURE obj_checkEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
@@ -109,7 +109,7 @@ END PROCEDURE AbstractMeshFieldCheckEssentialParam
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 obj%isInitiated = .FALSE.
 obj%fieldType = FIELD_TYPE_NORMAL
 obj%name = ""
@@ -121,17 +121,17 @@ obj%varType = 0
 obj%rank = 0
 IF (ALLOCATED(obj%val)) DEALLOCATE (obj%val)
 obj%mesh => NULL()
-END PROCEDURE aField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "aField_Initiate1"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method should be implemented by the children subclass')
-END PROCEDURE aField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
@@ -291,7 +291,7 @@ END PROCEDURE AbstractMeshFieldInitiate
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_initiate2
+MODULE PROCEDURE obj_initiate2
   !!
 obj%isInitiated = obj2%isInitiated
 obj%fieldType = obj2%fieldType
@@ -305,25 +305,25 @@ obj%rank = obj2%rank
 obj%mesh => obj2%mesh
 IF (ALLOCATED(obj2%val)) obj%val = obj2%val
   !!
-END PROCEDURE aField_initiate2
+END PROCEDURE obj_initiate2
 
 !----------------------------------------------------------------------------
 !                                                                getPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_getPointer
+MODULE PROCEDURE obj_getPointer
 IF (ALLOCATED(obj%val)) THEN
   ans => obj%val
 ELSE
   ans => NULL()
 END IF
-END PROCEDURE aField_getPointer
+END PROCEDURE obj_getPointer
 
 !----------------------------------------------------------------------------
 !                                                                      Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Size
+MODULE PROCEDURE obj_Size
 IF (PRESENT(dim)) THEN
   ans = obj%s(dim)
 ELSE
@@ -338,13 +338,13 @@ ELSE
   END SELECT
   !
 END IF
-END PROCEDURE aField_Size
+END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !                                                                      Shape
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Shape
+MODULE PROCEDURE obj_Shape
 SELECT CASE (obj%rank)
   !
   ! Scalar
@@ -383,13 +383,13 @@ CASE (Matrix)
     ans = obj%s(1:4)
   END SELECT
 END SELECT
-END PROCEDURE aField_Shape
+END PROCEDURE obj_Shape
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Ptr_Vector
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -400,10 +400,10 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Ptr_Vector
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

@@ -46,6 +46,12 @@ USE FTL_TEMPLATE_TYPE_MODULE
 #endif
 IMPLICIT NONE
 PRIVATE
+PUBLIC :: SIZE
+PUBLIC :: SWAP
+PUBLIC :: MOVE
+PUBLIC :: Display
+PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
+
 CHARACTER( LEN=* ), PARAMETER :: modName="<T>PointerVector"
 
 !----------------------------------------------------------------------------
@@ -141,18 +147,13 @@ INTERFACE SIZE
   MODULE PROCEDURE T_Size
 END INTERFACE SIZE
 
-PUBLIC :: SIZE
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-
 INTERFACE SWAP
   MODULE PROCEDURE T_SWAP
 END INTERFACE SWAP
-
-PUBLIC :: SWAP
 
 !----------------------------------------------------------------------------
 !
@@ -162,8 +163,6 @@ INTERFACE MOVE
   MODULE PROCEDURE T_MoveDynArray, T_MoveArrayToDynArray
 END INTERFACE MOVE
 
-PUBLIC :: MOVE
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -171,8 +170,6 @@ PUBLIC :: MOVE
 INTERFACE Display
   MODULE PROCEDURE T_Display, iter_Display
 END INTERFACE Display
-
-PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !
@@ -221,12 +218,6 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
 
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => iter_display
 END TYPE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
 
 !----------------------------------------------------------------------------
 !
