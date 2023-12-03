@@ -187,14 +187,10 @@ END INTERFACE
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractMeshField_]]
 
-INTERFACE
+INTERFACE AbstractMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate(obj)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
   END SUBROUTINE aField_Deallocate
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE aField_Deallocate
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------

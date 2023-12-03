@@ -22,6 +22,7 @@ target_sources(
           ${src_path}/AbstractKernel_Class@GetMethods.F90
           ${src_path}/AbstractKernel_Class@InitiateFieldsMethods.F90
           ${src_path}/AbstractKernel_Class@SetMethods.F90
+          ${src_path}/AbstractKernel_Class@MaterialMethods.F90
           ${src_path}/AbstractKernel_Class@BCMethods.F90
           ${src_path}/AbstractKernel_Class@IOMethods.F90
           ${src_path}/AbstractKernel_Class@ImportHDFMethods.F90

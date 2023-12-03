@@ -40,6 +40,7 @@ USE TxtFile_Class
 USE VTKFile_Class
 USE FiniteElement_Class
 USE tomlf, ONLY: toml_table
+USE SolidMaterial_Class
 
 IMPLICIT NONE
 PRIVATE
@@ -76,6 +77,8 @@ PUBLIC :: KernelGetNSDFromName
 ! summary: Abstract class for kernel
 
 TYPE, ABSTRACT :: AbstractKernel_
+  LOGICAL(LGT) :: isConstantMatProp = DEFAULT_isConstantMatProp
+  !! Set it to True if the material properties are constant
   LOGICAL(LGT) :: isInitiated = .FALSE.
   !! This variable is Set to true when we initiate the kernel
   LOGICAL(LGT) :: isCommonDomain = .TRUE.
@@ -87,6 +90,19 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! For example, in the fluid mechanics, we often use Taylor-Hood element
   !! Which employs different order of interpolation for pressure and velocity.
   !! NOTE: In most of the application isCommonDomain is TRUE.
+  LOGICAL(LGT) :: ismaterialInterfaces = .FALSE.
+  !! True if materialInterfaces are allocated
+  !! We can have multiple solids
+  LOGICAL(LGT) :: isIsotropic = DEFAULT_isIsotropic
+  !! Set it to True for isotropic elasticity.
+  LOGICAL(LGT) :: isIncompressible = DEFAULT_isIncompressible
+    !! TRUE if the material is incompressible
+  INTEGER(I4B) :: tMaterials = 0
+  !! Total number of solid materials
+  INTEGER(I4B) :: SOLID_MATERIAL_ID = 0
+  !! solid material id
+  INTEGER(I4B) :: algorithm = 0
+  !! algorithm
   TYPE(String) :: name
   !! This is the name of the kernel. It can be anything you want.
   TYPE(String) :: engine
@@ -295,6 +311,18 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Stress field
   ! TYPE(TensorMeshField_), ALLOCATABLE :: strain(:)
   !! Strain field
+  INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
+  !! mesh id of material interfaces
+  TYPE(DomainConnectivity_), ALLOCATABLE :: matIfaceConnectData(:)
+  !! facet to cell data for each materialInterface mesh
+  !! The size of matIfaceConnectData is same as the size of
+  !! materialInterfaces
+  TYPE(MeshSelection_), ALLOCATABLE :: solidMaterialToMesh(:)
+  !! Map solid material to the mesh portion
+  !! The size of solidMaterialToMesh is the same as `tMaterials`
+  !! In this way, solidMaterialToMesh(i) gives the mesh region of ith element
+  TYPE(SolidMaterialPointer_), ALLOCATABLE :: solidMaterial(:)
+  !! Pointer to the solid material
 CONTAINS
   PRIVATE
 
@@ -384,6 +412,30 @@ CONTAINS
   !! This routine set mesh data necessary for implementing the
   !! Nitsche boundary condition.
 
+  ! SET:
+  ! @MaterialMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: AddSolidMaterial => obj_AddSolidMaterial
+  !! Add a solid material to the kernel
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateConstantMatProp =>  &
+    & obj_InitiateConstantMatProp
+  !! Initiate constant matrial properties
+  !! INFO: This method is called when the material properties are constant
+  !! This method is called in InitiateFieldsMethod.
+  PROCEDURE, PUBLIC, PASS(obj) :: SetConstantMatProp => &
+    & obj_SetConstantMatProp
+  !! Set the constant material properties
+  !! INFO: This method is called when the material properties are constant
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVariableMatProp =>  &
+    & obj_InitiateVariableMatProp
+  !! Initiate variable material properties
+  !! INFO: This method is called when the material propeties changes in
+  !! space and time.
+  PROCEDURE, PUBLIC, PASS(obj) :: SetVariableMatProp => &
+    & obj_SetVariableMatProp
+  !! Set variable material properties.
+  !! INFO: This method is called when the material properties changes in
+  !! space and time
+
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -463,47 +515,20 @@ END TYPE AbstractKernelPointer_
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractKernelParam( &
-    & prefix, &
-    & param, &
-    & name, &
-    & engine, &
-    & coordinateSystem, &
-    & domainFile, &
-    & isCommonDomain, &
-    & gravity, &
-    & timeDependency, &
-    & maxIter, &
-    & nsd, &
-    & nnt, &
-    & tdof, &
-    & dt, &
-    & startTime, &
-    & endTime, &
-    & currentTime, &
-    & currentTimeStep, &
-    & totalTimeStep, &
-    & baseInterpolationForSpace, &
-    & baseContinuityForSpace, &
-    & quadratureTypeForSpace, &
-    & ipTypeForSpace, &
-    & basisTypeForSpace, &
-    & alphaForSpace, &
-    & betaForSpace, &
-    & lambdaForSpace, &
-    & baseInterpolationForTime, &
-    & baseContinuityForTime, &
-    & quadratureTypeForTime, &
-    & ipTypeForTime, &
-    & basisTypeForTime, &
-    & alphaForTime, &
-    & betaForTime, &
-    & lambdaForTime, &
-    & postProcessOpt,  &
-    & tDirichletBC, &
-    & tNeumannBC, &
-    & tWeakDirichletBC, &
-    & isSymNitsche, &
-    & nitscheAlpha &
+    & prefix, param, name, engine, coordinateSystem, &
+    & domainFile, isCommonDomain, gravity, timeDependency, &
+    & maxIter, nsd, nnt, tdof, dt, startTime, endTime, &
+    & currentTime, currentTimeStep, totalTimeStep, &
+    & baseInterpolationForSpace, baseContinuityForSpace, &
+    & quadratureTypeForSpace, ipTypeForSpace, &
+    & basisTypeForSpace, alphaForSpace, &
+    & betaForSpace, lambdaForSpace, &
+    & baseInterpolationForTime, baseContinuityForTime, &
+    & quadratureTypeForTime, ipTypeForTime, &
+    & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
+    & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
+    & isSymNitsche, nitscheAlpha, materialInterfaces, isConstantMatProp, &
+    & tMaterials, algorithm, isIsotropic, isIncompressible &
     & )
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuityForSpace
@@ -595,7 +620,18 @@ INTERFACE
     !! True if symmetric Nitsche formulation
     REAL(DFP), OPTIONAL, INTENT(IN) :: nitscheAlpha
     !! Alpha parameter used in Nitsche formulation
-
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: materialInterfaces(:)
+    !! Mesh-IDs of materialInterfaces
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tMaterials
+    !! total number of materials
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isConstantMatProp
+    !! It is true if the material properties are constant
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: algorithm
+    !! algorithm
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropic
+    !! It is true if the material is isotropic
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIncompressible
+    !! It is true if the material is incompressible
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -1330,6 +1366,98 @@ INTERFACE
   MODULE SUBROUTINE obj_SetNitscheMeshData(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetNitscheMeshData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          AddSolidMaterial@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine Adds a solidMaterial to the kernel
+!
+!# Introduction
+!
+! - This routine Adds Solid material
+! - It also prepares `obj%SolidMaterialToMesh(materialNo)` and
+! `obj%solidMaterial(materialNo)`.
+! - `param` contains the parameters for constructing a [[FluidMaterial_]]
+! - More details about `param` can be found in [[FluidMaterial_:Initiate]].
+! - `materialName` is the name of material, it should be `fluidMaterial`.
+! - `region` is an instance of [[MeshSelection_]].
+!
+!@warning
+! `materialNo` should be lesser than or equal to the total
+! number of Fluid materials, i.e.,
+! [[AbstractElasticity_:tFluidMaterials]]
+!@endwarning
+!
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddSolidMaterial(obj, materialNo, materialName, &
+    & param, region)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
+    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
+  END SUBROUTINE obj_AddSolidMaterial
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     InitiateConstantMatProp@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate constant material properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateConstantMatProp(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateConstantMatProp
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetConstantMatProp@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set constant material properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetConstantMatProp(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetConstantMatProp
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateVariableMatProp@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate variable material properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateVariableMatProp(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateVariableMatProp
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetVariableMatProp@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set constant material properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetVariableMatProp(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetVariableMatProp
 END INTERFACE
 
 !----------------------------------------------------------------------------
