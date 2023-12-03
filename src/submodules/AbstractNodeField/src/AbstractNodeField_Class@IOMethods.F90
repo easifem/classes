@@ -27,8 +27,8 @@ CONTAINS
 
 MODULE PROCEDURE anf_Display
 CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
-CALL Display(obj%tSize, "# tSize : ", unitNo=unitNo)
-CALL Display(obj%realVec, obj%dof, "# realVec : ", unitNo=unitNo)
+CALL Display(obj%tSize, "tSize: ", unitNo=unitNo)
+CALL Display(obj%realVec, obj%dof, "realVec: ", unitNo=unitNo)
 END PROCEDURE anf_Display
 
 !----------------------------------------------------------------------------

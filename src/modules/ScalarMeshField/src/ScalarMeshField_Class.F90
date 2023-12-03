@@ -29,7 +29,7 @@ CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
 PUBLIC :: ScalarMeshField_
 PUBLIC :: ScalarMeshFieldPointer_
 PUBLIC :: SetScalarMeshFieldParam
-PUBLIC :: DEALLOCATE
+PUBLIC :: ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                     ScalarMeshField_Class
@@ -65,11 +65,11 @@ END TYPE ScalarMeshFieldPointer_
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE ScalarMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Vector(obj)
     TYPE(ScalarMeshField_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -79,11 +79,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE ScalarMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
     TYPE(ScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                              SetAbstractMeshFieldParam@ConstructorMethods

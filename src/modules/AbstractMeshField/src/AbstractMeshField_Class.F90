@@ -24,16 +24,19 @@ USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE HDF5File_Class
 USE VTKFile_Class
+USE AbstractMaterial_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
+CHARACTER(*), PARAMETER :: AbstractMeshFieldEssential = "/name/fieldType"// &
+  & "/engine/defineOn/varType/rank/s/totalShape"
+
 PUBLIC :: AbstractMeshField_
 PUBLIC :: AbstractMeshFieldPointer_
 PUBLIC :: SetAbstractMeshFieldParam
 PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
-PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -82,17 +85,28 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! based on the information stored in s(:)
   TYPE(Mesh_), POINTER :: mesh => NULL()
   !! Domain contains the information of the finite element meshes.
+
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & obj_checkEssentialParam
-  !! check essential parameters
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & obj_CheckEssentialParam
+  !! Check essential parameters
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and a given mesh
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate from Abstract materials
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
   !! Generic initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate the field
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -101,20 +115,25 @@ CONTAINS
   !! Export data in hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportInVTK => obj_ExportInVTK
   !! Export data in vtkFile
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-  !! Deallocate the field
+
+  ! GET:
+  ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_getPointer
   !! Return pointer to val
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns size
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
+  PROCEDURE, PUBLIC, PASS(obj) :: Get => obj_Get
+  !! Getting the value
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Add => obj_Add
   !! Adding a value
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Setting the value
-  PROCEDURE, PUBLIC, PASS(obj) :: Get => obj_Get
-  !! Getting the value
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
@@ -131,7 +150,7 @@ END TYPE AbstractMeshFieldPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractMeshFieldParam(param, prefix, name, &
@@ -149,34 +168,69 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
-INTERFACE
-  MODULE SUBROUTINE obj_checkEssentialParam(obj, param)
+INTERFACE AbstractMeshFieldCheckEssentialParam
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_checkEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE AbstractMeshFieldCheckEssentialParam
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Initiate the field by reading param and given domain
+
+INTERFACE AbstractMeshFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, mesh)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+  END SUBROUTINE obj_Initiate1
+END INTERFACE AbstractMeshFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Initiate by copying other fields, and different options
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
+    & usePointer)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj2
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: Initiate from abstractMaterials
 
 INTERFACE
-  MODULE SUBROUTINE AbstractMeshFieldCheckEssentialParam(obj, prefix, param)
-    CLASS(AbstractMeshField_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: prefix
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE AbstractMeshFieldCheckEssentialParam
+  MODULE SUBROUTINE obj_Initiate3(obj, material, name)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -201,63 +255,11 @@ END INTERFACE AbstractMeshFieldDeallocate
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE AbstractMeshFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(AbstractMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE obj_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, mesh)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE AbstractMeshFieldInitiate(obj, prefix, param, mesh)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: prefix
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE AbstractMeshFieldInitiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate by copying other fields, and different options
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj2
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
-END INTERFACE
+END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             GetPointer@ConstructorMethods
@@ -417,6 +419,21 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
   END SUBROUTINE obj_Get
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-03
+! summary:  Get the prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

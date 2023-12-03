@@ -56,10 +56,7 @@ END PROCEDURE SetSTVectorMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam( &
-  & obj=obj, &
-  & prefix="STVectorMeshField", &
-  & param=param)
+CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
 END PROCEDURE aField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -67,10 +64,7 @@ END PROCEDURE aField_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate( &
-  & obj=obj, &
-  & prefix="STVectorMeshField", &
-  & param=param, mesh=mesh)
+CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -103,7 +97,6 @@ IF (ALLOCATED(obj)) THEN
   DEALLOCATE (obj)
 END IF
 END PROCEDURE aField_Deallocate_Ptr_Vector
-
 
 !----------------------------------------------------------------------------
 !

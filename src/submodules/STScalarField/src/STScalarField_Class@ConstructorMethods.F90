@@ -74,7 +74,7 @@ CHARACTER(*), PARAMETER :: myName = "stsField_CheckEssentialParam()"
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'timeCompo should be present in param.')
+    & '[INTERNAL ERROR] :: timeCompo should be present in param.')
 END IF
 END PROCEDURE stsField_CheckEssentialParam
 
@@ -124,10 +124,7 @@ CALL AbstractNodeFieldSetParam(obj=obj,  &
 
 nsd = dom%GetNSD()
 
-CALL AbstractNodeFieldInitiate( &
-  & obj=obj,  &
-  & param=param,  &
-  & dom=dom)
+CALL AbstractNodeFieldInitiate(obj=obj, param=param, dom=dom)
 
 astr = ""
 sublist => NULL()
