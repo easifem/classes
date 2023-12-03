@@ -29,7 +29,20 @@ PUBLIC :: BasisType_ToInteger
 !----------------------------------------------------------------------------
 
 CHARACTER(*), PUBLIC, PARAMETER :: toml_linsolver_name = "linSolver"
+!! Default value of linSolver in toml
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
+!! Default value of engine
+REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
+!! Alpha for Nitsche boundary
+INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_Sym = -1
+!! Sym or unsymmetric Nitsche formulation
+INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isSymNitsche = .TRUE.
 
 !----------------------------------------------------------------------------
 !

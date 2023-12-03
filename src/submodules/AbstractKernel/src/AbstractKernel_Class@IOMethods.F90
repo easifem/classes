@@ -26,6 +26,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
+INTEGER(I4B) :: aint
 
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInitiated, "Kernel initiated: ", unitNo=unitNo)
@@ -157,6 +158,48 @@ CALL Display(bool1, "facetFE ALLOCATED: ", unitNo=unitNo)
 ! edgeFE
 bool1 = ALLOCATED(obj%edgeFE)
 CALL Display(bool1, "edgeFE ALLOCATED: ", unitNo=unitNo)
+
+! isNitsche
+CALL Display(obj%isNitsche, "isNitsche: ", unitNo=unitNo)
+CALL Display(obj%nitscheAlpha, "nitscheAlpha : ", unitno=unitno)
+IF (INT(obj%NitscheType, kind=I4B) .EQ. Nitsche_Sym) THEN
+  CALL Display("NitscheType : SYM", unitno=unitno)
+ELSE
+  CALL Display("NitscheType : UNSYM", unitno=unitno)
+END IF
+
+! dbc
+bool1 = ALLOCATED(obj%dbc)
+CALL Display(bool1, "dbc ALLOCATED: ", unitNo=unitNo)
+
+IF (bool1) THEN
+  CALL DirichletBCDisplay(obj%dbc, "dbc: ", unitNo=unitNo)
+END IF
+
+! nbc
+bool1 = ALLOCATED(obj%nbc)
+CALL Display(bool1, "nbc ALLOCATED: ", unitNo=unitNo)
+
+IF (bool1) THEN
+  CALL NeumannBCDisplay(obj%nbc, "nbc: ", unitNo=unitNo)
+END IF
+
+! wbc
+bool1 = ALLOCATED(obj%wdbc)
+CALL Display(bool1, "wdbc ALLOCATED: ", unitNo=unitNo)
+
+IF (bool1) THEN
+  CALL NitscheBCDisplay(obj%wdbc, "wdbc: ", unitNo=unitNo)
+END IF
+
+! nitscheFacetToCell
+bool1 = ALLOCATED(obj%nitscheFacetToCell)
+CALL Display(bool1, "nitscheFacetToCell ALLOCATED: ", unitNo=unitNo)
+IF (bool1) THEN
+  aint = SIZE(obj%nitscheFacetToCell)
+  CALL Display("nitscheFacetToCell["//tostring(aint)//"]:: ALLOCATED", &
+    & unitno)
+END IF
 
 END PROCEDURE obj_Display
 
