@@ -24,48 +24,26 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSTVectorMeshFieldParam
+INTEGER(I4B) :: s(3), n
 
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="STVectorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Vector, &
-    & s=[spaceCompo])
+  s = spaceCompo; n = 1
 ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="STVectorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Vector, &
-    & s=[spaceCompo, nns, nnt])
+  s = [spaceCompo, nns, nnt]; n = 3
 END IF
 
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix="STVectorMeshField", &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Vector, &
+  & s=s(1:n))
+
 END PROCEDURE SetSTVectorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
-END PROCEDURE aField_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

@@ -26,7 +26,10 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STVectorMeshField_Class"
-PUBLIC :: DEALLOCATE
+PUBLIC :: STVectorMeshFieldDeallocate
+PUBLIC :: STVectorMeshField_
+PUBLIC :: STVectorMeshFieldPointer_
+PUBLIC :: SetSTVectorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                     STVectorMeshField_Class
@@ -37,16 +40,7 @@ PUBLIC :: DEALLOCATE
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: STVectorMeshField_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
 END TYPE STVectorMeshField_
-
-PUBLIC :: STVectorMeshField_
 
 !----------------------------------------------------------------------------
 !
@@ -55,8 +49,6 @@ PUBLIC :: STVectorMeshField_
 TYPE :: STVectorMeshFieldPointer_
   CLASS(STVectorMeshField_), POINTER :: ptr => NULL()
 END TYPE STVectorMeshFieldPointer_
-
-PUBLIC :: STVectorMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                              SetAbstractMeshFieldParam@ConstructorMethods
@@ -75,47 +67,14 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: varType
     CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
-  !! Nodal, Quadrature
+    !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     INTEGER(I4B), INTENT(IN) :: nns
     INTEGER(I4B), INTENT(IN) :: nnt
-  !! Number of node in space
+    !! Number of node in space
   END SUBROUTINE SetSTVectorMeshFieldParam
 END INTERFACE
 
-PUBLIC :: SetSTVectorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
-    CLASS(STVectorMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
-    CLASS(STVectorMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
-END INTERFACE
-
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -124,11 +83,11 @@ END INTERFACE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE STVectorMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Vector(obj)
     TYPE(STVectorMeshField_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE STVectorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -138,10 +97,10 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE STVectorMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
     TYPE(STVectorMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE STVectorMeshFieldDeallocate
 
 END MODULE STVectorMeshField_Class

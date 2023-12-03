@@ -24,48 +24,26 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetVectorMeshFieldParam
+INTEGER(I4B) :: s(2), n
 
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="VectorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Vector, &
-    & s=[spaceCompo])
+  s = spaceCompo; n = 1
 ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="VectorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Vector, &
-    & s=[spaceCompo, nns])
+  s = [spaceCompo, nns]; n = 2
 END IF
 
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix="VectorMeshField", &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Vector, &
+  & s=s(1:n))
+
 END PROCEDURE SetVectorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
-END PROCEDURE aField_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

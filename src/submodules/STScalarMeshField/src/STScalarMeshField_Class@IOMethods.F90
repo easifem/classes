@@ -16,7 +16,4 @@
 
 SUBMODULE(STScalarMeshField_Class) IOMethods
 ! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
 END SUBMODULE IOMethods

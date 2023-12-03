@@ -24,46 +24,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSTTensorMeshFieldParam
+INTEGER(I4B) :: s(4), n
+
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-      & param=param, &
-      & prefix="STTensorMeshField", &
-      & name=name, &
-      & fieldType=fieldType, &
-      & varType=constant, &
-      & engine=engine, &
-      & defineOn=defineOn, &
-      & rank=Matrix, &
-      & s=[dim1, dim2])
+  n = 2; s(1:n) = [dim1, dim2]
 ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="STTensorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2, nns, nnt])
+  n = 4; s(1:n) = [dim1, dim2, nns, nnt]
 END IF
+
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix="STTensorMeshField", &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Matrix, &
+  & s=s(1:n))
 END PROCEDURE SetSTTensorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
-END PROCEDURE aField_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

@@ -24,46 +24,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetTensorMeshFieldParam
+INTEGER(I4B) :: s(3), n
+
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix=myPrefix, &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=constant, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2])
+  n = 2; s(1:n) = [dim1, dim2]
 ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix=myPrefix, &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2, nns])
+  n = 3; s(1:n) = [dim1, dim2, nns]
 END IF
+
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix=myPrefix, &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=constant, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Matrix, &
+  & s=s(1:n))
 END PROCEDURE SetTensorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
-END PROCEDURE aField_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
