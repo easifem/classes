@@ -35,7 +35,7 @@ INTEGER(I4B), PUBLIC, PARAMETER :: oversetType = 4
 
 PUBLIC :: DomainConnectivity_
 PUBLIC :: DomainConnectivityPointer_
-PUBLIC :: DEALLOCATE
+PUBLIC :: DomainConnectivityDeallocate
 
 !----------------------------------------------------------------------------
 !                                                        FacetConnectivity_
@@ -290,11 +290,11 @@ END INTERFACE
 ! date:  2023-09-09
 ! summary: Deallocate a vector of DomainConnectivity_
 
-INTERFACE DEALLOCATE
+INTERFACE DomainConnectivityDeallocate
   MODULE SUBROUTINE dc_Deallocate2(obj)
     TYPE(DomainConnectivity_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE dc_Deallocate2
-END INTERFACE DEALLOCATE
+END INTERFACE DomainConnectivityDeallocate
 
 !----------------------------------------------------------------------------
 !                                               Deallocate@ConstructorMethods
@@ -304,11 +304,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary: Deallocate a vector of DomainConnectivityPointer_
 
-INTERFACE DEALLOCATE
+INTERFACE DomainConnectivityDeallocate
   MODULE SUBROUTINE dc_Deallocate3(obj)
     TYPE(DomainConnectivityPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE dc_Deallocate3
-END INTERFACE DEALLOCATE
+END INTERFACE DomainConnectivityDeallocate
 
 !----------------------------------------------------------------------------
 !                                                  Final@ConstructorMethods
