@@ -28,7 +28,8 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
 CHARACTER(*), PARAMETER :: myprefix = "DirichletBC"
-PUBLIC :: DEALLOCATE
+PUBLIC :: DirichletBCDeallocate
+PUBLIC :: DirichletBCDisplay
 PUBLIC :: DirichletBC_
 PUBLIC :: DirichletBCPointer_
 PUBLIC :: AddDirichletBC
@@ -66,11 +67,11 @@ END TYPE DirichletBCPointer_
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE DirichletBCDeallocate
   MODULE SUBROUTINE bc_Deallocate_Vector(obj)
     TYPE(DirichletBC_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -80,11 +81,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE DirichletBCDeallocate
   MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
     TYPE(DirichletBCPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -181,8 +182,8 @@ END INTERFACE DirichletBCImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE DirichletBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
-    & filename, printToml)
+  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile, filename,  &
+    & printToml)
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -191,6 +192,38 @@ INTERFACE DirichletBCImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE bc_ImportFromToml2
 END INTERFACE DirichletBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE DirichletBCDisplay
+  MODULE SUBROUTINE bc_Display_Vector(obj, msg, unitNo)
+    TYPE(DirichletBC_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display_Vector
+END INTERFACE DirichletBCDisplay
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE DirichletBCDisplay
+  MODULE SUBROUTINE bc_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(DirichletBCPointer_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display_Ptr_Vector
+END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------
 !

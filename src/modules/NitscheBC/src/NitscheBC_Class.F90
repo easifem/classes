@@ -32,7 +32,8 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "NitscheBC_Class"
 CHARACTER(*), PARAMETER :: myprefix = "NitscheBC"
-PUBLIC :: DEALLOCATE
+PUBLIC :: NitscheBCDeallocate
+PUBLIC :: NitscheBCDisplay
 PUBLIC :: NitscheBCPointer_
 PUBLIC :: NitscheBC_
 PUBLIC :: AddNitscheBC
@@ -82,11 +83,11 @@ END TYPE NitscheBCPointer_
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE NitscheBCDeallocate
   MODULE SUBROUTINE bc_Deallocate_Vector(obj)
     TYPE(NitscheBC_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE NitscheBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -96,11 +97,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE NitscheBCDeallocate
   MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
     TYPE(NitscheBCPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE NitscheBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -304,6 +305,38 @@ INTERFACE NitscheBCImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE bc_ImportFromToml2
 END INTERFACE NitscheBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE NitscheBCDisplay
+  MODULE SUBROUTINE bc_Display_Vector(obj, msg, unitNo)
+    TYPE(NitscheBC_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display_Vector
+END INTERFACE NitscheBCDisplay
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE NitscheBCDisplay
+  MODULE SUBROUTINE bc_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(NitscheBCPointer_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display_Ptr_Vector
+END INTERFACE NitscheBCDisplay
 
 !----------------------------------------------------------------------------
 !

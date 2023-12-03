@@ -116,4 +116,38 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
 END PROCEDURE bc_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Display_Vector
+INTEGER(I4B) :: tsize, ii
+tsize = SIZE(obj)
+CALL Display(msg, unitNo=unitNo)
+CALL Display("nbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
+DO ii = 1, tsize
+  CALL obj(ii)%Display("nbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
+END DO
+END PROCEDURE bc_Display_Vector
+
+!----------------------------------------------------------------------------
+!                                                                   Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Display_Ptr_Vector
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: bool1
+tsize = SIZE(obj)
+CALL Display(msg, unitNo=unitNo)
+CALL Display("nbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
+DO ii = 1, tsize
+  bool1 = ASSOCIATED(obj(ii)%ptr)
+  CALL Display(bool1, "nbc("//TOSTRING(ii)//") ASSOCIATED: ", unitNo=unitNo)
+  IF (bool1) THEN
+    CALL obj(ii)%ptr%Display("nbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
+  END IF
+END DO
+END PROCEDURE bc_Display_Ptr_Vector
+
 END SUBMODULE IOMethods
