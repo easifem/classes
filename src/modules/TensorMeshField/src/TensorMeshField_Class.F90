@@ -27,7 +27,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "TensorMeshField_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "TensorMeshField"
-PUBLIC :: DEALLOCATE
+PUBLIC :: TensorMeshFieldDeallocate
 PUBLIC :: TensorMeshField_
 PUBLIC :: TensorMeshFieldPointer_
 PUBLIC :: SetTensorMeshFieldParam
@@ -41,13 +41,6 @@ PUBLIC :: SetTensorMeshFieldParam
 ! summary: Tensor mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: TensorMeshField_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & aField_CheckEssentialParam
-    !! Check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
 END TYPE TensorMeshField_
 
 !----------------------------------------------------------------------------
@@ -84,37 +77,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_CheckEssentialParam(obj, param)
-    CLASS(TensorMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
-    CLASS(TensorMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -122,11 +84,11 @@ END INTERFACE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE TensorMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Vector(obj)
     TYPE(TensorMeshField_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE TensorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -136,10 +98,10 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE TensorMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
     TYPE(TensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE TensorMeshFieldDeallocate
 
 END MODULE TensorMeshField_Class

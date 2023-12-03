@@ -28,7 +28,7 @@ USE FPL, ONLY: ParameterList_
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-CHARACTER(LEN=*), PARAMETER :: modName = "TensorField_Class"
+CHARACTER(*), PARAMETER :: modName = "TensorField_Class"
 TYPE(ExceptionHandler_) :: e
 
 !----------------------------------------------------------------------------

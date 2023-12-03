@@ -24,46 +24,26 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetScalarMeshFieldParam
+INTEGER(I4B) :: s(1)
+
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="ScalarMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Scalar, &
-    & s=[1])
+  s = 1
 ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="ScalarMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Scalar, &
-    & s=[nns])
+  s = nns
 END IF
+
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
+  & prefix="ScalarMeshField", &
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Scalar, &
+  & s=s)
+
 END PROCEDURE SetScalarMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
-END PROCEDURE aField_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate

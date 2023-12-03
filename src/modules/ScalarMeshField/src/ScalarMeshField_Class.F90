@@ -40,13 +40,6 @@ PUBLIC :: ScalarMeshFieldDeallocate
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: ScalarMeshField_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & aField_CheckEssentialParam
-    !! Check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
 END TYPE ScalarMeshField_
 
 !----------------------------------------------------------------------------
@@ -106,37 +99,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: nns
   !! Number of node in space
   END SUBROUTINE SetScalarMeshFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_CheckEssentialParam(obj, param)
-    CLASS(ScalarMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
-    CLASS(ScalarMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
 END INTERFACE
 
 END MODULE ScalarMeshField_Class

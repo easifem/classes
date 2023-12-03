@@ -26,7 +26,10 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STScalarMeshField_Class"
-PUBLIC :: DEALLOCATE
+PUBLIC :: STScalarMeshFieldDeallocate
+PUBLIC :: STScalarMeshField_
+PUBLIC :: SetSTScalarMeshFieldParam
+PUBLIC :: STScalarMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                                     STScalarMeshField_Class
@@ -37,16 +40,7 @@ PUBLIC :: DEALLOCATE
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: STScalarMeshField_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
 END TYPE STScalarMeshField_
-
-PUBLIC :: STScalarMeshField_
 
 !----------------------------------------------------------------------------
 !
@@ -55,8 +49,6 @@ PUBLIC :: STScalarMeshField_
 TYPE :: STScalarMeshFieldPointer_
   CLASS(STScalarMeshField_), POINTER :: ptr => NULL()
 END TYPE STScalarMeshFieldPointer_
-
-PUBLIC :: STScalarMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                              setAbstractMeshFieldParam@ConstructorMethods
@@ -83,39 +75,6 @@ INTERFACE
   END SUBROUTINE SetSTScalarMeshFieldParam
 END INTERFACE
 
-PUBLIC :: SetSTScalarMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
-    CLASS(STScalarMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
-    CLASS(STScalarMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
-END INTERFACE
-
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -124,11 +83,11 @@ END INTERFACE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE STScalarMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Vector(obj)
     TYPE(STScalarMeshField_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE STScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -138,10 +97,10 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE STScalarMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
     TYPE(STScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE STScalarMeshFieldDeallocate
 
 END MODULE STScalarMeshField_Class
