@@ -28,6 +28,12 @@ USE HDF5File_Class
 USE VTKFile_Class
 IMPLICIT NONE
 PRIVATE
+PUBLIC :: Mesh_
+PUBLIC :: MeshPointer_
+! PUBLIC :: Mesh
+PUBLIC :: Mesh_Pointer
+PUBLIC :: DEALLOCATE
+PUBLIC :: MeshDisplay
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
@@ -155,8 +161,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => BoundaryFacetData_Display
   !! Display the content of boundary facetdata
 END TYPE BoundaryFacetData_
-
-! PUBLIC :: BoundaryFacetData_
 
 !----------------------------------------------------------------------------
 !                                                                     Mesh_
@@ -633,7 +637,6 @@ END TYPE Mesh_
 !                                                                     Mesh_
 !----------------------------------------------------------------------------
 
-PUBLIC :: Mesh_
 ! TYPE( Mesh_ ), PARAMETER, PUBLIC :: TypeMesh = Mesh_( )
 
 !----------------------------------------------------------------------------
@@ -647,8 +650,6 @@ PUBLIC :: Mesh_
 TYPE :: MeshPointer_
   TYPE(Mesh_), POINTER :: Ptr => NULL()
 END TYPE MeshPointer_
-
-PUBLIC :: MeshPointer_
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -699,14 +700,6 @@ INTERFACE
   END FUNCTION Mesh_Constructor1
 END INTERFACE
 
-!>
-! Generic function for constructing [[mesh_]]
-INTERFACE Mesh
-  MODULE PROCEDURE Mesh_Constructor1
-END INTERFACE Mesh
-
-PUBLIC :: Mesh
-
 !----------------------------------------------------------------------------
 !                                           Mesh_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -715,19 +708,13 @@ PUBLIC :: Mesh
 ! date: 18 June 2021
 ! summary: This function returns a pointer to an instance of mesh_ object
 
-INTERFACE
+INTERFACE Mesh_Pointer
   MODULE FUNCTION Mesh_Constructor_1(hdf5, group) RESULT(ans)
     CLASS(Mesh_), POINTER :: ans
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END FUNCTION Mesh_Constructor_1
-END INTERFACE
-
-INTERFACE Mesh_Pointer
-  MODULE PROCEDURE Mesh_Constructor_1
 END INTERFACE Mesh_Pointer
-
-PUBLIC :: Mesh_Pointer
 
 !----------------------------------------------------------------------------
 !                                                    Deallocate@Constructor
@@ -747,17 +734,11 @@ PUBLIC :: Mesh_Pointer
 !call obj%Deallocate( )
 !```end fortran
 
-INTERFACE
+INTERFACE DEALLOCATE
   MODULE SUBROUTINE mesh_Deallocate(obj)
     CLASS(Mesh_), INTENT(INOUT) :: obj
   END SUBROUTINE mesh_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE mesh_Deallocate
 END INTERFACE DEALLOCATE
-
-PUBLIC :: DEALLOCATE
 
 !----------------------------------------------------------------------------
 !                                                         isEmpty@Constructor
@@ -919,7 +900,7 @@ END INTERFACE
 ! call obj%display( 'mesh', stdout )
 !```
 
-INTERFACE
+INTERFACE MeshDisplay
   MODULE SUBROUTINE mesh_display(obj, msg, UnitNo)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     !! mesh object
@@ -928,15 +909,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: UnitNo
     !! unit number of ouput file
   END SUBROUTINE mesh_display
-END INTERFACE
-
-!>
-! generic routine to display content of mesh
-INTERFACE Display
-  MODULE PROCEDURE mesh_display
-END INTERFACE Display
-
-PUBLIC :: Display
+END INTERFACE MeshDisplay
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods

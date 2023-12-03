@@ -999,7 +999,9 @@ SUBROUTINE T_Display(obj, msg, unitno)
   INTEGER( I4B ) :: ii
   DO ii = 1, obj%psize
     IF( ASSOCIATED( obj%storage(ii)%ptr ) ) THEN
-      CALL Display(obj%storage(ii)%ptr, trim(msg)//"("//trim(str(ii, .true.))//")=", unitno)
+      CALL obj%storage(ii)%ptr%Display(  &
+        & trim(msg)//"("//trim(str(ii, .true.))//")=",  &
+        & unitno=unitno)
     END IF
   END DO
 END SUBROUTINE T_Display
@@ -1215,7 +1217,7 @@ SUBROUTINE iter_display( obj, msg, unitno )
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 
   IF( ASSOCIATED(obj%value%ptr) ) THEN
-    CALL Display(obj%value%ptr, msg, unitno)
+    CALL obj%value%ptr%Display(msg=msg, unitno=unitno)
   END IF
 END SUBROUTINE iter_display
 
