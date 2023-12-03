@@ -27,7 +27,7 @@ CONTAINS
 MODULE PROCEDURE obj_Run
 CHARACTER(*), PARAMETER :: myName = "obj_Run"
 CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The kernel that you are using does not support this routine')
+& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_Run
 
 !----------------------------------------------------------------------------

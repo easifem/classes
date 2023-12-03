@@ -26,8 +26,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_Set
 CHARACTER(*), PARAMETER :: myName = "obj_Set"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & '[WIP] :: This routine has not been implemented yet')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine has not been implemented yet')
 END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
@@ -52,6 +52,11 @@ END PROCEDURE obj_SetIterationNumber
 
 MODULE PROCEDURE obj_SetMeshData
 CHARACTER(*), PARAMETER :: myName = "obj_SetMeshData"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 IF (ASSOCIATED(obj%dom)) THEN
   CALL obj%dom%InitiateNodeToElements()
   CALL obj%dom%InitiateNodeToNodes()
@@ -59,13 +64,21 @@ IF (ASSOCIATED(obj%dom)) THEN
 ELSE
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[POINTER ERROR] :: AbstractKernel_::obj%dom is not associated.')
+  RETURN
 END IF
 
 IF (ALLOCATED(obj%domains)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[WIP] :: AbstractKernel_::obj%domains  case todo.')
+  RETURN
 END IF
 ! TODO: Implement SetMeshData when isCommonDomain is false.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_SetMeshData
 
 !----------------------------------------------------------------------------
@@ -76,6 +89,12 @@ MODULE PROCEDURE obj_SetFiniteElements
 CHARACTER(*), PARAMETER :: myName = "kernel_SetFiniteElements"
 INTEGER(I4B), ALLOCATABLE :: order(:), elemType(:)
 INTEGER(I4B) :: tsize, ii, nsd
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 nsd = obj%nsd
 tsize = obj%dom%getTotalMesh(dim=nsd)
@@ -84,10 +103,12 @@ CALL Reallocate(order, tsize)
 elemType = obj%dom%GetElemType(dim=nsd)
 order = obj%dom%GetOrder(dim=nsd)
 
-IF (ALLOCATED(obj%cellFE) .OR. ALLOCATED(obj%linCellFE)) THEN
+problem = (ALLOCATED(obj%cellFE) .OR. ALLOCATED(obj%linCellFE))
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[CONFIG ERROR] :: AbstractKernel_::obj%cellFE or obj%linCellFE '//  &
     & 'already allocated.')
+  RETURN
 END IF
 
 ALLOCATE (obj%cellFE(tsize), obj%linCellFE(tsize))
@@ -245,6 +266,12 @@ END IF
 
 IF (ALLOCATED(elemType)) DEALLOCATE (elemType)
 IF (ALLOCATED(order)) DEALLOCATE (order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_SetFiniteElements
 
 !----------------------------------------------------------------------------
@@ -258,8 +285,8 @@ CLASS(FiniteElement_), POINTER :: fe
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] SetQuadPointsInSpace')
-#endif
+  & '[START] ')
+#endif DEBUG_VER
 
 IF (.NOT. ALLOCATED(obj%cellFE)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -290,8 +317,9 @@ NULLIFY (fe)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] SetQuadPointsInSpace')
-#endif
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_SetQuadPointsInSpace
 
 !----------------------------------------------------------------------------
@@ -304,7 +332,7 @@ INTEGER(I4B) :: order
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] SetQuadPointsInTime')
+  & '[START]')
 #endif
 
 IF (obj%nnt .GT. 1) THEN
@@ -321,7 +349,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] SetQuadPointsInTime')
+  & '[END]')
 #endif
 END PROCEDURE obj_SetQuadPointsInTime
 
@@ -339,7 +367,7 @@ CLASS(FiniteElement_), POINTER :: fe
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] SetLocalElemShapeDataInSpace()')
+  & '[START]')
 #endif
 
 IF (.NOT. ALLOCATED(obj%cellFE)) THEN
@@ -383,7 +411,7 @@ NULLIFY (fe)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] SetQuadPointsInTime')
+  & '[END]')
 #endif
 
 END PROCEDURE obj_SetLocalElemShapeDataInSpace
@@ -400,7 +428,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInTime()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] SetLocalElemShapeDataInTime()')
+  & '[START]')
 #endif
 
 CALL obj%timeFE%GetLocalElemShapeData( &
@@ -413,7 +441,7 @@ CALL obj%linTimeFE%GetLocalElemShapeData( &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] SetQuadPointsInTime')
+  & '[END]')
 #endif
 END PROCEDURE obj_SetLocalElemShapeDataInTime
 

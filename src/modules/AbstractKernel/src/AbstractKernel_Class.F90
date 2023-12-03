@@ -56,13 +56,14 @@ PUBLIC :: AbstractKernelCheckEssentialParam
 PUBLIC :: AbstractKernelInitiate
 PUBLIC :: AbstractKernelDeallocate
 PUBLIC :: AbstractKernelDisplay
-PUBLIC :: KernelExport
-PUBLIC :: KernelImport
+PUBLIC :: AbstractKernelExport
+PUBLIC :: AbstractKernelImport
+PUBLIC :: AbstractKernelImportParamFromToml
+
 PUBLIC :: KernelGetCoordinateSystemName
 PUBLIC :: KernelGetCoordinateSystemID
 PUBLIC :: KernelGetNSDFromID
 PUBLIC :: KernelGetNSDFromName
-PUBLIC :: AbstractKernelImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
@@ -133,11 +134,9 @@ TYPE, ABSTRACT :: AbstractKernel_
   REAL(DFP) :: startTime = 0.0
   !! Starting time of simulation
   !! NOTE: This varible is needed in the transient or pseudostatic simulation
-  !! only.
   REAL(DFP) :: endTime = 0.0
   !! Final time of the simulation
   !! NOTE: This varible is needed in the transient or pseudostatic simulation
-  !! only.
   REAL(DFP) :: currentTime = 0.0
   !! The current time of the simulation
   !! NOTE: This varible is needed in the transient simulation only.
@@ -150,7 +149,6 @@ TYPE, ABSTRACT :: AbstractKernel_
   REAL(DFP) :: lengthScale = 1.0_DFP
   !! This variable denotes the length scale of the problem.
   !! NOTE: This variable is for internal use only.
-  !! INTERNAL:
   INTEGER(I4B) :: postProcessOpt = 0
   !! Postprocessing options
   !! INFO: The actual action depends upon the specific kernels
@@ -169,7 +167,6 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Indices where Dirichlet boundary conditions is prescribed
   !! INFO: This variable is for internal use only.
   !! It is formed from the Dirichlet boundary conditions.
-  !! INTERNAL:
   CLASS(AbstractLinSolver_), POINTER :: linsol => NULL()
   !! A pointer to a Linear iterative solver
   !! NOTE: The actual linear solver depends upon the
@@ -309,22 +306,21 @@ CONTAINS
     & obj_SetQuadPointsInTime
   PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInSpace =>  &
     & obj_SetLocalElemShapeDataInSpace
+  !! Set local element shape data in space
   PROCEDURE, PUBLIC, PASS(obj) :: SetLocalElemShapeDataInTime =>  &
     & obj_SetLocalElemShapeDataInTime
+  !! Set local element shape data in time
   PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInSpace =>  &
     & obj_SetGlobalElemShapeDataInSpace
   !! Set global element shape data in space
-  ! NOTE: Currently this method has not been implemented.
   ! TODO: Implement SetGlobalElemShapeDataInSpace
   PROCEDURE, PUBLIC, PASS(obj) :: SetGlobalElemShapeDataInTime =>  &
     & obj_SetGlobalElemShapeDataInTime
   !! Set global element shape data in time
-  ! NOTE: Currently this method has not been implemented.
   ! TODO: Implement SetGlobalElemShapeDataInTime
   PROCEDURE, PUBLIC, PASS(obj) :: SetFacetFiniteElements =>  &
     & obj_SetFacetFiniteElements
   !! Set Facet Finite Elements
-  !! NOTE: Currently this method has not been implemented
   !! TODO: Implement SetFacetFiniteElements method
 
   ! IO:
@@ -342,10 +338,14 @@ CONTAINS
   ! PROCEDURE, PASS( obj ) :: WriteData_xdmf => obj_WriteData_xdmf
   GENERIC, PUBLIC :: WriteData => WriteData_hdf5, WriteData_vtk
   !! Export data to an external file
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml => obj_ImportFromToml
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+
   PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
     & obj_ImportParamFromToml
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToToml => obj_ExportToToml
+
   ! GET:
   ! @RunMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Run => obj_Run
@@ -375,8 +375,7 @@ CONTAINS
   ! @UpdateMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Update => obj_Update
   !! This procedure pointer update the problem
-  PROCEDURE, PUBLIC, PASS(obj) :: &
-    & UpdateIteration => obj_UpdateIteration
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateIteration => obj_UpdateIteration
   !! This procedure pointer update the problem
 
   ! GET:
@@ -550,7 +549,6 @@ END INTERFACE AbstractKernelCheckEssentialParam
 !
 !INFO: domains is necessary when isCommonDomain is false.
 ! This can happen in multi-physics applications
-!
 !WARN: This routine should be implemented by the subclass
 
 INTERFACE AbstractKernelInitiate
@@ -739,7 +737,7 @@ END INTERFACE AbstractKernelDisplay
 ! date: 21 Aug 2021
 ! summary: This routine exports the kernel
 
-INTERFACE
+INTERFACE AbstractKernelExport
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Kernel object
@@ -747,11 +745,7 @@ INTERFACE
     !! Parameter list
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
-END INTERFACE
-
-INTERFACE KernelExport
-  MODULE PROCEDURE obj_Export
-END INTERFACE KernelExport
+END INTERFACE AbstractKernelExport
 
 !----------------------------------------------------------------------------
 !                                                          Import@IOMethods
@@ -771,7 +765,7 @@ END INTERFACE KernelExport
 ! allocate memory for the domain, and use the mesh file information given
 ! in the hdf5 file to generate that domain.
 
-INTERFACE KernelImport
+INTERFACE AbstractKernelImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Kernel object
@@ -782,7 +776,7 @@ INTERFACE KernelImport
     CLASS(Domain_), TARGET, INTENT(INOUT) :: dom
     !! Domain of computation
   END SUBROUTINE obj_Import
-END INTERFACE KernelImport
+END INTERFACE AbstractKernelImport
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@IOMethods
@@ -793,13 +787,10 @@ END INTERFACE KernelImport
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE AbstractKernelImportParamFromToml
-  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, tomlName,  &
-    & afile, filename)
+  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportParamFromToml
 END INTERFACE AbstractKernelImportParamFromToml
 
@@ -811,14 +802,12 @@ END INTERFACE AbstractKernelImportParamFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE AbstractKernelImportParamFromToml
-  MODULE SUBROUTINE obj_ImportParamFromToml2(obj, param, table, tomlName)
+INTERFACE AbstractKernelImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
     TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: tomlName
-  END SUBROUTINE obj_ImportParamFromToml2
-END INTERFACE AbstractKernelImportParamFromToml
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE AbstractKernelImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@IOMethods
@@ -828,37 +817,16 @@ END INTERFACE AbstractKernelImportParamFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE AbstractKernelImportParamFromToml
-  MODULE SUBROUTINE obj_ImportParamFromToml3(obj, param, table, child,  &
-    & tomlName, filename, afile)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
-    TYPE(toml_table), POINTER, INTENT(INOUT) :: child
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-  END SUBROUTINE obj_ImportParamFromToml3
-END INTERFACE AbstractKernelImportParamFromToml
-
-!----------------------------------------------------------------------------
-!                                                 ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml(obj, tomlName, afile, filename,  &
+INTERFACE AbstractKernelImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename,  &
     & printToml)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE obj_ImportFromToml
-END INTERFACE
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE AbstractKernelImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                   ExportFromToml@IOMethods
@@ -974,7 +942,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Nov 2022
-! summary:         Set the current time step number of kernel
+! summary: Set the current time step number of kernel
 
 INTERFACE
   MODULE SUBROUTINE obj_SetCurrentTimeStep(obj, its)

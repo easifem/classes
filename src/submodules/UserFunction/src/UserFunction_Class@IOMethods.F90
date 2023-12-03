@@ -518,18 +518,10 @@ INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
-IF (PRESENT(afile)) THEN
-  CALL GetValue(table=table, afile=afile)
-ELSEIF (PRESENT(filename)) THEN
-  CALL GetValue(table=table, filename=filename)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: either filename or afile should be present!')
-  RETURN
-END IF
+CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
@@ -550,9 +542,11 @@ IF (PRESENT(printToml)) THEN
 END IF
 #endif
 
+NULLIFY (node)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE auf_ImportFromToml2
 
