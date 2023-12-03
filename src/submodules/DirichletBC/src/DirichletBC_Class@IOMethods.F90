@@ -62,7 +62,7 @@ END IF
 tsize = toml_len(array)
 IF (tsize .NE. tsize1) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: The number of boundary condition '// char_lf// &
+    & '[CONFIG ERROR] :: The number of boundary condition '//char_lf// &
     & ' in the toml config ('//tostring(tsize)//') is not same '// &
     & ' as the size of obj ('//tostring(tsize1)//")")
   RETURN
@@ -117,4 +117,38 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
 END PROCEDURE bc_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Display_Vector
+INTEGER(I4B) :: tsize, ii
+tsize = SIZE(obj)
+CALL Display(msg, unitNo=unitNo)
+CALL Display("dbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
+DO ii = 1, tsize
+  CALL obj(ii)%Display("dbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
+END DO
+END PROCEDURE bc_Display_Vector
+
+!----------------------------------------------------------------------------
+!                                                                   Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE bc_Display_Ptr_Vector
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: bool1
+tsize = SIZE(obj)
+CALL Display(msg, unitNo=unitNo)
+CALL Display("dbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
+DO ii = 1, tsize
+  bool1 = ASSOCIATED(obj(ii)%ptr)
+  CALL Display(bool1, "dbc("//TOSTRING(ii)//") ASSOCIATED: ", unitNo=unitNo)
+  IF (bool1) THEN
+    CALL obj(ii)%ptr%Display("dbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
+  END IF
+END DO
+END PROCEDURE bc_Display_Ptr_Vector
+
 END SUBMODULE IOMethods

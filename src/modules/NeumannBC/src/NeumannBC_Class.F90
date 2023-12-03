@@ -32,7 +32,8 @@ CHARACTER(*), PARAMETER :: modName = "NeumannBC_CLASS"
 CHARACTER(*), PARAMETER :: myprefix = "NeumannBC"
 PUBLIC :: NeumannBC_
 PUBLIC :: NeumannBCPointer_
-PUBLIC :: DEALLOCATE
+PUBLIC :: NeumannBCDeallocate
+PUBLIC :: NeumannBCDisplay
 PUBLIC :: AddNeumannBC
 PUBLIC :: GetNeumannBCPointer
 PUBLIC :: NeumannBCImportFromToml
@@ -68,11 +69,11 @@ END TYPE NeumannBCPointer_
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE NeumannBCDeallocate
   MODULE SUBROUTINE bc_Deallocate_Vector(obj)
     TYPE(NeumannBC_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE NeumannBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -82,11 +83,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE NeumannBCDeallocate
   MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
     TYPE(NeumannBCPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE bc_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE NeumannBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -193,5 +194,41 @@ INTERFACE NeumannBCImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE bc_ImportFromToml2
 END INTERFACE NeumannBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE NeumannBCDisplay
+  MODULE SUBROUTINE bc_Display_Vector(obj, msg, unitNo)
+    TYPE(NeumannBC_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display_Vector
+END INTERFACE NeumannBCDisplay
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE NeumannBCDisplay
+  MODULE SUBROUTINE bc_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(NeumannBCPointer_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE bc_Display_Ptr_Vector
+END INTERFACE NeumannBCDisplay
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE NeumannBC_Class
