@@ -23,34 +23,111 @@ CONTAINS
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Get
-CHARACTER(LEN=*), PARAMETER :: myName = "aField_Get"
+MODULE PROCEDURE obj_Get
+CHARACTER(*), PARAMETER :: myName = "obj_Get"
 INTEGER(I4B) :: iel
-!!
+
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  !!
   fevar%val = obj%val(:, 1)
   fevar%s = obj%s
   fevar%defineOn = obj%defineOn
   fevar%varType = obj%varType
   fevar%rank = obj%rank
-  !!
-ELSE
-  !!
-  IF (.NOT. PRESENT(globalElement)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'globalElement should be present, when mesh field is not constant')
-  END IF
-  !!
-  iel = obj%mesh%getLocalElemNumber(globalElement)
-  fevar%val = obj%val(:, iel)
-  fevar%s = obj%s
-  fevar%defineOn = obj%defineOn
-  fevar%varType = obj%varType
-  fevar%rank = obj%rank
+  RETURN
 END IF
-!!
-END PROCEDURE aField_Get
+
+IF (.NOT. PRESENT(globalElement)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElement should be present, '//  &
+    & 'when mesh field is not constant')
+  RETURN
+END IF
+
+iel = obj%mesh%getLocalElemNumber(globalElement)
+fevar%val = obj%val(:, iel)
+fevar%s = obj%s
+fevar%defineOn = obj%defineOn
+fevar%varType = obj%varType
+fevar%rank = obj%rank
+END PROCEDURE obj_Get
+
+!----------------------------------------------------------------------------
+!                                                                  GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+ans = ""
+END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                                      Shape
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Shape
+SELECT CASE (obj%rank)
+CASE (Scalar)
+  SELECT CASE (obj%vartype)
+  CASE (Constant)
+    ans = [1]
+  CASE (Space, Time)
+    ans = obj%s(1:1)
+  CASE (SpaceTime)
+    ans = obj%s(1:2)
+  END SELECT
+CASE (Vector)
+  SELECT CASE (obj%vartype)
+  CASE (Constant)
+    ans = obj%s(1:1)
+  CASE (Space, Time)
+    ans = obj%s(1:2)
+  CASE (SpaceTime)
+    ans = obj%s(1:3)
+  END SELECT
+CASE (Matrix)
+  SELECT CASE (obj%vartype)
+  CASE (Constant)
+    ans = obj%s(1:2)
+  CASE (Space, Time)
+    ans = obj%s(1:3)
+  CASE (SpaceTime)
+    ans = obj%s(1:4)
+  END SELECT
+END SELECT
+END PROCEDURE obj_Shape
+
+!----------------------------------------------------------------------------
+!                                                                      Size
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Size
+IF (PRESENT(dim)) THEN
+  ans = obj%s(dim)
+ELSE
+  SELECT CASE (obj%rank)
+  CASE (Scalar)
+    ans = 1
+  CASE (Vector)
+    ans = obj%s(1)
+  CASE (Matrix)
+    ans = obj%s(1) * obj%s(2)
+  END SELECT
+END IF
+END PROCEDURE obj_Size
+
+!----------------------------------------------------------------------------
+!                                                                GetPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointer
+IF (ALLOCATED(obj%val)) THEN
+  ans => obj%val
+ELSE
+  ans => NULL()
+END IF
+END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
 !

@@ -23,7 +23,7 @@ CONTAINS
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Set
+MODULE PROCEDURE obj_Set
 !!
 INTEGER(I4B) :: iel
 !!
@@ -40,7 +40,7 @@ ELSE
   END IF
 END IF
 !!
-END PROCEDURE aField_Set
+END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
 !

@@ -23,24 +23,24 @@ CONTAINS
 !                                                                       Add
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Add
+MODULE PROCEDURE obj_Add
   !!
-  INTEGER( I4B ) :: iel
+INTEGER(I4B) :: iel
   !!
-  IF( obj%fieldType .EQ. FIELD_TYPE_CONSTANT ) THEN
-    obj%val( :, 1 )=obj%val( :, 1 ) + scale * fevar%val( : )
+IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  obj%val(:, 1) = obj%val(:, 1) + scale * fevar%val(:)
+ELSE
+  IF (PRESENT(globalElement)) THEN
+    iel = obj%mesh%getLocalElemNumber(globalElement)
+    obj%val(:, iel) = obj%val(:, iel) + scale * fevar%val(:)
   ELSE
-    IF( PRESENT( globalElement ) ) THEN
-      iel = obj%mesh%getLocalElemNumber( globalElement )
-      obj%val( :, iel )=obj%val( :, iel ) + scale * fevar%val(:)
-    ELSE
-      DO iel = 1, obj%mesh%getTotalElements()
-        obj%val( :, iel )=obj%val( :, iel ) + scale * fevar%val(:)
-      END DO
-    END IF
+    DO iel = 1, obj%mesh%getTotalElements()
+      obj%val(:, iel) = obj%val(:, iel) + scale * fevar%val(:)
+    END DO
   END IF
+END IF
   !!
-END PROCEDURE aField_Add
+END PROCEDURE obj_Add
 
 !----------------------------------------------------------------------------
 !

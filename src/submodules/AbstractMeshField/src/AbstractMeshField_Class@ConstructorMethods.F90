@@ -16,6 +16,7 @@
 
 SUBMODULE(AbstractMeshField_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -36,80 +37,94 @@ ierr = param%Set(key=TRIM(prefix)//"/totalShape", VALUE=SIZE(s))
 END PROCEDURE SetAbstractMeshFieldParam
 
 !----------------------------------------------------------------------------
-!                                                       checkEssentialParam
+!                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = &
-  & "aField_checkEssentialParam"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method should be implemented by the children subclass')
-END PROCEDURE aField_checkEssentialParam
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
+CALL CheckEssentialParam(obj=param,  &
+  & keys=AbstractMeshFieldEssential,  &
+  & prefix=obj%GetPrefix(),  &
+  & myName=myName,  &
+  & modName=modName)
+!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
+!                                                           GetTotalRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE AbstractMeshFieldCheckEssentialParam
-!
-CHARACTER(*), PARAMETER :: myName = &
-  & "AbstractMeshFieldCheckEssentialParam"
-!
-! fieldType
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/fieldType")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'fieldType should be present in param')
-!
-! name
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/name")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'names should be present in param')
-!
-! engine
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/engine")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'engine should be present in param')
-!
-! s
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/s")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 's should be present in param')
-!
-! totalShape
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/totalShape")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'totalShape should be present in param')
-!
-! defineOn
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/defineOn")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'defineOn should be present in param')
-!
-! varType
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/varType")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'varType should be present in param')
-!
-! rank
-!
-IF (.NOT. param%isPresent(key=TRIM(prefix)//"/rank")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'rank should be present in param')
-!
-END PROCEDURE AbstractMeshFieldCheckEssentialParam
+FUNCTION GetTotalRow(rank, varType) RESULT(nrow)
+  INTEGER(I4B), INTENT(IN) :: rank, varType
+  INTEGER(I4B) :: nrow
+
+  SELECT CASE (rank)
+
+  CASE (Scalar)
+    SELECT CASE (varType)
+    CASE (Constant, Space, Time)
+      nrow = 1
+      ! one dimension, single entry
+      ! one dimension, multiple entries in space
+      ! one dimension, multiple entries in time
+    CASE (SpaceTime)
+      ! two dimensions, multiple entries in space-time
+      nrow = 2
+    END SELECT
+
+  CASE (Vector)
+    SELECT CASE (varType)
+    CASE (Constant)
+      ! one dimension, only vector components
+      nrow = 1
+    CASE (Space, Time)
+      nrow = 2
+      ! two dimension, vector components and space values
+      ! two dimension, vector components and time values
+    CASE (SpaceTime)
+      ! two dimension, vector components, space and time values
+      nrow = 3
+    END SELECT
+
+  CASE (Matrix)
+    SELECT CASE (varType)
+    CASE (Constant)
+      ! two dimensions, matrix components
+      nrow = 2
+    CASE (Space, Time)
+      ! three dimensions, matrix components and space values
+      ! three dimensions, matrix components and time values
+      nrow = 3
+    CASE (SpaceTime)
+      ! four dimensions, matrix components, space and time values
+      nrow = 4
+    END SELECT
+  END SELECT
+END FUNCTION GetTotalRow
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii, tsize
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+  DO ii = 1, tsize
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 obj%isInitiated = .FALSE.
 obj%fieldType = FIELD_TYPE_NORMAL
 obj%name = ""
@@ -121,178 +136,96 @@ obj%varType = 0
 obj%rank = 0
 IF (ALLOCATED(obj%val)) DEALLOCATE (obj%val)
 obj%mesh => NULL()
-END PROCEDURE aField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "aField_Initiate1"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method should be implemented by the children subclass')
-END PROCEDURE aField_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE AbstractMeshFieldInitiate
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(String) :: dSetname
 INTEGER(I4B) :: ierr, nrow, totalShape
-CHARACTER(:), ALLOCATABLE :: char_var
-CHARACTER(*), PARAMETER :: myName = "AbstractMeshFieldInitiate"
-!
-! check
-!
+CHARACTER(:), ALLOCATABLE :: prefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 IF (obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'MeshField object is already initiated, deallocate first')
+    & '[INTERNAL ERROR] :: MeshField object is already Initiated, '//  &
+    & ' deallocate first.')
+  RETURN
 END IF
-!
-! check
-!
-CALL obj%checkEssentialParam(param)
-!
+
+CALL obj%DEALLOCATE()
+CALL obj%CheckEssentialParam(param)
 obj%isInitiated = .TRUE.
-!
+prefix = obj%GetPrefix()
+
 ! fieldType
-!
-dSetname = TRIM(prefix)//"/fieldType"
-IF (param%isPresent(key=dsetname%chars())) THEN
-  ierr = param%get(key=dsetname%chars(), VALUE=obj%fieldType)
-ELSE
-  obj%fieldType = FIELD_TYPE_NORMAL
-END IF
-!
+obj%fieldType = FIELD_TYPE_NORMAL
+CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
+
 ! name
-!
-dsetname = TRIM(prefix)//"/name"
-ALLOCATE (CHARACTER(LEN= &
-  & param%DataSizeInBytes(key=dsetname%chars())) :: char_var)
-ierr = param%get(key=dsetname%chars(), VALUE=char_var)
-obj%name = char_var; DEALLOCATE (char_var)
-!
+obj%name = prefix
+CALL GetValue(obj=param, prefix=prefix, key="name", VALUE=obj%name)
+
 ! engine
-!
-dsetname = TRIM(prefix)//"/engine"
-ALLOCATE (CHARACTER(LEN= &
-  & param%DataSizeInBytes(key=dsetname%chars())) :: char_var)
-ierr = param%get(key=dsetname%chars(), VALUE=char_var)
-obj%engine = char_var; DEALLOCATE (char_var)
-!
+CALL GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
+
 ! defineOn
-!
-dsetname = TRIM(prefix)//"/defineOn"
-ierr = param%get(key=dsetname%chars(), VALUE=obj%defineOn)
-!
+CALL GetValue(obj=param, prefix=prefix, key="defineOn", VALUE=obj%defineOn)
+
 ! varType
-!
-dsetname = TRIM(prefix)//"/varType"
-ierr = param%get(key=dsetname%chars(), VALUE=obj%varType)
-!
+CALL GetValue(obj=param, prefix=prefix, key="varType", VALUE=obj%varType)
+
 ! rank
-!
-dsetname = TRIM(prefix)//"/rank"
-ierr = param%get(key=dsetname%chars(), VALUE=obj%rank)
-!
-! nrow
-!
-SELECT CASE (obj%rank)
-  !
-  ! Scalar
-  !
-CASE (Scalar)
-  SELECT CASE (obj%varType)
-  CASE (Constant)
-    ! one dimension, single entry
-    nrow = 1
-  CASE (Space)
-    ! one dimension, multiple entries in space
-    nrow = 1
-  CASE (Time)
-    ! one dimension, multiple entries in time
-    nrow = 1
-  CASE (SpaceTime)
-    ! two dimensions, multiple entries in space-time
-    nrow = 2
-  END SELECT
-  !
-  ! Vector
-  !
-CASE (Vector)
-  SELECT CASE (obj%varType)
-  CASE (Constant)
-    ! one dimension, only vector components
-    nrow = 1
-  CASE (Space)
-    ! two dimension, vector components and space values
-    nrow = 2
-  CASE (Time)
-    ! two dimension, vector components and time values
-    nrow = 2
-  CASE (SpaceTime)
-    ! two dimension, vector components, space and time values
-    nrow = 3
-  END SELECT
-  !
-  ! Matrix
-  !
-CASE (Matrix)
-  SELECT CASE (obj%varType)
-  CASE (Constant)
-    ! two dimensions, matrix components
-    nrow = 2
-  CASE (Space)
-    ! three dimensions, matrix components and space values
-    nrow = 3
-  CASE (Time)
-    ! three dimensions, matrix components and time values
-    nrow = 3
-  CASE (SpaceTime)
-    ! four dimensions, matrix components, space and time values
-    nrow = 4
-  END SELECT
-  !
-  !
-  !
-END SELECT
-!
-! s
-!
-dsetname = TRIM(prefix)//"/totalShape"
-ierr = param%get(key=dsetname%chars(), VALUE=totalShape)
+CALL GetValue(obj=param, prefix=prefix, key="rank", VALUE=obj%rank)
+
+nrow = GetTotalRow(rank=obj%rank, varType=obj%varType)
+
+CALL GetValue(obj=param, prefix=prefix, key="totalShape", VALUE=totalShape)
+
 IF (totalShape .GT. SIZE(obj%s)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'The size of s in param is more than the size of s in obj')
+    & '[INTERNAL ERROR] :: The size of s in param is '//  &
+    & ' more than the size of s in obj')
+  RETURN
 END IF
+
 dsetname = TRIM(prefix)//"/s"
-ierr = param%get(key=dsetname%chars(), VALUE=obj%s(1:totalShape))
-!
+ierr = param%Get(key=dsetname%chars(), VALUE=obj%s(1:totalShape))
+
 ! tSize
-!
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   obj%tSize = 1
 ELSE
-  obj%tSize = mesh%getTotalElements()
+  obj%tSize = mesh%GetTotalElements()
 END IF
-!
+
 ! val
-!
 CALL Reallocate(obj%val, PRODUCT(obj%s(1:nrow)), obj%tSize)
-!
+
 ! mesh
-!
 obj%mesh => mesh
-!
-END PROCEDURE AbstractMeshFieldInitiate
+
+prefix = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_initiate2
-  !!
+MODULE PROCEDURE obj_Initiate2
 obj%isInitiated = obj2%isInitiated
 obj%fieldType = obj2%fieldType
 obj%name = obj2%name
@@ -304,106 +237,16 @@ obj%varType = obj2%varType
 obj%rank = obj2%rank
 obj%mesh => obj2%mesh
 IF (ALLOCATED(obj2%val)) obj%val = obj2%val
-  !!
-END PROCEDURE aField_initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                                getPointer
+!                                                           Iniitate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_getPointer
-IF (ALLOCATED(obj%val)) THEN
-  ans => obj%val
-ELSE
-  ans => NULL()
-END IF
-END PROCEDURE aField_getPointer
-
-!----------------------------------------------------------------------------
-!                                                                      Size
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Size
-IF (PRESENT(dim)) THEN
-  ans = obj%s(dim)
-ELSE
-  !
-  SELECT CASE (obj%rank)
-  CASE (Scalar)
-    ans = 1
-  CASE (Vector)
-    ans = obj%s(1)
-  CASE (Matrix)
-    ans = obj%s(1) * obj%s(2)
-  END SELECT
-  !
-END IF
-END PROCEDURE aField_Size
-
-!----------------------------------------------------------------------------
-!                                                                      Shape
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Shape
-SELECT CASE (obj%rank)
-  !
-  ! Scalar
-  !
-CASE (Scalar)
-  SELECT CASE (obj%vartype)
-  CASE (Constant)
-    ans = [1]
-  CASE (Space, Time)
-    ans = obj%s(1:1)
-  CASE (SpaceTime)
-    ans = obj%s(1:2)
-  END SELECT
-  !
-  ! Vector
-  !
-CASE (Vector)
-  SELECT CASE (obj%vartype)
-  CASE (Constant)
-    ans = obj%s(1:1)
-  CASE (Space, Time)
-    ans = obj%s(1:2)
-  CASE (SpaceTime)
-    ans = obj%s(1:3)
-  END SELECT
-  !
-  ! Matrix
-  !
-CASE (Matrix)
-  SELECT CASE (obj%vartype)
-  CASE (Constant)
-    ans = obj%s(1:2)
-  CASE (Space, Time)
-    ans = obj%s(1:3)
-  CASE (SpaceTime)
-    ans = obj%s(1:4)
-  END SELECT
-END SELECT
-END PROCEDURE aField_Shape
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
-END PROCEDURE aField_Deallocate_Ptr_Vector
-
-!----------------------------------------------------------------------------
-!                                                                 
-!----------------------------------------------------------------------------
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_Initiate3
 
 END SUBMODULE ConstructorMethods

@@ -24,7 +24,6 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetScalarMeshFieldParam
-!!
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   CALL SetAbstractMeshFieldParam( &
     & param=param, &
@@ -48,7 +47,6 @@ ELSE
     & rank=Scalar, &
     & s=[nns])
 END IF
-!!
 END PROCEDURE SetScalarMeshFieldParam
 
 !----------------------------------------------------------------------------
@@ -56,10 +54,7 @@ END PROCEDURE SetScalarMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam( &
-  & obj=obj, &
-  & prefix="ScalarMeshField", &
-  & param=param)
+CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
 END PROCEDURE aField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -67,15 +62,11 @@ END PROCEDURE aField_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate( &
-  & obj=obj, &
-  & prefix="ScalarMeshField", &
-  & param=param, &
-  & mesh=mesh)
+CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Deallocate_Vector
@@ -89,7 +80,7 @@ END IF
 END PROCEDURE aField_Deallocate_Vector
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Deallocate_Ptr_Vector

@@ -46,6 +46,12 @@ USE FTL_TEMPLATE_TYPE_MODULE
 #endif
 IMPLICIT NONE
 PRIVATE
+PUBLIC :: SIZE
+PUBLIC :: SWAP
+PUBLIC :: MOVE
+PUBLIC :: Display
+PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
+
 CHARACTER( LEN=* ), PARAMETER :: modName="<T>PointerVector"
 
 !----------------------------------------------------------------------------
@@ -141,18 +147,13 @@ INTERFACE SIZE
   MODULE PROCEDURE T_Size
 END INTERFACE SIZE
 
-PUBLIC :: SIZE
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-
 INTERFACE SWAP
   MODULE PROCEDURE T_SWAP
 END INTERFACE SWAP
-
-PUBLIC :: SWAP
 
 !----------------------------------------------------------------------------
 !
@@ -162,8 +163,6 @@ INTERFACE MOVE
   MODULE PROCEDURE T_MoveDynArray, T_MoveArrayToDynArray
 END INTERFACE MOVE
 
-PUBLIC :: MOVE
-
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
@@ -171,8 +170,6 @@ PUBLIC :: MOVE
 INTERFACE Display
   MODULE PROCEDURE T_Display, iter_Display
 END INTERFACE Display
-
-PUBLIC :: Display
 
 !----------------------------------------------------------------------------
 !
@@ -221,12 +218,6 @@ TYPE :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
 
     PROCEDURE, PUBLIC, PASS( obj ) :: Display => iter_display
 END TYPE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,PointerIterator,_)
 
 !----------------------------------------------------------------------------
 !
@@ -999,7 +990,9 @@ SUBROUTINE T_Display(obj, msg, unitno)
   INTEGER( I4B ) :: ii
   DO ii = 1, obj%psize
     IF( ASSOCIATED( obj%storage(ii)%ptr ) ) THEN
-      CALL Display(obj%storage(ii)%ptr, trim(msg)//"("//trim(str(ii, .true.))//")=", unitno)
+      CALL obj%storage(ii)%ptr%Display(  &
+        & trim(msg)//"("//trim(str(ii, .true.))//")=",  &
+        & unitno=unitno)
     END IF
   END DO
 END SUBROUTINE T_Display
@@ -1215,7 +1208,7 @@ SUBROUTINE iter_display( obj, msg, unitno )
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 
   IF( ASSOCIATED(obj%value%ptr) ) THEN
-    CALL Display(obj%value%ptr, msg, unitno)
+    CALL obj%value%ptr%Display(msg=msg, unitno=unitno)
   END IF
 END SUBROUTINE iter_display
 

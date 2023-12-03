@@ -54,10 +54,7 @@ END PROCEDURE SetTensorMeshFieldParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam( &
-  & obj=obj, &
-  & prefix=myPrefix, &
-  & param=param)
+CALL AbstractMeshFieldCheckEssentialParam(obj=obj, param=param)
 END PROCEDURE aField_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -65,10 +62,7 @@ END PROCEDURE aField_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate( &
-  & obj=obj, &
-  & prefix=myPrefix, &
-  & param=param, mesh=mesh)
+CALL AbstractMeshFieldInitiate(obj=obj, param=param, mesh=mesh)
 END PROCEDURE aField_Initiate1
 
 !----------------------------------------------------------------------------
