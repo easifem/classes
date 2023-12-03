@@ -91,6 +91,23 @@ CALL Set(param, TypeIntI4B, prefix, "ipTypeForTime", ipTypeForTime)
 CALL Set(param, TypeIntI4B, prefix, "basisTypeForSpace", basisTypeForSpace)
 CALL Set(param, TypeIntI4B, prefix, "basisTypeForTime", basisTypeForTime)
 
+CALL Set(param, TypeIntI4B, prefix, "tDirichletBC",  &
+ & INPUT(option=tDirichletBC, default=0_I4B))
+
+CALL Set(param, TypeIntI4B, prefix, "tNeumannBC",  &
+ & INPUT(option=tNeumannBC, default=0_I4B))
+
+CALL Set(param, TypeIntI4B, prefix, "tWeakDirichletBC",  &
+ & INPUT(option=tWeakDirichletBC, default=0_I4B))
+
+CALL Set(param, .TRUE., prefix, "isSymNitsche",  &
+  & INPUT(option=isSymNitsche, default=DEFAULT_isSymNitsche))
+! INFO: DEFAULT_isSymNitsche is definedin AbstractElasticityParam module
+
+! real
+CALL Set(param, TypeDFP, prefix, "nitscheAlpha",  &
+  & INPUT(option=nitscheAlpha, default=DEFAULT_nitscheAlpha))
+
 aint = QuadraturePointNameToID(INPUT(option=quadratureTypeForSpace,  &
   & default=DEFAULT_quadratureTypeForSpace))
 CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForSpace", &
@@ -98,8 +115,7 @@ CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForSpace", &
 
 aint = QuadraturePointNameToID(INPUT(option=quadratureTypeForTime,  &
   & default=DEFAULT_quadratureTypeForTime))
-CALL Set(param, datatype=TypeIntI4B, prefix=prefix,  &
-  & key="quadTypeForTime",  &
+CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForTime",  &
   & VALUE=aint)
 
 !! bool
@@ -163,6 +179,8 @@ IF (ASSOCIATED(obj%tanmat)) THEN
   CALL obj%tanmat%CheckEssentialParam(param=param)
 END IF
 
+prefix0 = ""
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
@@ -177,6 +195,10 @@ END PROCEDURE obj_CheckEssentialParam
 MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 INTEGER(I4B) :: ii
+INTEGER(I4B) :: tDirichletBC
+INTEGER(I4B) :: tWeakDirichletBC
+INTEGER(I4B) :: tNeumannBC
+LOGICAL(LGT) :: isSymNitsche
 CHARACTER(:), ALLOCATABLE :: prefix
 
 #ifdef DEBUG_VER
@@ -285,6 +307,25 @@ IF (.NOT. PRESENT(domains) .AND. .NOT. PRESENT(dom)) THEN
     & '[ARGUMENT ERROR] :: Either dom or domains should be present.')
   RETURN
 END IF
+
+tDirichletBC = 0
+CALL GetValue(param, prefix, "tDirichletBC", tDirichletBC)
+ALLOCATE (obj%dbc(tDirichletBC))
+
+CALL GetValue(param, prefix, "tNeumannBC", tNeumannBC)
+ALLOCATE (obj%nbc(tNeumannBC))
+
+tWeakDirichletBC = 0
+CALL GetValue(param, prefix, "tWeakDirichletBC", tWeakDirichletBC)
+ALLOCATE (obj%wdbc(tWeakDirichletBC))
+obj%isNitsche = .FALSE.
+IF (tWeakDirichletBC .GT. 0) obj%isNitsche = .TRUE.
+
+CALL GetValue(param, prefix, "isSymNitsche", isSymNitsche)
+obj%NitscheType = Nitsche_SkewSym
+IF (isSymNitsche) obj%NitscheType = Nitsche_Sym
+
+CALL GetValue(param, prefix, "nitscheAlpha", obj%nitscheAlpha)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -395,6 +436,16 @@ IF (ALLOCATED(obj%stelemsd)) THEN
   DEALLOCATE (obj%stelemsd)
 END IF
 
+CALL DirichletBCDeallocate(obj%dbc)
+CALL NeumannBCDeallocate(obj%nbc)
+CALL NitscheBCDeallocate(obj%wdbc)
+
+obj%isNitsche = .FALSE.
+obj%nitscheAlpha = DEFAULT_nitscheAlpha
+obj%nitscheType = Nitsche_Sym
+
+CALL DomainConnectivityDeallocate(obj%nitscheFacetToCell)
+IF (ALLOCATED(obj%nitscheLocalID)) DEALLOCATE (obj%nitscheLocalID)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

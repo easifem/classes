@@ -25,6 +25,7 @@ USE String_Class, ONLY: String
 USE AbstractKernelParam
 USE AbstractMatrixField_Class
 USE Domain_Class
+USE DomainConnectivity_Class
 USE DirichletBC_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
@@ -32,6 +33,7 @@ USE GlobalData
 USE HDF5File_Class
 USE LinSolverFactory
 USE MeshSelection_Class
+USE DirichletBC_Class
 USE NeumannBC_Class
 USE NitscheBC_Class
 USE TxtFile_Class
@@ -154,6 +156,16 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! INFO: The actual action depends upon the specific kernels
   REAL(DFP) :: gravity(3) = 0.0_DFP
   !! Acceleration vector due to gravity
+  LOGICAL(LGT) :: isNitsche = .FALSE.
+  !! If true, then it means weak dirichlet boundary condition is used
+  !! This variable is set in Initiate method
+  !! This variable is set to true if the tWeakDirichletBCForDisplacement
+  !! is greater than zero, otherwise it is set to false
+  REAL(DFP) :: nitscheAlpha = DEFAULT_nitscheAlpha
+  !! coefficient for nitsche formulation
+  REAL(DFP) :: nitscheType = Nitsche_Sym
+  !! -1.0 for symmetric formulation
+  !! 1.0 for skew symmetric formulation
   TYPE(IterationData_) :: iterData
   !! Iteration data
   !! INFO: The actual action depends upon the specific kernels
@@ -255,7 +267,34 @@ TYPE, ABSTRACT :: AbstractKernel_
     !! Element shape data on space element
   TYPE(STElemshapeData_), ALLOCATABLE :: stelemsd(:, :)
     !! Element shape data on space-time element
-
+  TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
+  !! Dirichlet boundary condition for displacement
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
+  !! Neumann boundary condition for displacement
+  TYPE(NitscheBCPointer_), ALLOCATABLE :: wdbc(:)
+  !! Weak dirichlet boundary condition for displacement
+  INTEGER(I4B), ALLOCATABLE :: nitscheLocalID(:)
+  !! nitscheLocalID is a mapping from global mesh-id (of dimension
+  !! nsd-1), to local id.
+  !! If nitscheLocalID(meshID) = 0, then it means
+  !! meshID of dimension nsd-1 is not a nitsche boundary.
+  !! This mapping is used to access entries in nitscheFacetToCell.
+  TYPE(DomainConnectivityPointer_), ALLOCATABLE :: nitscheFacetToCell(:)
+  !! Nitsche facet to cell data connectivity information
+  !! We form FacetToCellData for each Nitsche boundary
+  !! The size of nitscheFacetToCell is same as the
+  !! total number of boundaries (mesh-ids) in wdbcForDisplacement
+  !! This data is initiated in Set Method
+  ! TYPE(ScalarMeshField_), ALLOCATABLE :: lame_mu(:)
+  !! Young's modulus, needed in case of Isotropic elasticity
+  ! TYPE(ScalarMeshField_), ALLOCATABLE :: lame_lambda(:)
+  !! Poisson's ratio, needed in case of Isotropic elasticity
+  ! TYPE(TensorMeshField_), ALLOCATABLE :: Cijkl(:)
+  !! Elasticity tensor used for non isotropic materials
+  ! TYPE(TensorMeshField_), ALLOCATABLE :: stress(:)
+  !! Stress field
+  ! TYPE(TensorMeshField_), ALLOCATABLE :: strain(:)
+  !! Strain field
 CONTAINS
   PRIVATE
 
@@ -322,6 +361,28 @@ CONTAINS
     & obj_SetFacetFiniteElements
   !! Set Facet Finite Elements
   !! TODO: Implement SetFacetFiniteElements method
+
+  ! SET:
+  ! @BCMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: AddDirichletBC => obj_AddDirichletBC
+  !! Add displacement dirichlet boundary conditions
+  PROCEDURE, PUBLIC, PASS(obj) :: AddNeumannBC => obj_AddNeumannBC
+  !! Add Neumann boundary condition
+  PROCEDURE, PUBLIC, PASS(obj) :: AddNitscheBC => obj_AddNitscheBC
+  !! Add displacement dirichlet boundary conditions
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCPointer => &
+    & obj_GetDirichletBCPointer
+  !! Get pointer to the pressure dirichlet boundary condition
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNitscheBCPointer => &
+    & obj_GetNitscheBCPointer
+  !! Get pointer to the pressure dirichlet boundary condition
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNeumannBCPointer => &
+    & obj_GetNeumannBCPointer
+  !! Get pointer to the neumann boundary condition for velocity
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNitscheMeshData => &
+    & obj_SetNitscheMeshData
+  !! This routine set mesh data necessary for implementing the
+  !! Nitsche boundary condition.
 
   ! IO:
   ! @IOMethods
@@ -437,7 +498,13 @@ INTERFACE
     & alphaForTime, &
     & betaForTime, &
     & lambdaForTime, &
-    & postProcessOpt)
+    & postProcessOpt,  &
+    & tDirichletBC, &
+    & tNeumannBC, &
+    & tWeakDirichletBC, &
+    & isSymNitsche, &
+    & nitscheAlpha &
+    & )
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuityForSpace
     !! Type of continuity of basis function for Space
@@ -517,6 +584,18 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: betaForTime
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambdaForSpace
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambdaForTime
+    !!
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tDirichletBC
+    !! Total number of Dirichlet domain for pressure, default=0
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tWeakDirichletBC
+    !! Total number of Nitsche boundary conditions for displacement
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNeumannBC
+    !! Total number of Neumann domain for pressure, default=0
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSymNitsche
+    !! True if symmetric Nitsche formulation
+    REAL(DFP), OPTIONAL, INTENT(IN) :: nitscheAlpha
+    !! Alpha parameter used in Nitsche formulation
+
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -1090,6 +1169,167 @@ INTERFACE
   MODULE SUBROUTINE obj_SetFacetFiniteElements(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetFacetFiniteElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   AddDirichletBC@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine sets dirichlet boundary condition for pressure field
+!
+!# Introduction
+!
+! - This routine sets the Dirichlet boundary condition for pressure field
+! in [[AbstractElasticity_]] kernel.
+! - It also makes the `obj%DBCForPressure(dbcNo)`
+!
+! - `dbcNo` should be lesser than total dirichlet boundary condition for
+! pressure field
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddDirichletBC(obj, dbcNo, param, boundary)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+  END SUBROUTINE obj_AddDirichletBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     AddNeumannBC@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine sets Neumann BC for displacement field
+!
+!# Introduction
+!
+! - This routine sets the Neumann boundary condition for displacement field
+! in [[AbstractElasticity_]] kernel.
+! - It makes `obj%nbcForDisplacement(nbcNo)`
+!
+! - `nbcNo` should be lesser than total Neumann boundary condition for
+! displacement field
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddNeumannBC(obj, nbcNo, param, boundary)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nbcNo
+    !! Neumann boundary nunber
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[NeumannBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+  END SUBROUTINE obj_AddNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    AddNitscheBC@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine sets dirichlet boundary condition for displacement
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddNitscheBC(obj, dbcNo, param, boundary)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+  END SUBROUTINE obj_AddNitscheBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetDirichletBCPointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to dirichlet boundary condition
+!
+!# Introduction
+!
+! - This routine returns the pointer to Dirichlet boundary condition of
+! pressure field in [[AbstractElasticity_]] kernel, that is
+! `obj%DBCForPressure(dbcNo)%ptr`.
+! - After obtaining the Dirichlet boundary condition pointer, user can set the
+! boundary condition
+! - `dbcNo` should be lesser than total dirichlet boundary condition
+
+INTERFACE
+  MODULE FUNCTION obj_GetDirichletBCPointer(obj, dbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    CLASS(DirichletBC_), POINTER :: ans
+  END FUNCTION obj_GetDirichletBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetNitscheBCPointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to dirichlet boundary condition
+
+INTERFACE
+  MODULE FUNCTION obj_GetNitscheBCPointer(obj, dbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Nitsche boundary nunber
+    CLASS(NitscheBC_), POINTER :: ans
+  END FUNCTION obj_GetNitscheBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetNeumannBCPointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to Neumann boundary condition
+!
+!# Introduction
+!
+! - This routine returns the pointer to Neumann boundary condition of
+! pressure field in [[AbstractElasticity_]] kernel, that is
+! `obj%NBCForPressure(nbcNo)%ptr`.
+! - After obtaining the Neumann boundary condition pointer, user can set the
+! boundary condition
+! - `nbcNo` should be lesser than total Neumann boundary condition
+
+INTERFACE
+  MODULE FUNCTION obj_GetNeumannBCPointer(obj, nbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nbcNo
+    !! Neumann boundary nunber
+    CLASS(NeumannBC_), POINTER :: ans
+  END FUNCTION obj_GetNeumannBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetNitscheMeshData@BCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set mesh data for Nitsche boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetNitscheMeshData(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetNitscheMeshData
 END INTERFACE
 
 !----------------------------------------------------------------------------
