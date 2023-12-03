@@ -27,6 +27,7 @@ CONTAINS
 
 MODULE PROCEDURE SetAbstractKernelParam
 INTEGER(I4B) :: aint
+INTEGER(I4B) :: ii
 CHARACTER(*), PARAMETER :: myName = "SetAbstractKernelParam()"
 
 #ifdef DEBUG_VER
@@ -140,6 +141,42 @@ CALL Set(param, TypeDFP, prefix, "betaForTime", betaForTime)
 CALL Set(param, TypeDFP, prefix, "lambdaForSpace", lambdaForSpace)
 CALL Set(param, TypeDFP, prefix, "lambdaForTime", lambdaForTime)
 
+CALL Set(param, TypeIntI4B, prefix, "algorithm",  &
+ & INPUT(option=algorithm, default=DEFAULT_algorithm))
+! INFO: DEFAULT_algorithm is defined in AbstractElasticityParam module
+! INFO: Set method is defined in FPL_Method
+
+ii = 0_I4B
+IF (PRESENT(materialInterfaces)) THEN
+  ii = SIZE(materialInterfaces)
+  IF (ii .GT. 0_I4B) THEN
+    CALL Set(  &
+    & param,  &
+    & [TypeIntI4B],  &
+    & prefix,  &
+    & "materialInterfaces",  &
+    & materialInterfaces)
+  END IF
+END IF
+CALL Set(param, TypeIntI4B, prefix, "tMaterialInterfaces", ii)
+
+CALL Set(param, TypeIntI4B, prefix, "tMaterials",  &
+ & INPUT(option=tMaterials, default=1_I4B))
+
+!bool
+CALL Set(param, .TRUE., prefix, "isConstantMatProp",  &
+  & INPUT(option=isConstantMatProp, default=DEFAULT_isConstantMatProp))
+! INFO: DEFAULT_isConstantMatProp is definedin AbstractElasticityParam module
+
+! int
+CALL Set(param, .TRUE., prefix, "isIsotropic",  &
+  & INPUT(option=isIsotropic, default=DEFAULT_isIsotropic))
+! INFO: DEFAULT_isIsotropic is definedin AbstractElasticityParam module
+
+CALL Set(param, .TRUE., prefix, "isIncompressible",  &
+  & INPUT(option=isIncompressible, default=DEFAULT_isIncompressible))
+! INFO: DEFAULT_isIncompressible is definedin AbstractElasticityParam module
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -200,6 +237,7 @@ INTEGER(I4B) :: tWeakDirichletBC
 INTEGER(I4B) :: tNeumannBC
 LOGICAL(LGT) :: isSymNitsche
 CHARACTER(:), ALLOCATABLE :: prefix
+INTEGER(I4B) :: tMaterialInterfaces
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -327,6 +365,28 @@ IF (isSymNitsche) obj%NitscheType = Nitsche_Sym
 
 CALL GetValue(param, prefix, "nitscheAlpha", obj%nitscheAlpha)
 
+CALL GetValue(obj=param, prefix=prefix, key="isConstantMatProp",  &
+& VALUE=obj%isConstantMatProp)
+CALL GetValue(param, prefix, "isIsotropic", obj%isIsotropic)
+CALL GetValue(param, prefix, "isIncompressible", obj%isIncompressible)
+
+! tMaterials
+obj%tMaterials = 0
+CALL GetValue(param, prefix, "tMaterials", obj%tMaterials)
+ALLOCATE (obj%solidMaterial(obj%tMaterials))
+ALLOCATE (obj%solidMaterialToMesh(obj%tMaterials))
+
+! materialInterfaces
+tMaterialInterfaces = 0
+CALL GetValue(param, prefix, "tMaterialInterfaces", tMaterialInterfaces)
+ALLOCATE (obj%materialInterfaces(tMaterialInterfaces))
+ALLOCATE (obj%matIfaceConnectData(tMaterialInterfaces))
+obj%isMaterialInterfaces = .FALSE.
+IF (tMaterialInterfaces .GT. 0) THEN
+  obj%isMaterialInterfaces = .TRUE.
+  CALL GetValue(param, prefix, "materialInterfaces", obj%materialInterfaces)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -446,6 +506,19 @@ obj%nitscheType = Nitsche_Sym
 
 CALL DomainConnectivityDeallocate(obj%nitscheFacetToCell)
 IF (ALLOCATED(obj%nitscheLocalID)) DEALLOCATE (obj%nitscheLocalID)
+
+obj%isConstantMatProp = DEFAULT_isConstantMatProp
+obj%isIsotropic = DEFAULT_isIsotropic
+obj%isIncompressible = DEFAULT_isIncompressible
+obj%isMaterialInterfaces = .FALSE.
+IF (ALLOCATED(obj%materialInterfaces)) DEALLOCATE (obj%materialInterfaces)
+CALL DomainConnectivityDeallocate(obj%matIfaceConnectData)
+obj%tMaterials = 0
+obj%SOLID_MATERIAL_ID = 0
+
+CALL SolidMaterialDeallocate(obj%solidMaterial)
+CALL MeshSelectionDeallocate(obj%solidMaterialToMesh)
+
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

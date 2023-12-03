@@ -46,7 +46,7 @@ CHARACTER(*), PARAMETER :: myprefix = "SolidMaterial"
 CHARACTER(*), PARAMETER :: default_stress_strain_toml = "stressStrainModel"
 PUBLIC :: SolidMaterial_
 PUBLIC :: SolidMaterialPointer_
-PUBLIC :: DEALLOCATE
+PUBLIC :: SolidMaterialDeallocate
 PUBLIC :: SetSolidMaterialParam
 PUBLIC :: AddSolidMaterial
 PUBLIC :: TypeSolidMaterial
@@ -247,11 +247,11 @@ END INTERFACE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector
 
-INTERFACE DEALLOCATE
+INTERFACE SolidMaterialDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(SolidMaterial_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE SolidMaterialDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -261,11 +261,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of pointer
 
-INTERFACE DEALLOCATE
+INTERFACE SolidMaterialDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(SolidMaterialPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE SolidMaterialDeallocate
 
 !----------------------------------------------------------------------------
 !                                          Final@ConstructorMethods

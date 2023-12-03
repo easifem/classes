@@ -32,7 +32,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
 CHARACTER(*), PARAMETER :: myprefix = "MeshSelection"
-PUBLIC :: DEALLOCATE
+PUBLIC :: MeshSelectionDeallocate
 PUBLIC :: MeshSelection_
 PUBLIC :: MeshSelectionPointer_
 PUBLIC :: MeshSelectionImportParamFromToml
@@ -77,16 +77,16 @@ TYPE :: MeshSelection_
     !! Element number in mesh of volume
   TYPE(IntVector_) :: pointNodeNum
     !! Global Node numbers in pointEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: curveNodeNum
     !! Global Node numbers in cuveEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: surfaceNodeNum
     !! Global Node numbers in surfaceEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: volumeNodeNum
     !! Global Node numbers in volumeEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: nodeNum
     !! Global Node numbers
   TYPE(BoundingBox_), ALLOCATABLE :: pointBox(:)
@@ -211,11 +211,11 @@ END TYPE MeshSelectionPointer_
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE MeshSelectionDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(MeshSelection_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE MeshSelectionDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -225,11 +225,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE MeshSelectionDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(MeshSelectionPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE MeshSelectionDeallocate
 
 !----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods

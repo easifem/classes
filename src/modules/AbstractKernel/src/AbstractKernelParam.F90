@@ -35,14 +35,23 @@ CHARACTER(*), PUBLIC, PARAMETER :: toml_linsolver_name = "linSolver"
 !
 !----------------------------------------------------------------------------
 
+INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_Sym = -1
+!! Sym or unsymmetric Nitsche formulation
+INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
 !! Default value of engine
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
 !! Alpha for Nitsche boundary
-INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_Sym = -1
-!! Sym or unsymmetric Nitsche formulation
-INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isSymNitsche = .TRUE.
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isConstantMatProp = .TRUE.
+INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_algorithm = 1_I4B
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIsotropic = .TRUE.
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIncompressible = .FALSE.
 
 !----------------------------------------------------------------------------
 !
