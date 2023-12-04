@@ -410,4 +410,20 @@ END PROCEDURE auf_GetReturnType
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE auf_GetNumReturns
+ans = obj%numReturns
+END PROCEDURE auf_GetNumReturns
+
+!----------------------------------------------------------------------------
+!                                                           GetReturnShape
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE auf_GetReturnShape
+ans = obj%returnShape
+END PROCEDURE auf_GetReturnShape
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE GetMethods
