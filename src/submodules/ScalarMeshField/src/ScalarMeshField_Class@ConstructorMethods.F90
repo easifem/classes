@@ -24,7 +24,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetScalarMeshFieldParam
+CHARACTER(*), PARAMETER :: myName = "SetScalarMeshFieldParam()"
 INTEGER(I4B) :: s(1)
+
+IF (varType .EQ. SpaceTime) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: For ScalarMeshField varType cannot be SpaceTime.'// &
+    & ' In this situation you should use STScalarMeshField.')
+  RETURN
+END IF
 
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   s = 1
@@ -49,7 +57,7 @@ END PROCEDURE SetScalarMeshFieldParam
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Vector
+MODULE PROCEDURE obj_Deallocate_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -57,13 +65,13 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Vector
+END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Ptr_Vector
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -74,7 +82,15 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Ptr_Vector
+END PROCEDURE obj_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !

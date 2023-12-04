@@ -19,13 +19,13 @@ MODULE ScalarMeshField_Class
 USE GlobalData
 USE BaSetype
 USE FPL, ONLY: ParameterList_
-USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "ScalarMeshField"
 PUBLIC :: ScalarMeshField_
 PUBLIC :: ScalarMeshFieldPointer_
 PUBLIC :: SetScalarMeshFieldParam
@@ -40,6 +40,9 @@ PUBLIC :: ScalarMeshFieldDeallocate
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: ScalarMeshField_
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE ScalarMeshField_
 
 !----------------------------------------------------------------------------
@@ -59,9 +62,9 @@ END TYPE ScalarMeshFieldPointer_
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE ScalarMeshFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(ScalarMeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Vector
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -73,9 +76,9 @@ END INTERFACE ScalarMeshFieldDeallocate
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE ScalarMeshFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(ScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -87,18 +90,33 @@ END INTERFACE ScalarMeshFieldDeallocate
 ! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, &
-    & fieldType, varType, engine, defineOn, nns)
+  MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, fieldType, varType, &
+    & engine, defineOn, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
     CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
-  !! Nodal, Quadrature
+    !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: nns
-  !! Number of node in space
+    !! Number of node in space
   END SUBROUTINE SetScalarMeshFieldParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(ScalarMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 END MODULE ScalarMeshField_Class

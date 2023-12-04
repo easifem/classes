@@ -26,6 +26,7 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorMeshField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "VectorMeshField"
 PUBLIC :: VectorMeshField_
 PUBLIC :: VectorMeshFieldPointer_
 PUBLIC :: SetVectorMeshFieldParam
@@ -40,6 +41,9 @@ PUBLIC :: VectorMeshFieldDeallocate
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: VectorMeshField_
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE VectorMeshField_
 
 !----------------------------------------------------------------------------
@@ -84,9 +88,9 @@ END INTERFACE
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE VectorMeshFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(VectorMeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Vector
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE VectorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -98,9 +102,24 @@ END INTERFACE VectorMeshFieldDeallocate
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE VectorMeshFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE VectorMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(VectorMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE VectorMeshField_Class
