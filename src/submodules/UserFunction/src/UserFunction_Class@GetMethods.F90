@@ -24,17 +24,17 @@ CONTAINS
 !                                                                    GetName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetName
+MODULE PROCEDURE obj_GetName
 ans = obj%name%chars()
-END PROCEDURE auf_GetName
+END PROCEDURE obj_GetName
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetScalarValue
+MODULE PROCEDURE obj_GetScalarValue
 LOGICAL(LGT) :: isOK, isNotOK
-CHARACTER(*), PARAMETER :: myName = "auf_GetScalarValue()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetScalarValue()"
 #ifdef USE_LUA
 TYPE(C_PTR) :: l
 INTEGER(I4B) :: rc, nargs, nresults, iarg
@@ -140,15 +140,15 @@ IF (obj%isLuaScript) THEN
 END IF
 #endif
 
-END PROCEDURE auf_GetScalarValue
+END PROCEDURE obj_GetScalarValue
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetVectorValue
+MODULE PROCEDURE obj_GetVectorValue
 LOGICAL(LGT) :: isOK, isNotOK
-CHARACTER(*), PARAMETER :: myName = "auf_GetVectorValue()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue()"
 
 #ifdef USE_LUA
 TYPE(C_PTR) :: l
@@ -261,15 +261,15 @@ IF (obj%isLuaScript) THEN
 END IF
 #endif
 
-END PROCEDURE auf_GetVectorValue
+END PROCEDURE obj_GetVectorValue
 
 !----------------------------------------------------------------------------
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetMatrixValue
+MODULE PROCEDURE obj_GetMatrixValue
 LOGICAL(LGT) :: isOK, isNotOK
-CHARACTER(*), PARAMETER :: myName = "auf_GetMatrixValue()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetMatrixValue()"
 INTEGER(I4B) :: myshape(2)
 #ifdef USE_LUA
 TYPE(C_PTR) :: l
@@ -388,39 +388,39 @@ IF (obj%isLuaScript) THEN
 END IF
 #endif
 
-END PROCEDURE auf_GetMatrixValue
+END PROCEDURE obj_GetMatrixValue
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetArgType
+MODULE PROCEDURE obj_GetArgType
 ans = obj%argType
-END PROCEDURE auf_GetArgType
+END PROCEDURE obj_GetArgType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetReturnType
+MODULE PROCEDURE obj_GetReturnType
 ans = obj%returnType
-END PROCEDURE auf_GetReturnType
+END PROCEDURE obj_GetReturnType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetNumReturns
+MODULE PROCEDURE obj_GetNumReturns
 ans = obj%numReturns
-END PROCEDURE auf_GetNumReturns
+END PROCEDURE obj_GetNumReturns
 
 !----------------------------------------------------------------------------
 !                                                           GetReturnShape
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_GetReturnShape
+MODULE PROCEDURE obj_GetReturnShape
 ans = obj%returnShape
-END PROCEDURE auf_GetReturnShape
+END PROCEDURE obj_GetReturnShape
 
 !----------------------------------------------------------------------------
 !

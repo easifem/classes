@@ -107,48 +107,48 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & auf_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => auf_Deallocate
-  FINAL :: auf_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => auf_Initiate
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_Final
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => auf_Set1
+  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set1
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => auf_GetScalarValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => auf_GetVectorValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => auf_GetMatrixValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => obj_GetScalarValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => obj_GetVectorValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
   GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue, GetMatrixValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => auf_GetArgType
-  PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => auf_GetReturnType
-  PROCEDURE, PUBLIC, PASS(obj) :: GetName => auf_GetName
+  PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Get name of the function
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNumReturns => auf_GetNumReturns
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNumReturns => obj_GetNumReturns
   !! Get the number of returns
-  PROCEDURE, PUBLIC, PASS(obj) :: GetReturnShape => auf_GetReturnShape
+  PROCEDURE, PUBLIC, PASS(obj) :: GetReturnShape => obj_GetReturnShape
   !! Get the shape of return matrix
   !! Use only when return type if matrix.
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => auf_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => auf_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from HDF5File
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => auf_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export to HDF5File
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => auf_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => auf_ImportFromToml2
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     & ImportFromToml2
   !! Import abstract kernel from toml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml =>  &
-    & auf_ImportParamFromToml
+    & obj_ImportParamFromToml
   !! Import param from toml
 END TYPE UserFunction_
 
@@ -199,10 +199,10 @@ END INTERFACE
 ! summary: Check the essential parameter
 
 INTERFACE
-  MODULE SUBROUTINE auf_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(UserFunction_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE auf_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -247,9 +247,9 @@ END INTERFACE
 ! summary: Deallocate the data in UserFunction.
 
 INTERFACE
-  MODULE SUBROUTINE auf_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
-  END SUBROUTINE auf_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -261,9 +261,9 @@ END INTERFACE
 ! summary: Deallocate the data in UserFunction.
 
 INTERFACE
-  MODULE SUBROUTINE auf_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(UserFunction_), INTENT(INOUT) :: obj
-  END SUBROUTINE auf_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -275,10 +275,10 @@ END INTERFACE
 ! summary: Initiate the user function
 
 INTERFACE
-  MODULE SUBROUTINE auf_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj, param)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE auf_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -290,11 +290,11 @@ END INTERFACE
 ! summary: Returns the scalar value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE auf_GetScalarValue(obj, val, args)
+  MODULE RECURSIVE SUBROUTINE obj_GetScalarValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE auf_GetScalarValue
+  END SUBROUTINE obj_GetScalarValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -306,11 +306,11 @@ END INTERFACE
 ! summary: Returns the vector value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE auf_GetVectorValue(obj, val, args)
+  MODULE RECURSIVE SUBROUTINE obj_GetVectorValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE auf_GetVectorValue
+  END SUBROUTINE obj_GetVectorValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -322,11 +322,11 @@ END INTERFACE
 ! summary: Returns the Matrix value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE auf_GetMatrixValue(obj, val, args)
+  MODULE RECURSIVE SUBROUTINE obj_GetMatrixValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE auf_GetMatrixValue
+  END SUBROUTINE obj_GetMatrixValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -338,10 +338,10 @@ END INTERFACE
 ! summary: Returns the argument type
 
 INTERFACE
-  MODULE PURE FUNCTION auf_GetArgType(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetArgType(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION auf_GetArgType
+  END FUNCTION obj_GetArgType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -353,10 +353,10 @@ END INTERFACE
 ! summary: Returns the return type
 
 INTERFACE
-  MODULE PURE FUNCTION auf_GetReturnType(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetReturnType(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION auf_GetReturnType
+  END FUNCTION obj_GetReturnType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -368,10 +368,10 @@ END INTERFACE
 ! summary:  Get name of the function
 
 INTERFACE
-  MODULE PURE FUNCTION auf_GetName(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetName(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION auf_GetName
+  END FUNCTION obj_GetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -379,10 +379,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION auf_GetNumReturns(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetNumReturns(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION auf_GetNumReturns
+  END FUNCTION obj_GetNumReturns
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -390,10 +390,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION auf_GetReturnShape(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetReturnShape(obj) RESULT(ans)
     CLASS(UserFunction_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans(2)
-  END FUNCTION auf_GetReturnShape
+  END FUNCTION obj_GetReturnShape
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -405,11 +405,11 @@ END INTERFACE
 ! summary:  Display the content of UserFunction
 
 INTERFACE
-  MODULE SUBROUTINE auf_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(UserFunction_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE auf_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -421,11 +421,11 @@ END INTERFACE
 ! summary: Import data from HDF5File
 
 INTERFACE
-  MODULE SUBROUTINE auf_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE auf_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -437,11 +437,11 @@ END INTERFACE
 ! summary:  Initiate param by reading the toml table
 
 INTERFACE UserFunctionImportParamFromToml
-  MODULE SUBROUTINE auf_ImportParamFromToml(obj, param, table)
+  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(INOUT) :: param
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE auf_ImportParamFromToml
+  END SUBROUTINE obj_ImportParamFromToml
 END INTERFACE UserFunctionImportParamFromToml
 
 !----------------------------------------------------------------------------
@@ -453,10 +453,10 @@ END INTERFACE UserFunctionImportParamFromToml
 ! summary:  Initiate param from the toml file
 
 INTERFACE UserFunctionImportFromToml
-  MODULE SUBROUTINE auf_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE auf_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE UserFunctionImportFromToml
 
 !----------------------------------------------------------------------------
@@ -468,14 +468,14 @@ END INTERFACE UserFunctionImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE UserFunctionImportFromToml
-  MODULE SUBROUTINE auf_ImportFromToml2(obj, tomlName, afile,  &
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile,  &
     & filename, printToml)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE auf_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE UserFunctionImportFromToml
 
 !----------------------------------------------------------------------------
@@ -487,11 +487,11 @@ END INTERFACE UserFunctionImportFromToml
 ! summary:  Export data to HDF5File
 
 INTERFACE
-  MODULE SUBROUTINE auf_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(UserFunction_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE auf_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -508,7 +508,7 @@ CONTAINS
 ! date: 26 Oct 2021
 ! summary: Sets the user function
 
-SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
+SUBROUTINE obj_Set1(obj, scalarValue, vectorValue, matrixValue,  &
   & luaScript, luaFunctionName, scalarFunction, vectorFunction,  &
   & matrixFunction)
   USE BaseMethod, ONLY: Reallocate, tostring
@@ -526,7 +526,7 @@ SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
     & matrixFunction
 
   ! Internal variables
-  CHARACTER(*), PARAMETER :: myName = "auf_Set()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Set()"
   LOGICAL(LGT) :: isNotOK
   INTEGER(I4B) :: tsize, myshape(2)
 
@@ -648,6 +648,6 @@ SUBROUTINE auf_Set1(obj, scalarValue, vectorValue, matrixValue,  &
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[END] Set()')
 #endif
-END SUBROUTINE auf_Set1
+END SUBROUTINE obj_Set1
 
 END MODULE UserFunction_Class
