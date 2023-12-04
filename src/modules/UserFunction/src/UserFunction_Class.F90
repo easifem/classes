@@ -126,6 +126,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => auf_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => auf_GetName
   !! Get name of the function
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNumReturns => auf_GetNumReturns
+  !! Get the number of returns
+  PROCEDURE, PUBLIC, PASS(obj) :: GetReturnShape => auf_GetReturnShape
+  !! Get the shape of return matrix
+  !! Use only when return type if matrix.
 
   ! IO:
   ! @IOMethods
@@ -367,6 +372,28 @@ INTERFACE
     CLASS(UserFunction_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION auf_GetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetNumReturn@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION auf_GetNumReturns(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION auf_GetNumReturns
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetReturnShape@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE PURE FUNCTION auf_GetReturnShape(obj) RESULT(ans)
+    CLASS(UserFunction_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans(2)
+  END FUNCTION auf_GetReturnShape
 END INTERFACE
 
 !----------------------------------------------------------------------------
