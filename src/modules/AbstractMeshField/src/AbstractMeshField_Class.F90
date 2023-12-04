@@ -226,10 +226,17 @@ END INTERFACE
 ! summary: Initiate from abstractMaterials
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, material, name)
+  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
     CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
     CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
   END SUBROUTINE obj_Initiate3
 END INTERFACE
 
@@ -262,12 +269,12 @@ INTERFACE AbstractMeshFieldDeallocate
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                             GetPointer@ConstructorMethods
+!                                                     GetPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Returns the pointer to a fortran real vector stored inside realVec
+! summary: Returns the pointer to a fortran real vector
 
 INTERFACE
   MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
@@ -277,12 +284,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Size@ConstructorMethods
+!                                                           Size@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This function returns the size of the field
+! summary: This function returns the size of data
 
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dim) RESULT(ans)
@@ -293,12 +300,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Shape@ConstructorMethods
+!                                                           Shape@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This function returns the size of the field
+! summary: This function returns the shape of data
 
 INTERFACE
   MODULE FUNCTION obj_Shape(obj) RESULT(ans)
@@ -373,7 +380,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -389,7 +396,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@SetMethods
+!                                                          Add@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -406,7 +413,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

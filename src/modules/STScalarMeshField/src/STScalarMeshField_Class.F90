@@ -26,6 +26,7 @@ USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STScalarMeshField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "STScalarMeshField"
 PUBLIC :: STScalarMeshFieldDeallocate
 PUBLIC :: STScalarMeshField_
 PUBLIC :: SetSTScalarMeshFieldParam
@@ -40,6 +41,9 @@ PUBLIC :: STScalarMeshFieldPointer_
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: STScalarMeshField_
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE STScalarMeshField_
 
 !----------------------------------------------------------------------------
@@ -102,5 +106,20 @@ INTERFACE STScalarMeshFieldDeallocate
     TYPE(STScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Ptr_Vector
 END INTERFACE STScalarMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(STScalarMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE STScalarMeshField_Class

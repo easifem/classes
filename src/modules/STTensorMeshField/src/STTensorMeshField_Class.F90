@@ -19,13 +19,13 @@ MODULE STTensorMeshField_Class
 USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
-USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STTensorMeshField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "STTensorMeshField"
 PUBLIC :: STTensorMeshFieldDeallocate
 PUBLIC :: STTensorMeshField_
 PUBLIC :: STTensorMeshFieldPointer_
@@ -40,6 +40,9 @@ PUBLIC :: SetSTTensorMeshFieldParam
 ! summary: Scalar mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: STTensorMeshField_
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE STTensorMeshField_
 
 !----------------------------------------------------------------------------
@@ -85,9 +88,9 @@ END INTERFACE
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE STTensorMeshFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(STTensorMeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Vector
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE STTensorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -99,9 +102,24 @@ END INTERFACE STTensorMeshFieldDeallocate
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE STTensorMeshFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(STTensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE STTensorMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(STTensorMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE STTensorMeshField_Class
