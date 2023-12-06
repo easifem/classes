@@ -51,7 +51,12 @@ CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
   & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
   & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
   & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
-  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"
+  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"//&
+  & "/tMaterialInterfaces/tMaterials/tDirichletBC/tWeakDirichletBC/"//  &
+  & "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"//  &
+  & "rtoleranceForResidual/atoleranceForDisplacement/"//&
+  & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
+  & "isConstantMatProp/isIsotropic/isIncompressible/algorithm"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -63,6 +68,7 @@ PUBLIC :: AbstractKernelDisplay
 PUBLIC :: AbstractKernelExport
 PUBLIC :: AbstractKernelImport
 PUBLIC :: AbstractKernelImportParamFromToml
+PUBLIC :: AbstractKernelImportFromToml
 
 PUBLIC :: KernelGetCoordinateSystemName
 PUBLIC :: KernelGetCoordinateSystemID
@@ -385,6 +391,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! User can externally set the boundary condition
   !! in dispBC, which can be read in the program.
   !! Currently, we use this for NitscheBoundary condition.
+  TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: solidMechData(:)
+  !! Constitutive data for solid materials
 CONTAINS
   PRIVATE
 
@@ -402,6 +410,8 @@ CONTAINS
   !! it should be implemented by the subclass.
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the memory occupied by the kernel
+
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckError => obj_CheckError
 
   ! CONSTRUCTOR:
   ! @InitiateFieldsMethods
@@ -775,16 +785,26 @@ INTERFACE AbstractKernelDeallocate
 END INTERFACE AbstractKernelDeallocate
 
 !----------------------------------------------------------------------------
+!                                             CheckError@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-06
+! summary: Check error
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckError(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_CheckError
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                       InitiateFields@InitiateFieldsMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Oct 2022
 ! summary: This routine initiates the matrix and vector fields
-!
-!# Introduction
-!
-! This routine should be implemented by subclass.
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateFields(obj)

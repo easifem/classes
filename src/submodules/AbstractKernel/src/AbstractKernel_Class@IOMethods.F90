@@ -303,6 +303,42 @@ IF (bool1) THEN
   END DO
 END IF
 
+! stiffnessMat
+bool1 = ASSOCIATED(obj%stiffnessMat)
+CALL Display(bool1, "stiffnessMat ASSOCIATED: ", unitNo=unitNo)
+
+! massMat
+bool1 = ASSOCIATED(obj%massMat)
+CALL Display(bool1, "massMat ASSOCIATED: ", unitNo=unitNo)
+
+! dampingMat
+bool1 = ASSOCIATED(obj%dampingMat)
+CALL Display(bool1, "dampingMat ASSOCIATED: ", unitNo=unitNo)
+
+! displacement
+bool1 = ASSOCIATED(obj%displacement)
+CALL Display(bool1, "displacement ASSOCIATED: ", unitNo=unitNo)
+
+! velocity
+bool1 = ASSOCIATED(obj%velocity)
+CALL Display(bool1, "velocity ASSOCIATED: ", unitNo=unitNo)
+
+! acceleration
+bool1 = ASSOCIATED(obj%acceleration)
+CALL Display(bool1, "acceleration ASSOCIATED: ", unitNo=unitNo)
+
+! dispBC
+bool1 = ASSOCIATED(obj%dispBC)
+CALL Display(bool1, "dispBC ASSOCIATED: ", unitNo=unitNo)
+
+! velBC
+bool1 = ASSOCIATED(obj%velBC)
+CALL Display(bool1, "velBC ASSOCIATED: ", unitNo=unitNo)
+
+! accBC
+bool1 = ASSOCIATED(obj%accBC)
+CALL Display(bool1, "accBC ASSOCIATED: ", unitNo=unitNo)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------

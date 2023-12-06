@@ -33,6 +33,9 @@ PUBLIC :: KernelGetCoordinateSystemID
 !----------------------------------------------------------------------------
 
 CHARACTER(*), PUBLIC, PARAMETER :: toml_linsolver_name = "linSolver"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_DIRICHLET_BC_NAME = "dirichletBC"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_NEUMANN_BC_NAME = "neumannBC"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_NITSCHE_BC_NAME = "nitscheBC"
 !! Default value of linSolver in toml
 
 !----------------------------------------------------------------------------

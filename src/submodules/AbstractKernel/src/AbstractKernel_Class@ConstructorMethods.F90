@@ -650,7 +650,37 @@ IF (ASSOCIATED(obj%dampingMat)) THEN
   CALL obj%dampingMat%DEALLOCATE()
   obj%dampingMat => NULL()
 END IF
+
+CALL VectorMeshFieldDeallocate(obj%solidMechData)
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                 CheckError
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_CheckError
+CHARACTER(*), PARAMETER :: myName = "obj_CheckError"
+! Check
+IF (.NOT. ALLOCATED(obj%solidMaterialToMesh)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[WRONG CONFIG] solidMaterialToMesh is not allocated!')
+END IF
+
+! Check
+IF (SIZE(obj%solidMaterialToMesh) .NE. obj%tMaterials) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[WRONG CONFIG] SIZE( obj%solidMaterialToMesh ) [= '//  &
+  & TOSTRING(SIZE(obj%solidMaterialToMesh))// &
+  & '] .NE. obj%tMaterials [= '//  &
+  & TOSTRING(obj%tMaterials)//']')
+END IF
+
+! Check
+IF (.NOT. ASSOCIATED(obj%dom)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[WRONG CONFIG] Domain_::dom is not associated')
+END IF
+END PROCEDURE obj_CheckError
 
 !----------------------------------------------------------------------------
 !
