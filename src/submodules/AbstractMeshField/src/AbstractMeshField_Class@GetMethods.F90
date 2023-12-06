@@ -26,6 +26,7 @@ CONTAINS
 MODULE PROCEDURE obj_Get
 CHARACTER(*), PARAMETER :: myName = "obj_Get"
 INTEGER(I4B) :: iel
+LOGICAL(LGT) :: problem
 
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   fevar%val = obj%val(:, 1)
@@ -36,14 +37,25 @@ IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   RETURN
 END IF
 
-IF (.NOT. PRESENT(globalElement)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+problem = .NOT. PRESENT(globalElement)
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: globalElement should be present, '//  &
     & 'when mesh field is not constant')
   RETURN
 END IF
 
-iel = obj%mesh%getLocalElemNumber(globalElement)
+problem = .NOT. (obj%mesh%IsElementPresent(globalElement))
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: globalElement = '//tostring(globalElement)//  &
+    & 'is not present in the mesh.')
+  RETURN
+END IF
+
+iel = obj%mesh%GetLocalElemNumber(globalElement)
 fevar%val = obj%val(:, iel)
 fevar%s = obj%s
 fevar%defineOn = obj%defineOn

@@ -19,6 +19,12 @@ USE BaseMethod
 USE FPL_Method
 USE UserFunction_Class
 USE ScalarMeshField_Class, ONLY: SetScalarMeshFieldParam
+USE VectorMeshField_Class, ONLY: SetVectorMeshFieldParam
+USE TensorMeshField_Class, ONLY: SetTensorMeshFieldParam
+USE STScalarMeshField_Class, ONLY: SetSTScalarMeshFieldParam
+USE STVectorMeshField_Class, ONLY: SetSTVectorMeshFieldParam
+USE STTensorMeshField_Class, ONLY: SetSTTensorMeshFieldParam
+
 IMPLICIT NONE
 CONTAINS
 
@@ -248,25 +254,12 @@ END PROCEDURE obj_Initiate2
 MODULE PROCEDURE obj_Initiate3
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: returnType, argType, nns, defineOn, varType, fieldType
-TYPE(ParameterList_) :: param
 CLASS(UserFunction_), POINTER :: func
-CLASS(ReferenceElement_), POINTER :: refelem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
-
-isok = obj%isInitiated
-IF (.NOT. isok) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstactMeshField_::obj is already Initiated, '//  &
-    & ' deallocate first.')
-  RETURN
-END IF
-
-obj%mesh => mesh
 
 isok = material%IsMaterialPresent(name)
 IF (.NOT. isok) THEN
@@ -274,16 +267,6 @@ IF (.NOT. isok) THEN
     & '[INTERNAL ERROR] :: material name = '//name//" not found.")
   RETURN
 END IF
-
-refelem => NULL()
-refelem => mesh%GetRefElemPointer()
-isok = ASSOCIATED(refelem)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: refelem pointer not found.')
-  RETURN
-END IF
-nns = (.NNE.refelem)
 
 func => NULL()
 func => material%GetMaterialPointer(name)
@@ -294,29 +277,9 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-returnType = func%GetReturnType()
-argType = func%GetArgType()
+CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
 
-IF (argType .EQ. Constant) THEN
-  fieldType = TypeField%constant
-  varType = Constant
-ELSE
-  fieldType = TypeField%normal
-  varType = argType
-END IF
-
-CALL param%Initiate()
-SELECT CASE (returnType)
-CASE (Scalar)
-  CALL SetScalarMeshFieldParam(param=param, name=name, fieldType=fieldType, &
-    & varType=varType, engine=engine, defineOn=Nodal, nns=nns)
-CASE (Vector)
-CASE (Matrix)
-END SELECT
-
-CALL param%DEALLOCATE()
-
-NULLIFY (func, refelem)
+NULLIFY (func)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -324,5 +287,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 END PROCEDURE obj_Initiate3
+
+!----------------------------------------------------------------------------
+!                                                           Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine should be implemented by subprocess.')
+END PROCEDURE obj_Initiate4
 
 END SUBMODULE ConstructorMethods
