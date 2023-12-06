@@ -22,6 +22,8 @@ USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE Mesh_Class, ONLY: Mesh_
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STVectorMeshField_Class"
@@ -43,6 +45,7 @@ TYPE, EXTENDS(AbstractMeshField_) :: STVectorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
 END TYPE STVectorMeshField_
 
 !----------------------------------------------------------------------------
@@ -76,6 +79,31 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: nnt
     !! Number of node in space
   END SUBROUTINE SetSTVectorMeshFieldParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Initiate4@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-05
+! summary:  Initiate an instance Userfunction
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
+    CLASS(STVectorMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
