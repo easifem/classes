@@ -138,10 +138,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Add => obj_Add
   !! Adding a value
   PROCEDURE, PUBLIC, PASS(obj) :: Set1 => obj_Set1
-  !! Setting the value
+  !! Setting the value by using FEVariable_
   PROCEDURE, PUBLIC, PASS(obj) :: Set2 => obj_Set2
-  !! Setting
-  GENERIC, PUBLIC :: Set => Set1, Set2
+  !! Setting the value by using UserFunction_
+  PROCEDURE, PUBLIC, PASS(obj) :: Set3 => obj_Set3
+  !! Setting the value by using material
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
@@ -443,8 +445,32 @@ INTERFACE
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
     CLASS(Domain_), INTENT(INOUT) :: dom
+    !! domain to access the node coord
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
   END SUBROUTINE obj_Set2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Set values in AbstractMeshField_ by AbstractMaterial
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set3(obj, material, name, dom, timeVec)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CLASS(Domain_), INTENT(INOUT) :: dom
+    !! domain to access the node coord
+    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
