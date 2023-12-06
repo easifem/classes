@@ -53,6 +53,68 @@ CALL SetAbstractMeshFieldParam( &
 END PROCEDURE SetTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate4
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: returnType, argType, nns, varType, fieldType,  &
+  & numReturns, dims(2)
+TYPE(ParameterList_) :: param
+CLASS(ReferenceElement_), POINTER :: refelem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+refelem => NULL()
+refelem => mesh%GetRefElemPointer()
+isok = ASSOCIATED(refelem)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: refelem pointer not found.')
+  RETURN
+END IF
+nns = (.NNE.refelem)
+
+returnType = func%GetReturnType()
+
+isok = returnType .EQ. Matrix
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: returnType should be Matrix')
+  RETURN
+END IF
+
+argType = func%GetArgType()
+numReturns = func%GetNumReturns()
+dims = func%GetReturnShape()
+fieldType = TypeField%normal
+varType = argType
+IF (argType .EQ. Constant) THEN
+  fieldType = TypeField%constant
+  varType = Constant
+END IF
+
+CALL param%Initiate()
+CALL SetTensorMeshFieldParam(param=param, name=name,  &
+   & fieldType=fieldType, varType=varType, engine=engine,  &
+   & defineOn=Nodal, dim1=dims(1), dim2=dims(2), nns=nns)
+CALL obj%Initiate(param=param, mesh=mesh)
+CALL param%DEALLOCATE()
+
+NULLIFY (refelem)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
