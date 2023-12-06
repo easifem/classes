@@ -23,6 +23,7 @@ USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorMeshField_Class"
@@ -38,12 +39,14 @@ PUBLIC :: VectorMeshFieldDeallocate
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 Feb 2022
-! summary: Scalar mesh field
+! summary: Vector mesh field
 
 TYPE, EXTENDS(AbstractMeshField_) :: VectorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate from user function
 END TYPE VectorMeshField_
 
 !----------------------------------------------------------------------------
@@ -80,12 +83,37 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-05
+! summary:  Initiate by using function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
+    CLASS(VectorMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
+! summary:  Deallocate the vector of VectorMeshField_
 
 INTERFACE VectorMeshFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_Vector(obj)
@@ -99,7 +127,7 @@ END INTERFACE VectorMeshFieldDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
+! summary:  Deallocate the vector of VectorMeshFieldPointer_
 
 INTERFACE VectorMeshFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
