@@ -30,7 +30,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Display
+MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 CALL Display(msg, unitNo=unitNo)
 CALL Display(obj%isInitiated, "isInitiated: ", unitNo=unitNo)
@@ -87,14 +87,14 @@ IF (obj%argType .EQ. CONSTANT) THEN
   END SELECT
 END IF
 
-END PROCEDURE auf_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Import
-CHARACTER(*), PARAMETER :: myName = "auf_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
@@ -192,14 +192,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE auf_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Export
-CHARACTER(*), PARAMETER :: myName = "auf_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
@@ -278,14 +278,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Export()')
 #endif
-END PROCEDURE auf_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                        ImportParamFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "auf_ImportParamFromToml()"
+MODULE PROCEDURE obj_ImportParamFromToml
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: bool1, isLuaScript, isFound
 INTEGER(I4B) :: argType, returnType, numReturns, numArgs
@@ -428,14 +428,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
-END PROCEDURE auf_ImportParamFromToml
+END PROCEDURE obj_ImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                        ImportParamFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "auf_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(ParameterList_) :: param
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: bool1, isFound
@@ -504,14 +504,14 @@ CALL param%DEALLOCATE()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportFromToml()')
 #endif
-END PROCEDURE auf_ImportFromToml1
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                        ImportParamFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "auf_ImportFromToml2()"
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
@@ -548,7 +548,7 @@ NULLIFY (node)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE auf_ImportFromToml2
+END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !
