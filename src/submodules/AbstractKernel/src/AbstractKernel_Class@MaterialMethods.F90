@@ -13,11 +13,8 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(AbstractKernel_Class) MaterialMethods
-! USE FieldFactory
-! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -28,8 +25,10 @@ CONTAINS
 MODULE PROCEDURE obj_AddSolidMaterial
 CHARACTER(*), PARAMETER :: myName = "obj_AddSolidMaterial"
 
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+  & '[START] ')
+#endif DEBUG_VER
 
 IF (.NOT. ALLOCATED(obj%solidMaterialToMesh)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -45,60 +44,32 @@ CALL AddSolidMaterial(obj=obj%solidMaterial,  &
   & solidMaterialToMesh=obj%solidMaterialToMesh)
 !! INFO: AddSolidMaterial is defined in SolidMaterial_Class
 
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_AddSolidMaterial
 
 !----------------------------------------------------------------------------
 !                                                  InitiateConstantMatProps
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_InitiateConstantMatProp
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateConstantMatProp"
-
-#ifdef DEBUG_VER
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
-#endif
-
+MODULE PROCEDURE obj_InitiateMaterialProperties
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateMaterialProperties"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR]')
-
-#ifdef DEBUG_VER
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
-#endif
-END PROCEDURE obj_InitiateConstantMatProp
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_InitiateMaterialProperties
 
 !----------------------------------------------------------------------------
 !                                                       SetConstantMatProps
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetConstantMatProp
+MODULE PROCEDURE obj_SetMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetConstantMatProp"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & 'This routine should be implemented by child class')
-END PROCEDURE obj_SetConstantMatProp
-
-!----------------------------------------------------------------------------
-!                                                       SetVariableMatProps
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetVariableMatProp
-CHARACTER(*), PARAMETER :: myName = "obj_SetVariableMatProp"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
- & '[IMPLEMENT ERROR] :: This routine should be implemented by child class')
-END PROCEDURE obj_SetVariableMatProp
-
-!----------------------------------------------------------------------------
-!                                                  InitiateVariableMatProps
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_InitiateVariableMatProp
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateVariableMatProp"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
- & '[IMPLEMENT ERROR] :: This routine should be implemented by child class')
-END PROCEDURE obj_InitiateVariableMatProp
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_SetMaterialProperties
 
 !----------------------------------------------------------------------------
 !

@@ -35,7 +35,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (.NOT. ALLOCATED(obj%dbc)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[ALLOCATION ERROR] :: dbc is not allocated!')
+    & '[ALLOCATION ERROR] :: dbc is not allocated!')
+  RETURN
 END IF
 
 CALL AddDirichletBC(dbc=obj%dbc, dbcNo=dbcNo, param=param,  &
@@ -46,7 +47,6 @@ CALL AddDirichletBC(dbc=obj%dbc, dbcNo=dbcNo, param=param,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_AddDirichletBC
 
 !----------------------------------------------------------------------------
@@ -82,7 +82,6 @@ END PROCEDURE obj_GetDirichletBCPointer
 
 MODULE PROCEDURE obj_AddNeumannBC
 CHARACTER(*), PARAMETER :: myName = "obj_AddNeumannBC()"
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -101,7 +100,6 @@ CALL AddNeumannBC(nbc=obj%nbc, nbcNo=nbcNo, param=param, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_AddNeumannBC
 
 !----------------------------------------------------------------------------
@@ -110,7 +108,6 @@ END PROCEDURE obj_AddNeumannBC
 
 MODULE PROCEDURE obj_GetNeumannBCPointer
 CHARACTER(*), PARAMETER :: myName = "obj_GetNeumannBCPointer()"
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -128,7 +125,6 @@ ans => GetNeumannBCPointer(nbc=obj%nbc, nbcNo=nbcNo)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
@@ -137,7 +133,6 @@ END PROCEDURE obj_GetNeumannBCPointer
 
 MODULE PROCEDURE obj_AddNitscheBC
 CHARACTER(*), PARAMETER :: myName = "obj_AddNitscheBC()"
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -156,7 +151,6 @@ CALL AddNitscheBC(dbc=obj%wdbc, dbcNo=dbcNo, param=param, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_AddNitscheBC
 
 !----------------------------------------------------------------------------
@@ -165,7 +159,6 @@ END PROCEDURE obj_AddNitscheBC
 
 MODULE PROCEDURE obj_GetNitscheBCPointer
 CHARACTER(*), PARAMETER :: myName = "obj_GetNitscheBCPointer()"
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -183,7 +176,6 @@ ans => GetNitscheBCPointer(dbc=obj%wdbc, dbcNo=dbcNo)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_GetNitscheBCPointer
 
 !----------------------------------------------------------------------------
@@ -198,6 +190,11 @@ CLASS(DomainConnectivity_), POINTER :: domCon
 INTEGER(I4B), ALLOCATABLE :: intvec(:), meshID(:), tFacetElements(:)
 LOGICAL(LGT) :: isVar
 CLASS(Mesh_), POINTER :: facetMesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 IF (.NOT. obj%isNitsche) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -287,6 +284,11 @@ NULLIFY (facetMesh, nbc, domCon)
 IF (ALLOCATED(meshID)) DEALLOCATE (meshID)
 IF (ALLOCATED(intvec)) DEALLOCATE (intvec)
 IF (ALLOCATED(tFacetElements)) DEALLOCATE (tFacetElements)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE obj_SetNitscheMeshData
 
