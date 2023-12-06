@@ -23,12 +23,19 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: BasisType_ToInteger
+PUBLIC :: KernelGetNSDFromID
+PUBLIC :: KernelGetNSDFromName
+PUBLIC :: KernelGetCoordinateSystemName
+PUBLIC :: KernelGetCoordinateSystemID
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 CHARACTER(*), PUBLIC, PARAMETER :: toml_linsolver_name = "linSolver"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_DIRICHLET_BC_NAME = "dirichletBC"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_NEUMANN_BC_NAME = "neumannBC"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_NITSCHE_BC_NAME = "nitscheBC"
 !! Default value of linSolver in toml
 
 !----------------------------------------------------------------------------
@@ -48,10 +55,27 @@ CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
 !! Alpha for Nitsche boundary
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isSymNitsche = .TRUE.
+!! Default value of symmetric Nitsche formulation
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isConstantMatProp = .TRUE.
+!! Default value of constant material property
 INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_algorithm = 1_I4B
+!! Default value of algorithm
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIsotropic = .TRUE.
+!! Default value for isotropicicity
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIncompressible = .FALSE.
+!! Default value for incompressibility
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForDisplacement = 1.0E-6
+!! Default absolute tolerance for displacement
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForDisplacement = 1.0E-6
+!! Default relative tolerance for displacement
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForVelocity = 1.0E-6
+!! Default absolute tolerance for velocity
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForVelocity = 1.0E-6
+!! Default relative tolerance for velocity
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForResidual = 1.0E-6
+!! Default absolute tolerance for residual
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForResidual = 1.0E-6
+!! Default relative tolerance for residual
 
 !----------------------------------------------------------------------------
 !
@@ -306,5 +330,114 @@ FUNCTION BasisType_ToInteger(name) RESULT(ans)
     ans = Serendipity
   END SELECT
 END FUNCTION
+
+!----------------------------------------------------------------------------
+!                                             KernelGetNSDFromID@GetMethods
+!----------------------------------------------------------------------------
+
+FUNCTION KernelGetNSDFromID(uid) RESULT(Ans)
+  INTEGER(I4B), INTENT(IN) :: uid
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (uid)
+  CASE (KERNEL_1D_H, KERNEL_1D_V)
+    ans = 1
+  CASE (KERNEL_2D, KERNEL_2D_AXISYM, KERNEL_PLANE_STRAIN, &
+    & KERNEL_PLANE_STRESS)
+    ans = 2
+  CASE DEFAULT
+    ans = 3
+  END SELECT
+END FUNCTION KernelGetNSDFromID
+
+!----------------------------------------------------------------------------
+!                                                       KernelGetNSDFromName
+!----------------------------------------------------------------------------
+
+FUNCTION KernelGetNSDFromName(name) RESULT(Ans)
+  CHARACTER(*), INTENT(IN) :: name
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (TRIM(name))
+  CASE ("1D_H", "1D_V")
+    ans = 1
+  CASE ("2D", "AXISYM", "PLANE_STRAIN", "PLANE_STRESS")
+    ans = 2
+  CASE DEFAULT
+    ans = 3
+  END SELECT
+END FUNCTION KernelGetNSDFromName
+
+!----------------------------------------------------------------------------
+!                                              KernelGetCoordinateSystemName
+!----------------------------------------------------------------------------
+
+FUNCTION KernelGetCoordinateSystemName(uid) RESULT(Ans)
+  INTEGER(I4B), INTENT(IN) :: uid
+  TYPE(String) :: ans
+
+  SELECT CASE (uid)
+  CASE (KERNEL_1D_H)
+    ans = "1D_H"
+  CASE (KERNEL_1D_V)
+    ans = "1D_V"
+  CASE (KERNEL_2D)
+    ans = "2D"
+  CASE (KERNEL_2D_AXISYM)
+    ans = "AXISYM"
+  CASE (KERNEL_PLANE_STRAIN)
+    ans = "PLANE_STRAIN"
+  CASE (KERNEL_PLANE_STRESS)
+    ans = "PLANE_STRESS"
+  CASE (KERNEL_3D)
+    ans = "3D"
+  CASE (KERNEL_CARTESIAN)
+    ans = "CARTESTIAN"
+  CASE (KERNEL_CYLINDRICAL)
+    ans = "CYLINDRICAL"
+  CASE (KERNEL_SPHERICAL)
+    ans = "SPHERICAL"
+  CASE DEFAULT
+    ans = "CARTESTIAN"
+  END SELECT
+END FUNCTION KernelGetCoordinateSystemName
+
+!----------------------------------------------------------------------------
+!                                    KernelGetCoordinateSystemID@GetMethods
+!----------------------------------------------------------------------------
+
+FUNCTION KernelGetCoordinateSystemID(name) RESULT(Ans)
+  CHARACTER(*), INTENT(IN) :: name
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (TRIM(name))
+  CASE ("1D_H")
+    ans = KERNEL_1D_H
+  CASE ("1D_V")
+    ans = KERNEL_1D_V
+  CASE ("2D")
+    ans = KERNEL_2D
+  CASE ("AXISYM")
+    ans = KERNEL_2D_AXISYM
+  CASE ("PLANE_STRAIN")
+    ans = KERNEL_PLANE_STRAIN
+  CASE ("PLANE_STRESS")
+    ans = KERNEL_PLANE_STRESS
+  CASE ("3D")
+    ans = KERNEL_3D
+  CASE ("CARTESIAN")
+    ans = KERNEL_CARTESIAN
+  CASE ("CYLINDRICAL")
+    ans = KERNEL_CYLINDRICAL
+  CASE ("SPHERICAL")
+    ans = KERNEL_SPHERICAL
+  CASE DEFAULT
+    ans = KERNEL_CARTESIAN
+  END SELECT
+END FUNCTION KernelGetCoordinateSystemID
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractKernelParam

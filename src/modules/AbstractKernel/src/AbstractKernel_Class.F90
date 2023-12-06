@@ -41,6 +41,7 @@ USE VTKFile_Class
 USE FiniteElement_Class
 USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
+USE Field
 
 IMPLICIT NONE
 PRIVATE
@@ -50,7 +51,12 @@ CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
   & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
   & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
   & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
-  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"
+  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"//&
+  & "/tMaterialInterfaces/tMaterials/tDirichletBC/tWeakDirichletBC/"//  &
+  & "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"//  &
+  & "rtoleranceForResidual/atoleranceForDisplacement/"//&
+  & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
+  & "isConstantMatProp/isIsotropic/isIncompressible/algorithm"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -62,6 +68,7 @@ PUBLIC :: AbstractKernelDisplay
 PUBLIC :: AbstractKernelExport
 PUBLIC :: AbstractKernelImport
 PUBLIC :: AbstractKernelImportParamFromToml
+PUBLIC :: AbstractKernelImportFromToml
 
 PUBLIC :: KernelGetCoordinateSystemName
 PUBLIC :: KernelGetCoordinateSystemID
@@ -182,6 +189,32 @@ TYPE, ABSTRACT :: AbstractKernel_
   REAL(DFP) :: nitscheType = Nitsche_Sym
   !! -1.0 for symmetric formulation
   !! 1.0 for skew symmetric formulation
+  REAL(DFP) :: incrementScale = 1.0_DFP
+  !! x = x + incrementScale * displacement
+  REAL(DFP) :: rtoleranceForDisplacement = DEFAULT_rtoleranceForDisplacement
+  !! relative tolerance for convergence in displacement field
+  REAL(DFP) :: atoleranceForDisplacement = DEFAULT_atoleranceForDisplacement
+  !! absolute tolerance for displacement field
+  REAL(DFP) :: displacementError0 = 0.0_DFP
+  !! initial displacement error
+  REAL(DFP) :: displacementError = 0.0_DFP
+  !! displacement error
+  REAL(DFP) :: rtoleranceForVelocity = DEFAULT_rtoleranceForVelocity
+  !! relative tolerance for convergence in velocity field
+  REAL(DFP) :: atoleranceForVelocity = DEFAULT_atoleranceForVelocity
+  !! absolute tolerance for convergence in velocity field
+  REAL(DFP) :: velocityError0 = 0.0_DFP
+  !! initial velocity error
+  REAL(DFP) :: velocityError = 0.0_DFP
+  !! velocity error
+  REAL(DFP) :: rtoleranceForResidual = DEFAULT_rtoleranceForResidual
+  !! relative tolerance for convergence in velocity field
+  REAL(DFP) :: atoleranceForResidual = DEFAULT_atoleranceForResidual
+  !! absolute tolerance for convergence in velocity field
+  REAL(DFP) :: residualError0 = 0.0_DFP
+  !! initial velocity error
+  REAL(DFP) :: residualError = 0.0_DFP
+  !! velocity error
   TYPE(IterationData_) :: iterData
   !! Iteration data
   !! INFO: The actual action depends upon the specific kernels
@@ -323,6 +356,43 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! In this way, solidMaterialToMesh(i) gives the mesh region of ith element
   TYPE(SolidMaterialPointer_), ALLOCATABLE :: solidMaterial(:)
   !! Pointer to the solid material
+  CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
+  !! Global Stiffness matrix
+  CLASS(MatrixField_), POINTER :: massMat => NULL()
+  !! Global mass matrix
+  CLASS(MatrixField_), POINTER :: dampingMat => NULL()
+  !! Global damping matrix
+  CLASS(VectorField_), POINTER :: displacement => NULL()
+  !! Vector field for nodal displacement
+  CLASS(VectorField_), POINTER :: velocity => NULL()
+  !! Vector field for nodal displacement
+  CLASS(VectorField_), POINTER :: acceleration => NULL()
+  !! Vector field for nodal acceleration
+  CLASS(VectorField_), POINTER :: nodeCoord => NULL()
+  !! Vector field for nodal coordinates
+  CLASS(VectorField_), POINTER :: dispBC => NULL()
+  !! Vector field for displacement boundary condition
+  !! if a boundary condition has useExternal=TRUE,
+  !! then we read boundary condition from dispBC.
+  !! user can externally set the boundary condition
+  !! in dispBC, which can be read in the program
+  !! currently, we use this for NitscheBoundary condition
+  CLASS(VectorField_), POINTER :: velBC => NULL()
+  !! Vector field for velocity boundary condition
+  !! If a boundary condition has useExternal=TRUE,
+  !! then we read boundary condition from velBC.
+  !! user can externally set the boundary condition
+  !! in velBC, which can be read in the program
+  !! currently, we use this for NitscheBoundary condition
+  CLASS(VectorField_), POINTER :: accBC => NULL()
+  !! Vector field for acceleration boundary condition.
+  !! If boundary condition has useExternal=TRUE,
+  !! then we read boundary condition from accBC.
+  !! User can externally set the boundary condition
+  !! in dispBC, which can be read in the program.
+  !! Currently, we use this for NitscheBoundary condition.
+  TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: solidMechData(:)
+  !! Constitutive data for solid materials
 CONTAINS
   PRIVATE
 
@@ -340,6 +410,8 @@ CONTAINS
   !! it should be implemented by the subclass.
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the memory occupied by the kernel
+
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckError => obj_CheckError
 
   ! CONSTRUCTOR:
   ! @InitiateFieldsMethods
@@ -416,25 +488,14 @@ CONTAINS
   ! @MaterialMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AddSolidMaterial => obj_AddSolidMaterial
   !! Add a solid material to the kernel
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateConstantMatProp =>  &
-    & obj_InitiateConstantMatProp
-  !! Initiate constant matrial properties
-  !! INFO: This method is called when the material properties are constant
-  !! This method is called in InitiateFieldsMethod.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetConstantMatProp => &
-    & obj_SetConstantMatProp
-  !! Set the constant material properties
-  !! INFO: This method is called when the material properties are constant
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVariableMatProp =>  &
-    & obj_InitiateVariableMatProp
-  !! Initiate variable material properties
-  !! INFO: This method is called when the material propeties changes in
-  !! space and time.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetVariableMatProp => &
-    & obj_SetVariableMatProp
-  !! Set variable material properties.
-  !! INFO: This method is called when the material properties changes in
-  !! space and time
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMaterialProperties =>  &
+    & obj_InitiateMaterialProperties
+  !! Initiate material properties
+  !! INFO: This routine should be implemented by subclass
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialProperties =>  &
+    & obj_SetMaterialProperties
+  !! Set material properties
+  !! INFO: This routine should be implemented by subclass
 
   ! IO:
   ! @IOMethods
@@ -528,8 +589,10 @@ INTERFACE
     & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
     & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
     & isSymNitsche, nitscheAlpha, materialInterfaces, isConstantMatProp, &
-    & tMaterials, algorithm, isIsotropic, isIncompressible &
-    & )
+    & tMaterials, algorithm, isIsotropic, isIncompressible,  &
+    & rtoleranceForDisplacement, atoleranceForDisplacement,  &
+    & rtoleranceForVelocity, atoleranceForVelocity,  &
+    & rtoleranceForResidual, atoleranceForResidual)
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuityForSpace
     !! Type of continuity of basis function for Space
@@ -600,15 +663,27 @@ INTERFACE
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Put parameters here
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipTypeForSpace
+    !! Interpolation point type in space
+    !! Default is Equidistance
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipTypeForTime
+    !! Interpolation point type in time
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisTypeForSpace
+    !! Basis type used for constructing the shape functions
+    !! Like monomials, Legendre, Chebyshev, Jacobi
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisTypeForTime
+    !! Basis type used for constructing the shape function in time
     REAL(DFP), OPTIONAL, INTENT(IN) :: alphaForSpace
+    !! Jacobi polynomial parameter  in space
     REAL(DFP), OPTIONAL, INTENT(IN) :: alphaForTime
+    !! Jacobi polynomial parameter in time
     REAL(DFP), OPTIONAL, INTENT(IN) :: betaForSpace
+    !! Jacobi polynomial parameter in space
     REAL(DFP), OPTIONAL, INTENT(IN) :: betaForTime
+    !! Jacobi polynomial parameter in time
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambdaForSpace
+    !! Ultraspherical polynomial parameter in space
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambdaForTime
+    !! Ultraspherical polynomial parameter in time
     !!
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tDirichletBC
     !! Total number of Dirichlet domain for pressure, default=0
@@ -632,6 +707,18 @@ INTERFACE
     !! It is true if the material is isotropic
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIncompressible
     !! It is true if the material is incompressible
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtoleranceForDisplacement
+    !! relative tolerance for convergence in displacement field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtoleranceForVelocity
+    !! relative tolerance for convergence in velocity field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtoleranceForResidual
+    !! relative tolerance for velocity field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForDisplacement
+    !! absolute tolerance for convergence in displacement field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForVelocity
+    !! absolute tolerance for convergence in velocity field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForResidual
+    !! absolute tolerance for velocity
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -698,21 +785,434 @@ INTERFACE AbstractKernelDeallocate
 END INTERFACE AbstractKernelDeallocate
 
 !----------------------------------------------------------------------------
+!                                             CheckError@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-06
+! summary: Check error
+
+INTERFACE
+  MODULE SUBROUTINE obj_CheckError(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_CheckError
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                       InitiateFields@InitiateFieldsMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 31 Oct 2022
 ! summary: This routine initiates the matrix and vector fields
-!
-!# Introduction
-!
-! This routine should be implemented by subclass.
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateFields(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine Sets the option of the kernel and build the kernel
+!
+!# Introduction
+! This routine builds the kernel
+! After calling this routine we can start the main computation.
+! The call to this subroutine indicates that all the options have been
+! Set to the kernel, and it is ready to be used.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetCurrentTimeStep@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 9 Nov 2022
+! summary: Set the current time step number of kernel
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCurrentTimeStep(obj, its)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: its
+  END SUBROUTINE obj_SetCurrentTimeStep
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetIterationNumber@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 9 Nov 2022
+! summary: Set the current iteration number of kernel
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetIterationNumber(obj, iter)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: iter
+  END SUBROUTINE obj_SetIterationNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetMeshData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set mesh data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMeshData(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMeshData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetFiniteElements@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set mesh data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFiniteElements(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetFiniteElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetQuadPointsInSpace@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-31
+! summary:  Set quadrature points in space
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadPointsInSpace(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetQuadPointsInSpace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetQuadPointsInTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-31
+! summary:  Set quadrature points in space
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadPointsInTime(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetQuadPointsInTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   SetLocalElemShapeDataInSpace@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-31
+! summary:  Set Local element shape data in space
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocalElemShapeDataInSpace(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetLocalElemShapeDataInSpace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     SetLocalElemShapeDataInTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-31
+! summary:  Set Local element shape data in time
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocalElemShapeDataInTime(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetLocalElemShapeDataInTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     SetGlobalElemShapeDataInTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-31
+! summary:  Set Global element shape data in time
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetGlobalElemShapeDataInTime(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetGlobalElemShapeDataInTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     SetGlobalElemShapeDataInTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-10-31
+! summary:  Set Global element shape data in time
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetGlobalElemShapeDataInSpace(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetGlobalElemShapeDataInSpace
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          SetFacetFiniteElements@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set mesh data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFacetFiniteElements(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetFacetFiniteElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          AddSolidMaterial@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine Adds a solid material to kernel
+!
+!# Introduction
+!
+! - This routine Adds Solid material
+! - It also prepares `obj%SolidMaterialToMesh(materialNo)` and
+! `obj%solidMaterial(materialNo)`.
+! - `param` contains the parameters for constructing a `SolidMaterial_`
+! - `materialName` is the name of material, it should be `solidMaterial`.
+! - `region` is an instance of MeshSelection.
+!
+!@warning
+! `materialNo` should be lesser than or equal to the total
+! number of Solid materials
+!@endwarning
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddSolidMaterial(obj, materialNo, materialName, &
+    & param, region)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    !! material number should be lesser than or equal to the
+    !! total number of solid materials.
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
+    !! name of the material
+    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    !! parameters
+    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
+    !! mesh region
+  END SUBROUTINE obj_AddSolidMaterial
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     InitiateConstantMatProp@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate constant material properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateMaterialProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateMaterialProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetConstantMatProp@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set constant material properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterialProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMaterialProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   AddDirichletBC@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine sets dirichlet boundary condition for pressure field
+!
+!# Introduction
+!
+! - This routine sets the Dirichlet boundary condition for pressure field
+! in [[AbstractElasticity_]] kernel.
+! - It also makes the `obj%DBCForPressure(dbcNo)`
+!
+! - `dbcNo` should be lesser than total dirichlet boundary condition for
+! pressure field
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddDirichletBC(obj, dbcNo, param, boundary)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+  END SUBROUTINE obj_AddDirichletBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     AddNeumannBC@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine sets Neumann BC for displacement field
+!
+!# Introduction
+!
+! - This routine sets the Neumann boundary condition for displacement field
+! in [[AbstractElasticity_]] kernel.
+! - It makes `obj%nbcForDisplacement(nbcNo)`
+!
+! - `nbcNo` should be lesser than total Neumann boundary condition for
+! displacement field
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddNeumannBC(obj, nbcNo, param, boundary)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: nbcNo
+    !! Neumann boundary nunber
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[NeumannBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+  END SUBROUTINE obj_AddNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    AddNitscheBC@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine sets dirichlet boundary condition for displacement
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddNitscheBC(obj, dbcNo, param, boundary)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+  END SUBROUTINE obj_AddNitscheBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetDirichletBCPointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to dirichlet boundary condition
+!
+!# Introduction
+!
+! - This routine returns the pointer to Dirichlet boundary condition of
+! pressure field in [[AbstractElasticity_]] kernel, that is
+! `obj%DBCForPressure(dbcNo)%ptr`.
+! - After obtaining the Dirichlet boundary condition pointer, user can set the
+! boundary condition
+! - `dbcNo` should be lesser than total dirichlet boundary condition
+
+INTERFACE
+  MODULE FUNCTION obj_GetDirichletBCPointer(obj, dbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
+    CLASS(DirichletBC_), POINTER :: ans
+  END FUNCTION obj_GetDirichletBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetNitscheBCPointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to dirichlet boundary condition
+
+INTERFACE
+  MODULE FUNCTION obj_GetNitscheBCPointer(obj, dbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dbcNo
+    !! Nitsche boundary nunber
+    CLASS(NitscheBC_), POINTER :: ans
+  END FUNCTION obj_GetNitscheBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetNeumannBCPointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to Neumann boundary condition
+!
+!# Introduction
+!
+! - This routine returns the pointer to Neumann boundary condition of
+! pressure field in [[AbstractElasticity_]] kernel, that is
+! `obj%NBCForPressure(nbcNo)%ptr`.
+! - After obtaining the Neumann boundary condition pointer, user can set the
+! boundary condition
+! - `nbcNo` should be lesser than total Neumann boundary condition
+
+INTERFACE
+  MODULE FUNCTION obj_GetNeumannBCPointer(obj, nbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: nbcNo
+    !! Neumann boundary nunber
+    CLASS(NeumannBC_), POINTER :: ans
+  END FUNCTION obj_GetNeumannBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetNitscheMeshData@BCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set mesh data for Nitsche boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetNitscheMeshData(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetNitscheMeshData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1032,435 +1532,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Aug 2021
-! summary: This subroutine Sets the option of the kernel and build the kernel
-!
-!# Introduction
-! This routine builds the kernel
-! After calling this routine we can start the main computation.
-! The call to this subroutine indicates that all the options have been
-! Set to the kernel, and it is ready to be used.
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Set
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetCurrentTimeStep@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 9 Nov 2022
-! summary: Set the current time step number of kernel
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetCurrentTimeStep(obj, its)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: its
-  END SUBROUTINE obj_SetCurrentTimeStep
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            SetIterationNumber@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 9 Nov 2022
-! summary: Set the current iteration number of kernel
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetIterationNumber(obj, iter)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: iter
-  END SUBROUTINE obj_SetIterationNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetMeshData@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Set mesh data
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshData(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetMeshData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetFiniteElements@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Set mesh data
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetFiniteElements(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetFiniteElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           SetQuadPointsInSpace@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-31
-! summary:  Set quadrature points in space
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadPointsInSpace(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetQuadPointsInSpace
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           SetQuadPointsInTime@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-31
-! summary:  Set quadrature points in space
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuadPointsInTime(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetQuadPointsInTime
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   SetLocalElemShapeDataInSpace@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-31
-! summary:  Set Local element shape data in space
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeDataInSpace(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetLocalElemShapeDataInSpace
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     SetLocalElemShapeDataInTime@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-31
-! summary:  Set Local element shape data in time
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetLocalElemShapeDataInTime(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetLocalElemShapeDataInTime
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     SetGlobalElemShapeDataInTime@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-31
-! summary:  Set Global element shape data in time
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetGlobalElemShapeDataInTime(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetGlobalElemShapeDataInTime
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     SetGlobalElemShapeDataInTime@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-31
-! summary:  Set Global element shape data in time
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetGlobalElemShapeDataInSpace(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetGlobalElemShapeDataInSpace
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          SetFacetFiniteElements@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Set mesh data
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetFacetFiniteElements(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetFacetFiniteElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   AddDirichletBC@BCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 April 2022
-! summary: This routine sets dirichlet boundary condition for pressure field
-!
-!# Introduction
-!
-! - This routine sets the Dirichlet boundary condition for pressure field
-! in [[AbstractElasticity_]] kernel.
-! - It also makes the `obj%DBCForPressure(dbcNo)`
-!
-! - `dbcNo` should be lesser than total dirichlet boundary condition for
-! pressure field
-
-INTERFACE
-  MODULE SUBROUTINE obj_AddDirichletBC(obj, dbcNo, param, boundary)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Dirichlet boundary nunber
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[DirichletBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-  END SUBROUTINE obj_AddDirichletBC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     AddNeumannBC@BCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine sets Neumann BC for displacement field
-!
-!# Introduction
-!
-! - This routine sets the Neumann boundary condition for displacement field
-! in [[AbstractElasticity_]] kernel.
-! - It makes `obj%nbcForDisplacement(nbcNo)`
-!
-! - `nbcNo` should be lesser than total Neumann boundary condition for
-! displacement field
-
-INTERFACE
-  MODULE SUBROUTINE obj_AddNeumannBC(obj, nbcNo, param, boundary)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: nbcNo
-    !! Neumann boundary nunber
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[NeumannBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-  END SUBROUTINE obj_AddNeumannBC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    AddNitscheBC@BCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 April 2022
-! summary: This routine sets dirichlet boundary condition for displacement
-
-INTERFACE
-  MODULE SUBROUTINE obj_AddNitscheBC(obj, dbcNo, param, boundary)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Dirichlet boundary nunber
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[DirichletBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-  END SUBROUTINE obj_AddNitscheBC
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetDirichletBCPointer@BCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine returns the pointer to dirichlet boundary condition
-!
-!# Introduction
-!
-! - This routine returns the pointer to Dirichlet boundary condition of
-! pressure field in [[AbstractElasticity_]] kernel, that is
-! `obj%DBCForPressure(dbcNo)%ptr`.
-! - After obtaining the Dirichlet boundary condition pointer, user can set the
-! boundary condition
-! - `dbcNo` should be lesser than total dirichlet boundary condition
-
-INTERFACE
-  MODULE FUNCTION obj_GetDirichletBCPointer(obj, dbcNo) RESULT(ans)
-    CLASS(AbstractKernel_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Dirichlet boundary nunber
-    CLASS(DirichletBC_), POINTER :: ans
-  END FUNCTION obj_GetDirichletBCPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetNitscheBCPointer@BCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine returns the pointer to dirichlet boundary condition
-
-INTERFACE
-  MODULE FUNCTION obj_GetNitscheBCPointer(obj, dbcNo) RESULT(ans)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Nitsche boundary nunber
-    CLASS(NitscheBC_), POINTER :: ans
-  END FUNCTION obj_GetNitscheBCPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              GetNeumannBCPointer@BCMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine returns the pointer to Neumann boundary condition
-!
-!# Introduction
-!
-! - This routine returns the pointer to Neumann boundary condition of
-! pressure field in [[AbstractElasticity_]] kernel, that is
-! `obj%NBCForPressure(nbcNo)%ptr`.
-! - After obtaining the Neumann boundary condition pointer, user can set the
-! boundary condition
-! - `nbcNo` should be lesser than total Neumann boundary condition
-
-INTERFACE
-  MODULE FUNCTION obj_GetNeumannBCPointer(obj, nbcNo) RESULT(ans)
-    CLASS(AbstractKernel_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: nbcNo
-    !! Neumann boundary nunber
-    CLASS(NeumannBC_), POINTER :: ans
-  END FUNCTION obj_GetNeumannBCPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetNitscheMeshData@BCMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Set mesh data for Nitsche boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetNitscheMeshData(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetNitscheMeshData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          AddSolidMaterial@MaterialMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 April 2022
-! summary: This routine Adds a solidMaterial to the kernel
-!
-!# Introduction
-!
-! - This routine Adds Solid material
-! - It also prepares `obj%SolidMaterialToMesh(materialNo)` and
-! `obj%solidMaterial(materialNo)`.
-! - `param` contains the parameters for constructing a [[FluidMaterial_]]
-! - More details about `param` can be found in [[FluidMaterial_:Initiate]].
-! - `materialName` is the name of material, it should be `fluidMaterial`.
-! - `region` is an instance of [[MeshSelection_]].
-!
-!@warning
-! `materialNo` should be lesser than or equal to the total
-! number of Fluid materials, i.e.,
-! [[AbstractElasticity_:tFluidMaterials]]
-!@endwarning
-!
-
-INTERFACE
-  MODULE SUBROUTINE obj_AddSolidMaterial(obj, materialNo, materialName, &
-    & param, region)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: materialNo
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
-  END SUBROUTINE obj_AddSolidMaterial
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     InitiateConstantMatProp@MaterialMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Initiate constant material properties
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateConstantMatProp(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateConstantMatProp
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         SetConstantMatProp@MaterialMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Set constant material properties
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetConstantMatProp(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetConstantMatProp
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  InitiateVariableMatProp@MaterialMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Initiate variable material properties
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateVariableMatProp(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_InitiateVariableMatProp
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         SetVariableMatProp@MaterialMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-06-19
-! summary: Set constant material properties
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetVariableMatProp(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetVariableMatProp
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   GetPrefix@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1473,50 +1544,6 @@ INTERFACE
     CLASS(AbstractKernel_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetPrefix
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             KernelGetNSDFromID@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION KernelGetNSDFromID(uid) RESULT(Ans)
-    INTEGER(I4B), INTENT(IN) :: uid
-    INTEGER(I4B) :: ans
-  END FUNCTION KernelGetNSDFromID
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            KernelGetNSDFromName@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION KernelGetNSDFromName(name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION KernelGetNSDFromName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   KernelGetCoordinateSystemName@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION KernelGetCoordinateSystemName(uid) RESULT(Ans)
-    INTEGER(I4B), INTENT(IN) :: uid
-    TYPE(String) :: ans
-  END FUNCTION KernelGetCoordinateSystemName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    KernelGetCoordinateSystemID@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION KernelGetCoordinateSystemID(name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION KernelGetCoordinateSystemID
 END INTERFACE
 
 !----------------------------------------------------------------------------

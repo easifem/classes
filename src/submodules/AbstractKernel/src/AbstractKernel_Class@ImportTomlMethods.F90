@@ -41,12 +41,20 @@ TYPE(String) :: name, engine, coordinateSystem, domainFile,  &
 & baseInterpolationForTime, baseContinuityForTime, quadratureTypeForTime,  &
 & ipTypeForTime, basisTypeForTime
 
-INTEGER(I4B) :: origin, stat, maxIter, nsd, nnt, tdof, &
-& currentTimeStep, totalTimeStep, postProcessOpt, ii
+INTEGER(I4B) :: algorithm, tMaterials, tDirichletBC, tWeakDirichletBC,  &
+  & tNeumannBC, tMaterialInterfaces, origin, stat, maxIter, nsd, nnt, tdof, &
+  & currentTimeStep, totalTimeStep, postProcessOpt, ii
 
-REAL(DFP) :: dt, startTime, endTime, currentTime, alphaForSpace,  &
-& betaForSpace, lambdaForSpace, alphaForTime, betaForTime, lambdaForTime,  &
-& gravity(3)
+INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
+
+LOGICAL(LGT) :: isConstantMatProp, isIsotropic, isIncompressible,  &
+  & isSymNitsche
+REAL(DFP) :: nitscheAlpha, rtoleranceForDisplacement,  &
+  & atoleranceForDisplacement, rtoleranceForVelocity,  &
+  & atoleranceForVelocity, rtoleranceForResidual, atoleranceForResidual,  &
+  & dt, startTime, endTime, currentTime, alphaForSpace,  &
+  & betaForSpace, lambdaForSpace, alphaForTime, betaForTime, lambdaForTime,  &
+  & gravity(3)
 
 REAL(DFP), ALLOCATABLE :: dummy_rvec(:)
 
@@ -172,6 +180,65 @@ CALL toml_get(table, "lambdaForSpace", lambdaForSpace,  &
 CALL toml_get(table, "lambdaForTime", lambdaForTime,  &
   & DEFAULT_lambdaForTime, origin=origin, stat=stat)
 
+CALL toml_get(table, "algorithm", algorithm, DEFAULT_algorithm,  &
+  & origin=origin, stat=stat)
+
+tMaterialInterfaces = 0
+CALL GetValue(table=table, key="materialInterfaces",  &
+  & VALUE=materialInterfaces, origin=origin, stat=stat)
+IF (ALLOCATED(materialInterfaces)) THEN
+  tMaterialInterfaces = SIZE(materialInterfaces)
+ELSE
+  tMaterialInterfaces = 0
+  CALL reallocate(materialInterfaces, tMaterialInterfaces)
+END IF
+
+CALL toml_get(table, "tMaterials", tMaterials, 1_I4B, origin=origin,  &
+& stat=stat)
+
+CALL toml_get(table, "tDirichletBC", tDirichletBC, 0_I4B,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "tWeakDirichletBC", tWeakDirichletBC, 0_I4B,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "tNeumannBC", tNeumannBC, 0_I4B,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "isConstantMatProp", isConstantMatProp, &
+  & DEFAULT_isConstantMatProp, origin=origin, stat=stat)
+
+CALL toml_get(table, "isIsotropic", isIsotropic, DEFAULT_isIsotropic, &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "isIncompressible", isIncompressible, &
+  & DEFAULT_isIncompressible, origin=origin, stat=stat)
+
+CALL toml_get(table, "isSymNitsche", isSymNitsche,  &
+  & DEFAULT_isSymNitsche, origin=origin, stat=stat)
+
+CALL toml_get(table, "nitscheAlpha", nitscheAlpha,  &
+  & DEFAULT_nitscheAlpha, origin=origin, stat=stat)
+
+CALL toml_get(table, "rtoleranceForResidual", rtoleranceForResidual,  &
+  & DEFAULT_rtoleranceForResidual, origin=origin, stat=stat)
+
+CALL toml_get(table, "rtoleranceForDisplacement",  &
+  & rtoleranceForDisplacement, DEFAULT_rtoleranceForDisplacement,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "rtoleranceForVelocity", rtoleranceForVelocity,  &
+  & DEFAULT_rtoleranceForVelocity, origin=origin, stat=stat)
+
+CALL toml_get(table, "atoleranceForResidual", atoleranceForResidual,  &
+  & DEFAULT_atoleranceForResidual, origin=origin, stat=stat)
+
+CALL toml_get(table, "atoleranceForDisplacement", atoleranceForDisplacement, &
+  & DEFAULT_atoleranceForDisplacement, origin=origin, stat=stat)
+
+CALL toml_get(table, "atoleranceForVelocity", atoleranceForVelocity,  &
+  & DEFAULT_atoleranceForVelocity, origin=origin, stat=stat)
+
 ! CALL Display(toml_serialize(table))
 
 CALL SetAbstractKernelParam( &
@@ -209,8 +276,24 @@ CALL SetAbstractKernelParam( &
   & betaForSpace=betaForSpace,  &
   & betaForTime=betaForTime,  &
   & lambdaForSpace=lambdaForSpace,  &
-  & lambdaForTime=lambdaForTime &
-  & )
+  & lambdaForTime=lambdaForTime, &
+  & algorithm=algorithm,  &
+  & isConstantMatProp=isConstantMatProp,  &
+  & isIsotropic=isIsotropic,  &
+  & isIncompressible=isIncompressible,  &
+  & materialInterfaces=materialInterfaces,  &
+  & tMaterials=tMaterials,  &
+  & tDirichletBC=tDirichletBC,  &
+  & tWeakDirichletBC=tWeakDirichletBC,  &
+  & isSymNitsche=isSymNitsche,  &
+  & nitscheAlpha=nitscheAlpha,  &
+  & tNeumannBC=tNeumannBC,  &
+  & rtoleranceForDisplacement=rtoleranceForDisplacement,  &
+  & rtoleranceForVelocity=rtoleranceForVelocity,  &
+  & rtoleranceForResidual=rtoleranceForResidual,  &
+  & atoleranceForDisplacement=rtoleranceForDisplacement,  &
+  & atoleranceForVelocity=rtoleranceForVelocity,  &
+  & atoleranceForResidual=atoleranceForResidual)
 
 ! linesolve
 linsolve_toml => NULL()
@@ -280,6 +363,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%Initiate(param=param, dom=obj%dom)
 CALL param%DEALLOCATE()
 !---------------------- make domain ----------------------------------
+
+CALL DirichletBCImportFromToml(table=table, dom=obj%dom,  &
+  & tomlName=TOML_DIRICHLET_BC_NAME, obj=obj%dbc)
+
+CALL NeumannBCImportFromToml(table=table, dom=obj%dom,  &
+  & tomlName=TOML_NEUMANN_BC_NAME, obj=obj%nbc)
+
+CALL NitscheBCImportFromToml(table=table, dom=obj%dom,  &
+  & tomlName=TOML_NITSCHE_BC_NAME, obj=obj%wdbc)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
