@@ -121,7 +121,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => obj_GetScalarValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => obj_GetVectorValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
-  GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue, GetMatrixValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
+  GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue, GetMatrixValue, &
+    & GetFEVariable
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
@@ -290,7 +292,7 @@ END INTERFACE
 ! summary: Returns the scalar value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE obj_GetScalarValue(obj, val, args)
+  MODULE SUBROUTINE obj_GetScalarValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
@@ -306,7 +308,7 @@ END INTERFACE
 ! summary: Returns the vector value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE obj_GetVectorValue(obj, val, args)
+  MODULE SUBROUTINE obj_GetVectorValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
@@ -322,11 +324,28 @@ END INTERFACE
 ! summary: Returns the Matrix value
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE obj_GetMatrixValue(obj, val, args)
+  MODULE SUBROUTINE obj_GetMatrixValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
   END SUBROUTINE obj_GetMatrixValue
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Returns the Matrix value
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFEVariable(obj, fevar, xij, timeVec)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(FEVariable_), INTENT(INOUT) :: fevar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+  END SUBROUTINE obj_GetFEVariable
 END INTERFACE
 
 !----------------------------------------------------------------------------
