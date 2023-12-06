@@ -22,6 +22,9 @@ USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE Mesh_Class, ONLY: Mesh_
+USE UserFunction_Class
+
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STTensorMeshField_Class"
@@ -43,6 +46,7 @@ TYPE, EXTENDS(AbstractMeshField_) :: STTensorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
 END TYPE STTensorMeshField_
 
 !----------------------------------------------------------------------------
@@ -72,11 +76,39 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: defineOn
     !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: dim1
+    !! size in dim1
     INTEGER(I4B), INTENT(IN) :: dim2
+    !! size in dim2
     INTEGER(I4B), INTENT(IN) :: nns
+    !! number of nodes in space
     INTEGER(I4B), INTENT(IN) :: nnt
     !! Number of node in space
   END SUBROUTINE SetSTTensorMeshFieldParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-05
+! summary:  Initiate STTensorMeshField using user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
+    CLASS(STTensorMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
