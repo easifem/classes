@@ -135,6 +135,47 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
+!                                                               Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set3
+CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+LOGICAL(LGT) :: isok
+CLASS(UserFunction_), POINTER :: func
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+isok = material%IsMaterialPresent(name)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: material name = '//name//" not found.")
+  RETURN
+END IF
+
+func => NULL()
+func => material%GetMaterialPointer(name)
+isok = ASSOCIATED(func)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: material pointer not found.')
+  RETURN
+END IF
+
+CALL obj%Set(func=func, dom=dom, timeVec=timeVec)
+
+NULLIFY (func)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Set3
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
