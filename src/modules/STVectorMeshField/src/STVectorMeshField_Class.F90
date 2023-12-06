@@ -41,7 +41,7 @@ PUBLIC :: SetSTVectorMeshFieldParam
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: STVectorMeshField_
+TYPE, EXTENDS(AbstractVectorMeshField_) :: STVectorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix

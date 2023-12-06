@@ -89,8 +89,8 @@ IF (.NOT. isok) THEN
 END IF
 
 fieldType = TypeField%normal
-varType = argType
 argType = func%GetArgType()
+varType = argType
 
 IF (argType .EQ. Constant) THEN
   fieldType = TypeField%constant

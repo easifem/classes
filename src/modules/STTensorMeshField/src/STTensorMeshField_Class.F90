@@ -42,7 +42,7 @@ PUBLIC :: SetSTTensorMeshFieldParam
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: STTensorMeshField_
+TYPE, EXTENDS(AbstractTensorMeshField_) :: STTensorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix

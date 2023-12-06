@@ -37,7 +37,11 @@ PUBLIC :: VectorFieldFactory
 PUBLIC :: STScalarFieldFactory
 PUBLIC :: STVectorFieldFactory
 PUBLIC :: Initiate
+
 PUBLIC :: MeshFieldFactory
+PUBLIC :: ScalarMeshFieldFactory
+PUBLIC :: VectorMeshFieldFactory
+PUBLIC :: TensorMeshFieldFactory
 
 !----------------------------------------------------------------------------
 !                                                           MeshFieldFactory
@@ -53,6 +57,54 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     CLASS(AbstractMeshField_), POINTER :: ans
   END FUNCTION MeshFieldFactory
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ScalarMeshFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-09-14
+! summary: This function returns subclass of AbstractScalarMeshField
+
+INTERFACE
+  MODULE FUNCTION ScalarMeshFieldFactory(engine, name) RESULT(Ans)
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: name
+    CLASS(AbstractScalarMeshField_), POINTER :: ans
+  END FUNCTION ScalarMeshFieldFactory
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     VectorMeshFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-09-14
+! summary: This function returns subclass of AbstractVectorMeshField
+
+INTERFACE
+  MODULE FUNCTION VectorMeshFieldFactory(engine, name) RESULT(Ans)
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: name
+    CLASS(AbstractVectorMeshField_), POINTER :: ans
+  END FUNCTION VectorMeshFieldFactory
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     TensorMeshFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-09-14
+! summary: This function returns subclass of AbstractTensorMeshField
+
+INTERFACE
+  MODULE FUNCTION TensorMeshFieldFactory(engine, name) RESULT(Ans)
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: name
+    CLASS(AbstractTensorMeshField_), POINTER :: ans
+  END FUNCTION TensorMeshFieldFactory
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -243,8 +295,8 @@ END INTERFACE Initiate
 ! NOTE: This is a module routine not a Method to VectorField_
 
 INTERFACE Initiate
- MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo,  &
-    & fieldType, engine, dom)
+  MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo,  &
+     & fieldType, engine, dom)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to VectorField or subclass
     !! NOTE: It should be allocated
