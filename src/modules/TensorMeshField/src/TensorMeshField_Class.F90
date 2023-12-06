@@ -42,7 +42,7 @@ PUBLIC :: SetTensorMeshFieldParam
 ! date: 20 Feb 2022
 ! summary: Tensor mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: TensorMeshField_
+TYPE, EXTENDS(AbstractTensorMeshField_) :: TensorMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix

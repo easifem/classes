@@ -40,6 +40,13 @@ PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
 
+PUBLIC :: AbstractScalarMeshField_
+PUBLIC :: AbstractScalarMeshFieldPointer_
+PUBLIC :: AbstractVectorMeshField_
+PUBLIC :: AbstractVectorMeshFieldPointer_
+PUBLIC :: AbstractTensorMeshField_
+PUBLIC :: AbstractTensorMeshFieldPointer_
+
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
 !----------------------------------------------------------------------------
@@ -147,7 +154,52 @@ CONTAINS
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
-!
+!                                                 AbstractScalarMeshField_
+!----------------------------------------------------------------------------
+
+TYPE, EXTENDS(AbstractMeshField_) :: AbstractScalarMeshField_
+END TYPE AbstractScalarMeshField_
+
+!----------------------------------------------------------------------------
+!                                           AbstractScalarMeshFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractScalarMeshFieldPointer_
+  CLASS(AbstractScalarMeshField_), POINTER :: ptr => NULL()
+END TYPE AbstractScalarMeshFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 AbstractVectorMeshField_
+!----------------------------------------------------------------------------
+
+TYPE, EXTENDS(AbstractMeshField_) :: AbstractVectorMeshField_
+END TYPE AbstractVectorMeshField_
+
+!----------------------------------------------------------------------------
+!                                           AbstractVectorMeshFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractVectorMeshFieldPointer_
+  CLASS(AbstractVectorMeshField_), POINTER :: ptr => NULL()
+END TYPE AbstractVectorMeshFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 AbstractTensorMeshField_
+!----------------------------------------------------------------------------
+
+TYPE, EXTENDS(AbstractMeshField_) :: AbstractTensorMeshField_
+END TYPE AbstractTensorMeshField_
+
+!----------------------------------------------------------------------------
+!                                           AbstractTensorMeshFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractTensorMeshFieldPointer_
+  CLASS(AbstractTensorMeshField_), POINTER :: ptr => NULL()
+END TYPE AbstractTensorMeshFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 AbstractMeshFieldPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractMeshFieldPointer_

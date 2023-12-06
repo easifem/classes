@@ -41,7 +41,7 @@ PUBLIC :: STScalarMeshFieldPointer_
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: STScalarMeshField_
+TYPE, EXTENDS(AbstractScalarMeshField_) :: STScalarMeshField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
