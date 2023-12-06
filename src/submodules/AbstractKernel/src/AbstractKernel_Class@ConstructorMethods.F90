@@ -119,6 +119,32 @@ aint = QuadraturePointNameToID(INPUT(option=quadratureTypeForTime,  &
 CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForTime",  &
   & VALUE=aint)
 
+CALL Set(param, TypeDFP, prefix, "rtoleranceForDisplacement",  &
+  & VALUE=INPUT(default=DEFAULT_rtoleranceForDisplacement, &
+  & option=rtoleranceForDisplacement))
+
+CALL Set(param, TypeDFP, prefix, "atoleranceForDisplacement",  &
+  & VALUE=INPUT(default=DEFAULT_atoleranceForDisplacement, &
+  & option=atoleranceForDisplacement))
+
+CALL Set(param, TypeDFP, prefix, "rtoleranceForVelocity",  &
+  & VALUE=INPUT(default=DEFAULT_rtoleranceForVelocity, &
+  & option=rtoleranceForVelocity))
+
+CALL Set(param, TypeDFP, prefix, "atoleranceForVelocity",  &
+  & VALUE=INPUT(default=DEFAULT_atoleranceForVelocity, &
+  & option=atoleranceForVelocity))
+
+CALL Set(param, TypeDFP, prefix, "rtoleranceForResidual",  &
+  & VALUE=INPUT(default=DEFAULT_rtoleranceForResidual, &
+  & option=rtoleranceForResidual))
+
+CALL Set(param, TypeDFP, prefix, "atoleranceForResidual",  &
+  & VALUE=INPUT(default=DEFAULT_atoleranceForResidual, &
+  & option=atoleranceForResidual))
+! INFO: All of the above floating point default values are defined
+! AbstractElasticityParam module.
+
 !! bool
 CALL Set(param, .TRUE., prefix, "isCommonDomain", isCommonDomain)
 
@@ -215,6 +241,27 @@ END IF
 IF (ASSOCIATED(obj%tanmat)) THEN
   CALL obj%tanmat%CheckEssentialParam(param=param)
 END IF
+
+IF (ASSOCIATED(obj%displacement)) &
+  & CALL obj%displacement%CheckEssentialParam(param=param)
+
+IF (ASSOCIATED(obj%velocity)) &
+  & CALL obj%velocity%CheckEssentialParam(param=param)
+
+IF (ASSOCIATED(obj%acceleration)) &
+  & CALL obj%acceleration%CheckEssentialParam(param=param)
+
+IF (ASSOCIATED(obj%nodeCoord)) &
+  & CALL obj%nodeCoord%CheckEssentialParam(param=param)
+
+IF (ASSOCIATED(obj%dispBC)) &
+  & CALL obj%dispBC%CheckEssentialParam(param=param)
+
+IF (ASSOCIATED(obj%velBC)) &
+  & CALL obj%velBC%CheckEssentialParam(param=param)
+
+IF (ASSOCIATED(obj%accBC)) &
+  & CALL obj%accBC%CheckEssentialParam(param=param)
 
 prefix0 = ""
 
@@ -387,6 +434,19 @@ IF (tMaterialInterfaces .GT. 0) THEN
   CALL GetValue(param, prefix, "materialInterfaces", obj%materialInterfaces)
 END IF
 
+CALL GetValue(param, prefix, "atoleranceForDisplacement",  &
+& obj%atoleranceForDisplacement)
+CALL GetValue(param, prefix, "rtoleranceForDisplacement",  &
+& obj%rtoleranceForDisplacement)
+CALL GetValue(param, prefix, "atoleranceForVelocity", &
+& obj%atoleranceForVelocity)
+CALL GetValue(param, prefix, "rtoleranceForVelocity",  &
+& obj%rtoleranceForVelocity)
+CALL GetValue(param, prefix, "atoleranceForResidual",  &
+& obj%atoleranceForResidual)
+CALL GetValue(param, prefix, "rtoleranceForResidual",  &
+& obj%rtoleranceForResidual)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -519,6 +579,77 @@ obj%SOLID_MATERIAL_ID = 0
 CALL SolidMaterialDeallocate(obj%solidMaterial)
 CALL MeshSelectionDeallocate(obj%solidMaterialToMesh)
 
+obj%incrementScale = 1.0_DFP
+obj%rtoleranceForDisplacement = DEFAULT_rtoleranceForDisplacement
+obj%atoleranceForDisplacement = DEFAULT_atoleranceForDisplacement
+obj%rtoleranceForVelocity = DEFAULT_rtoleranceForVelocity
+obj%atoleranceForVelocity = DEFAULT_atoleranceForVelocity
+obj%rtoleranceForResidual = DEFAULT_rtoleranceForResidual
+obj%atoleranceForResidual = DEFAULT_atoleranceForResidual
+obj%displacementError0 = 0.0_DFP
+obj%displacementError = 0.0_DFP
+obj%velocityError0 = 0.0_DFP
+obj%velocityError = 0.0_DFP
+
+! displacement
+IF (ASSOCIATED(obj%displacement)) THEN
+  CALL obj%displacement%DEALLOCATE()
+  obj%displacement => NULL()
+END IF
+
+! velocity
+IF (ASSOCIATED(obj%velocity)) THEN
+  CALL obj%velocity%DEALLOCATE()
+  obj%velocity => NULL()
+END IF
+
+! acceleration
+IF (ASSOCIATED(obj%acceleration)) THEN
+  CALL obj%acceleration%DEALLOCATE()
+  obj%acceleration => NULL()
+END IF
+
+! nodeCoord
+IF (ASSOCIATED(obj%nodeCoord)) THEN
+  CALL obj%nodeCoord%DEALLOCATE()
+  obj%nodeCoord => NULL()
+END IF
+
+! dispBC
+IF (ASSOCIATED(obj%dispBC)) THEN
+  CALL obj%dispBC%DEALLOCATE()
+  obj%dispBC => NULL()
+END IF
+
+! velBC
+IF (ASSOCIATED(obj%velBC)) THEN
+  CALL obj%velBC%DEALLOCATE()
+  obj%velBC => NULL()
+END IF
+
+! accBC
+IF (ASSOCIATED(obj%accBC)) THEN
+  CALL obj%accBC%DEALLOCATE()
+  obj%accBC => NULL()
+END IF
+
+! stiffnessMat
+IF (ASSOCIATED(obj%stiffnessMat)) THEN
+  CALL obj%stiffnessMat%DEALLOCATE()
+  obj%stiffnessMat => NULL()
+END IF
+
+! massMat
+IF (ASSOCIATED(obj%massMat)) THEN
+  CALL obj%massMat%DEALLOCATE()
+  obj%massMat => NULL()
+END IF
+
+! dampingMat
+IF (ASSOCIATED(obj%dampingMat)) THEN
+  CALL obj%dampingMat%DEALLOCATE()
+  obj%dampingMat => NULL()
+END IF
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

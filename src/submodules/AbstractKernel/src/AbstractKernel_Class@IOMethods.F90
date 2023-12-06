@@ -26,7 +26,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
-INTEGER(I4B) :: aint
+INTEGER(I4B) :: aint, ii
 
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInitiated, "Kernel initiated: ", unitNo=unitNo)
@@ -91,6 +91,76 @@ CALL Display(obj%gravity, "gravity: ", unitno=unitno)
 
 ! iterData
 CALL Display(obj%iterData, "iterData: ", unitno=unitno)
+
+! isConstantMatProp
+CALL Display(obj%isConstantMatProp, "isConstantMatProp: ", unitNo=unitNo)
+
+! isIsotropic
+CALL Display(obj%isIsotropic, "isIsotropic: ", unitNo=unitNo)
+
+! isIncompressible
+CALL Display(obj%isIncompressible, "isIncompressible: ", unitNo=unitNo)
+
+! isMaterialInterfaces
+
+CALL Display(obj%isMaterialInterfaces, "isMaterialInterfaces: ", &
+  & unitNo=unitNo)
+IF (obj%isMaterialInterfaces) THEN
+  CALL Display(obj%materialInterfaces, 'materialInterfaces', &
+    & unitNo=unitNo)
+END IF
+
+! matIfaceConnectData
+bool1 = ALLOCATED(obj%matIfaceConnectData)
+CALL Display(bool1, "matIfaceConnectData ALLOCATED: ", unitNo=unitNo)
+
+! tMaterials
+CALL Display(obj%tMaterials, "tMaterials: ", unitNo=unitNo)
+
+! incrementScale
+CALL Display(obj%incrementScale, "incrementScale : ", unitNo=unitNo)
+
+! rtoleranceForDisplacement
+CALL Display(obj%rtoleranceForDisplacement, "rtoleranceForDisplacement: ", &
+  & unitNo=unitNo)
+
+! atoleranceForDisplacement
+CALL Display(obj%atoleranceForDisplacement, "atoleranceForDisplacement: ", &
+  & unitNo=unitNo)
+
+! rtoleranceForVelocity
+CALL Display(obj%rtoleranceForVelocity, "rtoleranceForVelocity: ", &
+  & unitNo=unitNo)
+
+! atoleranceForVelocity
+CALL Display(obj%atoleranceForVelocity, "atoleranceForVelocity: ", &
+  & unitNo=unitNo)
+
+! rtoleranceForResidual
+CALL Display(obj%rtoleranceForResidual, "rtoleranceForResidual: ", &
+  & unitNo=unitNo)
+
+! atoleranceForResidual
+CALL Display(obj%atoleranceForResidual, "atoleranceForResidual: ", &
+  & unitNo=unitNo)
+
+! displacementError0
+CALL Display(obj%displacementError0, "displacementError0: ", unitNo=unitNo)
+
+! displacementError
+CALL Display(obj%displacementError, "displacementError: ", unitNo=unitNo)
+
+! velocityError0
+CALL Display(obj%velocityError0, "velocityError0: ", unitNo=unitNo)
+
+! velocityError
+CALL Display(obj%velocityError, "velocityError: ", unitNo=unitNo)
+
+! residualError0
+CALL Display(obj%residualError0, "residualError0: ", unitNo=unitNo)
+
+! residualError
+CALL Display(obj%residualError, "residualError: ", unitNo=unitNo)
 
 ! elemToMatId
 bool1 = ALLOCATED(obj%elemToMatId)
@@ -161,11 +231,11 @@ CALL Display(bool1, "edgeFE ALLOCATED: ", unitNo=unitNo)
 
 ! isNitsche
 CALL Display(obj%isNitsche, "isNitsche: ", unitNo=unitNo)
-CALL Display(obj%nitscheAlpha, "nitscheAlpha : ", unitno=unitno)
+CALL Display(obj%nitscheAlpha, "nitscheAlpha: ", unitno=unitno)
 IF (INT(obj%NitscheType, kind=I4B) .EQ. Nitsche_Sym) THEN
-  CALL Display("NitscheType : SYM", unitno=unitno)
+  CALL Display("NitscheType: SYM", unitno=unitno)
 ELSE
-  CALL Display("NitscheType : UNSYM", unitno=unitno)
+  CALL Display("NitscheType: UNSYM", unitno=unitno)
 END IF
 
 ! dbc
@@ -199,6 +269,38 @@ IF (bool1) THEN
   aint = SIZE(obj%nitscheFacetToCell)
   CALL Display("nitscheFacetToCell["//tostring(aint)//"]:: ALLOCATED", &
     & unitno)
+END IF
+
+bool1 = ALLOCATED(obj%solidMaterial)
+IF (bool1) THEN
+  CALL Display("solidMaterial: ALLOCATED, SIZE[" &
+    & //TOSTRING(SIZE(obj%solidMaterial))//']', &
+    & unitNo=unitNo)
+  DO ii = 1, SIZE(obj%solidMaterial)
+    IF (ASSOCIATED(obj%solidMaterial(ii)%ptr)) THEN
+      CALL obj%solidMaterial(ii)%ptr%Display( &
+        & "solidMaterial("//TOSTRING(ii)//") : ", &
+        & unitNo=unitNo)
+    ELSE
+      CALL Display("solidMaterial("//TOSTRING(ii)// &
+        & ") : NOT ASSOCIATED", unitNo=unitNo)
+    END IF
+  END DO
+ELSE
+END IF
+
+! solidMaterialToMesh
+bool1 = ALLOCATED(obj%solidMaterialToMesh)
+CALL Display(bool1, "solidMaterialToMesh ALLOCATED: ", unitNo=unitNo)
+IF (bool1) THEN
+  CALL Display("solidMaterialToMesh: SIZE[" &
+    & //TOSTRING(SIZE(obj%solidMaterialToMesh))//']', &
+    & unitNo=unitNo)
+  DO ii = 1, SIZE(obj%solidMaterialToMesh)
+    CALL obj%solidMaterialToMesh(ii)%Display( &
+      & "solidMaterialToMesh("//TOSTRING(ii)//") : ", &
+      & unitNo=unitNo)
+  END DO
 END IF
 
 END PROCEDURE obj_Display

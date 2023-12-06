@@ -41,6 +41,7 @@ USE VTKFile_Class
 USE FiniteElement_Class
 USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
+USE Field
 
 IMPLICIT NONE
 PRIVATE
@@ -182,6 +183,32 @@ TYPE, ABSTRACT :: AbstractKernel_
   REAL(DFP) :: nitscheType = Nitsche_Sym
   !! -1.0 for symmetric formulation
   !! 1.0 for skew symmetric formulation
+  REAL(DFP) :: incrementScale = 1.0_DFP
+  !! x = x + incrementScale * displacement
+  REAL(DFP) :: rtoleranceForDisplacement = DEFAULT_rtoleranceForDisplacement
+  !! relative tolerance for convergence in displacement field
+  REAL(DFP) :: atoleranceForDisplacement = DEFAULT_atoleranceForDisplacement
+  !! absolute tolerance for displacement field
+  REAL(DFP) :: displacementError0 = 0.0_DFP
+  !! initial displacement error
+  REAL(DFP) :: displacementError = 0.0_DFP
+  !! displacement error
+  REAL(DFP) :: rtoleranceForVelocity = DEFAULT_rtoleranceForVelocity
+  !! relative tolerance for convergence in velocity field
+  REAL(DFP) :: atoleranceForVelocity = DEFAULT_atoleranceForVelocity
+  !! absolute tolerance for convergence in velocity field
+  REAL(DFP) :: velocityError0 = 0.0_DFP
+  !! initial velocity error
+  REAL(DFP) :: velocityError = 0.0_DFP
+  !! velocity error
+  REAL(DFP) :: rtoleranceForResidual = DEFAULT_rtoleranceForResidual
+  !! relative tolerance for convergence in velocity field
+  REAL(DFP) :: atoleranceForResidual = DEFAULT_atoleranceForResidual
+  !! absolute tolerance for convergence in velocity field
+  REAL(DFP) :: residualError0 = 0.0_DFP
+  !! initial velocity error
+  REAL(DFP) :: residualError = 0.0_DFP
+  !! velocity error
   TYPE(IterationData_) :: iterData
   !! Iteration data
   !! INFO: The actual action depends upon the specific kernels
@@ -323,6 +350,41 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! In this way, solidMaterialToMesh(i) gives the mesh region of ith element
   TYPE(SolidMaterialPointer_), ALLOCATABLE :: solidMaterial(:)
   !! Pointer to the solid material
+  CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
+  !! Global Stiffness matrix
+  CLASS(MatrixField_), POINTER :: massMat => NULL()
+  !! Global mass matrix
+  CLASS(MatrixField_), POINTER :: dampingMat => NULL()
+  !! Global damping matrix
+  CLASS(VectorField_), POINTER :: displacement => NULL()
+  !! Vector field for nodal displacement
+  CLASS(VectorField_), POINTER :: velocity => NULL()
+  !! Vector field for nodal displacement
+  CLASS(VectorField_), POINTER :: acceleration => NULL()
+  !! Vector field for nodal acceleration
+  CLASS(VectorField_), POINTER :: nodeCoord => NULL()
+  !! Vector field for nodal coordinates
+  CLASS(VectorField_), POINTER :: dispBC => NULL()
+  !! Vector field for displacement boundary condition
+  !! if a boundary condition has useExternal=TRUE,
+  !! then we read boundary condition from dispBC.
+  !! user can externally set the boundary condition
+  !! in dispBC, which can be read in the program
+  !! currently, we use this for NitscheBoundary condition
+  CLASS(VectorField_), POINTER :: velBC => NULL()
+  !! Vector field for velocity boundary condition
+  !! If a boundary condition has useExternal=TRUE,
+  !! then we read boundary condition from velBC.
+  !! user can externally set the boundary condition
+  !! in velBC, which can be read in the program
+  !! currently, we use this for NitscheBoundary condition
+  CLASS(VectorField_), POINTER :: accBC => NULL()
+  !! Vector field for acceleration boundary condition.
+  !! If boundary condition has useExternal=TRUE,
+  !! then we read boundary condition from accBC.
+  !! User can externally set the boundary condition
+  !! in dispBC, which can be read in the program.
+  !! Currently, we use this for NitscheBoundary condition.
 CONTAINS
   PRIVATE
 
@@ -517,8 +579,10 @@ INTERFACE
     & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
     & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
     & isSymNitsche, nitscheAlpha, materialInterfaces, isConstantMatProp, &
-    & tMaterials, algorithm, isIsotropic, isIncompressible &
-    & )
+    & tMaterials, algorithm, isIsotropic, isIncompressible,  &
+    & rtoleranceForDisplacement, atoleranceForDisplacement,  &
+    & rtoleranceForVelocity, atoleranceForVelocity,  &
+    & rtoleranceForResidual, atoleranceForResidual)
     CHARACTER(*), INTENT(IN) :: prefix
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuityForSpace
     !! Type of continuity of basis function for Space
@@ -589,15 +653,27 @@ INTERFACE
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! Put parameters here
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipTypeForSpace
+    !! Interpolation point type in space
+    !! Default is Equidistance
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipTypeForTime
+    !! Interpolation point type in time
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisTypeForSpace
+    !! Basis type used for constructing the shape functions
+    !! Like monomials, Legendre, Chebyshev, Jacobi
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisTypeForTime
+    !! Basis type used for constructing the shape function in time
     REAL(DFP), OPTIONAL, INTENT(IN) :: alphaForSpace
+    !! Jacobi polynomial parameter  in space
     REAL(DFP), OPTIONAL, INTENT(IN) :: alphaForTime
+    !! Jacobi polynomial parameter in time
     REAL(DFP), OPTIONAL, INTENT(IN) :: betaForSpace
+    !! Jacobi polynomial parameter in space
     REAL(DFP), OPTIONAL, INTENT(IN) :: betaForTime
+    !! Jacobi polynomial parameter in time
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambdaForSpace
+    !! Ultraspherical polynomial parameter in space
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambdaForTime
+    !! Ultraspherical polynomial parameter in time
     !!
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tDirichletBC
     !! Total number of Dirichlet domain for pressure, default=0
@@ -621,6 +697,18 @@ INTERFACE
     !! It is true if the material is isotropic
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIncompressible
     !! It is true if the material is incompressible
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtoleranceForDisplacement
+    !! relative tolerance for convergence in displacement field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtoleranceForVelocity
+    !! relative tolerance for convergence in velocity field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: rtoleranceForResidual
+    !! relative tolerance for velocity field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForDisplacement
+    !! absolute tolerance for convergence in displacement field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForVelocity
+    !! absolute tolerance for convergence in velocity field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForResidual
+    !! absolute tolerance for velocity
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 

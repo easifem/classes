@@ -52,10 +52,27 @@ CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
 !! Alpha for Nitsche boundary
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isSymNitsche = .TRUE.
+!! Default value of symmetric Nitsche formulation
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isConstantMatProp = .TRUE.
+!! Default value of constant material property
 INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_algorithm = 1_I4B
+!! Default value of algorithm
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIsotropic = .TRUE.
+!! Default value for isotropicicity
 LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isIncompressible = .FALSE.
+!! Default value for incompressibility
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForDisplacement = 1.0E-6
+!! Default absolute tolerance for displacement
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForDisplacement = 1.0E-6
+!! Default relative tolerance for displacement
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForVelocity = 1.0E-6
+!! Default absolute tolerance for velocity
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForVelocity = 1.0E-6
+!! Default relative tolerance for velocity
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForResidual = 1.0E-6
+!! Default absolute tolerance for residual
+REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForResidual = 1.0E-6
+!! Default relative tolerance for residual
 
 !----------------------------------------------------------------------------
 !
