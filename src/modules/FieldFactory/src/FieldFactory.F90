@@ -28,8 +28,11 @@ USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "FieldFactory"
+
+PUBLIC :: AbstractMatrixFieldFactory
 PUBLIC :: MatrixFieldFactory
 PUBLIC :: BlockMatrixFieldFactory
+
 PUBLIC :: NodeFieldFactory
 PUBLIC :: BlockNodeFieldFactory
 PUBLIC :: ScalarFieldFactory
@@ -116,9 +119,25 @@ END INTERFACE
 ! summary: This function returns child of [[AbstractMatrixField_]]
 
 INTERFACE
-  MODULE FUNCTION MatrixFieldFactory(engine) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
+  MODULE FUNCTION AbstractMatrixFieldFactory(engine, name) RESULT(Ans)
     CLASS(AbstractMatrixField_), POINTER :: ans
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: name
+  END FUNCTION AbstractMatrixFieldFactory
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        MatrixFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractMatrixField_]]
+
+INTERFACE
+  MODULE FUNCTION MatrixFieldFactory(engine) RESULT(Ans)
+    CLASS(MatrixField_), POINTER :: ans
+    CHARACTER(*), INTENT(IN) :: engine
   END FUNCTION MatrixFieldFactory
 END INTERFACE
 
@@ -132,8 +151,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION BlockMatrixFieldFactory(engine) RESULT(Ans)
+    CLASS(BlockMatrixField_), POINTER :: ans
     CHARACTER(*), INTENT(IN) :: engine
-    CLASS(AbstractMatrixField_), POINTER :: ans
   END FUNCTION BlockMatrixFieldFactory
 END INTERFACE
 
