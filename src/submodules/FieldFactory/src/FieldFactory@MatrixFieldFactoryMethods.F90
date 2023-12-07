@@ -20,7 +20,8 @@
 ! summary: This modules is a factory for linear solvers
 
 SUBMODULE(FieldFactory) MatrixFieldFactoryMethods
-USE BaseMethod, ONLY: UpperCase
+USE BaseMethod, ONLY: UpperCase, Assert, Tostring
+USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 CONTAINS
 
@@ -116,5 +117,103 @@ CASE DEFAULT
   RETURN
 END SELECT
 END PROCEDURE BlockMatrixFieldFactory
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MatrixField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate1"
+INTEGER(I4B) :: tsize, ii
+TYPE(ParameterList_) :: param
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
+  END IF
+
+  obj(ii)%ptr => MatrixFieldFactory(engine)
+
+  CALL SetMatrixFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & matrixProp=matrixProps,  &
+    & spaceCompo=spaceCompo,  &
+    & timeCompo=timeCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
+END DO
+
+CALL param%DEALLOCATE()
+
+END PROCEDURE MatrixField_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE MatrixField_Initiate2
+CHARACTER(*), PARAMETER :: myName = "MatrixFieldIntiate2"
+INTEGER(I4B) :: tsize, ii, nn(8)
+TYPE(ParameterList_) :: param
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+nn = [tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType),  &
+    & SIZE(engine), SIZE(dom), SIZE(timeCompo), SIZE(matrixProps)]
+
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fileType, "// &
+  & "timeCompo, engine, dom, matProps should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: MatrixField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
+  END IF
+
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
+  END IF
+
+  obj(ii)%ptr => MatrixFieldFactory(engine(ii)%Chars())
+
+  CALL SetMatrixFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & matrixProp=matrixProps(ii)%chars(), &
+    & spaceCompo=spaceCompo(ii),  &
+    & timeCompo=timeCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
+END DO
+
+CALL param%DEALLOCATE()
+
+END PROCEDURE MatrixField_Initiate2
 
 END SUBMODULE MatrixFieldFactoryMethods

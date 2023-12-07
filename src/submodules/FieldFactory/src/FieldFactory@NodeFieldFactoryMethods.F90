@@ -373,4 +373,117 @@ CALL param%DEALLOCATE()
 
 END PROCEDURE VectorField_Initiate2
 
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ScalarField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldIntiate1"
+INTEGER(I4B) :: tsize, ii
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
+  END IF
+
+  obj(ii)%ptr => ScalarFieldFactory(engine)
+
+  CALL SetScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & fieldType=fieldType,  &
+    & engine=engine)
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
+END DO
+
+CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE ScalarField_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ScalarField_Initiate2
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldIntiate2"
+INTEGER(I4B) :: tsize, ii, nn(5)
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+nn = [ &
+  & tsize, SIZE(names), SIZE(fieldType), SIZE(engine),  &
+  & SIZE(dom) &
+]
+
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, fileType, "// &
+  & "engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: ScalarField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
+  END IF
+
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
+  END IF
+
+  obj(ii)%ptr => ScalarFieldFactory(engine(ii)%Chars())
+
+  CALL SetScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
+END DO
+
+CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE ScalarField_Initiate2
+
 END SUBMODULE NodeFieldFactoryMethods
