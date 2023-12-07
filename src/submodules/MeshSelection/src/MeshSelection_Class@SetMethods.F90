@@ -148,10 +148,20 @@ END PROCEDURE meshSelect_Set
 MODULE PROCEDURE meshSelection_Set_Vec
 CHARACTER(*), PARAMETER :: myName = "meshSelection_Set_Vec()"
 INTEGER(I4B) :: ii, tMaterials
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 tMaterials = SIZE(obj)
 DO ii = 1, tMaterials
   CALL obj(ii)%Set()
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE meshSelection_Set_Vec
 
 !----------------------------------------------------------------------------
