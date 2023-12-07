@@ -298,4 +298,58 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by subprocess.')
 END PROCEDURE obj_Initiate4
 
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
+INTEGER(I4B) :: ii, tsize
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+  DO ii = 1, tsize
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector_Scalar
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Vector
+INTEGER(I4B) :: ii, tsize
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+  DO ii = 1, tsize
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
+INTEGER(I4B) :: ii, tsize
+IF (ALLOCATED(obj)) THEN
+  tsize = SIZE(obj)
+  DO ii = 1, tsize
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector_Tensor
+
 END SUBMODULE ConstructorMethods

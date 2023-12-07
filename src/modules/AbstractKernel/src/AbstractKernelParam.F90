@@ -32,7 +32,7 @@ PUBLIC :: KernelGetCoordinateSystemID
 !
 !----------------------------------------------------------------------------
 
-CHARACTER(*), PUBLIC, PARAMETER :: toml_linsolver_name = "linSolver"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_LINSOLVER_NAME = "linSolver"
 CHARACTER(*), PUBLIC, PARAMETER :: TOML_DIRICHLET_BC_NAME = "dirichletBC"
 CHARACTER(*), PUBLIC, PARAMETER :: TOML_NEUMANN_BC_NAME = "neumannBC"
 CHARACTER(*), PUBLIC, PARAMETER :: TOML_NITSCHE_BC_NAME = "nitscheBC"
@@ -50,6 +50,8 @@ INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
 !
 !----------------------------------------------------------------------------
 
+CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_TANMAT_PROP = "UNSYM"
+!! Default tangent matrix properties
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
 !! Default value of engine
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
@@ -76,9 +78,23 @@ REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_atoleranceForResidual = 1.0E-6
 !! Default absolute tolerance for residual
 REAL(DFP), PARAMETER, PUBLIC :: DEFAULT_rtoleranceForResidual = 1.0E-6
 !! Default relative tolerance for residual
+INTEGER(I4B), PARAMETER, PUBLIC :: DEFAULT_tOverlappedMaterials = 1_I4B
+!! Total number of overlapped materials
 
 !----------------------------------------------------------------------------
 !
+!----------------------------------------------------------------------------
+
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_NNT = 1_I4B
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_NSD = 0_I4B
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_postProcessOpt = 1_I4B
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_tdof = 0_I4B
+LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isCommonDomain = .TRUE.
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_maxIter = 100
+REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_gravity(3) = 0.0_DFP
+
+!----------------------------------------------------------------------------
+!                                                         Space dependency
 !----------------------------------------------------------------------------
 
 INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_1D_H = 1
@@ -104,7 +120,7 @@ INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_SPHERICAL = 10
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem_char = "Cartesian"
 INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_CoordinateSystem = KERNEL_CARTESIAN
 
-TYPE :: coordinateSystem_
+TYPE :: KernelCoordinateSystem_
   INTEGER(I4B) :: OneD_H = KERNEL_1D_H
   INTEGER(I4B) :: OneD_V = KERNEL_1D_V
   INTEGER(I4B) :: TwoD = KERNEL_2D
@@ -117,13 +133,13 @@ TYPE :: coordinateSystem_
   INTEGER(I4B) :: Spherical = KERNEL_SPHERICAL
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => coordinateSystem_ToNumber
-END TYPE coordinateSystem_
+END TYPE KernelCoordinateSystem_
 
-TYPE(coordinateSystem_), PUBLIC, PARAMETER :: typeCoordinateSystem =  &
-  & coordinateSystem_()
+TYPE(KernelCoordinateSystem_), PUBLIC, PARAMETER :: &
+  & KernelCoordinateSystem = KernelCoordinateSystem_()
 
 !----------------------------------------------------------------------------
-!
+!                                                          Time dependency
 !----------------------------------------------------------------------------
 
 INTEGER(I4B), PUBLIC, PARAMETER :: KERNEL_STATIC = 0
@@ -144,7 +160,7 @@ REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_dt = 0.0_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_startTime = 0.0_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_endTime = 0.0_DFP
 
-TYPE :: timeDependency_
+TYPE :: KernelTimeDependency_
   INTEGER(I4B) :: static = KERNEL_STATIC
   INTEGER(I4B) :: steady = KERNEL_STEADY
   INTEGER(I4B) :: pseudostatic = KERNEL_PSEUDOSTATIC
@@ -152,10 +168,33 @@ TYPE :: timeDependency_
   INTEGER(I4B) :: dynamic = KERNEL_DYNAMIC
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => timeDependency_ToNumber
-END TYPE timeDependency_
+END TYPE KernelTimeDependency_
 
-TYPE(timeDependency_), PARAMETER, PUBLIC :: typeTimeDependency = &
-  & timeDependency_()
+TYPE(KernelTimeDependency_), PARAMETER, PUBLIC :: KernelTimeDependency = &
+  & KernelTimeDependency_()
+
+!----------------------------------------------------------------------------
+!                                                       Problem type
+!----------------------------------------------------------------------------
+
+INTEGER(I4B), PARAMETER :: KERNEL_TYPE_SCALAR = Scalar
+INTEGER(I4B), PARAMETER :: KERNEL_TYPE_VECTOR = Vector
+INTEGER(I4B), PARAMETER :: KERNEL_TYPE_MULTI_PHYSICS = Vector + 100
+INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_PROBLEM_TYPE = -1_I4B
+INTEGER(I4B), PUBLIC, PARAMETER :: PROBLEM_TYPE_NONE = -1_I4B
+CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_PROBLEM_TYPE_CHAR = "NONE"
+
+TYPE :: KernelProblemType_
+  INTEGER(I4B) :: scalar = KERNEL_TYPE_SCALAR
+  INTEGER(I4B) :: vector = KERNEL_TYPE_VECTOR
+  INTEGER(I4B) :: multiPhysics = KERNEL_TYPE_MULTI_PHYSICS
+  INTEGER(I4B) :: NONE = PROBLEM_TYPE_NONE
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: ToNumber => problemType_ToNumber
+END TYPE KernelProblemType_
+
+TYPE(KernelProblemType_), PARAMETER, PUBLIC :: KernelProblemType =  &
+  & KernelProblemType_()
 
 !----------------------------------------------------------------------------
 !
@@ -214,22 +253,10 @@ REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForTime = 0.0_DFP
 !
 !----------------------------------------------------------------------------
 
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_NNT = 1_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_NSD = 0_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_postProcessOpt = 1_I4B
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_tdof = 0_I4B
-LOGICAL(LGT), PUBLIC, PARAMETER :: DEFAULT_isCommonDomain = .TRUE.
-INTEGER(I4B), PUBLIC, PARAMETER :: DEFAULT_maxIter = 100
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_gravity(3) = 0.0_DFP
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 CONTAINS
 
 FUNCTION coordinateSystem_ToNumber(obj, name) RESULT(ans)
-  CLASS(coordinateSystem_), INTENT(IN) :: obj
+  CLASS(KernelCoordinateSystem_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   TYPE(String) :: astr
@@ -269,7 +296,7 @@ END FUNCTION coordinateSystem_ToNumber
 ! summary:  Convert time dependency to number
 
 FUNCTION timeDependency_ToNumber(obj, name) RESULT(ans)
-  CLASS(timeDependency_), INTENT(IN) :: obj
+  CLASS(KernelTimeDependency_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: name
   INTEGER(I4B) :: ans
   TYPE(String) :: astr
@@ -285,6 +312,28 @@ FUNCTION timeDependency_ToNumber(obj, name) RESULT(ans)
   END SELECT
   astr = ""
 END FUNCTION timeDependency_ToNumber
+
+!----------------------------------------------------------------------------
+!                                                     problemType_ToNumber
+!----------------------------------------------------------------------------
+
+FUNCTION problemType_ToNumber(obj, name) RESULT(ans)
+  CLASS(KernelProblemType_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: name
+  INTEGER(I4B) :: ans
+  CHARACTER(:), ALLOCATABLE :: astr
+  astr = Uppercase(name)
+  ans = DEFAULT_PROBLEM_TYPE
+  SELECT CASE (astr)
+  CASE ("SCALAR")
+    ans = obj%scalar
+  CASE ("VECTOR")
+    ans = obj%vector
+  CASE ("MULTIPHYSICS")
+    ans = obj%multiPhysics
+  END SELECT
+  astr = ""
+END FUNCTION problemType_ToNumber
 
 !----------------------------------------------------------------------------
 !

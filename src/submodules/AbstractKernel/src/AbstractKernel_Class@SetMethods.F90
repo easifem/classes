@@ -25,10 +25,81 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set
-CHARACTER(*), PARAMETER :: myName = "obj_Set"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine has not been implemented yet')
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+TYPE(BoundingBox_) :: bbox
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+CALL obj%CheckError()
+
+CALL obj%SetMeshData()
+
+! Set Mesh Data required for Nitsche formulation from MovingMeshUtility
+IF (obj%isNitsche) CALL obj%SetNitscheMeshData()
+
+! MaterialToMesh: Here we are calling Set() method on
+! solidMaterialToMesh, which is an
+! instance of MeshSelection_, it contain information
+! of meshID for each material type
+! From MovingMeshUtility
+CALL obj%SetMaterialToMesh()
+
+! Call InitiateFields, which is defined by children of abstract kernel
+CALL obj%InitiateFields()
+
+! Now we map materials (MeshSelection_) to the domain
+CALL obj%SetMaterialToDomain()
+
+! now we make elemToMatId, which contains fluid-material-id for
+! each element. We can use these material-id to Get access the fluid material
+CALL obj%SetElementToMatID()
+
+! Set finite element in space as well as in time
+! Set local space function data in space and time
+CALL obj%SetFiniteElements()
+! CALL obj%SetElemShapeData()
+
+! Local element shape data for the domain of velocity field
+CALL obj%SetFacetFiniteElements()
+! CALL obj%SetFacetElemShapeData()
+
+! Get length scale of the problem
+bbox = obj%dom%GetBoundingBox()
+obj%lengthScale = GetDiameter(bbox)
+
+! Create MatIfaceConnectData
+! CALL obj%SetMatIFaceConnectData()
+
+! Create SetConstantMatProp
+CALL obj%SetMaterialProperties()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
 END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
+!                                                          SetMaterialToMesh
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterialToMesh
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaterialToMesh()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+CALL MeshSelectionSet(obj%solidMaterialToMesh)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_SetMaterialToMesh
 
 !----------------------------------------------------------------------------
 !                                                         SetCurrentTimeStep
@@ -80,6 +151,129 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 END PROCEDURE obj_SetMeshData
+
+!----------------------------------------------------------------------------
+!                                                       SetMaterialToDomain
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaterialToDomain
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaterialToDomain()"
+INTEGER(I4B) :: ii, kk, jj, nsd
+INTEGER(I4B), ALLOCATABLE :: indx(:)
+LOGICAL(LGT) :: isok
+CLASS(Domain_), POINTER :: dom
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not allocated.')
+  RETURN
+END IF
+
+dom => obj%dom
+
+nsd = obj%nsd
+DO ii = 1, nsd
+  CALL dom%SetTotalMaterial(dim=ii, n=obj%tOverlappedMaterials)
+  !! Add one material to all meshes of domain
+  indx = dom%GetTotalMaterial(dim=ii)
+  indx = indx - indx(1)
+  IF (ANY(indx .NE. 0)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Some error occured.')
+    RETURN
+  END IF
+END DO
+
+obj%SOLID_MATERIAL_ID = dom%GetTotalMaterial(dim=nsd, entityNum=1)
+
+DO ii = 1, obj%tSolidMaterials
+  DO kk = 1, obj%nsd
+    indx = obj%solidMaterialToMesh(ii)%GetMeshID(dim=kk)
+    DO jj = 1, SIZE(indx)
+      CALL dom%SetMaterial( &
+        & dim=kk, &
+        & entityNum=indx(jj), &
+        & medium=obj%SOLID_MATERIAL_ID, &
+        & material=ii)
+    END DO
+  END DO
+END DO
+
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+NULLIFY (dom)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_SetMaterialToDomain
+
+!----------------------------------------------------------------------------
+!                                                         SetElementToMatID
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetElementToMatID
+CHARACTER(*), PARAMETER :: myName = "obj_SetElementToMatID()"
+INTEGER(I4B) :: ii
+INTEGER(I4B), ALLOCATABLE :: indx(:)
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+ii = obj%dom%GetTotalElements()
+CALL Reallocate(obj%elemToMatId, ii, obj%tOverlappedMaterials)
+DO ii = 1, obj%tSolidMaterials
+  indx = obj%solidMaterialToMesh(ii)%GetElemNum(domain=obj%dom)
+  obj%elemToMatId(indx, obj%SOLID_MATERIAL_ID) = ii
+END DO
+IF (ALLOCATED(indx)) DEALLOCATE (indx)
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_SetElementToMatID
+
+!----------------------------------------------------------------------------
+!                                                   SetMatIFaceConnectData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMatIFaceConnectData
+CHARACTER(*), PARAMETER :: myName = "obj_SetMatIFaceConnectData()"
+INTEGER(I4B) :: ii, jj, tsize
+CLASS(Mesh_), POINTER :: amesh
+CLASS(Domain_), POINTER :: dom
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+amesh => NULL()
+dom => NULL()
+dom => obj%dom
+IF (obj%ismaterialInterfaces) THEN
+  tsize = SIZE(obj%materialInterfaces)
+  DO ii = 1, tsize
+    jj = obj%materialInterfaces(ii)
+    amesh => dom%GetMeshPointer(dim=obj%nsd - 1, entityNum=jj)
+    CALL obj%matIfaceConnectData(ii)%InitiateFacetToCellData( &
+      & facetMesh=amesh, cellDomain=dom)
+  END DO
+END IF
+NULLIFY (amesh, dom)
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_SetMatIFaceConnectData
 
 !----------------------------------------------------------------------------
 !                                                         SetFiniteElements
@@ -474,6 +668,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetFacetFiniteElements()"
 CALL e%RaiseWarning(modName//'::'//myName//' - '// &
   & '[WIP WARNING] :: This routine has been implemented yet.')
 END PROCEDURE obj_SetFacetFiniteElements
+
+!----------------------------------------------------------------------------
+!                                                       SetMaterialToDomain
+!----------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------
 !

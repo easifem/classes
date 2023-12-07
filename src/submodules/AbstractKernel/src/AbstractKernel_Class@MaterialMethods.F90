@@ -15,6 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractKernel_Class) MaterialMethods
+USE BaseMethod
+USE FieldFactory
+USE KernelUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -37,7 +40,7 @@ IF (.NOT. ALLOCATED(obj%solidMaterialToMesh)) THEN
 END IF
 
 CALL AddSolidMaterial(obj=obj%solidMaterial,  &
-  & tMaterials=obj%tMaterials,  &
+  & tMaterials=obj%tSolidMaterials,  &
   & materialNo=materialNo,  &
   & param=param,  &
   & region=region,  &
@@ -48,8 +51,96 @@ CALL AddSolidMaterial(obj=obj%solidMaterial,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_AddSolidMaterial
+
+!----------------------------------------------------------------------------
+!                                                       InitiateMassDensity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateMassDensity
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateMassDensity()"
+LOGICAL(LGT) :: isok
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+isok = ALLOCATED(obj%solidMaterial)
+IF (.NOT. isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
+  RETURN
+END IF
+
+CALL KernelInitiateScalarProperty(vars=obj%massDensity,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="massDensity", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_InitiateMassDensity
+
+!----------------------------------------------------------------------------
+!                                               InitiateElasticityProperties
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateElasticityProperties
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateElasticityProperties()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+isok = ALLOCATED(obj%solidMaterial)
+IF (.NOT. isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
+  RETURN
+END IF
+
+CALL KernelInitiateScalarProperty(vars=obj%lame_lambda,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="lambda", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+CALL KernelInitiateScalarProperty(vars=obj%lame_mu,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="mu", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+CALL KernelInitiateTensorProperty(vars=obj%Cijkl,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="Cijkl", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+CALL KernelInitiateConstantElasticityProperties(lambda=obj%lame_lambda,  &
+  & mu=obj%lame_mu, Cijkl=obj%Cijkl, dom=obj%dom,  &
+  & nnt=obj%nnt, engine=obj%engine%chars())
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_InitiateElasticityProperties
 
 !----------------------------------------------------------------------------
 !                                                  InitiateConstantMatProps
@@ -57,9 +148,76 @@ END PROCEDURE obj_AddSolidMaterial
 
 MODULE PROCEDURE obj_InitiateMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMaterialProperties"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL obj%InitiateMassDensity()
+CALL obj%InitiateElasticityProperties()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_InitiateMaterialProperties
+
+!----------------------------------------------------------------------------
+!                                                             SetMassDensity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMassDensity
+CHARACTER(*), PARAMETER :: myName = "obj_SetMassDensity()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+isok = ALLOCATED(obj%solidMaterial)
+IF (.NOT. isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
+  RETURN
+END IF
+
+CALL KernelSetScalarProperty(vars=obj%massDensity,  &
+  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & varname="massDensity", matid=obj%SOLID_MATERIAL_ID)
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_SetMassDensity
+
+!----------------------------------------------------------------------------
+!                                                    SetElasticityProperties
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetElasticityProperties
+CHARACTER(*), PARAMETER :: myName = "obj_SetElasticityProperties()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_InitiateMaterialProperties
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_SetElasticityProperties
 
 !----------------------------------------------------------------------------
 !                                                       SetConstantMatProps
@@ -67,12 +225,18 @@ END PROCEDURE obj_InitiateMaterialProperties
 
 MODULE PROCEDURE obj_SetMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetConstantMatProp"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_SetMaterialProperties
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_SetMaterialProperties
 
 END SUBMODULE MaterialMethods

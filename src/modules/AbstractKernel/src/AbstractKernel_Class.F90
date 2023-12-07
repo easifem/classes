@@ -24,6 +24,7 @@ USE BaseType
 USE String_Class, ONLY: String
 USE AbstractKernelParam
 USE AbstractMatrixField_Class
+USE Mesh_Class
 USE Domain_Class
 USE DomainConnectivity_Class
 USE DirichletBC_Class
@@ -52,11 +53,12 @@ CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
   & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
   & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
   & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"//&
-  & "/tMaterialInterfaces/tMaterials/tDirichletBC/tWeakDirichletBC/"//  &
+  & "/tMaterialInterfaces/tSolidMaterials/tDirichletBC/tWeakDirichletBC/"//  &
   & "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"//  &
-  & "rtoleranceForResidual/atoleranceForDisplacement/"//&
+  & "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"//&
   & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
-  & "isConstantMatProp/isIsotropic/isIncompressible/algorithm"
+  & "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"//  &
+  & "problemType/tOverlappedMaterials"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -69,11 +71,8 @@ PUBLIC :: AbstractKernelExport
 PUBLIC :: AbstractKernelImport
 PUBLIC :: AbstractKernelImportParamFromToml
 PUBLIC :: AbstractKernelImportFromToml
-
-PUBLIC :: KernelGetCoordinateSystemName
-PUBLIC :: KernelGetCoordinateSystemID
-PUBLIC :: KernelGetNSDFromID
-PUBLIC :: KernelGetNSDFromName
+PUBLIC :: AbstractKernelInitiateTangentMatrix
+PUBLIC :: AbstractKernelInitiateFields
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
@@ -104,7 +103,14 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Set it to True for isotropic elasticity.
   LOGICAL(LGT) :: isIncompressible = DEFAULT_isIncompressible
     !! TRUE if the material is incompressible
-  INTEGER(I4B) :: tMaterials = 0
+  INTEGER(I4B) :: problemType = DEFAULT_PROBLEM_TYPE
+  !! Kernel problem type
+  !! KernelProblemType%scalar
+  !! KernelProblemType%Vector
+  !! KernelProblemType%MultiPhysics
+  INTEGER(I4B) :: tOverlappedMaterials = 1
+  !! Total overlapped materials (like fluid, soil, solid)
+  INTEGER(I4B) :: tSolidMaterials = 0
   !! Total number of solid materials
   INTEGER(I4B) :: SOLID_MATERIAL_ID = 0
   !! solid material id
@@ -116,13 +122,10 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Which type of linear solver library (engine) we use to
   !! solve system of linear equations. We can specify following
   !! values.
-  !! `NATIVE_SERIAL`
-  !! `NATIVE_OMP`
-  !! `NATIVE_MPI`
-  !! `LIS_SERIAL`
-  !! `LIS_OMP`
-  !! `LIS_MPI`
-  !! `PETSC`
+  !! `NATIVE_SERIAL`, `NATIVE_OMP`, `NATIVE_MPI`, `LIS_SERIAL`
+  !! `LIS_OMP`, `LIS_MPI`, `PETSC`
+  TYPE(String) :: tanmatProp
+  !! Symmetric or Unsymmetric tangent matrix
   INTEGER(I4B) :: coordinateSystem = DEFAULT_coordinateSystem
   !! Spatial coordinate system type. It can take following values
   !! `KERNEL_CARTESIAN` for Cartesian coordinates
@@ -150,6 +153,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Total number of degree of freedom per node
   !! NOTE: This variable is Set internally by each kernel while
   !! Setting the kernel.
+  REAL(DFP), ALLOCATABLE :: timeVec(:)
+  !! time vector
   REAL(DFP) :: normRHS = 0.0_DFP
   !! norm of the right-hand-side vector in the system of linear equations
   !! NOTE: This variable is used internally
@@ -352,10 +357,16 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! materialInterfaces
   TYPE(MeshSelection_), ALLOCATABLE :: solidMaterialToMesh(:)
   !! Map solid material to the mesh portion
-  !! The size of solidMaterialToMesh is the same as `tMaterials`
+  !! The size of solidMaterialToMesh is the same as `tSolidMaterials`
   !! In this way, solidMaterialToMesh(i) gives the mesh region of ith element
   TYPE(SolidMaterialPointer_), ALLOCATABLE :: solidMaterial(:)
   !! Pointer to the solid material
+  TYPE(MatrixFieldPointer_), ALLOCATABLE :: matrixFields(:)
+  !! List of vectorfields
+  TYPE(VectorFieldPointer_), ALLOCATABLE :: vectorFields(:)
+  !! List of vectorfields
+  TYPE(ScalarFieldPointer_), ALLOCATABLE :: scalarFields(:)
+  !! List of scalarFields
   CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
   !! Global Stiffness matrix
   CLASS(MatrixField_), POINTER :: massMat => NULL()
@@ -393,6 +404,27 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Currently, we use this for NitscheBoundary condition.
   TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: solidMechData(:)
   !! Constitutive data for solid materials
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: massDensity(:)
+  !! Mass density
+  !! This will be a scalar mesh field
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: lame_mu(:)
+  !! Lame parameter
+  !! NOTE: It is need in the case of Isotropic elasticity
+  !! This will be a scalar mesh field
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: lame_lambda(:)
+  !! Lame parameter
+  !! NOTE: It is need in the case of Isotropic elasticity
+  !! This will be a scalar mesh field
+  TYPE(AbstractTensorMeshFieldPointer_), ALLOCATABLE :: Cijkl(:)
+  !! Elasticity tensor
+  !! NOTE: It is used for non Isotropic elasticity
+  !! This will be a tensor mesh field
+  TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: stress(:)
+  !! Stress tensor
+  !! This will be a tensor mesh field
+  TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: strain(:)
+  !! Strain tensor
+  !! This will be a tensor mesh field
 CONTAINS
   PRIVATE
 
@@ -410,13 +442,25 @@ CONTAINS
   !! it should be implemented by the subclass.
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the memory occupied by the kernel
-
   PROCEDURE, PUBLIC, PASS(obj) :: CheckError => obj_CheckError
+  !! Check error
 
   ! CONSTRUCTOR:
   ! @InitiateFieldsMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFields => obj_InitiateFields
   !! Initiate the fields
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateTangentMatrix =>  &
+    & obj_InitiateTangentMatrix
+  !! Initiate tangent matrix
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarFields =>  &
+    & obj_InitiateScalarFields
+  !! Initiate scalar fields
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVectorFields => &
+    & obj_InitiateVectorFields
+  !! Initiate vector fields
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMatrixFields => &
+    & obj_InitiateMatrixFields
+  !! Initiate vector fields
 
   ! GET:
   ! @GetMethods
@@ -461,6 +505,17 @@ CONTAINS
     & obj_SetFacetFiniteElements
   !! Set Facet Finite Elements
   !! TODO: Implement SetFacetFiniteElements method
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToMesh =>  &
+    & obj_SetMaterialToMesh
+  !! Set material to mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
+    & obj_SetMaterialToDomain
+  !! Set material to mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: SetElementToMatID =>  &
+    & obj_SetElementToMatID
+  !! Set element to material id
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMatIFaceConnectData =>  &
+    & obj_SetMatIFaceConnectData
 
   ! SET:
   ! @BCMethods
@@ -491,11 +546,21 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateMaterialProperties =>  &
     & obj_InitiateMaterialProperties
   !! Initiate material properties
-  !! INFO: This routine should be implemented by subclass
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialProperties =>  &
     & obj_SetMaterialProperties
   !! Set material properties
-  !! INFO: This routine should be implemented by subclass
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateMassDensity =>  &
+    & obj_InitiateMassDensity
+  !! Initiate mass density field if massDensity is defined in the materials
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMassDensity =>  &
+    & obj_SetMassDensity
+  !! Set mass density if mass density is defined in the materials
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElasticityProperties =>  &
+    & obj_InitiateElasticityProperties
+  !! Initiate lame parameters for isotropic elasticity
+  PROCEDURE, PUBLIC, PASS(obj) :: SetElasticityProperties =>  &
+    & obj_SetElasticityProperties
+  !! Set Lame parameters for isotropic elasticity
 
   ! IO:
   ! @IOMethods
@@ -576,7 +641,7 @@ END TYPE AbstractKernelPointer_
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractKernelParam( &
-    & prefix, param, name, engine, coordinateSystem, &
+    & param, prefix, problemType, name, engine, coordinateSystem, &
     & domainFile, isCommonDomain, gravity, timeDependency, &
     & maxIter, nsd, nnt, tdof, dt, startTime, endTime, &
     & currentTime, currentTimeStep, totalTimeStep, &
@@ -589,11 +654,17 @@ INTERFACE
     & basisTypeForTime, alphaForTime, betaForTime, lambdaForTime, &
     & postProcessOpt, tDirichletBC, tNeumannBC, tWeakDirichletBC, &
     & isSymNitsche, nitscheAlpha, materialInterfaces, isConstantMatProp, &
-    & tMaterials, algorithm, isIsotropic, isIncompressible,  &
+    & tSolidMaterials, algorithm, isIsotropic, isIncompressible,  &
     & rtoleranceForDisplacement, atoleranceForDisplacement,  &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
-    & rtoleranceForResidual, atoleranceForResidual)
+    & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
+    & tOverlappedMaterials)
     CHARACTER(*), INTENT(IN) :: prefix
+    INTEGER(I4B), INTENT(IN) :: problemType
+    !! Kernel problem type. Problem can be scalar, vector, or multi-physics
+    !! KernelProblemType%Scalar
+    !! KernelProblemType%Vector
+    !! KernelProblemType%MultiPhysics
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuityForSpace
     !! Type of continuity of basis function for Space
     !! NOTE: Default value is given in AbstractKernelParam
@@ -697,7 +768,7 @@ INTERFACE
     !! Alpha parameter used in Nitsche formulation
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: materialInterfaces(:)
     !! Mesh-IDs of materialInterfaces
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tMaterials
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSolidMaterials
     !! total number of materials
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isConstantMatProp
     !! It is true if the material properties are constant
@@ -719,6 +790,10 @@ INTERFACE
     !! absolute tolerance for convergence in velocity field
     REAL(DFP), OPTIONAL, INTENT(IN) :: atoleranceForResidual
     !! absolute tolerance for velocity
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: tanmatProp
+    !! Tangent matrix properties
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tOverlappedMaterials
+    !! Total number of overlapped materials
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -799,7 +874,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       InitiateFields@InitiateFieldsMethods
+!                                 InitiateTangentMatrix@InitiateFieldMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Oct 2022
+! summary: This routine initiates the tangent matrix
+
+INTERFACE AbstractKernelInitiateTangentMatrix
+  MODULE SUBROUTINE obj_InitiateTangentMatrix(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateTangentMatrix
+END INTERFACE AbstractKernelInitiateTangentMatrix
+
+!----------------------------------------------------------------------------
+!                                InitiateScalarFields@InitiateFieldsMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -807,10 +896,59 @@ END INTERFACE
 ! summary: This routine initiates the matrix and vector fields
 
 INTERFACE
+  MODULE SUBROUTINE obj_InitiateScalarFields(obj, names)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: names(:)
+  END SUBROUTINE obj_InitiateScalarFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 InitiateVectorFields@InitiateFieldsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Oct 2022
+! summary: This routine initiates the matrix and vector fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateVectorFields(obj, names)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: names(:)
+  END SUBROUTINE obj_InitiateVectorFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 InitiateMatrixFields@InitiateFieldsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Oct 2022
+! summary: This routine initiates the matrix and vector fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateMatrixFields(obj, names, matrixProp,  &
+    & spaceCompo, timeCompo)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: names(:)
+    TYPE(String), INTENT(IN) :: matrixProp(:)
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+  END SUBROUTINE obj_InitiateMatrixFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateFields@InitiateFieldsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Oct 2022
+! summary: This routine initiates the matrix and vector fields
+
+INTERFACE AbstractKernelInitiateFields
   MODULE SUBROUTINE obj_InitiateFields(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateFields
-END INTERFACE
+END INTERFACE AbstractKernelInitiateFields
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -989,6 +1127,62 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               SetMaterialToMesh@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-07
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterialToMesh(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMaterialToMesh
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetMaterialToMesh@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-07
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaterialToDomain(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMaterialToDomain
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetMaterialToMesh@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-07
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetElementToMatID(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetElementToMatID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMatIFaceConnectData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-07
+! summary:  Set material to mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMatIFaceConnectData(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMatIFaceConnectData
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                          AddSolidMaterial@MaterialMethods
 !----------------------------------------------------------------------------
 
@@ -1032,7 +1226,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-06-19
-! summary: Initiate constant material properties
+! summary: Initiate material properties
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateMaterialProperties(obj)
@@ -1046,12 +1240,68 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-06-19
-! summary: Set constant material properties
+! summary: Set material properties
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterialProperties(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetMaterialProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     InitiateMassDensity@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate mass density field
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateMassDensity(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateMassDensity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetMassDensity@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set mass density
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMassDensity(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetMassDensity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               InitiateElasticityProperties@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate elasticity properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateElasticityProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateElasticityProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetMassDensity@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set elasticity properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetElasticityProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetElasticityProperties
 END INTERFACE
 
 !----------------------------------------------------------------------------

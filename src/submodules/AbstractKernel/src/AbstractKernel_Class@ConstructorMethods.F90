@@ -69,7 +69,11 @@ CALL Set(param, datatype="char", prefix=prefix,  &
   & VALUE=input(option=quadratureTypeForTime,  &
   & default=DEFAULT_quadratureTypeForTime))
 
+CALL Set(param, datatype="char", prefix=prefix, key="tanmatProp",  &
+  & VALUE=input(option=tanmatProp, default=DEFAULT_TANMAT_PROP))
+
 !! int
+CALL Set(param, TypeIntI4B, prefix, "problemType", problemType)
 CALL Set(param, TypeIntI4B, prefix, "coordinateSystem", coordinateSystem)
 CALL Set(param, TypeIntI4B, prefix, "timeDependency",  &
   & INPUT(option=timeDependency, default=KERNEL_STEADY))
@@ -104,6 +108,9 @@ CALL Set(param, TypeIntI4B, prefix, "tWeakDirichletBC",  &
 CALL Set(param, .TRUE., prefix, "isSymNitsche",  &
   & INPUT(option=isSymNitsche, default=DEFAULT_isSymNitsche))
 ! INFO: DEFAULT_isSymNitsche is definedin AbstractElasticityParam module
+
+CALL Set(param, TypeIntI4B, prefix, "tOverlappedMaterials",  &
+  & INPUT(option=tOverlappedMaterials, default=DEFAULT_tOverlappedMaterials))
 
 ! real
 CALL Set(param, TypeDFP, prefix, "nitscheAlpha",  &
@@ -186,8 +193,8 @@ IF (PRESENT(materialInterfaces)) THEN
 END IF
 CALL Set(param, TypeIntI4B, prefix, "tMaterialInterfaces", ii)
 
-CALL Set(param, TypeIntI4B, prefix, "tMaterials",  &
- & INPUT(option=tMaterials, default=1_I4B))
+CALL Set(param, TypeIntI4B, prefix, "tSolidMaterials",  &
+ & INPUT(option=tSolidMaterials, default=1_I4B))
 
 !bool
 CALL Set(param, .TRUE., prefix, "isConstantMatProp",  &
@@ -302,6 +309,7 @@ obj%isInitiated = .TRUE.
 prefix = obj%GetPrefix()
 CALL obj%CheckEssentialParam(param, prefix)
 
+CALL GetValue(param, prefix, "problemType", obj%problemType)
 CALL GetValue(param, prefix, "isCommonDomain", obj%isCommonDomain)
 CALL GetValue(param, prefix, "name", obj%name)
 CALL GetValue(param, prefix, "engine", obj%engine)
@@ -334,6 +342,9 @@ CALL GetValue(param, prefix, "quadratureTypeForTime",  &
 CALL GetValue(param, prefix, "quadTypeForSpace", obj%quadTypeForSpace)
 CALL GetValue(param, prefix, "quadTypeForTime", obj%quadTypeForTime)
 CALL GetValue(param, prefix, "domainFile", obj%domainFile)
+CALL GetValue(param, prefix, "tanmatProp", obj%tanmatProp)
+CALL GetValue(param, prefix, "tOverlappedMaterials",  &
+  & obj%tOverlappedMaterials)
 
 obj%ipTypeForSpace = DEFAULT_ipTypeForSpace
 obj%ipTypeForTime = DEFAULT_ipTypeForTime
@@ -417,11 +428,11 @@ CALL GetValue(obj=param, prefix=prefix, key="isConstantMatProp",  &
 CALL GetValue(param, prefix, "isIsotropic", obj%isIsotropic)
 CALL GetValue(param, prefix, "isIncompressible", obj%isIncompressible)
 
-! tMaterials
-obj%tMaterials = 0
-CALL GetValue(param, prefix, "tMaterials", obj%tMaterials)
-ALLOCATE (obj%solidMaterial(obj%tMaterials))
-ALLOCATE (obj%solidMaterialToMesh(obj%tMaterials))
+! tSolidMaterials
+obj%tSolidMaterials = 0
+CALL GetValue(param, prefix, "tSolidMaterials", obj%tSolidMaterials)
+ALLOCATE (obj%solidMaterial(obj%tSolidMaterials))
+ALLOCATE (obj%solidMaterialToMesh(obj%tSolidMaterials))
 
 ! materialInterfaces
 tMaterialInterfaces = 0
@@ -447,6 +458,8 @@ CALL GetValue(param, prefix, "atoleranceForResidual",  &
 CALL GetValue(param, prefix, "rtoleranceForResidual",  &
 & obj%rtoleranceForResidual)
 
+obj%tDOF = obj%nsd * obj%nnt
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -460,6 +473,9 @@ END PROCEDURE obj_Initiate
 
 MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii, jj
+obj%tOverlappedMaterials = 0
+obj%tanmatProp = ""
+obj%problemType = 0
 obj%IsInitiated = .FALSE.
 obj%name = ""
 obj%engine = ""
@@ -573,7 +589,7 @@ obj%isIncompressible = DEFAULT_isIncompressible
 obj%isMaterialInterfaces = .FALSE.
 IF (ALLOCATED(obj%materialInterfaces)) DEALLOCATE (obj%materialInterfaces)
 CALL DomainConnectivityDeallocate(obj%matIfaceConnectData)
-obj%tMaterials = 0
+obj%tSolidMaterials = 0
 obj%SOLID_MATERIAL_ID = 0
 
 CALL SolidMaterialDeallocate(obj%solidMaterial)
@@ -652,6 +668,12 @@ IF (ASSOCIATED(obj%dampingMat)) THEN
 END IF
 
 CALL VectorMeshFieldDeallocate(obj%solidMechData)
+CALL AbstractMeshFieldDeallocate(obj%massDensity)
+CALL AbstractMeshFieldDeallocate(obj%lame_mu)
+CALL AbstractMeshFieldDeallocate(obj%lame_lambda)
+CALL AbstractMeshFieldDeallocate(obj%Cijkl)
+CALL AbstractMeshFieldDeallocate(obj%stress)
+CALL AbstractMeshFieldDeallocate(obj%strain)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -659,26 +681,39 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckError
-CHARACTER(*), PARAMETER :: myName = "obj_CheckError"
+CHARACTER(*), PARAMETER :: myName = "obj_CheckError()"
+LOGICAL(LGT) :: problem
+
 ! Check
-IF (.NOT. ALLOCATED(obj%solidMaterialToMesh)) THEN
+problem = .NOT. ALLOCATED(obj%solidMaterialToMesh)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & '[WRONG CONFIG] solidMaterialToMesh is not allocated!')
 END IF
 
 ! Check
-IF (SIZE(obj%solidMaterialToMesh) .NE. obj%tMaterials) THEN
+problem = SIZE(obj%solidMaterialToMesh) .NE. obj%tSolidMaterials
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & '[WRONG CONFIG] SIZE( obj%solidMaterialToMesh ) [= '//  &
   & TOSTRING(SIZE(obj%solidMaterialToMesh))// &
-  & '] .NE. obj%tMaterials [= '//  &
-  & TOSTRING(obj%tMaterials)//']')
+  & '] .NE. obj%tSolidMaterials [= '//  &
+  & TOSTRING(obj%tSolidMaterials)//']')
 END IF
 
 ! Check
-IF (.NOT. ASSOCIATED(obj%dom)) THEN
+problem = .NOT. ASSOCIATED(obj%dom)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[WRONG CONFIG] Domain_::dom is not associated')
+END IF
+
+! Check
+problem = obj%problemType .EQ. 0_I4B
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[WRONG CONFIG] AbstractKernel_::obj%problemType is not set.')
+  RETURN
 END IF
 END PROCEDURE obj_CheckError
 
