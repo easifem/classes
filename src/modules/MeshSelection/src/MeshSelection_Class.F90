@@ -38,6 +38,7 @@ PUBLIC :: MeshSelectionPointer_
 PUBLIC :: MeshSelectionImportParamFromToml
 PUBLIC :: MeshSelectionImportFromToml
 PUBLIC :: SetMeshSelectionParam
+PUBLIC :: MeshSelectionSet
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
@@ -387,6 +388,20 @@ INTERFACE
     CLASS(MeshSelection_), INTENT(INOUT) :: obj
   END SUBROUTINE meshSelect_Set
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 Aug 2021
+! summary: This routine adds data to the meshSelection
+
+INTERFACE MeshSelectionSet
+  MODULE SUBROUTINE meshSelection_Set_Vec(obj)
+    CLASS(MeshSelection_), INTENT(INOUT) :: obj(:)
+  END SUBROUTINE meshSelection_Set_Vec
+END INTERFACE MeshSelectionSet
 
 !----------------------------------------------------------------------------
 !                                                          Import@IOMethods

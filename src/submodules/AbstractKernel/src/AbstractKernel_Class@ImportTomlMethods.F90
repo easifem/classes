@@ -35,15 +35,15 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml"
 TYPE(toml_table), POINTER :: linsolve_toml
 CLASS(AbstractLinSolver_), POINTER :: temp_linsolve_ptr
 TYPE(String) :: name, engine, coordinateSystem, domainFile,  &
-& timeDependency, baseInterpolationForSpace,  &
-& baseContinuityForSpace,  &
-& quadratureTypeForSpace, ipTypeForSpace, basisTypeForSpace, &
-& baseInterpolationForTime, baseContinuityForTime, quadratureTypeForTime,  &
-& ipTypeForTime, basisTypeForTime
+  & timeDependency, baseInterpolationForSpace,  &
+  & baseContinuityForSpace, quadratureTypeForSpace, ipTypeForSpace, &
+  & basisTypeForSpace, baseInterpolationForTime, baseContinuityForTime,  &
+  & quadratureTypeForTime, ipTypeForTime, basisTypeForTime,  &
+  & problemType, tanmatProp
 
-INTEGER(I4B) :: algorithm, tMaterials, tDirichletBC, tWeakDirichletBC,  &
+INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC,  &
   & tNeumannBC, tMaterialInterfaces, origin, stat, maxIter, nsd, nnt, tdof, &
-  & currentTimeStep, totalTimeStep, postProcessOpt, ii
+  & currentTimeStep, totalTimeStep, postProcessOpt, ii, tOverlappedMaterials
 
 INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
 
@@ -64,6 +64,12 @@ LOGICAL(LGT) :: isCommonDomain
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
+
+CALL toml_get(table, "problemType", problemType%raw,  &
+  & DEFAULT_PROBLEM_TYPE_CHAR, origin=origin, stat=stat)
+
+CALL toml_get(table, "baseContinuityForSpace", baseContinuityForSpace%raw,  &
+  & DEFAULT_baseContinuityForSpace, origin=origin, stat=stat)
 
 CALL toml_get(table, "baseContinuityForSpace", baseContinuityForSpace%raw,  &
   & DEFAULT_baseContinuityForSpace, origin=origin, stat=stat)
@@ -91,6 +97,10 @@ CALL toml_get(table, "engine", engine%raw, default_engine, origin=origin, &
 
 CALL toml_get(table, "name", name%raw, obj%GetPrefix(), origin=origin, &
   & stat=stat)
+
+CALL toml_get(table, "tanmatProp",   &
+  & tanmatProp%raw, DEFAULT_TANMAT_PROP, &
+  & origin=origin, stat=stat)
 
 CALL toml_get(table, "quadratureTypeForSpace",   &
   & quadratureTypeForSpace%raw, DEFAULT_quadratureTypeForSpace, &
@@ -193,7 +203,7 @@ ELSE
   CALL reallocate(materialInterfaces, tMaterialInterfaces)
 END IF
 
-CALL toml_get(table, "tMaterials", tMaterials, 1_I4B, origin=origin,  &
+CALL toml_get(table, "tSolidMaterials", tSolidMaterials, 1_I4B, origin=origin,  &
 & stat=stat)
 
 CALL toml_get(table, "tDirichletBC", tDirichletBC, 0_I4B,  &
@@ -239,10 +249,16 @@ CALL toml_get(table, "atoleranceForDisplacement", atoleranceForDisplacement, &
 CALL toml_get(table, "atoleranceForVelocity", atoleranceForVelocity,  &
   & DEFAULT_atoleranceForVelocity, origin=origin, stat=stat)
 
+CALL toml_get(table, "tOverlappedMaterials", tOverlappedMaterials,  &
+  & DEFAULT_tOverlappedMaterials, origin=origin, stat=stat)
+
 ! CALL Display(toml_serialize(table))
 
 CALL SetAbstractKernelParam( &
   & param=param,  &
+  & tOverlappedMaterials=tOverlappedMaterials, &
+  & tanmatProp=tanmatProp%chars(), &
+  & problemType=KernelProblemType%ToNumber(problemType%chars()), &
   & prefix=obj%GetPrefix(),  &
   & baseContinuityForSpace=baseContinuityForSpace%chars(),  &
   & baseContinuityForTime=baseContinuityForTime%chars(),  &
@@ -253,13 +269,13 @@ CALL SetAbstractKernelParam( &
   & name=name%chars(),  &
   & quadratureTypeForSpace=quadratureTypeForSpace%chars(),  &
   & quadratureTypeForTime=quadratureTypeForTime%chars(),  &
-  & coordinateSystem=typeCoordinateSystem%ToNumber(coordinateSystem//""),  &
+  & coordinateSystem=KernelCoordinateSystem%ToNumber(coordinateSystem//""),  &
   & currentTimeStep=currentTimeStep,  &
   & maxIter=maxIter,  &
   & nnt=nnt,  &
   & postProcessOpt=postProcessOpt,  &
   & tdof=tdof,  &
-  & timeDependency=typeTimeDependency%ToNumber(timeDependency%chars()),  &
+  & timeDependency=KernelTimeDependency%ToNumber(timeDependency%chars()),  &
   & totalTimeStep=totalTimeStep,  &
   & isCommonDomain=isCommonDomain,  &
   & currentTime=currentTime,  &
@@ -282,7 +298,7 @@ CALL SetAbstractKernelParam( &
   & isIsotropic=isIsotropic,  &
   & isIncompressible=isIncompressible,  &
   & materialInterfaces=materialInterfaces,  &
-  & tMaterials=tMaterials,  &
+  & tSolidMaterials=tSolidMaterials,  &
   & tDirichletBC=tDirichletBC,  &
   & tWeakDirichletBC=tWeakDirichletBC,  &
   & isSymNitsche=isSymNitsche,  &

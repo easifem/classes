@@ -114,8 +114,8 @@ END IF
 bool1 = ALLOCATED(obj%matIfaceConnectData)
 CALL Display(bool1, "matIfaceConnectData ALLOCATED: ", unitNo=unitNo)
 
-! tMaterials
-CALL Display(obj%tMaterials, "tMaterials: ", unitNo=unitNo)
+! tSolidMaterials
+CALL Display(obj%tSolidMaterials, "tSolidMaterials: ", unitNo=unitNo)
 
 ! incrementScale
 CALL Display(obj%incrementScale, "incrementScale : ", unitNo=unitNo)
@@ -173,6 +173,7 @@ CALL Display(bool1, "linsol ASSOCIATED: ", unitno=unitno)
 ! tanmat
 bool1 = ASSOCIATED(obj%tanmat)
 CALL Display(bool1, "tanmat ASSOCIATED: ", unitno=unitno)
+CALL Display(obj%tanmatProp, "tanmatProp: ", unitno=unitno)
 
 IF (bool1) THEN
   CALL obj%tanmat%Display("tanmat: ", unitNo=unitNo)

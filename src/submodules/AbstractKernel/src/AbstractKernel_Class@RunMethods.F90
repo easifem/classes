@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractKernel_Class) RunMethods
-USE BaseMethod
+! USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
