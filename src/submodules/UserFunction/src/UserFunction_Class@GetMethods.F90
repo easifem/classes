@@ -644,7 +644,7 @@ SUBROUTINE Vector_Space_GetVariable(obj, fevar, xij)
   CHARACTER(*), PARAMETER :: myName = "Vector_Space_GetVariable()"
   REAL(DFP), ALLOCATABLE :: val(:, :), r1(:)
   LOGICAL(LGT) :: isxij
-  INTEGER(I4B) :: ii, nrow, ncol, jj
+  INTEGER(I4B) :: nrow, ncol, jj
 
   isxij = PRESENT(xij)
   IF (isxij) THEN
@@ -681,7 +681,7 @@ SUBROUTINE Vector_Time_GetVariable(obj, fevar, timeVec)
   CHARACTER(*), PARAMETER :: myName = "Vector_Time_GetVariable()"
   REAL(DFP), ALLOCATABLE :: val(:, :), r1(:)
   LOGICAL(LGT) :: istimevec
-  INTEGER(I4B) :: ii, nrow, ncol, jj
+  INTEGER(I4B) :: nrow, ncol, jj
 
   istimevec = PRESENT(timeVec)
   IF (istimevec) THEN
@@ -718,8 +718,8 @@ SUBROUTINE Vector_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   ! internal variable
   CHARACTER(*), PARAMETER :: myName = "Vector_SpaceTime_GetVariable()"
   REAL(DFP), ALLOCATABLE :: val(:, :, :), r1(:), args(:)
-  LOGICAL(LGT) :: isxij, istimevec
-  INTEGER(I4B) :: dim1, dim2, dim3, ii, jj, kk, nsd
+  LOGICAL(LGT) :: isxij
+  INTEGER(I4B) :: dim1, dim2, dim3, jj, kk, nsd
 
   isxij = PRESENT(xij)
   IF (isxij) THEN
