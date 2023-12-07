@@ -141,4 +141,21 @@ IF (isAllocated(obj%NodeNum)) THEN
 END IF
 END PROCEDURE meshSelect_Set
 
+!----------------------------------------------------------------------------
+!                                                         MeshSelectionSet
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshSelection_Set_Vec
+CHARACTER(*), PARAMETER :: myName = "meshSelection_Set_Vec()"
+INTEGER(I4B) :: ii, tMaterials
+tMaterials = SIZE(obj)
+DO ii = 1, tMaterials
+  CALL obj(ii)%Set()
+END DO
+END PROCEDURE meshSelection_Set_Vec
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE SetMethods
