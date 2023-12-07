@@ -28,15 +28,20 @@ USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "FieldFactory"
+
+PUBLIC :: AbstractMatrixFieldFactory
 PUBLIC :: MatrixFieldFactory
 PUBLIC :: BlockMatrixFieldFactory
+PUBLIC :: InitiateMatrixFields
+
 PUBLIC :: NodeFieldFactory
 PUBLIC :: BlockNodeFieldFactory
 PUBLIC :: ScalarFieldFactory
 PUBLIC :: VectorFieldFactory
 PUBLIC :: STScalarFieldFactory
 PUBLIC :: STVectorFieldFactory
-PUBLIC :: Initiate
+PUBLIC :: InitiateScalarFields
+PUBLIC :: InitiateVectorFields
 
 PUBLIC :: MeshFieldFactory
 PUBLIC :: ScalarMeshFieldFactory
@@ -116,9 +121,25 @@ END INTERFACE
 ! summary: This function returns child of [[AbstractMatrixField_]]
 
 INTERFACE
-  MODULE FUNCTION MatrixFieldFactory(engine) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
+  MODULE FUNCTION AbstractMatrixFieldFactory(engine, name) RESULT(Ans)
     CLASS(AbstractMatrixField_), POINTER :: ans
+    CHARACTER(*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: name
+  END FUNCTION AbstractMatrixFieldFactory
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        MatrixFieldFactory
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Aug 2021
+! summary: This function returns child of [[AbstractMatrixField_]]
+
+INTERFACE
+  MODULE FUNCTION MatrixFieldFactory(engine) RESULT(Ans)
+    CLASS(MatrixField_), POINTER :: ans
+    CHARACTER(*), INTENT(IN) :: engine
   END FUNCTION MatrixFieldFactory
 END INTERFACE
 
@@ -132,8 +153,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION BlockMatrixFieldFactory(engine) RESULT(Ans)
+    CLASS(BlockMatrixField_), POINTER :: ans
     CHARACTER(*), INTENT(IN) :: engine
-    CLASS(AbstractMatrixField_), POINTER :: ans
   END FUNCTION BlockMatrixFieldFactory
 END INTERFACE
 
@@ -234,6 +255,87 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-29
+! summary: Initiate a vector of ScalarFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of ScalarField and
+! its subclasses.
+!
+! Many times we need to initiate the scalar field of same structures.
+! Calling intiate methods on each field increases the
+! code repeatition.
+! Therefore, we can call this method  instead. This method
+! will create ScalarField of same type. They just have different
+! names.
+!
+! NOTE: This is a module routine not a Method to ScalarField_
+
+INTERFACE InitiateScalarFields
+  MODULE SUBROUTINE ScalarField_Initiate1(obj, names, fieldType, engine, dom)
+    TYPE(ScalarFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to ScalarField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    CHARACTER(*), INTENT(IN) :: engine
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    !! pointer to the domain
+  END SUBROUTINE ScalarField_Initiate1
+END INTERFACE InitiateScalarFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate a vector of ScalarFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of ScalarField and
+! its subclasses.
+!
+! Many times we need to initiate the scalar field of same structures.
+! Calling intiate methods on each field increases the
+! code repeatition.
+! Therefore, we can call this method  instead. This method
+! will create instances of ScalarField and its subclass.
+!
+! INFO: This routine is same as ScalarField_Initiate1 but
+! here, we can set different properties to each vector field.
+!
+! NOTE: This is a module routine not a Method to ScalarField_
+
+INTERFACE InitiateScalarFields
+  MODULE SUBROUTINE ScalarField_Initiate2(obj, names, fieldType, engine,  &
+    & dom)
+    TYPE(ScalarFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to ScalarField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: fieldType(:)
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    TYPE(String), INTENT(IN) :: engine(:)
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    !! pointer to the domain
+  END SUBROUTINE ScalarField_Initiate2
+END INTERFACE InitiateScalarFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
 ! summary: Initiate a vector of VectorFieldPointer_
 !
 !# Introduction
@@ -250,7 +352,7 @@ END INTERFACE
 !
 ! NOTE: This is a module routine not a Method to VectorField_
 
-INTERFACE Initiate
+INTERFACE InitiateVectorFields
   MODULE SUBROUTINE VectorField_Initiate1(obj, names, spaceCompo, &
     &  fieldType, engine, dom)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
@@ -268,7 +370,7 @@ INTERFACE Initiate
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     !! pointer to the domain
   END SUBROUTINE VectorField_Initiate1
-END INTERFACE Initiate
+END INTERFACE InitiateVectorFields
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -294,7 +396,7 @@ END INTERFACE Initiate
 !
 ! NOTE: This is a module routine not a Method to VectorField_
 
-INTERFACE Initiate
+INTERFACE InitiateVectorFields
   MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo,  &
      & fieldType, engine, dom)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
@@ -312,6 +414,70 @@ INTERFACE Initiate
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
     !! pointer to the domain
   END SUBROUTINE VectorField_Initiate2
-END INTERFACE Initiate
+END INTERFACE InitiateVectorFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate a vector of MatrixFieldPointer_
+
+INTERFACE InitiateMatrixFields
+MODULE SUBROUTINE MatrixField_Initiate1(obj, names, matrixProps, spaceCompo, &
+      &  timeCompo, fieldType, engine, dom)
+    TYPE(MatrixFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to MatrixField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of MatrixField
+    !! NOTE: The size of names should be at least the size of obj
+    CHARACTER(*), INTENT(IN) :: matrixProps
+    !! properties of of MatrixField
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! spatial components in MatrixField
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! temporal components in MatrixField
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    CHARACTER(*), INTENT(IN) :: engine
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    !! pointer to the domain
+  END SUBROUTINE MatrixField_Initiate1
+END INTERFACE InitiateMatrixFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-03-29
+! summary: Initiate a vector of MatrixFieldPointer_
+
+INTERFACE InitiateMatrixFields
+  MODULE SUBROUTINE MatrixField_Initiate2(obj, names, matrixProps, spaceCompo,  &
+     & timeCompo, fieldType, engine, dom)
+    TYPE(MatrixFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to MatrixField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of MatrixField
+    !! NOTE: The size of names should be at least the size of obj
+    TYPE(String), INTENT(IN) :: matrixProps(:)
+    !! properties of of MatrixField
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! spatial components in MatrixField
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! time components in MatrixField
+    INTEGER(I4B), INTENT(IN) :: fieldType(:)
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    TYPE(String), INTENT(IN) :: engine(:)
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    !! pointer to the domain
+  END SUBROUTINE MatrixField_Initiate2
+END INTERFACE InitiateMatrixFields
 
 END MODULE FieldFactory
