@@ -58,9 +58,8 @@ PUBLIC :: STVectorFieldExport
 !{!pages/docs-api/STVectorField/STVectorField_.md}
 
 TYPE, EXTENDS(AbstractNodeField_) :: STVectorField_
-  ! private
-  INTEGER(I4B) :: spaceCompo = 0_I4B
-  INTEGER(I4B) :: timeCompo = 0_I4B
+  INTEGER(I4B), PUBLIC :: spaceCompo = 0_I4B
+  INTEGER(I4B), PUBLIC :: timeCompo = 0_I4B
 CONTAINS
   PRIVATE
 
@@ -1007,9 +1006,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stvField_ApplyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE stvField_ApplyDirichletBC1(obj, dbc, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE stvField_ApplyDirichletBC1
 END INTERFACE
 
@@ -1022,9 +1022,10 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE stvField_ApplyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE stvField_ApplyDirichletBC2(obj, dbc, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE stvField_ApplyDirichletBC2
 END INTERFACE
 
