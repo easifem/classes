@@ -49,6 +49,7 @@ INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 PUBLIC :: SetMatrixFieldParam
 PUBLIC :: TypeMatrixField
 PUBLIC :: MatrixField_
+PUBLIC :: MatrixFieldPointer_
 PUBLIC :: SetMatrixFieldPrecondParam
 PUBLIC :: SetRectangleMatrixFieldParam
 PUBLIC :: DEALLOCATE
@@ -270,8 +271,20 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => mField_ApplyDBC
 END TYPE MatrixField_
 
+!----------------------------------------------------------------------------
+!                                                           TypeMatrixField
+!----------------------------------------------------------------------------
+
 TYPE(MatrixField_), PARAMETER :: TypeMatrixField =  &
   & MatrixField_(domains=NULL())
+
+!----------------------------------------------------------------------------
+!                                                     MatrixFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: MatrixFieldPointer_
+  CLASS(MatrixField_), POINTER :: ptr => NULL()
+END TYPE MatrixFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                    SetMatrixFieldParam@sConstructorMethods
