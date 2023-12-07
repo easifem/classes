@@ -41,9 +41,10 @@ IF (PRESENT(times)) THEN
      & ' which is '//tostring(obj%timeCompo))
     RETURN
   END IF
+aint = dbc%GetDOFNo()
   DO idof = 1, obj%timeCompo
     CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
-                & timeCompo=idof, spacecompo=dbc%getDOFNo())
+                & timeCompo=idof, spacecompo=aint)
   END DO
   IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
   IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
@@ -51,8 +52,9 @@ IF (PRESENT(times)) THEN
 END IF
 
 DO idof = 1, obj%timecompo
+aint = dbc%GetDOFNo()
   CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
-              & timecompo=idof, spacecompo=dbc%getDOFNo())
+              & timecompo=idof, spacecompo=aint)
 END DO
 
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
@@ -82,10 +84,11 @@ IF (PRESENT(times)) THEN
   DO ibc = 1, SIZE(dbc)
     CALL dbc(ibc)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum,  &
       & times=times)
+aint = dbc(ibc)%ptr%GetDOFNo()
 
     DO idof = 1, obj%timecompo
       CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
-        & timecompo=idof, spacecompo=dbc(ibc)%ptr%getDOFNo())
+        & timecompo=idof, spacecompo=aint)
     END DO
   END DO
 
@@ -96,9 +99,10 @@ END IF
 
 DO ibc = 1, SIZE(dbc)
   CALL dbc(ibc)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum)
+aint = dbc(ibc)%ptr%GetDOFNo()
   DO idof = 1, obj%timecompo
     CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
-      & timecompo=idof, spacecompo=dbc(ibc)%ptr%getDOFNo())
+      & timecompo=idof, spacecompo=aint)
   END DO
 END DO
 
