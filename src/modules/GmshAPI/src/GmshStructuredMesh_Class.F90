@@ -37,6 +37,11 @@ CHARACTER(*), PARAMETER :: modName = "StructuredMesh_Class"
 CHARACTER(*), PARAMETER :: myprefix = "StructuredMesh"
 CHARACTER(*), PARAMETER :: MeshTypeName(2) = ["Progression", "Bump       "]
 
+INTERFACE SetGmshStructuredMeshParam
+  MODULE PROCEDURE SetGmshStructuredMeshParam1
+  MODULE PROCEDURE SetGmshStructuredMeshParam2
+END INTERFACE SetGmshStructuredMeshParam
+
 !----------------------------------------------------------------------------
 !                                                      GmshStructuredMesh_
 !----------------------------------------------------------------------------
@@ -150,7 +155,7 @@ CONTAINS
 ! date:  2023-11-04
 ! summary:  Set parameter
 
-SUBROUTINE SetGmshStructuredMeshParam( &
+SUBROUTINE SetGmshStructuredMeshParam1( &
   & param,  &
   & filename, &
   & pointsOnAxis1,  &
@@ -203,8 +208,13 @@ SUBROUTINE SetGmshStructuredMeshParam( &
   INTEGER(I4B), ALLOCATABLE :: transfinitePointsOnAxis3_(:)
   REAL(DFP), PARAMETER :: r2type(1, 1) = 0, r1type(1) = 0.0_DFP
   INTEGER(I4B), PARAMETER :: i1type(1) = 0
-  CHARACTER(*), PARAMETER :: myName = "SetGmshStructuredMesh2DParam()"
+  CHARACTER(*), PARAMETER :: myName = "SetGmshStructuredMeshParam1()"
   LOGICAL(LGT) :: recombineAll_
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
 
   aint = SIZE(pointsOnAxis1, 1)
   IF (aint .NE. 3_I4B) THEN
@@ -433,7 +443,100 @@ SUBROUTINE SetGmshStructuredMeshParam( &
 
   IF (ALLOCATED(transfinitePointsOnAxis3_))  &
     & DEALLOCATE (transfinitePointsOnAxis3_)
-END SUBROUTINE SetGmshStructuredMeshParam
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE SetGmshStructuredMeshParam1
+
+!----------------------------------------------------------------------------
+!                                               SetGmshStructuredMeshParam
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetGmshStructuredMeshParam2( &
+  & param, filename, pointsOnAxis1, transfinitePointsOnAxis1,  &
+  & pointsOnAxis2, transfinitePointsOnAxis2, pointsOnAxis3,  &
+  & transfinitePointsOnAxis3, recombineAll, meshTypeOnAxis1,  &
+  & meshTypeOnAxis2, meshTypeOnAxis3, coefOnAxis1, coefOnAxis2,  &
+  & coefOnAxis3)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  !! spatial dimension
+  CHARACTER(*), INTENT(IN) :: filename
+  !! name of the mesh file to be generated
+  REAL(DFP), INTENT(IN) :: pointsOnAxis1(:)
+  !! points on axis 1
+  INTEGER(I4B), INTENT(IN) :: transfinitePointsOnAxis1(:)
+  !! transfinitePoints on axis 1
+  REAL(DFP), INTENT(IN) :: pointsOnAxis2(:)
+  !! points on axis 2
+  INTEGER(I4B), INTENT(IN) :: transfinitePointsOnAxis2(:)
+  !! transfinitePoints on axis 2
+  REAL(DFP), OPTIONAL, INTENT(IN) :: pointsOnAxis3(:)
+  !! points on axis 3
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: transfinitePointsOnAxis3(:)
+  !! transfinitePoints on axis 3
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombineAll
+  !! If true we combine triangle and tetrahedron into quad and hexahedron
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshTypeOnAxis1(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshTypeOnAxis2(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshTypeOnAxis3(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: coefOnAxis1(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: coefOnAxis2(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: coefOnAxis3(:)
+
+  LOGICAL(LGT) :: is3present
+  INTEGER(I4B) :: tsize
+  REAL(DFP), ALLOCATABLE :: p1(:, :), p2(:, :), p3(:, :)
+
+  is3present = PRESENT(pointsOnAxis3)
+
+  tsize = SIZE(pointsOnAxis1)
+  CALL Reallocate(p1, 3, tsize)
+  p1(1, :) = pointsOnAxis1
+
+  tsize = SIZE(pointsOnAxis2)
+  CALL Reallocate(p2, 3, tsize)
+  p2(2, :) = pointsOnAxis2
+
+  IF (is3present) THEN
+    tsize = SIZE(pointsOnAxis3)
+    CALL Reallocate(p3, 3, tsize)
+    p3(3, :) = pointsOnAxis3
+  END IF
+
+  IF (is3present) THEN
+    CALL SetGmshStructuredMeshParam1(param=param, filename=filename,  &
+      & pointsOnAxis1=p1, pointsOnAxis2=p2, pointsOnAxis3=p3, &
+      & transfinitePointsOnAxis1=transfinitePointsOnAxis1,  &
+      & transfinitePointsOnAxis2=transfinitePointsOnAxis2,  &
+      & transfinitePointsOnAxis3=transfinitePointsOnAxis3,  &
+      & recombineAll=recombineAll,  &
+      & meshTypeOnAxis1=meshTypeOnAxis1,  &
+      & meshTypeOnAxis2=meshTypeOnAxis2,  &
+      & meshTypeOnAxis3=meshTypeOnAxis3,  &
+      & coefOnAxis1=coefOnAxis1,  &
+      & coefOnAxis2=coefOnAxis2,  &
+      & coefOnAxis3=coefOnAxis3)
+
+  ELSE
+    CALL SetGmshStructuredMeshParam1(param=param, filename=filename,  &
+      & pointsOnAxis1=p1, pointsOnAxis2=p2,  &
+      & transfinitePointsOnAxis1=transfinitePointsOnAxis1,  &
+      & transfinitePointsOnAxis2=transfinitePointsOnAxis2,  &
+      & recombineAll=recombineAll,  &
+      & meshTypeOnAxis1=meshTypeOnAxis1,  &
+      & meshTypeOnAxis2=meshTypeOnAxis2,  &
+      & coefOnAxis1=coefOnAxis1,  &
+      & coefOnAxis2=coefOnAxis2)
+  END IF
+
+  IF (ALLOCATED(p1)) DEALLOCATE (p1)
+  IF (ALLOCATED(p2)) DEALLOCATE (p2)
+  IF (ALLOCATED(p3)) DEALLOCATE (p3)
+
+END SUBROUTINE SetGmshStructuredMeshParam2
 
 !----------------------------------------------------------------------------
 !
@@ -536,7 +639,7 @@ SUBROUTINE mesh_Initiate(obj, param)
   pointsOnAxis3 = 0.0_DFP
 
   pointsOnAxis1(1:3, 1:) = Get(obj%points(1))
-  pointsOnAxis2(1:3, 1:) = Get(obj%points(2)) 
+  pointsOnAxis2(1:3, 1:) = Get(obj%points(2))
   pointsOnAxis3(1:3, 1:) = Get(obj%points(3))
 
   ipoint = obj%tPoints(1) * obj%tPoints(2) * obj%tPoints(3)
