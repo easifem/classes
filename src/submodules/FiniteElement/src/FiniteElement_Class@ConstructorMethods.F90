@@ -24,9 +24,9 @@ CONTAINS
 !                                                        InitiateLagrangeFE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_InitiateLagrangeFE
+MODULE PROCEDURE obj_InitiateLagrangeFE
 TYPE(ParameterList_) :: param
-CHARACTER(*), PARAMETER :: myName = "fe_InitiateLagrangeFE()"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateLagrangeFE()"
 LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
@@ -69,14 +69,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE fe_InitiateLagrangeFE
+END PROCEDURE obj_InitiateLagrangeFE
 
 !----------------------------------------------------------------------------
 !                                                 FiniteElementInitiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Initiate1
-CHARACTER(*), PARAMETER :: myName = "fe_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(ParameterList_), POINTER :: sublist
 INTEGER(I4B) :: ierr, ii, tsize
 INTEGER(I4B), ALLOCATABLE :: elemType(:), order(:)
@@ -124,7 +124,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE fe_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate

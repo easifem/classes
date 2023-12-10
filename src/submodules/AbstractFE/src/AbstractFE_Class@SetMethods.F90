@@ -23,7 +23,7 @@ CONTAINS
 !                                                                  SetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_SetParam
+MODULE PROCEDURE obj_SetParam
 IF (PRESENT(nsd)) obj%nsd = nsd
 IF (PRESENT(order)) obj%order = order
 IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
@@ -62,7 +62,7 @@ IF (PRESENT(basisType)) obj%basisType = basisType
 IF (PRESENT(alpha)) obj%alpha = alpha
 IF (PRESENT(beta)) obj%beta = beta
 IF (PRESENT(lambda)) obj%lambda = lambda
-END PROCEDURE fe_SetParam
+END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
 !

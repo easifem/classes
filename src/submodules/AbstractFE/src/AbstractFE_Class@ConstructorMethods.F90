@@ -26,8 +26,8 @@ CONTAINS
 !                                                     CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "fe_CheckEssentialParam"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -45,7 +45,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE fe_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                       SetAbstractFEParam
@@ -597,8 +597,8 @@ END SUBROUTINE SetFEPram_Heirarchy2D
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Initiate
-CHARACTER(*), PARAMETER :: myName = "fe_Initiate()"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 INTEGER(I4B) :: ierr, nsd, elemType, order, anisoOrder(3), &
   & cellOrder(3), feType, ipType, dofType(4), transformType, basisType(3), &
   & tEdgeOrder, tFaceOrder, tCellOrder, ii
@@ -743,15 +743,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE fe_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                     Copy
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Copy
+MODULE PROCEDURE obj_Copy
 INTEGER(I4B) :: ii, elemType
-CHARACTER(*), PARAMETER :: myName = "fe_Copy()"
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -817,7 +817,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE fe_Copy
+END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
 !                                                     SetFEPram_Heirarchy2D
@@ -964,9 +964,9 @@ END SUBROUTINE SetFEPram_Heirarchy3D
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii
-CHARACTER(*), PARAMETER :: myName = "fe_Deallocate()"
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1020,7 +1020,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE fe_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate

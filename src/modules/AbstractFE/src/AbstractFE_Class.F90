@@ -174,72 +174,72 @@ CONTAINS
 
   ! CONSTRUCTOR:
   !@ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fe_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Constructor method for AbstractFE element
   !! This method can be overloaded by Subclass of this abstract class.
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => fe_Copy
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & fe_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => fe_Display
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of a finite element
-  PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => fe_MdEncode
+  PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: ReactEncode => fe_ReactEncode
+  PROCEDURE, PUBLIC, PASS(obj) :: ReactEncode => obj_ReactEncode
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => fe_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored in an instance
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => fe_SetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
 
   !GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => fe_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   !! Get prefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => fe_GetParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData =>  &
-    &  fe_GetLocalElemShapeData
+    &  obj_GetLocalElemShapeData
   PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_H1 =>  &
-    & fe_GetLocalElemShapeData_H1_Master
+    & obj_GetLocalElemShapeData_H1_Master
   !! Get local element shape data for H1
   PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HDiv =>  &
-    & fe_GetLocalElemShapeData_HDiv_Master
+    & obj_GetLocalElemShapeData_HDiv_Master
   !! Get local element shape data for Hdiv
   PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HCurl =>  &
-    & fe_GetLocalElemShapeData_HCurl_Master
+    & obj_GetLocalElemShapeData_HCurl_Master
   !! Get local element shape data for HCurl
   PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_DG =>  &
-    & fe_GetLocalElemShapeData_DG_Master
+    & obj_GetLocalElemShapeData_DG_Master
 
   ! GET:
   ! @Global element shapedata
 
   !! Get local element shape data for Discontinuous Galerkin
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData =>  &
-    &  fe_GetGlobalElemShapeData
+    &  obj_GetGlobalElemShapeData
   PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_H1 =>  &
-    & fe_GetGlobalElemShapeData_H1_Master
+    & obj_GetGlobalElemShapeData_H1_Master
   !! Get global shape data for H1
   PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HDiv =>  &
-    & fe_GetGlobalElemShapeData_HDiv_Master
+    & obj_GetGlobalElemShapeData_HDiv_Master
   !! Get global shape data for Hdiv
   PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HCurl =>  &
-    & fe_GetGlobalElemShapeData_HCurl_Master
+    & obj_GetGlobalElemShapeData_HCurl_Master
   !! Get global shape data for HCurl
   PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_DG =>  &
-    & fe_GetGlobalElemShapeData_DG_Master
+    & obj_GetGlobalElemShapeData_DG_Master
   !! Get global shape data for Discontinuous Galerkin
 
   ! GET:
   ! @QuadratureMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints =>  &
-    & fe_GetQuadraturePoints1
+    & obj_GetQuadraturePoints1
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -259,10 +259,10 @@ END TYPE AbstractFEPointer_
 ! summary: This routine Check the essential parameters in param.
 
 INTERFACE AbstractFECheckEssentialParam
-  MODULE SUBROUTINE fe_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE fe_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE AbstractFECheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -343,10 +343,10 @@ END INTERFACE SetFiniteElementParam
 ! summary: Initiates an instance of the finite element
 
 INTERFACE AbstractFEInitiate
-  MODULE SUBROUTINE fe_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj, param)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE fe_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE AbstractFEInitiate
 
 !----------------------------------------------------------------------------
@@ -358,10 +358,10 @@ END INTERFACE AbstractFEInitiate
 ! summary: Initiates an instance of the finite element by copying
 
 INTERFACE
-  MODULE SUBROUTINE fe_Copy(obj, obj2)
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(AbstractFE_), INTENT(IN) :: obj2
-  END SUBROUTINE fe_Copy
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -373,9 +373,9 @@ END INTERFACE
 ! summary: Deallocate the data
 
 INTERFACE AbstractFEDeallocate
-  MODULE SUBROUTINE fe_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-  END SUBROUTINE fe_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractFEDeallocate
 
 !----------------------------------------------------------------------------
@@ -401,12 +401,12 @@ END INTERFACE DEALLOCATE
 ! summary: Display the content
 
 INTERFACE AbstractFEDisplay
-  MODULE SUBROUTINE fe_Display(obj, msg, unitno, notFull)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno, notFull)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
-  END SUBROUTINE fe_Display
+  END SUBROUTINE obj_Display
 END INTERFACE AbstractFEDisplay
 
 !----------------------------------------------------------------------------
@@ -418,10 +418,10 @@ END INTERFACE AbstractFEDisplay
 ! summary: Display the contents in mardown format
 
 INTERFACE
-  MODULE FUNCTION fe_MdEncode(obj) RESULT(ans)
+  MODULE FUNCTION obj_MdEncode(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     TYPE(String) :: ans
-  END FUNCTION fe_MdEncode
+  END FUNCTION obj_MdEncode
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -433,10 +433,10 @@ END INTERFACE
 ! summary: Display the reference elements in react components
 
 INTERFACE
-  MODULE FUNCTION fe_ReactEncode(obj) RESULT(ans)
+  MODULE FUNCTION obj_ReactEncode(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     TYPE(String) :: ans
-  END FUNCTION fe_ReactEncode
+  END FUNCTION obj_ReactEncode
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -448,7 +448,7 @@ END INTERFACE
 ! summary: Set the parameters
 
 INTERFACE
-  MODULE SUBROUTINE fe_SetParam( &
+  MODULE SUBROUTINE obj_SetParam( &
     & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
     & cellOrder, feType, elemType, ipType, basisType, alpha, &
     & beta, lambda, dofType, transformType, refElemDomain, &
@@ -502,7 +502,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdgeOrder
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFaceOrder
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCellOrder
-  END SUBROUTINE fe_SetParam
+  END SUBROUTINE obj_SetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -514,10 +514,10 @@ END INTERFACE
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION fe_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION fe_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -529,7 +529,7 @@ END INTERFACE
 ! summary: Get the parameters
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetParam( &
+  MODULE SUBROUTINE obj_GetParam( &
     & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
     & cellOrder, feType, elemType, ipType, basisType, alpha, &
     & beta, lambda, dofType, transformType, refElemDomain, &
@@ -583,7 +583,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEdgeOrder
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tFaceOrder
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tCellOrder
-  END SUBROUTINE fe_GetParam
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -595,11 +595,11 @@ END INTERFACE
 ! summary:  Get local element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
     CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData
+  END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -611,7 +611,7 @@ END INTERFACE
 ! summary:  Get local element shape data shape data on facets
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalFacetElemShapeData(obj, cellElemsd, &
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
     & facetElemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
       !! finite element
@@ -623,7 +623,7 @@ INTERFACE
       !! facets in element.
     CLASS(QuadraturePoint_), INTENT(IN) :: quad(:)
       !! Quadrature points on each facet element
-  END SUBROUTINE fe_GetLocalFacetElemShapeData
+  END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -635,7 +635,7 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -650,7 +650,7 @@ INTERFACE
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
-  END SUBROUTINE fe_GetGlobalElemShapeData
+  END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -662,11 +662,11 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
     CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemshapeData_H1_Master
+  END SUBROUTINE obj_GetLocalElemshapeData_H1_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -678,7 +678,7 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetGlobalElemShapeData_H1_Master(obj, elemsd,   &
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData_H1_Master(obj, elemsd,   &
     & xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
@@ -694,7 +694,7 @@ INTERFACE
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
-  END SUBROUTINE fe_GetGlobalElemShapeData_H1_Master
+  END SUBROUTINE obj_GetGlobalElemShapeData_H1_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -706,11 +706,11 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
     CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master
+  END SUBROUTINE obj_GetLocalElemShapeData_HDiv_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -722,7 +722,7 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetGlobalElemShapeData_HDiv_Master(obj, elemsd, &
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData_HDiv_Master(obj, elemsd, &
     & xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
@@ -738,7 +738,7 @@ INTERFACE
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
-  END SUBROUTINE fe_GetGlobalElemShapeData_HDiv_Master
+  END SUBROUTINE obj_GetGlobalElemShapeData_HDiv_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -750,11 +750,11 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
     CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master
+  END SUBROUTINE obj_GetLocalElemShapeData_HCurl_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -766,7 +766,7 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetGlobalElemShapeData_HCurl_Master(obj, elemsd, &
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master(obj, elemsd, &
     & xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
@@ -782,7 +782,7 @@ INTERFACE
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
-  END SUBROUTINE fe_GetGlobalElemShapeData_HCurl_Master
+  END SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -794,11 +794,11 @@ END INTERFACE
 ! summary:  Get local shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
     CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData_DG_Master
+  END SUBROUTINE obj_GetLocalElemShapeData_DG_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -810,7 +810,7 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetGlobalElemShapeData_DG_Master(obj, elemsd, &
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData_DG_Master(obj, elemsd, &
     & xij, geoElemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
@@ -826,7 +826,7 @@ INTERFACE
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
-  END SUBROUTINE fe_GetGlobalElemShapeData_DG_Master
+  END SUBROUTINE obj_GetGlobalElemShapeData_DG_Master
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -838,7 +838,7 @@ END INTERFACE
 ! summary: Get quadrature points
 
 INTERFACE
-  MODULE SUBROUTINE fe_GetQuadraturePoints1(obj, quad, quadratureType,  &
+  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType,  &
     & order, nips, alpha, beta, lambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
@@ -867,7 +867,7 @@ INTERFACE
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameter
-  END SUBROUTINE fe_GetQuadraturePoints1
+  END SUBROUTINE obj_GetQuadraturePoints1
 END INTERFACE
 
 END MODULE AbstractFE_Class

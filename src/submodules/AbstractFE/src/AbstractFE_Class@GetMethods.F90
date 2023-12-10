@@ -24,8 +24,8 @@ CONTAINS
 !                                                    GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData()"
+MODULE PROCEDURE obj_GetLocalElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[NOT INITIATED] It seems AbstractFE_::obj is not initiated.')
@@ -47,14 +47,14 @@ CLASS DEFAULT
     & '  AbstractFE_::obj%baseContinuity')
   RETURN
 END SELECT
-END PROCEDURE fe_GetLocalElemShapeData
+END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                    GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData()"
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[NOT INITIATED] It seems AbstractFE_::obj is not initiated.')
@@ -79,27 +79,27 @@ CLASS DEFAULT
     & '[NO CASE FOUND] No case found for type of  &
     & AbstractFE_::obj%baseContinuity')
 END SELECT
-END PROCEDURE fe_GetGlobalElemShapeData
+END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                GetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetParam
-CHARACTER(*), PARAMETER :: myName = "fe_GetParam()"
+MODULE PROCEDURE obj_GetParam
+CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-END PROCEDURE fe_GetParam
+END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
 !                                                             GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "fe_GetPrefix()"
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE fe_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !

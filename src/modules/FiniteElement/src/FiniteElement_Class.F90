@@ -44,8 +44,8 @@ TYPE, EXTENDS(AbstractFE_) :: FiniteElement_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateLagrangeFE =>  &
-    & fe_InitiateLagrangeFE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => fe_GetPrefix
+    & obj_InitiateLagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE FiniteElement_
 
 !----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ END TYPE FiniteElementPointer_
 ! summary: Initiates an instance of the finite element
 
 INTERFACE
-  MODULE SUBROUTINE fe_InitiateLagrangeFE(obj, nsd,  &
+  MODULE SUBROUTINE obj_InitiateLagrangeFE(obj, nsd,  &
     & elemType, baseContinuity, baseInterpolation, ipType,  &
     & basisType, alpha, beta, lambda, order)
     CLASS(FiniteElement_), INTENT(INOUT) :: obj
@@ -97,7 +97,7 @@ INTERFACE
       !! Ultraspherical parameters
     INTEGER(I4B), INTENT(IN) :: order
       !! Isotropic Order of finite element
-  END SUBROUTINE fe_InitiateLagrangeFE
+  END SUBROUTINE obj_InitiateLagrangeFE
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -109,12 +109,12 @@ END INTERFACE
 ! summary:  Initiate vector of FiniteElement pointers
 
 INTERFACE FiniteElementInitiate
-  MODULE SUBROUTINE fe_Initiate1(obj, param, dom, dim)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, dom, dim)
     TYPE(FiniteElementPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(Domain_), INTENT(IN) :: dom
     INTEGER(I4B), INTENT(IN) :: dim
-  END SUBROUTINE fe_Initiate1
+  END SUBROUTINE obj_Initiate1
 END INTERFACE FiniteElementInitiate
 
 !----------------------------------------------------------------------------
@@ -154,10 +154,10 @@ END INTERFACE FiniteElementDeallocate
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION fe_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(FiniteElement_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION fe_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 END MODULE FiniteElement_Class

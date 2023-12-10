@@ -24,23 +24,23 @@ CONTAINS
 !                                                 GetLocalElemShapeData_DG
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData_DG_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData_DG()"
+MODULE PROCEDURE obj_GetLocalElemShapeData_DG_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData_DG()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-!TODO: Implement fe_GetLocalElemShapeData_DG_Master
-END PROCEDURE fe_GetLocalElemShapeData_DG_Master
+!TODO: Implement obj_GetLocalElemShapeData_DG_Master
+END PROCEDURE obj_GetLocalElemShapeData_DG_Master
 
 !----------------------------------------------------------------------------
 !                                                 GetGlobalElemShapeData_DG
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData_DG_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData_DG()"
+MODULE PROCEDURE obj_GetGlobalElemShapeData_DG_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData_DG()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-!TODO: Implement fe_GetGlobalElemShapeData_DG_Master
-END PROCEDURE fe_GetGlobalElemShapeData_DG_Master
+!TODO: Implement obj_GetGlobalElemShapeData_DG_Master
+END PROCEDURE obj_GetGlobalElemShapeData_DG_Master
 
 !----------------------------------------------------------------------------
 !
