@@ -49,6 +49,7 @@ PUBLIC :: SolidMaterialPointer_
 PUBLIC :: SolidMaterialDeallocate
 PUBLIC :: SetSolidMaterialParam
 PUBLIC :: AddSolidMaterial
+PUBLIC :: GetSolidMaterialPointer
 PUBLIC :: TypeSolidMaterial
 
 !----------------------------------------------------------------------------
@@ -189,33 +190,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        AddSolidMaterial@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-11
-! summary:  Add a solid material to the vector of SolidMaterialPointer_
-
-INTERFACE AddSolidMaterial
-  MODULE SUBROUTINE obj_AddSolidMaterial( &
-    & obj, &
-    & tMaterials,   &
-    & materialNo, &
-    & materialName,  &
-    & solidMaterialToMesh, &
-    & param, &
-    & region)
-    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
-    INTEGER(I4B), INTENT(IN) :: tMaterials
-    INTEGER(I4B), INTENT(IN) :: materialNo
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
-    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: solidMaterialToMesh(:)
-  END SUBROUTINE obj_AddSolidMaterial
-END INTERFACE AddSolidMaterial
-
-!----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -280,6 +254,49 @@ INTERFACE
     TYPE(SolidMaterial_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        AddSolidMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-11
+! summary:  Add a solid material to the vector of SolidMaterialPointer_
+
+INTERFACE AddSolidMaterial
+  MODULE SUBROUTINE obj_AddSolidMaterial( &
+    & obj, &
+    & tMaterials,   &
+    & materialNo, &
+    & materialName,  &
+    & solidMaterialToMesh, &
+    & param, &
+    & region)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tMaterials
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
+    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: solidMaterialToMesh(:)
+  END SUBROUTINE obj_AddSolidMaterial
+END INTERFACE AddSolidMaterial
+
+!----------------------------------------------------------------------------
+!                                        GetSolidMaterialPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-08
+! summary:  Get a solid material pointer
+
+INTERFACE GetSolidMaterialPointer
+  MODULE FUNCTION obj_GetSolidMaterialPointer(obj, materialNo) RESULT(ans)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CLASS(SolidMaterial_), POINTER :: ans
+  END FUNCTION obj_GetSolidMaterialPointer
+END INTERFACE GetSolidMaterialPointer
 
 !----------------------------------------------------------------------------
 !                                    GetStressStrainModelPointer@GetMethods
