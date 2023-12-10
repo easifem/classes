@@ -153,7 +153,8 @@ CALL Set(param, TypeDFP, prefix, "atoleranceForResidual",  &
 ! AbstractElasticityParam module.
 
 !! bool
-CALL Set(param, .TRUE., prefix, "isCommonDomain", isCommonDomain)
+CALL Set(param, .TRUE., prefix, "isCommonDomain",  &
+  & input(default=DEFAULT_isCommonDomain, option=isCommonDomain))
 
 !! real
 CALL Set(param, [TypeDFP], prefix, "gravity",  &
@@ -685,27 +686,19 @@ CHARACTER(*), PARAMETER :: myName = "obj_CheckError()"
 LOGICAL(LGT) :: problem
 
 ! Check
-problem = .NOT. ALLOCATED(obj%solidMaterialToMesh)
+problem = obj%tOverlappedMaterials .LE. 0_I4B
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[WRONG CONFIG] solidMaterialToMesh is not allocated!')
+  & '[CONFIG ERROR] :: in tOverlappedMaterials.')
+  RETURN
 END IF
 
 ! Check
-problem = SIZE(obj%solidMaterialToMesh) .NE. obj%tSolidMaterials
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[WRONG CONFIG] SIZE( obj%solidMaterialToMesh ) [= '//  &
-  & TOSTRING(SIZE(obj%solidMaterialToMesh))// &
-  & '] .NE. obj%tSolidMaterials [= '//  &
-  & TOSTRING(obj%tSolidMaterials)//']')
-END IF
-
-! Check
-problem = .NOT. ASSOCIATED(obj%dom)
+problem = (.NOT. ASSOCIATED(obj%dom)) .AND. (.NOT. ALLOCATED(obj%domains))
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[WRONG CONFIG] Domain_::dom is not associated')
+  RETURN
 END IF
 
 ! Check

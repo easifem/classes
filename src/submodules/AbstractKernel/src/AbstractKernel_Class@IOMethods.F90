@@ -340,6 +340,21 @@ CALL Display(bool1, "velBC ASSOCIATED: ", unitNo=unitNo)
 bool1 = ASSOCIATED(obj%accBC)
 CALL Display(bool1, "accBC ASSOCIATED: ", unitNo=unitNo)
 
+bool1 = ALLOCATED(obj%lame_mu)
+CALL Display(bool1, "obj%lame_mu ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%lame_lambda)
+CALL Display(bool1, "obj%lame_lambda ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%Cijkl)
+CALL Display(bool1, "obj%Cijkl ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%stress)
+CALL Display(bool1, "obj%stress ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%strain)
+CALL Display(bool1, "obj%strain ALLOCATED: ", unitNo=unitNo)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -347,9 +362,58 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteData_hdf5
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: kernel which you are using cannot writeData hdf5 format')
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5()"
+TYPE(String) :: dsetname
+LOGICAL(LGT) :: isok, problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+problem = .NOT. obj%isInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+   & "[INTERNAL ERROR] :: AbstractKernel_::obj is not initiated")
+  RETURN
+END IF
+
+isok = hdf5%isOpen()
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & "[INTERNAL ERROR] :: HDF5 file is not opened")
+  RETURN
+END IF
+
+isok = hdf5%isWrite()
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & "[INTERNAL ERROR] :: HDF5 file does not have Write permission")
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%displacement)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/displacement"
+  CALL obj%displacement%Export(hdf5=hdf5, group=dsetname%chars())
+END IF
+
+isok = ASSOCIATED(obj%velocity)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/velocity"
+  CALL obj%velocity%export(hdf5=hdf5, group=dsetname%chars())
+END IF
+
+isok = ASSOCIATED(obj%acceleration)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/acceleration"
+  CALL obj%acceleration%export(hdf5=hdf5, group=dsetname%chars())
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
 END PROCEDURE obj_WriteData_hdf5
 
 !----------------------------------------------------------------------------
@@ -357,9 +421,54 @@ END PROCEDURE obj_WriteData_hdf5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteData_vtk
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: kernel which you are using cannot writeData vtk format')
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
+LOGICAL(LGT) :: isok, problem
+TYPE(VTKFile_) :: avtk
+TYPE(String) :: filename
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+problem = .NOT. obj%isInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+   & "[INTERNAL ERROR] :: AbstractKernel_::obj is not initiated")
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%displacement)
+IF (isok) THEN
+  filename = obj%outputPath//obj%GetPrefix()//"_displacement_"  &
+    & //tostring(obj%currentTimeStep)//".vtu"
+  CALL avtk%InitiateVTKFile(filename=filename%chars())
+  CALL obj%displacement%WriteData(vtk=avtk)
+  CALL avtk%DEALLOCATE()
+END IF
+
+isok = ASSOCIATED(obj%velocity)
+IF (isok) THEN
+  filename = obj%outputPath//obj%GetPrefix()//"_velocity_"  &
+    & //tostring(obj%currentTimeStep)//".vtu"
+  CALL avtk%InitiateVTKFile(filename=filename%chars())
+  CALL obj%velocity%WriteData(vtk=avtk)
+  CALL avtk%DEALLOCATE()
+END IF
+
+isok = ASSOCIATED(obj%acceleration)
+IF (isok) THEN
+  filename = obj%outputPath//obj%GetPrefix()//"_acceleration_"  &
+    & //tostring(obj%currentTimeStep)//".vtu"
+  CALL avtk%InitiateVTKFile(filename=filename%chars())
+  CALL obj%acceleration%WriteData(vtk=avtk)
+  CALL avtk%DEALLOCATE()
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
 END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------

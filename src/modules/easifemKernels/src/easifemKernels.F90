@@ -17,4 +17,6 @@
 
 MODULE easifemKernels
 USE AbstractKernel_Class
+USE AbstractKernelParam
+USE KernelUtility
 END MODULE easifemKernels

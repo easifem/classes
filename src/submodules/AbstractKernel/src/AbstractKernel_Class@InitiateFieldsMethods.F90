@@ -262,4 +262,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 END PROCEDURE obj_InitiateFields
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE InitiateFieldsMethods

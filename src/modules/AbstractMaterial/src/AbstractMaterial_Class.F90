@@ -41,6 +41,7 @@ PUBLIC :: AbstractMaterialImport
 PUBLIC :: AbstractMaterialExport
 PUBLIC :: AbstractMaterialDisplay
 PUBLIC :: AbstractMaterialImportFromToml
+PUBLIC :: TypeMaterial
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractMaterial"
@@ -50,6 +51,17 @@ INTEGER(I4B), PARAMETER :: thresholdSize = 20
 CHARACTER(*), PARAMETER :: toml_mat_prop_name = "property"
 !! tomlName.property is the table of table or table which
 !! contains the file name, see ImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                          TypeMaterial_
+!----------------------------------------------------------------------------
+
+TYPE :: TypeMaterial_
+  CHARACTER(5) :: solid = "SOLID"
+  CHARACTER(5) :: fluid = "FLUID"
+END TYPE TypeMaterial_
+
+TYPE(TypeMaterial_), PARAMETER :: TypeMaterial = TypeMaterial_()
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMaterial_

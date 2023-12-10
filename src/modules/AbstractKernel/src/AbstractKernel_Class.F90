@@ -73,6 +73,7 @@ PUBLIC :: AbstractKernelImportParamFromToml
 PUBLIC :: AbstractKernelImportFromToml
 PUBLIC :: AbstractKernelInitiateTangentMatrix
 PUBLIC :: AbstractKernelInitiateFields
+PUBLIC :: AbstractKernelCheckError
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
@@ -126,6 +127,9 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! `LIS_OMP`, `LIS_MPI`, `PETSC`
   TYPE(String) :: tanmatProp
   !! Symmetric or Unsymmetric tangent matrix
+  TYPE(String) :: outputPath
+  !! Path to put output files
+  !! Default is results
   INTEGER(I4B) :: coordinateSystem = DEFAULT_coordinateSystem
   !! Spatial coordinate system type. It can take following values
   !! `KERNEL_CARTESIAN` for Cartesian coordinates
@@ -505,15 +509,6 @@ CONTAINS
     & obj_SetFacetFiniteElements
   !! Set Facet Finite Elements
   !! TODO: Implement SetFacetFiniteElements method
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToMesh =>  &
-    & obj_SetMaterialToMesh
-  !! Set material to mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
-    & obj_SetMaterialToDomain
-  !! Set material to mesh
-  PROCEDURE, PUBLIC, PASS(obj) :: SetElementToMatID =>  &
-    & obj_SetElementToMatID
-  !! Set element to material id
   PROCEDURE, PUBLIC, PASS(obj) :: SetMatIFaceConnectData =>  &
     & obj_SetMatIFaceConnectData
 
@@ -543,6 +538,9 @@ CONTAINS
   ! @MaterialMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AddSolidMaterial => obj_AddSolidMaterial
   !! Add a solid material to the kernel
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSolidMaterialPointer =>  &
+    & obj_GetSolidMaterialPointer
+  !! Get a solid material to the kernel
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateMaterialProperties =>  &
     & obj_InitiateMaterialProperties
   !! Initiate material properties
@@ -561,6 +559,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetElasticityProperties =>  &
     & obj_SetElasticityProperties
   !! Set Lame parameters for isotropic elasticity
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
+    & obj_SetMaterialToDomain
+  !! Set material to mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: SetElementToMatID =>  &
+    & obj_SetElementToMatID
+  !! Set element to material id
 
   ! IO:
   ! @IOMethods
@@ -599,11 +603,24 @@ CONTAINS
   ! @AssembleTanmatMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleTanmat => obj_AssembleTanmat
   !! This procedure pointer assembles the global tangent matrix
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleMassMat => obj_AssembleMassMat
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleStiffnessMat =>  &
+    & obj_AssembleStiffnessMat
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleDampingMat =>  &
+    & obj_AssembleDampingMat
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleNitscheMat =>  &
+    & obj_AssembleNitscheMat
 
   ! SET:
   ! @AssembleRHSMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
   !! This procedure pointer assembles the right-hand-side vector
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodyForce => &
+    & obj_AssembleBodyForce
+  !! This procedure assemble the body force term to RHS
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceForce => &
+    & obj_AssembleSurfaceForce
+  !! This procedure assemble the surface force term to RHS
 
   ! GET:
   ! @SolveMethods
@@ -867,11 +884,11 @@ END INTERFACE AbstractKernelDeallocate
 ! date: 2023-12-06
 ! summary: Check error
 
-INTERFACE
+INTERFACE AbstractKernelCheckError
   MODULE SUBROUTINE obj_CheckError(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_CheckError
-END INTERFACE
+END INTERFACE AbstractKernelCheckError
 
 !----------------------------------------------------------------------------
 !                                 InitiateTangentMatrix@InitiateFieldMethods
@@ -1135,20 +1152,6 @@ END INTERFACE
 ! summary:  Set material to mesh
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMaterialToMesh(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_SetMaterialToMesh
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetMaterialToMesh@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-07
-! summary:  Set material to mesh
-
-INTERFACE
   MODULE SUBROUTINE obj_SetMaterialToDomain(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetMaterialToDomain
@@ -1218,6 +1221,24 @@ INTERFACE
     TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
     !! mesh region
   END SUBROUTINE obj_AddSolidMaterial
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          AddSolidMaterial@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 April 2022
+! summary: This routine returns pointer to solid material to kernel
+
+INTERFACE
+  MODULE FUNCTION obj_GetSolidMaterialPointer(obj, materialNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    !! material number should be lesser than or equal to the
+    !! total number of solid materials.
+    CLASS(SolidMaterial_), POINTER :: ans
+  END FUNCTION obj_GetSolidMaterialPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1489,14 +1510,67 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Aug 2021
 ! summary: This subroutine assembles the system of linear equation
-!
-!# Introduction
-! This subroutine assembles the system of linear equation.
 
 INTERFACE
   MODULE SUBROUTINE obj_AssembleTanmat(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_AssembleTanmat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       AssembleMassMat@AssembleTanmatMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the mass matrix of the system
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleMassMat(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleMassMat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 AssembleStiffnessMat@AssembleTanmatMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the stiffness matrix of the system
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleStiffnessMat(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleStiffnessMat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 AssembleDampingMat@AssembleTanmatMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the damping matrix of the system
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleDampingMat(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleDampingMat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  AssembleNitscheMat@AssembleTanmatMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the Nitsche matrix of the system
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleNitscheMat(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleNitscheMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1506,14 +1580,39 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Aug 2021
 ! summary: This subroutine assembles the system of linear equation
-!
-!# Introduction
-! This subroutine assembles the system of linear equation.
 
 INTERFACE
   MODULE SUBROUTINE obj_AssembleRHS(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_AssembleRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       AssembleBodyForce@AssembleRHSMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the system of linear equation
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleBodyForce(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleBodyForce
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     AssembleSurfaceForce@AssembleRHSMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the surface force terms in RHS
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleSurfaceForce(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleSurfaceForce
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1734,37 +1833,12 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Aug 2021
 ! summary:  This routine writes the data in the hdf5 file
-!
-!# Introduction
-! This routine write the data in the hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk, group)
+  MODULE SUBROUTINE obj_WriteData_vtk(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        WriteData@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Aug 2021
-! summary:  This routine writes the data in the xdmf3 file
-!
-!# Introduction
-! This routine write the data in the xdmf3 file
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_WriteData_xdmf(obj, xdmf, group)
-!     IMPORT :: AbstractKernel_, XDMFFile_, I4B
-!     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-!     TYPE(XDMFFile_), INTENT(INOUT) :: xdmf
-!     CHARACTER(len=*), INTENT(IN) :: group
-!   END SUBROUTINE obj_WriteData_xdmf
-! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Run@RunMethods
