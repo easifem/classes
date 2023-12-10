@@ -25,37 +25,55 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mesh_InitiateFacetElements
-CHARACTER(*), PARAMETER :: myName = "mesh_InitiateFacetElements"
+CHARACTER(*), PARAMETER :: myName = "mesh_InitiateFacetElements()"
 INTEGER(I4B) :: iel, ii, jj, iintface, idomainFace, kk, telements, &
   & tIntFace, tDomainFace
 INTEGER(I4B), ALLOCATABLE :: e2e(:, :), indx(:), cellNptrs(:)
+LOGICAL(LGT) :: problem, isok
 
-IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
-IF (obj%IsFacetDataInitiated) THEN
+problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
+IF (problem) RETURN
+
+problem = obj%isFacetDataInitiated
+IF (problem) THEN
   CALL e%raiseInformation(modName//"::"//myName//" - "// &
-    & "InternalFacetData and boundary facet data is already initiated. &
-    & If you want to Reinitiate it then deallocate nodeData, first!")
+    & "[INTERNAL ERROR] :: InternalFacetData and boundary "//  &
+    & "facet data is already initiated. "//  &
+    & "If you want to Reinitiate it then deallocate nodeData, first!")
   RETURN
 END IF
 
-IF (.NOT. obj%IsElementToElementsInitiated) &
-  & CALL obj%InitiateElementToElements()
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+  & '[1]')
+problem = .NOT. obj%isElementToElementsInitiated
+IF (problem) CALL obj%InitiateElementToElements()
 
-IF (.NOT. obj%IsBoundaryDataInitiated) &
-  & CALL obj%InitiateBoundaryData()
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+  & '[2]')
+problem = .NOT. obj%IsBoundaryDataInitiated
+IF (problem) CALL obj%InitiateBoundaryData()
 
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+  & '[3]')
 tDomainFace = 0
 tIntFace = 0
 obj%isFacetDataInitiated = .TRUE.
 
-DO iel = 1, obj%GetTotalElements()
+telements = obj%GetTotalElements()
+DO iel = 1, telements
 
   jj = obj%GetGlobalElemNumber(iel)
 
-  IF (obj%IsBoundaryElement(globalElement=jj)) &
-    & tDomainFace = tDomainFace + &
-    & SIZE(obj%GetBoundaryElementData(globalElement=jj))
+  isok = obj%IsBoundaryElement(globalElement=jj)
+  IF (isok) THEN
+    indx = obj%GetBoundaryElementData(globalElement=jj)
+    tDomainFace = tDomainFace + SIZE(indx)
+  END IF
 
   e2e = obj%GetElementToElements(globalElement=jj, onlyElements=.TRUE.)
 
@@ -65,6 +83,9 @@ DO iel = 1, obj%GetTotalElements()
     END IF
   END DO
 END DO
+
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+  & '[4]')
 
 ! internalFacetData
 IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
@@ -79,6 +100,9 @@ telements = obj%GetTotalElements()
 CALL Reallocate(obj%facetElementType, SIZE(obj%facetElements), telements)
 
 iintface = 0; idomainFace = 0
+
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+  & '[5]')
 
 DO iel = 1, telements
 
