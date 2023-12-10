@@ -42,9 +42,10 @@ CLASS is (HCURL_)
 CLASS IS (DG_)
   CALL obj%GetLocalElemShapeData_DG(elemsd=elemsd, quad=quad)
 CLASS DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of  &
-    & AbstractFE_::obj%baseContinuity')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[NO CASE FOUND] No case found for type of '//  &
+    & '  AbstractFE_::obj%baseContinuity')
+  RETURN
 END SELECT
 END PROCEDURE fe_GetLocalElemShapeData
 
@@ -89,6 +90,16 @@ CHARACTER(*), PARAMETER :: myName = "fe_GetParam()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
 END PROCEDURE fe_GetParam
+
+!----------------------------------------------------------------------------
+!                                                             GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE fe_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "fe_GetPrefix()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE fe_GetPrefix
 
 !----------------------------------------------------------------------------
 !

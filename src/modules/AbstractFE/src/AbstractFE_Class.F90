@@ -34,6 +34,7 @@ PRIVATE
 PUBLIC :: AbstractFE_
 PUBLIC :: AbstractFEPointer_
 PUBLIC :: SetAbstractFEParam
+PUBLIC :: SetFiniteElementParam
 PUBLIC :: AbstractFEDeallocate
 PUBLIC :: AbstractFEDisplay
 PUBLIC :: AbstractFEInitiate
@@ -41,6 +42,12 @@ PUBLIC :: AbstractFECheckEssentialParam
 PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
+CHARACTER(*), PARAMETER :: AbstractFEEssentialParams = &
+& "/nsd/order/anisoOrder/tEdgeOrder/edgeOrder/tFaceOrder"//  &
+& "/faceOrder/cellOrder/feType/elemType/ipType/dofType"//  &
+& "/transformType/refElemDomain/baseContinuity/baseInterpolation"//  &
+& "/isIsotropicOrder/isAnisotropicOrder/isEdgeOrder/isFaceOrder"//  &
+& "/isCellOrder/tCellOrder/basisType/alpha/beta/lambda"
 
 INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
@@ -164,6 +171,7 @@ TYPE, ABSTRACT :: AbstractFE_
   REAL(DFP), ALLOCATABLE :: coeff(:, :)
 CONTAINS
   PRIVATE
+
   ! CONSTRUCTOR:
   !@ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fe_Initiate
@@ -183,8 +191,16 @@ CONTAINS
   !! Display the contents
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => fe_Deallocate
   !! Deallocate the data stored in an instance
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => fe_SetParam
   !! Sets the parameters of finite element
+
+  !GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => fe_GetPrefix
+  !! Get prefix
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => fe_GetParam
   !! Sets the parameters of finite element
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData =>  &
@@ -235,35 +251,19 @@ TYPE :: AbstractFEPointer_
 END TYPE AbstractFEPointer_
 
 !----------------------------------------------------------------------------
-!                                               CheckEssentialParam@Methods
+!                                    CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2023-08-11
 ! summary: This routine Check the essential parameters in param.
 
-INTERFACE
+INTERFACE AbstractFECheckEssentialParam
   MODULE SUBROUTINE fe_CheckEssentialParam(obj, param)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE fe_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               CheckEssentialParam@Methods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-08-11
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFECheckEssentialParam(obj, param, prefix)
-    CLASS(AbstractFE_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFECheckEssentialParam
-END INTERFACE
+END INTERFACE AbstractFECheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                     SetAbstractFEParam@ConstructorMethods
@@ -275,22 +275,10 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractFEParam( &
-    & param, &
-    & prefix, &
-    & nsd, &
-    & elemType, &
-    & baseContinuity, &
-    & baseInterpolation, &
-    & ipType, &
-    & basisType, &
-    & alpha, &
-    & beta, &
-    & lambda, &
-    & order,  &
-    & anisoOrder,  &
-    & edgeOrder,  &
-    & faceOrder,  &
-    & cellOrder)
+    & param, prefix, nsd, elemType, baseContinuity, &
+    & baseInterpolation, ipType, basisType, alpha, &
+    & beta, lambda, order, anisoOrder, edgeOrder,  &
+    & faceOrder, cellOrder)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     !! ParameterList
     CHARACTER(*), INTENT(IN) :: prefix
@@ -342,6 +330,10 @@ INTERFACE
   END SUBROUTINE SetAbstractFEParam
 END INTERFACE
 
+INTERFACE SetFiniteElementParam
+  MODULE PROCEDURE SetAbstractFEParam
+END INTERFACE SetFiniteElementParam
+
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -350,28 +342,12 @@ END INTERFACE
 ! date: 27 Aug 2022
 ! summary: Initiates an instance of the finite element
 
-INTERFACE
+INTERFACE AbstractFEInitiate
   MODULE SUBROUTINE fe_Initiate(obj, param)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE fe_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFEInitiate(obj, param, prefix)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFEInitiate
-END INTERFACE
+END INTERFACE AbstractFEInitiate
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -389,7 +365,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        Deallocate@Methods
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -403,7 +379,7 @@ INTERFACE AbstractFEDeallocate
 END INTERFACE AbstractFEDeallocate
 
 !----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -473,33 +449,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE fe_SetParam( &
-    & obj, &
-    & nsd, &
-    & order, &
-    & anisoOrder, &
-    & edgeOrder, &
-    & faceOrder, &
-    & cellOrder, &
-    & feType, &
-    & elemType, &
-    & ipType, &
-    & basisType, &
-    & alpha, &
-    & beta, &
-    & lambda, &
-    & dofType, &
-    & transformType, &
-    & refElemDomain, &
-    & baseContinuity, &
-    & baseInterpolation, &
-    & isIsotropicOrder,  &
-    & isAnisotropicOrder,  &
-    & isEdgeOrder, &
-    & isFaceOrder,  &
-    & isCellOrder, &
-    & tEdgeOrder,  &
-    & tFaceOrder,  &
-    & tCellOrder)
+    & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
+    & cellOrder, feType, elemType, ipType, basisType, alpha, &
+    & beta, lambda, dofType, transformType, refElemDomain, &
+    & baseContinuity, baseInterpolation, isIsotropicOrder,  &
+    & isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
+    & tEdgeOrder, tFaceOrder, tCellOrder)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
@@ -551,6 +506,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-11
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION fe_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION fe_GetPrefix
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetParam@GetMethods
 !----------------------------------------------------------------------------
 
@@ -560,33 +530,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE fe_GetParam( &
-    & obj, &
-    & nsd, &
-    & order, &
-    & anisoOrder, &
-    & edgeOrder, &
-    & faceOrder, &
-    & cellOrder, &
-    & feType, &
-    & elemType, &
-    & ipType, &
-    & basisType, &
-    & alpha, &
-    & beta, &
-    & lambda, &
-    & dofType, &
-    & transformType, &
-    & refElemDomain, &
-    & baseContinuity, &
-    & baseInterpolation, &
-    & isIsotropicOrder,  &
-    & isAnisotropicOrder,  &
-    & isEdgeOrder, &
-    & isFaceOrder,  &
-    & isCellOrder, &
-    & tEdgeOrder,  &
-    & tFaceOrder,  &
-    & tCellOrder)
+    & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
+    & cellOrder, feType, elemType, ipType, basisType, alpha, &
+    & beta, lambda, dofType, transformType, refElemDomain, &
+    & baseContinuity, baseInterpolation, isIsotropicOrder,  &
+    & isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
+    & tEdgeOrder, tFaceOrder, tCellOrder)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
@@ -678,111 +627,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        GetLocalElemShapeData_H1@H1Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemshapeData_H1_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    GetLocalElemShapeData_HDiv@HDivMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   GetLocalElemShapeData_HCurl@HCurlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData_DG@DGMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE fe_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE fe_GetLocalElemShapeData_DG_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     GetQuadraturePoints@QuadratureMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points
-
-INTERFACE
-  MODULE SUBROUTINE fe_GetQuadraturePoints1(obj, quad, quadratureType,  &
-    & order, nips, alpha, beta, lambda)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType(:)
-    !! Type of quadrature points
-    !! GaussLegendre
-    !! GaussLegendreLobatto
-    !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight
-    !! GaussChebyshev
-    !! GaussChebyshevLobatto
-    !! GaussChebyshevRadau, GaussChebyshevRadauLeft
-    !! GaussChebyshevRadauRight
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    !! Order of integrand 
-    !! either the order or the nips should be present
-    !! Both nips and order should not be present
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(:)
-    !! Number of integration points required
-    !! Either order or nips should be present
-    !! Both nips and order should not be present
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameter
-  END SUBROUTINE fe_GetQuadraturePoints1
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                          GetGlobalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -810,7 +654,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                        GetLocalElemShapeData_H1@H1Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemshapeData_H1_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@H1Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -838,7 +698,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                    GetLocalElemShapeData_HDiv@HDivMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemShapeData_HDiv_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetGlobalElemShapeData@HDivMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -866,7 +742,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                   GetLocalElemShapeData_HCurl@HCurlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemShapeData_HCurl_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetGlobalElemShapeData@HCurlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -894,7 +786,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                         GetLocalElemShapeData_DG@DGMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local shape data
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+  END SUBROUTINE fe_GetLocalElemShapeData_DG_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetGlobalElemShapeData@DGMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -919,6 +827,47 @@ INTERFACE
     !! will be used for geometry. This means we are dealing with
     !! isoparametric shape functions.
   END SUBROUTINE fe_GetGlobalElemShapeData_DG_Master
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     GetQuadraturePoints@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points
+
+INTERFACE
+  MODULE SUBROUTINE fe_GetQuadraturePoints1(obj, quad, quadratureType,  &
+    & order, nips, alpha, beta, lambda)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: quadratureType(:)
+    !! Type of quadrature points
+    !! GaussLegendre
+    !! GaussLegendreLobatto
+    !! GaussLegendreRadau, GaussLegendreRadauLeft
+    !! GaussLegendreRadauRight
+    !! GaussChebyshev
+    !! GaussChebyshevLobatto
+    !! GaussChebyshevRadau, GaussChebyshevRadauLeft
+    !! GaussChebyshevRadauRight
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    !! Order of integrand
+    !! either the order or the nips should be present
+    !! Both nips and order should not be present
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(:)
+    !! Number of integration points required
+    !! Either order or nips should be present
+    !! Both nips and order should not be present
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! Jacobi parameter
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! Ultraspherical parameter
+  END SUBROUTINE fe_GetQuadraturePoints1
 END INTERFACE
 
 END MODULE AbstractFE_Class
