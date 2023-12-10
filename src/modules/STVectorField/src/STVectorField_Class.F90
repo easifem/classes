@@ -108,10 +108,14 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set14 => stvField_Set14
     !! Set values to a STvector by using triplet
   PROCEDURE, PASS(obj) :: Set15 => stvField_Set15
+    !! Set selected values to given STvector
+  PROCEDURE, PASS(obj) :: Set16 => stvField_Set16
+  PROCEDURE, PASS(obj) :: Set17 => stvField_Set17
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
     & Set7, Set8, Set9, Set10, Set11, &
-    & Set12, Set13, Set14, Set15
+    & Set12, Set13, Set14, Set15, Set16,  &
+    & Set17
 
   ! GET:
   ! @GetMethods
@@ -732,6 +736,46 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE stvField_Set15
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2023-12-10
+! summary: Setvalues
+
+INTERFACE
+  MODULE SUBROUTINE stvField_Set16(obj, VALUE, spaceCompo, timeCompo,  &
+    & scale, addContribution)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stvField_Set16
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2023-12-10
+! summary: Setvalues
+
+INTERFACE
+  MODULE SUBROUTINE stvField_Set17(obj, VALUE, spaceCompo, timeCompo,  &
+    & scale, addContribution)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE stvField_Set17
 END INTERFACE
 
 !----------------------------------------------------------------------------

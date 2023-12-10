@@ -28,15 +28,23 @@ CONTAINS
 MODULE PROCEDURE stvField_set1
 CHARACTER(*), PARAMETER :: myName = "stvField_set1"
 INTEGER(I4B) :: localNode
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The shape of value is not compatible, it should be equal'// &
-  & ' to [obj%spaceCompo, obj%timeCompo]')
+IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+   & 'The shape of value is not compatible, it should be equal'// &
+   & ' to [obj%spaceCompo, obj%timeCompo]')
+  RETURN
+END IF
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
@@ -44,9 +52,10 @@ IF (localNode .EQ. 0) THEN
   CALL e%raiseError(modName//'::'//myName//" - " &
     & //'globalNode :: '//tostring(globalNode) &
     & //" is out of bound for the domain.")
+  RETURN
 END IF
 
-IF (PRESENT(addContribution)) THEN
+IF (abool) THEN
 
   CALL add( &
     & obj=obj%realVec, &
@@ -54,7 +63,7 @@ IF (PRESENT(addContribution)) THEN
     & nodenum=[localNode], &
     & VALUE=RESHAPE(VALUE, [SIZE(VALUE)]), &
     & conversion=[NONE], &
-    & scale=scale)
+    & scale=areal)
 
 ELSE
 
@@ -77,25 +86,33 @@ MODULE PROCEDURE stvField_set2
 REAL(DFP), POINTER :: vecPointer(:)
 CHARACTER(*), PARAMETER :: myName = "stvField_set2"
 INTEGER(I4B) :: ii, aa, idof
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The shape of value is not compatible, it should be equal'// &
-  & ' to [obj%spaceCompo, obj%timeCompo]')
+IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'The shape of value is not compatible, it should be equal'// &
+ & ' to [obj%spaceCompo, obj%timeCompo]')
+  RETURN
+END IF
 
 idof = 0
 
-IF (PRESENT(addContribution)) THEN
+IF (abool) THEN
 
   DO aa = 1, obj%timeCompo
     DO ii = 1, obj%spaceCompo
       idof = idof + 1
       vecPointer => getPointer(obj%realVec, obj%dof, idof)
-      vecPointer = vecPointer + scale * VALUE(ii, aa)
+      vecPointer = vecPointer + areal * VALUE(ii, aa)
     END DO
   END DO
 
@@ -122,21 +139,30 @@ MODULE PROCEDURE stvField_set3
 REAL(DFP), POINTER :: vecPointer(:)
 CHARACTER(*), PARAMETER :: myName = "stvField_set3"
 INTEGER(I4B) :: idof
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
+IF (ANY([spaceCompo, timeCompo]  &
+  & .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'given spaceCompo and timeCompo should be less than or equal'// &
   & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
 
-IF (PRESENT(addContribution)) THEN
-  vecPointer = vecPointer + scale * VALUE
+IF (abool) THEN
+  vecPointer = vecPointer + areal * VALUE
 ELSE
   vecPointer = VALUE
 END IF
@@ -152,21 +178,30 @@ MODULE PROCEDURE stvField_set4
 CHARACTER(*), PARAMETER :: myName = "stvField_set4"
 INTEGER(I4B) :: ii, tnodes, aa, jj
 REAL(DFP), ALLOCATABLE :: vec(:)
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
 tnodes = obj%domain%getTotalNodes()
 
-IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo, tNodes])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The shape of value is not compatible')
+IF (ANY(SHAPE(VALUE)  &
+  & .NE. [obj%spaceCompo, obj%timeCompo, tNodes])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'The shape of value is not compatible')
+  RETURN
+END IF
 
 vec = RESHAPE(VALUE, [SIZE(VALUE)])
 
-IF (PRESENT(addContribution)) THEN
-  CALL Add(obj=obj%realVec, VALUE=vec, scale=scale)
+IF (abool) THEN
+  CALL Add(obj=obj%realVec, VALUE=vec, scale=areal)
 ELSE
   CALL Set(obj=obj%realVec, VALUE=vec)
 END IF
@@ -182,25 +217,36 @@ MODULE PROCEDURE stvField_set5
 REAL(DFP), POINTER :: vecPointer(:)
 CHARACTER(*), PARAMETER :: myName = "stvField_set5"
 INTEGER(I4B) :: idof
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo and timeCompo should be less than or equal'// &
-  & ' to obj%spaceCompo and obj%timeCompo')
+IF (ANY([spaceCompo, timeCompo]  &
+  & .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'given spaceCompo and timeCompo should be less than or equal'// &
+ & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
 !
-IF (SIZE(VALUE) .NE. obj%domain%getTotalNodes()) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to the total number of nodes')
+IF (SIZE(VALUE) .NE. obj%domain%getTotalNodes()) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Size of value should be equal to the total number of nodes')
+  RETURN
+END IF
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
 
-IF (PRESENT(addContribution)) THEN
-  vecPointer = vecPointer + scale * VALUE
+IF (abool) THEN
+  vecPointer = vecPointer + areal * VALUE
 ELSE
   vecPointer = VALUE
 END IF
@@ -217,46 +263,55 @@ REAL(DFP), POINTER :: vecPointer(:)
 REAL(DFP) :: vec(1)
 CHARACTER(*), PARAMETER :: myName = "stvField_set6"
 INTEGER(I4B) :: idof
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated .OR. .NOT. VALUE%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated .OR. .NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo and timeCompo should be less than or equal'// &
-  & ' to obj%spaceCompo and obj%timeCompo')
+IF (ANY([spaceCompo, timeCompo]  &
+  & .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'given spaceCompo and timeCompo should be less than or equal'// &
+ & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
 
-IF (VALUE%domain%getTotalNodes() .NE. obj%domain%getTotalNodes()) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to the total number of nodes')
+IF (VALUE%domain%getTotalNodes() .NE. obj%domain%getTotalNodes()) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Size of value should be equal to the total number of nodes')
+  RETURN
+END IF
 
 SELECT TYPE (VALUE)
 TYPE is (ScalarField_)
   IF (VALUE%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-
     idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
     vecPointer => getPointer(obj%realVec, obj%dof, idof)
     vec = get(obj=VALUE%realVec, nodenum=[1], datatype=1.0_DFP)
-    IF (PRESENT(addContribution)) THEN
-      vecPointer = vecPointer + scale * vec(1)
+    IF (abool) THEN
+      vecPointer = vecPointer + areal * vec(1)
     ELSE
       vecPointer = vec(1)
     END IF
-
-  ELSE
-
-    idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
-    vecPointer => getPointer(obj%realVec, obj%dof, idof)
-    IF (PRESENT(addContribution)) THEN
-      vecPointer = vecPointer + scale * get(VALUE%realVec, 1.0_DFP)
-    ELSE
-      vecPointer = get(VALUE%realVec, 1.0_DFP)
-    END IF
-
+    vecPointer => NULL()
+    RETURN
   END IF
 
+  idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
+  vecPointer => getPointer(obj%realVec, obj%dof, idof)
+  IF (abool) THEN
+    vecPointer = vecPointer + areal * get(VALUE%realVec, 1.0_DFP)
+  ELSE
+    vecPointer = get(VALUE%realVec, 1.0_DFP)
+  END IF
   vecPointer => NULL()
+  RETURN
 CLASS DEFAULT
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'No case found for the type of VALUE')
@@ -286,32 +341,42 @@ MODULE PROCEDURE stvField_set8
 CHARACTER(*), PARAMETER :: myName = "stvField_set8"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: val(SIZE(VALUE))
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Scalar field object is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Scalar field object is not initiated')
+  RETURN
+END IF
 
 IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo, &
-  & SIZE(globalNode)])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Incompatible shape and size of value')
+  & SIZE(globalNode)])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Incompatible shape and size of value')
+  RETURN
+END IF
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
-IF (ANY(localNode .EQ. 0)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Some of the globalNode are out of bound')
+IF (ANY(localNode .EQ. 0)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Some of the globalNode are out of bound')
+  RETURN
+END IF
 
 val = RESHAPE(VALUE, [SIZE(VALUE)])
 
-IF (PRESENT(addContribution)) THEN
+IF (abool) THEN
   CALL add( &
     & obj=obj%realVec, &
     & dofobj=obj%dof, &
     & nodenum=localNode, &
     & VALUE=val, &
     & conversion=[NONE], &
-    & scale=scale)
+    & scale=areal)
 ELSE
   CALL set( &
     & obj=obj%realVec, &
@@ -332,31 +397,43 @@ REAL(DFP), POINTER :: vecPointer(:)
 CHARACTER(*), PARAMETER :: myName = "stvField_set9"
 INTEGER(I4B) :: idof
 INTEGER(I4B) :: localNode(SIZE(globalNode))
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo and timeCompo should be less than or equal'// &
-  & ' to obj%spaceCompo and obj%timeCompo')
+IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'given spaceCompo and timeCompo should be less than or equal'// &
+ & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
 
-IF (SIZE(VALUE) .NE. SIZE(globalNode)) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Size of value should be equal to size of globalNode')
+IF (SIZE(VALUE) .NE. SIZE(globalNode)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Size of value should be equal to size of globalNode')
+  RETURN
+END IF
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
-IF (ANY(localNode .GT. obj%domain%getTotalNodes())) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Some of the global node num are out of bound')
+IF (ANY(localNode .GT. obj%domain%getTotalNodes())) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'Some of the global node num are out of bound')
+  RETURN
+END IF
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
 
-IF (PRESENT(addContribution)) THEN
-  vecPointer(localNode) = vecPointer(localNode) + scale * VALUE
+IF (abool) THEN
+  vecPointer(localNode) = vecPointer(localNode) + areal * VALUE
 ELSE
   vecPointer(localNode) = VALUE
 END IF
@@ -373,27 +450,37 @@ REAL(DFP), POINTER :: vecPointer(:)
 CHARACTER(*), PARAMETER :: myName = "stvField_set9"
 INTEGER(I4B) :: idof
 INTEGER(I4B) :: localNode
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'given spaceCompo and timeCompo should be less than or equal'// &
-  & ' to obj%spaceCompo and obj%timeCompo')
+IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'given spaceCompo and timeCompo should be less than or equal'// &
+ & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
-IF (localNode .GT. obj%domain%getTotalNodes()) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The given global node num are out of bound')
+IF (localNode .GT. obj%domain%getTotalNodes()) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'The given global node num are out of bound')
+  RETURN
+END IF
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
 
-IF (PRESENT(addContribution)) THEN
-  vecPointer(localNode) = vecPointer(localNode) + scale * VALUE
+IF (abool) THEN
+  vecPointer(localNode) = vecPointer(localNode) + areal * VALUE
 ELSE
   vecPointer(localNode) = VALUE
 END IF
@@ -466,13 +553,19 @@ END PROCEDURE stvField_set13
 
 MODULE PROCEDURE stvField_set14
 CHARACTER(*), PARAMETER :: myName = "stvField_set14"
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 
-IF (.NOT. obj%isInitiated) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'STVectorField_::obj is not initiated')
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
 
-IF (PRESENT(addContribution)) THEN
-  CALL Add(obj=obj%realvec, VALUE=VALUE, scale=scale)
+IF (abool) THEN
+  CALL Add(obj=obj%realvec, VALUE=VALUE, scale=areal)
 ELSE
   CALL Set(obj=obj%realvec, VALUE=VALUE)
 END IF
@@ -527,7 +620,91 @@ END DO
 END PROCEDURE stvField_set15
 
 !----------------------------------------------------------------------------
-!
+!                                                                      set
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_set16
+CHARACTER(*), PARAMETER :: myName = "stvField_set16"
+INTEGER(I4B) :: isp, aint
+REAL(DFP) :: val(SIZE(VALUE, 2))
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
+
+IF (ANY([SIZE(spaceCompo), timeCompo]  &
+  & .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'size of spaceCompo and given timeCompo'// &
+        & ' should be less than or equal'// &
+        & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
+
+IF (ANY(SHAPE(VALUE)  &
+  &.NE. [obj%spaceCompo, obj%domain%getTotalNodes()])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'The shape of value is not compatible')
+  RETURN
+END IF
+
+DO isp = 1, SIZE(spaceCompo)
+  aint = spaceCompo(isp)
+  val(:) = VALUE(aint, :)
+  CALL obj%Set(VALUE=val, spaceCompo=aint, timeCompo=timeCompo,  &
+  & addContribution=abool, scale=areal)
+END DO
+
+END PROCEDURE stvField_set16
+
+!----------------------------------------------------------------------------
+!                                                                    set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE stvField_set17
+CHARACTER(*), PARAMETER :: myName = "stvField_set17"
+INTEGER(I4B) :: it, aint
+REAL(DFP) :: val(SIZE(VALUE, 2))
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+ & 'STVectorField_::obj is not initiated')
+  RETURN
+END IF
+
+IF (ANY([spaceCompo, SIZE(timeCompo)]  &
+  & .GT. [obj%spaceCompo, obj%timeCompo])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'given spaceCompo and size of timeCompo'// &
+        & ' should be less than or equal'// &
+        & ' to obj%spaceCompo and obj%timeCompo')
+  RETURN
+END IF
+
+IF (ANY(SHAPE(VALUE)  &
+  & .NE. [obj%timeCompo, obj%domain%getTotalNodes()])) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+        & 'The shape of value is not compatible')
+  RETURN
+END IF
+
+DO it = 1, SIZE(timeCompo)
+  aint = timeCompo(it)
+  val(:) = VALUE(aint, :)
+  CALL obj%Set(VALUE=val, spaceCompo=spaceCompo, timeCompo=aint,  &
+  & addContribution=abool, scale=areal)
+END DO
+
+END PROCEDURE stvField_set17
 
 END SUBMODULE SetMethods
