@@ -547,7 +547,7 @@ INTERFACE
     !! order of approximation on the edges of element
     INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: faceOrder(:)
     !! order of approximation on the faces of element
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: cellOrder(3)
+    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: cellOrder(:)
     !! order of approximation in the cell of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: feType
     !! finite element type
