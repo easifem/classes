@@ -30,7 +30,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE NodeFieldFactory
-CHARACTER(*), PARAMETER :: myName = "NodeFieldFactory"
+CHARACTER(*), PARAMETER :: myName = "NodeFieldFactory()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -79,6 +84,12 @@ CASE DEFAULT
     & 'No case found for given engine')
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE NodeFieldFactory
 
 !----------------------------------------------------------------------------
@@ -87,6 +98,11 @@ END PROCEDURE NodeFieldFactory
 
 MODULE PROCEDURE BlockNodeFieldFactory
 CHARACTER(*), PARAMETER :: myName = "BlockNodeFieldFactory"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -118,6 +134,11 @@ CASE DEFAULT
     & 'No case found for given engine')
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE BlockNodeFieldFactory
 
 !----------------------------------------------------------------------------
@@ -126,6 +147,11 @@ END PROCEDURE BlockNodeFieldFactory
 
 MODULE PROCEDURE ScalarFieldFactory
 CHARACTER(*), PARAMETER :: myName = "ScalarFieldFactory"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -157,6 +183,12 @@ CASE DEFAULT
     & 'No case found for given engine')
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE ScalarFieldFactory
 
 !----------------------------------------------------------------------------
@@ -165,6 +197,11 @@ END PROCEDURE ScalarFieldFactory
 
 MODULE PROCEDURE VectorFieldFactory
 CHARACTER(*), PARAMETER :: myName = "VectorFieldFactory"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -196,6 +233,12 @@ CASE DEFAULT
     & 'No case found for given engine')
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE VectorFieldFactory
 
 !----------------------------------------------------------------------------
@@ -204,6 +247,11 @@ END PROCEDURE VectorFieldFactory
 
 MODULE PROCEDURE STVectorFieldFactory
 CHARACTER(*), PARAMETER :: myName = "STVectorFieldFactory"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -236,6 +284,11 @@ CASE DEFAULT
 
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE STVectorFieldFactory
 
 !----------------------------------------------------------------------------
@@ -244,6 +297,11 @@ END PROCEDURE STVectorFieldFactory
 
 MODULE PROCEDURE STScalarFieldFactory
 CHARACTER(*), PARAMETER :: myName = "STScalarFieldFactory"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 SELECT CASE (TRIM(engine))
 
@@ -275,6 +333,12 @@ CASE DEFAULT
     & 'No case found for given engine')
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE STScalarFieldFactory
 
 !----------------------------------------------------------------------------
@@ -285,6 +349,11 @@ MODULE PROCEDURE VectorField_Initiate1
 CHARACTER(*), PARAMETER :: myName = "VectorFieldIntiate1"
 INTEGER(I4B) :: tsize, ii
 TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL param%Initiate()
 
@@ -317,6 +386,11 @@ END DO
 
 CALL param%DEALLOCATE()
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE VectorField_Initiate1
 
 !----------------------------------------------------------------------------
@@ -327,6 +401,11 @@ MODULE PROCEDURE VectorField_Initiate2
 CHARACTER(*), PARAMETER :: myName = "VectorFieldIntiate2"
 INTEGER(I4B) :: tsize, ii, nn(6)
 TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL param%Initiate()
 
@@ -370,6 +449,11 @@ DO ii = 1, tsize
 END DO
 
 CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE VectorField_Initiate2
 
