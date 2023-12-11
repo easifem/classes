@@ -42,7 +42,7 @@ END IF
 
 CALL SetAbstractMeshFieldParam( &
   & param=param, &
-  & prefix="ScalarMeshField", &
+  & prefix=myprefix, &
   & name=name, &
   & fieldType=fieldType, &
   & varType=varType, &
