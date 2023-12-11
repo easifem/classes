@@ -183,6 +183,7 @@ SUBROUTINE SetFEPram_BasisType( &
   CHARACTER(*), PARAMETER :: myName = "SetFEPram_BasisType()"
   INTEGER(I4B) :: xidim, basisType0(3), ii, ierr
   REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
+  LOGICAL(LGT) :: case1, case2, isLagrange, isOrthogonal
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -192,11 +193,14 @@ SUBROUTINE SetFEPram_BasisType( &
   alpha0 = 0.0_DFP
   beta0 = 0.0_DFP
   lambda0 = 0.0_DFP
+  basisType0 = -1
+  isLagrange = baseInterpol0(1:8) .EQ. "LAGRANGE"
+  isOrthogonal = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
 
   SELECT CASE (elemType)
   CASE (Line)
-    IF (baseInterpol0 .EQ. "LAGRANGE" .OR.  &
-      & baseInterpol0 .EQ. "LAGRANGEPOLYNOMIAL") THEN
+    ! isok = baseInterpol0(1:8) .EQ. "LAGRANGE"
+    IF (isLagrange) THEN
       IF (.NOT. PRESENT(basisType)) THEN
         basisType0 = Monomial
       ELSE
@@ -204,8 +208,8 @@ SUBROUTINE SetFEPram_BasisType( &
       END IF
     END IF
 
-    IF (baseInterpol0 .EQ. "ORTHOGONAL" .OR.  &
-      & baseInterpol0 .EQ. "ORTHOGONALPOLYNOMIAL") THEN
+    ! isok = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
+    IF (isOrthogonal) THEN
       IF (.NOT. PRESENT(basisType)) THEN
         basisType0 = Legendre
       ELSE
@@ -236,8 +240,7 @@ SUBROUTINE SetFEPram_BasisType( &
     END IF
 
   CASE (Triangle, Tetrahedron, Prism, Pyramid)
-    IF (baseInterpol0 .EQ. "LAGRANGE" .OR.  &
-      & baseInterpol0 .EQ. "LAGRANGEPOLYNOMIAL") THEN
+    IF (isLagrange) THEN
       IF (.NOT. PRESENT(basisType)) THEN
         basisType0 = Monomial
       ELSE
@@ -248,31 +251,34 @@ SUBROUTINE SetFEPram_BasisType( &
   CASE (Quadrangle, Hexahedron)
     xidim = XiDimension(elemType)
 
-    IF (baseInterpol0 .EQ. "LAGRANGE" .OR.  &
-      & baseInterpol0 .EQ. "LAGRANGEPOLYNOMIAL") THEN
-      IF (.NOT. PRESENT(basisType)) THEN
-        basisType0(1:xidim) = Monomial * ones(xidim, 1_I4B)
+    case1 = isLagrange .AND. .NOT. PRESENT(basisType)
+    IF (case1) THEN
+      basisType0(1:xidim) = Monomial * ones(xidim, 1_I4B)
+    END IF
+
+    case2 = isLagrange .AND. PRESENT(basisType)
+
+    IF (case2) THEN
+      IF (SIZE(basisType) .EQ. 1_I4B) THEN
+        basisType0 = basisType(1)
       ELSE
-        IF (SIZE(basisType) .EQ. 1_I4B) THEN
-          basisType0 = basisType(1)
-        ELSE
-          basisType0(1:xidim) = basisType(1:xidim)
-        END IF
+        basisType0(1:xidim) = basisType(1:xidim)
       END IF
     END IF
 
-    IF (baseInterpol0 .EQ. "ORTHOGONAL" .OR.  &
-      & baseInterpol0 .EQ. "ORTHOGONALPOLYNOMIAL") THEN
+    case1 = isOrthogonal .AND. .NOT. PRESENT(basisType)
+    IF (case1) basisType0(1:xidim) = Legendre * ones(xidim, 1_I4B)
 
-      IF (.NOT. PRESENT(basisType)) THEN
-        basisType0(1:xidim) = Legendre * ones(xidim, 1_I4B)
+    case2 = isOrthogonal .AND. PRESENT(basisType)
+    IF (case2) THEN
+      IF (SIZE(basisType) .EQ. 1_I4B) THEN
+        basisType0 = basisType(1)
       ELSE
-        IF (SIZE(basisType) .EQ. 1_I4B) THEN
-          basisType0 = basisType(1)
-        ELSE
-          basisType0(1:xidim) = basisType(1:xidim)
-        END IF
+        basisType0(1:xidim) = basisType(1:xidim)
       END IF
+    END IF
+
+    IF (isOrthogonal) THEN
 
       DO ii = 1, xidim
 
@@ -308,8 +314,9 @@ SUBROUTINE SetFEPram_BasisType( &
     END IF
 
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & '[NO CASE FOUND] No case found for given element type')
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: No case found for given element type')
+    RETURN
   END SELECT
 
   ierr = param%Set(key=prefix//"/alpha", VALUE=alpha0)
@@ -624,37 +631,26 @@ CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(sublist)
 
 !! Get sublisteters
-ierr = sublist%get(key=prefix//"/nsd", VALUE=nsd)
-ierr = sublist%get(key=prefix//"/elemType", VALUE=elemType)
-CALL GetValue( &
-  & obj=sublist, &
-  & key=prefix//"/baseContinuity", &
-  & VALUE=baseCont)
+ierr = sublist%Get(key=prefix//"/nsd", VALUE=nsd)
+ierr = sublist%Get(key=prefix//"/elemType", VALUE=elemType)
+CALL GetValue(obj=sublist, key=prefix//"/baseContinuity", VALUE=baseCont)
+CALL GetValue( obj=sublist, key=prefix//"/baseInterpolation", VALUE=baseInterpol)
 
-CALL GetValue( &
-  & obj=sublist, &
-  & key=prefix//"/baseInterpolation", &
-  & VALUE=baseInterpol)
+ierr = sublist%Get(key=prefix//"/feType", VALUE=feType)
+ierr = sublist%Get(key=prefix//"/ipType", VALUE=ipType)
+ierr = sublist%Get(key=prefix//"/dofType", VALUE=dofType)
+ierr = sublist%Get(key=prefix//"/transformType", VALUE=transformType)
+ierr = sublist%Get(key=prefix//"/basisType", VALUE=basisType)
+ierr = sublist%Get(key=prefix//"/alpha", VALUE=alpha)
+ierr = sublist%Get(key=prefix//"/beta", VALUE=beta)
+ierr = sublist%Get(key=prefix//"/lambda", VALUE=lambda)
 
-ierr = sublist%get(key=prefix//"/feType", VALUE=feType)
-ierr = sublist%get(key=prefix//"/ipType", VALUE=ipType)
-ierr = sublist%get(key=prefix//"/dofType", VALUE=dofType)
-ierr = sublist%get(key=prefix//"/transformType", VALUE=transformType)
-ierr = sublist%get(key=prefix//"/basisType", VALUE=basisType)
-ierr = sublist%get(key=prefix//"/alpha", VALUE=alpha)
-ierr = sublist%get(key=prefix//"/beta", VALUE=beta)
-ierr = sublist%get(key=prefix//"/lambda", VALUE=lambda)
-
-CALL GetValue( &
-  & obj=sublist, &
-  & key=prefix//"/refElemDomain", &
-  & VALUE=refElemDomain0)
+CALL GetValue(obj=sublist, key=prefix//"/refElemDomain", VALUE=refElemDomain0)
 
 !! Initiate ReferenceElement
 obj%refelem => RefElement_Pointer(elemType)
-CALL obj%refelem%Initiate( &
-  & nsd=nsd, &
-  & baseContinuity=baseCont%chars(), &
+!! NOTE: RefElement_Pointer is defined in RefElementFactory
+CALL obj%refelem%Initiate(nsd=nsd, baseContinuity=baseCont%chars(), &
   & baseInterpolation=baseInterpol%chars())
 
 !! Set parameters
