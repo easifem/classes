@@ -102,9 +102,6 @@ SUBROUTINE KernelInitiateScalarProperty1(vars, materials, dom, nnt,  &
   nsd = dom%GetNSD()
   tmesh = dom%GetTotalMesh(dim=nsd)
 
-  CALL Display(nsd, "nsd = ")
-  STOP
-
   isok = ALLOCATED(vars)
   IF (.NOT. isok) ALLOCATE (vars(tmesh))
 
@@ -459,30 +456,21 @@ SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
   tmesh = dom%GetTotalMesh(dim=nsd)
 
   isok = ALLOCATED(lambda)
-  IF (.NOT. isok) THEN
-    ALLOCATE (lambda(tmesh))
-    RETURN
-  END IF
+  IF (.NOT. isok) ALLOCATE (lambda(tmesh))
 
   isok = ALLOCATED(mu)
-  IF (.NOT. isok) THEN
-    ALLOCATE (mu(tmesh))
-    RETURN
-  END IF
+  IF (.NOT. isok) ALLOCATE (mu(tmesh))
 
   isok = ALLOCATED(Cijkl)
-  IF (.NOT. isok) THEN
-    ALLOCATE (Cijkl(tmesh))
-    RETURN
-  END IF
+  IF (.NOT. isok) ALLOCATE (Cijkl(tmesh))
 
   IF (nnt .EQ. 1) THEN
-    name = "Scalar"
+    name = ""
     CALL SetScalarMeshFieldParam(param=param1, name="lambda", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant,  &
       & engine=engine, defineOn=Nodal, nns=1)
 
-    CALL SetScalarMeshFieldParam(param=param1, name="mu", &
+    CALL SetScalarMeshFieldParam(param=param2, name="mu", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant,  &
       & engine=engine, defineOn=Nodal, nns=1)
 
@@ -492,7 +480,7 @@ SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
       & nns=1, dim1=6, dim2=6)
 
   ELSE
-    name = "STScalar"
+    name = "ST"
 
     CALL SetSTScalarMeshFieldParam(param=param1, name="lambda", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant, &
@@ -514,19 +502,22 @@ SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
 
     isok = ASSOCIATED(lambda(ii)%ptr)
     IF (.NOT. isok) THEN
-      lambda(ii)%ptr => ScalarMeshFieldFactory(engine=engine, name=name)
+      lambda(ii)%ptr => ScalarMeshFieldFactory(engine=engine, &
+        & name=name//"Scalar")
       CALL lambda(ii)%ptr%Initiate(param=param1, mesh=amesh)
     END IF
 
     isok = ASSOCIATED(mu(ii)%ptr)
     IF (.NOT. isok) THEN
-      mu(ii)%ptr => ScalarMeshFieldFactory(engine=engine, name=name)
+      mu(ii)%ptr => ScalarMeshFieldFactory(engine=engine,  &
+        & name=name//"Scalar")
       CALL mu(ii)%ptr%Initiate(param=param2, mesh=amesh)
     END IF
 
     isok = ASSOCIATED(Cijkl(ii)%ptr)
     IF (.NOT. isok) THEN
-      Cijkl(ii)%ptr => TensorMeshFieldFactory(engine=engine, name=name)
+      Cijkl(ii)%ptr => TensorMeshFieldFactory(engine=engine, &
+        & name=name//"Tensor")
       CALL Cijkl(ii)%ptr%Initiate(param=param3, mesh=amesh)
     END IF
   END DO

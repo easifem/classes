@@ -88,7 +88,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Set it to True if the material properties are constant
   LOGICAL(LGT) :: isInitiated = .FALSE.
   !! This variable is Set to true when we initiate the kernel
-  LOGICAL(LGT) :: isCommonDomain = .TRUE.
+  LOGICAL(LGT) :: isCommonDomain = DEFAULT_isCommonDomain
   !! This variable is True when the domain is common
   !! It is useful in the case of multi-physics simulations.
   !! In multi-physics applications different fields can have different
@@ -262,15 +262,15 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Quadrature type in space
   INTEGER(I4B) :: quadTypeForSpace
   !! Quadrature type in space
-  INTEGER(I4B) :: ipTypeForSpace = 0
+  INTEGER(I4B) :: ipTypeForSpace = DEFAULT_ipTypeForSpace
   !! Interpolation grid used for Lagrange polynomials
-  INTEGER(I4B) :: basisTypeForSpace = 0
+  INTEGER(I4B) :: basisTypeForSpace = DEFAULT_basisTypeForSpace
   !! Basis type for space
-  REAL(DFP) :: alphaForSpace = 0.0_DFP
+  REAL(DFP) :: alphaForSpace = DEFAULT_alphaForSpace
   !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: betaForSpace = 0.0_DFP
+  REAL(DFP) :: betaForSpace = DEFAULT_betaForSpace
   !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: lambdaForSpace = 0.0_DFP
+  REAL(DFP) :: lambdaForSpace = DEFAULT_lambdaForSpace
   !! Parameter for Ultraspherical polynomials in  space
   TYPE(String) :: baseContinuityForTime
   !! Continuity of basis function in time in time domain
@@ -284,11 +284,11 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Interpolation grid used for Lagrange polynomials
   INTEGER(I4B) :: basisTypeForTime
   !! Basis type for space
-  REAL(DFP) :: alphaForTime = 0.0_DFP
+  REAL(DFP) :: alphaForTime = DEFAULT_alphaForTime
   !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: betaForTime = 0.0_DFP
+  REAL(DFP) :: betaForTime = DEFAULT_betaForTime
   !! Parameter for Jacobi polynomials in space
-  REAL(DFP) :: lambdaForTime = 0.0_DFP
+  REAL(DFP) :: lambdaForTime = DEFAULT_lambdaForTime
   !! Parameter for Ultraspherical polynomials in space
   TYPE(String) :: domainFile
   !! Domain file name

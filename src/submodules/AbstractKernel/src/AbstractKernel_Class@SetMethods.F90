@@ -165,7 +165,7 @@ END PROCEDURE obj_SetMatIFaceConnectData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFiniteElements
-CHARACTER(*), PARAMETER :: myName = "kernel_SetFiniteElements"
+CHARACTER(*), PARAMETER :: myName = "kernel_SetFiniteElements()"
 INTEGER(I4B), ALLOCATABLE :: order(:), elemType(:)
 INTEGER(I4B) :: tsize, ii, nsd
 LOGICAL(LGT) :: problem
@@ -360,6 +360,7 @@ END PROCEDURE obj_SetFiniteElements
 MODULE PROCEDURE obj_SetQuadPointsInSpace
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInSpace"
 INTEGER(I4B) :: ii, tCell, order
+LOGICAL(LGT) :: isok
 CLASS(FiniteElement_), POINTER :: fe
 
 #ifdef DEBUG_VER
@@ -367,15 +368,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-IF (.NOT. ALLOCATED(obj%cellFE)) THEN
+isok = ALLOCATED(obj%cellFE)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] AbstractKernel_::obj%cellFE not allocated')
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%cellFE not allocated')
+  RETURN
 END IF
 
 tCell = SIZE(obj%cellFE)
 fe => NULL()
 
-IF (.NOT. ALLOCATED(obj%quadratureForSpace)) THEN
+isok = ALLOCATED(obj%quadratureForSpace)
+IF (.NOT. isok) THEN
   ALLOCATE (obj%quadratureForSpace(tCell))
 END IF
 
@@ -443,33 +447,41 @@ MODULE PROCEDURE obj_SetLocalElemShapeDataInSpace
 CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInSpace()"
 INTEGER(I4B) :: ii, tCell
 CLASS(FiniteElement_), POINTER :: fe
+LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
 
-IF (.NOT. ALLOCATED(obj%cellFE)) THEN
+isok = ALLOCATED(obj%cellFE)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] AbstractKernel_::obj%cellFE not allocated')
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%cellFE not allocated')
+  RETURN
 END IF
 
-IF (.NOT. ALLOCATED(obj%quadratureForSpace)) THEN
+isok = ALLOCATED(obj%quadratureForSpace)
+IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] AbstractKernel_::obj%quadratureForSpace not allocated')
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%quadratureForSpace not allocated')
+  RETURN
 END IF
 
 tCell = SIZE(obj%cellFE)
 fe => NULL()
 
-IF (ALLOCATED(obj%spaceElemSD)) THEN
+problem = ALLOCATED(obj%spaceElemSD)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] AbstractKernel_::obj%spaceElemSD already allocated')
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%spaceElemSD already allocated')
+  RETURN
 END IF
 
 IF (ALLOCATED(obj%linSpaceElemSD)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[CONFIG ERROR] AbstractKernel_::obj%linSpaceElemSD already allocated')
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%linSpaceElemSD already allocated')
+  RETURN
 END IF
 
 ALLOCATE (obj%spaceElemSD(tCell), obj%linSpaceElemSD(tCell))
