@@ -48,18 +48,12 @@ IF (problem) THEN
   RETURN
 END IF
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-  & '[1]')
 problem = .NOT. obj%isElementToElementsInitiated
 IF (problem) CALL obj%InitiateElementToElements()
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-  & '[2]')
 problem = .NOT. obj%IsBoundaryDataInitiated
 IF (problem) CALL obj%InitiateBoundaryData()
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-  & '[3]')
 tDomainFace = 0
 tIntFace = 0
 obj%isFacetDataInitiated = .TRUE.
@@ -84,9 +78,6 @@ DO iel = 1, telements
   END DO
 END DO
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-  & '[4]')
-
 ! internalFacetData
 IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
 ALLOCATE (obj%internalFacetData(tIntFace))
@@ -101,22 +92,15 @@ CALL Reallocate(obj%facetElementType, SIZE(obj%facetElements), telements)
 
 iintface = 0; idomainFace = 0
 
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-  & '[5]')
-
 DO iel = 1, telements
-
   jj = obj%GetGlobalElemNumber(iel)
   cellNptrs = obj%GetConnectivity(globalElement=jj)
   e2e = obj%GetElementToElements(globalElement=jj, onlyElements=.FALSE.)
 
   ! boundaryFacetData
   IF (obj%IsBoundaryElement(globalElement=jj)) THEN
-
     indx = obj%GetBoundaryElementData(globalElement=jj)
-
     DO ii = 1, SIZE(indx)
-
       kk = indx(ii)
       idomainFace = idomainFace + 1
       obj%boundaryFacetData(idomainFace)%masterCellNumber = jj
@@ -124,9 +108,7 @@ DO iel = 1, telements
       obj%boundaryFacetData(idomainFace)%elementType = &
         & DOMAIN_BOUNDARY_ELEMENT
       obj%facetElementType(kk, iel) = DOMAIN_BOUNDARY_ELEMENT
-
     END DO
-
   END IF
 
   ! internalFacetData
@@ -141,12 +123,16 @@ DO iel = 1, telements
       obj%internalFacetData(iintface)%slavelocalFacetID = e2e(ii, 3)
     END IF
   END DO
-
 END DO
 
 IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
 IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE mesh_InitiateFacetElements
 
