@@ -23,6 +23,7 @@ MODULE RefHexahedron_Class
 USE GlobalData
 USE Topology_Class
 USE AbstractRefElement_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "RefHexahedron_Class"

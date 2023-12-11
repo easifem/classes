@@ -26,7 +26,12 @@ CONTAINS
 
 MODULE PROCEDURE refelem_RefCoord
 TYPE(String) :: baseContinuity0, baseInterpolation0
-CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 baseContinuity0 = UpperCase(baseContinuity)
 baseInterpolation0 = UpperCase(baseInterpolation)
@@ -72,6 +77,11 @@ CASE DEFAULT
     & 'Currently, only baseContinuity=H1 allowed!')
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_RefCoord
 
 !----------------------------------------------------------------------------
@@ -87,16 +97,19 @@ END PROCEDURE refelem_GetName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetElements
+CHARACTER(*), PARAMETER :: myName = "refelem_GetFacetElements()"
 INTEGER(I4B), PARAMETER :: tface = 4_I4B
 INTEGER(I4B) :: ii
 TYPE(string) :: baseContinuity0, baseInterpolation0
 INTEGER(I4B) :: faceCon(3, tface)
-REAL(DFP), ALLOCATABLE :: xij(:, :)
 
-CALL obj%getParam( &
-  & baseInterpolation=baseInterpolation0, &
-  & baseContinuity=baseContinuity0, &
-  & xij=xij)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL obj%getParam(baseInterpolation=baseInterpolation0, &
+  & baseContinuity=baseContinuity0)
 
 faceCon = FacetConnectivity_Tetrahedron( &
   & baseInterpolation0%chars(), &
@@ -105,15 +118,15 @@ faceCon = FacetConnectivity_Tetrahedron( &
 ALLOCATE (ans(tface))
 DO ii = 1, tface
   ALLOCATE (RefTriangle_ :: ans(ii)%ptr)
-  CALL ans(ii)%ptr%Initiate( &
-    & nsd=obj%getNSD(),  &
+  CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD(),  &
     & baseContinuity=baseContinuity0%chars(),  &
-    & baseInterpolation=baseInterpolation0%chars(), &
-    & xij=xij(:, faceCon(:, ii)) &
-    & )
+    & baseInterpolation=baseInterpolation0%chars())
 END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------

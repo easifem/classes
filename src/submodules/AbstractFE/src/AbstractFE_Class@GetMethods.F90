@@ -16,7 +16,6 @@
 
 SUBMODULE(AbstractFE_Class) GetMethods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 

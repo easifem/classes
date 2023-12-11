@@ -34,8 +34,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-problem = baseInterpolation .NE. "LagrangePolynomial"  &
-  & .AND. baseInterpolation .NE. "LagrangeInterpolation"
+problem = baseInterpolation(1:8) .NE. "Lagrange"
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -59,16 +58,13 @@ CALL SetFiniteElementParam( &
   & beta=[beta],  &
   & lambda=[lambda],  &
   & order=order)
-
 CALL obj%Initiate(param)
-
 CALL param%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_InitiateLagrangeFE
 
 !----------------------------------------------------------------------------

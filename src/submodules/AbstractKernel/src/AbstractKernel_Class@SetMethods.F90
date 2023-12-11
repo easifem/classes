@@ -176,7 +176,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 nsd = obj%nsd
-tsize = obj%dom%getTotalMesh(dim=nsd)
+tsize = obj%dom%GetTotalMesh(dim=nsd)
 CALL Reallocate(elemType, tsize)
 CALL Reallocate(order, tsize)
 elemType = obj%dom%GetElemType(dim=nsd)
@@ -189,6 +189,11 @@ IF (problem) THEN
     & 'already allocated.')
   RETURN
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Setting Cell Finite Element.')
+#endif DEBUG_VER
 
 ALLOCATE (obj%cellFE(tsize), obj%linCellFE(tsize))
 
@@ -219,20 +224,33 @@ DO ii = 1, tsize
     & alpha=obj%alphaForSpace,  &
     & beta=obj%betaForSpace,  &
     & lambda=obj%lambdaForSpace)
+
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Setting Cell Finite Element.')
+#endif DEBUG_VER
 
 CALL obj%SetQuadPointsInSpace()
 CALL obj%SetLocalElemShapeDataInSpace()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] Setting Facet Finite Element.')
+#endif DEBUG_VER
 
 IF (nsd .GE. 2) THEN
   elemType = obj%dom%GetElemType(dim=nsd - 1)
   order = obj%dom%GetOrder(dim=nsd - 1)
   tsize = SIZE(elemType)
 
-  IF (ALLOCATED(obj%facetFE) .OR. ALLOCATED(obj%linFacetFE)) THEN
+  problem = ALLOCATED(obj%facetFE) .OR. ALLOCATED(obj%linFacetFE)
+  IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractKernel_::obj%facetFE or obj%linFacetFE '//  &
-      & 'already allocated.')
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%facetFE '//  &
+    & 'or obj%linFacetFE already allocated.')
+    RETURN
   END IF
 
   ALLOCATE (obj%facetFE(tsize), obj%linFacetFE(tsize))
@@ -267,7 +285,13 @@ IF (nsd .GE. 2) THEN
       & lambda=obj%lambdaForSpace)
 
   END DO
+
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] Setting Facet Finite Element.')
+#endif DEBUG_VER
 
 IF (nsd .GE. 3) THEN
   elemType = obj%dom%GetElemType(dim=nsd - 2)
@@ -276,8 +300,9 @@ IF (nsd .GE. 3) THEN
 
   IF (ALLOCATED(obj%edgeFE) .OR. ALLOCATED(obj%linEdgeFE)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: AbstractKernel_::obj%edgeFE or obj%linEdgeFE '//  &
-      & 'already allocated.')
+      & '[INTERNAL ERROR] :: AbstractKernel_::obj%edgeFE '//  &
+      & 'or obj%linEdgeFE already allocated.')
+    RETURN
   END IF
 
   ! CALL DEALLOCATE (obj%edgeFE)

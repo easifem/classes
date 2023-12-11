@@ -16,7 +16,6 @@
 
 SUBMODULE(AbstractFE_Class) H1Methods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 
 INTERFACE GetLocalElemShapeData_H1

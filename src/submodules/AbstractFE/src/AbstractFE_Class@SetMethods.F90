@@ -24,6 +24,13 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 IF (PRESENT(nsd)) obj%nsd = nsd
 IF (PRESENT(order)) obj%order = order
 IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
@@ -62,6 +69,12 @@ IF (PRESENT(basisType)) obj%basisType = basisType
 IF (PRESENT(alpha)) obj%alpha = alpha
 IF (PRESENT(beta)) obj%beta = beta
 IF (PRESENT(lambda)) obj%lambda = lambda
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
