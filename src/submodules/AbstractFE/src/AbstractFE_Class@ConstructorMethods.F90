@@ -163,6 +163,227 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE SetAbstractFEParam
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetFEPram_BasisType_Line( &
+  & param, elemType, nsd, baseContinuity0, baseInterpol0, &
+  & basisType, alpha, beta, lambda, prefix)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  INTEGER(I4B), INTENT(IN) :: elemType
+  INTEGER(I4B), INTENT(IN) :: nsd
+  CHARACTER(*), INTENT(IN) :: baseContinuity0
+  CHARACTER(*), INTENT(IN) :: baseInterpol0
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  CHARACTER(*), INTENT(IN) :: prefix
+
+  CHARACTER(*), PARAMETER :: myName = "SetFEPram_BasisType_Line()"
+  INTEGER(I4B) :: basisType0(3), ierr
+  REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
+  LOGICAL(LGT) :: isLagrange, isOrthogonal, isBasis
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  alpha0 = 0.0_DFP
+  beta0 = 0.0_DFP
+  lambda0 = 0.0_DFP
+  basisType0 = -1
+  isLagrange = baseInterpol0(1:8) .EQ. "LAGRANGE"
+  isOrthogonal = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
+  isBasis = PRESENT(basisType)
+
+  IF (isLagrange) basisType0 = Monomial
+  IF (isOrthogonal) basisType0 = Legendre
+  IF (isBasis) basisType0 = basisType(1)
+  alpha0 = 0.0_DFP; IF (PRESENT(alpha)) alpha0 = alpha(1)
+  beta0 = 0.0_DFP; IF (PRESENT(beta)) beta0 = beta(1)
+  lambda0 = 0.5_DFP; IF (PRESENT(lambda)) lambda0 = lambda(1)
+
+  ierr = param%Set(key=prefix//"/alpha", VALUE=alpha0)
+  ierr = param%Set(key=prefix//"/beta", VALUE=beta0)
+  ierr = param%Set(key=prefix//"/lambda", VALUE=lambda0)
+  ierr = param%Set(key=prefix//"/basisType", VALUE=basisType0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE SetFEPram_BasisType_Line
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetFEPram_BasisType_Simplex( &
+  & param, elemType, nsd, baseContinuity0, baseInterpol0, &
+  & basisType, alpha, beta, lambda, prefix)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  INTEGER(I4B), INTENT(IN) :: elemType
+  INTEGER(I4B), INTENT(IN) :: nsd
+  CHARACTER(*), INTENT(IN) :: baseContinuity0
+  CHARACTER(*), INTENT(IN) :: baseInterpol0
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  CHARACTER(*), INTENT(IN) :: prefix
+
+  CHARACTER(*), PARAMETER :: myName = "SetFEPram_BasisType_Simplex()"
+  INTEGER(I4B) :: basisType0(3), ierr
+  REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
+  LOGICAL(LGT) :: isLagrange, isOrthogonal, isBasis
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  alpha0 = 0.0_DFP
+  beta0 = 0.0_DFP
+  lambda0 = 0.0_DFP
+  basisType0 = -1
+  isLagrange = baseInterpol0(1:8) .EQ. "LAGRANGE"
+  isOrthogonal = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
+  isBasis = PRESENT(basisType)
+  IF (isLagrange) basisType0 = Monomial
+  IF (isOrthogonal) basisType0 = Legendre
+  IF (isBasis) basisType0 = basisType(1)
+  ierr = param%Set(key=prefix//"/alpha", VALUE=alpha0)
+  ierr = param%Set(key=prefix//"/beta", VALUE=beta0)
+  ierr = param%Set(key=prefix//"/lambda", VALUE=lambda0)
+  ierr = param%Set(key=prefix//"/basisType", VALUE=basisType0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE SetFEPram_BasisType_Simplex
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE SetFEPram_BasisType_Cartesian( &
+  & param, elemType, nsd, baseContinuity0, baseInterpol0, &
+  & basisType, alpha, beta, lambda, prefix)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  INTEGER(I4B), INTENT(IN) :: elemType
+  INTEGER(I4B), INTENT(IN) :: nsd
+  CHARACTER(*), INTENT(IN) :: baseContinuity0
+  CHARACTER(*), INTENT(IN) :: baseInterpol0
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+  CHARACTER(*), INTENT(IN) :: prefix
+
+  CHARACTER(*), PARAMETER :: myName = "SetFEPram_BasisType_Cartesian()"
+  INTEGER(I4B) :: xidim, basisType0(3), ii, ierr
+  REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
+  LOGICAL(LGT) :: case1, case2, isLagrange, isOrthogonal, isBasis
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  alpha0 = 0.0_DFP
+  beta0 = 0.0_DFP
+  lambda0 = 0.0_DFP
+  basisType0 = -1
+  isLagrange = baseInterpol0(1:8) .EQ. "LAGRANGE"
+  isOrthogonal = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
+  isBasis = PRESENT(basisType)
+
+  xidim = XiDimension(elemType)
+
+  IF (isLagrange) basisType0(1:xidim) = Monomial
+  IF (isOrthogonal) basisType0 = Legendre
+  IF (isBasis) basisType0(1:xidim) = basisType(1:xidim)
+
+  case1 = isLagrange .AND. .NOT. PRESENT(basisType)
+  IF (case1) THEN
+    basisType0(1:xidim) = Monomial * ones(xidim, 1_I4B)
+  END IF
+
+  case2 = isLagrange .AND. PRESENT(basisType)
+
+  IF (case2) THEN
+    IF (SIZE(basisType) .EQ. 1_I4B) THEN
+      basisType0 = basisType(1)
+    ELSE
+      basisType0(1:xidim) = basisType(1:xidim)
+    END IF
+  END IF
+
+  case1 = isOrthogonal .AND. .NOT. PRESENT(basisType)
+  IF (case1) basisType0(1:xidim) = Legendre * ones(xidim, 1_I4B)
+
+  case2 = isOrthogonal .AND. PRESENT(basisType)
+  IF (case2) THEN
+    IF (SIZE(basisType) .EQ. 1_I4B) THEN
+      basisType0 = basisType(1)
+    ELSE
+      basisType0(1:xidim) = basisType(1:xidim)
+    END IF
+  END IF
+
+  IF (isOrthogonal) THEN
+
+    DO ii = 1, xidim
+
+      IF (basisType0(ii) .EQ. Jacobi) THEN
+        IF (PRESENT(alpha)) THEN
+          IF (SIZE(alpha) .EQ. xidim) THEN
+            alpha0(ii) = alpha(ii)
+          ELSE
+            alpha0(ii) = alpha(1)
+          END IF
+        END IF
+
+        IF (PRESENT(beta)) THEN
+          IF (SIZE(beta) .EQ. xidim) THEN
+            beta0(ii) = beta(ii)
+          ELSE
+            beta0(ii) = beta(1)
+          END IF
+        END IF
+      END IF
+
+      IF (basisType0(ii) .EQ. Ultraspherical) THEN
+        IF (PRESENT(lambda)) THEN
+          IF (SIZE(lambda) .EQ. xidim) THEN
+            lambda0(ii) = lambda(ii)
+          ELSE
+            lambda0(ii) = lambda(1)
+          END IF
+        END IF
+      END IF
+
+    END DO
+  END IF
+
+  ierr = param%Set(key=prefix//"/alpha", VALUE=alpha0)
+  ierr = param%Set(key=prefix//"/beta", VALUE=beta0)
+  ierr = param%Set(key=prefix//"/lambda", VALUE=lambda0)
+  ierr = param%Set(key=prefix//"/basisType", VALUE=basisType0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE SetFEPram_BasisType_Cartesian
+
+!----------------------------------------------------------------------------
 !                                                       SetFEPram_BasisType
 !----------------------------------------------------------------------------
 
