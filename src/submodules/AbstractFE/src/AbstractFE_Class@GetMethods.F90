@@ -26,9 +26,17 @@ CONTAINS
 
 MODULE PROCEDURE obj_GetLocalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NOT INITIATED] It seems AbstractFE_::obj is not initiated.')
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+isok = obj%isInitiated
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractFE_::obj is not initiated.')
   RETURN
 END IF
 
@@ -43,10 +51,16 @@ CLASS IS (DG_)
   CALL obj%GetLocalElemShapeData_DG(elemsd=elemsd, quad=quad)
 CLASS DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of '//  &
+    & '[INTERNAL ERROR] :: No case found for type of '//  &
     & '  AbstractFE_::obj%baseContinuity')
   RETURN
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
@@ -55,9 +69,17 @@ END PROCEDURE obj_GetLocalElemShapeData
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NOT INITIATED] It seems AbstractFE_::obj is not initiated.')
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+isok = obj%isInitiated
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: It seems AbstractFE_::obj is not initiated.')
   RETURN
 END IF
 
@@ -75,10 +97,17 @@ CLASS IS (DG_)
   CALL obj%GetGlobalElemShapeData_DG(elemsd=elemsd, xij=xij,  &
     & geoElemsd=geoElemsd)
 CLASS DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of  &
-    & AbstractFE_::obj%baseContinuity')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[NO CASE FOUND] No case found for type of  '//  &
+    & 'AbstractFE_::obj%baseContinuity.')
+  RETURN
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
