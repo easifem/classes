@@ -42,7 +42,7 @@ CONTAINS
 FUNCTION RefElement_Pointer(elemType) RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: elemType
   CLASS(AbstractRefElement_), POINTER :: ans
-  !!
+  ans => NULL()
   SELECT CASE (elemType)
   CASE (Point)
     ALLOCATE (RefPoint_ :: ans)
@@ -61,7 +61,6 @@ FUNCTION RefElement_Pointer(elemType) RESULT(ans)
   CASE (Pyramid)
     ALLOCATE (RefPyramid_ :: ans)
   END SELECT
-  !!
 END FUNCTION RefElement_Pointer
 
 END MODULE RefElementFactory
