@@ -17,7 +17,7 @@
 SUBMODULE(AbstractFE_Class) ConstructorMethods
 USE BaseMethod
 USE ExceptionHandler_Class, ONLY: e
-USE FPL_Method, ONLY: GetValue
+USE FPL_Method, ONLY: GetValue, CheckEssentialParam
 USE RefElementFactory, ONLY: RefElement_Pointer
 IMPLICIT NONE
 CONTAINS
@@ -26,58 +26,26 @@ CONTAINS
 !                                                     CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "fe_CheckEssentialParam"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented '//  &
-  & ' by the child class.')
-END PROCEDURE fe_CheckEssentialParam
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
-!----------------------------------------------------------------------------
-!                                                     CheckEssentialParam
-!----------------------------------------------------------------------------
+CALL CheckEssentialParam(obj=param,  &
+  & keys=AbstractFEEssentialParams,  &
+  & prefix=obj%GetPrefix(),  &
+  & myName=myName,  &
+  & modName=modName)
+!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
-MODULE PROCEDURE AbstractFECheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "AbstractFECheckEssentialParam()"
-INTEGER(I4B), PARAMETER :: jj = 26
-TYPE(String) :: necessary(jj)
-INTEGER(I4B) :: ii, ierr
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
-necessary(1) = prefix//"/nsd"
-necessary(2) = prefix//"/order"
-necessary(3) = prefix//"/anisoOrder"
-necessary(4) = prefix//"/tEdgeOrder"
-necessary(5) = prefix//"/edgeOrder"
-necessary(6) = prefix//"/tFaceOrder"
-necessary(7) = prefix//"/faceOrder"
-necessary(8) = prefix//"/cellOrder"
-necessary(9) = prefix//"/feType"
-necessary(10) = prefix//"/elemType"
-necessary(11) = prefix//"/ipType"
-necessary(12) = prefix//"/dofType"
-necessary(13) = prefix//"/transformType"
-necessary(14) = prefix//"/refElemDomain"
-necessary(15) = prefix//"/baseContinuity"
-necessary(16) = prefix//"/baseInterpolation"
-necessary(17) = prefix//"/isIsotropicOrder"
-necessary(18) = prefix//"/isAnisotropicOrder"
-necessary(19) = prefix//"/isEdgeOrder"
-necessary(20) = prefix//"/isFaceOrder"
-necessary(21) = prefix//"/isCellOrder"
-necessary(22) = prefix//"/tCellOrder"
-necessary(23) = prefix//"/basisType"
-necessary(24) = prefix//"/alpha"
-necessary(25) = prefix//"/beta"
-necessary(26) = prefix//"/lambda"
-
-DO ii = 1, jj
-  IF (.NOT. param%isPresent(key=necessary(ii)%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & necessary(ii)//' should be present in param')
-  END IF
-END DO
-
-END PROCEDURE AbstractFECheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                       SetAbstractFEParam
@@ -88,6 +56,11 @@ INTEGER(I4B) :: ierr, ii, ipType0
 TYPE(String) :: astr
 CHARACTER(*), PARAMETER :: myName = "SetAbstractFEParam()"
 TYPE(ParameterList_), POINTER :: sublist
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 sublist => NULL()
 sublist => param%NewSubList(key=prefix)
@@ -182,6 +155,11 @@ END SELECT
 
 sublist => NULL()
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE SetAbstractFEParam
 
 !----------------------------------------------------------------------------
@@ -189,14 +167,8 @@ END PROCEDURE SetAbstractFEParam
 !----------------------------------------------------------------------------
 
 SUBROUTINE SetFEPram_BasisType( &
-  & param, &
-  & elemType, &
-  & nsd, &
-  & baseContinuity0, &
-  & baseInterpol0, &
-  & basisType, &
-  & alpha, &
-  & beta, lambda, prefix)
+  & param, elemType, nsd, baseContinuity0, baseInterpol0, &
+  & basisType, alpha, beta, lambda, prefix)
   TYPE(ParameterList_), INTENT(INOUT) :: param
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: nsd
@@ -211,15 +183,24 @@ SUBROUTINE SetFEPram_BasisType( &
   CHARACTER(*), PARAMETER :: myName = "SetFEPram_BasisType()"
   INTEGER(I4B) :: xidim, basisType0(3), ii, ierr
   REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
+  LOGICAL(LGT) :: case1, case2, isLagrange, isOrthogonal
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
 
   alpha0 = 0.0_DFP
   beta0 = 0.0_DFP
   lambda0 = 0.0_DFP
+  basisType0 = -1
+  isLagrange = baseInterpol0(1:8) .EQ. "LAGRANGE"
+  isOrthogonal = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
 
   SELECT CASE (elemType)
   CASE (Line)
-    IF (baseInterpol0 .EQ. "LAGRANGE" .OR.  &
-      & baseInterpol0 .EQ. "LAGRANGEPOLYNOMIAL") THEN
+    ! isok = baseInterpol0(1:8) .EQ. "LAGRANGE"
+    IF (isLagrange) THEN
       IF (.NOT. PRESENT(basisType)) THEN
         basisType0 = Monomial
       ELSE
@@ -227,8 +208,8 @@ SUBROUTINE SetFEPram_BasisType( &
       END IF
     END IF
 
-    IF (baseInterpol0 .EQ. "ORTHOGONAL" .OR.  &
-      & baseInterpol0 .EQ. "ORTHOGONALPOLYNOMIAL") THEN
+    ! isok = baseInterpol0(1:10) .EQ. "ORTHOGONAL"
+    IF (isOrthogonal) THEN
       IF (.NOT. PRESENT(basisType)) THEN
         basisType0 = Legendre
       ELSE
@@ -259,8 +240,7 @@ SUBROUTINE SetFEPram_BasisType( &
     END IF
 
   CASE (Triangle, Tetrahedron, Prism, Pyramid)
-    IF (baseInterpol0 .EQ. "LAGRANGE" .OR.  &
-      & baseInterpol0 .EQ. "LAGRANGEPOLYNOMIAL") THEN
+    IF (isLagrange) THEN
       IF (.NOT. PRESENT(basisType)) THEN
         basisType0 = Monomial
       ELSE
@@ -271,31 +251,34 @@ SUBROUTINE SetFEPram_BasisType( &
   CASE (Quadrangle, Hexahedron)
     xidim = XiDimension(elemType)
 
-    IF (baseInterpol0 .EQ. "LAGRANGE" .OR.  &
-      & baseInterpol0 .EQ. "LAGRANGEPOLYNOMIAL") THEN
-      IF (.NOT. PRESENT(basisType)) THEN
-        basisType0(1:xidim) = Monomial * ones(xidim, 1_I4B)
+    case1 = isLagrange .AND. .NOT. PRESENT(basisType)
+    IF (case1) THEN
+      basisType0(1:xidim) = Monomial * ones(xidim, 1_I4B)
+    END IF
+
+    case2 = isLagrange .AND. PRESENT(basisType)
+
+    IF (case2) THEN
+      IF (SIZE(basisType) .EQ. 1_I4B) THEN
+        basisType0 = basisType(1)
       ELSE
-        IF (SIZE(basisType) .EQ. 1_I4B) THEN
-          basisType0 = basisType(1)
-        ELSE
-          basisType0(1:xidim) = basisType(1:xidim)
-        END IF
+        basisType0(1:xidim) = basisType(1:xidim)
       END IF
     END IF
 
-    IF (baseInterpol0 .EQ. "ORTHOGONAL" .OR.  &
-      & baseInterpol0 .EQ. "ORTHOGONALPOLYNOMIAL") THEN
+    case1 = isOrthogonal .AND. .NOT. PRESENT(basisType)
+    IF (case1) basisType0(1:xidim) = Legendre * ones(xidim, 1_I4B)
 
-      IF (.NOT. PRESENT(basisType)) THEN
-        basisType0(1:xidim) = Legendre * ones(xidim, 1_I4B)
+    case2 = isOrthogonal .AND. PRESENT(basisType)
+    IF (case2) THEN
+      IF (SIZE(basisType) .EQ. 1_I4B) THEN
+        basisType0 = basisType(1)
       ELSE
-        IF (SIZE(basisType) .EQ. 1_I4B) THEN
-          basisType0 = basisType(1)
-        ELSE
-          basisType0(1:xidim) = basisType(1:xidim)
-        END IF
+        basisType0(1:xidim) = basisType(1:xidim)
       END IF
+    END IF
+
+    IF (isOrthogonal) THEN
 
       DO ii = 1, xidim
 
@@ -331,14 +314,20 @@ SUBROUTINE SetFEPram_BasisType( &
     END IF
 
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & '[NO CASE FOUND] No case found for given element type')
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: No case found for given element type')
+    RETURN
   END SELECT
 
   ierr = param%Set(key=prefix//"/alpha", VALUE=alpha0)
   ierr = param%Set(key=prefix//"/beta", VALUE=beta0)
   ierr = param%Set(key=prefix//"/lambda", VALUE=lambda0)
   ierr = param%Set(key=prefix//"/basisType", VALUE=basisType0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
 
 END SUBROUTINE SetFEPram_BasisType
 
@@ -352,11 +341,17 @@ SUBROUTINE SetFEPram_Order(param, order, elemType, prefix)
   INTEGER(I4B), INTENT(IN) :: elemType
   CHARACTER(*), INTENT(IN) :: prefix
   ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = "SetFEPram_Order()"
   INTEGER(I4B) :: tEdgeOrder, tFaceOrder, tCellOrder, order0, &
     &  cellOrder0(3), anisoOrder0(3), ierr, ii
   INTEGER(I4B), ALLOCATABLE :: edgeOrder0(:), faceOrder0(:)
   LOGICAL(LGT) :: isIsotropicOrder, isEdgeOrder, isFaceOrder, &
     & isCellOrder, isAnisotropicOrder
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
 
   tEdgeOrder = 0_I4B
   tFaceOrder = 0_I4B
@@ -404,6 +399,12 @@ SUBROUTINE SetFEPram_Order(param, order, elemType, prefix)
   ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
 END SUBROUTINE SetFEPram_Order
 
 !----------------------------------------------------------------------------
@@ -424,6 +425,11 @@ SUBROUTINE SetFEPram_AnisoOrder(param, anisoOrder, elemType, nsd, prefix)
   LOGICAL(LGT) :: isIsotropicOrder, isEdgeOrder, isFaceOrder, &
     & isCellOrder, isAnisotropicOrder
   CHARACTER(*), PARAMETER :: myName = "SetFEPram_AnisoOrder()"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
 
   IF (.NOT. isQuadrangle(elemType)  &
     & .AND. .NOT. isHexahedron(elemType)) THEN
@@ -472,6 +478,11 @@ SUBROUTINE SetFEPram_AnisoOrder(param, anisoOrder, elemType, nsd, prefix)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
 END SUBROUTINE SetFEPram_AnisoOrder
 
 !----------------------------------------------------------------------------
@@ -494,6 +505,11 @@ SUBROUTINE SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, &
     & isCellOrder, isAnisotropicOrder
   CHARACTER(*), PARAMETER :: myName = "SetFEPram_Heirarchy2D()"
   TYPE(String) :: amsg
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
 
   isIsotropicOrder = .FALSE.
   isAnisotropicOrder = .FALSE.
@@ -576,25 +592,20 @@ SUBROUTINE SetFEPram_Heirarchy2D(param, elemType, nsd, edgeOrder, &
   ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
 END SUBROUTINE SetFEPram_Heirarchy2D
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Initiate
-CHARACTER(*), PARAMETER :: myName = "fe_Initiate()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented '//  &
-  & ' by the child class.')
-END PROCEDURE fe_Initiate
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE AbstractFEInitiate
-CHARACTER(*), PARAMETER :: myName = "AbstractFEInitiate()"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 INTEGER(I4B) :: ierr, nsd, elemType, order, anisoOrder(3), &
   & cellOrder(3), feType, ipType, dofType(4), transformType, basisType(3), &
   & tEdgeOrder, tFaceOrder, tCellOrder, ii
@@ -605,6 +616,14 @@ LOGICAL(LGT) :: isEdgeOrder, isFaceOrder, isCellOrder,  &
   & isIsotropicOrder, isAnisotropicOrder
 TYPE(AbstractRefElementPointer_), ALLOCATABLE :: facetElemPtrs(:)
 TYPE(ParameterList_), POINTER :: sublist
+CHARACTER(:), ALLOCATABLE :: prefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+prefix = obj%GetPrefix()
 
 sublist => NULL()
 ierr = param%GetSubList(key=prefix, sublist=sublist)
@@ -612,37 +631,26 @@ CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(sublist)
 
 !! Get sublisteters
-ierr = sublist%get(key=prefix//"/nsd", VALUE=nsd)
-ierr = sublist%get(key=prefix//"/elemType", VALUE=elemType)
-CALL GetValue( &
-  & obj=sublist, &
-  & key=prefix//"/baseContinuity", &
-  & VALUE=baseCont)
+ierr = sublist%Get(key=prefix//"/nsd", VALUE=nsd)
+ierr = sublist%Get(key=prefix//"/elemType", VALUE=elemType)
+CALL GetValue(obj=sublist, key=prefix//"/baseContinuity", VALUE=baseCont)
+CALL GetValue( obj=sublist, key=prefix//"/baseInterpolation", VALUE=baseInterpol)
 
-CALL GetValue( &
-  & obj=sublist, &
-  & key=prefix//"/baseInterpolation", &
-  & VALUE=baseInterpol)
+ierr = sublist%Get(key=prefix//"/feType", VALUE=feType)
+ierr = sublist%Get(key=prefix//"/ipType", VALUE=ipType)
+ierr = sublist%Get(key=prefix//"/dofType", VALUE=dofType)
+ierr = sublist%Get(key=prefix//"/transformType", VALUE=transformType)
+ierr = sublist%Get(key=prefix//"/basisType", VALUE=basisType)
+ierr = sublist%Get(key=prefix//"/alpha", VALUE=alpha)
+ierr = sublist%Get(key=prefix//"/beta", VALUE=beta)
+ierr = sublist%Get(key=prefix//"/lambda", VALUE=lambda)
 
-ierr = sublist%get(key=prefix//"/feType", VALUE=feType)
-ierr = sublist%get(key=prefix//"/ipType", VALUE=ipType)
-ierr = sublist%get(key=prefix//"/dofType", VALUE=dofType)
-ierr = sublist%get(key=prefix//"/transformType", VALUE=transformType)
-ierr = sublist%get(key=prefix//"/basisType", VALUE=basisType)
-ierr = sublist%get(key=prefix//"/alpha", VALUE=alpha)
-ierr = sublist%get(key=prefix//"/beta", VALUE=beta)
-ierr = sublist%get(key=prefix//"/lambda", VALUE=lambda)
-
-CALL GetValue( &
-  & obj=sublist, &
-  & key=prefix//"/refElemDomain", &
-  & VALUE=refElemDomain0)
+CALL GetValue(obj=sublist, key=prefix//"/refElemDomain", VALUE=refElemDomain0)
 
 !! Initiate ReferenceElement
 obj%refelem => RefElement_Pointer(elemType)
-CALL obj%refelem%Initiate( &
-  & nsd=nsd, &
-  & baseContinuity=baseCont%chars(), &
+!! NOTE: RefElement_Pointer is defined in RefElementFactory
+CALL obj%refelem%Initiate(nsd=nsd, baseContinuity=baseCont%chars(), &
   & baseInterpolation=baseInterpol%chars())
 
 !! Set parameters
@@ -726,14 +734,25 @@ DO ii = 1, SIZE(facetElemPtrs)
 END DO
 DEALLOCATE (facetElemPtrs)
 
-END PROCEDURE AbstractFEInitiate
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                     Copy
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Copy
+MODULE PROCEDURE obj_Copy
 INTEGER(I4B) :: ii, elemType
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL obj%DEALLOCATE()
 obj%firstCall = obj2%firstCall
@@ -789,7 +808,12 @@ IF (ALLOCATED(obj2%coeff)) THEN
   obj%coeff = obj2%coeff
 END IF
 
-END PROCEDURE fe_Copy
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
 !                                                     SetFEPram_Heirarchy2D
@@ -812,6 +836,11 @@ SUBROUTINE SetFEPram_Heirarchy3D(param, elemType, nsd, edgeOrder, &
     & isCellOrder, isAnisotropicOrder
   CHARACTER(*), PARAMETER :: myName = "SetFEPram_Heirarchy2D()"
   TYPE(String) :: amsg
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
 
   isIsotropicOrder = .FALSE.
   isAnisotropicOrder = .FALSE.
@@ -919,14 +948,27 @@ SUBROUTINE SetFEPram_Heirarchy3D(param, elemType, nsd, edgeOrder, &
   ierr = param%Set(key=prefix//"/tCellOrder", VALUE=tCellOrder)
 
   DEALLOCATE (edgeOrder0, faceOrder0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
 END SUBROUTINE SetFEPram_Heirarchy3D
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 DO ii = 1, SIZE(obj%facetElem0)
   CALL DEALLOCATE (obj%facetElem0(ii))
 END DO
@@ -968,14 +1010,27 @@ obj%refElemDomain = ""
 IF (ALLOCATED(obj%baseContinuity)) DEALLOCATE (obj%baseContinuity)
 IF (ALLOCATED(obj%baseInterpolation)) DEALLOCATE (obj%baseInterpolation)
 obj%isInitiated = .FALSE.
-END PROCEDURE fe_Deallocate
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
     IF (ASSOCIATED(obj(ii)%ptr)) THEN
@@ -985,6 +1040,12 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------

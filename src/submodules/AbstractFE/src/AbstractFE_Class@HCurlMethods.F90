@@ -24,23 +24,23 @@ CONTAINS
 !                                                    GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData_HCurl_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData_HCurl()"
+MODULE PROCEDURE obj_GetLocalElemShapeData_HCurl_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData_HCurl()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
 !TODO: Implement get_GetLocalElemShapeData_HCurl_Master
-END PROCEDURE fe_GetLocalElemShapeData_HCurl_Master
+END PROCEDURE obj_GetLocalElemShapeData_HCurl_Master
 
 !----------------------------------------------------------------------------
 !                                                    GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData_HCurl_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData_HCurl()"
+MODULE PROCEDURE obj_GetGlobalElemShapeData_HCurl_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData_HCurl()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
 !TODO: Implement get_GetGlobalElemShapeData_HCurl_Master
-END PROCEDURE fe_GetGlobalElemShapeData_HCurl_Master
+END PROCEDURE obj_GetGlobalElemShapeData_HCurl_Master
 
 !----------------------------------------------------------------------------
 !

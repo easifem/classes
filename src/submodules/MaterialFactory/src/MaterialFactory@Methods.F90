@@ -57,7 +57,7 @@ CHARACTER(*), PARAMETER :: myName = "FluidMechanicsModelFactory"
 TYPE(String) :: astr
 astr = uppercase(name)
 SELECT CASE (astr%chars())
-CASE ("NEWTONIANFLUIDMODEL")
+CASE ("NEWTONIANFLUIDMODEL", "NEWTONIANFLUID")
   ALLOCATE (NewtonianFluidModel_ :: ans)
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -101,12 +101,12 @@ CHARACTER(*), PARAMETER :: myName = "SolidMaterialFactory"
 TYPE(String) :: astr
 astr = uppercase(name)
 SELECT CASE (astr%chars())
-CASE ("SOLIDMATERIAL")
+CASE ("SOLID", "SOLIDMATERIAL")
   ALLOCATE (SolidMaterial_ :: ans)
 CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: Cannot find the material name. '//  &
-    & 'Currently, only SolidMaterial is avaiable, '//  &
+    & '[INTERNAL ERROR] :: Cannot find the given material name = '//  &
+    & name//'. Currently, only SolidMaterial is avaiable, '//  &
     & 'we are working on others.')
   ALLOCATE (SolidMaterial_ :: ans)
   RETURN

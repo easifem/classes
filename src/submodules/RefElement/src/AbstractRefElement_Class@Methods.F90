@@ -24,36 +24,46 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Initiate
-CHARACTER(*), PARAMETER :: myName = "refelem_Initiate"
-INTEGER(I4B) :: name
-CHARACTER(20) :: domainName
+CHARACTER(*), PARAMETER :: myName = "refelem_Initiate()"
+INTEGER(I4B) :: name, aint
 REAL(DFP), ALLOCATABLE :: xij0(:, :)
+LOGICAL(LGT) :: isok, problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL obj%DEALLOCATE()
 
 IF (PRESENT(xij)) THEN
 
-  IF (SIZE(xij, 1) .NE. nsd) THEN
+  aint = SIZE(xij, 1)
+  problem = aint .NE. nsd
+  IF (problem) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & '[ARG MISMATCH] size(xij, 1) .NE. NSD')
+      & '[INTERNAL ERROR] :: size(xij, 1) which is '//  &
+      & tostring(aint)//' is not equal to '//  &
+      & ' NSD which is '//tostring(nsd))
+    RETURN
   END IF
-
   xij0 = xij
 
 ELSE
 
   IF (.NOT. PRESENT(baseContinuity)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & '[MISSING ARG] baseContinuity should be present.')
+      & '[INTERNAL ERROR] :: baseContinuity should be present.')
+    RETURN
   END IF
 
   IF (.NOT. PRESENT(baseInterpolation)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
-      & '[MISSING ARG]  baseInterpolation should be present.')
+      & '[INTERNAL ERROR] :: baseInterpolation should be present.')
+    RETURN
   END IF
 
-  xij0 = obj%RefCoord( &
-    & baseInterpolation=baseInterpolation,  &
+  xij0 = obj%RefCoord(baseInterpolation=baseInterpolation,  &
     & baseContinuity=baseContinuity)
 
 END IF
@@ -88,6 +98,12 @@ CALL obj%SetParam( &
   & baseInterpolation=baseInterpolation)
 
 ! CALL obj%GenerateTopology()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_Initiate
 
 !----------------------------------------------------------------------------
@@ -119,6 +135,7 @@ ELSE
     ans(ii) = obj%refelem%topology(ii)
   END DO
 END IF
+
 END PROCEDURE refelem_GetTopology
 
 !----------------------------------------------------------------------------
@@ -126,7 +143,13 @@ END PROCEDURE refelem_GetTopology
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Copy
-INTEGER(I4B) :: ii, n
+CHARACTER(*), PARAMETER :: myName = "refelem_Copy()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 CALL obj%DEALLOCATE()
 obj%refelem = obj2%refelem
 obj%nameStr = obj2%nameStr
@@ -138,6 +161,12 @@ END IF
 IF (ALLOCATED(obj2%baseContinuity)) THEN
   ALLOCATE (obj%baseContinuity, source=obj2%baseContinuity)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_Copy
 
 !----------------------------------------------------------------------------
@@ -145,11 +174,11 @@ END PROCEDURE refelem_Copy
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_Deallocate
-INTEGER(I4B) :: ii, n
 CALL DEALLOCATE (obj%refelem)
 obj%nameStr = ""
 IF (ALLOCATED(obj%baseContinuity)) DEALLOCATE (obj%baseContinuity)
 IF (ALLOCATED(obj%baseInterpolation)) DEALLOCATE (obj%baseInterpolation)
+
 END PROCEDURE refelem_Deallocate
 
 !----------------------------------------------------------------------------
@@ -158,8 +187,13 @@ END PROCEDURE refelem_Deallocate
 
 MODULE PROCEDURE refelem_Display
 !! Define internal variable
-INTEGER(I4B) :: j
 LOGICAL(LGT) :: notFull0
+CHARACTER(*), PARAMETER :: myName = "refelem_Display()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 notFull0 = INPUT(option=notFull, default=.FALSE.)
 CALL Display(msg, unitno=unitno)
@@ -180,6 +214,12 @@ IF (ALLOCATED(obj%baseInterpolation)) THEN
 ELSE
   CALL Display("baseInterpolation: NOT ALLOCATED")
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_Display
 
 !----------------------------------------------------------------------------
@@ -187,9 +227,15 @@ END PROCEDURE refelem_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_MdEncode
+CHARACTER(*), PARAMETER :: myName = "refelem_MdEncode()"
 TYPE(String) :: astr(2)
 TYPE(String) :: rowTitle(2), colTitle(1)
 colTitle(1) = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 rowTitle(1) = "BaseContinuity"
 !! baseContinuity
@@ -209,6 +255,12 @@ END IF
 
 ans = MdEncode(obj%refelem)  &
   & //MdEncode(val=astr(1:2), rh=rowTitle(1:2), ch=colTitle)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_MdEncode
 
 !----------------------------------------------------------------------------

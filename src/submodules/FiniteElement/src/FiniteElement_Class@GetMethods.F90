@@ -14,36 +14,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AbstractFE_Class) DGMethods
-! USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
+SUBMODULE(FiniteElement_Class) GetMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                 GetLocalElemShapeData_DG
+!                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetLocalElemShapeData_DG_Master
-CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData_DG()"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & '[WORK IN PROGRESS]')
-!TODO: Implement obj_GetLocalElemShapeData_DG_Master
-END PROCEDURE obj_GetLocalElemShapeData_DG_Master
-
-!----------------------------------------------------------------------------
-!                                                 GetGlobalElemShapeData_DG
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetGlobalElemShapeData_DG_Master
-CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData_DG()"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & '[WORK IN PROGRESS]')
-!TODO: Implement obj_GetGlobalElemShapeData_DG_Master
-END PROCEDURE obj_GetGlobalElemShapeData_DG_Master
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-END SUBMODULE DGMethods
+END SUBMODULE GetMethods

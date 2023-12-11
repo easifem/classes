@@ -24,101 +24,114 @@ CONTAINS
 !                                                 InitiateElementToElements
 !----------------------------------------------------------------------------
 
-!! nodeToElements
+! nodeToElements
 
 MODULE PROCEDURE mesh_InitiateElementToElements
-! Define internal  variables
+CHARACTER(*), PARAMETER :: myName = "mesh_InitiateElementToElements()"
 INTEGER(I4B) :: i, j, r, iel1, tFace, iFace1, NNS1, pt1, &
   & iel2, iFace2, NNS2, localElem1
 INTEGER(I4B), ALLOCATABLE :: global_nptrs1(:),   &
   & global_nptrsFace1(:), n2e1(:), global_nptrs2(:), &
-  & global_nptrsFace2(:)
-LOGICAL(LGT) :: Found
-CHARACTER(LEN=*), PARAMETER :: myName = "mesh_InitiateElementToElements"
-!!
-!! check
-!!
-IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
-  !!
-  !! check
-  !!
+  & global_nptrsFace2(:), intvec_temp_1(:), intvec_temp_2(:)
+LOGICAL(LGT) :: Found, problem, isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
+IF (problem) RETURN
+
 IF (.NOT. ASSOCIATED(obj%refelem)) THEN
-  CALL e%raiseError(modName//"::"//myName//" - "// &
-    & "Unable to identify the Reference element of the mesh, &
-    & may be it is not set")
-END IF
-  !!
-  !! check
-  !!
-IF (obj%isElementToElementsInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "element to element information is already initiated. If you want to &
-    & Reinitiate it then deallocate nodeData, first!!")
+  CALL e%RaiseError(modName//"::"//myName//" - "// &
+    & "[INTERNAL ERROR] :: Mesh_::obj%refelem not ASSOCIATED.")
   RETURN
 END IF
-  !!
-IF (.NOT. ALLOCATED(obj%FacetElements)) THEN
-  obj%FacetElements = FacetElements(obj%refelem)
+
+problem = obj%isElementToElementsInitiated
+IF (problem) THEN
+  CALL e%RaiseWarning(modName//"::"//myName//" - "// &
+    & "Element to element information is already initiated.")
+  RETURN
 END IF
-  !!
-tFace = SIZE(obj%FacetElements)
-    !! Total number of facet elements
+
+isok = ALLOCATED(obj%facetElements)
+IF (.NOT. isok) THEN
+  obj%facetElements = FacetElements(obj%refelem)
+END IF
+
+tFace = SIZE(obj%facetElements)
+! Total number of facet elements
+
 obj%isElementToElementsInitiated = .TRUE.
-  !!
-IF (.NOT. obj%isNodeToElementsInitiated) THEN
-  CALL obj%InitiateNodeToElements()
-END IF
-  !!
+
+isok = obj%isNodeToElementsInitiated
+IF (.NOT. isok) CALL obj%InitiateNodeToElements()
+
 DO localElem1 = 1, obj%tElements
-  iel1 = obj%getGlobalElemNumber(localElem1)
-  global_nptrs1 = obj%getConnectivity(iel1)
-    !!
-    !! getting node numbers of element iel1
-    !!
+  iel1 = obj%GetGlobalElemNumber(localElem1)
+  global_nptrs1 = obj%GetConnectivity(iel1)
+
+  ! Getting node numbers of element iel1
   DO iFace1 = 1, tFace
     FOUND = .FALSE.
-    global_nptrsFace1 = global_nptrs1(getConnectivity( &
-      & obj%FacetElements(iFace1)))
-      !! getting global node number in face iFace1
+    intvec_temp_2 = GetConnectivity(obj%facetElements(iFace1))
+    problem = SIZE(intvec_temp_2) .EQ. 0
+
+    IF (problem) THEN
+      CALL Display(obj%facetElements(iFace1), "iFace1: ")
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: Error in getting facet elements.')
+      RETURN
+    END IF
+
+    global_nptrsFace1 = global_nptrs1(intvec_temp_2)
+    ! Getting global node number in face iFace1
     NNS1 = SIZE(global_nptrsFace1)
-      !! number of nodes in iFace1
+    ! number of nodes in iFace1
     pt1 = global_nptrsFace1(1)
-      !! select a point on facet iFace1
-    n2e1 = obj%getNodeToElements(GlobalNode=pt1)
-      !! get elements connected to the node pt1
+    ! select a point on facet iFace1
+    n2e1 = obj%GetNodeToElements(GlobalNode=pt1)
+    ! Get elements connected to the node pt1
     DO iel2 = 1, SIZE(n2e1)
       IF (iel1 .EQ. n2e1(iel2)) CYCLE
-      global_nptrs2 = obj%getConnectivity(n2e1(iel2))
+      global_nptrs2 = obj%GetConnectivity(n2e1(iel2))
+
       DO iFace2 = 1, tFace
-          !! getting total number of nodes in iFace2
-        global_nptrsFace2 = global_nptrs2( &
-          & getConnectivity(obj%FacetElements(iFace2)))
+        ! Getting total number of nodes in iFace2
+        intvec_temp_1 = GetConnectivity(obj%facetElements(iFace2))
+        global_nptrsFace2 = global_nptrs2(intvec_temp_1)
         NNS2 = SIZE(global_nptrsFace2)
         r = 0
+
         DO i = 1, NNS2
           DO j = 1, NNS1
-            IF (global_nptrsFace2(i) .EQ. global_nptrsFace1(j)) THEN
-              r = r + 1
-            END IF
+            isok = global_nptrsFace2(i) .EQ. global_nptrsFace1(j)
+            IF (isok) r = r + 1
           END DO
         END DO
-        IF (r .EQ. NNS1) THEN
+
+        isok = r .EQ. NNS1
+        IF (isok) THEN
           CALL APPEND(obj%elementData(localElem1)%globalElements, &
             & [n2e1(iel2), iFace1, iFace2])
           FOUND = .TRUE.
           EXIT
         END IF
+
       END DO
       IF (FOUND) EXIT
     END DO
   END DO
-    !!
-  IF (INT(SIZE(obj%elementData(localElem1)%globalElements) / 3) &
-    & .NE. tFace) THEN
+
+  isok = INT(SIZE(obj%elementData(localElem1)%globalElements) / 3) &
+    & .NE. tFace
+  IF (isok) THEN
     obj%elementData(localElem1)%elementType = BOUNDARY_ELEMENT
   END IF
 END DO
-  !!
+
 IF (ALLOCATED(global_nptrs1)) DEALLOCATE (global_nptrs1)
 IF (ALLOCATED(global_nptrs2)) DEALLOCATE (global_nptrs2)
 IF (ALLOCATED(global_nptrsFace1)) DEALLOCATE (global_nptrsFace1)

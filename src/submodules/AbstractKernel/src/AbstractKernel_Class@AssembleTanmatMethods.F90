@@ -21,7 +21,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                            AssembleTanmat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleTanmat
@@ -29,5 +29,49 @@ CHARACTER(*), PARAMETER :: myName = "obj_AssembleTanmat"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_AssembleTanmat
+
+!----------------------------------------------------------------------------
+!                                                            AssembleMassMat
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AssembleMassMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleMassMat"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement obj_AssembleMassMat
+END PROCEDURE obj_AssembleMassMat
+
+!----------------------------------------------------------------------------
+!                                                       AssembleStiffnessMat
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AssembleStiffnessMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleStiffnessMat"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement obj_AssembleStiffnessMat
+END PROCEDURE obj_AssembleStiffnessMat
+
+!----------------------------------------------------------------------------
+!                                                     AssembleDampingMatrix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AssembleDampingMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleDampingMat"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement obj_AssembleDampingMat
+END PROCEDURE obj_AssembleDampingMat
+
+!----------------------------------------------------------------------------
+!                                                     AssembleNitscheMatrix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AssembleNitscheMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleNitscheMat"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This module has not been implemented yet')
+! TODO: Implement obj_AssembleNitscheMat
+END PROCEDURE obj_AssembleNitscheMat
 
 END SUBMODULE AssembleTanmatMethods

@@ -174,8 +174,8 @@ CONTAINS
     & meshSelect_GetNodeNum2, &
     & meshSelect_GetNodeNum3
     !! Returns the node number if available
-  PROCEDURE, PUBLIC, PASS(obj) :: isMeshIDAllocated => &
-    & meshSelect_isMeshIDAllocated
+  PROCEDURE, PUBLIC, PASS(obj) :: IsMeshIDAllocated => &
+    & meshSelect_IsMeshIDAllocated
     !! returns true if selection by meshID is allocated
   PROCEDURE, PUBLIC, PASS(obj) :: isElemNumAllocated => &
     & meshSelect_isElemNumAllocated
@@ -521,7 +521,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              isMeshIDAllocated@GetMethods
+!                                              IsMeshIDAllocated@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

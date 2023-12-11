@@ -34,6 +34,18 @@ CHARACTER(*), PARAMETER :: modName = "AbstractMaterialModel_Class"
 PUBLIC :: AbstractMaterialModel_
 PUBLIC :: AbstractMaterialModelPointer_
 PUBLIC :: AbstractMaterialModelDeallocate
+PUBLIC :: TypeMaterialModel
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+TYPE :: TypeMaterialModel_
+  CHARACTER(18) :: linearElastic = "LINEARELASTICMODEL"
+  CHARACTER(19) :: newtonianFluid = "NEWTONIANFLUIDMODEL"
+END TYPE TypeMaterialModel_
+
+TYPE(TypeMaterialModel_), PARAMETER :: TypeMaterialModel=TypeMaterialModel_()
 
 !----------------------------------------------------------------------------
 !                                                   AbstractMaterialModel_

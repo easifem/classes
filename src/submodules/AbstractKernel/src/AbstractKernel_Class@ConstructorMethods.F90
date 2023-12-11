@@ -46,126 +46,135 @@ CALL Set(param, datatype="char", prefix=prefix,  &
   & key="domainFile", VALUE=domainFile)
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="baseInterpolationForSpace",  &
-  & VALUE=input(option=baseInterpolationForSpace,  &
+  & VALUE=Input(option=baseInterpolationForSpace,  &
   & default=DEFAULT_baseInterpolationForSpace))
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="baseInterpolationForTime",  &
-  & VALUE=input(option=baseInterpolationForTime,  &
+  & VALUE=Input(option=baseInterpolationForTime,  &
   & default=DEFAULT_baseInterpolationForTime))
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="baseContinuityForSpace",  &
-  & VALUE=input(option=baseContinuityForSpace,  &
+  & VALUE=Input(option=baseContinuityForSpace,  &
   & default=DEFAULT_baseContinuityForSpace))
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="baseContinuityForTime",  &
-  & VALUE=input(option=basecontinuityfortime,  &
+  & VALUE=Input(option=basecontinuityfortime,  &
   & default=default_basecontinuityfortime))
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="quadratureTypeForSpace",  &
-  & VALUE=input(option=quadratureTypeForSpace,  &
+  & VALUE=Input(option=quadratureTypeForSpace,  &
   & default=DEFAULT_quadratureTypeForSpace))
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="quadratureTypeForTime",  &
-  & VALUE=input(option=quadratureTypeForTime,  &
+  & VALUE=Input(option=quadratureTypeForTime,  &
   & default=DEFAULT_quadratureTypeForTime))
 
 CALL Set(param, datatype="char", prefix=prefix, key="tanmatProp",  &
-  & VALUE=input(option=tanmatProp, default=DEFAULT_TANMAT_PROP))
+  & VALUE=Input(option=tanmatProp, default=DEFAULT_TANMAT_PROP))
 
 !! int
 CALL Set(param, TypeIntI4B, prefix, "problemType", problemType)
 CALL Set(param, TypeIntI4B, prefix, "coordinateSystem", coordinateSystem)
 CALL Set(param, TypeIntI4B, prefix, "timeDependency",  &
-  & INPUT(option=timeDependency, default=KERNEL_STEADY))
+  & Input(option=timeDependency, default=KERNEL_STEADY))
 !! NOTE: KERNEL_STEADY is defined in AbstractKernelParam module
 CALL Set(param, TypeIntI4B, prefix, "maxIter",  &
-  & INPUT(option=maxIter, default=default_maxIter))
+  & Input(option=maxIter, default=default_maxIter))
 CALL Set(param, TypeIntI4B, prefix, "nsd",  &
-  & INPUT(option=nsd, default=0_I4B))
+  & Input(option=nsd, default=0_I4B))
 CALL Set(param, TypeIntI4B, prefix, "nnt",  &
-  & INPUT(option=nnt, default=1_I4B))
+  & Input(option=nnt, default=1_I4B))
 CALL Set(param, TypeIntI4B, prefix, "tdof",  &
-  & INPUT(option=tdof, default=0_I4B))
+  & Input(option=tdof, default=0_I4B))
 CALL Set(param, TypeIntI4B, prefix, "currentTimeStep",  &
-  & INPUT(option=currentTimeStep, default=1_I4B))
+  & Input(option=currentTimeStep, default=1_I4B))
 CALL Set(param, TypeIntI4B, prefix, "totalTimeStep",  &
-  & INPUT(option=totalTimeStep, default=1_I4B))
+  & Input(option=totalTimeStep, default=1_I4B))
 CALL Set(param, TypeIntI4B, prefix, "postProcessOpt", postProcessOpt)
-CALL Set(param, TypeIntI4B, prefix, "ipTypeForSpace", ipTypeForSpace)
-CALL Set(param, TypeIntI4B, prefix, "ipTypeForTime", ipTypeForTime)
-CALL Set(param, TypeIntI4B, prefix, "basisTypeForSpace", basisTypeForSpace)
-CALL Set(param, TypeIntI4B, prefix, "basisTypeForTime", basisTypeForTime)
+
+CALL Set(param, TypeIntI4B, prefix, "ipTypeForSpace",   &
+  & Input(option=ipTypeForSpace, default=DEFAULT_ipTypeForSpace))
+
+CALL Set(param, TypeIntI4B, prefix, "ipTypeForTime",  &
+  & Input(option=ipTypeForTime, default=DEFAULT_ipTypeForTime))
+
+CALL Set(param, TypeIntI4B, prefix, "basisTypeForSpace",  &
+  & Input(option=basisTypeForSpace, default=DEFAULT_basisTypeForSpace))
+
+CALL Set(param, TypeIntI4B, prefix, "basisTypeForTime",  &
+  & Input(option=basisTypeForTime, default=DEFAULT_basisTypeForTime))
 
 CALL Set(param, TypeIntI4B, prefix, "tDirichletBC",  &
- & INPUT(option=tDirichletBC, default=0_I4B))
+  & Input(option=tDirichletBC, default=0_I4B))
 
 CALL Set(param, TypeIntI4B, prefix, "tNeumannBC",  &
- & INPUT(option=tNeumannBC, default=0_I4B))
+  & Input(option=tNeumannBC, default=0_I4B))
 
 CALL Set(param, TypeIntI4B, prefix, "tWeakDirichletBC",  &
- & INPUT(option=tWeakDirichletBC, default=0_I4B))
+  & Input(option=tWeakDirichletBC, default=0_I4B))
 
 CALL Set(param, .TRUE., prefix, "isSymNitsche",  &
-  & INPUT(option=isSymNitsche, default=DEFAULT_isSymNitsche))
+  & Input(option=isSymNitsche, default=DEFAULT_isSymNitsche))
 ! INFO: DEFAULT_isSymNitsche is definedin AbstractElasticityParam module
 
 CALL Set(param, TypeIntI4B, prefix, "tOverlappedMaterials",  &
-  & INPUT(option=tOverlappedMaterials, default=DEFAULT_tOverlappedMaterials))
+  & Input(option=tOverlappedMaterials, default=DEFAULT_tOverlappedMaterials))
 
 ! real
 CALL Set(param, TypeDFP, prefix, "nitscheAlpha",  &
-  & INPUT(option=nitscheAlpha, default=DEFAULT_nitscheAlpha))
+  & Input(option=nitscheAlpha, default=DEFAULT_nitscheAlpha))
 
-aint = QuadraturePointNameToID(INPUT(option=quadratureTypeForSpace,  &
+aint = QuadraturePointNameToID(Input(option=quadratureTypeForSpace,  &
   & default=DEFAULT_quadratureTypeForSpace))
 CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForSpace", &
   & VALUE=aint)
 
-aint = QuadraturePointNameToID(INPUT(option=quadratureTypeForTime,  &
+aint = QuadraturePointNameToID(Input(option=quadratureTypeForTime,  &
   & default=DEFAULT_quadratureTypeForTime))
 CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForTime",  &
   & VALUE=aint)
 
 CALL Set(param, TypeDFP, prefix, "rtoleranceForDisplacement",  &
-  & VALUE=INPUT(default=DEFAULT_rtoleranceForDisplacement, &
+  & VALUE=Input(default=DEFAULT_rtoleranceForDisplacement, &
   & option=rtoleranceForDisplacement))
 
 CALL Set(param, TypeDFP, prefix, "atoleranceForDisplacement",  &
-  & VALUE=INPUT(default=DEFAULT_atoleranceForDisplacement, &
+  & VALUE=Input(default=DEFAULT_atoleranceForDisplacement, &
   & option=atoleranceForDisplacement))
 
 CALL Set(param, TypeDFP, prefix, "rtoleranceForVelocity",  &
-  & VALUE=INPUT(default=DEFAULT_rtoleranceForVelocity, &
+  & VALUE=Input(default=DEFAULT_rtoleranceForVelocity, &
   & option=rtoleranceForVelocity))
 
 CALL Set(param, TypeDFP, prefix, "atoleranceForVelocity",  &
-  & VALUE=INPUT(default=DEFAULT_atoleranceForVelocity, &
+  & VALUE=Input(default=DEFAULT_atoleranceForVelocity, &
   & option=atoleranceForVelocity))
 
 CALL Set(param, TypeDFP, prefix, "rtoleranceForResidual",  &
-  & VALUE=INPUT(default=DEFAULT_rtoleranceForResidual, &
+  & VALUE=Input(default=DEFAULT_rtoleranceForResidual, &
   & option=rtoleranceForResidual))
 
 CALL Set(param, TypeDFP, prefix, "atoleranceForResidual",  &
-  & VALUE=INPUT(default=DEFAULT_atoleranceForResidual, &
+  & VALUE=Input(default=DEFAULT_atoleranceForResidual, &
   & option=atoleranceForResidual))
 ! INFO: All of the above floating point default values are defined
 ! AbstractElasticityParam module.
 
 !! bool
-CALL Set(param, .TRUE., prefix, "isCommonDomain", isCommonDomain)
+CALL Set(param, .TRUE., prefix, "isCommonDomain",  &
+  & Input(default=DEFAULT_isCommonDomain, option=isCommonDomain))
 
 !! real
 CALL Set(param, [TypeDFP], prefix, "gravity",  &
-  & INPUT(default=[0.0_DFP, 0.0_DFP, 0.0_DFP], option=gravity))
+  & Input(default=[0.0_DFP, 0.0_DFP, 0.0_DFP], option=gravity))
 CALL Set(param, TypeDFP, prefix, "dt",  &
-  & INPUT(option=dt, default=0.0_DFP))
+  & Input(option=dt, default=0.0_DFP))
 CALL Set(param, TypeDFP, prefix, "startTime",  &
-  & INPUT(option=startTime, default=0.0_DFP))
+  & Input(option=startTime, default=0.0_DFP))
 CALL Set(param, TypeDFP, prefix, "endTime",  &
-  & INPUT(option=endTime, default=0.0_DFP))
+  & Input(option=endTime, default=0.0_DFP))
 CALL Set(param, TypeDFP, prefix, "currentTime",  &
-  & INPUT(option=currentTime, default=0.0_DFP))
+  & Input(option=currentTime, default=0.0_DFP))
 
 CALL Set(param, TypeDFP, prefix, "alphaForSpace", alphaForSpace)
 CALL Set(param, TypeDFP, prefix, "alphaForTime", alphaForTime)
@@ -175,7 +184,7 @@ CALL Set(param, TypeDFP, prefix, "lambdaForSpace", lambdaForSpace)
 CALL Set(param, TypeDFP, prefix, "lambdaForTime", lambdaForTime)
 
 CALL Set(param, TypeIntI4B, prefix, "algorithm",  &
- & INPUT(option=algorithm, default=DEFAULT_algorithm))
+ & Input(option=algorithm, default=DEFAULT_algorithm))
 ! INFO: DEFAULT_algorithm is defined in AbstractElasticityParam module
 ! INFO: Set method is defined in FPL_Method
 
@@ -194,20 +203,20 @@ END IF
 CALL Set(param, TypeIntI4B, prefix, "tMaterialInterfaces", ii)
 
 CALL Set(param, TypeIntI4B, prefix, "tSolidMaterials",  &
- & INPUT(option=tSolidMaterials, default=1_I4B))
+ & Input(option=tSolidMaterials, default=1_I4B))
 
 !bool
 CALL Set(param, .TRUE., prefix, "isConstantMatProp",  &
-  & INPUT(option=isConstantMatProp, default=DEFAULT_isConstantMatProp))
+  & Input(option=isConstantMatProp, default=DEFAULT_isConstantMatProp))
 ! INFO: DEFAULT_isConstantMatProp is definedin AbstractElasticityParam module
 
 ! int
 CALL Set(param, .TRUE., prefix, "isIsotropic",  &
-  & INPUT(option=isIsotropic, default=DEFAULT_isIsotropic))
+  & Input(option=isIsotropic, default=DEFAULT_isIsotropic))
 ! INFO: DEFAULT_isIsotropic is definedin AbstractElasticityParam module
 
 CALL Set(param, .TRUE., prefix, "isIncompressible",  &
-  & INPUT(option=isIncompressible, default=DEFAULT_isIncompressible))
+  & Input(option=isIncompressible, default=DEFAULT_isIncompressible))
 ! INFO: DEFAULT_isIncompressible is definedin AbstractElasticityParam module
 
 #ifdef DEBUG_VER
@@ -230,7 +239,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-prefix0 = input(default=obj%GetPrefix(), option=prefix)
+prefix0 = Input(default=obj%GetPrefix(), option=prefix)
 
 CALL CheckEssentialParam(obj=param,  &
   & keys=AbstractKernelEssentialParam,  &
@@ -685,27 +694,19 @@ CHARACTER(*), PARAMETER :: myName = "obj_CheckError()"
 LOGICAL(LGT) :: problem
 
 ! Check
-problem = .NOT. ALLOCATED(obj%solidMaterialToMesh)
+problem = obj%tOverlappedMaterials .LE. 0_I4B
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[WRONG CONFIG] solidMaterialToMesh is not allocated!')
+  & '[CONFIG ERROR] :: in tOverlappedMaterials.')
+  RETURN
 END IF
 
 ! Check
-problem = SIZE(obj%solidMaterialToMesh) .NE. obj%tSolidMaterials
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[WRONG CONFIG] SIZE( obj%solidMaterialToMesh ) [= '//  &
-  & TOSTRING(SIZE(obj%solidMaterialToMesh))// &
-  & '] .NE. obj%tSolidMaterials [= '//  &
-  & TOSTRING(obj%tSolidMaterials)//']')
-END IF
-
-! Check
-problem = .NOT. ASSOCIATED(obj%dom)
+problem = (.NOT. ASSOCIATED(obj%dom)) .AND. (.NOT. ALLOCATED(obj%domains))
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[WRONG CONFIG] Domain_::dom is not associated')
+  RETURN
 END IF
 
 ! Check

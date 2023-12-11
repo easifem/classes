@@ -80,6 +80,7 @@ END PROCEDURE obj_InitiateTangentMatrix
 MODULE PROCEDURE obj_InitiateScalarFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarFields()"
 LOGICAL(LGT) :: problem, isok
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -108,6 +109,8 @@ IF (problem) THEN
   RETURN
 END IF
 
+tsize = SIZE(names)
+ALLOCATE (obj%scalarFields(tsize))
 !INFO: Initiate method from FieldFactory
 CALL InitiateScalarFields(obj=obj%scalarFields, names=names,  &
   & fieldType=typeField%normal, engine=obj%engine%chars(),  &
@@ -127,6 +130,7 @@ END PROCEDURE obj_InitiateScalarFields
 MODULE PROCEDURE obj_InitiateVectorFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateVectorFields()"
 LOGICAL(LGT) :: problem, isok
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -154,6 +158,9 @@ IF (problem) THEN
     & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd is zero.')
   RETURN
 END IF
+
+tsize = SIZE(names)
+ALLOCATE (obj%vectorFields(tsize))
 
 !INFO: Initiate method from FieldFactory
 CALL InitiateVectorFields(obj=obj%vectorFields, names=names,  &
@@ -261,5 +268,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_InitiateFields
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE InitiateFieldsMethods

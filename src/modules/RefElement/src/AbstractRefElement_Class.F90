@@ -31,7 +31,8 @@ CHARACTER(*), PARAMETER :: modName = "AbstractRefElement_Class"
 
 PUBLIC :: AbstractRefElement_
 PUBLIC :: AbstractRefElementPointer_
-PUBLIC :: Display
+PUBLIC :: AbstractRefElementDisplay
+PUBLIC :: AbstractRefElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                                       AbstractRefElement_
@@ -62,7 +63,7 @@ TYPE, ABSTRACT :: AbstractRefElement_
   !! HierarchyInterpolation
   !! OrthogonalInterpolation
 CONTAINS
-  
+
   ! @DeferredMethods
   PROCEDURE(refelem_RefCoord), DEFERRED, PUBLIC, PASS(obj) :: &
     & RefCoord
@@ -194,12 +195,8 @@ END INTERFACE
 ! summary: Initiate the instance of Reference element
 
 INTERFACE
-  MODULE SUBROUTINE refelem_Initiate( &
-    & obj,  &
-    & nsd, &
-    & baseContinuity,  &
-    & baseInterpolation,  &
-    & xij)
+  MODULE SUBROUTINE refelem_Initiate(obj, nsd, baseContinuity,  &
+    & baseInterpolation, xij)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: nsd
       !! Spatial dimension of element
@@ -281,15 +278,11 @@ END INTERFACE
 ! date: 1 March 2022
 ! summary: Deallocates the data stored inside the [[AbstractRefElement_]]
 
-INTERFACE
+INTERFACE AbstractRefElementDeallocate
   MODULE PURE SUBROUTINE refelem_Deallocate(obj)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
   END SUBROUTINE refelem_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE refelem_Deallocate
-END INTERFACE
+END INTERFACE AbstractRefElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                                            Display@Methods
@@ -299,7 +292,7 @@ END INTERFACE
 ! date: 20 May 2022
 ! summary: Display the AbstractRefElement
 
-INTERFACE
+INTERFACE AbstractRefElementDisplay
   MODULE SUBROUTINE refelem_Display(obj, msg, unitno, notFull)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
@@ -307,11 +300,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
     !! if present and true then only a summary is printed
   END SUBROUTINE refelem_Display
-END INTERFACE
-
-INTERFACE Display
-  MODULE PROCEDURE refelem_Display
-END INTERFACE Display
+END INTERFACE AbstractRefElementDisplay
 
 !----------------------------------------------------------------------------
 !                                                          MdEncode@Methods
