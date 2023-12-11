@@ -88,7 +88,8 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange(obj, elemsd, quad,  &
   CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
   CLASS(QuadraturePoint_), INTENT(IN) :: quad
   CLASS(LagrangeInterpolation_), INTENT(IN) :: baseInterpolation
-  CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Lagrange"
+  CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Lagrange()"
+
   IF (obj%isIsotropicOrder) THEN
     CALL Initiate( &
       & obj=elemsd,  &
@@ -107,10 +108,11 @@ SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange(obj, elemsd, quad,  &
     obj%firstCall = .TRUE.
     RETURN
   END IF
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[WIP] This routine at present support isIsotropicOrder  &
-    & for H1 Lagrange shape functions')
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[WIP ERROR] :: This routine is under development')
 ! TODO: Implement GetLocalElemshapeData_H1_Lagrange for anisotropic order
+
 END SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange
 
 !----------------------------------------------------------------------------
@@ -272,7 +274,7 @@ END SUBROUTINE obj_GetLocalElemshapeData_H1_Hermit
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalFacetElemShapeData
-CHARACTER(*), PARAMETER :: myName="get_GetLocalFacetElemShapeData"
+CHARACTER(*), PARAMETER :: myName = "get_GetLocalFacetElemShapeData"
 
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WIP] This routine is not avaiable yet.')
