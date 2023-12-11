@@ -41,6 +41,7 @@ IF (PRESENT(xij)) THEN
   aint = SIZE(xij, 1)
   problem = aint .NE. nsd
   IF (problem) THEN
+    CALL Display(xij, "xij = ")
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & '[INTERNAL ERROR] :: size(xij, 1) which is '//  &
       & tostring(aint)//' is not equal to '//  &
@@ -112,6 +113,12 @@ END PROCEDURE refelem_Initiate
 
 MODULE PROCEDURE refelem_GetTopology
 INTEGER(I4B) :: ii, n, jj
+CHARACTER(*), PARAMETER :: myName = "refelem_GetTopology()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 IF (PRESENT(xidim)) THEN
   n = obj%refelem%entityCounts(xidim + 1)
@@ -135,6 +142,11 @@ ELSE
     ans(ii) = obj%refelem%topology(ii)
   END DO
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE refelem_GetTopology
 
@@ -450,6 +462,12 @@ END PROCEDURE refelem_GetInterpolationPoint
 
 MODULE PROCEDURE refelem_SetParam
 INTEGER(I4B) :: ii, n
+CHARACTER(*), PARAMETER :: myName = "refelem_SetParam()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 IF (PRESENT(xij)) obj%refelem%xij = xij
 IF (PRESENT(entityCounts)) obj%refelem%entityCounts = entityCounts
@@ -481,6 +499,11 @@ IF (PRESENT(refelem)) THEN
   obj%refelem = refelem
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_SetParam
 
 !----------------------------------------------------------------------------
@@ -489,7 +512,12 @@ END PROCEDURE refelem_SetParam
 
 MODULE PROCEDURE refelem_GetParam
 INTEGER(I4B) :: ii, n
-CHARACTER(*), PARAMETER :: myName = "refelem_GetParam"
+CHARACTER(*), PARAMETER :: myName = "refelem_GetParam()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 IF (PRESENT(entityCounts)) entityCounts = obj%refelem%entityCounts
 IF (PRESENT(xidimension)) xidimension = obj%refelem%xidimension
@@ -535,6 +563,11 @@ END IF
 IF (PRESENT(refelem)) THEN
   refelem = obj%refelem
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE refelem_GetParam
 

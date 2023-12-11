@@ -29,6 +29,7 @@ USE BaseType, ONLY: BaseInterpolation_, &
 USE String_Class, ONLY: String
 USE AbstractRefElement_Class
 USE FPL, ONLY: ParameterList_
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractFE_

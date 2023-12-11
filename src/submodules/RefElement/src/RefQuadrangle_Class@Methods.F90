@@ -27,10 +27,22 @@ CONTAINS
 
 MODULE PROCEDURE refelem_RefCoord
 TYPE(String) :: baseContinuity0, baseInterpolation0
-CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 baseContinuity0 = UpperCase(baseContinuity)
 baseInterpolation0 = UpperCase(baseInterpolation)
 ans = RefCoord_Quadrangle("BIUNIT")
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_RefCoord
 
 !----------------------------------------------------------------------------
@@ -50,30 +62,32 @@ INTEGER(I4B), PARAMETER :: tface = 4_I4B
 INTEGER(I4B) :: ii
 TYPE(string) :: baseContinuity0, baseInterpolation0
 INTEGER(I4B) :: faceCon(2, tface)
-REAL(DFP), ALLOCATABLE :: xij(:, :)
+CHARACTER(*), PARAMETER :: myName = "refelem_GetFacetElements()"
 
-CALL obj%getParam( &
-  & baseInterpolation=baseInterpolation0, &
-  & baseContinuity=baseContinuity0, &
-  & xij=xij)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
-faceCon = FacetConnectivity_Quadrangle( &
-  & baseInterpolation0%chars(), &
+CALL obj%GetParam(baseInterpolation=baseInterpolation0, &
+  & baseContinuity=baseContinuity0)
+
+faceCon = FacetConnectivity_Quadrangle(baseInterpolation0%chars(), &
   & baseContinuity0%chars())
 
 ALLOCATE (ans(tface))
 
 DO ii = 1, tface
   ALLOCATE (RefLine_ :: ans(ii)%ptr)
-  CALL ans(ii)%ptr%Initiate( &
-    & nsd=obj%getNSD(),  &
+  CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD(),  &
     & baseContinuity=baseContinuity0%chars(),  &
-    & baseInterpolation=baseInterpolation0%chars(), &
-    & xij=xij(:, faceCon(:, ii)) &
-    & )
+    & baseInterpolation=baseInterpolation0%chars())
 END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------
