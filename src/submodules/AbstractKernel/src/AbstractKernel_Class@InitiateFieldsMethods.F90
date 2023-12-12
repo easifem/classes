@@ -17,8 +17,6 @@
 
 SUBMODULE(AbstractKernel_Class) InitiateFieldsMethods
 USE BaseMethod, ONLY: Reallocate
-USE KernelUtility, ONLY: KernelInitiateTangentMatrix,  &
-  & KernelInitiateSpaceMatrix
 USE FieldFactory, ONLY: MatrixFieldFactory, AbstractMatrixFieldFactory,  &
   & InitiateVectorFields, InitiateScalarFields, InitiateMatrixFields
 IMPLICIT NONE
@@ -37,27 +35,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-isok = ASSOCIATED(obj%linsol)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
-    & " associated. It means configuration problem.")
-  RETURN
-END IF
-
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractElasticity_::obj%dom is not'//  &
-    & " associated. It means configuration problem.")
-  RETURN
-END IF
-
 isok = ASSOCIATED(obj%tanmat)
 IF (.NOT. isok) THEN
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & 'Allocating AbstractKernel_::obj%tanmat as follows...'//  &
-    & CHAR_LF//'  Calling ')
+    & CHAR_LF//'  Calling AbstractMatrixFieldFactory('//obj%engine//')')
   obj%tanmat => AbstractMatrixFieldFactory(engine=obj%engine%chars(),  &
     & name="MATRIX")
 END IF
@@ -80,7 +62,7 @@ END PROCEDURE obj_InitiateTangentMatrix
 MODULE PROCEDURE obj_InitiateScalarFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarFields()"
 LOGICAL(LGT) :: problem, isok
-INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize, ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -17,7 +17,6 @@
 SUBMODULE(AbstractKernel_Class) MaterialMethods
 USE BaseMethod
 USE FieldFactory
-USE KernelUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -101,8 +100,9 @@ END PROCEDURE obj_GetSolidMaterialPointer
 
 MODULE PROCEDURE obj_InitiateMassDensity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMassDensity()"
-LOGICAL(LGT) :: isok, problem
-INTEGER(I4B) :: tmesh
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
+
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
@@ -121,6 +121,10 @@ IF (.NOT. isok) THEN
     & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
   RETURN
 END IF
+
+tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
+ALLOCATE (obj%massDensity(tsize))
+DO ii = 1, tsize; obj%massDensity(ii)%ptr => NULL(); END DO
 
 CALL KernelInitiateScalarProperty(vars=obj%massDensity,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
@@ -140,6 +144,7 @@ END PROCEDURE obj_InitiateMassDensity
 MODULE PROCEDURE obj_InitiateElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElasticityProperties()"
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -160,15 +165,27 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
+tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
+ALLOCATE (obj%lame_lambda(tsize))
+DO ii = 1, tsize; obj%lame_lambda(ii)%ptr => NULL(); END DO
+
 CALL KernelInitiateScalarProperty(vars=obj%lame_lambda,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
   & varname="lambda", matid=obj%SOLID_MATERIAL_ID,  &
   & engine=obj%engine%chars())
 
+tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
+ALLOCATE (obj%lame_mu(tsize))
+DO ii = 1, tsize; obj%lame_mu(ii)%ptr => NULL(); END DO
+
 CALL KernelInitiateScalarProperty(vars=obj%lame_mu,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
   & varname="mu", matid=obj%SOLID_MATERIAL_ID,  &
   & engine=obj%engine%chars())
+
+tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
+ALLOCATE (obj%Cijkl(tsize))
+DO ii = 1, tsize; obj%Cijkl(ii)%ptr => NULL(); END DO
 
 CALL KernelInitiateTensorProperty(vars=obj%Cijkl,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
@@ -192,7 +209,7 @@ END PROCEDURE obj_InitiateElasticityProperties
 MODULE PROCEDURE obj_InitiateMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMaterialProperties"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+  & '[WIP ERROR] :: This routine should be implemented by subclass')
 END PROCEDURE obj_InitiateMaterialProperties
 
 !----------------------------------------------------------------------------
@@ -223,13 +240,25 @@ END PROCEDURE obj_SetMassDensity
 
 MODULE PROCEDURE obj_SetElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetElasticityProperties()"
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+CALL KernelSetScalarProperty(vars=obj%lame_lambda,  &
+  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & varname="lambda", matid=obj%SOLID_MATERIAL_ID)
+
+CALL KernelSetScalarProperty(vars=obj%lame_mu,  &
+  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & varname="mu", matid=obj%SOLID_MATERIAL_ID)
+
+CALL KernelSetTensorProperty(vars=obj%Cijkl,  &
+  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & varname="cijkl", matid=obj%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -25,7 +25,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleTanmat
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleTanmat"
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleTanmat()"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_AssembleTanmat
@@ -35,10 +35,32 @@ END PROCEDURE obj_AssembleTanmat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleMassMat
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleMassMat"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_AssembleMassMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleMassMat()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+isok = ASSOCIATED(obj%massMat)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%massMat is NOT '//  &
+    & ' ASSOCIATED.')
+  RETURN
+END IF
+
+CALL KernelAssembleMassMatrix(mat=obj%massMat, massDensity=obj%massDensity, &
+  & dom=obj%dom, cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
+  & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
+  & problemType=obj%problemType, reset=.TRUE.)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_AssembleMassMat
 
 !----------------------------------------------------------------------------
@@ -46,10 +68,42 @@ END PROCEDURE obj_AssembleMassMat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleStiffnessMat
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleStiffnessMat"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_AssembleStiffnessMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleStiffnessMat()"
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+IF (obj%isIsotropic) THEN
+  tsize = SIZE(obj%lame_lambda)
+  DO ii = 1, tsize
+    IF (.NOT. ASSOCIATED(obj%lame_lambda(ii)%ptr)) THEN
+
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[NULL]')
+    END IF
+  END DO
+
+  CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
+    & lambda=obj%lame_lambda, mu=obj%lame_mu, dom=obj%dom,  &
+    & cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
+    & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
+    & reset=.TRUE.)
+  RETURN
+END IF
+
+CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
+  & Cijkl=obj%Cijkl, dom=obj%dom, cellFE=obj%cellFE,  &
+  & linCellFE=obj%linCellFE, spaceElemSD=obj%spaceElemSD,  &
+  & linSpaceElemSD=obj%linSpaceElemSD, reset=.TRUE.)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_AssembleStiffnessMat
 
 !----------------------------------------------------------------------------
