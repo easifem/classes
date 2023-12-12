@@ -686,11 +686,11 @@ CALL AbstractMeshFieldDeallocate(obj%strain)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                 CheckError
+!                                                           PreCheckError
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_CheckError
-CHARACTER(*), PARAMETER :: myName = "obj_CheckError()"
+MODULE PROCEDURE obj_PreCheckError
+CHARACTER(*), PARAMETER :: myName = "obj_PreCheckError()"
 LOGICAL(LGT) :: problem
 
 ! Check
@@ -716,7 +716,31 @@ IF (problem) THEN
     & '[WRONG CONFIG] AbstractKernel_::obj%problemType is not set.')
   RETURN
 END IF
-END PROCEDURE obj_CheckError
+END PROCEDURE obj_PreCheckError
+
+!----------------------------------------------------------------------------
+!                                                           PostCheckError
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_PostCheckError
+CHARACTER(*), PARAMETER :: myName = "obj_PostCheckError()"
+LOGICAL(LGT) :: isok
+
+isok = ASSOCIATED(obj%tanmat)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
+    & " ASSOCIATED.")
+END IF
+
+isok = ASSOCIATED(obj%linsol)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
+    & " associated.")
+  RETURN
+END IF
+END PROCEDURE obj_PostCheckError
 
 !----------------------------------------------------------------------------
 !

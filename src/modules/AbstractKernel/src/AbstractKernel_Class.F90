@@ -43,6 +43,7 @@ USE FiniteElement_Class
 USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
 USE Field
+USE KernelUtility
 
 IMPLICIT NONE
 PRIVATE
@@ -73,7 +74,8 @@ PUBLIC :: AbstractKernelImportParamFromToml
 PUBLIC :: AbstractKernelImportFromToml
 PUBLIC :: AbstractKernelInitiateTangentMatrix
 PUBLIC :: AbstractKernelInitiateFields
-PUBLIC :: AbstractKernelCheckError
+PUBLIC :: AbstractKernelPreCheckError
+PUBLIC :: AbstractKernelPostCheckError
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
@@ -109,7 +111,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! KernelProblemType%scalar
   !! KernelProblemType%Vector
   !! KernelProblemType%MultiPhysics
-  INTEGER(I4B) :: tOverlappedMaterials = 1
+  INTEGER(I4B) :: tOverlappedMaterials = DEFAULT_tOverlappedMaterials
   !! Total overlapped materials (like fluid, soil, solid)
   INTEGER(I4B) :: tSolidMaterials = 0
   !! Total number of solid materials
@@ -141,7 +143,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! This is useful when when we use iterative solvers like
   !! Newton method, Modified Newton method, or Iterative-predictor solvers.
   !! NOTE: DEFAULT_maxIter is defined in AbstractKernelParam
-  INTEGER(I4B) :: timeDependency = 0
+  INTEGER(I4B) :: timeDependency = DEFAULT_TimeDependency
   !! This variable indicates if the problem is time dependent or not.
   !! It can take following values:
   !! KERNEL_STEADY  or KERNEL_STATIC
@@ -446,8 +448,10 @@ CONTAINS
   !! it should be implemented by the subclass.
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the memory occupied by the kernel
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckError => obj_CheckError
-  !! Check error
+  PROCEDURE, PUBLIC, PASS(obj) :: PreCheckError => obj_PreCheckError
+  !! Check error before setting kernel
+  PROCEDURE, PUBLIC, PASS(obj) :: PostCheckError => obj_PostCheckError
+  !! Check error after setting kernel
 
   ! CONSTRUCTOR:
   ! @InitiateFieldsMethods
@@ -875,6 +879,34 @@ INTERFACE AbstractKernelDeallocate
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractKernelDeallocate
+
+!----------------------------------------------------------------------------
+!                                         PreCheckError@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-06
+! summary: Check error before setting the kernel
+
+INTERFACE AbstractKernelPreCheckError
+  MODULE SUBROUTINE obj_PreCheckError(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_PreCheckError
+END INTERFACE AbstractKernelPreCheckError
+
+!----------------------------------------------------------------------------
+!                                          PostCheckError@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-06
+! summary: Check error after setting the kernel
+
+INTERFACE AbstractKernelPostCheckError
+  MODULE SUBROUTINE obj_PostCheckError(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_PostCheckError
+END INTERFACE AbstractKernelPostCheckError
 
 !----------------------------------------------------------------------------
 !                                             CheckError@ConstructorMethods
