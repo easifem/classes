@@ -512,13 +512,13 @@ FUNCTION geo_AddSurfaceLoop(surfaceTags, tag) &
   INTEGER(I4B), INTENT(IN) :: surfaceTags(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
   INTEGER(I4B) :: ans
-  
+
   cintvar = gmshModelGeoAddSurfaceLoop( &
     & surfaceTags=gmsh_cint(surfaceTags),  &
     & surfaceTags_n=INT(SIZE(surfaceTags), C_SIZE_T), &
     & tag=gmsh_cint(input(default=-1, option=tag)), &
     & ierr=ierr)
- 
+
   ans = INT(cintvar, i4b)
 END FUNCTION geo_AddsurfaceLoop
 
@@ -643,14 +643,32 @@ FUNCTION geo_Extrude(dimTags, dx, dy, dz, &
   & numElements, heights, recombine) RESULT(outDimTags)
   INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
   CLASS(*), INTENT(IN) :: dx, dy, dz
-  INTEGER(I4B), INTENT(IN) :: numElements(:)
-  CLASS(*), INTENT(IN) :: heights(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: numElements(:)
+  !! make it optional
+  CLASS(*), OPTIONAL, INTENT(IN) :: heights(:)
+  !! make it optional
   LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombine
+  !! make it optional
   INTEGER(I4B), ALLOCATABLE :: outDimTags(:, :)
-  !!
+
+  ! main
+  INTEGER(C_INT), ALLOCATABLE :: numElements_(:)
+  REAL(C_DOUBLE), ALLOCATABLE :: heights_(:)
   INTEGER(C_SIZE_T) :: outDimTags_n
   TYPE(C_PTR) :: cptr
-  !!
+
+  IF (PRESENT(numElements)) THEN
+    numElements_ = gmsh_cint(numElements)
+  ELSE
+    CALL Reallocate(numElements_, 0)
+  END IF
+
+  IF (PRESENT(heights)) THEN
+    heights_ = gmsh_cdouble(heights)
+  ELSE
+    CALL Reallocate(heights_, 0)
+  END IF
+
   CALL gmshModelGeoExtrude( &
     & dimTags=gmsh_cint(dimTags), &
     & dimTags_n=INT(SIZE(dimTags), C_SIZE_T), &
@@ -659,15 +677,13 @@ FUNCTION geo_Extrude(dimTags, dx, dy, dz, &
     & dz=gmsh_cdouble(dz), &
     & outDimTags=cptr, &
     & outDimTags_n=outDimTags_n, &
-    & numElements=gmsh_cint(numElements), &
-    & numElements_n=SIZE(numElements, KIND=C_SIZE_T), &
-    & heights=gmsh_cdouble(heights), &
-    & heights_n=SIZE(heights, KIND=C_SIZE_T), &
+    & numElements=gmsh_cint(numElements_), &
+    & numElements_n=SIZE(numElements_, KIND=C_SIZE_T), &
+    & heights=gmsh_cdouble(heights_), &
+    & heights_n=SIZE(heights_, KIND=C_SIZE_T), &
     & recombine=optval_c_bool(.FALSE., recombine), &
     & ierr=ierr)
-  !!
   outDimTags = gmsh_dimtag_c2f(cptr, outDimTags_n)
-  !!
 END FUNCTION geo_Extrude
 
 !----------------------------------------------------------------------------
