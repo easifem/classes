@@ -28,7 +28,6 @@ MODULE PROCEDURE ls_GetPrefix
 ans = myprefix
 END PROCEDURE ls_GetPrefix
 
-
 !----------------------------------------------------------------------------
 !                                                 GetLinSolverCodeFromName
 !----------------------------------------------------------------------------
@@ -38,17 +37,15 @@ TYPE(String) :: astr
 astr = UpperCase(name)
 
 SELECT CASE (astr%chars())
-CASE ("SUPERLU") !1
-  ans = LIS_SUPERLU
 CASE ("CG") !1
   ans = LIS_CG
-CASE ("BICG") !2
+CASE ("BICG", "BCG") !2
   ans = LIS_BICG
 CASE ("CGS") !3
   ans = LIS_CGS
-CASE ("BICGSTAB") !4
+CASE ("BICGSTAB", "BCGSTAB") !4
   ans = LIS_BICGSTAB
-CASE ("BICGSTABL") !5
+CASE ("BICGSTABL", "BCGSTABL") !5
   ans = LIS_BICGSTABL
 CASE ("GPBICG") !6
   ans = LIS_GPBICG
@@ -92,10 +89,12 @@ CASE ("COCR") !25
   ans = LIS_COCR
 CASE ("CGNR", "CGN") !26
   ans = LIS_CGNR
-CASE ("DBICG") !27
+CASE ("DBICG", "DBCG") !27
   ans = LIS_DBICG
 CASE ("DQGMRES") !28
   ans = LIS_DQGMRES
+CASE ("SUPERLU") !29
+  ans = LIS_SUPERLU
 END SELECT
 astr = ""
 END PROCEDURE ls_GetLinSolverCodeFromName
