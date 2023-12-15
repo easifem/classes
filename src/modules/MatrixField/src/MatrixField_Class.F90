@@ -132,12 +132,22 @@ END TYPE MatrixFieldPrecondition_
 TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   LOGICAL(LGT) :: isRectangle = .FALSE.
   TYPE(CSRMatrix_) :: mat
-  TYPE(MatrixFieldPrecondition_) :: Pmat
+  !! main matrix
+  TYPE(MatrixFieldPrecondition_) :: pmat
+  !! Preconditioner
+  TYPE(CSRMatrix_) :: submat
+  !! Submatrix of columns
+  !! this is used to apply Dirichlet boundary condition
+  !! to rhs of the problem
+  INTEGER(I4B), ALLOCATABLE :: dbcPtrs(:)
+  !! Dirichlet nodes numbers
+  INTEGER(I4B), ALLOCATABLE :: subIndices(:)
+  !! Indices of dirichlet boundary condition submatrix in
+  !! matrix field
 CONTAINS
   PRIVATE
-  !
+
   ! @ConstructorMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & MatrixFieldCheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => mField_Initiate1
@@ -150,9 +160,8 @@ CONTAINS
   !! Deallocate the field
   FINAL :: mField_Final
   !! Deallocate the field
-  !
+
   ! @IOMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: Display => mField_Display
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mField_Import
@@ -165,30 +174,26 @@ CONTAINS
   !! export PMat
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => mField_SPY
   !! Get the sparsity pattern in various file formats
-  !
+
   ! @GetMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: Size => mField_Size
   !! Returns the size of the matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => mField_Shape
   !! Returns the shape of the matrix
-  !
+
   ! @MatvecMethods
-  !
   PROCEDURE, PASS(obj) :: Matvec1 => mField_Matvec1
   !! Matrix vector multiplication
   PROCEDURE, PASS(obj) :: Matvec2 => mField_Matvec2
   !! Matrix vector multiplication
-  !
+
   ! @LUSolveMethods
-  !
   PROCEDURE, PASS(obj) :: ILUSOLVE1 => mField_ILUSOLVE1
   !! Solve (LU) sol = rhs
   PROCEDURE, PASS(obj) :: ILUSOLVE2 => mField_ILUSOLVE2
   !! Solve (LU) sol = rhs
-  !
+
   ! @PreconditionMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetPrecondition => &
     & mField_SetPrecondition
   !! Building precondition matrix
@@ -197,9 +202,8 @@ CONTAINS
   !! Get the precondition matrix
   PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => &
     & mField_ReversePermutation
-  !
+
   ! @SetMethods
-  !
   PROCEDURE, PASS(obj) :: Set1 => mField_Set1
   PROCEDURE, PASS(obj) :: Set2 => mField_Set2
   PROCEDURE, PASS(obj) :: Set3 => mField_Set3
@@ -210,9 +214,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set8 => mField_Set8
   PROCEDURE, PASS(obj) :: Set9 => mField_Set9
   PROCEDURE, PASS(obj) :: Set10 => mField_Set10
-  !
+
   ! @SetColMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => mField_SetColumn1
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn2 => mField_SetColumn2
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn3 => mField_SetColumn3
@@ -220,9 +223,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => mField_SetColumn5
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => mField_SetColumn6
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => mField_SetColumn7
-  !
+
   ! @SetRowMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => mField_SetRow1
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow2 => mField_SetRow2
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow3 => mField_SetRow3
@@ -230,9 +232,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow5 => mField_SetRow5
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => mField_SetRow6
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow7 => mField_SetRow7
-  !
+
   ! @GetColMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => mField_GetColumn1
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => mField_GetColumn2
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => mField_GetColumn3
@@ -240,9 +241,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => mField_GetColumn5
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => mField_GetColumn6
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => mField_GetColumn7
-  !
+
   ! @GetRowMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => mField_GetRow1
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow2 => mField_GetRow2
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow3 => mField_GetRow3
@@ -250,25 +250,25 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => mField_GetRow5
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => mField_GetRow6
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => mField_GetRow7
-  !
+
   ! @DiagonalMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: GetDiagonal => &
     & mField_GetDiagonal
-  !
+
   ! @DiagonalScalingMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: DiagonalScaling => &
     & mField_DiagonalScaling
-  !
+
   ! @SpectralMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: &
     & SymSchurLargestEigenVal => mField_SymSchurLargestEigenVal
   PROCEDURE, PUBLIC, PASS(obj) :: &
     & SymLargestEigenVal => mField_SymLargestEigenVal
 
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBC => mField_ApplyDBC
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBCtoRHS => mField_ApplyDBCToRHS
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDBCSubMat => mField_GetDBCSubMat
+
 END TYPE MatrixField_
 
 !----------------------------------------------------------------------------
@@ -1041,14 +1041,53 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                      ApplyDBC@DBCMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-14
+! summary:  Apply dirichlet boundary condition to matrixfield_
 
 INTERFACE
   MODULE SUBROUTINE mField_ApplyDBC(obj, dbcPtrs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcPtrs(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
   END SUBROUTINE mField_ApplyDBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyDBCtoRHS@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-14
+! summary:  Apply dirichlet boundary condition to a node field
+
+INTERFACE
+  MODULE SUBROUTINE mField_ApplyDBCToRHS(obj, x, y, isTranspose,  &
+    & scale, addContribution)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: x
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: y
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE mField_ApplyDBCToRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetDBCSubMat@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-14
+! summary:  Get submatrix for apply dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE mField_GetDBCSubMat(obj, submat)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
+  END SUBROUTINE mField_GetDBCSubMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
