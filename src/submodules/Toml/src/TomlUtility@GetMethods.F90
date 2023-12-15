@@ -243,4 +243,25 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 END PROCEDURE toml_get_from_file_master
 
+!----------------------------------------------------------------------------
+!                                                     TomlArrayLength
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE toml_array_length
+TYPE(toml_array), POINTER :: array
+
+! try to read from the array
+array => NULL()
+CALL toml_get(table, key, array, origin=origin, stat=stat,  &
+  & requested=.FALSE.)
+
+ans = 0
+IF (ASSOCIATED(array)) THEN
+  ans = toml_len(array)
+END IF
+
+array => NULL()
+
+END PROCEDURE toml_array_length
+
 END SUBMODULE GetMethods
