@@ -39,7 +39,7 @@ INTEGER(I4B) :: origin, stat, tsize, ii, tsize1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
 tsize1 = SIZE(obj)
@@ -82,7 +82,7 @@ END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE bc_ImportFromToml1
 
@@ -96,7 +96,7 @@ TYPE(toml_table), ALLOCATABLE :: table
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
 IF (PRESENT(afile)) THEN
@@ -114,7 +114,7 @@ CALL DirichletBCImportFromToml(obj=obj, table=table, dom=dom,  &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE bc_ImportFromToml2
 
