@@ -15,10 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This module contains constructor method for [[MatrixField_]]
-
 SUBMODULE(MatrixFieldLis_Class) IOMethods
 USE BaseMethod
 IMPLICIT NONE

@@ -15,12 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This module contains matrix vector method for [[MatrixField_]]
-
-SUBMODULE(MatrixFieldLis_Class) LUSolveMethods
-! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-END SUBMODULE LUSolveMethods
+! SUBMODULE(MatrixFieldLis_Class) LUSolveMethods
+! ! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE LUSolveMethods

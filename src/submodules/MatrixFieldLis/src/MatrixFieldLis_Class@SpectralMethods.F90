@@ -15,8 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(MatrixFieldLis_Class) SpectralMethods
-! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-END SUBMODULE SpectralMethods
+! SUBMODULE(MatrixFieldLis_Class) SpectralMethods
+! ! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE SpectralMethods
