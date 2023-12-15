@@ -36,7 +36,7 @@ y1 = SIZE(y)
 x1 = SIZE(x)
 
 IF (y1 .NE. s(1) .OR. x1 .NE. s(2)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'There is some mismatch in dimension of matrix and vectors'// &
     & 'The shape of MatrixField_ instance is ' &
     & //tostring(s(1))//", " &

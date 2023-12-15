@@ -35,12 +35,12 @@ INTEGER(I4B) :: ierr
 ! check
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'MatrixField_ is not initiated')
+  & '[INTERNAL ERROR] :: MatrixField_ is not initiated')
 END IF
 
 IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is avaiable for NATIVE_SERIAL')
+    & '[INTERNAL ERROR] :: This routine is avaiable for NATIVE_SERIAL')
 END IF
 
 IF (PRESENT(param)) THEN

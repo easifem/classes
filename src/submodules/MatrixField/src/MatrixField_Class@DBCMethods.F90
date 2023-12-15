@@ -25,7 +25,78 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE mField_ApplyDBC
+CHARACTER(*), PARAMETER :: myName = "mField_ApplyDBC()"
+LOGICAL(LGT) :: case1
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+case1 = PRESENT(dbcPtrs)
+
+IF (case1) THEN
+  tsize = SIZE(dbcPtrs)
+  CALL Reallocate(obj%dbcPtrs, tsize)
+  obj%dbcPtrs = dbcPtrs
+  CALL GetSubMatrix(obj=obj%mat, cols=obj%dbcPtrs, submat=obj%submat,  &
+    & subIndices=obj%subIndices)
+ELSE
+  CALL GetSubMatrix(obj=obj%mat, subIndices=obj%subIndices, submat=obj%submat)
+END IF
+
 CALL ApplyDBC(obj=obj%mat, dbcPtrs=dbcPtrs)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE mField_ApplyDBC
+
+!----------------------------------------------------------------------------
+!                                                             GetDBCSubMat
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_GetDBCSubMat
+CHARACTER(*), PARAMETER :: myName = "mField_GetDBCSubMat()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE mField_GetDBCSubMat
+
+!----------------------------------------------------------------------------
+!                                                       ApplyDBCToRHS
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE mField_ApplyDBCToRHS
+CHARACTER(*), PARAMETER :: myName = "mField_ApplyDBCToRHS()"
+REAL(DFP), POINTER :: xvec(:)
+REAL(DFP), POINTER :: yvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+xvec => x%GetPointer()
+yvec => y%GetPointer()
+
+CALL Matvec( &
+  & obj=obj%submat, &
+  & y=yvec, &
+  & x=xvec, &
+  & isTranspose=isTranspose, &
+  & addContribution=addContribution, &
+  & scale=scale)
+
+NULLIFY (xvec, yvec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE mField_ApplyDBCToRHS
 
 END SUBMODULE DBCMethods
