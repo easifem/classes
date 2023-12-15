@@ -31,6 +31,10 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
 CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
+PUBLIC :: MatrixFieldLis_
+PUBLIC :: TypeMatrixFieldLis
+PUBLIC :: MatrixFieldLisInitiate2
+PUBLIC :: MatrixFieldLisDeallocate
 
 !----------------------------------------------------------------------------
 !                                                              MatrixField_
@@ -40,16 +44,16 @@ CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
 ! date: 15 July 2021
 ! summary: This is native implementation of finite element tangent matrices.
 !
-!{!pages/MatrixFieldLis_.md!}
+!{!pages/docs-api/MatrixFieldLis/MatrixFieldLis_.md!}
 
 TYPE, EXTENDS(MatrixField_) :: MatrixFieldLis_
   INTEGER(I4B), ALLOCATABLE :: lis_ia(:)
   INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
 CONTAINS
   PRIVATE
-  !
+
+  ! CONSTRUCTOR:
   ! @ConstructorMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => mField_Initiate1
   !! Initiate from the parameter list
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => mField_Initiate2
@@ -59,25 +63,23 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => mField_Deallocate
   !! Deallocate the field
   FINAL :: mField_Final
-  !
+
+  ! IO:
   ! @IOMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: Display => mField_Display
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mField_Import
   !! Import from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => mField_Export
   !! export matrix field in hdf5file_
-  !
+
+  ! GET:
   ! @MatvecMethods
-  !
   PROCEDURE, PASS(obj) :: Matvec2 => mField_Matvec2
   !! Matrix vector multiplication
 END TYPE MatrixFieldLis_
 
-PUBLIC :: MatrixFieldLis_
-
-TYPE(MatrixFieldLis_), PARAMETER, PUBLIC :: TypeMatrixFieldLis = &
+TYPE(MatrixFieldLis_), PARAMETER :: TypeMatrixFieldLis = &
 & MatrixFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -165,7 +167,7 @@ END INTERFACE
 ! Add functionality for other options too.
 !@endtodo
 
-INTERFACE
+INTERFACE MatrixFieldLisInitiate2
   MODULE SUBROUTINE mField_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
@@ -175,13 +177,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE mField_Initiate2
-END INTERFACE
-
-INTERFACE MatrixFieldLisInitiate2
-  MODULE PROCEDURE mField_Initiate2
 END INTERFACE MatrixFieldLisInitiate2
-
-PUBLIC :: MatrixFieldLisInitiate2
 
 !----------------------------------------------------------------------------
 !                                               Initiate@sConstructorMethods
@@ -207,17 +203,11 @@ END INTERFACE
 ! date: 2023-03-30
 ! summary: This routine deallocates the data stored inside the matrix
 
-INTERFACE
+INTERFACE MatrixFieldLisDeallocate
   MODULE SUBROUTINE mField_Deallocate(obj)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE mField_Deallocate
-END INTERFACE
-
-INTERFACE MatrixFieldLisDeallocate
-  MODULE PROCEDURE mField_Deallocate
 END INTERFACE MatrixFieldLisDeallocate
-
-PUBLIC :: MatrixFieldLisDeallocate
 
 !----------------------------------------------------------------------------
 !                                                          Display@IOMethods
