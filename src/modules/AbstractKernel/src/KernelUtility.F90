@@ -13,22 +13,22 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 MODULE KernelUtility
 USE GlobalData
 USE Field
+USE BaseMethod
+USE BaseType
 USE AbstractLinSolver_Class
 USE FieldFactory
 USE SolidMaterial_Class
 USE Domain_Class
 USE Mesh_Class
-USE BaseMethod
 USE FiniteElement_Class
-USE BaseType
 USE BaseMethod, ONLY: MassMatrix
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractKernelParam, ONLY: kernelProblemType
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -43,6 +43,7 @@ PUBLIC :: KernelInitiateSpaceMatrix
 PUBLIC :: KernelInitiateTangentMatrix
 PUBLIC :: KernelAssembleMassMatrix
 PUBLIC :: KernelAssembleStiffnessMatrix
+PUBLIC :: KernelAssembleBodyForce
 
 INTERFACE KernelInitiateScalarProperty
   MODULE PROCEDURE KernelInitiateScalarProperty1
@@ -64,6 +65,11 @@ INTERFACE KernelAssembleStiffnessMatrix
   MODULE PROCEDURE KernelAssembleIsoStiffMat
   MODULE PROCEDURE KernelAssembleCijklStiffMat
 END INTERFACE KernelAssembleStiffnessMatrix
+
+INTERFACE KernelAssembleBodyForce
+  MODULE PROCEDURE KernelAssembleBodyForce1
+  MODULE PROCEDURE KernelAssembleBodyForce2
+END INTERFACE KernelAssembleBodyForce
 
 CONTAINS
 
@@ -402,11 +408,11 @@ END SUBROUTINE KernelSetTensorProperty1
 !                                       InitiateConstantElasticityProperties
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
-  & Cijkl, dom, nnt, engine)
-  TYPE(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: lambda(:)
-  TYPE(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: mu(:)
-  TYPE(AbstractTensorMeshFieldPointer_), INTENT(INOUT) :: Cijkl(:)
+SUBROUTINE KernelInitiateConstantElasticityProperties(youngsModulus,  &
+  & shearModulus, cijkl, dom, nnt, engine)
+  TYPE(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: youngsModulus(:)
+  TYPE(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: shearModulus(:)
+  TYPE(AbstractTensorMeshFieldPointer_), INTENT(INOUT) :: cijkl(:)
   TYPE(Domain_), INTENT(INOUT) :: dom
   INTEGER(I4B), INTENT(IN) :: nnt
   CHARACTER(*), INTENT(IN) :: engine
@@ -434,15 +440,15 @@ SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
 
   IF (nnt .EQ. 1) THEN
     name = ""
-    CALL SetScalarMeshFieldParam(param=param1, name="lambda", &
+    CALL SetScalarMeshFieldParam(param=param1, name="youngsModulus", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant,  &
       & engine=engine, defineOn=Nodal, nns=1)
 
-    CALL SetScalarMeshFieldParam(param=param2, name="mu", &
+    CALL SetScalarMeshFieldParam(param=param2, name="shearModulus", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant,  &
       & engine=engine, defineOn=Nodal, nns=1)
 
-    CALL SetTensorMeshFieldParam(param=param3, name="Cijkl", &
+    CALL SetTensorMeshFieldParam(param=param3, name="cijkl", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant, &
       & engine=engine, defineOn=Nodal, &
       & nns=1, dim1=6, dim2=6)
@@ -450,16 +456,16 @@ SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
   ELSE
     name = "ST"
 
-    CALL SetSTScalarMeshFieldParam(param=param1, name="lambda", &
+    CALL SetSTScalarMeshFieldParam(param=param1, name="youngsModulus", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant, &
       & engine=engine, defineOn=Nodal, nns=1, nnt=1)
 
     CALL SetSTScalarMeshFieldParam( &
-      & param=param2, name="mu", fieldType=FIELD_TYPE_CONSTANT, &
+      & param=param2, name="shearModulus", fieldType=FIELD_TYPE_CONSTANT, &
       & varType=Constant, engine=engine, defineOn=Nodal, &
       & nns=1, nnt=1)
 
-    CALL SetSTTensorMeshFieldParam(param=param3, name="Cijkl", &
+    CALL SetSTTensorMeshFieldParam(param=param3, name="cijkl", &
       & fieldType=FIELD_TYPE_CONSTANT, varType=Constant, &
       & engine=engine, defineOn=Nodal, nns=1, dim1=6, dim2=6,  &
       & nnt=1)
@@ -468,32 +474,32 @@ SUBROUTINE KernelInitiateConstantElasticityProperties(lambda, mu,  &
   DO ii = 1, tmesh
     amesh => dom%GetMeshPointer(dim=nsd, entityNum=ii)
 
-    isok = ASSOCIATED(lambda(ii)%ptr)
+    isok = ASSOCIATED(youngsModulus(ii)%ptr)
     IF (isok) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-        & 'lambda ('//tostring(ii)//') already ASSOCIATED.')
+        & 'youngsModulus ('//tostring(ii)//') already ASSOCIATED.')
     END IF
 
     IF (.NOT. isok) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-        & 'Making lambda ('//tostring(ii)//').')
-      lambda(ii)%ptr => ScalarMeshFieldFactory(engine=engine, &
+        & 'Making youngsModulus ('//tostring(ii)//').')
+      youngsModulus(ii)%ptr => ScalarMeshFieldFactory(engine=engine, &
         & name=name//"Scalar")
-      CALL lambda(ii)%ptr%Initiate(param=param1, mesh=amesh)
+      CALL youngsModulus(ii)%ptr%Initiate(param=param1, mesh=amesh)
     END IF
 
-    isok = ASSOCIATED(mu(ii)%ptr)
+    isok = ASSOCIATED(shearModulus(ii)%ptr)
     IF (isok) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-        & 'mu ('//tostring(ii)//') already ASSOCIATED.')
+        & 'shearModulus ('//tostring(ii)//') already ASSOCIATED.')
     END IF
 
     IF (.NOT. isok) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-        & 'Making mu ('//tostring(ii)//').')
-      mu(ii)%ptr => ScalarMeshFieldFactory(engine=engine,  &
+        & 'Making shearModulus ('//tostring(ii)//').')
+      shearModulus(ii)%ptr => ScalarMeshFieldFactory(engine=engine,  &
         & name=name//"Scalar")
-      CALL mu(ii)%ptr%Initiate(param=param2, mesh=amesh)
+      CALL shearModulus(ii)%ptr%Initiate(param=param2, mesh=amesh)
     END IF
 
     isok = ASSOCIATED(Cijkl(ii)%ptr)
@@ -744,11 +750,11 @@ END SUBROUTINE KernelAssembleMassMatrix
 !                                   KernelAssembleIsotropicStiffnessMatrix
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleIsoStiffMat(mat, lambda, mu,  &
+SUBROUTINE KernelAssembleIsoStiffMat(mat, youngsModulus, shearModulus,  &
   & dom, cellFE, linCellFE, spaceElemSD, linSpaceElemSD, reset)
   CLASS(MatrixField_), INTENT(INOUT) :: mat
-  CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: lambda(:)
-  CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: mu(:)
+  CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: youngsModulus(:)
+  CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: shearModulus(:)
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
@@ -760,10 +766,11 @@ SUBROUTINE KernelAssembleIsoStiffMat(mat, lambda, mu,  &
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleIsoStiffMat()"
   INTEGER(I4B) :: id, tmesh, nsd, nns, tdof, iel
   TYPE(ElemShapeData_) :: elemsd, linElemSD
-  TYPE(FEVariable_) :: lambdaVar, muVar
+  TYPE(FEVariable_) :: muVar, youngsVar
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
-  CLASS(AbstractScalarMeshField_), POINTER :: lambdaField, muField
+  CLASS(AbstractScalarMeshField_), POINTER :: youngsModulusField,  &
+    & shearModulusField
   CLASS(ReferenceElement_), POINTER :: refelem
   REAL(DFP), ALLOCATABLE :: Mmat(:, :), xij(:, :)
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
@@ -779,12 +786,10 @@ SUBROUTINE KernelAssembleIsoStiffMat(mat, lambda, mu,  &
   tmesh = dom%GetTotalMesh(dim=nsd)
   tdof = nsd
 
-  NULLIFY (meshptr, spaceFE, linSpaceFE, lambdaField, muField, refelem)
+  NULLIFY (meshptr, spaceFE, linSpaceFE, youngsModulusField,  &
+    & shearModulusField, refelem)
 
   DO id = 1, tmesh
-
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-     & '1')
     meshptr => dom%GetMeshPointer(dim=nsd, entityNum=id)
 
     isok = ASSOCIATED(meshptr)
@@ -809,78 +814,56 @@ SUBROUTINE KernelAssembleIsoStiffMat(mat, lambda, mu,  &
     CALL Reallocate(xij, nsd, nns)
     CALL Reallocate(Mmat, tdof * nns, tdof * nns)
 
-    lambdaField => lambda(id)%ptr
-    muField => mu(id)%ptr
+    youngsModulusField => youngsModulus(id)%ptr
+    shearModulusField => shearModulus(id)%ptr
 
-    isok = ASSOCIATED(lambdaField)
+    isok = ASSOCIATED(youngsModulusField)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: lambda('//tostring(id)//') is NULL.')
+        & '[INTERNAL ERROR] :: youngsModulus('//tostring(id)//') is NULL.')
       RETURN
     END IF
 
-    isok = ASSOCIATED(muField)
+    isok = ASSOCIATED(shearModulusField)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: mu('//tostring(id)//') is NULL.')
+        & '[INTERNAL ERROR] :: shearModulus('//tostring(id)//') is NULL.')
       RETURN
     END IF
-
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-      & '2')
 
     DO iel = meshptr%minElemNum, meshptr%maxElemNum
 
       isok = meshptr%isElementPresent(iel)
       IF (.NOT. isok) CYCLE
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '3')
-      CALL lambdaField%Get(fevar=lambdaVar, globalElement=iel)
+      CALL youngsModulusField%Get(fevar=youngsVar, globalElement=iel)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '4')
-      CALL muField%Get(fevar=muVar, globalElement=iel)
+      CALL shearModulusField%Get(fevar=muVar, globalElement=iel)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '5')
       nptrs = meshptr%GetConnectivity(iel)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '6')
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '7')
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
         & geoElemSD=linElemSD)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '8')
       Mmat = StiffnessMatrix(test=elemsd, trial=elemsd, &
-        & lambda=lambdaVar, mu=muVar)
+        & lambda=youngsVar, mu=muVar, isLambdaYoungsModulus=.TRUE.)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '9')
       CALL mat%Set(globalNode=nptrs, VALUE=Mmat,  &
         & storageFMT=DOF_FMT, scale=1.0_DFP, addContribution=.TRUE.)
 
-      CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-        & '10')
     END DO
-
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-      & '3')
   END DO
 
-  NULLIFY (meshptr, spaceFE, lambdaField, muField, refelem, linSpaceFE)
+  NULLIFY (meshptr, spaceFE, youngsModulusField, shearModulusField, refelem, linSpaceFE)
 
   IF (ALLOCATED(Mmat)) DEALLOCATE (Mmat)
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   CALL DEALLOCATE (elemsd)
   CALL DEALLOCATE (linElemSD)
-  CALL DEALLOCATE (lambdaVar)
+  CALL DEALLOCATE (youngsVar)
   CALL DEALLOCATE (muVar)
 
 #ifdef DEBUG_VER
@@ -981,5 +964,196 @@ SUBROUTINE KernelAssembleCijklStiffMat(mat, Cijkl, dom, cellFE,  &
     & '[END] ')
 #endif DEBUG_VER
 END SUBROUTINE KernelAssembleCijklStiffMat
+
+!----------------------------------------------------------------------------
+!                                                   KernelAssembleBodyForce
+!----------------------------------------------------------------------------
+
+SUBROUTINE KernelAssembleBodyForce1(rhs, dom, bodyFunc, cellFE,  &
+  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
+  CLASS(VectorField_), INTENT(INOUT) :: rhs
+  CLASS(Domain_), INTENT(INOUT) :: dom
+  CLASS(UserFunction_), INTENT(INOUT) :: bodyFunc
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  LOGICAL(LGT), INTENT(IN) :: reset
+  REAL(DFP), INTENT(IN) :: scale
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodyForce1()"
+  LOGICAL(LGT) :: problem, isok
+  INTEGER(I4B) :: tmesh, nsd, id, nns, iel
+  INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+  REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :)
+  TYPE(FEVariable_) :: bodyvar
+  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  CLASS(Mesh_), POINTER :: meshptr
+  CLASS(ReferenceElement_), POINTER :: refelem
+  CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
+
+  nsd = dom%GetNSD()
+  tmesh = dom%GetTotalMesh(dim=nsd)
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
+
+  DO id = 1, tmesh
+    meshptr => dom%GetMeshPointer(dim=nsd, entityNum=id)
+    problem = meshptr%isEmpty()
+    IF (problem) CYCLE
+
+    spaceFE => cellFE(id)%ptr
+    linSpaceFE => linCellFE(id)%ptr
+
+    elemsd = spaceElemSD(id)
+    linElemSD = linSpaceElemSD(id)
+
+    refelem => meshptr%GetRefElemPointer()
+    nns = (.nne.refelem)
+
+    CALL Reallocate(xij, nsd, nns)
+    CALL Reallocate(fevec, nsd, nns)
+
+    DO iel = meshptr%minElemNum, meshptr%maxElemNum
+
+      isok = meshptr%isElementPresent(iel)
+      IF (.NOT. isok) CYCLE
+
+      nptrs = meshptr%GetConnectivity(iel)
+
+      CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
+
+      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+        & geoElemSD=linElemSD)
+
+      CALL bodyFunc%Get(fevar=bodyvar, xij=xij)
+
+      fevec = ForceVector(test=elemsd, c=bodyvar,  &
+        & crank=TypeFEVariableVector)
+
+      CALL rhs%Set(globalNode=nptrs, scale=scale,  &
+        & addContribution=.TRUE., VALUE=fevec)
+
+    END DO
+
+  END DO
+
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
+  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+  IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
+  CALL DEALLOCATE (bodyvar)
+  CALL DEALLOCATE (elemsd)
+  CALL DEALLOCATE (linElemSD)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE KernelAssembleBodyForce1
+
+!----------------------------------------------------------------------------
+!                                                   KernelAssembleBodyForce
+!----------------------------------------------------------------------------
+
+SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
+  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
+  CLASS(VectorField_), INTENT(INOUT) :: rhs
+  CLASS(Domain_), INTENT(INOUT) :: dom
+  CLASS(VectorField_), INTENT(INOUT) :: bodyVec
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  LOGICAL(LGT), INTENT(IN) :: reset
+  REAL(DFP), INTENT(IN) :: scale
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodyForce2()"
+  LOGICAL(LGT) :: problem, isok
+  INTEGER(I4B) :: tmesh, nsd, id, nns, iel
+  INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+  REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), aBodyVec(:, :)
+  TYPE(FEVariable_) :: bodyvar
+  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  CLASS(Mesh_), POINTER :: meshptr
+  CLASS(ReferenceElement_), POINTER :: refelem
+  CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
+
+  nsd = dom%GetNSD()
+  tmesh = dom%GetTotalMesh(dim=nsd)
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
+
+  DO id = 1, tmesh
+    meshptr => dom%GetMeshPointer(dim=nsd, entityNum=id)
+    problem = meshptr%isEmpty()
+    IF (problem) CYCLE
+
+    spaceFE => cellFE(id)%ptr
+    linSpaceFE => linCellFE(id)%ptr
+
+    elemsd = spaceElemSD(id)
+    linElemSD = linSpaceElemSD(id)
+
+    refelem => meshptr%GetRefElemPointer()
+    nns = (.nne.refelem)
+
+    CALL Reallocate(xij, nsd, nns)
+    CALL Reallocate(fevec, nsd, nns)
+
+    DO iel = meshptr%minElemNum, meshptr%maxElemNum
+
+      isok = meshptr%isElementPresent(iel)
+      IF (.NOT. isok) CYCLE
+
+      nptrs = meshptr%GetConnectivity(iel)
+
+      CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
+
+      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+        & geoElemSD=linElemSD)
+
+      CALL bodyVec%Get(VALUE=aBodyVec, globalNode=nptrs)
+      bodyvar = NodalVariable(val=aBodyVec, rank=TypeFEVariableVector,  &
+        & vartype=TypeFEVariableSpace)
+
+      fevec = ForceVector(test=elemsd, c=bodyvar,  &
+        & crank=TypeFEVariableVector)
+
+      CALL rhs%Set(globalNode=nptrs, scale=scale,  &
+        & addContribution=.TRUE., VALUE=fevec)
+
+    END DO
+
+  END DO
+
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
+  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+  IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
+  IF (ALLOCATED(aBodyVec)) DEALLOCATE (aBodyVec)
+  CALL DEALLOCATE (bodyvar)
+  CALL DEALLOCATE (elemsd)
+  CALL DEALLOCATE (linElemSD)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE KernelAssembleBodyForce2
 
 END MODULE KernelUtility

@@ -166,21 +166,21 @@ IF (.NOT. isok) THEN
 END IF
 
 tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%lame_lambda(tsize))
-DO ii = 1, tsize; obj%lame_lambda(ii)%ptr => NULL(); END DO
+ALLOCATE (obj%youngsModulus(tsize))
+DO ii = 1, tsize; obj%youngsModulus(ii)%ptr => NULL(); END DO
 
-CALL KernelInitiateScalarProperty(vars=obj%lame_lambda,  &
+CALL KernelInitiateScalarProperty(vars=obj%youngsModulus,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="lambda", matid=obj%SOLID_MATERIAL_ID,  &
+  & varname="youngsModulus", matid=obj%SOLID_MATERIAL_ID,  &
   & engine=obj%engine%chars())
 
 tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
-ALLOCATE (obj%lame_mu(tsize))
-DO ii = 1, tsize; obj%lame_mu(ii)%ptr => NULL(); END DO
+ALLOCATE (obj%shearModulus(tsize))
+DO ii = 1, tsize; obj%shearModulus(ii)%ptr => NULL(); END DO
 
-CALL KernelInitiateScalarProperty(vars=obj%lame_mu,  &
+CALL KernelInitiateScalarProperty(vars=obj%shearModulus,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="mu", matid=obj%SOLID_MATERIAL_ID,  &
+  & varname="shearModulus", matid=obj%SOLID_MATERIAL_ID,  &
   & engine=obj%engine%chars())
 
 tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
@@ -189,11 +189,11 @@ DO ii = 1, tsize; obj%Cijkl(ii)%ptr => NULL(); END DO
 
 CALL KernelInitiateTensorProperty(vars=obj%Cijkl,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="Cijkl", matid=obj%SOLID_MATERIAL_ID,  &
+  & varname="cijkl", matid=obj%SOLID_MATERIAL_ID,  &
   & engine=obj%engine%chars())
 
-CALL KernelInitiateConstantElasticityProperties(lambda=obj%lame_lambda,  &
-  & mu=obj%lame_mu, Cijkl=obj%Cijkl, dom=obj%dom,  &
+CALL KernelInitiateConstantElasticityProperties(youngsModulus=obj%youngsModulus,  &
+  & shearModulus=obj%shearModulus, Cijkl=obj%Cijkl, dom=obj%dom,  &
   & nnt=obj%nnt, engine=obj%engine%chars())
 
 #ifdef DEBUG_VER
@@ -240,21 +240,19 @@ END PROCEDURE obj_SetMassDensity
 
 MODULE PROCEDURE obj_SetElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetElasticityProperties()"
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-CALL KernelSetScalarProperty(vars=obj%lame_lambda,  &
+CALL KernelSetScalarProperty(vars=obj%youngsModulus,  &
   & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
-  & varname="lambda", matid=obj%SOLID_MATERIAL_ID)
+  & varname="youngsModulus", matid=obj%SOLID_MATERIAL_ID)
 
-CALL KernelSetScalarProperty(vars=obj%lame_mu,  &
+CALL KernelSetScalarProperty(vars=obj%shearModulus,  &
   & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
-  & varname="mu", matid=obj%SOLID_MATERIAL_ID)
+  & varname="shearModulus", matid=obj%SOLID_MATERIAL_ID)
 
 CALL KernelSetTensorProperty(vars=obj%Cijkl,  &
   & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &

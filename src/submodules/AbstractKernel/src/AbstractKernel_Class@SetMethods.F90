@@ -21,14 +21,32 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                    PreSet
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_PreSet
+CHARACTER(*), PARAMETER :: myName = "obj_PreSet()"
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & 'This routine does noting.')
+END PROCEDURE obj_PreSet
+
+!----------------------------------------------------------------------------
+!                                                                   PostSet
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_PostSet
+CHARACTER(*), PARAMETER :: myName = "obj_PostSet()"
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & 'This routine does noting.')
+END PROCEDURE obj_PostSet
+
+!----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set
 CHARACTER(*), PARAMETER :: myName = "obj_Set()"
 TYPE(BoundingBox_) :: bbox
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -36,6 +54,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%PreCheckError()
+
+CALL obj%PreSet()
 
 CALL obj%SetMeshData()
 
@@ -48,16 +68,6 @@ CALL obj%SetMaterialToDomain()
 ! Call InitiateFields, which is defined by children of abstract kernel
 CALL obj%InitiateFields()
 
-tsize = SIZE(obj%lame_lambda)
-DO ii = 1, tsize
-  isok = ASSOCIATED(obj%lame_lambda(ii)%ptr)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR 2] :: lambda('//tostring(ii)//') is NULL.')
-    RETURN
-  END IF
-END DO
-
 ! now we make elemToMatId, which contains fluid-material-id for
 ! each element. We can use these material-id to Get access the fluid material
 CALL obj%SetElementToMatID()
@@ -66,16 +76,6 @@ CALL obj%SetElementToMatID()
 ! Set local space function data in space and time
 CALL obj%SetFiniteElements()
 ! CALL obj%SetElemShapeData()
-
-tsize = SIZE(obj%lame_lambda)
-DO ii = 1, tsize
-  isok = ASSOCIATED(obj%lame_lambda(ii)%ptr)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: lambda('//tostring(ii)//') is NULL.')
-    RETURN
-  END IF
-END DO
 
 ! Local element shape data for the domain of velocity field
 CALL obj%SetFacetFiniteElements()
@@ -88,31 +88,10 @@ obj%lengthScale = GetDiameter(bbox)
 ! Create MatIfaceConnectData
 CALL obj%SetMatIFaceConnectData()
 
-tsize = SIZE(obj%lame_lambda)
-DO ii = 1, tsize
-  isok = ASSOCIATED(obj%lame_lambda(ii)%ptr)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR 2] :: lambda('//tostring(ii)//') is NULL.')
-    RETURN
-  END IF
-END DO
-
 ! Create SetConstantMatProp
 CALL obj%SetMaterialProperties()
 
-tsize = SIZE(obj%lame_lambda)
-DO ii = 1, tsize
-  isok = ASSOCIATED(obj%lame_lambda(ii)%ptr)
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR 3] :: lambda('//tostring(ii)//') is NULL.')
-    RETURN
-  END IF
-END DO
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & 'Debugging')
+CALL obj%PostSet()
 
 CALL obj%PostCheckError()
 
