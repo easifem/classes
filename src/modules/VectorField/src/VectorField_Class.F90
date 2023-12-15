@@ -625,7 +625,7 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
-  !! value is in value(i,J) format.
+    !! value is in value(i,J) format.
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE vField_Set8
@@ -851,6 +851,10 @@ INTERFACE
   MODULE SUBROUTINE vField_Get3(obj, VALUE, globalNode, force3D)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+    !! The number of columns in value is same as the
+    !! the size of globalNode
+    !! The number of rows in columns is equal to the
+    !! spaceCompo
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
   END SUBROUTINE vField_Get3
