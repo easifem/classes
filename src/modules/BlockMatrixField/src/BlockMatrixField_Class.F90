@@ -44,6 +44,12 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "BlockMatrixField_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "BlockMatrixField"
+PUBLIC :: BlockMatrixField_
+PUBLIC :: TypeBlockMatrixField
+PUBLIC :: setBlockMatrixFieldParam
+PUBLIC :: SetBlockMatrixFieldPrecondParam
+PUBLIC :: BlockMatrixFieldInitiate1
+PUBLIC :: BlockMatrixFieldInitiate3
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -121,9 +127,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: getColumn7 => mField_getColumn7
 END TYPE BlockMatrixField_
 
-PUBLIC :: BlockMatrixField_
-
-TYPE(BlockMatrixField_), PARAMETER, PUBLIC :: TypeBlockMatrixField = &
+TYPE(BlockMatrixField_), PARAMETER :: TypeBlockMatrixField = &
   & BlockMatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -176,8 +180,6 @@ INTERFACE
   END SUBROUTINE setBlockMatrixFieldParam
 END INTERFACE
 
-PUBLIC :: setBlockMatrixFieldParam
-
 !----------------------------------------------------------------------------
 !                       SetBlockMatrixFieldPrecondParam@sConstructorMethods
 !----------------------------------------------------------------------------
@@ -207,8 +209,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
   END SUBROUTINE SetBlockMatrixFieldPrecondParam
 END INTERFACE
-
-PUBLIC :: SetBlockMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !                                     checkEssentialParam@ConstructorMethods
@@ -271,19 +271,13 @@ END INTERFACE
 ! - `timeCompo`, INT, default is 1
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
-INTERFACE
+INTERFACE BlockMatrixFieldInitiate1
   MODULE SUBROUTINE mField_Initiate1(obj, param, dom)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE mField_Initiate1
-END INTERFACE
-
-INTERFACE BlockMatrixFieldInitiate1
-  MODULE PROCEDURE mField_Initiate1
 END INTERFACE BlockMatrixFieldInitiate1
-
-PUBLIC :: BlockMatrixFieldInitiate1
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -293,19 +287,13 @@ PUBLIC :: BlockMatrixFieldInitiate1
 ! date: 16 July 2021
 ! summary: This routine initiates the Matrix Field
 
-INTERFACE
+INTERFACE BlockMatrixFieldInitiate3
   MODULE SUBROUTINE mField_Initiate3(obj, param, dom)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
   END SUBROUTINE mField_Initiate3
-END INTERFACE
-
-INTERFACE BlockMatrixFieldInitiate3
-  MODULE PROCEDURE mField_Initiate3
 END INTERFACE BlockMatrixFieldInitiate3
-
-PUBLIC :: BlockMatrixFieldInitiate3
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
