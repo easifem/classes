@@ -49,122 +49,123 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractMatrixField_
   !! True if precondition matrix is initiated
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => amField_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => amField_Deallocate
-  PROCEDURE(amField_Size), DEFERRED, PUBLIC, PASS(obj) :: Size
-  PROCEDURE(amField_Shape), DEFERRED, PUBLIC, PASS(obj) :: Shape
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE(obj_Size), DEFERRED, PUBLIC, PASS(obj) :: Size
+  PROCEDURE(obj_Shape), DEFERRED, PUBLIC, PASS(obj) :: Shape
 
   ! @MatVecMethods
-  PROCEDURE(amField_Matvec1), DEFERRED, PASS(obj) :: Matvec1
+  PROCEDURE(obj_Matvec1), DEFERRED, PASS(obj) :: Matvec1
   !! Matrix vector multiplication, here vector is fortran array
-  PROCEDURE(amField_Matvec2), DEFERRED, PASS(obj) :: Matvec2
+  PROCEDURE(obj_Matvec2), DEFERRED, PASS(obj) :: Matvec2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: Matvec => Matvec1, Matvec2
 
   ! @ILUSolveMethods
-  PROCEDURE(amField_ILUSOLVE1), DEFERRED, PASS(obj) :: ILUSOLVE1
+  PROCEDURE(obj_ILUSOLVE1), DEFERRED, PASS(obj) :: ILUSOLVE1
   !! Matrix vector multiplication, here vector is fortran array
-  PROCEDURE(amField_ILUSOLVE2), DEFERRED, PASS(obj) :: ILUSOLVE2
+  PROCEDURE(obj_ILUSOLVE2), DEFERRED, PASS(obj) :: ILUSOLVE2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
   GENERIC, PUBLIC :: ILUSOLVE => ILUSOLVE1, ILUSOLVE2
   !! Generic LU Solve
 
   PROCEDURE, PUBLIC, PASS(obj) :: isPreconditionSet => &
-    & amField_isPreconditionSet
+    & obj_isPreconditionSet
   !! True if prcondition is Set
-  PROCEDURE(amField_SetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
+  PROCEDURE(obj_SetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
     & SetPrecondition
   !! Build precondition matrix
-  PROCEDURE(amField_GetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
+  PROCEDURE(obj_GetPrecondition), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetPrecondition
   !! Get the precondition matrix
-  PROCEDURE(amField_reversePermutation), DEFERRED, PUBLIC, PASS(obj) :: &
+  PROCEDURE(obj_reversePermutation), DEFERRED, PUBLIC, PASS(obj) :: &
     & reversePermutation
   !
-  PROCEDURE(amField_DiagonalScaling), DEFERRED, PUBLIC, PASS(obj) :: &
+  PROCEDURE(obj_DiagonalScaling), DEFERRED, PUBLIC, PASS(obj) :: &
     & DiagonalScaling
   ! DiagonalScaling
-  PROCEDURE(amField_GetDiagonal), DEFERRED, PUBLIC, PASS(obj) :: &
+  PROCEDURE(obj_GetDiagonal), DEFERRED, PUBLIC, PASS(obj) :: &
     & GetDiagonal
   ! Get Diagonal
   PROCEDURE, PUBLIC, PASS(obj) :: &
-    & SymSchurLargestEigenVal => amField_SymSchurLargestEigenVal
+    & SymSchurLargestEigenVal => obj_SymSchurLargestEigenVal
   ! SymSchurLargestEigenVal
   PROCEDURE, PUBLIC, PASS(obj) :: &
-    & SymLargestEigenVal => amField_SymLargestEigenVal
+    & SymLargestEigenVal => obj_SymLargestEigenVal
   ! SymLargestEigenVal
-  PROCEDURE(amField_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC
+  PROCEDURE(obj_ApplyDBC), DEFERRED, PUBLIC, PASS(obj) :: ApplyDBC
   ! ApplyDBC
-  PROCEDURE(amField_GetDBCSubMat), DEFERRED, PUBLIC, PASS(obj) ::  &
+  PROCEDURE(obj_GetDBCSubMat), DEFERRED, PUBLIC, PASS(obj) ::  &
     & GetDBCSubMat
   ! ApplyDBC
-  PROCEDURE(amField_ApplyDBCToRHS), DEFERRED, PUBLIC, PASS(obj) ::  &
+  PROCEDURE(obj_ApplyDBCToRHS), DEFERRED, PUBLIC, PASS(obj) ::  &
     & ApplyDBCtoRHS
-  PROCEDURE, PUBLIC, PASS(obj) :: SPY => amField_SPY
+  PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
   ! SPY
 
   ! Set:
   ! @SetMethods
-  PROCEDURE(amField_Set1), DEFERRED, PASS(obj) :: set1
-  PROCEDURE(amField_Set2), DEFERRED, PASS(obj) :: set2
-  PROCEDURE(amField_Set3), DEFERRED, PASS(obj) :: set3
-  PROCEDURE(amField_Set4), DEFERRED, PASS(obj) :: set4
-  PROCEDURE(amField_Set5), DEFERRED, PASS(obj) :: set5
-  PROCEDURE(amField_Set6), DEFERRED, PASS(obj) :: set6
-  PROCEDURE(amField_Set7), DEFERRED, PASS(obj) :: set7
-  PROCEDURE(amField_Set8), DEFERRED, PASS(obj) :: set8
-  PROCEDURE(amField_Set9), DEFERRED, PASS(obj) :: set9
-  PROCEDURE(amField_Set10), DEFERRED, PASS(obj) :: set10
-  GENERIC, PUBLIC :: Set => set1, set2, set3, set4, set5, &
-    & Set6, set7, set8, set9, set10
+  PROCEDURE(obj_Set1), DEFERRED, PASS(obj) :: Set1
+  PROCEDURE(obj_Set2), DEFERRED, PASS(obj) :: Set2
+  PROCEDURE(obj_Set3), DEFERRED, PASS(obj) :: Set3
+  PROCEDURE(obj_Set4), DEFERRED, PASS(obj) :: Set4
+  PROCEDURE(obj_Set5), DEFERRED, PASS(obj) :: Set5
+  PROCEDURE(obj_Set6), DEFERRED, PASS(obj) :: Set6
+  PROCEDURE(obj_Set7), DEFERRED, PASS(obj) :: Set7
+  PROCEDURE(obj_Set8), DEFERRED, PASS(obj) :: Set8
+  PROCEDURE(obj_Set9), DEFERRED, PASS(obj) :: Set9
+  PROCEDURE(obj_Set10), DEFERRED, PASS(obj) :: Set10
+  PROCEDURE(obj_Set11), DEFERRED, PASS(obj) :: Set11
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
+    & Set6, Set7, Set8, Set9, Set10, Set11
 
   ! Set:
   ! @SetRow
-  PROCEDURE(amField_SetRow1), DEFERRED, PASS(obj) :: setRow1
-  PROCEDURE(amField_SetRow2), DEFERRED, PASS(obj) :: setRow2
-  PROCEDURE(amField_SetRow3), DEFERRED, PASS(obj) :: setRow3
-  PROCEDURE(amField_SetRow4), DEFERRED, PASS(obj) :: setRow4
-  PROCEDURE(amField_SetRow5), DEFERRED, PASS(obj) :: setRow5
-  PROCEDURE(amField_SetRow6), DEFERRED, PASS(obj) :: setRow6
-  PROCEDURE(amField_SetRow7), DEFERRED, PASS(obj) :: setRow7
-  GENERIC, PUBLIC :: SetRow => setRow1, setRow2, setRow3, &
-    & SetRow4, setRow5, setRow6, setRow7
+  PROCEDURE(obj_SetRow1), DEFERRED, PASS(obj) :: SetRow1
+  PROCEDURE(obj_SetRow2), DEFERRED, PASS(obj) :: SetRow2
+  PROCEDURE(obj_SetRow3), DEFERRED, PASS(obj) :: SetRow3
+  PROCEDURE(obj_SetRow4), DEFERRED, PASS(obj) :: SetRow4
+  PROCEDURE(obj_SetRow5), DEFERRED, PASS(obj) :: SetRow5
+  PROCEDURE(obj_SetRow6), DEFERRED, PASS(obj) :: SetRow6
+  PROCEDURE(obj_SetRow7), DEFERRED, PASS(obj) :: SetRow7
+  GENERIC, PUBLIC :: SetRow => SetRow1, SetRow2, SetRow3, &
+    & SetRow4, SetRow5, SetRow6, SetRow7
 
   ! Get:
   ! @GetColumn
-  PROCEDURE(amField_GetColumn1), DEFERRED, PASS(obj) :: getColumn1
-  PROCEDURE(amField_GetColumn2), DEFERRED, PASS(obj) :: getColumn2
-  PROCEDURE(amField_GetColumn3), DEFERRED, PASS(obj) :: getColumn3
-  PROCEDURE(amField_GetColumn4), DEFERRED, PASS(obj) :: getColumn4
-  PROCEDURE(amField_GetColumn5), DEFERRED, PASS(obj) :: getColumn5
-  PROCEDURE(amField_GetColumn6), DEFERRED, PASS(obj) :: getColumn6
-  PROCEDURE(amField_GetColumn7), DEFERRED, PASS(obj) :: getColumn7
-  GENERIC, PUBLIC :: GetColumn => getColumn1, getColumn2, &
-    & GetColumn3, getColumn4, getColumn5, getColumn6, getColumn7
+  PROCEDURE(obj_GetColumn1), DEFERRED, PASS(obj) :: GetColumn1
+  PROCEDURE(obj_GetColumn2), DEFERRED, PASS(obj) :: GetColumn2
+  PROCEDURE(obj_GetColumn3), DEFERRED, PASS(obj) :: GetColumn3
+  PROCEDURE(obj_GetColumn4), DEFERRED, PASS(obj) :: GetColumn4
+  PROCEDURE(obj_GetColumn5), DEFERRED, PASS(obj) :: GetColumn5
+  PROCEDURE(obj_GetColumn6), DEFERRED, PASS(obj) :: GetColumn6
+  PROCEDURE(obj_GetColumn7), DEFERRED, PASS(obj) :: GetColumn7
+  GENERIC, PUBLIC :: GetColumn => GetColumn1, GetColumn2, &
+    & GetColumn3, GetColumn4, GetColumn5, GetColumn6, GetColumn7
 
   ! Get:
   ! @GetRow
-  PROCEDURE(amField_GetRow1), DEFERRED, PASS(obj) :: getRow1
-  PROCEDURE(amField_GetRow2), DEFERRED, PASS(obj) :: getRow2
-  PROCEDURE(amField_GetRow3), DEFERRED, PASS(obj) :: getRow3
-  PROCEDURE(amField_GetRow4), DEFERRED, PASS(obj) :: getRow4
-  PROCEDURE(amField_GetRow5), DEFERRED, PASS(obj) :: getRow5
-  PROCEDURE(amField_GetRow6), DEFERRED, PASS(obj) :: getRow6
-  PROCEDURE(amField_GetRow7), DEFERRED, PASS(obj) :: getRow7
-  GENERIC, PUBLIC :: GetRow => getRow1, getRow2, &
-    & GetRow3, getRow4, getRow5, getRow6, getRow7
+  PROCEDURE(obj_GetRow1), DEFERRED, PASS(obj) :: GetRow1
+  PROCEDURE(obj_GetRow2), DEFERRED, PASS(obj) :: GetRow2
+  PROCEDURE(obj_GetRow3), DEFERRED, PASS(obj) :: GetRow3
+  PROCEDURE(obj_GetRow4), DEFERRED, PASS(obj) :: GetRow4
+  PROCEDURE(obj_GetRow5), DEFERRED, PASS(obj) :: GetRow5
+  PROCEDURE(obj_GetRow6), DEFERRED, PASS(obj) :: GetRow6
+  PROCEDURE(obj_GetRow7), DEFERRED, PASS(obj) :: GetRow7
+  GENERIC, PUBLIC :: GetRow => GetRow1, GetRow2, &
+    & GetRow3, GetRow4, GetRow5, GetRow6, GetRow7
 
   ! Set:
   ! @SetColumn
-  PROCEDURE(amField_SetColumn1), DEFERRED, PASS(obj) :: setColumn1
-  PROCEDURE(amField_SetColumn2), DEFERRED, PASS(obj) :: setColumn2
-  PROCEDURE(amField_SetColumn3), DEFERRED, PASS(obj) :: setColumn3
-  PROCEDURE(amField_SetColumn4), DEFERRED, PASS(obj) :: setColumn4
-  PROCEDURE(amField_SetColumn5), DEFERRED, PASS(obj) :: setColumn5
-  PROCEDURE(amField_SetColumn6), DEFERRED, PASS(obj) :: setColumn6
-  PROCEDURE(amField_SetColumn7), DEFERRED, PASS(obj) :: setColumn7
-  GENERIC, PUBLIC :: SetColumn => setColumn1, setColumn2, &
-    & SetColumn3, setColumn4, setColumn5, setColumn6, setColumn7
+  PROCEDURE(obj_SetColumn1), DEFERRED, PASS(obj) :: SetColumn1
+  PROCEDURE(obj_SetColumn2), DEFERRED, PASS(obj) :: SetColumn2
+  PROCEDURE(obj_SetColumn3), DEFERRED, PASS(obj) :: SetColumn3
+  PROCEDURE(obj_SetColumn4), DEFERRED, PASS(obj) :: SetColumn4
+  PROCEDURE(obj_SetColumn5), DEFERRED, PASS(obj) :: SetColumn5
+  PROCEDURE(obj_SetColumn6), DEFERRED, PASS(obj) :: SetColumn6
+  PROCEDURE(obj_SetColumn7), DEFERRED, PASS(obj) :: SetColumn7
+  GENERIC, PUBLIC :: SetColumn => SetColumn1, SetColumn2, &
+    & SetColumn3, SetColumn4, SetColumn5, SetColumn6, SetColumn7
 END TYPE AbstractMatrixField_
 
 !----------------------------------------------------------------------------
@@ -172,11 +173,11 @@ END TYPE AbstractMatrixField_
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMatrixFieldDisplay
-  MODULE SUBROUTINE amField_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE amField_Display
+  END SUBROUTINE obj_Display
 END INTERFACE AbstractMatrixFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -184,9 +185,9 @@ END INTERFACE AbstractMatrixFieldDisplay
 !----------------------------------------------------------------------------
 
 INTERFACE AbstractMatrixFieldDeallocate
-  MODULE SUBROUTINE amField_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-  END SUBROUTINE amField_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractMatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -194,12 +195,12 @@ END INTERFACE AbstractMatrixFieldDeallocate
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  FUNCTION amField_Size(obj, dim) RESULT(ans)
+  FUNCTION obj_Size(obj, dim) RESULT(ans)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B) :: ans
-  END FUNCTION amField_Size
+  END FUNCTION obj_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -207,11 +208,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  FUNCTION amField_Shape(obj) RESULT(ans)
+  FUNCTION obj_Shape(obj) RESULT(ans)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans(2)
-  END FUNCTION amField_Shape
+  END FUNCTION obj_Shape
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -230,7 +231,7 @@ END INTERFACE
 ! outside and it should have same length as the input vector.
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Matvec1(obj, x, y, isTranspose, addContribution, &
+  SUBROUTINE obj_Matvec1(obj, x, y, isTranspose, addContribution, &
     & scale)
     IMPORT :: AbstractMatrixField_, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -246,7 +247,7 @@ ABSTRACT INTERFACE
     !! y = y + matvec(obj, x)
     !! if false, then we perform y = matvec(obj, x)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-  END SUBROUTINE amField_Matvec1
+  END SUBROUTINE obj_Matvec1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -264,7 +265,7 @@ END INTERFACE
 ! The output vector is also an abstract node field.
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Matvec2(obj, x, y, isTranspose, addContribution, &
+  SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, addContribution, &
     & scale)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, LGT, DFP
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -280,7 +281,7 @@ ABSTRACT INTERFACE
     !! y = y + matvec(obj, x)
     !! if false, then we perform y = matvec(obj, x)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-  END SUBROUTINE amField_Matvec2
+  END SUBROUTINE obj_Matvec2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -306,7 +307,7 @@ END INTERFACE
 ! (LU)^T sol = rhs
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_ILUSOLVE1(obj, sol, rhs, isTranspose)
+  SUBROUTINE obj_ILUSOLVE1(obj, sol, rhs, isTranspose)
     IMPORT :: AbstractMatrixField_, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: sol(:)
@@ -314,7 +315,7 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: rhs(:)
     !! Input vector in y=Ax
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
-  END SUBROUTINE amField_ILUSOLVE1
+  END SUBROUTINE obj_ILUSOLVE1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -336,7 +337,7 @@ END INTERFACE
 ! (LU)^T sol = rhs
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_ILUSOLVE2(obj, sol, rhs, isTranspose)
+  SUBROUTINE obj_ILUSOLVE2(obj, sol, rhs, isTranspose)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: sol
@@ -344,7 +345,7 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: rhs
     !! Input vector, rhs
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
-  END SUBROUTINE amField_ILUSOLVE2
+  END SUBROUTINE obj_ILUSOLVE2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -356,12 +357,12 @@ END INTERFACE
 ! summary: This routine Sets the precondition
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetPrecondition(obj, param, dbcPtrs)
+  SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
     IMPORT :: AbstractMatrixField_, ParameterList_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE amField_SetPrecondition
+  END SUBROUTINE obj_SetPrecondition
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -373,11 +374,11 @@ END INTERFACE
 ! summary: This routine returns the precondition
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetPrecondition(obj, Pmat)
+  SUBROUTINE obj_GetPrecondition(obj, Pmat)
     IMPORT :: AbstractMatrixField_
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: Pmat
-  END SUBROUTINE amField_GetPrecondition
+  END SUBROUTINE obj_GetPrecondition
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -395,12 +396,12 @@ END INTERFACE
 ! In case of row permulation, the rhs needs to be permutated
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_reversePermutation(obj, rhs, sol)
+  SUBROUTINE obj_reversePermutation(obj, rhs, sol)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: rhs
     CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: sol
-  END SUBROUTINE amField_reversePermutation
+  END SUBROUTINE obj_reversePermutation
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -408,10 +409,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION amField_isPreconditionSet(obj) RESULT(Ans)
+  MODULE PURE FUNCTION obj_isPreconditionSet(obj) RESULT(Ans)
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION amField_isPreconditionSet
+  END FUNCTION obj_isPreconditionSet
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -423,11 +424,11 @@ END INTERFACE
 ! summary: REturns the diagnoal
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetDiagonal(obj, diag)
+  SUBROUTINE obj_GetDiagonal(obj, diag)
     IMPORT :: AbstractMatrixField_, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: diag(:)
-  END SUBROUTINE amField_GetDiagonal
+  END SUBROUTINE obj_GetDiagonal
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -439,13 +440,13 @@ END INTERFACE
 ! summary: Perform diagonal scaling to the matrix
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_DiagonalScaling(obj, side, diag, OPERATOR)
+  SUBROUTINE obj_DiagonalScaling(obj, side, diag, OPERATOR)
     IMPORT :: AbstractMatrixField_, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: side
     REAL(DFP), OPTIONAL, INTENT(IN) :: diag(:)
     CHARACTER(*), OPTIONAL, INTENT(IN) :: OPERATOR
-  END SUBROUTINE amField_DiagonalScaling
+  END SUBROUTINE obj_DiagonalScaling
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -457,11 +458,11 @@ END INTERFACE
 ! summary: This routine creates spy figure
 
 INTERFACE
-  MODULE SUBROUTINE amField_SPY(obj, filename, ext)
+  MODULE SUBROUTINE obj_SPY(obj, filename, ext)
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: filename
     CHARACTER(*), INTENT(IN) :: ext
-  END SUBROUTINE amField_SPY
+  END SUBROUTINE obj_SPY
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -473,7 +474,7 @@ END INTERFACE
 ! summary: SymSchurLargestEigenVal
 
 INTERFACE
-  MODULE FUNCTION amField_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
+  MODULE FUNCTION obj_SymSchurLargestEigenVal(obj, B, nev, which, NCV, &
       & maxIter, tol) RESULT(ans)
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     !! CSRMatrix, symmetric
@@ -495,7 +496,7 @@ INTERFACE
     !! tolerance, default = 0.0
     REAL(DFP) :: ans(nev)
     !! first k, largest eigenvalue
-  END FUNCTION amField_SymSchurLargestEigenVal
+  END FUNCTION obj_SymSchurLargestEigenVal
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -507,7 +508,7 @@ END INTERFACE
 ! summary: SymSchurLargestEigenVal
 
 INTERFACE
-  MODULE FUNCTION amField_SymLargestEigenVal(obj, nev, which, NCV, &
+  MODULE FUNCTION obj_SymLargestEigenVal(obj, nev, which, NCV, &
       & maxIter, tol) RESULT(ans)
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     !! CSRMatrix, symmetric
@@ -527,7 +528,7 @@ INTERFACE
     !! tolerance, default = 0.0
     REAL(DFP) :: ans(nev)
     !! first k, largest eigenvalue
-  END FUNCTION amField_SymLargestEigenVal
+  END FUNCTION obj_SymLargestEigenVal
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -535,11 +536,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_ApplyDBC(obj, dbcPtrs)
+  SUBROUTINE obj_ApplyDBC(obj, dbcPtrs)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-  END SUBROUTINE amField_ApplyDBC
+  END SUBROUTINE obj_ApplyDBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -547,11 +548,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetDBCSubMat(obj, submat)
+  SUBROUTINE obj_GetDBCSubMat(obj, submat)
     IMPORT :: AbstractMatrixField_, I4B
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
-  END SUBROUTINE amField_GetDBCSubMat
+  END SUBROUTINE obj_GetDBCSubMat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -563,7 +564,7 @@ END INTERFACE
 ! summary:  Apply dirichlet boundary condition to a node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_ApplyDBCToRHS(obj, x, y, isTranspose,  &
+  SUBROUTINE obj_ApplyDBCToRHS(obj, x, y, isTranspose,  &
     & scale, addContribution)
     IMPORT :: AbstractMatrixField_, LGT, DFP, AbstractNodeField_
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -572,15 +573,15 @@ ABSTRACT INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_ApplyDBCToRHS
+  END SUBROUTINE obj_ApplyDBCToRHS
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set1(obj, globalNode, VALUE, storageFMT, scale, &
+  SUBROUTINE obj_Set1(obj, globalNode, VALUE, storageFMT, scale, &
     & addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -589,30 +590,30 @@ ABSTRACT INTERFACE
     INTEGER(I4B), INTENT(IN) :: storageFMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set1
+  END SUBROUTINE obj_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set2(obj, globalNode, VALUE, scale, addContribution)
+  SUBROUTINE obj_Set2(obj, globalNode, VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set2
+  END SUBROUTINE obj_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set3(obj, iNodeNum, jNodeNum, idof, jdof, VALUE, &
+  SUBROUTINE obj_Set3(obj, iNodeNum, jNodeNum, idof, jdof, VALUE, &
     & scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -623,15 +624,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set3
+  END SUBROUTINE obj_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set4(obj, iNodeNum, jNodeNum, ivar, jvar, VALUE, &
+  SUBROUTINE obj_Set4(obj, iNodeNum, jNodeNum, ivar, jvar, VALUE, &
     & scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -642,15 +643,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set4
+  END SUBROUTINE obj_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set5(obj, iNodeNum, jNodeNum, ivar, jvar, idof,  &
+  SUBROUTINE obj_Set5(obj, iNodeNum, jNodeNum, ivar, jvar, idof,  &
     & jdof, VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -663,15 +664,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set5
+  END SUBROUTINE obj_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  SUBROUTINE obj_Set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & idof, jdof, VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -684,15 +685,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set6
+  END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  SUBROUTINE obj_Set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
     & VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
@@ -708,15 +709,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set7
+  END SUBROUTINE obj_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  SUBROUTINE obj_Set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
     & VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
@@ -732,15 +733,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set8
+  END SUBROUTINE obj_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  SUBROUTINE obj_Set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
     & VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
@@ -756,15 +757,15 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set9
+  END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_Set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  SUBROUTINE obj_Set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
     & VALUE, scale, addContribution)
     IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
@@ -780,11 +781,29 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_Set10
+  END SUBROUTINE obj_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                           Set@SetMethod
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-16
+! summary:  Set matrix
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Set11(obj, VALUE, scale, addContribution)
+    IMPORT :: AbstractMatrixField_, DFP, LGT
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_Set11
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -804,7 +823,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow1(obj, globalNode, idof, scalarVal, vecVal, &
+  SUBROUTINE obj_SetRow1(obj, globalNode, idof, scalarVal, vecVal, &
     & nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -813,11 +832,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow1
+  END SUBROUTINE obj_SetRow1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -837,7 +856,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow2(obj, globalNode, ivar, idof, scalarVal, vecVal, &
+  SUBROUTINE obj_SetRow2(obj, globalNode, ivar, idof, scalarVal, vecVal, &
     & nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -847,11 +866,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow2
+  END SUBROUTINE obj_SetRow2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -871,7 +890,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow3(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_SetRow3(obj, globalNode, ivar, spacecompo, timecompo, &
     & scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -882,11 +901,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow3
+  END SUBROUTINE obj_SetRow3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -906,7 +925,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow4(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_SetRow4(obj, globalNode, ivar, spacecompo, timecompo, &
     & scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -917,11 +936,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow4
+  END SUBROUTINE obj_SetRow4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -941,7 +960,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow5(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_SetRow5(obj, globalNode, ivar, spacecompo, timecompo, &
     & scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -952,11 +971,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow5
+  END SUBROUTINE obj_SetRow5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -976,7 +995,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow6(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_SetRow6(obj, globalNode, ivar, spacecompo, timecompo, &
     & scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -987,11 +1006,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow6
+  END SUBROUTINE obj_SetRow6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          SetRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1011,7 +1030,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetRow7(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_SetRow7(obj, globalNode, ivar, spacecompo, timecompo, &
     & scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1022,11 +1041,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetRow7
+  END SUBROUTINE obj_SetRow7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1047,7 +1066,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn1(obj, globalNode, idof, scalarVal, vecVal, &
+  SUBROUTINE obj_SetColumn1(obj, globalNode, idof, scalarVal, vecVal, &
     & nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1056,11 +1075,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn1
+  END SUBROUTINE obj_SetColumn1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1081,7 +1100,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn2(obj, globalNode, ivar, idof, &
+  SUBROUTINE obj_SetColumn2(obj, globalNode, ivar, idof, &
     & scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1091,11 +1110,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn2
+  END SUBROUTINE obj_SetColumn2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1116,7 +1135,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn3(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_SetColumn3(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1127,11 +1146,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn3
+  END SUBROUTINE obj_SetColumn3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1152,7 +1171,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn4(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_SetColumn4(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1163,11 +1182,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn4
+  END SUBROUTINE obj_SetColumn4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1188,7 +1207,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn5(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_SetColumn5(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1199,11 +1218,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn5
+  END SUBROUTINE obj_SetColumn5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1224,7 +1243,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn6(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_SetColumn6(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1235,11 +1254,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn6
+  END SUBROUTINE obj_SetColumn6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1260,7 +1279,7 @@ END INTERFACE
 ! - `nodeFieldVal` is the field of nodal values
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_SetColumn7(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_SetColumn7(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
@@ -1271,11 +1290,11 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE amField_SetColumn7
+  END SUBROUTINE obj_SetColumn7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1293,7 +1312,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow1(obj, globalNode, idof, VALUE, nodeFieldVal, &
+  SUBROUTINE obj_GetRow1(obj, globalNode, idof, VALUE, nodeFieldVal, &
     & scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1303,11 +1322,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow1
+  END SUBROUTINE obj_GetRow1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1325,7 +1344,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow2(obj, globalNode, ivar, idof, VALUE, &
+  SUBROUTINE obj_GetRow2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1336,11 +1355,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow2
+  END SUBROUTINE obj_GetRow2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1358,7 +1377,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow3(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_GetRow3(obj, globalNode, ivar, spacecompo, timecompo, &
     & VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1370,11 +1389,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow3
+  END SUBROUTINE obj_GetRow3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1392,7 +1411,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow4(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_GetRow4(obj, globalNode, ivar, spacecompo, timecompo, &
     & VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1404,11 +1423,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow4
+  END SUBROUTINE obj_GetRow4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1426,7 +1445,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow5(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_GetRow5(obj, globalNode, ivar, spacecompo, timecompo, &
     & VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1438,11 +1457,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow5
+  END SUBROUTINE obj_GetRow5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1460,7 +1479,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow6(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_GetRow6(obj, globalNode, ivar, spacecompo, timecompo, &
     & VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1472,11 +1491,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow6
+  END SUBROUTINE obj_GetRow6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1494,7 +1513,7 @@ END INTERFACE
 ! If `nodeFieldVal` is present then the row is returned inside the node field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetRow7(obj, globalNode, ivar, spacecompo, timecompo, &
+  SUBROUTINE obj_GetRow7(obj, globalNode, ivar, spacecompo, timecompo, &
     & VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1506,11 +1525,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetRow7
+  END SUBROUTINE obj_GetRow7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1529,7 +1548,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn1(obj, globalNode, idof, VALUE, nodeFieldVal, &
+  SUBROUTINE obj_GetColumn1(obj, globalNode, idof, VALUE, nodeFieldVal, &
     & scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1539,11 +1558,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn1
+  END SUBROUTINE obj_GetColumn1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1562,7 +1581,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn2(obj, globalNode, ivar, idof, &
+  SUBROUTINE obj_GetColumn2(obj, globalNode, ivar, idof, &
       & VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1573,11 +1592,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn2
+  END SUBROUTINE obj_GetColumn2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1596,7 +1615,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn3(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_GetColumn3(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1608,11 +1627,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn3
+  END SUBROUTINE obj_GetColumn3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1631,7 +1650,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn4(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_GetColumn4(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1643,11 +1662,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn4
+  END SUBROUTINE obj_GetColumn4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1666,7 +1685,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn5(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_GetColumn5(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1678,11 +1697,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn5
+  END SUBROUTINE obj_GetColumn5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1701,7 +1720,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn6(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_GetColumn6(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1713,11 +1732,11 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn6
+  END SUBROUTINE obj_GetColumn6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1736,7 +1755,7 @@ END INTERFACE
 ! field
 
 ABSTRACT INTERFACE
-  SUBROUTINE amField_GetColumn7(obj, globalNode, ivar, spacecompo, &
+  SUBROUTINE obj_GetColumn7(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     IMPORT :: AbstractMatrixField_, AbstractNodeField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
@@ -1748,7 +1767,7 @@ ABSTRACT INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE amField_GetColumn7
+  END SUBROUTINE obj_GetColumn7
 END INTERFACE
 
 END MODULE AbstractMatrixField_Class
