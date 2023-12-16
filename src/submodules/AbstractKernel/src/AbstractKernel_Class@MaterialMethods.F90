@@ -203,6 +203,42 @@ CALL e%raiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_InitiateElasticityProperties
 
 !----------------------------------------------------------------------------
+!                                                 InitiateDampingProperties
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateDampingProperties
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateDampingProperties()"
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
+ALLOCATE (obj%dampCoeff_alpha(tsize))
+DO ii = 1, tsize; obj%dampCoeff_alpha(ii)%ptr => NULL(); END DO
+
+CALL KernelInitiateScalarProperty(vars=obj%dampCoeff_alpha,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="rayleigh_alpha", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+ALLOCATE (obj%dampCoeff_beta(tsize))
+DO ii = 1, tsize; obj%dampCoeff_beta(ii)%ptr => NULL(); END DO
+
+CALL KernelInitiateScalarProperty(vars=obj%dampCoeff_beta,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="rayleigh_beta", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_InitiateDampingProperties
+
+!----------------------------------------------------------------------------
 !                                                  InitiateConstantMatProps
 !----------------------------------------------------------------------------
 
@@ -263,6 +299,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_SetElasticityProperties
+
+!----------------------------------------------------------------------------
+!                                                    SetElasticityProperties
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetDampingProperties
+CHARACTER(*), PARAMETER :: myName = "obj_SetDampingProperties()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL KernelSetScalarProperty(vars=obj%dampCoeff_alpha,  &
+  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & varname="rayleigh_alpha", matid=obj%SOLID_MATERIAL_ID)
+
+CALL KernelSetScalarProperty(vars=obj%dampCoeff_beta,  &
+  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & varname="rayleigh_beta", matid=obj%SOLID_MATERIAL_ID)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_SetDampingProperties
 
 !----------------------------------------------------------------------------
 !                                                       SetConstantMatProps
