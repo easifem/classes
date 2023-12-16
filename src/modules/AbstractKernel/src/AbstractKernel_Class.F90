@@ -430,6 +430,10 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Elasticity tensor
   !! NOTE: It is used for non Isotropic elasticity
   !! This will be a tensor mesh field
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: dampCoeff_alpha(:)
+  !! Rayleigh damping coefficient alpha
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: dampCoeff_beta(:)
+  !! Rayleigh damping coefficient beta
   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: stress(:)
   !! Stress tensor
   !! This will be a tensor mesh field
@@ -571,6 +575,12 @@ CONTAINS
   !! Initiate lame parameters for isotropic elasticity
   PROCEDURE, PUBLIC, PASS(obj) :: SetElasticityProperties =>  &
     & obj_SetElasticityProperties
+  !! Set Lame parameters for isotropic elasticity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDampingProperties =>  &
+    & obj_InitiateDampingProperties
+  !! Initiate rayleight damping properties
+  PROCEDURE, PUBLIC, PASS(obj) :: SetDampingProperties =>  &
+    & obj_SetDampingProperties
   !! Set Lame parameters for isotropic elasticity
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
     & obj_SetMaterialToDomain
@@ -1393,6 +1403,34 @@ INTERFACE
   MODULE SUBROUTINE obj_SetElasticityProperties(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetElasticityProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               InitiateDampingProperties@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate elasticity properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateDampingProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateDampingProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetMassDensity@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set elasticity properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetDampingProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetDampingProperties
 END INTERFACE
 
 !----------------------------------------------------------------------------
