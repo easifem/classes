@@ -25,11 +25,11 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set1
-CHARACTER(*), PARAMETER :: myName = "mField_set1"
+MODULE PROCEDURE obj_Set1
+CHARACTER(*), PARAMETER :: myName = "obj_Set1"
 INTEGER(I4B) :: val1, val2, val3
 
 ! check: this routine should not be called for rectangle matrix
@@ -56,19 +56,19 @@ IF (PRESENT(addContribution)) THEN
     & storageFMT=storageFMT, &
     & scale=INPUT(default=1.0_DFP, option=scale))
 ELSE
-  CALL set(obj=obj%mat,  &
+  CALL Set(obj=obj%mat,  &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & VALUE=VALUE, &
     & storageFMT=storageFMT)
 END IF
-END PROCEDURE mField_set1
+END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set2
-CHARACTER(*), PARAMETER :: myName = "mField_set2"
+MODULE PROCEDURE obj_Set2
+CHARACTER(*), PARAMETER :: myName = "obj_Set2"
 
 IF (PRESENT(addContribution)) THEN
   ! Add
@@ -96,21 +96,21 @@ ELSE
       CALL e%raiseError(modName//'::'//myName//' - '// &
         & 'This routine should not be called for rectangle matrix')
     ELSE
-      CALL set(obj=obj%mat, &
+      CALL Set(obj=obj%mat, &
         & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
         & VALUE=VALUE)
     END IF
   ELSE
-    CALL set(obj=obj%mat, VALUE=VALUE)
+    CALL Set(obj=obj%mat, VALUE=VALUE)
   END IF
 END IF
-END PROCEDURE mField_set2
+END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set3
+MODULE PROCEDURE obj_Set3
 IF (PRESENT(addContribution)) THEN
   IF (obj%isRectangle) THEN
     CALL add(obj=obj%mat, &
@@ -146,13 +146,13 @@ ELSE
       & VALUE=VALUE)
   END IF
 END IF
-END PROCEDURE mField_set3
+END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set4
+MODULE PROCEDURE obj_Set4
 IF (PRESENT(addContribution)) THEN
   !
   IF (obj%isRectangle) THEN
@@ -176,14 +176,14 @@ IF (PRESENT(addContribution)) THEN
 ELSE
   !
   IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
       & jvar=jvar, &
       & VALUE=VALUE)
   ELSE
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -193,67 +193,13 @@ ELSE
 
   !
 END IF
-END PROCEDURE mField_set4
+END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set5
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  ELSE
-    CALL set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  END IF
-  !
-END IF
-END PROCEDURE mField_set5
-
-!----------------------------------------------------------------------------
-!                                                                       set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE mField_set6
+MODULE PROCEDURE obj_Set5
 IF (PRESENT(addContribution)) THEN
   !
   IF (obj%isRectangle) THEN
@@ -281,7 +227,7 @@ IF (PRESENT(addContribution)) THEN
 ELSE
   !
   IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -290,7 +236,7 @@ ELSE
       & jdof=jdof, &
       & VALUE=VALUE)
   ELSE
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -301,13 +247,67 @@ ELSE
   END IF
   !
 END IF
-END PROCEDURE mField_set6
+END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set7
+MODULE PROCEDURE obj_Set6
+IF (PRESENT(addContribution)) THEN
+  !
+  IF (obj%isRectangle) THEN
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & VALUE=VALUE, &
+      & scale=INPUT(default=1.0_DFP, option=scale))
+  ELSE
+    CALL add(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & VALUE=VALUE, &
+      & scale=INPUT(default=1.0_DFP, option=scale))
+  END IF
+  !
+ELSE
+  !
+  IF (obj%isRectangle) THEN
+    CALL Set(obj=obj%mat, &
+      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & VALUE=VALUE)
+  ELSE
+    CALL Set(obj=obj%mat, &
+      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+      & ivar=ivar, &
+      & jvar=jvar, &
+      & idof=idof, &
+      & jdof=jdof, &
+      & VALUE=VALUE)
+  END IF
+  !
+END IF
+END PROCEDURE obj_Set6
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set7
 IF (PRESENT(addContribution)) THEN
   !
   IF (obj%isRectangle) THEN
@@ -339,7 +339,7 @@ IF (PRESENT(addContribution)) THEN
 ELSE
   !
   IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -350,7 +350,7 @@ ELSE
       & jtimecompo=jtimecompo, &
       & VALUE=VALUE)
   ELSE
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -363,13 +363,13 @@ ELSE
   END IF
   !
 END IF
-END PROCEDURE mField_set7
+END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set8
+MODULE PROCEDURE obj_Set8
 IF (PRESENT(addContribution)) THEN
   !
   IF (obj%isRectangle) THEN
@@ -401,7 +401,7 @@ IF (PRESENT(addContribution)) THEN
 ELSE
   !
   IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -412,7 +412,7 @@ ELSE
       & jtimecompo=jtimecompo, &
       & VALUE=VALUE)
   ELSE
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -425,13 +425,13 @@ ELSE
   END IF
   !
 END IF
-END PROCEDURE mField_set8
+END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set9
+MODULE PROCEDURE obj_Set9
 IF (PRESENT(addContribution)) THEN
   !
   IF (obj%isRectangle) THEN
@@ -463,7 +463,7 @@ IF (PRESENT(addContribution)) THEN
 ELSE
   !
   IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -474,7 +474,7 @@ ELSE
       & jtimecompo=jtimecompo, &
       & VALUE=VALUE)
   ELSE
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
       & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
       & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
       & ivar=ivar, &
@@ -487,13 +487,13 @@ ELSE
   END IF
   !
 END IF
-END PROCEDURE mField_set9
+END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_set10
+MODULE PROCEDURE obj_Set10
 IF (PRESENT(addContribution)) THEN
   !
   IF (obj%isRectangle) THEN
@@ -525,7 +525,7 @@ IF (PRESENT(addContribution)) THEN
 ELSE
   !
   IF (obj%isRectangle) THEN
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
     & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
     & ivar=ivar, &
@@ -536,7 +536,7 @@ ELSE
     & jtimecompo=jtimecompo, &
     & VALUE=VALUE)
   ELSE
-    CALL set(obj=obj%mat, &
+    CALL Set(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
     & ivar=ivar, &
@@ -549,6 +549,26 @@ ELSE
   END IF
   !
 END IF
-END PROCEDURE mField_set10
+END PROCEDURE obj_Set10
+
+!----------------------------------------------------------------------------
+!                                                                      Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set11
+CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_Set11
 
 END SUBMODULE SetMethods
