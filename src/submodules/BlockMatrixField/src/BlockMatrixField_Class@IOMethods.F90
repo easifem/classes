@@ -29,8 +29,8 @@ CONTAINS
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Import
-CHARACTER(*), PARAMETER :: myName = "mField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: strval, dsetname, name, matrixProp, engine
 INTEGER(I4B), ALLOCATABLE :: timeCompo(:), spaceCompo(:)
 INTEGER(I4B) :: fieldType, ii, tvar
@@ -211,6 +211,6 @@ IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
-END PROCEDURE mField_Import
+END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods
