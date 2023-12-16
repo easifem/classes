@@ -30,7 +30,7 @@
 
 MODULE BlockMatrixField_Class
 USE GlobalData
-USE BaseType
+USE BaSetype
 USE FPL, ONLY: ParameterList_
 USE FPL_Method
 USE HDF5File_Class
@@ -46,7 +46,7 @@ CHARACTER(*), PARAMETER :: modName = "BlockMatrixField_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "BlockMatrixField"
 PUBLIC :: BlockMatrixField_
 PUBLIC :: TypeBlockMatrixField
-PUBLIC :: setBlockMatrixFieldParam
+PUBLIC :: SetBlockMatrixFieldParam
 PUBLIC :: SetBlockMatrixFieldPrecondParam
 PUBLIC :: BlockMatrixFieldInitiate1
 PUBLIC :: BlockMatrixFieldInitiate3
@@ -63,87 +63,87 @@ TYPE, EXTENDS(MatrixField_) :: BlockMatrixField_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & bmField_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => mField_Initiate1
+    & obj_checkEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from the parameter list
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => mField_Initiate3
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate for block matrices
-  FINAL :: mField_Final
+  FINAL :: obj_Final
   !! Finalizer
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => mField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from hdf5 file
   !
   ! @SetMethods
   !
-  PROCEDURE, PASS(obj) :: set1 => mField_set1
-  PROCEDURE, PASS(obj) :: set2 => mField_set2
-  PROCEDURE, PASS(obj) :: set3 => mField_set3
-  PROCEDURE, PASS(obj) :: set4 => mField_set4
-  PROCEDURE, PASS(obj) :: set5 => mField_set5
-  PROCEDURE, PASS(obj) :: set6 => mField_set6
-  PROCEDURE, PASS(obj) :: set7 => mField_set7
-  PROCEDURE, PASS(obj) :: set8 => mField_set8
-  PROCEDURE, PASS(obj) :: set9 => mField_set9
-  PROCEDURE, PASS(obj) :: set10 => mField_set10
+  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
+  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
+  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
+  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
+  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
   !
   ! @SetColumnMethods
   !
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn1 => mField_setColumn1
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn2 => mField_setColumn2
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn3 => mField_setColumn3
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn4 => mField_setColumn4
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn5 => mField_setColumn5
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn6 => mField_setColumn6
-  PROCEDURE, PUBLIC, PASS(obj) :: setColumn7 => mField_setColumn7
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => obj_SetColumn1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn2 => obj_SetColumn2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn3 => obj_SetColumn3
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn4 => obj_SetColumn4
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => obj_SetColumn5
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => obj_SetColumn6
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => obj_SetColumn7
   !
   ! @SetRowMethods
   !
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow1 => mField_setRow1
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow2 => mField_setRow2
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow3 => mField_setRow3
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow4 => mField_setRow4
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow5 => mField_setRow5
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow6 => mField_setRow6
-  PROCEDURE, PUBLIC, PASS(obj) :: setRow7 => mField_setRow7
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => obj_SetRow1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow2 => obj_SetRow2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow3 => obj_SetRow3
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow4 => obj_SetRow4
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow5 => obj_SetRow5
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => obj_SetRow6
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow7 => obj_SetRow7
   !
   ! @GetRowMethods
   !
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow1 => mField_getRow1
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow2 => mField_getRow2
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow3 => mField_getRow3
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow4 => mField_getRow4
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow5 => mField_getRow5
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow6 => mField_getRow6
-  PROCEDURE, PUBLIC, PASS(obj) :: getRow7 => mField_getRow7
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => obj_GetRow1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow2 => obj_GetRow2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow3 => obj_GetRow3
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow4 => obj_GetRow4
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => obj_GetRow5
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => obj_GetRow6
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => obj_GetRow7
   !
   ! @GetColumnMethods
   !
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn1 => mField_getColumn1
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn2 => mField_getColumn2
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn3 => mField_getColumn3
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn4 => mField_getColumn4
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn5 => mField_getColumn5
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn6 => mField_getColumn6
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn7 => mField_getColumn7
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => obj_GetColumn1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => obj_GetColumn2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => obj_GetColumn3
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn4 => obj_GetColumn4
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => obj_GetColumn5
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => obj_GetColumn6
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => obj_GetColumn7
 END TYPE BlockMatrixField_
 
 TYPE(BlockMatrixField_), PARAMETER :: TypeBlockMatrixField = &
   & BlockMatrixField_(domains=NULL())
 
 !----------------------------------------------------------------------------
-!                                setBlockMatrixFieldParam@ConstructorMethods
+!                                SetBlockMatrixFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 July 2021
-! summary: This routine sets the parameter for creating [[BlockMatrixField_]]
+! summary: This routine Sets the parameter for creating [[BlockMatrixField_]]
 !
 !# Introduction
 !
-! - This routine sets the essential parameter for initiating
+! - This routine Sets the essential parameter for initiating
 ! an instance of [[BlockMatrixField_]]
 ! - The results will be returned in `param`
-! - After getting `param` user can call [[BlockMatrixField_:Initiate]] method
+! - After Getting `param` user can call [[BlockMatrixField_:Initiate]] method
 !
 !@note
 ! The size of `physicalVarNames`, `spaceCompo`, and `timeCompo` should be
@@ -151,7 +151,7 @@ TYPE(BlockMatrixField_), PARAMETER :: TypeBlockMatrixField = &
 !@endnote
 
 INTERFACE
-  MODULE SUBROUTINE setBlockMatrixFieldParam(param, name, matrixProp, &
+  MODULE SUBROUTINE SetBlockMatrixFieldParam(param, name, matrixProp, &
     & physicalVarNames, spaceCompo, timeCompo, engine, fieldType, &
     & comm, local_n, global_n)
     TYPE(ParameterList_), INTENT(INOUT) :: param
@@ -177,7 +177,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-  END SUBROUTINE setBlockMatrixFieldParam
+  END SUBROUTINE SetBlockMatrixFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -224,10 +224,10 @@ END INTERFACE
 ! [[BlockMatrixField_]] data type.
 
 INTERFACE
-  MODULE SUBROUTINE bmField_checkEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_checkEssentialParam(obj, param)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE bmField_checkEssentialParam
+  END SUBROUTINE obj_checkEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -235,9 +235,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE mField_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(BlockMatrixField_), INTENT(INOUT) :: obj
-  END SUBROUTINE mField_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -253,7 +253,7 @@ END INTERFACE
 ! This routine initiates an instance of [[BlockMatrixField_]].
 ! The options/arguments to initiate the matrix field are
 ! contained inside param, which is an instance of [[ParameterList_]].
-! In addition, [[Domain_]] `dom` is target to the pointer
+! In addition, [[Domain_]] `dom` is tarGet to the pointer
 ! [[AbstractField_:domain]] and [[AbstractField_::domains]]
 !
 ! - `param` contains both essential and optional parameters which are used in
@@ -272,11 +272,11 @@ END INTERFACE
 ! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
 
 INTERFACE BlockMatrixFieldInitiate1
-  MODULE SUBROUTINE mField_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE mField_Initiate1
+  END SUBROUTINE obj_Initiate1
 END INTERFACE BlockMatrixFieldInitiate1
 
 !----------------------------------------------------------------------------
@@ -288,11 +288,11 @@ END INTERFACE BlockMatrixFieldInitiate1
 ! summary: This routine initiates the Matrix Field
 
 INTERFACE BlockMatrixFieldInitiate3
-  MODULE SUBROUTINE mField_Initiate3(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-  END SUBROUTINE mField_Initiate3
+  END SUBROUTINE obj_Initiate3
 END INTERFACE BlockMatrixFieldInitiate3
 
 !----------------------------------------------------------------------------
@@ -304,17 +304,17 @@ END INTERFACE BlockMatrixFieldInitiate3
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE mField_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE mField_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -322,7 +322,7 @@ END INTERFACE
 ! summary: This routine is not callable for BlockMatrixField
 
 INTERFACE
-  MODULE SUBROUTINE mField_set1(obj, globalNode, VALUE, storageFMT, scale,  &
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, storageFMT, scale,  &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -330,16 +330,16 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: storageFMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set1
+  END SUBROUTINE obj_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 !
@@ -347,18 +347,18 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE SUBROUTINE mField_set2(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE obj_Set2(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set2
+  END SUBROUTINE obj_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -366,7 +366,7 @@ END INTERFACE
 ! summary: This routine is not callable for block matrix field
 
 INTERFACE
-  MODULE SUBROUTINE mField_set3(obj, iNodeNum, jNodeNum, idof, &
+  MODULE SUBROUTINE obj_Set3(obj, iNodeNum, jNodeNum, idof, &
     & jdof, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
@@ -376,16 +376,16 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set3
+  END SUBROUTINE obj_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 !
@@ -393,7 +393,7 @@ END INTERFACE
 ! See [[CSRMatrix_Method:Add6]]
 
 INTERFACE
-  MODULE SUBROUTINE mField_set4(obj, iNodeNum, jNodeNum, ivar, &
+  MODULE SUBROUTINE obj_Set4(obj, iNodeNum, jNodeNum, ivar, &
     & jvar, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -403,16 +403,16 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set4
+  END SUBROUTINE obj_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethod
+!                                                           Set@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 !
@@ -420,7 +420,7 @@ END INTERFACE
 ! See [[CSRMatrix_Method:Add6]]
 
 INTERFACE
-  MODULE SUBROUTINE mField_set5(obj, iNodeNum, jNodeNum, ivar, &
+  MODULE SUBROUTINE obj_Set5(obj, iNodeNum, jNodeNum, ivar, &
     & jvar, idof, jdof, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
@@ -432,20 +432,20 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set5
+  END SUBROUTINE obj_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethods
+!                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 ! If addContribution and scale not present then:
-! This subroutine sets a scalar value `value` to a single entry of the matrix.
+! This subroutine Sets a scalar value `value` to a single entry of the matrix.
 ! This entry is specified by the `rowNodeNum` and `colNodeNum`.
 ! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
 ! `colNodeNum` and `colDOF`.
@@ -458,7 +458,7 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE mField_set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  MODULE SUBROUTINE obj_Set6(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & idof, jdof, VALUE, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: iNodeNum
@@ -470,20 +470,20 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set6
+  END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethods
+!                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 ! If addContribution and scale not present then:
-! This subroutine sets a scalar value `value` to a single entry of the matrix.
+! This subroutine Sets a scalar value `value` to a single entry of the matrix.
 ! This entry is specified by the `rowNodeNum` and `colNodeNum`.
 ! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
 ! `colNodeNum` and `colDOF`.
@@ -496,7 +496,7 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE mField_set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  MODULE SUBROUTINE obj_Set7(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
@@ -511,20 +511,20 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set7
+  END SUBROUTINE obj_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethods
+!                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 ! If addContribution and scale not present then:
-! This subroutine sets a scalar value `value` to a single entry of the matrix.
+! This subroutine Sets a scalar value `value` to a single entry of the matrix.
 ! This entry is specified by the `rowNodeNum` and `colNodeNum`.
 ! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
 ! `colNodeNum` and `colDOF`.
@@ -537,7 +537,7 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE mField_set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  MODULE SUBROUTINE obj_Set8(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
@@ -552,20 +552,20 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set8
+  END SUBROUTINE obj_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethods
+!                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 ! If addContribution and scale not present then:
-! This subroutine sets a scalar value `value` to a single entry of the matrix.
+! This subroutine Sets a scalar value `value` to a single entry of the matrix.
 ! This entry is specified by the `rowNodeNum` and `colNodeNum`.
 ! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
 ! `colNodeNum` and `colDOF`.
@@ -578,7 +578,7 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE mField_set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  MODULE SUBROUTINE obj_Set9(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
@@ -593,20 +593,20 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set9
+  END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           set@setMethods
+!                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
-! summary: This routine sets data to matrix field
+! summary: This routine Sets data to matrix field
 !
 !# Introduction
 ! If addContribution and scale not present then:
-! This subroutine sets a scalar value `value` to a single entry of the matrix.
+! This subroutine Sets a scalar value `value` to a single entry of the matrix.
 ! This entry is specified by the `rowNodeNum` and `colNodeNum`.
 ! The exact location of the entry is computed using `rowNodeNum`, `rowDOF`,
 ! `colNodeNum` and `colDOF`.
@@ -619,7 +619,7 @@ END INTERFACE
 ! `colNodeNum` and `colDOF`.
 
 INTERFACE
-  MODULE SUBROUTINE mField_set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
+  MODULE SUBROUTINE obj_Set10(obj, iNodeNum, jNodeNum, ivar, jvar, &
     & ispacecompo, itimecompo, jspacecompo, jtimecompo, VALUE, scale, &
     & addContribution)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
@@ -634,11 +634,11 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_set10
+  END SUBROUTINE obj_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -646,7 +646,7 @@ END INTERFACE
 ! summary: This routine is not callable for BlockMatrixField
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow1(obj, globalNode, idof, scalarVal, vecVal, &
+  MODULE SUBROUTINE obj_SetRow1(obj, globalNode, idof, scalarVal, vecVal, &
     & nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -654,30 +654,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow1
+  END SUBROUTINE obj_SetRow1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the row of a sparse matrix
+! summary: This routine Set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated /
+! This routine Sets the row of a sparse matrix. The row index is calculated /
 ! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow2(obj, globalNode, ivar, idof, &
+  MODULE SUBROUTINE obj_SetRow2(obj, globalNode, ivar, idof, &
     & scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -686,30 +686,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow2
+  END SUBROUTINE obj_SetRow2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the row of a sparse matrix
+! summary: This routine Set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated /
+! This routine Sets the row of a sparse matrix. The row index is calculated /
 ! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow3(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_SetRow3(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -719,30 +719,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow3
+  END SUBROUTINE obj_SetRow3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the row of a sparse matrix
+! summary: This routine Set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated /
+! This routine Sets the row of a sparse matrix. The row index is calculated /
 ! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow4(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_SetRow4(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -752,30 +752,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow4
+  END SUBROUTINE obj_SetRow4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the row of a sparse matrix
+! summary: This routine Set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated /
+! This routine Sets the row of a sparse matrix. The row index is calculated /
 ! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow5(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_SetRow5(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -785,30 +785,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow5
+  END SUBROUTINE obj_SetRow5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the row of a sparse matrix
+! summary: This routine Set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated /
+! This routine Sets the row of a sparse matrix. The row index is calculated /
 ! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow6(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_SetRow6(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -818,30 +818,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow6
+  END SUBROUTINE obj_SetRow6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          setRow@setMethod
+!                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the row of a sparse matrix
+! summary: This routine Set the row of a sparse matrix
 !
 !# Introduction
-! This routine sets the row of a sparse matrix. The row index is calculated /
+! This routine Sets the row of a sparse matrix. The row index is calculated /
 ! using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setRow7(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_SetRow7(obj, globalNode, ivar, spacecompo, &
     & timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -851,11 +851,11 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setRow7
+  END SUBROUTINE obj_SetRow7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -863,7 +863,7 @@ END INTERFACE
 ! summary: This routine is not callable for BlockMatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn1(obj, globalNode, idof, scalarVal, &
+  MODULE SUBROUTINE obj_SetColumn1(obj, globalNode, idof, scalarVal, &
     & vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -871,30 +871,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn1
+  END SUBROUTINE obj_SetColumn1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the column of a sparse matrix
+! summary: This routine Set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is
+! This routine Sets the column of a sparse matrix. The column index is
 ! calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn2(obj, globalNode, ivar, idof, &
+  MODULE SUBROUTINE obj_SetColumn2(obj, globalNode, ivar, idof, &
     & scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -903,30 +903,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn2
+  END SUBROUTINE obj_SetColumn2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the column of a sparse matrix
+! summary: This routine Set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is
+! This routine Sets the column of a sparse matrix. The column index is
 ! calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn3(obj, globalNode, ivar, &
+  MODULE SUBROUTINE obj_SetColumn3(obj, globalNode, ivar, &
     & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -936,30 +936,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn3
+  END SUBROUTINE obj_SetColumn3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the column of a sparse matrix
+! summary: This routine Set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is
+! This routine Sets the column of a sparse matrix. The column index is
 ! calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set
+! - `scalarVal` is the scalar value, if present then the row will be Set
 ! to this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn4(obj, globalNode, ivar, &
+  MODULE SUBROUTINE obj_SetColumn4(obj, globalNode, ivar, &
     & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -969,30 +969,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn4
+  END SUBROUTINE obj_SetColumn4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the column of a sparse matrix
+! summary: This routine Set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is
+! This routine Sets the column of a sparse matrix. The column index is
 ! calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn5(obj, globalNode, ivar, &
+  MODULE SUBROUTINE obj_SetColumn5(obj, globalNode, ivar, &
     & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1002,30 +1002,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn5
+  END SUBROUTINE obj_SetColumn5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the column of a sparse matrix
+! summary: This routine Set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is
+! This routine Sets the column of a sparse matrix. The column index is
 ! calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn6(obj, globalNode, ivar, &
+  MODULE SUBROUTINE obj_SetColumn6(obj, globalNode, ivar, &
     & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1035,30 +1035,30 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn6
+  END SUBROUTINE obj_SetColumn6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       setColumn@setMethod
+!                                                       SetColumn@SetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 24 July 2021
-! summary: This routine set the column of a sparse matrix
+! summary: This routine Set the column of a sparse matrix
 !
 !# Introduction
-! This routine sets the column of a sparse matrix. The column index is
+! This routine Sets the column of a sparse matrix. The column index is
 ! calculated using the `globalNode` and `idof`.
 ! - `globalNode` is global node number.
 ! - `idof` is the degree of freedom number
-! - `scalarVal` is the scalar value, if present then the row will be set to
+! - `scalarVal` is the scalar value, if present then the row will be Set to
 ! this scalar value
-! - `vectorVal` is the vector value, if present then the row will be set to
+! - `vectorVal` is the vector value, if present then the row will be Set to
 ! this vector value
 ! - `nodeFieldVal` is the field of nodal values
 
 INTERFACE
-  MODULE SUBROUTINE mField_setColumn7(obj, globalNode, ivar, &
+  MODULE SUBROUTINE obj_SetColumn7(obj, globalNode, ivar, &
     & spacecompo, timecompo, scalarVal, vecVal, nodeFieldVal)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1068,11 +1068,11 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
-  END SUBROUTINE mField_setColumn7
+  END SUBROUTINE obj_SetColumn7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1080,7 +1080,7 @@ END INTERFACE
 ! summary: This routine is not callable for BlockMatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow1(obj, globalNode, idof, VALUE, &
+  MODULE SUBROUTINE obj_GetRow1(obj, globalNode, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1089,11 +1089,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow1
+  END SUBROUTINE obj_GetRow1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1113,7 +1113,7 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow2(obj, globalNode, ivar, idof, VALUE, &
+  MODULE SUBROUTINE obj_GetRow2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1123,11 +1123,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow2
+  END SUBROUTINE obj_GetRow2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1147,7 +1147,7 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow3(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_GetRow3(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1158,11 +1158,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow3
+  END SUBROUTINE obj_GetRow3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1182,7 +1182,7 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow4(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_GetRow4(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1193,11 +1193,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow4
+  END SUBROUTINE obj_GetRow4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1217,7 +1217,7 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow5(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_GetRow5(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1228,11 +1228,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow5
+  END SUBROUTINE obj_GetRow5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1252,7 +1252,7 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow6(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_GetRow6(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1263,11 +1263,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow6
+  END SUBROUTINE obj_GetRow6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          getRow@getMethod
+!                                                          GetRow@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1287,7 +1287,7 @@ END INTERFACE
 ! node field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getRow7(obj, globalNode, ivar, spacecompo, &
+  MODULE SUBROUTINE obj_GetRow7(obj, globalNode, ivar, spacecompo, &
     & timecompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1298,11 +1298,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getRow7
+  END SUBROUTINE obj_GetRow7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1310,7 +1310,7 @@ END INTERFACE
 ! summary: This routine is not callable for BlockMatrixField_
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn1(obj, globalNode, idof, VALUE, &
+  MODULE SUBROUTINE obj_GetColumn1(obj, globalNode, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1319,11 +1319,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn1
+  END SUBROUTINE obj_GetColumn1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1341,7 +1341,7 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn2(obj, globalNode, ivar, idof, VALUE, &
+  MODULE SUBROUTINE obj_GetColumn2(obj, globalNode, ivar, idof, VALUE, &
     & nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1351,11 +1351,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn2
+  END SUBROUTINE obj_GetColumn2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1373,7 +1373,7 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn3(obj, globalNode, ivar, spaceCompo, &
+  MODULE SUBROUTINE obj_GetColumn3(obj, globalNode, ivar, spaceCompo, &
     & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1384,11 +1384,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn3
+  END SUBROUTINE obj_GetColumn3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1406,7 +1406,7 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn4(obj, globalNode, ivar, spaceCompo, &
+  MODULE SUBROUTINE obj_GetColumn4(obj, globalNode, ivar, spaceCompo, &
     & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1417,11 +1417,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn4
+  END SUBROUTINE obj_GetColumn4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1439,7 +1439,7 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn5(obj, globalNode, ivar, spaceCompo, &
+  MODULE SUBROUTINE obj_GetColumn5(obj, globalNode, ivar, spaceCompo, &
     & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1450,11 +1450,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn5
+  END SUBROUTINE obj_GetColumn5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1472,7 +1472,7 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn6(obj, globalNode, ivar, spaceCompo, &
+  MODULE SUBROUTINE obj_GetColumn6(obj, globalNode, ivar, spaceCompo, &
     & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1483,11 +1483,11 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn6
+  END SUBROUTINE obj_GetColumn6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       getColumn@getMethod
+!                                                       GetColumn@GetMethod
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1505,7 +1505,7 @@ END INTERFACE
 ! field
 
 INTERFACE
-  MODULE SUBROUTINE mField_getColumn7(obj, globalNode, ivar, spaceCompo, &
+  MODULE SUBROUTINE obj_GetColumn7(obj, globalNode, ivar, spaceCompo, &
     & timeCompo, VALUE, nodeFieldVal, scale, addContribution)
     CLASS(BlockMatrixField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -1516,7 +1516,7 @@ INTERFACE
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE mField_getColumn7
+  END SUBROUTINE obj_GetColumn7
 END INTERFACE
 
 !----------------------------------------------------------------------------
