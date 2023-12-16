@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_ApplyDBC
-CHARACTER(*), PARAMETER :: myName = "mField_ApplyDBC()"
+MODULE PROCEDURE obj_ApplyDBC
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBC()"
 LOGICAL(LGT) :: case1
 INTEGER(I4B) :: tsize
 
@@ -53,24 +53,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-END PROCEDURE mField_ApplyDBC
+END PROCEDURE obj_ApplyDBC
 
 !----------------------------------------------------------------------------
 !                                                             GetDBCSubMat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_GetDBCSubMat
-CHARACTER(*), PARAMETER :: myName = "mField_GetDBCSubMat()"
+MODULE PROCEDURE obj_GetDBCSubMat
+CHARACTER(*), PARAMETER :: myName = "obj_GetDBCSubMat()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE mField_GetDBCSubMat
+END PROCEDURE obj_GetDBCSubMat
 
 !----------------------------------------------------------------------------
 !                                                       ApplyDBCToRHS
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_ApplyDBCToRHS
-CHARACTER(*), PARAMETER :: myName = "mField_ApplyDBCToRHS()"
+MODULE PROCEDURE obj_ApplyDBCToRHS
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDBCToRHS()"
 REAL(DFP), POINTER :: xvec(:)
 REAL(DFP), POINTER :: yvec(:)
 
@@ -97,6 +97,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-END PROCEDURE mField_ApplyDBCToRHS
+END PROCEDURE obj_ApplyDBCToRHS
 
 END SUBMODULE DBCMethods
