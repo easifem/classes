@@ -28,17 +28,17 @@ CONTAINS
 !                                                                       SIZE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Size
+MODULE PROCEDURE obj_Size
 ans = SIZE(obj%mat, dim)
-END PROCEDURE mField_Size
+END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !                                                                      SHAPE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Shape
+MODULE PROCEDURE obj_Shape
 ans = SHAPE(obj%mat)
-END PROCEDURE mField_Shape
+END PROCEDURE obj_Shape
 
 !----------------------------------------------------------------------------
 !
