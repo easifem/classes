@@ -27,9 +27,9 @@ CONTAINS
 !                                                                    Matvec
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Matvec2
+MODULE PROCEDURE obj_Matvec2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "mField_Matvec2"
+CHARACTER(*), PARAMETER :: myName = "obj_Matvec2"
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isTranspose0
 LOGICAL(LGT) :: addContribution0
@@ -80,6 +80,6 @@ ELSE
   END IF
 END IF
 
-END PROCEDURE mField_Matvec2
+END PROCEDURE obj_Matvec2
 
 END SUBMODULE MatVecMethods

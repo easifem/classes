@@ -36,6 +36,7 @@ CHARACTER(*), PUBLIC, PARAMETER :: TOML_LINSOLVER_NAME = "linSolver"
 CHARACTER(*), PUBLIC, PARAMETER :: TOML_DIRICHLET_BC_NAME = "dirichletBC"
 CHARACTER(*), PUBLIC, PARAMETER :: TOML_NEUMANN_BC_NAME = "neumannBC"
 CHARACTER(*), PUBLIC, PARAMETER :: TOML_NITSCHE_BC_NAME = "nitscheBC"
+CHARACTER(*), PUBLIC, PARAMETER :: TOML_SOLID_MATERIAL_NAME = "solidMaterial"
 !! Default value of linSolver in toml
 
 !----------------------------------------------------------------------------
@@ -52,6 +53,8 @@ INTEGER(I4B), PUBLIC, PARAMETER :: Nitsche_SkewSym = 1
 
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_TANMAT_PROP = "UNSYM"
 !! Default tangent matrix properties
+CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_OUTPUT_PATH = "./results/"
+!! Default outputpath
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_engine = "NATIVE_SERIAL"
 !! Default value of engine
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_nitscheAlpha = 100.0
@@ -244,10 +247,10 @@ CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_basisTypeForSpace_char = "Monomial"
 CHARACTER(*), PUBLIC, PARAMETER :: DEFAULT_basisTypeForTime_char = "Monomial"
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_alphaForSpace = 0.0_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_betaForSpace = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForSpace = 0.0_DFP
+REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForSpace = 0.5_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_alphaForTime = 0.0_DFP
 REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_betaForTime = 0.0_DFP
-REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForTime = 0.0_DFP
+REAL(DFP), PUBLIC, PARAMETER :: DEFAULT_lambdaForTime = 0.5_DFP
 
 !----------------------------------------------------------------------------
 !

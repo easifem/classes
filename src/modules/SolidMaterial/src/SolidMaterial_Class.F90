@@ -37,7 +37,8 @@ USE FPL, ONLY: ParameterList_
 USE AbstractMaterial_Class
 USE AbstractSolidMechanicsModel_Class
 USE MeshSelection_Class
-USE tomlf, ONLY: toml_table, toml_array
+USE Domain_Class, ONLY: Domain_
+USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 PRIVATE
@@ -51,6 +52,7 @@ PUBLIC :: SetSolidMaterialParam
 PUBLIC :: AddSolidMaterial
 PUBLIC :: GetSolidMaterialPointer
 PUBLIC :: TypeSolidMaterial
+PUBLIC :: SolidMaterialImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                            SolidMaterial_
@@ -391,6 +393,64 @@ INTERFACE
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE SolidMaterialImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, table, tomlName)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    CHARACTER(*), INTENT(IN) :: tomlName
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE SolidMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE SolidMaterialImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename,  &
+      & printToml)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml3
+END INTERFACE SolidMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE SolidMaterialImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml4(obj, table, tomlName,  &
+      & solidMaterialToMesh, dom)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(MeshSelection_), INTENT(INOUT) :: solidMaterialToMesh(:)
+    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportFromToml4
+END INTERFACE SolidMaterialImportFromToml
 
 !----------------------------------------------------------------------------
 !

@@ -31,218 +31,147 @@ INTEGER(I4B) :: aint, ii
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInitiated, "Kernel initiated: ", unitNo=unitNo)
 IF (.NOT. obj%isInitiated) RETURN
-
-! name
-CALL Display(obj%name, "name: ", unitno=unitno)
-
-! isCommonDomain
-CALL Display(obj%isCommonDomain, "isCommonDomain: ", unitNo=unitNo)
-
-! engine
-CALL Display(obj%engine, "engine: ", unitno=unitno)
-
-! coordinateSystem
-CALL Display(obj%coordinateSystem, "coordinateSystem: ", unitno=unitno)
-
-! maxIter
-CALL Display(obj%maxIter, "maxIter: ", unitno=unitno)
-
-! timeDependency
-CALL Display(obj%timeDependency, "timeDependency: ", unitno=unitno)
-
-! nsd
-CALL Display(obj%nsd, "nsd: ", unitno=unitno)
-
-! nnt
-CALL Display(obj%nnt, "nnt: ", unitno=unitno)
-
-! tdof
-CALL Display(obj%tdof, "tdof: ", unitno=unitno)
-
-! normRHS
-CALL Display(obj%normRHS, "normRHS: ", unitno=unitno)
-
-! dt
-CALL Display(obj%dt, "dt: ", unitno=unitno)
-
-! startTime
-CALL Display(obj%startTime, "startTime: ", unitno=unitno)
-
-! endTime
-CALL Display(obj%endTime, "endTime: ", unitno=unitno)
-
-! currentTime
-CALL Display(obj%currentTime, "currentTime: ", unitno=unitno)
-
-! lengthScale
-CALL Display(obj%lengthScale, "lengthScale: ", unitno=unitno)
-
-! currentTimeStep
-CALL Display(obj%currentTimeStep, "currentTimeStep: ", unitno=unitno)
-
-! totalTimeStep
-CALL Display(obj%totalTimeStep, "totalTimeStep: ", unitno=unitno)
-
-! postProcessOpt
-CALL Display(obj%postProcessOpt, "postProcessOpt: ", unitno=unitno)
-
-! gravity
-CALL Display(obj%gravity, "gravity: ", unitno=unitno)
-
-! iterData
-CALL Display(obj%iterData, "iterData: ", unitno=unitno)
-
-! isConstantMatProp
 CALL Display(obj%isConstantMatProp, "isConstantMatProp: ", unitNo=unitNo)
-
-! isIsotropic
-CALL Display(obj%isIsotropic, "isIsotropic: ", unitNo=unitNo)
-
-! isIncompressible
+CALL Display(obj%isCommonDomain, "isCommonDomain: ", unitNo=unitNo)
 CALL Display(obj%isIncompressible, "isIncompressible: ", unitNo=unitNo)
-
-! isMaterialInterfaces
-
 CALL Display(obj%isMaterialInterfaces, "isMaterialInterfaces: ", &
   & unitNo=unitNo)
-IF (obj%isMaterialInterfaces) THEN
-  CALL Display(obj%materialInterfaces, 'materialInterfaces', &
-    & unitNo=unitNo)
-END IF
-
-! matIfaceConnectData
-bool1 = ALLOCATED(obj%matIfaceConnectData)
-CALL Display(bool1, "matIfaceConnectData ALLOCATED: ", unitNo=unitNo)
-
-! tSolidMaterials
-CALL Display(obj%tSolidMaterials, "tSolidMaterials: ", unitNo=unitNo)
-
-! incrementScale
-CALL Display(obj%incrementScale, "incrementScale : ", unitNo=unitNo)
-
-! rtoleranceForDisplacement
-CALL Display(obj%rtoleranceForDisplacement, "rtoleranceForDisplacement: ", &
-  & unitNo=unitNo)
-
-! atoleranceForDisplacement
-CALL Display(obj%atoleranceForDisplacement, "atoleranceForDisplacement: ", &
-  & unitNo=unitNo)
-
-! rtoleranceForVelocity
-CALL Display(obj%rtoleranceForVelocity, "rtoleranceForVelocity: ", &
-  & unitNo=unitNo)
-
-! atoleranceForVelocity
-CALL Display(obj%atoleranceForVelocity, "atoleranceForVelocity: ", &
-  & unitNo=unitNo)
-
-! rtoleranceForResidual
-CALL Display(obj%rtoleranceForResidual, "rtoleranceForResidual: ", &
-  & unitNo=unitNo)
-
-! atoleranceForResidual
-CALL Display(obj%atoleranceForResidual, "atoleranceForResidual: ", &
-  & unitNo=unitNo)
-
-! displacementError0
-CALL Display(obj%displacementError0, "displacementError0: ", unitNo=unitNo)
-
-! displacementError
-CALL Display(obj%displacementError, "displacementError: ", unitNo=unitNo)
-
-! velocityError0
-CALL Display(obj%velocityError0, "velocityError0: ", unitNo=unitNo)
-
-! velocityError
-CALL Display(obj%velocityError, "velocityError: ", unitNo=unitNo)
-
-! residualError0
-CALL Display(obj%residualError0, "residualError0: ", unitNo=unitNo)
-
-! residualError
-CALL Display(obj%residualError, "residualError: ", unitNo=unitNo)
-
-! elemToMatId
-bool1 = ALLOCATED(obj%elemToMatId)
-CALL Display(bool1, "elemToMatID ALLOCATED: ", unitno=unitno)
-
-! linsol
-bool1 = ASSOCIATED(obj%linsol)
-CALL Display(bool1, "linsol ASSOCIATED: ", unitno=unitno)
-
-! tanmat
-bool1 = ASSOCIATED(obj%tanmat)
-CALL Display(bool1, "tanmat ASSOCIATED: ", unitno=unitno)
-CALL Display(obj%tanmatProp, "tanmatProp: ", unitno=unitno)
-
-IF (bool1) THEN
-  CALL obj%tanmat%Display("tanmat: ", unitNo=unitNo)
-END IF
-
-! baseContinuityForSpace
-CALL Display(obj%baseContinuityForSpace, "baseContinuityForSpace: ", &
-  & unitNo=unitNo)
-
-! baseInterpolationForSpace
-CALL Display(obj%baseInterpolationForSpace, "baseInterpolationForSpace: ", &
-  & unitNo=unitNo)
-
-! quadratureTypeForSpace
-CALL Display(obj%quadratureTypeForSpace, "quadratureTypeForSpace: ", &
-  & unitNo=unitNo)
-
-! baseContinuityForTime
-CALL Display(obj%baseContinuityForTime, "baseContinuityForTime: ", &
-  & unitNo=unitNo)
-
-! baseInterpolationForTime
-CALL Display(obj%baseInterpolationForTime, "baseInterpolationForTime: ", &
-  & unitNo=unitNo)
-
-! quadratureTypeForTime
-CALL Display(obj%quadratureTypeForTime, "quadratureTypeForTime: ", &
-  & unitNo=unitNo)
-
-! domainFile
-CALL Display(obj%domainFile, "domainFile: ", unitNo=unitNo)
-
-! dom
-bool1 = ASSOCIATED(obj%dom)
-CALL Display(bool1, "dom ASSOCIATED: ", unitNo=unitNo)
-
-! domains
-bool1 = ALLOCATED(obj%domains)
-CALL Display(bool1, "domains ALLOCATED: ", unitNo=unitNo)
-
-! quadratureForSpace
-bool1 = ALLOCATED(obj%quadratureForSpace)
-CALL Display(bool1, "quadratureForSpace ALLOCATED: ", unitNo=unitNo)
-
-! cellFE
-bool1 = ALLOCATED(obj%cellFE)
-CALL Display(bool1, "cellFE ALLOCATED: ", unitNo=unitNo)
-
-! facetFE
-bool1 = ALLOCATED(obj%facetFE)
-CALL Display(bool1, "facetFE ALLOCATED: ", unitNo=unitNo)
-
-! edgeFE
-bool1 = ALLOCATED(obj%edgeFE)
-CALL Display(bool1, "edgeFE ALLOCATED: ", unitNo=unitNo)
-
-! isNitsche
+CALL Display(obj%isIsotropic, "isIsotropic: ", unitNo=unitNo)
 CALL Display(obj%isNitsche, "isNitsche: ", unitNo=unitNo)
+CALL Display(obj%problemType, "problemType: ", unitNo=unitNo)
+CALL Display(obj%tOverlappedMaterials,  &
+  & "tOverlappedMaterials: ", unitNo=unitNo)
+CALL Display(obj%tSolidMaterials, "tSolidMaterials: ", unitNo=unitNo)
+CALL Display(obj%SOLID_MATERIAL_ID, "SOLID_MATERIAL_ID: ", unitNo=unitNo)
+CALL Display(obj%algorithm, "algorithm: ", unitNo=unitNo)
+CALL Display(obj%name, "name: ", unitno=unitno)
+CALL Display(obj%engine, "engine: ", unitno=unitno)
+CALL Display(obj%tanmatProp, "tanmatProp: ", unitno=unitno)
+CALL Display(obj%outputPath, "outputPath: ", unitno=unitno)
+CALL Display(obj%coordinateSystem, "coordinateSystem: ", unitno=unitno)
+CALL Display(obj%maxIter, "maxIter: ", unitno=unitno)
+CALL Display(obj%timeDependency, "timeDependency: ", unitno=unitno)
+CALL Display(obj%nsd, "nsd: ", unitno=unitno)
+CALL Display(obj%nnt, "nnt: ", unitno=unitno)
+CALL Display(obj%tdof, "tdof: ", unitno=unitno)
+IF (ALLOCATED(obj%timeVec)) THEN
+  CALL Display(obj%timeVec, "timeVec: ", unitno=unitno)
+END IF
+CALL Display(obj%normRHS, "normRHS: ", unitno=unitno)
+CALL Display(obj%dt, "dt: ", unitno=unitno)
+CALL Display(obj%startTime, "startTime: ", unitno=unitno)
+CALL Display(obj%endTime, "endTime: ", unitno=unitno)
+CALL Display(obj%currentTime, "currentTime: ", unitno=unitno)
+CALL Display(obj%currentTimeStep, "currentTimeStep: ", unitno=unitno)
+CALL Display(obj%totalTimeStep, "totalTimeStep: ", unitno=unitno)
+CALL Display(obj%lengthScale, "lengthScale: ", unitno=unitno)
+CALL Display(obj%postProcessOpt, "postProcessOpt: ", unitno=unitno)
+CALL Display(obj%gravity, "gravity: ", unitno=unitno)
 CALL Display(obj%nitscheAlpha, "nitscheAlpha: ", unitno=unitno)
 IF (INT(obj%NitscheType, kind=I4B) .EQ. Nitsche_Sym) THEN
   CALL Display("NitscheType: SYM", unitno=unitno)
 ELSE
   CALL Display("NitscheType: UNSYM", unitno=unitno)
 END IF
+CALL Display(obj%incrementScale, "incrementScale : ", unitNo=unitNo)
+CALL Display(obj%rtoleranceForDisplacement, "rtoleranceForDisplacement: ", &
+  & unitNo=unitNo)
+CALL Display(obj%atoleranceForDisplacement, "atoleranceForDisplacement: ", &
+  & unitNo=unitNo)
+CALL Display(obj%rtoleranceForVelocity, "rtoleranceForVelocity: ", &
+  & unitNo=unitNo)
+CALL Display(obj%atoleranceForVelocity, "atoleranceForVelocity: ", &
+  & unitNo=unitNo)
+CALL Display(obj%rtoleranceForResidual, "rtoleranceForResidual: ", &
+  & unitNo=unitNo)
+CALL Display(obj%atoleranceForResidual, "atoleranceForResidual: ", &
+  & unitNo=unitNo)
+CALL Display(obj%displacementError0, "displacementError0: ", unitNo=unitNo)
+CALL Display(obj%displacementError, "displacementError: ", unitNo=unitNo)
+CALL Display(obj%velocityError0, "velocityError0: ", unitNo=unitNo)
+CALL Display(obj%velocityError, "velocityError: ", unitNo=unitNo)
+CALL Display(obj%residualError0, "residualError0: ", unitNo=unitNo)
+CALL Display(obj%residualError, "residualError: ", unitNo=unitNo)
+CALL Display(obj%iterData, "iterData: ", unitno=unitno)
+IF (obj%isMaterialInterfaces) THEN
+  CALL Display(obj%materialInterfaces, 'materialInterfaces', &
+    & unitNo=unitNo)
+END IF
+bool1 = ALLOCATED(obj%elemToMatId)
+CALL Display(bool1, "elemToMatID ALLOCATED: ", unitno=unitno)
+bool1 = ALLOCATED(obj%dbcIndx)
+CALL Display(bool1, "dbcIndx ALLOCATED: ", unitno=unitno)
+bool1 = ASSOCIATED(obj%linsol)
+CALL Display(bool1, "linsol ASSOCIATED: ", unitno=unitno)
+bool1 = ASSOCIATED(obj%tanmat)
+CALL Display(bool1, "tanmat ASSOCIATED: ", unitno=unitno)
+IF (bool1) THEN
+  CALL obj%tanmat%Display("tanmat: ", unitNo=unitNo)
+END IF
+
+CALL Display(obj%domainFile, "domainFile: ", unitNo=unitNo)
+bool1 = ASSOCIATED(obj%dom)
+CALL Display(bool1, "dom ASSOCIATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%domains)
+CALL Display(bool1, "domains ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%matIfaceConnectData)
+CALL Display(bool1, "matIfaceConnectData ALLOCATED: ", unitNo=unitNo)
+
+CALL Display(obj%baseContinuityForSpace, "baseContinuityForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%baseInterpolationForSpace, "baseInterpolationForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%quadratureTypeForSpace, "quadratureTypeForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%quadTypeForSpace, "quadTypeForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%ipTypeForSpace, "ipTypeForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%basisTypeForSpace, "basisTypeForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%alphaForSpace, "alphaForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%betaForSpace, "betaForSpace: ", &
+  & unitNo=unitNo)
+CALL Display(obj%lambdaForSpace, "lambdaForSpace: ", &
+  & unitNo=unitNo)
+bool1 = ALLOCATED(obj%quadratureForSpace)
+CALL Display(bool1, "quadratureForSpace ALLOCATED: ", unitNo=unitNo)
+
+CALL Display(obj%baseContinuityForTime, "baseContinuityForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%baseInterpolationForTime, "baseInterpolationForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%quadratureTypeForTime, "quadratureTypeForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%quadTypeForTime, "quadTypeForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%ipTypeForTime, "ipTypeForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%basisTypeForTime, "basisTypeForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%alphaForTime, "alphaForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%betaForTime, "betaForTime: ", &
+  & unitNo=unitNo)
+CALL Display(obj%lambdaForTime, "lambdaForTime: ", &
+  & unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%cellFE)
+CALL Display(bool1, "cellFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%linCellFE)
+CALL Display(bool1, "linCellFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%linFacetFE)
+CALL Display(bool1, "linFacetFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%edgeFE)
+CALL Display(bool1, "edgeFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%linEdgeFE)
+CALL Display(bool1, "linEdgeFE ALLOCATED: ", unitNo=unitNo)
 
 ! dbc
 bool1 = ALLOCATED(obj%dbc)
 CALL Display(bool1, "dbc ALLOCATED: ", unitNo=unitNo)
-
 IF (bool1) THEN
   CALL DirichletBCDisplay(obj%dbc, "dbc: ", unitNo=unitNo)
 END IF
@@ -250,7 +179,6 @@ END IF
 ! nbc
 bool1 = ALLOCATED(obj%nbc)
 CALL Display(bool1, "nbc ALLOCATED: ", unitNo=unitNo)
-
 IF (bool1) THEN
   CALL NeumannBCDisplay(obj%nbc, "nbc: ", unitNo=unitNo)
 END IF
@@ -258,7 +186,6 @@ END IF
 ! wbc
 bool1 = ALLOCATED(obj%wdbc)
 CALL Display(bool1, "wdbc ALLOCATED: ", unitNo=unitNo)
-
 IF (bool1) THEN
   CALL NitscheBCDisplay(obj%wdbc, "wdbc: ", unitNo=unitNo)
 END IF
@@ -340,11 +267,17 @@ CALL Display(bool1, "velBC ASSOCIATED: ", unitNo=unitNo)
 bool1 = ASSOCIATED(obj%accBC)
 CALL Display(bool1, "accBC ASSOCIATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%lame_mu)
-CALL Display(bool1, "obj%lame_mu ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%shearModulus)
+CALL Display(bool1, "obj%shearModulus ALLOCATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%lame_lambda)
-CALL Display(bool1, "obj%lame_lambda ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%youngsModulus)
+CALL Display(bool1, "obj%youngsModulus ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%dampCoeff_alpha)
+CALL Display(bool1, "obj%dampCoeff_alpha ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%dampCoeff_beta)
+CALL Display(bool1, "obj%dampCoeff_beta ALLOCATED: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%Cijkl)
 CALL Display(bool1, "obj%Cijkl ALLOCATED: ", unitNo=unitNo)

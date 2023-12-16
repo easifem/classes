@@ -367,10 +367,11 @@ CALL toml_get(table, "poissonRatio", poissonRatio, origin=origin, stat=stat)
 bool1 = stat .NE. toml_stat%success
 IF (bool1) THEN
   IF (elasticityType .EQ. TypeElasticity%Isotropic) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: In case of Isotropic elasticity '//  &
-      & 'poissonRatio (missing) and youngsModulus should be present.')
-    RETURN
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+      & 'In case of Isotropic elasticity '//  &
+      & 'poissonRatio (missing) and youngsModulus should be present.'//  &
+      & 'using default value = 0.33')
+    poissonRatio = 0.33
   END IF
 END IF
 
@@ -380,10 +381,11 @@ CALL toml_get(table, "youngsModulus", youngsModulus, origin=origin,  &
   & stat=stat)
 bool1 = (stat .NE. toml_stat%success) .AND. isIsotropic
 IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: In case of Isotropic elasticity '//  &
-    & 'poissonRatio and youngsModulus (missing) should be present.')
-  RETURN
+  CALL e%raiseInformation(modName//'::'//myName//' - '// &
+    & 'In case of Isotropic elasticity '//  &
+    & 'poissonRatio and youngsModulus (missing) should be present.'//  &
+    & ' Using default value = 3.0e+6.')
+  youngsModulus = 3.0E+6
 END IF
 
 CALL toml_get(table, "stiffnessPower", stiffnessPower, 0.0_DFP,  &
@@ -396,12 +398,12 @@ bool1 = ((stat .NE. toml_stat%success) .OR. (.NOT. isFound_c)  &
       & .OR. (.NOT. ALLOCATED(c))) .AND. (.NOT. isIsotropic)
 
 IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: In case of Anisotropic elasticity '//  &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'In case of Anisotropic elasticity '//  &
     & 'c should be present. c should be a 3 by 3 matrix for '//  &
     & 'plane-stress and plane-strain case. c should be 6 by c '//  &
-    & 'in other cases.')
-  RETURN
+    & 'in other cases. Using default value identity.')
+  c = eye(6, 1.0_DFP)
 END IF
 
 isFound_invc = .TRUE.
@@ -411,12 +413,12 @@ bool1 = ((stat .NE. toml_stat%success) .OR. (.NOT. isFound_invc) .OR.  &
       & (.NOT. ALLOCATED(invC))) .AND. (.NOT. isIsotropic)
 
 IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: In case of Anisotropic elasticity '//  &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & 'In case of Anisotropic elasticity '//  &
     & 'invC should be present. invC should be a 3 by 3 matrix for '//  &
     & 'plane-stress and plane-strain case. invC should be 6 by invC '//  &
-    & 'in other cases.')
-  RETURN
+    & 'in other cases. using default value identity.')
+  invC = eye(6, 1.0_DFP)
 END IF
 
 CALL param%Initiate()

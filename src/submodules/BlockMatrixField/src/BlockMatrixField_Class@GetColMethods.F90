@@ -25,25 +25,25 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn1
-CHARACTER(*), PARAMETER :: myName = "mField_getColumn1"
+MODULE PROCEDURE obj_GetColumn1
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn1"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & 'This routine is not callable for BlockMatrixField')
-END PROCEDURE mField_getColumn1
+END PROCEDURE obj_GetColumn1
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn2
+MODULE PROCEDURE obj_GetColumn2
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(VALUE)) THEN
-  CALL getColumn( &
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & idof=idof, &
     & VALUE=VALUE, &
@@ -51,10 +51,10 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
 END IF
 IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%getPointer()
-  CALL getColumn( &
+  realvec => nodeFieldVal%GetPointer()
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & idof=idof, &
     & VALUE=realvec, &
@@ -63,18 +63,18 @@ IF (PRESENT(nodeFieldVal)) THEN
   !
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getColumn2
+END PROCEDURE obj_GetColumn2
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn3
+MODULE PROCEDURE obj_GetColumn3
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(VALUE)) THEN
-  CALL getColumn( &
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -83,10 +83,10 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
 END IF
 IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%getPointer()
-  CALL getColumn( &
+  realvec => nodeFieldVal%GetPointer()
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -95,18 +95,18 @@ IF (PRESENT(nodeFieldVal)) THEN
     & addContribution=addContribution)
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getColumn3
+END PROCEDURE obj_GetColumn3
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn4
+MODULE PROCEDURE obj_GetColumn4
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(VALUE)) THEN
-  CALL getColumn( &
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -115,10 +115,10 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
 END IF
 IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%getPointer()
-  CALL getColumn( &
+  realvec => nodeFieldVal%GetPointer()
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -128,18 +128,18 @@ IF (PRESENT(nodeFieldVal)) THEN
   !
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getColumn4
+END PROCEDURE obj_GetColumn4
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn5
+MODULE PROCEDURE obj_GetColumn5
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(VALUE)) THEN
-  CALL getColumn( &
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -148,10 +148,10 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
 END IF
 IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%getPointer()
-  CALL getColumn( &
+  realvec => nodeFieldVal%GetPointer()
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -160,18 +160,18 @@ IF (PRESENT(nodeFieldVal)) THEN
     & addContribution=addContribution)
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getColumn5
+END PROCEDURE obj_GetColumn5
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn6
+MODULE PROCEDURE obj_GetColumn6
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(VALUE)) THEN
-  CALL getColumn( &
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -180,10 +180,10 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
 END IF
 IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%getPointer()
-  CALL getColumn( &
+  realvec => nodeFieldVal%GetPointer()
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -192,18 +192,18 @@ IF (PRESENT(nodeFieldVal)) THEN
     & addContribution=addContribution)
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getColumn6
+END PROCEDURE obj_GetColumn6
 
 !----------------------------------------------------------------------------
-!                                                                 getColumn
+!                                                                 GetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getColumn7
+MODULE PROCEDURE obj_GetColumn7
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(VALUE)) THEN
-  CALL getColumn( &
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -212,10 +212,10 @@ IF (PRESENT(VALUE)) THEN
     & addContribution=addContribution)
 END IF
 IF (PRESENT(nodeFieldVal)) THEN
-  realvec => nodeFieldVal%getPointer()
-  CALL getColumn( &
+  realvec => nodeFieldVal%GetPointer()
+  CALL GetColumn( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
     & ivar=ivar, &
     & spacecompo=spacecompo, &
     & timecompo=timecompo, &
@@ -224,7 +224,7 @@ IF (PRESENT(nodeFieldVal)) THEN
     & addContribution=addContribution)
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getColumn7
+END PROCEDURE obj_GetColumn7
 
 !----------------------------------------------------------------------------
 !

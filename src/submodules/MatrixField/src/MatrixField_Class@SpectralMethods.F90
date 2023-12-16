@@ -23,7 +23,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_SymSchurLargestEigenVal
+MODULE PROCEDURE obj_SymSchurLargestEigenVal
 SELECT TYPE (B)
 CLASS IS (MatrixField_)
   ans = SymSchurLargestEigenVal(&
@@ -35,13 +35,13 @@ CLASS IS (MatrixField_)
     & maxIter=maxIter, &
     & tol=tol)
 END SELECT
-END PROCEDURE mField_SymSchurLargestEigenVal
+END PROCEDURE obj_SymSchurLargestEigenVal
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_SymLargestEigenVal
+MODULE PROCEDURE obj_SymLargestEigenVal
 ans = SymLargestEigenVal(&
   & mat=obj%mat, &
   & nev=nev, &
@@ -49,7 +49,7 @@ ans = SymLargestEigenVal(&
   & NCV=NCV, &
   & maxIter=maxIter, &
   & tol=tol)
-END PROCEDURE mField_SymLargestEigenVal
+END PROCEDURE obj_SymLargestEigenVal
 
 !----------------------------------------------------------------------------
 !

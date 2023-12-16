@@ -44,39 +44,89 @@ CALL Set(param, datatype="char", prefix=prefix,  &
   & key="domainFile", VALUE=domainFile)
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="domainFile", VALUE=domainFile)
+
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="baseInterpolationForSpace",  &
   & VALUE=Input(option=baseInterpolationForSpace,  &
   & default=DEFAULT_baseInterpolationForSpace))
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="baseInterpolationForTime",  &
-  & VALUE=Input(option=baseInterpolationForTime,  &
-  & default=DEFAULT_baseInterpolationForTime))
+
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="baseContinuityForSpace",  &
   & VALUE=Input(option=baseContinuityForSpace,  &
   & default=DEFAULT_baseContinuityForSpace))
-CALL Set(param, datatype="char", prefix=prefix,  &
-  & key="baseContinuityForTime",  &
-  & VALUE=Input(option=basecontinuityfortime,  &
-  & default=default_basecontinuityfortime))
+
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="quadratureTypeForSpace",  &
   & VALUE=Input(option=quadratureTypeForSpace,  &
   & default=DEFAULT_quadratureTypeForSpace))
+
+aint = QuadraturePointNameToID(Input(option=quadratureTypeForSpace,  &
+  & default=DEFAULT_quadratureTypeForSpace))
+CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForSpace", &
+  & VALUE=aint)
+
+CALL Set(param, TypeIntI4B, prefix, "ipTypeForSpace",   &
+  & Input(option=ipTypeForSpace, default=DEFAULT_ipTypeForSpace))
+
+CALL Set(param, TypeIntI4B, prefix, "basisTypeForSpace",  &
+  & Input(option=basisTypeForSpace, default=DEFAULT_basisTypeForSpace))
+
+CALL Set(param, TypeDFP, prefix, "alphaForSpace",  &
+& Input(default=DEFAULT_alphaForSpace, option=alphaForSpace))
+
+CALL Set(param, TypeDFP, prefix, "betaForSpace",  &
+& Input(default=DEFAULT_betaForSpace, option=betaForSpace))
+
+CALL Set(param, TypeDFP, prefix, "lambdaForSpace",  &
+& Input(default=DEFAULT_lambdaForSpace, option=lambdaForSpace))
+
+CALL Set(param, datatype="char", prefix=prefix,  &
+  & key="baseInterpolationForTime",  &
+  & VALUE=Input(option=baseInterpolationForTime,  &
+  & default=DEFAULT_baseInterpolationForTime))
+
+CALL Set(param, datatype="char", prefix=prefix,  &
+  & key="baseContinuityForTime",  &
+  & VALUE=Input(option=basecontinuityfortime,  &
+  & default=default_basecontinuityfortime))
+
 CALL Set(param, datatype="char", prefix=prefix,  &
   & key="quadratureTypeForTime",  &
   & VALUE=Input(option=quadratureTypeForTime,  &
   & default=DEFAULT_quadratureTypeForTime))
 
+aint = QuadraturePointNameToID(Input(option=quadratureTypeForTime,  &
+  & default=DEFAULT_quadratureTypeForTime))
+CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForTime",  &
+  & VALUE=aint)
+
+CALL Set(param, TypeIntI4B, prefix, "ipTypeForTime",  &
+  & Input(option=ipTypeForTime, default=DEFAULT_ipTypeForTime))
+
+CALL Set(param, TypeIntI4B, prefix, "basisTypeForTime",  &
+  & Input(option=basisTypeForTime, default=DEFAULT_basisTypeForTime))
+
+CALL Set(param, TypeDFP, prefix, "alphaForTime",  &
+& Input(default=DEFAULT_alphaForTime, option=alphaForTime))
+
+CALL Set(param, TypeDFP, prefix, "betaForTime",  &
+& Input(default=DEFAULT_betaForTime, option=betaForTime))
+
+CALL Set(param, TypeDFP, prefix, "lambdaForTime",  &
+& Input(default=DEFAULT_lambdaForTime, option=lambdaForTime))
+
 CALL Set(param, datatype="char", prefix=prefix, key="tanmatProp",  &
   & VALUE=Input(option=tanmatProp, default=DEFAULT_TANMAT_PROP))
+
+CALL Set(param, datatype="char", prefix=prefix, key="outputPath",  &
+  & VALUE=Input(option=outputPath, default=DEFAULT_OUTPUT_PATH))
 
 !! int
 CALL Set(param, TypeIntI4B, prefix, "problemType", problemType)
 CALL Set(param, TypeIntI4B, prefix, "coordinateSystem", coordinateSystem)
 CALL Set(param, TypeIntI4B, prefix, "timeDependency",  &
   & Input(option=timeDependency, default=KERNEL_STEADY))
+
 !! NOTE: KERNEL_STEADY is defined in AbstractKernelParam module
 CALL Set(param, TypeIntI4B, prefix, "maxIter",  &
   & Input(option=maxIter, default=default_maxIter))
@@ -91,18 +141,6 @@ CALL Set(param, TypeIntI4B, prefix, "currentTimeStep",  &
 CALL Set(param, TypeIntI4B, prefix, "totalTimeStep",  &
   & Input(option=totalTimeStep, default=1_I4B))
 CALL Set(param, TypeIntI4B, prefix, "postProcessOpt", postProcessOpt)
-
-CALL Set(param, TypeIntI4B, prefix, "ipTypeForSpace",   &
-  & Input(option=ipTypeForSpace, default=DEFAULT_ipTypeForSpace))
-
-CALL Set(param, TypeIntI4B, prefix, "ipTypeForTime",  &
-  & Input(option=ipTypeForTime, default=DEFAULT_ipTypeForTime))
-
-CALL Set(param, TypeIntI4B, prefix, "basisTypeForSpace",  &
-  & Input(option=basisTypeForSpace, default=DEFAULT_basisTypeForSpace))
-
-CALL Set(param, TypeIntI4B, prefix, "basisTypeForTime",  &
-  & Input(option=basisTypeForTime, default=DEFAULT_basisTypeForTime))
 
 CALL Set(param, TypeIntI4B, prefix, "tDirichletBC",  &
   & Input(option=tDirichletBC, default=0_I4B))
@@ -123,16 +161,6 @@ CALL Set(param, TypeIntI4B, prefix, "tOverlappedMaterials",  &
 ! real
 CALL Set(param, TypeDFP, prefix, "nitscheAlpha",  &
   & Input(option=nitscheAlpha, default=DEFAULT_nitscheAlpha))
-
-aint = QuadraturePointNameToID(Input(option=quadratureTypeForSpace,  &
-  & default=DEFAULT_quadratureTypeForSpace))
-CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForSpace", &
-  & VALUE=aint)
-
-aint = QuadraturePointNameToID(Input(option=quadratureTypeForTime,  &
-  & default=DEFAULT_quadratureTypeForTime))
-CALL Set(param, datatype=TypeIntI4B, prefix=prefix, key="quadTypeForTime",  &
-  & VALUE=aint)
 
 CALL Set(param, TypeDFP, prefix, "rtoleranceForDisplacement",  &
   & VALUE=Input(default=DEFAULT_rtoleranceForDisplacement, &
@@ -175,13 +203,6 @@ CALL Set(param, TypeDFP, prefix, "endTime",  &
   & Input(option=endTime, default=0.0_DFP))
 CALL Set(param, TypeDFP, prefix, "currentTime",  &
   & Input(option=currentTime, default=0.0_DFP))
-
-CALL Set(param, TypeDFP, prefix, "alphaForSpace", alphaForSpace)
-CALL Set(param, TypeDFP, prefix, "alphaForTime", alphaForTime)
-CALL Set(param, TypeDFP, prefix, "betaForSpace", betaForSpace)
-CALL Set(param, TypeDFP, prefix, "betaForTime", betaForTime)
-CALL Set(param, TypeDFP, prefix, "lambdaForSpace", lambdaForSpace)
-CALL Set(param, TypeDFP, prefix, "lambdaForTime", lambdaForTime)
 
 CALL Set(param, TypeIntI4B, prefix, "algorithm",  &
  & Input(option=algorithm, default=DEFAULT_algorithm))
@@ -352,6 +373,7 @@ CALL GetValue(param, prefix, "quadTypeForSpace", obj%quadTypeForSpace)
 CALL GetValue(param, prefix, "quadTypeForTime", obj%quadTypeForTime)
 CALL GetValue(param, prefix, "domainFile", obj%domainFile)
 CALL GetValue(param, prefix, "tanmatProp", obj%tanmatProp)
+CALL GetValue(param, prefix, "outputPath", obj%outputPath)
 CALL GetValue(param, prefix, "tOverlappedMaterials",  &
   & obj%tOverlappedMaterials)
 
@@ -483,6 +505,7 @@ END PROCEDURE obj_Initiate
 MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii, jj
 obj%tOverlappedMaterials = 0
+obj%outputPath = ""
 obj%tanmatProp = ""
 obj%problemType = 0
 obj%IsInitiated = .FALSE.
@@ -678,8 +701,10 @@ END IF
 
 CALL VectorMeshFieldDeallocate(obj%solidMechData)
 CALL AbstractMeshFieldDeallocate(obj%massDensity)
-CALL AbstractMeshFieldDeallocate(obj%lame_mu)
-CALL AbstractMeshFieldDeallocate(obj%lame_lambda)
+CALL AbstractMeshFieldDeallocate(obj%shearModulus)
+CALL AbstractMeshFieldDeallocate(obj%youngsModulus)
+CALL AbstractMeshFieldDeallocate(obj%dampCoeff_alpha)
+CALL AbstractMeshFieldDeallocate(obj%dampCoeff_beta)
 CALL AbstractMeshFieldDeallocate(obj%Cijkl)
 CALL AbstractMeshFieldDeallocate(obj%stress)
 CALL AbstractMeshFieldDeallocate(obj%strain)
@@ -731,6 +756,7 @@ IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
     & " ASSOCIATED.")
+  RETURN
 END IF
 
 isok = ASSOCIATED(obj%linsol)

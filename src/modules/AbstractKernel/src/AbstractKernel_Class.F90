@@ -44,6 +44,7 @@ USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
 USE Field
 USE KernelUtility
+USE UserFunction_Class
 
 IMPLICIT NONE
 PRIVATE
@@ -53,13 +54,17 @@ CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
   & "timeDependency/maxIter/nsd/nnt/tdof/dt/startTime/endTime/"//  &
   & "currentTime/currentTimeStep/totalTimeStep/baseInterpolationForSpace/"//&
   & "baseContinuityForSpace/quadratureTypeForSpace/"//  &
-  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime"//&
+  & "ipTypeForSpace/basisTypeForSpace/"//  &
+  & "alphaForSpace/betaForSpace/lambdaForSpace/betaForSpace/"//  &
+  & "baseInterpolationForTime/baseContinuityForTime/quadratureTypeForTime/"//&
+  & "ipTypeForTime/basisTypeForTime/"//  &
+  & "alphaForTime/betaForTime/lambdaForTime/"//  &
   & "/tMaterialInterfaces/tSolidMaterials/tDirichletBC/tWeakDirichletBC/"//  &
   & "isSymNitsche/nitscheAlpha/tNeumannBC/rtoleranceForDisplacement/"//  &
   & "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"//&
   & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
   & "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"//  &
-  & "problemType/tOverlappedMaterials"
+  & "problemType/tOverlappedMaterials/outputPath"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -106,6 +111,11 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Set it to True for isotropic elasticity.
   LOGICAL(LGT) :: isIncompressible = DEFAULT_isIncompressible
     !! TRUE if the material is incompressible
+  LOGICAL(LGT) :: isNitsche = .FALSE.
+  !! If true, then it means weak dirichlet boundary condition is used
+  !! This variable is set in Initiate method
+  !! This variable is set to true if the tWeakDirichletBCForDisplacement
+  !! is greater than zero, otherwise it is set to false
   INTEGER(I4B) :: problemType = DEFAULT_PROBLEM_TYPE
   !! Kernel problem type
   !! KernelProblemType%scalar
@@ -190,11 +200,6 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! INFO: The actual action depends upon the specific kernels
   REAL(DFP) :: gravity(3) = 0.0_DFP
   !! Acceleration vector due to gravity
-  LOGICAL(LGT) :: isNitsche = .FALSE.
-  !! If true, then it means weak dirichlet boundary condition is used
-  !! This variable is set in Initiate method
-  !! This variable is set to true if the tWeakDirichletBCForDisplacement
-  !! is greater than zero, otherwise it is set to false
   REAL(DFP) :: nitscheAlpha = DEFAULT_nitscheAlpha
   !! coefficient for nitsche formulation
   REAL(DFP) :: nitscheType = Nitsche_Sym
@@ -345,9 +350,9 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! The size of nitscheFacetToCell is same as the
   !! total number of boundaries (mesh-ids) in wdbcForDisplacement
   !! This data is initiated in Set Method
-  ! TYPE(ScalarMeshField_), ALLOCATABLE :: lame_mu(:)
+  ! TYPE(ScalarMeshField_), ALLOCATABLE :: shearModulus(:)
   !! Young's modulus, needed in case of Isotropic elasticity
-  ! TYPE(ScalarMeshField_), ALLOCATABLE :: lame_lambda(:)
+  ! TYPE(ScalarMeshField_), ALLOCATABLE :: youngsModulus(:)
   !! Poisson's ratio, needed in case of Isotropic elasticity
   ! TYPE(TensorMeshField_), ALLOCATABLE :: Cijkl(:)
   !! Elasticity tensor used for non isotropic materials
@@ -413,11 +418,11 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: massDensity(:)
   !! Mass density
   !! This will be a scalar mesh field
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: lame_mu(:)
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: shearModulus(:)
   !! Lame parameter
   !! NOTE: It is need in the case of Isotropic elasticity
   !! This will be a scalar mesh field
-  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: lame_lambda(:)
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: youngsModulus(:)
   !! Lame parameter
   !! NOTE: It is need in the case of Isotropic elasticity
   !! This will be a scalar mesh field
@@ -425,6 +430,10 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Elasticity tensor
   !! NOTE: It is used for non Isotropic elasticity
   !! This will be a tensor mesh field
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: dampCoeff_alpha(:)
+  !! Rayleigh damping coefficient alpha
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: dampCoeff_beta(:)
+  !! Rayleigh damping coefficient beta
   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: stress(:)
   !! Stress tensor
   !! This will be a tensor mesh field
@@ -478,6 +487,10 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: PreSet => obj_PreSet
+  !! Perform final check, before starting the actual computations
+  PROCEDURE, PUBLIC, PASS(obj) :: PostSet => obj_PostSet
+  !! Perform final check, before starting the actual computations
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Perform final check, before starting the actual computations
   PROCEDURE, PUBLIC, PASS(obj) :: SetCurrentTimeStep => &
@@ -562,6 +575,12 @@ CONTAINS
   !! Initiate lame parameters for isotropic elasticity
   PROCEDURE, PUBLIC, PASS(obj) :: SetElasticityProperties =>  &
     & obj_SetElasticityProperties
+  !! Set Lame parameters for isotropic elasticity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateDampingProperties =>  &
+    & obj_InitiateDampingProperties
+  !! Initiate rayleight damping properties
+  PROCEDURE, PUBLIC, PASS(obj) :: SetDampingProperties =>  &
+    & obj_SetDampingProperties
   !! Set Lame parameters for isotropic elasticity
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
     & obj_SetMaterialToDomain
@@ -679,7 +698,7 @@ INTERFACE
     & rtoleranceForDisplacement, atoleranceForDisplacement,  &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
-    & tOverlappedMaterials)
+    & tOverlappedMaterials, outputPath)
     CHARACTER(*), INTENT(IN) :: prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
@@ -815,6 +834,7 @@ INTERFACE
     !! Tangent matrix properties
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tOverlappedMaterials
     !! Total number of overlapped materials
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: outputPath
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -1017,6 +1037,34 @@ INTERFACE
   MODULE SUBROUTINE obj_Set(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         PreSet@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine Sets the option of the kernel and build the kernel
+
+INTERFACE
+  MODULE SUBROUTINE obj_PreSet(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_PreSet
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         PostSet@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine Sets the option of the kernel and build the kernel
+
+INTERFACE
+  MODULE SUBROUTINE obj_PostSet(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_PostSet
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1358,6 +1406,34 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                               InitiateDampingProperties@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Initiate elasticity properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateDampingProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateDampingProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetMassDensity@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-06-19
+! summary: Set elasticity properties
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetDampingProperties(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetDampingProperties
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   AddDirichletBC@BCMethods
 !----------------------------------------------------------------------------
 
@@ -1628,8 +1704,10 @@ END INTERFACE
 ! summary: This subroutine assembles the system of linear equation
 
 INTERFACE
-  MODULE SUBROUTINE obj_AssembleBodyForce(obj)
+  MODULE SUBROUTINE obj_AssembleBodyForce(obj, bodyForceFunc, bodyForceVec)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), OPTIONAL, INTENT(INOUT) :: bodyForceFunc
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: bodyForceVec
   END SUBROUTINE obj_AssembleBodyForce
 END INTERFACE
 
@@ -1775,7 +1853,7 @@ INTERFACE AbstractKernelImport
 END INTERFACE AbstractKernelImport
 
 !----------------------------------------------------------------------------
-!                                                 ImportFromToml@IOMethods
+!                                         ImportFromToml@ImportTomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1791,7 +1869,7 @@ INTERFACE AbstractKernelImportParamFromToml
 END INTERFACE AbstractKernelImportParamFromToml
 
 !----------------------------------------------------------------------------
-!                                                 ImportFromToml@IOMethods
+!                                           ImportFromToml@ImportTomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1806,7 +1884,7 @@ INTERFACE AbstractKernelImportFromToml
 END INTERFACE AbstractKernelImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                 ImportFromToml@IOMethods
+!                                           ImportFromToml@ImportTomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

@@ -30,6 +30,8 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "BlockMatrixField"
+PUBLIC :: BlockMatrixFieldLis_
+PUBLIC :: TypeBlockMatrixFieldLis
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -63,9 +65,7 @@ CONTAINS
   !! Matrix vector multiplication
 END TYPE BlockMatrixFieldLis_
 
-PUBLIC :: BlockMatrixFieldLis_
-
-TYPE(BlockMatrixFieldLis_), PARAMETER, PUBLIC :: TypeBlockMatrixFieldLis = &
+TYPE(BlockMatrixFieldLis_), PARAMETER :: TypeBlockMatrixFieldLis = &
   & BlockMatrixFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------

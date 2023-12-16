@@ -280,8 +280,8 @@ END PROCEDURE RectangleMatrixFieldCheckEssentialParam
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate1"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nrow, ncol, nnz
 INTEGER(I4B) :: storageFMT
@@ -372,14 +372,14 @@ IF (obj%global_n .EQ. 0) THEN
 END IF
 
 CALL DEALLOCATE (dofobj)
-END PROCEDURE mField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate2"
+MODULE PROCEDURE obj_Initiate2
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2"
 
 SELECT TYPE (obj2)
 CLASS IS (MatrixField_)
@@ -404,14 +404,14 @@ CLASS DEFAULT
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'obj2 should an instance of MatrixField_ or its child')
 END SELECT
-END PROCEDURE mField_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate3
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate3"
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
 INTEGER(I4B), PARAMETER :: tVar = 2
 INTEGER(I4B) :: ierror
 INTEGER(I4B) :: nrow, ncol, nnz
@@ -560,19 +560,19 @@ END IF
 
 CALL DEALLOCATE (idofobj)
 CALL DEALLOCATE (jdofobj)
-END PROCEDURE mField_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ierr
 CALL AbstractMatrixFieldDeallocate(obj)
 CALL DEALLOCATE (obj%mat)
 CALL Pmat_Deallocate(obj%Pmat)
 obj%isRectangle = .FALSE.
-END PROCEDURE mField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
@@ -601,8 +601,8 @@ END PROCEDURE Pmat_Deallocate
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE mField_Final
+END PROCEDURE obj_Final
 
 END SUBMODULE ConstructorMethods

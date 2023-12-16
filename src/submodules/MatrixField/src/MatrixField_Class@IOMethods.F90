@@ -30,7 +30,7 @@ CONTAINS
 !                                                                  Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Display
+MODULE PROCEDURE obj_Display
 
 CALL AbstractMatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 
@@ -39,14 +39,14 @@ IF (obj%isRectangle) THEN
 ELSE
   CALL Display("# Shape: Square", unitNo=unitNo)
 END IF
-END PROCEDURE mField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Export
-CHARACTER(*), PARAMETER :: myName = "mField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dname, matprop
 TYPE(DOF_), POINTER :: dofobj
 INTEGER(I4B) :: ii
@@ -64,14 +64,14 @@ CALL ExportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=TRIM(group)//"/mat")
 CALL obj%ExportPmat(hdf5=hdf5, group=group)
 
 NULLIFY (dofobj)
-END PROCEDURE mField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_ExportPmat
-CHARACTER(*), PARAMETER :: myName = "mField_ExportPmat"
+MODULE PROCEDURE obj_ExportPmat
+CHARACTER(*), PARAMETER :: myName = "obj_ExportPmat"
 TYPE(String) :: dname
 IF (obj%isPmatInitiated) THEN
 
@@ -169,14 +169,14 @@ IF (obj%isPmatInitiated) THEN
 
 END IF
 
-END PROCEDURE mField_ExportPmat
+END PROCEDURE obj_ExportPmat
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Import
-CHARACTER(*), PARAMETER :: myName = "mField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: strval, dsetname, name, matrixProp, engine
 INTEGER(I4B) :: timeCompo1, spaceCompo1
 INTEGER(I4B) :: timeCompo2, spaceCompo2
@@ -311,14 +311,14 @@ ELSE
     & "This routine needs further attention")
 END IF
 
-END PROCEDURE mField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_ImportPmat
-CHARACTER(*), PARAMETER :: myName = "mField_ImportPmat"
+MODULE PROCEDURE obj_ImportPmat
+CHARACTER(*), PARAMETER :: myName = "obj_ImportPmat"
 TYPE(String) :: dsetname
 
 ! info
@@ -438,14 +438,14 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
   & vals=obj%pmat%LEVS)
 END IF
 
-END PROCEDURE mField_ImportPmat
+END PROCEDURE obj_ImportPmat
 
 !----------------------------------------------------------------------------
 !                                                                      SPY
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_SPY
+MODULE PROCEDURE obj_SPY
 CALL SPY(obj=obj%mat, filename=filename, ext=ext)
-END PROCEDURE mField_SPY
+END PROCEDURE obj_SPY
 
 END SUBMODULE IOMethods

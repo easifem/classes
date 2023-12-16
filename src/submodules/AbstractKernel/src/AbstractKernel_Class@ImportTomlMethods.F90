@@ -39,7 +39,7 @@ TYPE(String) :: name, engine, coordinateSystem, domainFile,  &
   & baseContinuityForSpace, quadratureTypeForSpace, ipTypeForSpace, &
   & basisTypeForSpace, baseInterpolationForTime, baseContinuityForTime,  &
   & quadratureTypeForTime, ipTypeForTime, basisTypeForTime,  &
-  & problemType, tanmatProp
+  & problemType, tanmatProp, astr
 
 INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC,  &
   & tNeumannBC, tMaterialInterfaces, origin, stat, maxIter, nsd, nnt, tdof, &
@@ -65,88 +65,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
 
-CALL toml_get(table, "problemType", problemType%raw,  &
-  & DEFAULT_PROBLEM_TYPE_CHAR, origin=origin, stat=stat)
-
-CALL toml_get(table, "baseContinuityForSpace", baseContinuityForSpace%raw,  &
-  & DEFAULT_baseContinuityForSpace, origin=origin, stat=stat)
-
-CALL toml_get(table, "baseContinuityForSpace", baseContinuityForSpace%raw,  &
-  & DEFAULT_baseContinuityForSpace, origin=origin, stat=stat)
-
-CALL toml_get(table, "baseContinuityForTime", baseContinuityForTime%raw,  &
-  & DEFAULT_baseContinuityForTime, origin=origin, stat=stat)
-
-CALL toml_get(table, "baseInterpolationForSpace",   &
-  & baseInterpolationForSpace%raw, DEFAULT_baseInterpolationForSpace,  &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "baseInterpolationForTime",   &
-  & baseInterpolationForTime%raw, DEFAULT_baseInterpolationForTime,  &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "domainFile", domainFile%raw, origin=origin, stat=stat)
-IF (stat .NE. toml_stat%success) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: domainFile is missing. It should be string.')
-  RETURN
-END IF
+CALL toml_get(table, "name", name%raw, obj%GetPrefix(), origin=origin, &
+  & stat=stat)
 
 CALL toml_get(table, "engine", engine%raw, default_engine, origin=origin, &
   & stat=stat)
 
-CALL toml_get(table, "name", name%raw, obj%GetPrefix(), origin=origin, &
-  & stat=stat)
-
-CALL toml_get(table, "tanmatProp",   &
-  & tanmatProp%raw, DEFAULT_TANMAT_PROP, &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "quadratureTypeForSpace",   &
-  & quadratureTypeForSpace%raw, DEFAULT_quadratureTypeForSpace, &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "quadratureTypeForTime", quadratureTypeForTime%raw,  &
-  & DEFAULT_quadratureTypeForTime, origin=origin, stat=stat)
-
 CALL toml_get(table, "coordinateSystem", coordinateSystem%raw, &
   & DEFAULT_CoordinateSystem_Char, origin=origin, stat=stat)
 
-CALL toml_get(table, "currentTimeStep", currentTimeStep,  &
-  & 1_I4B, origin=origin, stat=stat)
-
-CALL toml_get(table, "maxIter", maxIter, DEFAULT_maxIter,  &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "nnt", nnt, DEFAULT_NNT, origin=origin,  &
-  & stat=stat)
-
-CALL toml_get(table, "nsd", nsd, DEFAULT_NSD, origin=origin, stat=stat)
-
-CALL toml_get(table, "postProcessOpt", postProcessOpt,  &
-  & DEFAULT_postProcessOpt, origin=origin, stat=stat)
-
-CALL toml_get(table, "tdof", tdof, DEFAULT_tdof, origin=origin, stat=stat)
-
-CALL toml_get(table, "timeDependency", timeDependency%raw,  &
-  & DEFAULT_TimeDependency_char, origin=origin, stat=stat)
-
-CALL toml_get(table, "totalTimeStep", totalTimeStep,  &
-  & DEFAULT_TotalTimeStep, origin=origin, stat=stat)
+CALL toml_get(table, "domainFile", domainFile%raw, origin=origin, stat=stat)
+IF (stat .NE. toml_stat%success) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: domainFile is missing. It should be a string.')
+  RETURN
+END IF
 
 CALL toml_get(table, "isCommonDomain", isCommonDomain,  &
   & DEFAULT_isCommonDomain, origin=origin, stat=stat)
 
-CALL toml_get(table, "currentTime", currentTime,  &
-  & DEFAULT_currentTime, origin=origin, stat=stat)
-
-CALL toml_get(table, "dt", dt, DEFAULT_dt, origin=origin, stat=stat)
-
-CALL toml_get(table, "endTime", endTime,  &
-  & DEFAULT_endTime, origin=origin, stat=stat)
-
-CALL GetValue(table, "gravity", dummy_rvec,  &
-  & origin=origin, stat=stat)
+CALL GetValue(table, "gravity", dummy_rvec, origin=origin, stat=stat)
 
 IF (.NOT. (ALLOCATED(dummy_rvec))) THEN
   gravity = DEFAULT_gravity
@@ -157,41 +95,21 @@ ELSE
   DEALLOCATE (dummy_rvec)
 END IF
 
-CALL toml_get(table, "startTime", startTime, DEFAULT_startTime,  &
+CALL toml_get(table, "tanmatProp",   &
+  & tanmatProp%raw, DEFAULT_TANMAT_PROP, &
   & origin=origin, stat=stat)
 
-CALL toml_get(table, "ipTypeForSpace", ipTypeForSpace%raw,  &
-  & DEFAULT_ipTypeForSpace_char, origin=origin, stat=stat)
+CALL toml_get(table, "problemType", problemType%raw,  &
+  & DEFAULT_PROBLEM_TYPE_CHAR, origin=origin, stat=stat)
 
-CALL toml_get(table, "ipTypeForTime", ipTypeForTime%raw,  &
-  & DEFAULT_ipTypeForTime_char, origin=origin, stat=stat)
-
-CALL toml_get(table, "basisTypeForSpace", basisTypeForSpace%raw,  &
-  & DEFAULT_basisTypeForSpace_char, origin=origin, stat=stat)
-
-CALL toml_get(table, "basisTypeForTime", basisTypeForTime%raw,  &
-  & DEFAULT_basisTypeForTime_char, origin=origin, stat=stat)
-
-CALL toml_get(table, "alphaForSpace", alphaForSpace,  &
-  & DEFAULT_alphaForSpace, origin=origin, stat=stat)
-
-CALL toml_get(table, "alphaForTime", alphaForTime,  &
-  & DEFAULT_alphaForTime, origin=origin, stat=stat)
-
-CALL toml_get(table, "betaForSpace", betaForSpace,  &
-  & DEFAULT_betaForSpace, origin=origin, stat=stat)
-
-CALL toml_get(table, "betaForTime", betaForTime,  &
-  & DEFAULT_betaForTime, origin=origin, stat=stat)
-
-CALL toml_get(table, "lambdaForSpace", lambdaForSpace,  &
-  & DEFAULT_lambdaForSpace, origin=origin, stat=stat)
-
-CALL toml_get(table, "lambdaForTime", lambdaForTime,  &
-  & DEFAULT_lambdaForTime, origin=origin, stat=stat)
+CALL toml_get(table, "timeDependency", timeDependency%raw,  &
+  & DEFAULT_TimeDependency_char, origin=origin, stat=stat)
 
 CALL toml_get(table, "algorithm", algorithm, DEFAULT_algorithm,  &
   & origin=origin, stat=stat)
+
+CALL toml_get(table, "tOverlappedMaterials", tOverlappedMaterials,  &
+  & DEFAULT_tOverlappedMaterials, origin=origin, stat=stat)
 
 tMaterialInterfaces = 0
 CALL GetValue(table=table, key="materialInterfaces",  &
@@ -203,18 +121,6 @@ ELSE
   CALL reallocate(materialInterfaces, tMaterialInterfaces)
 END IF
 
-CALL toml_get(table, "tSolidMaterials", tSolidMaterials, 1_I4B, origin=origin,  &
-& stat=stat)
-
-CALL toml_get(table, "tDirichletBC", tDirichletBC, 0_I4B,  &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "tWeakDirichletBC", tWeakDirichletBC, 0_I4B,  &
-  & origin=origin, stat=stat)
-
-CALL toml_get(table, "tNeumannBC", tNeumannBC, 0_I4B,  &
-  & origin=origin, stat=stat)
-
 CALL toml_get(table, "isConstantMatProp", isConstantMatProp, &
   & DEFAULT_isConstantMatProp, origin=origin, stat=stat)
 
@@ -224,92 +130,212 @@ CALL toml_get(table, "isIsotropic", isIsotropic, DEFAULT_isIsotropic, &
 CALL toml_get(table, "isIncompressible", isIncompressible, &
   & DEFAULT_isIncompressible, origin=origin, stat=stat)
 
-CALL toml_get(table, "isSymNitsche", isSymNitsche,  &
-  & DEFAULT_isSymNitsche, origin=origin, stat=stat)
+CALL toml_get(table, "nsd", nsd, DEFAULT_NSD, origin=origin, stat=stat)
 
-CALL toml_get(table, "nitscheAlpha", nitscheAlpha,  &
-  & DEFAULT_nitscheAlpha, origin=origin, stat=stat)
+CALL toml_get(table, "nnt", nnt, DEFAULT_NNT, origin=origin,  &
+  & stat=stat)
+
+CALL toml_get(table, "startTime", startTime, DEFAULT_startTime,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "endTime", endTime,  &
+  & DEFAULT_endTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "dt", dt, DEFAULT_dt, origin=origin, stat=stat)
+
+CALL toml_get(table, "currentTimeStep", currentTimeStep,  &
+  & 1_I4B, origin=origin, stat=stat)
+
+CALL toml_get(table, "totalTimeStep", totalTimeStep,  &
+  & DEFAULT_TotalTimeStep, origin=origin, stat=stat)
+
+CALL toml_get(table, "currentTime", currentTime,  &
+  & DEFAULT_currentTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "maxIter", maxIter, DEFAULT_maxIter,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "tdof", tdof, DEFAULT_tdof, origin=origin, stat=stat)
+
+CALL toml_get(table, "postProcessOpt", postProcessOpt,  &
+  & DEFAULT_postProcessOpt, origin=origin, stat=stat)
 
 CALL toml_get(table, "rtoleranceForResidual", rtoleranceForResidual,  &
   & DEFAULT_rtoleranceForResidual, origin=origin, stat=stat)
+
+CALL toml_get(table, "atoleranceForResidual", atoleranceForResidual,  &
+  & DEFAULT_atoleranceForResidual, origin=origin, stat=stat)
 
 CALL toml_get(table, "rtoleranceForDisplacement",  &
   & rtoleranceForDisplacement, DEFAULT_rtoleranceForDisplacement,  &
   & origin=origin, stat=stat)
 
-CALL toml_get(table, "rtoleranceForVelocity", rtoleranceForVelocity,  &
-  & DEFAULT_rtoleranceForVelocity, origin=origin, stat=stat)
-
-CALL toml_get(table, "atoleranceForResidual", atoleranceForResidual,  &
-  & DEFAULT_atoleranceForResidual, origin=origin, stat=stat)
-
 CALL toml_get(table, "atoleranceForDisplacement", atoleranceForDisplacement, &
   & DEFAULT_atoleranceForDisplacement, origin=origin, stat=stat)
+
+CALL toml_get(table, "rtoleranceForVelocity", rtoleranceForVelocity,  &
+  & DEFAULT_rtoleranceForVelocity, origin=origin, stat=stat)
 
 CALL toml_get(table, "atoleranceForVelocity", atoleranceForVelocity,  &
   & DEFAULT_atoleranceForVelocity, origin=origin, stat=stat)
 
-CALL toml_get(table, "tOverlappedMaterials", tOverlappedMaterials,  &
-  & DEFAULT_tOverlappedMaterials, origin=origin, stat=stat)
+CALL toml_get(table, "baseInterpolationForSpace",   &
+  & baseInterpolationForSpace%raw, DEFAULT_baseInterpolationForSpace,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "baseContinuityForSpace", baseContinuityForSpace%raw,  &
+  & DEFAULT_baseContinuityForSpace, origin=origin, stat=stat)
+
+CALL toml_get(table, "quadratureTypeForSpace",   &
+  & quadratureTypeForSpace%raw, DEFAULT_quadratureTypeForSpace, &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "ipTypeForSpace", ipTypeForSpace%raw,  &
+  & DEFAULT_ipTypeForSpace_char, origin=origin, stat=stat)
+
+CALL toml_get(table, "basisTypeForSpace", basisTypeForSpace%raw,  &
+  & DEFAULT_basisTypeForSpace_char, origin=origin, stat=stat)
+
+CALL toml_get(table, "alphaForSpace", alphaForSpace,  &
+  & DEFAULT_alphaForSpace, origin=origin, stat=stat)
+
+CALL toml_get(table, "betaForSpace", betaForSpace,  &
+  & DEFAULT_betaForSpace, origin=origin, stat=stat)
+
+CALL toml_get(table, "lambdaForSpace", lambdaForSpace,  &
+  & DEFAULT_lambdaForSpace, origin=origin, stat=stat)
+
+CALL toml_get(table, "baseInterpolationForTime",   &
+  & baseInterpolationForTime%raw, DEFAULT_baseInterpolationForTime,  &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "baseContinuityForTime", baseContinuityForTime%raw,  &
+  & DEFAULT_baseContinuityForTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "quadratureTypeForTime", quadratureTypeForTime%raw,  &
+  & DEFAULT_quadratureTypeForTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "ipTypeForTime", ipTypeForTime%raw,  &
+  & DEFAULT_ipTypeForTime_char, origin=origin, stat=stat)
+
+CALL toml_get(table, "basisTypeForTime", basisTypeForTime%raw,  &
+  & DEFAULT_basisTypeForTime_char, origin=origin, stat=stat)
+
+CALL toml_get(table, "alphaForTime", alphaForTime,  &
+  & DEFAULT_alphaForTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "betaForTime", betaForTime,  &
+  & DEFAULT_betaForTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "lambdaForTime", lambdaForTime,  &
+  & DEFAULT_lambdaForTime, origin=origin, stat=stat)
+
+CALL toml_get(table, "tSolidMaterials", tSolidMaterials, 1_I4B, origin=origin,  &
+  & stat=stat)
+
+IF (tSolidMaterials .EQ. 0) THEN
+  CALL toml_get(table, "materialName", astr%raw,  &
+    & TOML_SOLID_MATERIAL_NAME, origin=origin, stat=stat)
+
+  tSolidMaterials = TomlArrayLength(table=table, key=astr%chars(),  &
+    & origin=origin, stat=stat)
+END IF
+
+CALL toml_get(table, "tDirichletBC", tDirichletBC, 0_I4B,  &
+  & origin=origin, stat=stat)
+
+IF (tDirichletBC .EQ. 0) THEN
+  CALL toml_get(table, "diricletBCName", astr%raw,  &
+    & TOML_DIRICHLET_BC_NAME, origin=origin, stat=stat)
+  tDirichletBC = TomlArrayLength(table=table, key=astr%chars(),  &
+    & origin=origin, stat=stat)
+END IF
+
+CALL toml_get(table, "tWeakDirichletBC", tWeakDirichletBC, 0_I4B,  &
+  & origin=origin, stat=stat)
+
+IF (tWeakDirichletBC .EQ. 0) THEN
+  CALL toml_get(table, "weakDirichletBCName", astr%raw,  &
+    & TOML_NITSCHE_BC_NAME, origin=origin, stat=stat)
+  tWeakDirichletBC = TomlArrayLength(table=table, &
+    & key=astr%chars(), origin=origin, stat=stat)
+END IF
+
+CALL toml_get(table, "tNeumannBC", tNeumannBC, 0_I4B, &
+  & origin=origin, stat=stat)
+
+IF (tNeumannBC .EQ. 0) THEN
+  CALL toml_get(table, "neumannBCName", astr%raw,  &
+    & TOML_NEUMANN_BC_NAME, origin=origin, stat=stat)
+  tNeumannBC = TomlArrayLength(table=table, key=astr%chars(), &
+  & origin=origin, stat=stat)
+END IF
+
+CALL toml_get(table, "isSymNitsche", isSymNitsche, DEFAULT_isSymNitsche, &
+& origin=origin, stat=stat)
+
+CALL toml_get(table, "nitscheAlpha", nitscheAlpha, DEFAULT_nitscheAlpha,  &
+& origin=origin, stat=stat)
 
 ! CALL Display(toml_serialize(table))
 
 CALL SetAbstractKernelParam( &
   & param=param,  &
-  & tOverlappedMaterials=tOverlappedMaterials, &
-  & tanmatProp=tanmatProp%chars(), &
-  & problemType=KernelProblemType%ToNumber(problemType%chars()), &
   & prefix=obj%GetPrefix(),  &
-  & baseContinuityForSpace=baseContinuityForSpace%chars(),  &
-  & baseContinuityForTime=baseContinuityForTime%chars(),  &
-  & baseInterpolationForSpace=baseInterpolationForSpace%chars(),  &
-  & baseInterpolationForTime=baseInterpolationForTime%chars(),  &
-  & domainFile=domainFile%chars(),  &
-  & engine=engine%chars(),  &
+  & problemType=KernelProblemType%ToNumber(problemType%chars()), &
   & name=name%chars(),  &
-  & quadratureTypeForSpace=quadratureTypeForSpace%chars(),  &
-  & quadratureTypeForTime=quadratureTypeForTime%chars(),  &
+  & engine=engine%chars(),  &
   & coordinateSystem=KernelCoordinateSystem%ToNumber(coordinateSystem//""),  &
-  & currentTimeStep=currentTimeStep,  &
-  & maxIter=maxIter,  &
-  & nnt=nnt,  &
-  & postProcessOpt=postProcessOpt,  &
-  & tdof=tdof,  &
-  & timeDependency=KernelTimeDependency%ToNumber(timeDependency%chars()),  &
-  & totalTimeStep=totalTimeStep,  &
+  & domainFile=domainFile%chars(),  &
   & isCommonDomain=isCommonDomain,  &
-  & currentTime=currentTime,  &
-  & dt=dt,  &
-  & endTime=endTime,  &
   & gravity=gravity,  &
+  & timeDependency=KernelTimeDependency%ToNumber(timeDependency%chars()),  &
+  & maxIter=maxIter,  &
+  & nsd=nsd,  &
+  & nnt=nnt,  &
+  & tdof=tdof,  &
+  & dt=dt,  &
   & startTime=startTime,  &
+  & endTime=endTime,  &
+  & currentTime=currentTime,  &
+  & currentTimeStep=currentTimeStep,  &
+  & totalTimeStep=totalTimeStep,  &
+  & baseInterpolationForSpace=baseInterpolationForSpace%chars(),  &
+  & baseContinuityForSpace=baseContinuityForSpace%chars(),  &
+  & quadratureTypeForSpace=quadratureTypeForSpace%chars(),  &
   & ipTypeForSpace=BaseInterpolation_ToInteger(ipTypeForSpace%chars()),  &
-  & ipTypeForTime=BaseInterpolation_ToInteger(ipTypeForTime%chars()),  &
   & basisTypeForSpace=BasisType_ToInteger(basisTypeForSpace%chars()),  &
-  & basisTypeForTime=BasisType_ToInteger(basisTypeForTime%chars()),  &
   & alphaForSpace=alphaForSpace,  &
-  & alphaForTime=alphaForTime,  &
   & betaForSpace=betaForSpace,  &
-  & betaForTime=betaForTime,  &
   & lambdaForSpace=lambdaForSpace,  &
+  & baseInterpolationForTime=baseInterpolationForTime%chars(),  &
+  & baseContinuityForTime=baseContinuityForTime%chars(),  &
+  & quadratureTypeForTime=quadratureTypeForTime%chars(),  &
+  & ipTypeForTime=BaseInterpolation_ToInteger(ipTypeForTime%chars()),  &
+  & basisTypeForTime=BasisType_ToInteger(basisTypeForTime%chars()),  &
+  & alphaForTime=alphaForTime,  &
+  & betaForTime=betaForTime,  &
   & lambdaForTime=lambdaForTime, &
-  & algorithm=algorithm,  &
-  & isConstantMatProp=isConstantMatProp,  &
-  & isIsotropic=isIsotropic,  &
-  & isIncompressible=isIncompressible,  &
-  & materialInterfaces=materialInterfaces,  &
-  & tSolidMaterials=tSolidMaterials,  &
+  & postProcessOpt=postProcessOpt,  &
   & tDirichletBC=tDirichletBC,  &
+  & tNeumannBC=tNeumannBC,  &
   & tWeakDirichletBC=tWeakDirichletBC,  &
   & isSymNitsche=isSymNitsche,  &
   & nitscheAlpha=nitscheAlpha,  &
-  & tNeumannBC=tNeumannBC,  &
+  & materialInterfaces=materialInterfaces,  &
+  & isConstantMatProp=isConstantMatProp,  &
+  & tSolidMaterials=tSolidMaterials,  &
+  & algorithm=algorithm,  &
+  & isIsotropic=isIsotropic,  &
+  & isIncompressible=isIncompressible,  &
   & rtoleranceForDisplacement=rtoleranceForDisplacement,  &
-  & rtoleranceForVelocity=rtoleranceForVelocity,  &
-  & rtoleranceForResidual=rtoleranceForResidual,  &
   & atoleranceForDisplacement=rtoleranceForDisplacement,  &
+  & rtoleranceForVelocity=rtoleranceForVelocity,  &
   & atoleranceForVelocity=rtoleranceForVelocity,  &
-  & atoleranceForResidual=atoleranceForResidual)
+  & rtoleranceForResidual=rtoleranceForResidual,  &
+  & atoleranceForResidual=atoleranceForResidual,  &
+  & tanmatProp=tanmatProp%chars(),  &
+  & tOverlappedMaterials=tOverlappedMaterials)
 
 ! linesolve
 linsolve_toml => NULL()
@@ -343,9 +369,7 @@ TYPE(ParameterList_) :: param
 ! TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
 TYPE(String) :: astr
 TYPE(HDF5File_) :: domainFile
-
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -355,7 +379,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL param%Initiate()
 CALL obj%ImportParamFromToml(param=param, table=table)
 
-!---------------------- make domain ----------------------------------
+!----------------------------------------------------------------------------
+!                                                             Make Domain
+!----------------------------------------------------------------------------
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] Making domain')
@@ -378,16 +405,49 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%Initiate(param=param, dom=obj%dom)
 CALL param%DEALLOCATE()
-!---------------------- make domain ----------------------------------
+
+!----------------------------------------------------------------------------
+!                                                   Make boundary conditions
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, "diricletBCName", astr%raw,  &
+  & TOML_DIRICHLET_BC_NAME, origin=origin, stat=stat)
 
 CALL DirichletBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=TOML_DIRICHLET_BC_NAME, obj=obj%dbc)
+  & tomlName=astr%chars(), obj=obj%dbc)
+
+CALL toml_get(table, "neumannBCName", astr%raw,  &
+  & TOML_NEUMANN_BC_NAME, origin=origin, stat=stat)
 
 CALL NeumannBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=TOML_NEUMANN_BC_NAME, obj=obj%nbc)
+  & tomlName=astr%chars(), obj=obj%nbc)
+
+CALL toml_get(table, "weakDirichletBCName", astr%raw,  &
+  & TOML_NITSCHE_BC_NAME, origin=origin, stat=stat)
 
 CALL NitscheBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=TOML_NITSCHE_BC_NAME, obj=obj%wdbc)
+  & tomlName=astr%chars(), obj=obj%wdbc)
+
+!----------------------------------------------------------------------------
+!                                                       Make solid materials
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, "materialName", astr%raw,  &
+  & TOML_SOLID_MATERIAL_NAME, origin=origin, stat=stat)
+
+CALL SolidMaterialImportFromToml(table=table,  &
+  & tomlName=astr%chars(), obj=obj%solidMaterial,  &
+  & solidMaterialToMesh=obj%solidMaterialToMesh, dom=obj%dom)
+
+!----------------------------------------------------------------------------
+!                                                               Set
+!----------------------------------------------------------------------------
+
+CALL obj%Set()
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

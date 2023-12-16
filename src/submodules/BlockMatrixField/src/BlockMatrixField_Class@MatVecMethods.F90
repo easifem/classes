@@ -14,13 +14,8 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This module contains matrix vector method for [[MatrixField_]]
-
-SUBMODULE(BlockMatrixField_Class) MatVecMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-END SUBMODULE MatVecMethods
+! SUBMODULE(BlockMatrixField_Class) MatVecMethods
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE MatVecMethods

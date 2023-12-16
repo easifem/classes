@@ -83,6 +83,11 @@ TYPE(String) :: astr
 LOGICAL(LGT) :: isIsotropic, problem, isPlaneStrain0, isPlaneStress0,  &
   & shapeProblem(2), is2D
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 CALL Set(obj=param, datatype="char", prefix=myprefix, key="name",  &
   & VALUE=myprefix)
 
@@ -109,7 +114,7 @@ is2D = (isPlaneStress0 .OR. isPlaneStrain0)
 CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix, key="stiffnessPower",&
   & VALUE=INPUT(option=stiffnessPower, default=0.0_DFP))
 
-lam = 0.0; G = 0.0; EE = 0.0; nu = 0.0
+lam = 1.0; G = 1.0; EE = 1.0; nu = 0.3
 isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
 IF (isIsotropic) THEN
   CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
@@ -164,6 +169,11 @@ END IF
 
 ierr = param%Set(key=myprefix//"/invC", VALUE=def_c_inv)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE SetLinearElasticModelParam
 
 !----------------------------------------------------------------------------
@@ -196,8 +206,8 @@ IF (ALLOCATED(essentialParam)) THEN
 END IF
 astr = ''
 
-ierr = param%get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
-ierr = param%get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
+ierr = param%Get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
+ierr = param%Get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 
 IF (isPlaneStress .AND. isPlaneStrain) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -230,22 +240,22 @@ CALL obj%CheckEssentialParam(param)
 CALL obj%SetIsInitiated(.TRUE.)
 CALL obj%SetName(myprefix)
 
-ierr = param%get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
+ierr = param%Get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
 CALL obj%SetPlaneStress(isPlaneStress)
 IF (isPlaneStress) obj%nc = SIZE_C_PLANE_STRESS
 
-ierr = param%get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
+ierr = param%Get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 CALL obj%SetPlaneStrain(isPlaneStrain)
 IF (isPlaneStrain) obj%nc = SIZE_C_PLANE_STRAIN
 
-ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
+ierr = param%Get(key=myprefix//"/elasticityType", VALUE=charVar)
 obj%elasticityType = elasticityType_tonumber(charVar)
 
 IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
-  ierr = param%get(key=myprefix//"/lambda", VALUE=obj%lambda)
-  ierr = param%get(key=myprefix//"/shearModulus", VALUE=obj%G)
-  ierr = param%get(key=myprefix//"/youngsModulus", VALUE=obj%E)
-  ierr = param%get(key=myprefix//"/poissonRatio", VALUE=obj%nu)
+  ierr = param%Get(key=myprefix//"/lambda", VALUE=obj%lambda)
+  ierr = param%Get(key=myprefix//"/shearModulus", VALUE=obj%G)
+  ierr = param%Get(key=myprefix//"/youngsModulus", VALUE=obj%E)
+  ierr = param%Get(key=myprefix//"/poissonRatio", VALUE=obj%nu)
   IF (isPlaneStress) THEN
     CALL Get_PlaneStress_C_InvC(C=obj%C, invC=obj%invC,  &
       & youngsModulus=obj%E, nu=obj%nu)
@@ -257,11 +267,11 @@ IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
       & youngsModulus=obj%E, nu=obj%nu)
   END IF
 ELSE
-  ierr = param%get(key=myprefix//"/c", VALUE=obj%C)
-  ierr = param%get(key=myprefix//"/invC", VALUE=obj%invC)
+  ierr = param%Get(key=myprefix//"/c", VALUE=obj%C)
+  ierr = param%Get(key=myprefix//"/invC", VALUE=obj%invC)
 END IF
 
-ierr = param%get(key=myprefix//"/stiffnessPower", VALUE=obj%stiffnessPower)
+ierr = param%Get(key=myprefix//"/stiffnessPower", VALUE=obj%stiffnessPower)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

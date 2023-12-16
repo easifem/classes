@@ -27,16 +27,28 @@ CONTAINS
 !                                                                    Matvec
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Matvec1
-CHARACTER(*), PARAMETER :: myName = "mField_Matvec1"
-INTEGER(I4B) :: s(2), y1, x1
+MODULE PROCEDURE obj_Matvec1
+CHARACTER(*), PARAMETER :: myName = "obj_Matvec1()"
 
+#ifdef DEBUG_VER
+INTEGER(I4B) :: s(2), y1, x1
+LOGICAL(LGT) :: problem
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 s = obj%SHAPE()
 y1 = SIZE(y)
 x1 = SIZE(x)
 
-IF (y1 .NE. s(1) .OR. x1 .NE. s(2)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
+problem = y1 .NE. s(1) .OR. x1 .NE. s(2)
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'There is some mismatch in dimension of matrix and vectors'// &
     & 'The shape of MatrixField_ instance is ' &
     & //tostring(s(1))//", " &
@@ -46,6 +58,7 @@ IF (y1 .NE. s(1) .OR. x1 .NE. s(2)) THEN
     & //'and, the size of y is ' &
     & //tostring(y1))
 END IF
+#endif
 
 CALL Matvec( &
   & obj=obj%mat, &
@@ -55,16 +68,25 @@ CALL Matvec( &
   & addContribution=addContribution, &
   & scale=scale)
 
-END PROCEDURE mField_Matvec1
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_Matvec1
 
 !----------------------------------------------------------------------------
 !                                                                    Matvec
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Matvec2
-CHARACTER(*), PARAMETER :: myName = "mField_Matvec2"
+MODULE PROCEDURE obj_Matvec2
+CHARACTER(*), PARAMETER :: myName = "obj_Matvec2()"
 REAL(DFP), POINTER :: xvec(:)
 REAL(DFP), POINTER :: yvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
 xvec => x%getPointer()
 yvec => y%getPointer()
@@ -79,6 +101,10 @@ CALL Matvec( &
 
 NULLIFY (xvec, yvec)
 
-END PROCEDURE mField_Matvec2
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_Matvec2
 
 END SUBMODULE MatVecMethods

@@ -69,7 +69,6 @@ END PROCEDURE obj_AssembleMassMat
 
 MODULE PROCEDURE obj_AssembleStiffnessMat
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleStiffnessMat()"
-INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -77,17 +76,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 IF (obj%isIsotropic) THEN
-  tsize = SIZE(obj%lame_lambda)
-  DO ii = 1, tsize
-    IF (.NOT. ASSOCIATED(obj%lame_lambda(ii)%ptr)) THEN
-
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[NULL]')
-    END IF
-  END DO
-
   CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
-    & lambda=obj%lame_lambda, mu=obj%lame_mu, dom=obj%dom,  &
+    & youngsModulus=obj%youngsModulus, shearModulus=obj%shearModulus, dom=obj%dom,  &
     & cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
     & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
     & reset=.TRUE.)

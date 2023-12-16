@@ -62,7 +62,7 @@ END PROCEDURE obj_InitiateTangentMatrix
 MODULE PROCEDURE obj_InitiateScalarFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarFields()"
 LOGICAL(LGT) :: problem, isok
-INTEGER(I4B) :: tsize, ii
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -102,7 +102,6 @@ CALL InitiateScalarFields(obj=obj%scalarFields, names=names,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_InitiateScalarFields
 
 !----------------------------------------------------------------------------
@@ -153,7 +152,6 @@ CALL InitiateVectorFields(obj=obj%vectorFields, names=names,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-
 END PROCEDURE obj_InitiateVectorFields
 
 !----------------------------------------------------------------------------

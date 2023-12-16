@@ -25,26 +25,26 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                     getRow
+!                                                                     GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow1
+MODULE PROCEDURE obj_GetRow1
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_getRow1"
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow1"
 
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
-    CALL getRow( &
+    CALL GetRow( &
     & obj=obj%mat, &
-    & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
     & idof=idof, &
     & VALUE=VALUE, &
     & scale=scale, &
     & addContribution=addContribution)
   ELSE
-    CALL getRow( &
+    CALL GetRow( &
     & obj=obj%mat, &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+    & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
     & idof=idof, &
     & VALUE=VALUE, &
     & scale=scale, &
@@ -54,19 +54,19 @@ END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & idof=idof, &
       & VALUE=realvec, &
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & idof=idof, &
       & VALUE=realvec, &
       & scale=scale, &
@@ -74,29 +74,29 @@ IF (PRESENT(nodeFieldVal)) THEN
   END IF
 END IF
 NULLIFY (realvec)
-END PROCEDURE mField_getRow1
+END PROCEDURE obj_GetRow1
 
 !----------------------------------------------------------------------------
-!                                                                 getRow
+!                                                                 GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow2
-CALL obj%getRow( &
+MODULE PROCEDURE obj_GetRow2
+CALL obj%GetRow( &
   & globalNode=globalNode, &
   & idof=(obj%mat%csr%idof.DOFStartIndex.ivar) + idof - 1, &
   & VALUE=VALUE, &
   & nodefieldVal=nodefieldVal, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE mField_getRow2
+END PROCEDURE obj_GetRow2
 
 !----------------------------------------------------------------------------
-!                                                                 getRow
+!                                                                 GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow3
+MODULE PROCEDURE obj_GetRow3
 
-CALL obj%getRow( &
+CALL obj%GetRow( &
   & globalNode=globalNode, &
   & idof=GetIDOF( &
           & obj=obj%mat%csr%idof, &
@@ -108,21 +108,21 @@ CALL obj%getRow( &
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE mField_getRow3
+END PROCEDURE obj_GetRow3
 
 !----------------------------------------------------------------------------
-!                                                                 getRow
+!                                                                 GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow4
-CHARACTER(*), PARAMETER :: myName = "mField_getRow4"
+MODULE PROCEDURE obj_GetRow4
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow4"
 REAL(DFP), POINTER :: realvec(:)
 
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -130,9 +130,9 @@ IF (PRESENT(VALUE)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -144,10 +144,10 @@ END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -155,10 +155,10 @@ IF (PRESENT(nodeFieldVal)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -170,21 +170,21 @@ END IF
 
 NULLIFY (realvec)
 
-END PROCEDURE mField_getRow4
+END PROCEDURE obj_GetRow4
 
 !----------------------------------------------------------------------------
-!                                                                 getRow
+!                                                                 GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow5
-CHARACTER(*), PARAMETER :: myName = "mField_getRow2"
+MODULE PROCEDURE obj_GetRow5
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow2"
 REAL(DFP), POINTER :: realvec(:)
 
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -192,9 +192,9 @@ IF (PRESENT(VALUE)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -206,10 +206,10 @@ END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -217,10 +217,10 @@ IF (PRESENT(nodeFieldVal)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -232,21 +232,21 @@ END IF
 
 NULLIFY (realvec)
 
-END PROCEDURE mField_getRow5
+END PROCEDURE obj_GetRow5
 
 !----------------------------------------------------------------------------
-!                                                                 getRow
+!                                                                 GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow6
-CHARACTER(*), PARAMETER :: myName = "mField_getRow2"
+MODULE PROCEDURE obj_GetRow6
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow2"
 REAL(DFP), POINTER :: realvec(:)
 
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -254,9 +254,9 @@ IF (PRESENT(VALUE)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -268,10 +268,10 @@ END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -279,10 +279,10 @@ IF (PRESENT(nodeFieldVal)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -294,21 +294,21 @@ END IF
 
 NULLIFY (realvec)
 
-END PROCEDURE mField_getRow6
+END PROCEDURE obj_GetRow6
 
 !----------------------------------------------------------------------------
-!                                                                 getRow
+!                                                                 GetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getRow7
-CHARACTER(*), PARAMETER :: myName = "mField_getRow2"
+MODULE PROCEDURE obj_GetRow7
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow2"
 REAL(DFP), POINTER :: realvec(:)
 
 IF (PRESENT(VALUE)) THEN
   IF (obj%isRectangle) THEN
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -316,9 +316,9 @@ IF (PRESENT(VALUE)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    CALL getRow( &
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -330,10 +330,10 @@ END IF
 
 IF (PRESENT(nodeFieldVal)) THEN
   IF (obj%isRectangle) THEN
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domains(1)%ptr%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domains(1)%ptr%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -341,10 +341,10 @@ IF (PRESENT(nodeFieldVal)) THEN
       & scale=scale, &
       & addContribution=addContribution)
   ELSE
-    realvec => nodeFieldVal%getPointer()
-    CALL getRow( &
+    realvec => nodeFieldVal%GetPointer()
+    CALL GetRow( &
       & obj=obj%mat, &
-      & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+      & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
       & ivar=ivar, &
       & spacecompo=spacecompo, &
       & timecompo=timecompo, &
@@ -356,7 +356,7 @@ END IF
 
 NULLIFY (realvec)
 
-END PROCEDURE mField_getRow7
+END PROCEDURE obj_GetRow7
 
 !----------------------------------------------------------------------------
 !
