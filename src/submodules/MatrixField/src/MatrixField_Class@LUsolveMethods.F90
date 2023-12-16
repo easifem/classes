@@ -28,8 +28,8 @@ CONTAINS
 !                                                                    LUSOLVE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_ILUSOLVE1
-CHARACTER(*), PARAMETER :: myName = "mField_ILUSOLVE1"
+MODULE PROCEDURE obj_ILUSOLVE1
+CHARACTER(*), PARAMETER :: myName = "obj_ILUSOLVE1"
 INTEGER(I4B) :: s(2), info, sol1, rhs1
 
 IF (.NOT. obj%isInitiated) THEN
@@ -75,19 +75,19 @@ ELSE
   END IF
 
 END IF
-END PROCEDURE mField_ILUSOLVE1
+END PROCEDURE obj_ILUSOLVE1
 
 !----------------------------------------------------------------------------
 !                                                                   LUSOLVE
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_ILUSOLVE2
+MODULE PROCEDURE obj_ILUSOLVE2
 REAL(DFP), POINTER :: solval(:)
 REAL(DFP), POINTER :: rhsval(:)
 solval => sol%getPointer()
 rhsval => rhs%getPointer()
 CALL obj%ILUSOLVE(sol=solval, rhs=rhsval, isTranspose=isTranspose)
 NULLIFY (solval, rhsval)
-END PROCEDURE mField_ILUSOLVE2
+END PROCEDURE obj_ILUSOLVE2
 
 END SUBMODULE LUSolveMethods
