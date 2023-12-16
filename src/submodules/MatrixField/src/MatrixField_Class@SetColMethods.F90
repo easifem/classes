@@ -25,23 +25,23 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn1
+MODULE PROCEDURE obj_SetColumn1
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn1"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn1"
 
 ! main
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
-    CALL setColumn( &
+    CALL SetColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domains(2)%ptr%getLocalNodeNumber(globalNode), &
     & idof=idof, &
     & VALUE=scalarVal)
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & idof=idof, &
@@ -54,7 +54,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & idof=idof, &
@@ -68,7 +68,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & idof=idof, &
@@ -78,15 +78,15 @@ END IF
 
 realvec => NULL()
 
-END PROCEDURE mField_setColumn1
+END PROCEDURE obj_SetColumn1
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn2
+MODULE PROCEDURE obj_SetColumn2
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn2"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn2"
 
 ! main
 IF (PRESENT(scalarVal)) THEN
@@ -94,7 +94,7 @@ IF (PRESENT(scalarVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
@@ -108,7 +108,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
@@ -123,7 +123,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & ivar=ivar, &
@@ -133,22 +133,22 @@ IF (PRESENT(nodeFieldVal)) THEN
 END IF
 
 realvec => NULL()
-END PROCEDURE mField_setColumn2
+END PROCEDURE obj_SetColumn2
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn3
+MODULE PROCEDURE obj_SetColumn3
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn3"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn3"
 
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -163,7 +163,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -179,7 +179,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & ivar=ivar, &
@@ -191,22 +191,22 @@ END IF
 
 realvec => NULL()
 
-END PROCEDURE mField_setColumn3
+END PROCEDURE obj_SetColumn3
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn4
+MODULE PROCEDURE obj_SetColumn4
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn4"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn4"
 
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -221,7 +221,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -237,7 +237,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & ivar=ivar, &
@@ -248,22 +248,22 @@ IF (PRESENT(nodeFieldVal)) THEN
 END IF
 
 realvec => NULL()
-END PROCEDURE mField_setColumn4
+END PROCEDURE obj_SetColumn4
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn5
+MODULE PROCEDURE obj_SetColumn5
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn5"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn5"
 
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -278,7 +278,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -294,7 +294,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & ivar=ivar, &
@@ -305,15 +305,15 @@ IF (PRESENT(nodeFieldVal)) THEN
 END IF
 
 realvec => NULL()
-END PROCEDURE mField_setColumn5
+END PROCEDURE obj_SetColumn5
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn6
+MODULE PROCEDURE obj_SetColumn6
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn6"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn6"
 
 ! main
 IF (PRESENT(scalarVal)) THEN
@@ -321,7 +321,7 @@ IF (PRESENT(scalarVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
@@ -336,7 +336,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -352,7 +352,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & ivar=ivar, &
@@ -363,22 +363,22 @@ IF (PRESENT(nodeFieldVal)) THEN
 END IF
 
 realvec => NULL()
-END PROCEDURE mField_setColumn6
+END PROCEDURE obj_SetColumn6
 
 !----------------------------------------------------------------------------
-!                                                                 setColumn
+!                                                                 SetColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setColumn7
+MODULE PROCEDURE obj_SetColumn7
 REAL(DFP), POINTER :: realvec(:)
-CHARACTER(*), PARAMETER :: myName = "mField_setColumn7"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColumn7"
 
 IF (PRESENT(scalarVal)) THEN
   IF (obj%isRectangle) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
    & obj=obj%mat, &
    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
    & ivar=ivar, &
@@ -393,7 +393,7 @@ IF (PRESENT(vecVal)) THEN
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'This routine not implemented for rectangle matrix')
   ELSE
-    CALL setColumn( &
+    CALL SetColumn( &
     & obj=obj%mat, &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
     & ivar=ivar, &
@@ -409,7 +409,7 @@ IF (PRESENT(nodeFieldVal)) THEN
       & 'This routine not implemented for rectangle matrix')
   ELSE
     realvec => nodeFieldVal%getPointer()
-    CALL setColumn( &
+    CALL SetColumn( &
       & obj=obj%mat, &
       & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
       & ivar=ivar, &
@@ -420,7 +420,7 @@ IF (PRESENT(nodeFieldVal)) THEN
 END IF
 
 realvec => NULL()
-END PROCEDURE mField_setColumn7
+END PROCEDURE obj_SetColumn7
 
 !----------------------------------------------------------------------------
 !
