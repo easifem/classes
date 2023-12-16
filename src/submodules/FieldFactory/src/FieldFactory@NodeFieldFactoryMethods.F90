@@ -533,7 +533,7 @@ nn = [ &
 
 CALL Assert( &
   & nn=nn,  &
-  & msg="[ARG ERROR] :: The size of obj, names, fileType, "// &
+  & msg="[ARG ERROR] :: The size of obj, names, fieldType, "// &
   & "engine, dom should be the same",  &
   & file=__FILE__, line=__LINE__, routine=myName)
 
