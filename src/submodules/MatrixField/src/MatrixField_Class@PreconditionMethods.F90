@@ -25,11 +25,11 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                           setPrecondition
+!                                                           SetPrecondition
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setPrecondition
-CHARACTER(*), PARAMETER :: myName = "mField_setPrecondition"
+MODULE PROCEDURE obj_SetPrecondition
+CHARACTER(*), PARAMETER :: myName = "obj_SetPrecondition"
 INTEGER(I4B) :: ierr
 
 ! check
@@ -49,7 +49,7 @@ IF (PRESENT(param)) THEN
   obj%Pmat%ncol = SIZE(obj%mat, 2)
 
   IF (param%isPresent(key="Precond/name")) THEN
-    ierr = param%get(key="Precond/name", &
+    ierr = param%Get(key="Precond/name", &
       & VALUE=obj%Pmat%PmatName)
   ELSE
     CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -63,14 +63,14 @@ IF (PRESENT(param)) THEN
   CASE (PRECOND_ILUT)
 
     IF (param%isPresent(key="Precond/droptol")) THEN
-      ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
+      ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Precond/droptol should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/lfil")) THEN
-      ierr = param%get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
+      ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/lfil should be present in param')
@@ -83,28 +83,28 @@ IF (PRESENT(param)) THEN
   CASE (PRECOND_ILUTP)
 
     IF (param%isPresent(key="Precond/droptol")) THEN
-      ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
+      ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
         & 'Precond/droptol should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/lfil")) THEN
-      ierr = param%get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
+      ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/lfil should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/permtol")) THEN
-      ierr = param%get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
+      ierr = param%Get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/permtol should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/mbloc")) THEN
-      ierr = param%get(key="Precond/mbloc", VALUE=obj%Pmat%mbloc)
+      ierr = param%Get(key="Precond/mbloc", VALUE=obj%Pmat%mbloc)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/mbloc should be present in param')
@@ -116,14 +116,14 @@ IF (PRESENT(param)) THEN
     ! droptol, alpha
   CASE (PRECOND_ILUD)
     IF (param%isPresent(key="Precond/droptol")) THEN
-      ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
+      ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/droptol should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/alpha")) THEN
-      ierr = param%get(key="Precond/alpha", VALUE=obj%Pmat%alpha)
+      ierr = param%Get(key="Precond/alpha", VALUE=obj%Pmat%alpha)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/alpha should be present in param')
@@ -135,28 +135,28 @@ IF (PRESENT(param)) THEN
     ! droptol, alpha, permtol, mbloc
   CASE (PRECOND_ILUDP)
     IF (param%isPresent(key="Precond/droptol")) THEN
-      ierr = param%get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
+      ierr = param%Get(key="Precond/droptol", VALUE=obj%Pmat%droptol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/droptol should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/alpha")) THEN
-      ierr = param%get(key="Precond/alpha", VALUE=obj%Pmat%alpha)
+      ierr = param%Get(key="Precond/alpha", VALUE=obj%Pmat%alpha)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/alpha should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/permtol")) THEN
-      ierr = param%get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
+      ierr = param%Get(key="Precond/permtol", VALUE=obj%Pmat%permtol)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/permtol should be present in param')
     END IF
 
     IF (param%isPresent(key="Precond/mbloc")) THEN
-      ierr = param%get(key="Precond/mbloc", VALUE=obj%Pmat%mbloc)
+      ierr = param%Get(key="Precond/mbloc", VALUE=obj%Pmat%mbloc)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/mbloc should be present in param')
@@ -169,7 +169,7 @@ IF (PRESENT(param)) THEN
   CASE (PRECOND_ILUK)
 
     IF (param%isPresent(key="Precond/lfil")) THEN
-      ierr = param%get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
+      ierr = param%Get(key="Precond/lfil", VALUE=obj%Pmat%lfil)
     ELSE
       CALL e%raiseError(modName//'::'//myName//" - "// &
       & 'Precond/lfil should be present in param')
@@ -181,9 +181,9 @@ END IF
 SELECT CASE (obj%Pmat%PmatName)
 
 CASE (PRECOND_ILUT)
-  ! CALL mField_getILUT( obj )
+  ! CALL obj_GetILUT( obj )
   obj%isPmatInitiated = .TRUE.
-  CALL getILUT( &
+  CALL GetILUT( &
     & obj=obj%mat, &
     & lfil=obj%Pmat%lfil, &
     & droptol=obj%Pmat%droptol, &
@@ -192,9 +192,9 @@ CASE (PRECOND_ILUT)
     & JU=obj%Pmat%JU)
 
 CASE (PRECOND_ILUTP)
-  ! CALL mField_getILUTP( obj )
+  ! CALL obj_GetILUTP( obj )
   obj%isPmatInitiated = .TRUE.
-  CALL getILUTP( &
+  CALL GetILUTP( &
     & obj=obj%mat, &
     & lfil=obj%Pmat%lfil, &
     & droptol=obj%Pmat%droptol, &
@@ -206,9 +206,9 @@ CASE (PRECOND_ILUTP)
     & JU=obj%Pmat%JU)
 
 CASE (PRECOND_ILUD)
-  ! CALL mField_getILUD( obj )
+  ! CALL obj_GetILUD( obj )
   obj%isPmatInitiated = .TRUE.
-  CALL getILUD( &
+  CALL GetILUD( &
     & obj=obj%mat, &
     & alpha=obj%Pmat%alpha, &
     & droptol=obj%Pmat%droptol, &
@@ -217,9 +217,9 @@ CASE (PRECOND_ILUD)
     & JU=obj%Pmat%JU)
 
 CASE (PRECOND_ILUDP)
-  ! CALL mField_getILUDP( obj )
+  ! CALL obj_GetILUDP( obj )
   obj%isPmatInitiated = .TRUE.
-  CALL getILUDP( &
+  CALL GetILUDP( &
     & obj=obj%mat, &
     & alpha=obj%Pmat%alpha, &
     & droptol=obj%Pmat%droptol, &
@@ -231,9 +231,9 @@ CASE (PRECOND_ILUDP)
     & JU=obj%Pmat%JU)
 
 CASE (PRECOND_ILUK)
-  ! CALL mField_getILUK( obj )
+  ! CALL obj_GetILUK( obj )
   obj%isPmatInitiated = .TRUE.
-  CALL getILUK( &
+  CALL GetILUK( &
     & obj=obj%mat, &
     & lfil=obj%Pmat%lfil, &
     & LEVS=obj%Pmat%LEVS, &
@@ -243,27 +243,27 @@ CASE (PRECOND_ILUK)
 
 END SELECT
 
-END PROCEDURE mField_setPrecondition
+END PROCEDURE obj_SetPrecondition
 
 !----------------------------------------------------------------------------
 !                                                      reversePermutation
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_reversePermutation
-CHARACTER(*), PARAMETER :: myName = "mField_reversePermutation"
+MODULE PROCEDURE obj_reversePermutation
+CHARACTER(*), PARAMETER :: myName = "obj_reversePermutation"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This subroutine has not been implemented yet')
-END PROCEDURE mField_reversePermutation
+END PROCEDURE obj_reversePermutation
 
 !----------------------------------------------------------------------------
-!                                                           getPrecondition
+!                                                           GetPrecondition
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_getPrecondition
-CHARACTER(*), PARAMETER :: myName = "mField_getPrecondition"
+MODULE PROCEDURE obj_GetPrecondition
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrecondition"
 CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'This routine has not been implemented so far')
-END PROCEDURE mField_getPrecondition
+END PROCEDURE obj_GetPrecondition
 
 !----------------------------------------------------------------------------
 !                                                         ApplyDBCtoPrecond
