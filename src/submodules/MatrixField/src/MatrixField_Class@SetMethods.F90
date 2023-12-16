@@ -29,14 +29,27 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
-CHARACTER(*), PARAMETER :: myName = "obj_Set1"
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 INTEGER(I4B) :: val1, val2, val3
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
 
 ! check: this routine should not be called for rectangle matrix
 IF (obj%isRectangle) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine should not be called for rectangle matrix')
+    & '[INTERNAL ERROR] :: This routine is not for rectangle matrix')
+  RETURN
 END IF
+
+#ifdef DEBUG_VER
 ! check:
 val1 = SIZE(VALUE, 1)
 val2 = SIZE(VALUE, 2)
@@ -48,19 +61,27 @@ IF (&
    & "value is not square matrix, or its shape is inconsistent "// &
    & "with the degree of freedom stored in MatrixField")
 END IF
+#endif
 
-IF (PRESENT(addContribution)) THEN
+IF (add0) THEN
   CALL add(obj=obj%mat,  &
     & nodenum=obj%domain%getLocalNodeNumber(globalNode),  &
     & VALUE=VALUE, &
     & storageFMT=storageFMT, &
-    & scale=INPUT(default=1.0_DFP, option=scale))
-ELSE
-  CALL Set(obj=obj%mat,  &
-    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-    & VALUE=VALUE, &
-    & storageFMT=storageFMT)
+    & scale=scale0)
+  RETURN
 END IF
+
+CALL Set(obj=obj%mat,  &
+  & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+  & VALUE=VALUE, &
+  & storageFMT=storageFMT)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
@@ -68,42 +89,56 @@ END PROCEDURE obj_Set1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set2
-CHARACTER(*), PARAMETER :: myName = "obj_Set2"
+CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
+LOGICAL(LGT) :: add0, isnode
+REAL(DFP) :: scale0
 
-IF (PRESENT(addContribution)) THEN
-  ! Add
-  IF (PRESENT(globalNode)) THEN
-    ! check: this routine should not be called for rectangle matrix
-    IF (obj%isRectangle) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'This routine should not be called for rectangle matrix')
-    ELSE
-      CALL add(obj=obj%mat,  &
-        & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-        & scale=INPUT(default=1.0_DFP, option=scale), &
-        & VALUE=VALUE)
-    END IF
-  ELSE
-    CALL add(obj=obj%mat,  &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  ! Set
-ELSE
-  IF (PRESENT(globalNode)) THEN
-    ! check: this routine should not be called for rectangle matrix
-    IF (obj%isRectangle) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
-        & 'This routine should not be called for rectangle matrix')
-    ELSE
-      CALL Set(obj=obj%mat, &
-        & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
-        & VALUE=VALUE)
-    END IF
-  ELSE
-    CALL Set(obj=obj%mat, VALUE=VALUE)
-  END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+isnode = PRESENT(globalNode)
+
+! check: this routine should not be called for rectangle matrix
+IF (isnode .AND. obj%isRectangle) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: This routine is not for rectangle matrix')
+  RETURN
 END IF
+
+! Add
+IF (add0 .AND. isnode) THEN
+  CALL add(obj=obj%mat,  &
+    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+    & scale=scale0, &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, VALUE=VALUE, scale=scale0)
+  RETURN
+END IF
+
+! Set
+IF (isnode) THEN
+  ! check: this routine should not be called for rectangle matrix
+  CALL Set(obj=obj%mat, &
+    & nodenum=obj%domain%getLocalNodeNumber(globalNode), &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
@@ -111,41 +146,62 @@ END PROCEDURE obj_Set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
-IF (PRESENT(addContribution)) THEN
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-ELSE
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  END IF
+CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & idof=idof, &
+  & jdof=jdof, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
@@ -153,46 +209,62 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & VALUE=VALUE)
-  END IF
+CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
 
-  !
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
@@ -200,53 +272,70 @@ END PROCEDURE obj_Set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  END IF
-  !
+CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & idof=idof, &
+  & jdof=jdof, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
@@ -254,53 +343,70 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & idof=idof, &
-      & jdof=jdof, &
-      & VALUE=VALUE)
-  END IF
-  !
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & idof=idof, &
+    & jdof=jdof, &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & idof=idof, &
+  & jdof=jdof, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -308,61 +414,77 @@ END PROCEDURE obj_Set6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set7
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE)
-  END IF
-  !
+CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & ispacecompo=ispacecompo, &
+    & itimecompo=itimecompo, &
+    & jspacecompo=jspacecompo, &
+    & jtimecompo=jtimecompo, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & ispacecompo=ispacecompo, &
+    & itimecompo=itimecompo, &
+    & jspacecompo=jspacecompo, &
+    & jtimecompo=jtimecompo, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & ispacecompo=ispacecompo, &
+    & itimecompo=itimecompo, &
+    & jspacecompo=jspacecompo, &
+    & jtimecompo=jtimecompo, &
+    & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
@@ -370,10 +492,50 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
+CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+  & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE, &
+  & scale=scale0)
+  RETURN
+END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE, &
+  & scale=scale0)
+  RETURN
+END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
     & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
     & ivar=ivar, &
@@ -382,49 +544,26 @@ IF (PRESENT(addContribution)) THEN
     & itimecompo=itimecompo, &
     & jspacecompo=jspacecompo, &
     & jtimecompo=jtimecompo, &
-    & VALUE=VALUE, &
-    & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-    & ivar=ivar, &
-    & jvar=jvar, &
-    & ispacecompo=ispacecompo, &
-    & itimecompo=itimecompo, &
-    & jspacecompo=jspacecompo, &
-    & jtimecompo=jtimecompo, &
-    & VALUE=VALUE, &
-    & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE)
-  END IF
-  !
+    & VALUE=VALUE)
+  RETURN
 END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
@@ -432,100 +571,50 @@ END PROCEDURE obj_Set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE)
-  END IF
-  !
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & ispacecompo=ispacecompo, &
+    & itimecompo=itimecompo, &
+    & jspacecompo=jspacecompo, &
+    & jtimecompo=jtimecompo, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
-END PROCEDURE obj_Set9
 
-!----------------------------------------------------------------------------
-!                                                                       Set
-!----------------------------------------------------------------------------
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & ispacecompo=ispacecompo, &
+    & itimecompo=itimecompo, &
+    & jspacecompo=jspacecompo, &
+    & jtimecompo=jtimecompo, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
 
-MODULE PROCEDURE obj_Set10
-IF (PRESENT(addContribution)) THEN
-  !
-  IF (obj%isRectangle) THEN
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  ELSE
-    CALL add(obj=obj%mat, &
-      & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
-      & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
-      & ivar=ivar, &
-      & jvar=jvar, &
-      & ispacecompo=ispacecompo, &
-      & itimecompo=itimecompo, &
-      & jspacecompo=jspacecompo, &
-      & jtimecompo=jtimecompo, &
-      & VALUE=VALUE, &
-      & scale=INPUT(default=1.0_DFP, option=scale))
-  END IF
-  !
-ELSE
-  !
-  IF (obj%isRectangle) THEN
-    CALL Set(obj=obj%mat, &
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
     & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
     & ivar=ivar, &
@@ -535,8 +624,61 @@ ELSE
     & jspacecompo=jspacecompo, &
     & jtimecompo=jtimecompo, &
     & VALUE=VALUE)
-  ELSE
-    CALL Set(obj=obj%mat, &
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Set9
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set10
+CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
+
+IF (add0 .AND. obj%isRectangle) THEN
+  CALL add(obj=obj%mat, &
+    & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+    & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+    & ivar=ivar, &
+    & jvar=jvar, &
+    & ispacecompo=ispacecompo, &
+    & itimecompo=itimecompo, &
+    & jspacecompo=jspacecompo, &
+    & jtimecompo=jtimecompo, &
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
+END IF
+
+IF (add0) THEN
+  CALL add(obj=obj%mat, &
     & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
     & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
     & ivar=ivar, &
@@ -545,10 +687,41 @@ ELSE
     & itimecompo=itimecompo, &
     & jspacecompo=jspacecompo, &
     & jtimecompo=jtimecompo, &
-    & VALUE=VALUE)
-  END IF
-  !
+    & VALUE=VALUE, &
+    & scale=scale0)
+  RETURN
 END IF
+
+IF (obj%isRectangle) THEN
+  CALL Set(obj=obj%mat, &
+  & inodenum=obj%domains(1)%ptr%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domains(2)%ptr%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE)
+  RETURN
+END IF
+
+CALL Set(obj=obj%mat, &
+  & inodenum=obj%domain%getLocalNodeNumber(inodenum), &
+  & jnodenum=obj%domain%getLocalNodeNumber(jnodenum), &
+  & ivar=ivar, &
+  & jvar=jvar, &
+  & ispacecompo=ispacecompo, &
+  & itimecompo=itimecompo, &
+  & jspacecompo=jspacecompo, &
+  & jtimecompo=jtimecompo, &
+  & VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
@@ -557,10 +730,16 @@ END PROCEDURE obj_Set10
 
 MODULE PROCEDURE obj_Set11
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+REAL(DFP) :: scale0
+LOGICAL(LGT) :: add0
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
+
+add0 = Input(default=.FALSE., option=addContribution)
+scale0 = Input(default=1.0_DFP, option=scale)
 
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
