@@ -42,6 +42,8 @@ PUBLIC :: STScalarFieldFactory
 PUBLIC :: STVectorFieldFactory
 PUBLIC :: InitiateScalarFields
 PUBLIC :: InitiateVectorFields
+PUBLIC :: InitiateSTScalarFields
+PUBLIC :: InitiateSTVectorFields
 
 PUBLIC :: MeshFieldFactory
 PUBLIC :: ScalarMeshFieldFactory
@@ -334,6 +336,79 @@ END INTERFACE InitiateScalarFields
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Shion Shimizu
+! date:  2023-12-16
+! summary: Initiate a vector of STScalarFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of STScalarField and
+! its subclasses.
+!
+! NOTE: This is a module routine not a Method to STScalarField_
+
+INTERFACE InitiateSTScalarFields
+  MODULE SUBROUTINE STScalarField_Initiate1(obj, names, timeCompo, &
+    & fieldType, engine, dom)
+    TYPE(STScalarFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to STScalarField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! temporal components in STScalarField
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    CHARACTER(*), INTENT(IN) :: engine
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    !! pointer to the domain
+  END SUBROUTINE STScalarField_Initiate1
+END INTERFACE InitiateSTScalarFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:  2023-12-16
+! summary: Initiate a vector of STScalarFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of STScalarField and
+! its subclasses.
+!
+! INFO: This routine is same as STScalarField_Initiate1 but
+! here, we can set different properties to each vector field.
+!
+! NOTE: This is a module routine not a Method to ScalarField_
+
+INTERFACE InitiateSTScalarFields
+  MODULE SUBROUTINE STScalarField_Initiate2(obj, names, timeCompo, &
+    & fieldType, engine, dom)
+    TYPE(STScalarFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to STScalarField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! temporal components in STScalarField
+    INTEGER(I4B), INTENT(IN) :: fieldType(:)
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    TYPE(String), INTENT(IN) :: engine(:)
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    !! pointer to the domain
+  END SUBROUTINE STScalarField_Initiate2
+END INTERFACE InitiateSTScalarFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-29
 ! summary: Initiate a vector of VectorFieldPointer_
@@ -420,13 +495,90 @@ END INTERFACE InitiateVectorFields
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Shion Shimizu
+! date:  2023-12-16
+! summary: Initiate a vector of STVectorFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of STVectorField and
+! its subclasses.
+!
+! NOTE: This is a module routine not a Method to STVectorField_
+
+INTERFACE InitiateSTVectorFields
+  MODULE SUBROUTINE STVectorField_Initiate1(obj, names, spaceCompo, &
+    & timeCompo, fieldType, engine, dom)
+    TYPE(STVectorFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to STVectorField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! spatial components in vector field
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! temporal components in vector field
+    INTEGER(I4B), INTENT(IN) :: fieldType
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    CHARACTER(*), INTENT(IN) :: engine
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    !! pointer to the domain
+  END SUBROUTINE STVectorField_Initiate1
+END INTERFACE InitiateSTVectorFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:  2023-12-16
+! summary: Initiate a vector of STVectorFieldPointer_
+!
+!# Introduction
+!
+! This routine initiates several vector of STVectorField and
+! its subclasses.
+!
+! INFO: This routine is same as STVectorField_Initiate1 but
+! here, we can set different properties to each vector field.
+!
+! NOTE: This is a module routine not a Method to STVectorField_
+
+INTERFACE InitiateSTVectorFields
+  MODULE SUBROUTINE STVectorField_Initiate2(obj, names, spaceCompo,  &
+     & timeCompo, fieldType, engine, dom)
+    TYPE(STVectorFieldPointer_), INTENT(INOUT) :: obj(:)
+    !! A vector of pointer to VectorField or subclass
+    !! NOTE: It should be allocated
+    TYPE(String), INTENT(IN) :: names(:)
+    !! names of vector field
+    !! NOTE: The size of names should be at least the size of obj
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! spatial components in vector field
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! temporal components in vector field
+    INTEGER(I4B), INTENT(IN) :: fieldType(:)
+    !! NOTE: Field type, for info see documentation of AbstractNodeField_
+    TYPE(String), INTENT(IN) :: engine(:)
+    !! Engine, for info see documentation of AbstractNodeField_
+    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    !! pointer to the domain
+  END SUBROUTINE STVectorField_Initiate2
+END INTERFACE InitiateSTVectorFields
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-03-29
 ! summary: Initiate a vector of MatrixFieldPointer_
 
 INTERFACE InitiateMatrixFields
 MODULE SUBROUTINE MatrixField_Initiate1(obj, names, matrixProps, spaceCompo, &
-      &  timeCompo, fieldType, engine, dom)
+                                         &  timeCompo, fieldType, engine, dom)
     TYPE(MatrixFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to MatrixField or subclass
     !! NOTE: It should be allocated
@@ -470,7 +622,7 @@ INTERFACE InitiateMatrixFields
     INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
     !! spatial components in MatrixField
     INTEGER(I4B), INTENT(IN) :: timeCompo(:)
-    !! time components in MatrixField
+    !! temporal components in MatrixField
     INTEGER(I4B), INTENT(IN) :: fieldType(:)
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     TYPE(String), INTENT(IN) :: engine(:)

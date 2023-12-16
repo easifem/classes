@@ -418,7 +418,7 @@ nn = [ &
 
 CALL Assert( &
   & nn=nn,  &
-  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fileType, "// &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
   & "engine, dom should be the same",  &
   & file=__FILE__, line=__LINE__, routine=myName)
 
@@ -456,6 +456,124 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 END PROCEDURE VectorField_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                 initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE STVectorField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "STVectorFieldIntiate1"
+INTEGER(I4B) :: tsize, ii
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
+  END IF
+
+  obj(ii)%ptr => STVectorFieldFactory(engine)
+
+  CALL SetSTVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo,  &
+    & timeCompo=timeCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
+END DO
+
+CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE STVectorField_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                 initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE STVectorField_Initiate2
+CHARACTER(*), PARAMETER :: myName = "STVectorFieldIntiate2"
+INTEGER(I4B) :: tsize, ii, nn(7)
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+nn = [ &
+  & tsize, SIZE(names), SIZE(spaceCompo), SIZE(timeCompo), SIZE(fieldType),  &
+  & SIZE(engine), SIZE(dom) &
+]
+
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, timeCompo,"//  &
+  & "fieldType, engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: STVectorField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
+  END IF
+
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
+  END IF
+
+  obj(ii)%ptr => STVectorFieldFactory(engine(ii)%Chars())
+
+  CALL SetSTVectorFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & spaceCompo=spaceCompo(ii),  &
+    & timeCompo=timeCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
+END DO
+
+CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE STVectorField_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
@@ -569,5 +687,120 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE ScalarField_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE STScalarField_Initiate1
+CHARACTER(*), PARAMETER :: myName = "STScalarFieldIntiate1"
+INTEGER(I4B) :: tsize, ii
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+IF (SIZE(names) .LT. tsize) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: The size of names should be atleast the size of obj')
+END IF
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & " as it may cause memory leak.")
+  END IF
+
+  obj(ii)%ptr => STScalarFieldFactory(engine)
+
+  CALL SetSTScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & timeCompo=timeCompo,  &
+    & fieldType=fieldType,  &
+    & engine=engine)
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom)
+END DO
+
+CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE STScalarField_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                 Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE STScalarField_Initiate2
+CHARACTER(*), PARAMETER :: myName = "STScalarFieldIntiate2"
+INTEGER(I4B) :: tsize, ii, nn(6)
+TYPE(ParameterList_) :: param
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+CALL param%Initiate()
+
+tsize = SIZE(obj)
+
+nn = [ &
+  & tsize, SIZE(names), SIZE(timeCompo), SIZE(fieldType), SIZE(engine),  &
+  & SIZE(dom) &
+]
+
+CALL Assert( &
+  & nn=nn,  &
+  & msg="[ARG ERROR] :: The size of obj, names, timeCompo, fieldType, "// &
+  & "engine, dom should be the same",  &
+  & file=__FILE__, line=__LINE__, routine=myName)
+
+DO ii = 1, tsize
+  IF (ASSOCIATED(obj(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[ALLOCATION ERROR] :: STScalarField_::obj('//tostring(ii)//  &
+      & ") is already associated. We don't allocate like this"//  &
+      & ", as it may cause memory leak.")
+  END IF
+
+  IF (.NOT. ASSOCIATED(dom(ii)%ptr)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[POINTER ERROR] :: Domain_::dom('//tostring(ii)//  &
+      & ") is not associated. It will lead to segmentation fault.")
+  END IF
+
+  obj(ii)%ptr => STScalarFieldFactory(engine(ii)%Chars())
+
+  CALL SetSTScalarFieldParam( &
+    & param=param,  &
+    & name=names(ii)%Chars(), &
+    & timeCompo=timeCompo(ii),  &
+    & fieldType=fieldType(ii),  &
+    & engine=engine(ii)%Chars())
+
+  CALL obj(ii)%ptr%Initiate(param=param, dom=dom(ii)%ptr)
+END DO
+
+CALL param%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE STScalarField_Initiate2
 
 END SUBMODULE NodeFieldFactoryMethods
