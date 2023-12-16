@@ -703,6 +703,8 @@ CALL VectorMeshFieldDeallocate(obj%solidMechData)
 CALL AbstractMeshFieldDeallocate(obj%massDensity)
 CALL AbstractMeshFieldDeallocate(obj%shearModulus)
 CALL AbstractMeshFieldDeallocate(obj%youngsModulus)
+CALL AbstractMeshFieldDeallocate(obj%dampCoeff_alpha)
+CALL AbstractMeshFieldDeallocate(obj%dampCoeff_beta)
 CALL AbstractMeshFieldDeallocate(obj%Cijkl)
 CALL AbstractMeshFieldDeallocate(obj%stress)
 CALL AbstractMeshFieldDeallocate(obj%strain)
@@ -754,6 +756,7 @@ IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: AbstractElasticity_::obj%linsol is not'//  &
     & " ASSOCIATED.")
+  RETURN
 END IF
 
 isok = ASSOCIATED(obj%linsol)
