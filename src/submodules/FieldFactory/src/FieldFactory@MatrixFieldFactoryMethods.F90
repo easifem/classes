@@ -180,7 +180,7 @@ nn = [tsize, SIZE(names), SIZE(spaceCompo), SIZE(fieldType),  &
 
 CALL Assert( &
   & nn=nn,  &
-  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fileType, "// &
+  & msg="[ARG ERROR] :: The size of obj, names, spaceCompo, fieldType, "// &
   & "timeCompo, engine, dom, matProps should be the same",  &
   & file=__FILE__, line=__LINE__, routine=myName)
 
