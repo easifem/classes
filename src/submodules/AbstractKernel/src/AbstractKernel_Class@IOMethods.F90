@@ -273,6 +273,12 @@ CALL Display(bool1, "obj%shearModulus ALLOCATED: ", unitNo=unitNo)
 bool1 = ALLOCATED(obj%youngsModulus)
 CALL Display(bool1, "obj%youngsModulus ALLOCATED: ", unitNo=unitNo)
 
+bool1 = ALLOCATED(obj%dampCoeff_alpha)
+CALL Display(bool1, "obj%dampCoeff_alpha ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ALLOCATED(obj%dampCoeff_beta)
+CALL Display(bool1, "obj%dampCoeff_beta ALLOCATED: ", unitNo=unitNo)
+
 bool1 = ALLOCATED(obj%Cijkl)
 CALL Display(bool1, "obj%Cijkl ALLOCATED: ", unitNo=unitNo)
 
