@@ -24,7 +24,7 @@ CONTAINS
 !                                                                  Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Display
+MODULE PROCEDURE obj_Display
 CALL MatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 IF (obj%engine%chars() .EQ. "LIS_OMP") THEN
   IF (ALLOCATED(obj%lis_ia)) THEN
@@ -38,14 +38,14 @@ IF (obj%engine%chars() .EQ. "LIS_OMP") THEN
     CALL Display("# lis_ja NOT ALLOCATED", unitNo=unitNo)
   END IF
 END IF
-END PROCEDURE mField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Export
-CHARACTER(*), PARAMETER :: myName = "mField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dname
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -66,15 +66,15 @@ END IF
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
 & '[END] Export()')
 
-END PROCEDURE mField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Import
+MODULE PROCEDURE obj_Import
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "mField_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
@@ -111,6 +111,6 @@ CALL CHKERR(ierr)
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
-END PROCEDURE mField_Import
+END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods
