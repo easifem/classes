@@ -24,12 +24,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    setBlockMatrixFieldParam
+!                                                    SetBlockMatrixFieldParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setBlockMatrixFieldParam
+MODULE PROCEDURE SetBlockMatrixFieldParam
 INTEGER(I4B) :: ierr0, ii
-CHARACTER(*), PARAMETER :: myName = "setBlockMatrixFieldParam"
+CHARACTER(*), PARAMETER :: myName = "SetBlockMatrixFieldParam"
 
 IF (ANY([SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
   & .NE. SIZE(physicalVarNames))) THEN
@@ -37,47 +37,47 @@ IF (ANY([SIZE(physicalVarNames), SIZE(spaceCompo), SIZE(timeCompo)]  &
   & 'Size of physicalVarNames, spaceCompo, and timeCompo should be same')
 END IF
 
-ierr0 = param%set(key=myPrefix//"/name", VALUE=TRIM(name))
-ierr0 = param%set(key=myPrefix//"/engine", VALUE=TRIM(engine))
+ierr0 = param%Set(key=myPrefix//"/name", VALUE=TRIM(name))
+ierr0 = param%Set(key=myPrefix//"/engine", VALUE=TRIM(engine))
 
-ierr0 = param%set(key=myPrefix//"/matrixProp", &
+ierr0 = param%Set(key=myPrefix//"/matrixProp", &
   & VALUE=TRIM(matrixProp))
 
 ii = SIZE(physicalVarNames)
 
-ierr0 = param%set(key=myPrefix//"/tPhysicalVarNames", VALUE=ii)
+ierr0 = param%Set(key=myPrefix//"/tPhysicalVarNames", VALUE=ii)
 
 DO ii = 1, SIZE(physicalVarNames)
-  ierr0 = param%set(key=myPrefix//"/physicalVarName"//TOSTRING(ii), &
+  ierr0 = param%Set(key=myPrefix//"/physicalVarName"//TOSTRING(ii), &
     & VALUE=physicalVarNames(ii))
 END DO
 
-ierr0 = param%set(key=myPrefix//"/spaceCompo",  &
+ierr0 = param%Set(key=myPrefix//"/spaceCompo",  &
   &  VALUE=spaceCompo)
 
-ierr0 = param%set(key=myPrefix//"/timeCompo",  &
+ierr0 = param%Set(key=myPrefix//"/timeCompo",  &
   & VALUE=timeCompo)
 
-ierr0 = param%set(key=myPrefix//"/fieldType", VALUE=INPUT( &
+ierr0 = param%Set(key=myPrefix//"/fieldType", VALUE=INPUT( &
   & option=fieldType, default=FIELD_TYPE_NORMAL))
 
-ierr0 = param%set(key=myPrefix//"/comm", VALUE=INPUT( &
+ierr0 = param%Set(key=myPrefix//"/comm", VALUE=INPUT( &
 & option=comm, default=0_I4B))
 
-ierr0 = param%set(key=myPrefix//"/global_n", VALUE=INPUT( &
+ierr0 = param%Set(key=myPrefix//"/global_n", VALUE=INPUT( &
 & option=global_n, default=0_I4B))
 
-ierr0 = param%set(key=myPrefix//"/local_n", VALUE=INPUT( &
+ierr0 = param%Set(key=myPrefix//"/local_n", VALUE=INPUT( &
 & option=local_n, default=0_I4B))
 
-END PROCEDURE setBlockMatrixFieldParam
+END PROCEDURE SetBlockMatrixFieldParam
 
 !----------------------------------------------------------------------------
-!                                           setBlockMatrixFieldPrecondParam
+!                                           SetBlockMatrixFieldPrecondParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE setBlockMatrixFieldPrecondParam
-CALL setMatrixFieldPrecondParam( &
+MODULE PROCEDURE SetBlockMatrixFieldPrecondParam
+CALL SetMatrixFieldPrecondParam( &
   & param=param, &
   & name=name, &
   & engine=engine, &
@@ -87,14 +87,14 @@ CALL setMatrixFieldPrecondParam( &
   & permtol=permtol, &
   & alpha=alpha, &
   & comm=comm, local_n=local_n, global_n=global_n)
-END PROCEDURE setBlockMatrixFieldPrecondParam
+END PROCEDURE SetBlockMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bmField_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "bmField_checkEssentialParam"
+MODULE PROCEDURE obj_checkEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam"
 INTEGER(I4B) :: ii, n
 
 IF (.NOT. param%isPresent(key=myPrefix//"/name")) THEN
@@ -159,14 +159,14 @@ IF (.NOT. param%isPresent(key=myPrefix//"/local_n")) THEN
   & myPrefix//'/local_n should be present in param')
 END IF
 
-END PROCEDURE bmField_checkEssentialParam
+END PROCEDURE obj_checkEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate1"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii
 
@@ -187,14 +187,14 @@ END DO
 
 IF (ALLOCATED(domains)) DEALLOCATE (domains)
 
-END PROCEDURE mField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate3
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate3"
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
 INTEGER(I4B) :: ierror, nrow, ncol, storageFMT, tVar, ii, nnz
 INTEGER(I4B), ALLOCATABLE :: tNodes(:), timeCompo(:), spaceCompo(:)
 CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
@@ -297,7 +297,7 @@ DEALLOCATE (matProp)
 obj%isInitiated = .TRUE.
 obj%isPmatInitiated = .FALSE.
 
-! setting the sparsity
+! Setting the sparsity
 CALL Display("Calling DomainSetSparsity()")
 CALL DomainSetSparsity(mat=obj%mat, domains=obj%domains)
 
@@ -324,14 +324,14 @@ IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
 & '[END] Initiate()')
 
-END PROCEDURE mField_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE mField_Final
+END PROCEDURE obj_Final
 
 END SUBMODULE ConstructorMethods
