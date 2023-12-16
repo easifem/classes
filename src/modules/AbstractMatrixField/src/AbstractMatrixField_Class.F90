@@ -166,6 +166,11 @@ CONTAINS
   PROCEDURE(obj_SetColumn7), DEFERRED, PASS(obj) :: SetColumn7
   GENERIC, PUBLIC :: SetColumn => SetColumn1, SetColumn2, &
     & SetColumn3, SetColumn4, SetColumn5, SetColumn6, SetColumn7
+
+  ! GET:
+  ! @UnaryMethods
+  PROCEDURE(obj_Scal), DEFERRED, PUBLIC, PASS(obj) :: Scal
+
 END TYPE AbstractMatrixField_
 
 !----------------------------------------------------------------------------
@@ -1768,6 +1773,22 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_GetColumn7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        Scale@UnaryMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary:  Scale the matrix field
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Scal(obj, a)
+    IMPORT :: AbstractMatrixField_, DFP
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: a
+  END SUBROUTINE obj_Scal
 END INTERFACE
 
 END MODULE AbstractMatrixField_Class

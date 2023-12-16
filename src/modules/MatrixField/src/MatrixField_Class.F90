@@ -270,6 +270,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDBCtoRHS => obj_ApplyDBCToRHS
   PROCEDURE, PUBLIC, PASS(obj) :: GetDBCSubMat => obj_GetDBCSubMat
 
+  ! GET:
+  ! @UnaryMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Scal => obj_Scal
+
 END TYPE MatrixField_
 
 !----------------------------------------------------------------------------
@@ -2423,6 +2428,21 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_GetColumn7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Scal@UnaryMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-17
+! summary:  Scale the matrix field
+
+INTERFACE
+  MODULE SUBROUTINE obj_Scal(obj, a)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: a
+  END SUBROUTINE obj_Scal
 END INTERFACE
 
 END MODULE MatrixField_Class

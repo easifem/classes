@@ -741,8 +741,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 add0 = Input(default=.FALSE., option=addContribution)
 scale0 = Input(default=1.0_DFP, option=scale)
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+SELECT TYPE (VALUE)
+CLASS IS (MatrixField_)
+  IF (add0) THEN
+    CALL Add(obj=obj%mat, VALUE=VALUE%mat, scale=scale0,  &
+      & isSameStructure=.TRUE.)
+    RETURN
+  END IF
+
+  CALL Set(obj=obj%mat, VALUE=VALUE%mat, scale=scale0)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: This method is available for MatrixField_ only')
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
