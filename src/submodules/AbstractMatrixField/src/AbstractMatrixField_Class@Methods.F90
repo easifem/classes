@@ -24,60 +24,60 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE amField_Display
+MODULE PROCEDURE obj_Display
 CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
 IF (obj%isPmatInitiated) THEN
   CALL Display("# isPmatInitiated : TRUE ", unitNo)
 ELSE
   CALL Display("# isPmatInitiated : FALSE", unitNo)
 END IF
-END PROCEDURE amField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE amField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractFieldDeallocate(obj)
 obj%isPmatInitiated = .FALSE.
-END PROCEDURE amField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                   isPreconditionSet
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE amField_isPreconditionSet
+MODULE PROCEDURE obj_isPreconditionSet
 ans = obj%isPmatInitiated
-END PROCEDURE amField_isPreconditionSet
+END PROCEDURE obj_isPreconditionSet
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE amField_SPY
-CHARACTER(*), PARAMETER :: myName = "amField_SPY"
+MODULE PROCEDURE obj_SPY
+CHARACTER(*), PARAMETER :: myName = "obj_SPY"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This routine has not been implemented by the child class.')
-END PROCEDURE amField_SPY
+END PROCEDURE obj_SPY
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE amField_SymSchurLargestEigenVal
-CHARACTER(*), PARAMETER :: myName = "amField_SymSchurLargestEigenVal"
+MODULE PROCEDURE obj_SymSchurLargestEigenVal
+CHARACTER(*), PARAMETER :: myName = "obj_SymSchurLargestEigenVal"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This routine has not been implemented by the child class.')
-END PROCEDURE amField_SymSchurLargestEigenVal
+END PROCEDURE obj_SymSchurLargestEigenVal
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE amField_SymLargestEigenVal
-CHARACTER(*), PARAMETER :: myName = "amField_SymLargestEigenVal"
+MODULE PROCEDURE obj_SymLargestEigenVal
+CHARACTER(*), PARAMETER :: myName = "obj_SymLargestEigenVal"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This routine has not been implemented by the child class.')
-END PROCEDURE amField_SymLargestEigenVal
+END PROCEDURE obj_SymLargestEigenVal
 
 END SUBMODULE Methods
