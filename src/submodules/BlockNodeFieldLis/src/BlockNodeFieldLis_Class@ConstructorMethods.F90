@@ -24,9 +24,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 #ifdef USE_LIS
-MODULE PROCEDURE bnField_Initiate3
+MODULE PROCEDURE obj_Initiate3
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "bnField_Initiate3"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
 INTEGER(I4B) :: ierr
 
 CALL BlockNodeFieldInitiate3(obj=obj, param=param, dom=dom)
@@ -45,23 +45,23 @@ CALL lis_vector_get_range( &
   & ierr &
   & )
 CALL CHKERR(ierr)
-END PROCEDURE bnField_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE bnField_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                                      Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Size
+MODULE PROCEDURE obj_Size
 ans = obj%local_n
-END PROCEDURE bnField_Size
+END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !
