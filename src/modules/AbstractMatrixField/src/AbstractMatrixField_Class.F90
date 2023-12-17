@@ -268,6 +268,8 @@ END INTERFACE
 ! This routine returns the matrix vector multiplication. Here, input vector
 ! is an abstract node field.
 ! The output vector is also an abstract node field.
+!
+! y = y + Scale*Matvec(obj, x)
 
 ABSTRACT INTERFACE
   SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, addContribution, &
