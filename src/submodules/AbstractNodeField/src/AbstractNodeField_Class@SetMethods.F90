@@ -24,7 +24,7 @@ CONTAINS
 !                                                             SetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_SetParam
+MODULE PROCEDURE obj_SetParam
 INTEGER(I4B) :: ii, tsize1
 
 IF (PRESENT(dof_tPhysicalVars)) THEN
@@ -61,13 +61,13 @@ IF (PRESENT(dof_names_char)) THEN
   END DO
 END IF
 
-END PROCEDURE anf_SetParam
+END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_SetSingle
+MODULE PROCEDURE obj_SetSingle
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 areal = Input(option=scale, default=1.0_DFP)
@@ -87,7 +87,7 @@ ELSE
   CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
 END IF
 
-END PROCEDURE anf_SetSingle
+END PROCEDURE obj_SetSingle
 
 !----------------------------------------------------------------------------
 !

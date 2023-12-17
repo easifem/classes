@@ -24,18 +24,18 @@ CONTAINS
 !                                                       GetFEVariable
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetFEVariable
-CHARACTER(*), PARAMETER :: myName = "anf_GetFEVariable()"
+MODULE PROCEDURE obj_GetFEVariable
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
  & '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE anf_GetFEVariable
+END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
 !                                                         GetPhysicalNames
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetPhysicalNames
-CHARACTER(*), PARAMETER :: myName = "anf_GetPhysicalNames()"
+MODULE PROCEDURE obj_GetPhysicalNames
+CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalNames()"
 INTEGER(I4B) :: tnames, aint
 LOGICAL(LGT) :: isOK
 
@@ -60,14 +60,14 @@ ELSE
   RETURN
 END IF
 
-END PROCEDURE anf_GetPhysicalNames
+END PROCEDURE obj_GetPhysicalNames
 
 !----------------------------------------------------------------------------
 !                                                       GetTotalPhysicalVars
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetTotalPhysicalVars
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalPhysicalVars()"
+MODULE PROCEDURE obj_GetTotalPhysicalVars
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
 INTEGER(I4B) :: tnames, aint
 LOGICAL(LGT) :: isOK
 
@@ -90,14 +90,14 @@ ELSE
   RETURN
 END IF
 
-END PROCEDURE anf_GetTotalPhysicalVars
+END PROCEDURE obj_GetTotalPhysicalVars
 
 !----------------------------------------------------------------------------
 !                                                           GetSpaceCompo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetSpaceCompo
-CHARACTER(*), PARAMETER :: myName = "anf_GetTotalPhysicalVars()"
+MODULE PROCEDURE obj_GetSpaceCompo
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
 INTEGER(I4B) :: tnames, aint
 LOGICAL(LGT) :: isOK
 
@@ -119,14 +119,14 @@ ELSE
     & ' not allocated.')
   RETURN
 END IF
-END PROCEDURE anf_GetSpaceCompo
+END PROCEDURE obj_GetSpaceCompo
 
 !----------------------------------------------------------------------------
 !                                                           GetTimeCompo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetTimeCompo
-CHARACTER(*), PARAMETER :: myName = "anf_GetTimeCompo()"
+MODULE PROCEDURE obj_GetTimeCompo
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo()"
 INTEGER(I4B) :: tnames, aint
 LOGICAL(LGT) :: isOK
 
@@ -148,34 +148,34 @@ ELSE
     & ' not allocated.')
   RETURN
 END IF
-END PROCEDURE anf_GetTimeCompo
+END PROCEDURE obj_GetTimeCompo
 
 !----------------------------------------------------------------------------
 !                                                                GetPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetPointer
+MODULE PROCEDURE obj_GetPointer
 ans => GetPointer(obj%realVec)
-END PROCEDURE anf_GetPointer
+END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
 !                                                                     Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_size
-CHARACTER(*), PARAMETER :: myName = "anf_size"
+MODULE PROCEDURE obj_size
+CHARACTER(*), PARAMETER :: myName = "obj_size"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
 ans = obj%tSize
-END PROCEDURE anf_size
+END PROCEDURE obj_size
 
 !----------------------------------------------------------------------------
 !                                                                     Norm2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_Norm2
-CHARACTER(*), PARAMETER :: myName = "anf_Norm2"
+MODULE PROCEDURE obj_Norm2
+CHARACTER(*), PARAMETER :: myName = "obj_Norm2"
 IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   ans = NORM2(obj=obj%realvec)
 ELSE
@@ -183,13 +183,13 @@ ELSE
     & 'This method has been implemented for NATIVE engines')
   ans = 0.0_DFP
 END IF
-END PROCEDURE anf_Norm2
+END PROCEDURE obj_Norm2
 
 !----------------------------------------------------------------------------
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetSingle
+MODULE PROCEDURE obj_GetSingle
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   VALUE = Get( &
     & obj=obj%realVec, &
@@ -201,14 +201,14 @@ ELSE
     & nodenum=indx, &
     & dataType=1.0_DFP)
 END IF
-END PROCEDURE anf_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                                GetNodeLoc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetNodeLoc1
-CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc1()"
+MODULE PROCEDURE obj_GetNodeLoc1
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc1()"
 INTEGER(I4B), ALLOCATABLE :: spaceCompo0(:), timeCompo0(:), localNode(:)
 INTEGER(I4B) :: ivar0, tsize, itime, ttime
 TYPE(IntVector_), ALLOCATABLE :: int_vec_list(:)
@@ -289,14 +289,14 @@ IF (ALLOCATED(localNode)) DEALLOCATE (localNode)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] GetNodeLoc1()')
 #endif
-END PROCEDURE anf_GetNodeLoc1
+END PROCEDURE obj_GetNodeLoc1
 
 !----------------------------------------------------------------------------
 !                                                                GetNodeLoc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetNodeLoc2
-CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc2()"
+MODULE PROCEDURE obj_GetNodeLoc2
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc2()"
 INTEGER(I4B), ALLOCATABLE :: globalNode(:), timeCompo(:)
 INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0
 
@@ -322,14 +322,14 @@ IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] GetNodeLoc2()')
 #endif
-END PROCEDURE anf_GetNodeLoc2
+END PROCEDURE obj_GetNodeLoc2
 
 !----------------------------------------------------------------------------
 !                                                                GetNodeLoc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_GetNodeLoc3
-CHARACTER(*), PARAMETER :: myName = "anf_GetNodeLoc3()"
+MODULE PROCEDURE obj_GetNodeLoc3
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc3()"
 INTEGER(I4B) :: ii, tsize
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 
@@ -352,7 +352,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] GetNodeLoc3()')
 #endif
 
-END PROCEDURE anf_GetNodeLoc3
+END PROCEDURE obj_GetNodeLoc3
 
 !----------------------------------------------------------------------------
 !

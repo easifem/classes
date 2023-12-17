@@ -95,7 +95,7 @@ CONTAINS
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set8
     !! Set values to a vector
 
-  ! Get:
+  ! GET:
   ! @GetMethods
   PROCEDURE, PASS(obj) :: Get1 => sField_Get1
     !! Get single entry
