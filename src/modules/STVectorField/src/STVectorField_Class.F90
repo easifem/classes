@@ -111,11 +111,12 @@ CONTAINS
     !! Set selected values to given STvector
   PROCEDURE, PASS(obj) :: Set16 => obj_Set16
   PROCEDURE, PASS(obj) :: Set17 => obj_Set17
+  PROCEDURE, PASS(obj) :: Set18 => obj_Set18
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
     & Set7, Set8, Set9, Set10, Set11, &
     & Set12, Set13, Set14, Set15, Set16,  &
-    & Set17
+    & Set17, Set18
 
   ! GET:
   ! @GetMethods
@@ -802,6 +803,21 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! Add contribution
   END SUBROUTINE obj_Set17
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set18(obj, VALUE)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(STVectorField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set18
 END INTERFACE
 
 !----------------------------------------------------------------------------
