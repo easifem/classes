@@ -54,71 +54,83 @@ TYPE, EXTENDS(VectorField_) :: VectorFieldLis_
 #ifdef USE_LIS
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => vField_Size
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => vField_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => vField_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => vField_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => vField_Initiate1
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => vField_Deallocate
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => &
-    & vField_GetPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent => &
-    & vField_GetPointerOfComponent
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => vField_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => vField_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => vField_Export
-  FINAL :: vField_Final
-  !
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_Final
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+
+  ! SET:
   ! @SetMethods
-  !
-  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => vField_SetSingle
-  PROCEDURE, PASS(obj) :: SetAll => vField_SetAll
-  PROCEDURE, PASS(obj) :: SetMultiple => vField_SetMultiple
-  PROCEDURE, PASS(obj) :: Set1 => vField_Set1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
+  PROCEDURE, PASS(obj) :: SetAll => obj_SetAll
+  PROCEDURE, PASS(obj) :: SetMultiple => obj_SetMultiple
+  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
     !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => vField_Set2
+  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
     !! Set all values to a Vector values
-  PROCEDURE, PASS(obj) :: Set3 => vField_Set3
+  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
     !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => vField_Set4
+  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
     !! Set selected values to given Vector
-  PROCEDURE, PASS(obj) :: Set5 => vField_Set5
+  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
     !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => vField_Set6
+  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
     !! Set values to a Vector by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => vField_Set7
+  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => vField_Set8
+  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set9 => vField_Set9
+  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set10 => vField_Set10
+  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set11 => vField_Set11
+  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set12 => vField_Set12
+  PROCEDURE, PASS(obj) :: Set12 => obj_Set12
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set13 => vField_Set13
-  PROCEDURE, PASS(obj) :: Set14 => vField_Set14
+  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
+  PROCEDURE, PASS(obj) :: Set14 => obj_Set14
     !! Set selected values using FEVariable
-  !
+  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
+
+  ! GET:
   ! @GetMethods
-  !
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => vField_GetSingle
-  PROCEDURE, PASS(obj) :: Get1 => vField_Get1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => &
+    & obj_GetPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent => &
+    & obj_GetPointerOfComponent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
+  PROCEDURE, PASS(obj) :: Get1 => obj_Get1
     !! returns the single entry
-  PROCEDURE, PASS(obj) :: Get2 => vField_Get2
+  PROCEDURE, PASS(obj) :: Get2 => obj_Get2
     !! returns all entries in rank2 array of real
-  PROCEDURE, PASS(obj) :: Get3 => vField_Get3
+  PROCEDURE, PASS(obj) :: Get3 => obj_Get3
     !! returns selected values in XiJ format
-  PROCEDURE, PASS(obj) :: Get4 => vField_Get4
-  PROCEDURE, PASS(obj) :: Get5 => vField_Get5
-  PROCEDURE, PASS(obj) :: Get6 => vField_Get6
-  PROCEDURE, PASS(obj) :: Get7 => vField_Get7
-  PROCEDURE, PASS(obj) :: Get8 => vField_Get8
-  PROCEDURE, PASS(obj) :: Get9 => vField_Get9
-  PROCEDURE, PASS(obj) :: Get10 => vField_Get10
+  PROCEDURE, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
+  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
+  PROCEDURE, PASS(obj) :: Get8 => obj_Get8
+  PROCEDURE, PASS(obj) :: Get9 => obj_Get9
+  PROCEDURE, PASS(obj) :: Get10 => obj_Get10
     !! Get the entries of Vector field
+
+  ! GET:
+  ! @BlasMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
+  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+
 #endif
 END TYPE VectorFieldLis_
 
@@ -142,11 +154,11 @@ END TYPE VectorFieldLisPointer_
 ! summary:         This function returns an instance of [[VectorFieldLis_]]
 
 INTERFACE VectorFieldLis
-  MODULE FUNCTION vField_Constructor1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(VectorFieldLis_) :: ans
-  END FUNCTION vField_Constructor1
+  END FUNCTION obj_Constructor1
 END INTERFACE VectorFieldLis
 
 !----------------------------------------------------------------------------
@@ -158,47 +170,14 @@ END INTERFACE VectorFieldLis
 ! summary:         This function returns an instance of [[VectorFieldLis_]]
 
 INTERFACE VectorFieldLis_Pointer
-  MODULE FUNCTION vField_Constructor_1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(VectorFieldLis_), POINTER :: ans
-  END FUNCTION vField_Constructor_1
+  END FUNCTION obj_Constructor_1
 END INTERFACE VectorFieldLis_Pointer
 
 #ifdef USE_LIS
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION vField_Norm2(obj) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION vField_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION vField_Norm1(obj) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION vField_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION vField_Normi(obj) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION vField_Normi
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    Size@ConstructorMethods
@@ -209,11 +188,11 @@ END INTERFACE
 ! summary: Returns the size
 
 INTERFACE
-  MODULE FUNCTION vField_Size(obj, dims) RESULT(ans)
+  MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
-  END FUNCTION vField_Size
+  END FUNCTION obj_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -234,11 +213,11 @@ END INTERFACE
 ! - `fieldType` type of field type; FIELD_TYPE_CONSTANT, FIELD_TYPE_NORMAL
 
 INTERFACE
-  MODULE SUBROUTINE vField_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE vField_Initiate1
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -250,9 +229,9 @@ END INTERFACE
 ! summary:  Deallocate the data stored inside the VectorFieldLis_ obj
 
 INTERFACE
-  MODULE SUBROUTINE vField_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-  END SUBROUTINE vField_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -260,9 +239,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE vField_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(VectorFieldLis_), INTENT(INOUT) :: obj
-  END SUBROUTINE vField_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -274,11 +253,11 @@ END INTERFACE
 ! summary: Display the content of [[VectorFieldLis_]]
 
 INTERFACE
-  MODULE SUBROUTINE vField_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE vField_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -290,13 +269,13 @@ END INTERFACE
 ! summary: This routine Imports the content
 
 INTERFACE
-  MODULE SUBROUTINE vField_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE vField_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -308,11 +287,11 @@ END INTERFACE
 ! summary: This routine Exports the content
 
 INTERFACE
-  MODULE SUBROUTINE vField_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE vField_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -320,14 +299,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE vField_SetSingle(obj, indx, VALUE, scale, &
+  MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_SetSingle
+  END SUBROUTINE obj_SetSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -335,12 +314,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE vField_SetAll(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetAll(obj, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_SetAll
+  END SUBROUTINE obj_SetAll
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -348,13 +327,13 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE vField_SetMultiple(obj, indx, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple(obj, indx, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx(:)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_SetMultiple
+  END SUBROUTINE obj_SetMultiple
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -381,14 +360,14 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set1(obj, globalNode, VALUE, &
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, &
     & scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set1
+  END SUBROUTINE obj_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -414,12 +393,12 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set2(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), TARGET, INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set2
+  END SUBROUTINE obj_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -447,13 +426,13 @@ END INTERFACE
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_Set3(obj, VALUE, spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set3(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set3
+  END SUBROUTINE obj_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -481,12 +460,12 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set4(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set4
+  END SUBROUTINE obj_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -514,13 +493,13 @@ END INTERFACE
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_Set5(obj, VALUE, spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set5
+  END SUBROUTINE obj_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -554,13 +533,13 @@ END INTERFACE
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_Set6(obj, VALUE, spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set6(obj, VALUE, spaceCompo, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set6
+  END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -589,13 +568,13 @@ END INTERFACE
 !```
 
 INTERFACE
- MODULE SUBROUTINE vField_Set7(obj, VALUE, globalNode, scale, addContribution)
+  MODULE SUBROUTINE obj_Set7(obj, VALUE, globalNode, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set7
+  END SUBROUTINE obj_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -622,7 +601,7 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set8(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE obj_Set8(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -630,7 +609,7 @@ INTERFACE
   !! value is in value(i,J) format.
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set8
+  END SUBROUTINE obj_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -657,7 +636,7 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set9(obj, VALUE, globalNode, spaceCompo, scale, &
+  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, spaceCompo, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
@@ -665,7 +644,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set9
+  END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -682,7 +661,7 @@ END INTERFACE
 ! vector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set10(obj, VALUE, globalNode, spaceCompo, scale, &
+  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, spaceCompo, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
@@ -690,7 +669,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set10
+  END SUBROUTINE obj_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -705,7 +684,7 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set11(obj, VALUE, istart, iend, stride, scale, &
+  MODULE SUBROUTINE obj_Set11(obj, VALUE, istart, iend, stride, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
@@ -714,7 +693,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set11
+  END SUBROUTINE obj_Set11
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -729,7 +708,7 @@ END INTERFACE
 ! Set entries using the selected nodes using triplet.
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set12(obj, VALUE, istart, iend, stride, scale, &
+  MODULE SUBROUTINE obj_Set12(obj, VALUE, istart, iend, stride, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
@@ -738,7 +717,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: stride
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set12
+  END SUBROUTINE obj_Set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -750,14 +729,14 @@ END INTERFACE
 ! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set13(obj, VALUE, globalNode, scale, &
+  MODULE SUBROUTINE obj_Set13(obj, VALUE, globalNode, scale, &
     & addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set13
+  END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -769,12 +748,27 @@ END INTERFACE
 ! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_Set14(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set14(obj, VALUE, scale, addContribution)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE vField_Set14
+  END SUBROUTINE obj_Set14
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set16(obj, VALUE)
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+    CLASS(VectorField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set16
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -794,12 +788,12 @@ END INTERFACE
 ! In this case this routine returns the entire vector of spacecompo.
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get1(obj, VALUE, globalNode, spaceCompo)
+  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, spaceCompo)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_Get1
+  END SUBROUTINE obj_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -811,11 +805,11 @@ END INTERFACE
 ! summary: This routine Get all the entries by using given Vector field
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get2(obj, VALUE, force3D)
+  MODULE SUBROUTINE obj_Get2(obj, VALUE, force3D)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
-  END SUBROUTINE vField_Get2
+  END SUBROUTINE obj_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -827,12 +821,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get3(obj, VALUE, globalNode, force3D)
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, force3D)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
-  END SUBROUTINE vField_Get3
+  END SUBROUTINE obj_Get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -844,12 +838,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get4(obj, VALUE, globalNode, spaceCompo)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, spaceCompo)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_Get4
+  END SUBROUTINE obj_Get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -861,12 +855,12 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get5(obj, VALUE, globalNode, spaceCompo)
+  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, spaceCompo)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_Get5
+  END SUBROUTINE obj_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -878,13 +872,13 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get6(obj, VALUE, istart, iend, stride)
+  MODULE SUBROUTINE obj_Get6(obj, VALUE, istart, iend, stride)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
-  END SUBROUTINE vField_Get6
+  END SUBROUTINE obj_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -896,14 +890,14 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get7(obj, VALUE, istart, iend, stride, spaceCompo)
+  MODULE SUBROUTINE obj_Get7(obj, VALUE, istart, iend, stride, spaceCompo)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_Get7
+  END SUBROUTINE obj_Get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -915,11 +909,11 @@ END INTERFACE
 ! summary: This routine returns the selected entries in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get8(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get8(obj, VALUE, globalNode)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE vField_Get8
+  END SUBROUTINE obj_Get8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -931,11 +925,11 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get9(obj, VALUE, spaceCompo)
+  MODULE SUBROUTINE obj_Get9(obj, VALUE, spaceCompo)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: spaceCompo
-  END SUBROUTINE vField_Get9
+  END SUBROUTINE obj_Get9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -947,10 +941,10 @@ END INTERFACE
 ! summary: This routine return value in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE vField_Get10(obj, VALUE)
+  MODULE SUBROUTINE obj_Get10(obj, VALUE)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     CLASS(VectorField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE vField_Get10
+  END SUBROUTINE obj_Get10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -962,11 +956,11 @@ END INTERFACE
 ! summary: This routine cannot be called
 
 INTERFACE
-  MODULE FUNCTION vField_GetPointerOfComponent(obj, spaceCompo) RESULT(ans)
+  MODULE FUNCTION obj_GetPointerOfComponent(obj, spaceCompo) RESULT(ans)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     REAL(DFP), POINTER :: ans(:)
-  END FUNCTION vField_GetPointerOfComponent
+  END FUNCTION obj_GetPointerOfComponent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -978,10 +972,10 @@ END INTERFACE
 ! summary: This routine cannot be called
 
 INTERFACE
-  MODULE FUNCTION vField_GetPointer(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
     CLASS(VectorFieldLis_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:)
-  END FUNCTION vField_GetPointer
+  END FUNCTION obj_GetPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -993,11 +987,59 @@ END INTERFACE
 ! summary: Get single entry
 
 INTERFACE
-  MODULE SUBROUTINE vField_GetSingle(obj, indx, VALUE)
+  MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
-  END SUBROUTINE vField_GetSingle
+  END SUBROUTINE obj_GetSingle
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Normi
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         COPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Copy obj=obj2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
