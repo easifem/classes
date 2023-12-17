@@ -25,8 +25,8 @@ CONTAINS
 !                                                                   set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set1
-CHARACTER(*), PARAMETER :: myName = "stvField_set1()"
+MODULE PROCEDURE obj_set1
+CHARACTER(*), PARAMETER :: myName = "obj_set1()"
 INTEGER(I4B) :: localNode
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -87,15 +87,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set1
+END PROCEDURE obj_set1
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set2
+MODULE PROCEDURE obj_set2
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stvField_set2"
+CHARACTER(*), PARAMETER :: myName = "obj_set2"
 INTEGER(I4B) :: ii, aa, idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -152,15 +152,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set2
+END PROCEDURE obj_set2
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set3
+MODULE PROCEDURE obj_set3
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stvField_set3"
+CHARACTER(*), PARAMETER :: myName = "obj_set3"
 INTEGER(I4B) :: idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -203,14 +203,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set3
+END PROCEDURE obj_set3
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set4
-CHARACTER(*), PARAMETER :: myName = "stvField_set4"
+MODULE PROCEDURE obj_set4
+CHARACTER(*), PARAMETER :: myName = "obj_set4"
 INTEGER(I4B) :: tnodes
 REAL(DFP), ALLOCATABLE :: vec(:)
 REAL(DFP) :: areal
@@ -254,15 +254,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set4
+END PROCEDURE obj_set4
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set5
+MODULE PROCEDURE obj_set5
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stvField_set5"
+CHARACTER(*), PARAMETER :: myName = "obj_set5"
 INTEGER(I4B) :: idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -310,16 +310,16 @@ vecPointer => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE stvField_set5
+END PROCEDURE obj_set5
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set6
+MODULE PROCEDURE obj_set6
 REAL(DFP), POINTER :: vecPointer(:)
 REAL(DFP) :: vec(1)
-CHARACTER(*), PARAMETER :: myName = "stvField_set6"
+CHARACTER(*), PARAMETER :: myName = "obj_set6"
 INTEGER(I4B) :: idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -386,13 +386,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set6
+END PROCEDURE obj_set6
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set7
+MODULE PROCEDURE obj_set7
 REAL(DFP) :: val(SIZE(VALUE, 1), SIZE(VALUE, 2), SIZE(globalNode))
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
@@ -400,14 +400,14 @@ DO ii = 1, SIZE(globalNode)
 END DO
 CALL obj%set(VALUE=val, globalNode=globalNode, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stvField_set7
+END PROCEDURE obj_set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set8
-CHARACTER(*), PARAMETER :: myName = "stvField_set8"
+MODULE PROCEDURE obj_set8
+CHARACTER(*), PARAMETER :: myName = "obj_set8"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: val(SIZE(VALUE))
 REAL(DFP) :: areal
@@ -466,15 +466,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set8
+END PROCEDURE obj_set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set9
+MODULE PROCEDURE obj_set9
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stvField_set9"
+CHARACTER(*), PARAMETER :: myName = "obj_set9"
 INTEGER(I4B) :: idof
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: areal
@@ -530,15 +530,15 @@ vecPointer => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE stvField_set9
+END PROCEDURE obj_set9
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set10
+MODULE PROCEDURE obj_set10
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stvField_set9"
+CHARACTER(*), PARAMETER :: myName = "obj_set9"
 INTEGER(I4B) :: idof
 INTEGER(I4B) :: localNode
 REAL(DFP) :: areal
@@ -589,14 +589,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set10
+END PROCEDURE obj_set10
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set11
-CHARACTER(*), PARAMETER :: myName = "stvField_set11"
+MODULE PROCEDURE obj_set11
+CHARACTER(*), PARAMETER :: myName = "obj_set11"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 #ifdef DEBUG_VER
@@ -620,14 +620,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set11
+END PROCEDURE obj_set11
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set12
-CHARACTER(*), PARAMETER :: myName = "stvField_set12()"
+MODULE PROCEDURE obj_set12
+CHARACTER(*), PARAMETER :: myName = "obj_set12()"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 #ifdef DEBUG_VER
@@ -648,14 +648,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set12
+END PROCEDURE obj_set12
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set13
-CHARACTER(*), PARAMETER :: myName = "stvField_set13()"
+MODULE PROCEDURE obj_set13
+CHARACTER(*), PARAMETER :: myName = "obj_set13()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -679,14 +679,14 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE stvField_set13
+END PROCEDURE obj_set13
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set14
-CHARACTER(*), PARAMETER :: myName = "stvField_set14"
+MODULE PROCEDURE obj_set14
+CHARACTER(*), PARAMETER :: myName = "obj_set14"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 areal = Input(option=scale, default=1.0_DFP)
@@ -703,14 +703,14 @@ IF (abool) THEN
 ELSE
   CALL Set(obj=obj%realvec, VALUE=VALUE)
 END IF
-END PROCEDURE stvField_set14
+END PROCEDURE obj_set14
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set15
-CHARACTER(*), PARAMETER :: myName = "stvField_set15"
+MODULE PROCEDURE obj_set15
+CHARACTER(*), PARAMETER :: myName = "obj_set15"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -751,14 +751,14 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stvField_set15
+END PROCEDURE obj_set15
 
 !----------------------------------------------------------------------------
 !                                                                      set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set16
-CHARACTER(*), PARAMETER :: myName = "stvField_set16()"
+MODULE PROCEDURE obj_set16
+CHARACTER(*), PARAMETER :: myName = "obj_set16()"
 INTEGER(I4B) :: ii, aint, bint
 LOGICAL(LGT) :: problem
 
@@ -801,14 +801,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set16
+END PROCEDURE obj_set16
 
 !----------------------------------------------------------------------------
 !                                                                    set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set17
-CHARACTER(*), PARAMETER :: myName = "stvField_set17()"
+MODULE PROCEDURE obj_set17
+CHARACTER(*), PARAMETER :: myName = "obj_set17()"
 INTEGER(I4B) :: ii, aint, bint
 LOGICAL(LGT) :: problem
 
@@ -854,6 +854,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE stvField_set17
+END PROCEDURE obj_set17
 
 END SUBMODULE SetMethods

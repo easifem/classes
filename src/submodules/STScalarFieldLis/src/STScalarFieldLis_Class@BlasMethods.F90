@@ -24,9 +24,9 @@ CONTAINS
 !                                                                      Norm2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Norm2
+MODULE PROCEDURE obj_Norm2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Norm2"
+CHARACTER(*), PARAMETER :: myName = "obj_Norm2"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -37,15 +37,15 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STScalarFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE stsField_Norm2
+END PROCEDURE obj_Norm2
 
 !----------------------------------------------------------------------------
 !                                                                      Norm1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Norm1
+MODULE PROCEDURE obj_Norm1
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Norm1"
+CHARACTER(*), PARAMETER :: myName = "obj_Norm1"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -56,15 +56,15 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STScalarFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE stsField_Norm1
+END PROCEDURE obj_Norm1
 
 !----------------------------------------------------------------------------
 !                                                                      Normi
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Normi
+MODULE PROCEDURE obj_Normi
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Normi"
+CHARACTER(*), PARAMETER :: myName = "obj_Normi"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -75,5 +75,5 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STScalarFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE stsField_Normi
+END PROCEDURE obj_Normi
 END SUBMODULE BlasMethods

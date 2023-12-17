@@ -24,7 +24,7 @@ CONTAINS
 !                                                             GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_GetSingle
+MODULE PROCEDURE obj_GetSingle
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -34,24 +34,24 @@ ELSE
   CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE sField_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                               GetPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_getPointer
-CHARACTER(*), PARAMETER :: myName = "sField_getPointer"
+MODULE PROCEDURE obj_getPointer
+CHARACTER(*), PARAMETER :: myName = "obj_getPointer"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for ScalarFieldLis_')
-END PROCEDURE sField_getPointer
+END PROCEDURE obj_getPointer
 
 !----------------------------------------------------------------------------
 !                                                                   get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get1
-CHARACTER(*), PARAMETER :: myName = "sField_get1"
+MODULE PROCEDURE obj_get1
+CHARACTER(*), PARAMETER :: myName = "obj_get1"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: tSize
 INTEGER(I4B) :: ierr
@@ -85,15 +85,15 @@ ELSE
 
 END IF
 
-END PROCEDURE sField_get1
+END PROCEDURE obj_get1
 
 !----------------------------------------------------------------------------
 !                                                                   get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get2
+MODULE PROCEDURE obj_get2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_get1"
+CHARACTER(*), PARAMETER :: myName = "obj_get1"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tSize
 INTEGER(I4B) :: ii
@@ -124,15 +124,15 @@ ELSE
 
 END IF
 
-END PROCEDURE sField_get2
+END PROCEDURE obj_get2
 
 !----------------------------------------------------------------------------
 !                                                                   get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get3
+MODULE PROCEDURE obj_get3
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_get3"
+CHARACTER(*), PARAMETER :: myName = "obj_get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: tSize
@@ -174,13 +174,13 @@ ELSE
 
 END IF
 
-END PROCEDURE sField_get3
+END PROCEDURE obj_get3
 
 !----------------------------------------------------------------------------
 !                                                                   get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get4
+MODULE PROCEDURE obj_get4
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -188,13 +188,13 @@ DO ii = istart, iend, stride
   globalNode(jj) = ii
 END DO
 CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE sField_get4
+END PROCEDURE obj_get4
 
 !----------------------------------------------------------------------------
 !                                                                       get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get5
+MODULE PROCEDURE obj_get5
 REAL(DFP), ALLOCATABLE :: value0(:)
 CALL obj%Get(VALUE=value0, globalNode=globalNode)
 VALUE = NodalVariable( &
@@ -202,15 +202,15 @@ VALUE = NodalVariable( &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpace)
 IF (ALLOCATED(value0)) DEALLOCATE (value0)
-END PROCEDURE sField_get5
+END PROCEDURE obj_get5
 
 !----------------------------------------------------------------------------
 !                                                                       get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_get6
+MODULE PROCEDURE obj_get6
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_get6"
+CHARACTER(*), PARAMETER :: myName = "obj_get6"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: size1, size2
 REAL(DFP), POINTER :: realvec(:)
@@ -256,6 +256,6 @@ CLASS DEFAULT
   & 'No case found for type of value [ScalarField_, ScalarFieldLis_] '// &
   & ' are supported')
 END SELECT
-END PROCEDURE sField_get6
+END PROCEDURE obj_get6
 
 END SUBMODULE GetMethods

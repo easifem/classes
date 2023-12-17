@@ -25,17 +25,17 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Display
+MODULE PROCEDURE obj_Display
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL Display(obj%spaceCompo, msg="# spaceCompo = ", unitno=unitno)
-END PROCEDURE vField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Import
-CHARACTER(*), PARAMETER :: myName = "vField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: strval, dsetname, name, engine
 INTEGER(I4B) :: fieldType, spaceCompo
 TYPE(ParameterList_) :: param
@@ -89,14 +89,14 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
-END PROCEDURE vField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                  Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Export
-CHARACTER(*), PARAMETER :: myName = "vField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -110,7 +110,7 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE vField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !

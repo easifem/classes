@@ -24,7 +24,7 @@ CONTAINS
 !                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get1
+MODULE PROCEDURE obj_Get1
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   VALUE = Get( &
     & obj=obj%realVec, &
@@ -36,13 +36,13 @@ ELSE
     & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
     & dataType=1.0_DFP)
 END IF
-END PROCEDURE sField_Get1
+END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
 !                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get2
+MODULE PROCEDURE obj_Get2
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
   CALL reallocate(VALUE, obj%tsize)
   VALUE = Get( &
@@ -56,24 +56,24 @@ ELSE
     & VALUE=VALUE, &
     & idof=1)
 END IF
-END PROCEDURE sField_Get2
+END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
 !                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get3
+MODULE PROCEDURE obj_Get3
 VALUE = Get( &
   & obj=obj%realVec, &
   & nodenum=obj%domain%GetLocalNodeNumber(globalNode), &
   & dataType=1.0_DFP)
-END PROCEDURE sField_Get3
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
 !                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get4
+MODULE PROCEDURE obj_Get4
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -81,13 +81,13 @@ DO ii = istart, iend, stride
   globalNode(jj) = ii
 END DO
 CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE sField_Get4
+END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get5
+MODULE PROCEDURE obj_Get5
 VALUE = NodalVariable( &
   & Get( &
   & obj=obj%realVec, &
@@ -95,22 +95,22 @@ VALUE = NodalVariable( &
   & dataType=1.0_DFP), &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpace)
-END PROCEDURE sField_Get5
+END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get6
+MODULE PROCEDURE obj_Get6
 CALL GetValue(obj=obj%realVec, VALUE=VALUE%realVec)
-END PROCEDURE sField_Get6
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Get7
-CHARACTER(*), PARAMETER :: myName = "sField_Get7"
+MODULE PROCEDURE obj_Get7
+CHARACTER(*), PARAMETER :: myName = "obj_Get7"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -150,23 +150,23 @@ DO ii = 1, tsize
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
 
-END PROCEDURE sField_Get7
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !                                                              GetFeVariable
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_GetFEVariable
-CHARACTER(*), PARAMETER :: myName = "sField_GetFEVariable()"
+MODULE PROCEDURE obj_GetFEVariable
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
 CALL obj%Get(VALUE=VALUE, globalNode=globalNode)
-END PROCEDURE sField_GetFEVariable
+END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE sField_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

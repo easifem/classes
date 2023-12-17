@@ -25,8 +25,8 @@ CONTAINS
 !                                                                   set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set1
-CHARACTER(*), PARAMETER :: myName = "vField_set1"
+MODULE PROCEDURE obj_set1
+CHARACTER(*), PARAMETER :: myName = "obj_set1"
 INTEGER(I4B) :: localNode
 
 IF (.NOT. obj%isInitiated) THEN
@@ -91,15 +91,15 @@ ELSE
 
 END IF
 
-END PROCEDURE vField_set1
+END PROCEDURE obj_set1
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set2
+MODULE PROCEDURE obj_set2
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "vField_set2"
+CHARACTER(*), PARAMETER :: myName = "obj_set2"
 INTEGER(I4B) :: idof
 
 IF (.NOT. obj%isInitiated) THEN
@@ -144,15 +144,15 @@ ELSE
   END IF
   vecPointer => NULL()
 END IF
-END PROCEDURE vField_set2
+END PROCEDURE obj_set2
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set3
+MODULE PROCEDURE obj_set3
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "vField_set3"
+CHARACTER(*), PARAMETER :: myName = "obj_set3"
 INTEGER(I4B) :: idof
 
 IF (.NOT. obj%isInitiated) THEN
@@ -173,14 +173,14 @@ ELSE
   vecPointer => NULL()
 END IF
 
-END PROCEDURE vField_set3
+END PROCEDURE obj_set3
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set4
-CHARACTER(*), PARAMETER :: myName = "vField_set4"
+MODULE PROCEDURE obj_set4
+CHARACTER(*), PARAMETER :: myName = "obj_set4"
 INTEGER(I4B) :: ii, tnodes, aa, jj
 
 IF (.NOT. obj%isInitiated) THEN
@@ -221,15 +221,15 @@ ELSE
   END DO
 END IF
 
-END PROCEDURE vField_set4
+END PROCEDURE obj_set4
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set5
+MODULE PROCEDURE obj_set5
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "vField_set5"
+CHARACTER(*), PARAMETER :: myName = "obj_set5"
 
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -256,15 +256,15 @@ ELSE
 END IF
 
 vecPointer => NULL()
-END PROCEDURE vField_set5
+END PROCEDURE obj_set5
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set6
+MODULE PROCEDURE obj_set6
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "vField_set5"
+CHARACTER(*), PARAMETER :: myName = "obj_set5"
 
 IF (.NOT. obj%isInitiated .OR. .NOT. VALUE%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -302,13 +302,13 @@ CLASS DEFAULT
   & 'No case found for the type of value.')
 END SELECT
 
-END PROCEDURE vField_set6
+END PROCEDURE obj_set6
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set7
+MODULE PROCEDURE obj_set7
 REAL(DFP) :: val(SIZE(VALUE), SIZE(globalNode))
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
@@ -316,14 +316,14 @@ DO ii = 1, SIZE(globalNode)
 END DO
 CALL obj%set(VALUE=val, globalNode=globalNode, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE vField_set7
+END PROCEDURE obj_set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set8
-CHARACTER(*), PARAMETER :: myName = "vField_set8"
+MODULE PROCEDURE obj_set8
+CHARACTER(*), PARAMETER :: myName = "obj_set8"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: val(SIZE(VALUE))
 
@@ -365,15 +365,15 @@ ELSE
     & VALUE=val, &
     & conversion=[NONE])
 END IF
-END PROCEDURE vField_set8
+END PROCEDURE obj_set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set9
+MODULE PROCEDURE obj_set9
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "vField_set9"
+CHARACTER(*), PARAMETER :: myName = "obj_set9"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 
 IF (.NOT. obj%isInitiated) &
@@ -411,15 +411,15 @@ ELSE
 END IF
 
 vecPointer => NULL()
-END PROCEDURE vField_set9
+END PROCEDURE obj_set9
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set10
+MODULE PROCEDURE obj_set10
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "vField_set9"
+CHARACTER(*), PARAMETER :: myName = "obj_set9"
 INTEGER(I4B) :: localNode
 
 IF (.NOT. obj%isInitiated) &
@@ -449,14 +449,14 @@ ELSE
 END IF
 
 vecPointer => NULL()
-END PROCEDURE vField_set10
+END PROCEDURE obj_set10
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set11
-CHARACTER(*), PARAMETER :: myName = "vField_set11"
+MODULE PROCEDURE obj_set11
+CHARACTER(*), PARAMETER :: myName = "obj_set11"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -465,14 +465,14 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE vField_set11
+END PROCEDURE obj_set11
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set12
-CHARACTER(*), PARAMETER :: myName = "vField_set12"
+MODULE PROCEDURE obj_set12
+CHARACTER(*), PARAMETER :: myName = "obj_set12"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -481,14 +481,14 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE vField_set12
+END PROCEDURE obj_set12
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set13
-CHARACTER(*), PARAMETER :: myName = "vField_set13"
+MODULE PROCEDURE obj_set13
+CHARACTER(*), PARAMETER :: myName = "obj_set13"
 
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -518,26 +518,26 @@ CASE (Space)
     & scale=scale, &
     & addContribution=addContribution)
 END SELECT
-END PROCEDURE vField_set13
+END PROCEDURE obj_set13
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set14
+MODULE PROCEDURE obj_set14
 IF (PRESENT(addContribution)) THEN
   CALL Add(obj=obj%realvec, VALUE=VALUE, scale=scale)
 ELSE
   CALL Set(obj=obj%realvec, VALUE=VALUE)
 END IF
-END PROCEDURE vField_set14
+END PROCEDURE obj_set14
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_set15
-CHARACTER(*), PARAMETER :: myName = "vField_set15"
+MODULE PROCEDURE obj_set15
+CHARACTER(*), PARAMETER :: myName = "obj_set15"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -578,6 +578,6 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE vField_set15
+END PROCEDURE obj_set15
 
 END SUBMODULE SetMethods

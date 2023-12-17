@@ -26,8 +26,8 @@ CONTAINS
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Import
-CHARACTER(*), PARAMETER :: myName = "sField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
@@ -67,6 +67,6 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
-END PROCEDURE sField_Import
+END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods

@@ -25,18 +25,18 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Display
+MODULE PROCEDURE obj_Display
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL Display(obj%spaceCompo, msg="# spaceCompo = ", unitno=unitno)
 CALL Display(obj%timeCompo, msg="# timeCompo = ", unitno=unitno)
-END PROCEDURE stvField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                     Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Import
-CHARACTER(*), PARAMETER :: myName = "stvField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
@@ -99,14 +99,14 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
-END PROCEDURE stvField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Export
-CHARACTER(*), PARAMETER :: myName = "stvField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -124,7 +124,7 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE stvField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !

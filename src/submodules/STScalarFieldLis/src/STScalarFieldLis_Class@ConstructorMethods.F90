@@ -24,18 +24,18 @@ CONTAINS
 !                                                             STScalarField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Constructor1
+MODULE PROCEDURE obj_Constructor1
 CALL ans%initiate(param, dom)
-END PROCEDURE stsField_Constructor1
+END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
 !                                                     STScalarField_Pointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Constructor_1
+MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
 CALL ans%initiate(param, dom)
-END PROCEDURE stsField_Constructor_1
+END PROCEDURE obj_Constructor_1
 
 #ifdef USE_LIS
 
@@ -43,17 +43,17 @@ END PROCEDURE stsField_Constructor_1
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE stsField_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Initiate1
+MODULE PROCEDURE obj_Initiate1
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ierr
 
 CALL STScalarFieldInitiate1(obj=obj, param=param, dom=dom)
@@ -67,27 +67,27 @@ CALL CHKERR(ierr)
 CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
 
-END PROCEDURE stsField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 CALL lis_vector_destroy(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 CALL STScalarFieldDeallocate(obj)
-END PROCEDURE stsField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Size
+MODULE PROCEDURE obj_Size
 ans = obj%local_n
-END PROCEDURE stsField_Size
+END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !

@@ -25,7 +25,7 @@ CONTAINS
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_GetSingle
+MODULE PROCEDURE obj_GetSingle
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -35,14 +35,14 @@ ELSE
   CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stvField_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get1
-CHARACTER(*), PARAMETER :: myName = "stvField_get1"
+MODULE PROCEDURE obj_get1
+CHARACTER(*), PARAMETER :: myName = "obj_get1"
 INTEGER(I4B) :: case_id
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: indx
@@ -168,14 +168,14 @@ CASE DEFAULT
   & ' spaceCompo or timeCompo should be present')
 END SELECT
 
-END PROCEDURE stvField_get1
+END PROCEDURE obj_get1
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get2
-CHARACTER(*), PARAMETER :: myName = "stvField_get2"
+MODULE PROCEDURE obj_get2
+CHARACTER(*), PARAMETER :: myName = "obj_get2"
 INTEGER(I4B) :: tNodes
 INTEGER(I4B) :: ierr
 
@@ -197,14 +197,14 @@ CALL lis_vector_get_values( &
 & VALUE, ierr)
 CALL CHKERR(ierr)
 
-END PROCEDURE stvField_get2
+END PROCEDURE obj_get2
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get3
-CHARACTER(*), PARAMETER :: myName = "stvField_get3"
+MODULE PROCEDURE obj_get3
+CHARACTER(*), PARAMETER :: myName = "obj_get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode(SIZE(globalnode))
 INTEGER(I4B) :: ii
@@ -250,14 +250,14 @@ DO ii = 1, tsize
   END DO
 END DO
 
-END PROCEDURE stvField_get3
+END PROCEDURE obj_get3
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get4
-CHARACTER(*), PARAMETER :: myName = "stvField_get4"
+MODULE PROCEDURE obj_get4
+CHARACTER(*), PARAMETER :: myName = "obj_get4"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode(SIZE(globalnode))
 INTEGER(I4B) :: ii
@@ -307,14 +307,14 @@ DO ii = 1, tsize
   CALL CHKERR(ierr)
 END DO
 
-END PROCEDURE stvField_get4
+END PROCEDURE obj_get4
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get5
-CHARACTER(*), PARAMETER :: myName = "stvField_get5"
+MODULE PROCEDURE obj_get5
+CHARACTER(*), PARAMETER :: myName = "obj_get5"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ii
@@ -357,13 +357,13 @@ CALL lis_vector_get_value( &
   & VALUE, ierr)
 CALL CHKERR(ierr)
 
-END PROCEDURE stvField_get5
+END PROCEDURE obj_get5
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get6
+MODULE PROCEDURE obj_get6
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -371,13 +371,13 @@ DO ii = istart, iend, stride
   globalNode(jj) = ii
 END DO
 CALL obj%get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE stvField_get6
+END PROCEDURE obj_get6
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get7
+MODULE PROCEDURE obj_get7
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -389,14 +389,14 @@ CALL obj%get( &
   & VALUE=VALUE, &
   & spaceCompo=spaceCompo, &
   & timeCompo=timeCompo)
-END PROCEDURE stvField_get7
+END PROCEDURE obj_get7
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get8
-CHARACTER(*), PARAMETER :: myName = "stvField_get8"
+MODULE PROCEDURE obj_get8
+CHARACTER(*), PARAMETER :: myName = "obj_get8"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: jj
@@ -437,13 +437,13 @@ DO jj = 1, obj%timeCompo
   END DO
 END DO
 
-END PROCEDURE stvField_get8
+END PROCEDURE obj_get8
 
 !----------------------------------------------------------------------------
 !                                                                      get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get9
+MODULE PROCEDURE obj_get9
 REAL(DFP), ALLOCATABLE :: m3a(:, :, :), m3b(:, :, :)
 CALL obj%get(VALUE=m3b, globalNode=globalNode)
 
@@ -455,14 +455,14 @@ VALUE = NodalVariable(m3a, TypeFEVariableVector, &
   & TypeFEVariableSpacetime)
 
 DEALLOCATE (m3a, m3b)
-END PROCEDURE stvField_get9
+END PROCEDURE obj_get9
 
 !----------------------------------------------------------------------------
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_get10
-CHARACTER(*), PARAMETER :: myName = "stvField_get10"
+MODULE PROCEDURE obj_get10
+CHARACTER(*), PARAMETER :: myName = "obj_get10"
 INTEGER(I4B) :: case_id
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tNodes
@@ -655,27 +655,27 @@ CASE default
   & 'No case found for given arguments')
 END SELECT
 
-END PROCEDURE stvField_get10
+END PROCEDURE obj_get10
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_getPointer
-CHARACTER(*), PARAMETER :: myName = "stvField_getPointer"
+MODULE PROCEDURE obj_getPointer
+CHARACTER(*), PARAMETER :: myName = "obj_getPointer"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for STVectorFieldLis_')
-END PROCEDURE stvField_getPointer
+END PROCEDURE obj_getPointer
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "stvField_getPointerOfComponent"
+MODULE PROCEDURE obj_getPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "obj_getPointerOfComponent"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for STVectorFieldLis_')
-END PROCEDURE stvField_getPointerOfComponent
+END PROCEDURE obj_getPointerOfComponent
 
 !----------------------------------------------------------------------------
 !

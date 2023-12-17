@@ -25,9 +25,9 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Display
+MODULE PROCEDURE obj_Display
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stvField_Display"
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -47,14 +47,14 @@ ELSE
 
 END IF
 
-END PROCEDURE stvField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                     Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Import
-CHARACTER(*), PARAMETER :: myName = "stvField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
@@ -141,14 +141,14 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
-END PROCEDURE stvField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Export
-CHARACTER(*), PARAMETER :: myName = "stvField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -169,6 +169,6 @@ END IF
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE stvField_Export
+END PROCEDURE obj_Export
 
 END SUBMODULE IOMethods
