@@ -153,6 +153,7 @@ CONTAINS
   ! @BlasMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AXPY => obj_AXPY
   PROCEDURE, PUBLIC, PASS(obj) :: SCAL => obj_SCAL
+  PROCEDURE, PUBLIC, PASS(obj) :: COPY => obj_Copy
 
 END TYPE AbstractNodeField_
 
@@ -624,6 +625,21 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: scale
   END SUBROUTINE obj_SCAL
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         COPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Copy obj=obj2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
