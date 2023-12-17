@@ -110,8 +110,11 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
     !! Set values using FEVariable
   PROCEDURE, PASS(obj) :: Set15 => obj_Set15
+  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
+
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    & Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
+    & Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14, Set15,  &
+    & Set16
 
   ! GET:
   ! @GetMethods
@@ -800,6 +803,24 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set15
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: Set the STScalar values
+!
+!# Introduction
+! Set entries using the selected nodes using triplet.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set16(obj, VALUE)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    CLASS(STScalarField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set16
 END INTERFACE
 
 !----------------------------------------------------------------------------
