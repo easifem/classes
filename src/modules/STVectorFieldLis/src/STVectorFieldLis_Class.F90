@@ -53,19 +53,22 @@ TYPE, EXTENDS(STVectorField_) :: STVectorFieldLis_
 #ifdef USE_LIS
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !
+
+  ! SET:
   ! @SetMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   PROCEDURE, PASS(obj) :: SetAll => obj_SetAll
   PROCEDURE, PASS(obj) :: SetMultiple => obj_SetMultiple
@@ -96,9 +99,10 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
     !! Set values to a STvector by using triplet
-  !
+  PROCEDURE, PASS(obj) :: Set18 => obj_Set18
+
+  ! GET:
   ! @GetMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   PROCEDURE, PASS(obj) :: Get1 => obj_Get1
   PROCEDURE, PASS(obj) :: Get2 => obj_Get2
@@ -116,6 +120,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointerOfComponent =>  &
     & obj_GetPointerOfComponent
     !! Get the entries of STVector field
+
+  ! GET:
+  ! @BlasMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
+  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+
 #endif
 END TYPE STVectorFieldLis_
 
@@ -207,6 +219,21 @@ INTERFACE
     CLASS(STVectorFieldLis_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_Normi
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         COPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Copy obj=obj2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -734,6 +761,21 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set14
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set18(obj, VALUE)
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
+    CLASS(STVectorField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set18
 END INTERFACE
 
 !----------------------------------------------------------------------------
