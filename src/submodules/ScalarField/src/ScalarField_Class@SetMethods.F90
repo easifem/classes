@@ -21,11 +21,11 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   set
+!                                                                   Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set1
-CHARACTER(*), PARAMETER :: myName = "obj_set1"
+MODULE PROCEDURE obj_Set1
+CHARACTER(*), PARAMETER :: myName = "obj_Set1"
 INTEGER(I4B) :: localNode
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -44,7 +44,7 @@ IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
     RETURN
   END IF
 
-  CALL set(obj%realVec, nodenum=[1], VALUE=[VALUE])
+  CALL Set(obj%realVec, nodenum=[1], VALUE=[VALUE])
   RETURN
 END IF
 
@@ -56,18 +56,18 @@ IF (localNode .NE. 0) THEN
     RETURN
   END IF
 
-  CALL set(obj%realVec, nodenum=[localNode], VALUE=[VALUE])
+  CALL Set(obj%realVec, nodenum=[localNode], VALUE=[VALUE])
   RETURN
 END IF
 
-END PROCEDURE obj_set1
+END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set2
-CHARACTER(*), PARAMETER :: myName = "obj_set2"
+MODULE PROCEDURE obj_Set2
+CHARACTER(*), PARAMETER :: myName = "obj_Set2"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 areal = Input(option=scale, default=1.0_DFP)
@@ -82,17 +82,17 @@ END IF
 IF (abool) THEN
   CALL add(obj%realVec, VALUE=VALUE, scale=areal)
 ELSE
-  CALL set(obj%realVec, VALUE=VALUE)
+  CALL Set(obj%realVec, VALUE=VALUE)
 END IF
 
-END PROCEDURE obj_set2
+END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set3
-CHARACTER(*), PARAMETER :: myName = "obj_set3"
+MODULE PROCEDURE obj_Set3
+CHARACTER(*), PARAMETER :: myName = "obj_Set3"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 areal = Input(option=scale, default=1.0_DFP)
@@ -121,17 +121,17 @@ END IF
 IF (abool) THEN
   CALL add(obj%realVec, VALUE=VALUE, scale=areal)
 ELSE
-  CALL set(obj%realVec, VALUE=VALUE)
+  CALL Set(obj%realVec, VALUE=VALUE)
 END IF
 
-END PROCEDURE obj_set3
+END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set4
-CHARACTER(*), PARAMETER :: myName = "obj_set4"
+MODULE PROCEDURE obj_Set4
+CHARACTER(*), PARAMETER :: myName = "obj_Set4"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -160,16 +160,16 @@ END IF
 IF (abool) THEN
   CALL add(obj%realVec, nodenum=localNode, VALUE=VALUE, scale=areal)
 ELSE
-  CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
+  CALL Set(obj%realVec, nodenum=localNode, VALUE=VALUE)
 END IF
-END PROCEDURE obj_set4
+END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set5
-CHARACTER(*), PARAMETER :: myName = "obj_set5"
+MODULE PROCEDURE obj_Set5
+CHARACTER(*), PARAMETER :: myName = "obj_Set5"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -203,17 +203,17 @@ IF (abool) THEN
     & VALUE=VALUE, &
     & scale=areal)
 ELSE
-  CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
+  CALL Set(obj%realVec, nodenum=localNode, VALUE=VALUE)
 END IF
 
-END PROCEDURE obj_set5
+END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
-!                                                                        set
+!                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set6
-CHARACTER(*), PARAMETER :: myName = "obj_set6"
+MODULE PROCEDURE obj_Set6
+CHARACTER(*), PARAMETER :: myName = "obj_Set6"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 jj = 0
@@ -221,16 +221,16 @@ DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
+CALL obj%Set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE obj_set6
+END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set7
-CHARACTER(*), PARAMETER :: myName = "obj_set7"
+MODULE PROCEDURE obj_Set7
+CHARACTER(*), PARAMETER :: myName = "obj_Set7"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 jj = 0
@@ -238,24 +238,37 @@ DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
+CALL obj%Set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE obj_set7
+END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set8
-CALL set(obj%realVec, VALUE=obj2%realVec)
-END PROCEDURE obj_set8
+MODULE PROCEDURE obj_Set8
+CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+CALL Set(obj%realVec, VALUE=VALUE%realVec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set9
-CHARACTER(*), PARAMETER :: myName = "obj_set9"
+MODULE PROCEDURE obj_Set9
+CHARACTER(*), PARAMETER :: myName = "obj_Set9"
 
 SELECT CASE (VALUE%vartype)
 CASE (Constant)
@@ -274,22 +287,22 @@ CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
   & 'No case found for Value%vartype, only [Constant and Space is allowed]')
 END SELECT
-END PROCEDURE obj_set9
+END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
-!                                                                       set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set10
+MODULE PROCEDURE obj_Set10
 CALL add(obj%realVec, VALUE=obj2%realVec, scale=scale)
-END PROCEDURE obj_set10
+END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
 !                                                                      Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set11
-CHARACTER(*), PARAMETER :: myName = "obj_set11"
+MODULE PROCEDURE obj_Set11
+CHARACTER(*), PARAMETER :: myName = "obj_Set11"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -330,7 +343,7 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE obj_set11
+END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
 !
