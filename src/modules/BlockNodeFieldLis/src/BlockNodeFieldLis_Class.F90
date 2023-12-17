@@ -34,6 +34,9 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "BlockNodeFieldLis_Class"
 CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
+PUBLIC :: BlockNodeFieldLis_
+PUBLIC :: TypeBlockNodeFieldLis
+PUBLIC :: BlockNodeFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                                         BlockNodeFieldLis_
@@ -113,9 +116,7 @@ CONTAINS
 #endif
 END TYPE BlockNodeFieldLis_
 
-PUBLIC :: BlockNodeFieldLis_
-
-TYPE(BlockNodeFieldLis_), PARAMETER, PUBLIC :: TypeBlockNodeFieldLis = &
+TYPE(BlockNodeFieldLis_), PARAMETER :: TypeBlockNodeFieldLis = &
 & BlockNodeFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
@@ -125,8 +126,6 @@ TYPE(BlockNodeFieldLis_), PARAMETER, PUBLIC :: TypeBlockNodeFieldLis = &
 TYPE :: BlockNodeFieldLisPointer_
   CLASS(BlockNodeFieldLis_), POINTER :: ptr => NULL()
 END TYPE BlockNodeFieldLisPointer_
-
-PUBLIC :: BlockNodeFieldLisPointer_
 
 #ifdef USE_LIS
 
@@ -821,10 +820,10 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
   END SUBROUTINE obj_Copy
 END INTERFACE
+#endif
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-#endif
 END MODULE BlockNodeFieldLis_Class

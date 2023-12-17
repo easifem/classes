@@ -116,10 +116,8 @@ CONTAINS
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: obj_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: obj_ApplyDirichletBC2
-  GENERIC, PUBLIC :: ApplyDirichletBC => obj_ApplyDirichletBC1, &
-    & obj_ApplyDirichletBC2
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
 
   ! GET:
   ! @OperatorMethods
@@ -905,10 +903,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, ivar)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
-    INTEGER(I4B), INTENT(IN) :: ivar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -921,10 +920,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, ivar)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-    INTEGER(I4B), INTENT(IN) :: ivar
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
