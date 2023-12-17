@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_isEqual
+MODULE PROCEDURE obj_isEqual
 ans = obj%realvec .EQ. obj2%realvec
-END PROCEDURE bnField_isEqual
+END PROCEDURE obj_isEqual
 
 END SUBMODULE OperatorMethods
