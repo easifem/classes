@@ -419,9 +419,9 @@ END INTERFACE
 ! summary: used for assignment operator
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, obj2)
+  MODULE SUBROUTINE obj_Set8(obj, VALUE)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: obj2
+    CLASS(ScalarField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set8
 END INTERFACE
 
