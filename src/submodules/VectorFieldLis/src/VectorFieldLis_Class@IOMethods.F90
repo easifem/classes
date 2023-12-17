@@ -25,9 +25,9 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Display
+MODULE PROCEDURE obj_Display
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "vField_Display"
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -47,14 +47,14 @@ ELSE
 
 END IF
 
-END PROCEDURE vField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Import
-CHARACTER(*), PARAMETER :: myName = "vField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 TYPE(ParameterList_) :: param
 LOGICAL(LGT) :: bools(3)
@@ -131,14 +131,14 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
-END PROCEDURE vField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                  Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_Export
-CHARACTER(*), PARAMETER :: myName = "vField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -159,7 +159,7 @@ END IF
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE vField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !
