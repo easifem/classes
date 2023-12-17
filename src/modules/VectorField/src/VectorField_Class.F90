@@ -108,11 +108,12 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   PROCEDURE, PASS(obj) :: Set15 => obj_Set15
+  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
   !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
     & Set7, Set8, Set9, Set10, Set11, Set12, &
-    & Set13, Set14, Set15
+    & Set13, Set14, Set15, Set16
 
   ! GET:
   ! @GetMethods
@@ -794,6 +795,21 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set15
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set16(obj, VALUE)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(VectorField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set16
 END INTERFACE
 
 !----------------------------------------------------------------------------
