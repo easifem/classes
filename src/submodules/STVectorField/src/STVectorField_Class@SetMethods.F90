@@ -856,4 +856,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 END PROCEDURE obj_set17
 
+!----------------------------------------------------------------------------
+!                                                                 Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set18
+CHARACTER(*), PARAMETER :: myName = "obj_Set18()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+CALL Set(obj=obj%realVec, VALUE=VALUE%realVec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_Set18
+
 END SUBMODULE SetMethods

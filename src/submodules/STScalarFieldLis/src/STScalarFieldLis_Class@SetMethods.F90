@@ -728,6 +728,91 @@ CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
+!                                                                 Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set16
+CHARACTER(*), PARAMETER :: myName = "obj_Set16()"
+INTEGER(I4B) :: ierr
+REAL(DFP), POINTER :: realvec(:)
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
+problem = .NOT. obj%isInitiated .OR. (ierr .EQ. LIS_TRUE)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: Either STScalarFieldLis_::obj is not initiated'// &
+  & " or, lis_ptr is not available")
+  RETURN
+END IF
+
+problem = .NOT. VALUE%isInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Either STScalarField_::value is not initiated')
+  RETURN
+END IF
+#endif
+
+SELECT TYPE (VALUE)
+TYPE is (STScalarField_)
+  realvec => NULL()
+  realvec => VALUE%GetPointer()
+
+#ifdef DEBUG_VER
+  problem = .NOT. ASSOCIATED(realvec)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: cannot get pointer from value.')
+    RETURN
+  END IF
+#endif
+
+  CALL obj%Set(VALUE=realvec)
+  realvec => NULL()
+
+TYPE is (STScalarFieldLis_)
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
+  problem = ierr .EQ. LIS_TRUE
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Either ScalarFieldLis_::obj%lis_ptr'// &
+    & " is not available")
+  END IF
+
+  problem = obj%SIZE() .NE. VALUE%SIZE()
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Size of obj and value are not same')
+    RETURN
+  END IF
+#endif
+
+  CALL lis_vector_copy(VALUE%lis_ptr, obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Unknown type of ScalarField_::value')
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Set16
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

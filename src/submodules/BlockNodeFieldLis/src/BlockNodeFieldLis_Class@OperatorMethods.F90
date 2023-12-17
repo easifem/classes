@@ -24,9 +24,9 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_isEqual
+MODULE PROCEDURE obj_isEqual
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "bnField_isEqual"
+CHARACTER(*), PARAMETER :: myName = "obj_isEqual"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: tsize
@@ -65,6 +65,6 @@ DO ii = 1, tsize
   END IF
 END DO
 
-END PROCEDURE bnField_isEqual
+END PROCEDURE obj_isEqual
 
 END SUBMODULE OperatorMethods

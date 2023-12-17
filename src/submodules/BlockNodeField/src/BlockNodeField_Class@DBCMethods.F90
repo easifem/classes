@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "bnField_applyDirichletBC1"
+MODULE PROCEDURE obj_applyDirichletBC1
+CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: idof, spacecompo, ttimecompo
@@ -57,14 +57,14 @@ ELSE
 END IF
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE bnField_applyDirichletBC1
+END PROCEDURE obj_applyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "bnField_applyDirichletBC2"
+MODULE PROCEDURE obj_applyDirichletBC2
+CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: ibc, idof, spacecompo, ttimecompo
@@ -98,7 +98,7 @@ DO ibc = 1, SIZE(dbc)
 END DO
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE bnField_applyDirichletBC2
+END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------
 !

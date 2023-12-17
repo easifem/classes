@@ -24,7 +24,7 @@ CONTAINS
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_setSingle
+MODULE PROCEDURE obj_SetSingle
 #include "lisf.h"
 INTEGER(I4B) :: i, ierr
 REAL(DFP) :: value0
@@ -57,13 +57,13 @@ ELSE
   CALL CHKERR(ierr)
 END IF
 
-END PROCEDURE bnField_setSingle
+END PROCEDURE obj_SetSingle
 
 !----------------------------------------------------------------------------
 !                                                               SetMultiple
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_setMultiple
+MODULE PROCEDURE obj_SetMultiple
 INTEGER(I4B) :: ierr, n
 REAL(DFP) :: value0(SIZE(VALUE))
 
@@ -91,13 +91,13 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE bnField_setMultiple
+END PROCEDURE obj_SetMultiple
 
 !----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_setAll
+MODULE PROCEDURE obj_SetAll
 INTEGER(I4B) :: ierr, ii, n
 REAL(DFP) :: value0
 
@@ -123,14 +123,14 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE bnField_setAll
+END PROCEDURE obj_SetAll
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set1
-CHARACTER(*), PARAMETER :: myName = "bnField_set1"
+MODULE PROCEDURE obj_Set1
+CHARACTER(*), PARAMETER :: myName = "obj_Set1"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -140,14 +140,14 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   & " or, obj%lis_ptr is not available")
 END IF
 CALL obj%setAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
-END PROCEDURE bnField_set1
+END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set2
-CHARACTER(*), PARAMETER :: myName = "bnField_set2"
+MODULE PROCEDURE obj_Set2
+CHARACTER(*), PARAMETER :: myName = "obj_Set2"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -168,14 +168,14 @@ END IF
 CALL lis_vector_scatter(VALUE, obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 
-END PROCEDURE bnField_set2
+END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set3
-CHARACTER(*), PARAMETER :: myName = "bnField_set3"
+MODULE PROCEDURE obj_Set3
+CHARACTER(*), PARAMETER :: myName = "obj_Set3"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx
@@ -204,14 +204,14 @@ indx = GetNodeLoc(&
 CALL obj%setSingle(indx=indx, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set3
+END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set4
-CHARACTER(*), PARAMETER :: myName = "bnField_set4"
+MODULE PROCEDURE obj_Set4
+CHARACTER(*), PARAMETER :: myName = "obj_Set4"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B), ALLOCATABLE :: indx(:)
@@ -243,14 +243,14 @@ DO ii = 1, SIZE(indx)
 END DO
 
 DEALLOCATE (indx)
-END PROCEDURE bnField_set4
+END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set5
-CHARACTER(*), PARAMETER :: myName = "bnField_set5"
+MODULE PROCEDURE obj_Set5
+CHARACTER(*), PARAMETER :: myName = "obj_Set5"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: tsize
 INTEGER(I4B), ALLOCATABLE :: indx(:)
@@ -288,14 +288,14 @@ CALL obj%SetMultiple(&
 
 DEALLOCATE (indx)
 
-END PROCEDURE bnField_set5
+END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set6
-CHARACTER(*), PARAMETER :: myName = "bnField_set6"
+MODULE PROCEDURE obj_Set6
+CHARACTER(*), PARAMETER :: myName = "obj_Set6"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode))
@@ -330,14 +330,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set6
+END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set7
-CHARACTER(*), PARAMETER :: myName = "bnField_set6"
+MODULE PROCEDURE obj_Set7
+CHARACTER(*), PARAMETER :: myName = "obj_Set6"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode))
@@ -373,14 +373,14 @@ CALL obj%SetMultiple(&
   & indx=indx, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE bnField_set7
+END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set8
-CHARACTER(*), PARAMETER :: myName = "bnField_set6"
+MODULE PROCEDURE obj_Set8
+CHARACTER(*), PARAMETER :: myName = "obj_Set6"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode))
@@ -417,14 +417,14 @@ CALL obj%SetMultiple(&
   & indx=indx, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE bnField_set8
+END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set9
-CHARACTER(*), PARAMETER :: myName = "bnField_set9"
+MODULE PROCEDURE obj_Set9
+CHARACTER(*), PARAMETER :: myName = "obj_Set9"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode))
@@ -459,14 +459,14 @@ CALL obj%SetMultiple(&
   & indx=indx, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE bnField_set9
+END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set10
-CHARACTER(*), PARAMETER :: myName = "bnField_set10"
+MODULE PROCEDURE obj_Set10
+CHARACTER(*), PARAMETER :: myName = "obj_Set10"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode))
@@ -519,14 +519,14 @@ DO jj = 1, nn
   END DO
 END DO
 
-END PROCEDURE bnField_set10
+END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set11
-CHARACTER(*), PARAMETER :: myName = "bnField_set11"
+MODULE PROCEDURE obj_Set11
+CHARACTER(*), PARAMETER :: myName = "obj_Set11"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode) * SIZE(timeCompo))
@@ -562,14 +562,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set11
+END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set12
-CHARACTER(*), PARAMETER :: myName = "bnField_set12"
+MODULE PROCEDURE obj_Set12
+CHARACTER(*), PARAMETER :: myName = "obj_Set12"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode))
@@ -621,14 +621,14 @@ DO jj = 1, nn
       & addContribution=addContribution)
   END DO
 END DO
-END PROCEDURE bnField_set12
+END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set13
-CHARACTER(*), PARAMETER :: myName = "bnField_set13"
+MODULE PROCEDURE obj_Set13
+CHARACTER(*), PARAMETER :: myName = "obj_Set13"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(globalNode) * SIZE(spaceCompo))
@@ -664,14 +664,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set13
+END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set14
-CHARACTER(*), PARAMETER :: myName = "bnField_set14"
+MODULE PROCEDURE obj_Set14
+CHARACTER(*), PARAMETER :: myName = "obj_Set14"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx
@@ -704,14 +704,14 @@ CALL obj%setSingle(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set14
+END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set15
-CHARACTER(*), PARAMETER :: myName = "bnField_set15"
+MODULE PROCEDURE obj_Set15
+CHARACTER(*), PARAMETER :: myName = "obj_Set15"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(timeCompo))
 REAL(DFP) :: value0(SIZE(timeCompo))
@@ -746,14 +746,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set15
+END PROCEDURE obj_Set15
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set16
-CHARACTER(*), PARAMETER :: myName = "bnField_set16"
+MODULE PROCEDURE obj_Set16
+CHARACTER(*), PARAMETER :: myName = "obj_Set16"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: indx(SIZE(spaceCompo))
 REAL(DFP) :: value0(SIZE(spaceCompo))
@@ -788,14 +788,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE bnField_set16
+END PROCEDURE obj_Set16
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_set17
-CHARACTER(*), PARAMETER :: myName = "bnField_set17"
+MODULE PROCEDURE obj_Set17
+CHARACTER(*), PARAMETER :: myName = "obj_Set17()"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize2
@@ -809,50 +809,50 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (.NOT. obj2%isInitiated) THEN
+IF (.NOT. VALUE%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'BlockNodeField_::obj2 is not initiated')
+  & 'BlockNodeField_::value is not initiated')
 END IF
 
 tsize = obj%SIZE()
-tsize2 = obj2%SIZE()
+tsize2 = VALUE%SIZE()
 
 IF (tsize .NE. tsize2) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Size of obj not same as size of obj2')
+    & 'Size of obj not same as size of value')
 END IF
 
-SELECT TYPE (obj2)
+SELECT TYPE (VALUE)
 TYPE IS (BlockNodeField_)
-  realvec => obj2%getPointer()
+  realvec => VALUE%getPointer()
   CALL obj%set(VALUE=realvec, scale=scale, addContribution=addContribution)
   NULLIFY (realvec)
 TYPE IS (BlockNodeFieldLis_)
-  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+  CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
   CALL CHKERR(ierr)
   IF (ierr .EQ. LIS_TRUE) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
-    & " obj2%lis_ptr is not available")
+    & " value%lis_ptr is not available")
   END IF
   IF (PRESENT(addContribution)) THEN
-    CALL lis_vector_axpy(scale, obj2%lis_ptr, obj%lis_ptr, ierr)
+    CALL lis_vector_axpy(scale, VALUE%lis_ptr, obj%lis_ptr, ierr)
     CALL CHKERR(ierr)
   ELSE
-    CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
+    CALL lis_vector_copy(VALUE%lis_ptr, obj%lis_ptr, ierr)
     CALL CHKERR(ierr)
   END IF
 CLASS DEFAULT
 END SELECT
 
-END PROCEDURE bnField_set17
+END PROCEDURE obj_Set17
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_assign
+MODULE PROCEDURE obj_assign
 CALL set(obj%realVec, VALUE=VALUE)
-END PROCEDURE bnField_assign
+END PROCEDURE obj_assign
 
 !----------------------------------------------------------------------------
 !

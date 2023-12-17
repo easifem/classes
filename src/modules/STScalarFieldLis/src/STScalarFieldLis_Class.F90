@@ -101,12 +101,15 @@ CONTAINS
     !! Set values using FEVariable
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
     !! Set values using FEVariable
+  PROCEDURE, PASS(obj) :: Set16 => obj_Set16
+    !! obj1 = obj2
 
   ! GET:
   ! @BlasMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
   PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
   PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
 
   ! GET:
   ! @GetMethods
@@ -277,39 +280,6 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -797,6 +767,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: Set the STScalar values
+!
+!# Introduction
+! Set entries using the selected nodes using triplet.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set16(obj, VALUE)
+    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    CLASS(STScalarField_), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_Set16
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1001,6 +989,54 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE obj_GetSingle
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Normi
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         COPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Copy obj=obj2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------

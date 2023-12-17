@@ -24,9 +24,9 @@ CONTAINS
 !                                                                      Norm2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Norm2
+MODULE PROCEDURE obj_Norm2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "bnField_Norm2"
+CHARACTER(*), PARAMETER :: myName = "obj_Norm2"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -36,14 +36,14 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STVectorFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE bnField_Norm2
+END PROCEDURE obj_Norm2
 
 !----------------------------------------------------------------------------
 !                                                                      Norm1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Norm1
-CHARACTER(*), PARAMETER :: myName = "bnField_Norm1"
+MODULE PROCEDURE obj_Norm1
+CHARACTER(*), PARAMETER :: myName = "obj_Norm1"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -53,14 +53,14 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STVectorFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE bnField_Norm1
+END PROCEDURE obj_Norm1
 
 !----------------------------------------------------------------------------
 !                                                                      Normi
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Normi
-CHARACTER(*), PARAMETER :: myName = "bnField_Normi"
+MODULE PROCEDURE obj_Normi
+CHARACTER(*), PARAMETER :: myName = "obj_Normi"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -70,7 +70,35 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STVectorFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE bnField_Normi
+END PROCEDURE obj_Normi
+
+!----------------------------------------------------------------------------
+!                                                                    Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Copy
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+SELECT TYPE (obj2)
+CLASS is (BlockNodeField_)
+  CALL obj%Set(VALUE=obj2)
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found for obj2 type')
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
 !

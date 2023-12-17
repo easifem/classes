@@ -86,6 +86,43 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SCAL
 
 !----------------------------------------------------------------------------
+!                                                                      COPY
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_COPY
+CHARACTER(*), PARAMETER :: myName = "obj_COPY()"
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+problem = obj%engine .NE. "NATIVE_SERIAL"
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: engine of obj should be NATIVE_SERIAL.')
+  RETURN
+END IF
+
+problem = obj2%engine .NE. "NATIVE_SERIAL"
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: engine of obj2 should be NATIVE_SERIAL.')
+  RETURN
+END IF
+#endif
+
+CALL COPY(y=obj%realVec, x=obj2%realVec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_COPY
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

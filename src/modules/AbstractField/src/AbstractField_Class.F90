@@ -141,7 +141,6 @@ CONTAINS
   !! Initiate  block fields (different physical variables) defined
   !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-  GENERIC, PUBLIC :: Copy => Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
   !! Deallocate the field
 
