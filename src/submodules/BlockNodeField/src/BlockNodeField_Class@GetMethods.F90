@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get1
-CHARACTER(*), PARAMETER :: myName = "bnField_Get1"
+MODULE PROCEDURE obj_Get1
+CHARACTER(*), PARAMETER :: myName = "obj_Get1"
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'BlockNodeField_::obj is not initiated')
@@ -35,26 +35,26 @@ VALUE = Get( &
   & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
   & ivar=ivar, &
   & idof=idof)
-END PROCEDURE bnField_Get1
+END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get2
-CHARACTER(*), PARAMETER :: myName = "bnField_Get2"
+MODULE PROCEDURE obj_Get2
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'BlockNodeField_::obj is not initiated')
 VALUE = Get(obj=obj%realVec)
-END PROCEDURE bnField_Get2
+END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get3
-CHARACTER(*), PARAMETER :: myName = "bnField_Get3"
+MODULE PROCEDURE obj_Get3
+CHARACTER(*), PARAMETER :: myName = "obj_Get3"
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'BlockNodeField_::obj is not initiated')
@@ -65,13 +65,13 @@ VALUE = Get( &
   & nodenum=obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode), &
   & ivar=ivar, &
   & idof=idof)
-END PROCEDURE bnField_Get3
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
 !                                                                   Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get4
+MODULE PROCEDURE obj_Get4
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -83,13 +83,13 @@ CALL obj%Get( &
   & VALUE=VALUE, &
   & ivar=ivar, &
   & idof=idof)
-END PROCEDURE bnField_Get4
+END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get5
+MODULE PROCEDURE obj_Get5
 REAL(DFP), ALLOCATABLE :: value0(:)
 CALL obj%Get(VALUE=value0, globalNode=globalNode, ivar=ivar, idof=idof)
 VALUE = NodalVariable( &
@@ -97,14 +97,14 @@ VALUE = NodalVariable( &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpace)
 DEALLOCATE (value0)
-END PROCEDURE bnField_Get5
+END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get6
-CHARACTER(*), PARAMETER :: myName = "bnField_Get6"
+MODULE PROCEDURE obj_Get6
+CHARACTER(*), PARAMETER :: myName = "obj_Get6"
 INTEGER(I4B) :: timeCompo
 INTEGER(I4B) :: spaceCompo
 INTEGER(I4B) :: ierr
@@ -175,15 +175,15 @@ IF (ALLOCATED(value0)) DEALLOCATE (value0)
 IF (ALLOCATED(m3a)) DEALLOCATE (m3a)
 IF (ALLOCATED(m3b)) DEALLOCATE (m3b)
 
-END PROCEDURE bnField_Get6
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get7
+MODULE PROCEDURE obj_Get7
 INTEGER(I4B) :: localNode(SIZE(globalNode)), idof
-CHARACTER(*), PARAMETER :: myName = "bnField_Get7"
+CHARACTER(*), PARAMETER :: myName = "obj_Get7"
 IF (.NOT. obj%isInitiated) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'BlockNodeField_::obj is not initiated')
@@ -196,13 +196,13 @@ idof = GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
   & tSpaceCompo=obj%dof.SpaceComponents.ivar)
 VALUE = Get(obj=obj%realVec, dofobj=obj%dof, &
   & nodenum=localNode, ivar=ivar, idof=idof)
-END PROCEDURE bnField_Get7
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get8
+MODULE PROCEDURE obj_Get8
 REAL(DFP), ALLOCATABLE :: value0(:)
 CALL obj%Get(VALUE=value0, globalNode=globalNode, ivar=ivar, &
   & spaceCompo=spaceCompo, timeCompo=timeCompo)
@@ -211,14 +211,14 @@ VALUE = NodalVariable( &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpace)
 DEALLOCATE (value0)
-END PROCEDURE bnField_Get8
+END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Get9
-CHARACTER(*), PARAMETER :: myName = "bnField_Get9"
+MODULE PROCEDURE obj_Get9
+CHARACTER(*), PARAMETER :: myName = "obj_Get9"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -257,25 +257,25 @@ DO ii = 1, tsize
     & idof=idof_value)
   CALL VALUE%SetSingle(VALUE=avar, indx=indx2)
 END DO
-END PROCEDURE bnField_Get9
+END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
 !                                                           GetFEVariable
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_GetFEVariable
+MODULE PROCEDURE obj_GetFEVariable
 INTEGER(I4B) :: ivar0
 ivar0 = input(option=ivar, default=1_I4B)
 CALL obj%Get(globalNode=globalNode, VALUE=VALUE, ivar=ivar0)
-END PROCEDURE bnField_GetFEVariable
+END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE bnField_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !
