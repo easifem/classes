@@ -24,7 +24,7 @@ CONTAINS
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_GetSingle
+MODULE PROCEDURE obj_GetSingle
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -34,14 +34,14 @@ ELSE
   CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE vField_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get1
-CHARACTER(*), PARAMETER :: myName = "vField_get1"
+MODULE PROCEDURE obj_Get1
+CHARACTER(*), PARAMETER :: myName = "obj_Get1"
 LOGICAL(LGT) :: bool1, bool2
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
@@ -126,14 +126,14 @@ IF (bool2) THEN
 
 END IF
 
-END PROCEDURE vField_get1
+END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
 !                                                                       get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get2
-CHARACTER(*), PARAMETER :: myName = "vField_get2"
+MODULE PROCEDURE obj_Get2
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -173,14 +173,14 @@ DO jj = 1, SIZE(VALUE, 2)
   END DO
 END DO
 
-END PROCEDURE vField_get2
+END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get3
-CHARACTER(*), PARAMETER :: myName = "vField_get3"
+MODULE PROCEDURE obj_Get3
+CHARACTER(*), PARAMETER :: myName = "obj_Get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -235,14 +235,14 @@ END DO
 VALUE(1:obj%spaceCompo, :) = &
 & RESHAPE(val, [obj%spaceCompo, SIZE(globalnode)])
 
-END PROCEDURE vField_get3
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get4
-CHARACTER(*), PARAMETER :: myName = "vField_get2"
+MODULE PROCEDURE obj_Get4
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -288,14 +288,14 @@ DO ii = 1, SIZE(indx)
 
 END DO
 
-END PROCEDURE vField_get4
+END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get5
-CHARACTER(*), PARAMETER :: myName = "vField_get2"
+MODULE PROCEDURE obj_Get5
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: indx
@@ -333,13 +333,13 @@ CALL lis_vector_get_value( &
 
 CALL CHKERR(ierr)
 
-END PROCEDURE vField_get5
+END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get6
+MODULE PROCEDURE obj_Get6
 INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -347,13 +347,13 @@ DO ii = istart, iend, stride
   globalnode(jj) = ii
 END DO
 CALL obj%get(globalnode=globalnode, VALUE=VALUE)
-END PROCEDURE vField_get6
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get7
+MODULE PROCEDURE obj_Get7
 INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -361,13 +361,13 @@ DO ii = istart, iend, stride
   globalnode(jj) = ii
 END DO
 CALL obj%get(globalnode=globalnode, VALUE=VALUE, spaceCompo=spaceCompo)
-END PROCEDURE vField_get7
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get8
+MODULE PROCEDURE obj_Get8
 REAL(DFP), ALLOCATABLE :: val(:, :)
 CALL obj%get(globalNode=globalNode, VALUE=val)
 VALUE = NodalVariable( &
@@ -375,14 +375,14 @@ VALUE = NodalVariable( &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpaceTime)
 DEALLOCATE (val)
-END PROCEDURE vField_get8
+END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get9
-CHARACTER(*), PARAMETER :: myName = "vField_get9"
+MODULE PROCEDURE obj_Get9
+CHARACTER(*), PARAMETER :: myName = "obj_Get9"
 REAL(DFP) :: aval
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -402,14 +402,14 @@ CLASS default
   & 'No case found for type of value')
 END SELECT
 
-END PROCEDURE vField_get9
+END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_get10
-CHARACTER(*), PARAMETER :: myName = "vField_get10"
+MODULE PROCEDURE obj_Get10
+CHARACTER(*), PARAMETER :: myName = "obj_Get10"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
 INTEGER(I4B) :: tsize
@@ -423,26 +423,26 @@ DO ii = 1, tsize
   CALL VALUE%set(VALUE=aval, globalNode=jj)
 END DO
 
-END PROCEDURE vField_get10
+END PROCEDURE obj_Get10
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "vField_getPointerOfComponent"
+MODULE PROCEDURE obj_GetPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointerOfComponent"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for VectorFieldLis_')
-END PROCEDURE vField_getPointerOfComponent
+END PROCEDURE obj_GetPointerOfComponent
 
 !----------------------------------------------------------------------------
 !                                                                getPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_getPointer
-CHARACTER(*), PARAMETER :: myName = "vField_getPointer"
+MODULE PROCEDURE obj_GetPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointer"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for VectorFieldLis_')
-END PROCEDURE vField_getPointer
+END PROCEDURE obj_GetPointer
 
 END SUBMODULE GetMethods
