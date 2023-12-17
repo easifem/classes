@@ -24,7 +24,7 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractBC_Class, ONLY: AbstractBC_
-USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractNodeFieldDisplay
@@ -142,10 +142,18 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
 
+  ! SET:
+  ! @DirichletBCMethods
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
+    & ApplyDirichletBC2
+
   ! GET:
   ! @BlasMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AXPY => obj_AXPY
   PROCEDURE, PUBLIC, PASS(obj) :: SCAL => obj_SCAL
+
 END TYPE AbstractNodeField_
 
 !----------------------------------------------------------------------------
@@ -553,6 +561,38 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNodeLoc3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBC_), INTENT(IN) :: dbc
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

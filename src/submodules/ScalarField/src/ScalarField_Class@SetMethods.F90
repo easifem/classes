@@ -24,8 +24,8 @@ CONTAINS
 !                                                                   set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set1
-CHARACTER(*), PARAMETER :: myName = "sField_set1"
+MODULE PROCEDURE obj_set1
+CHARACTER(*), PARAMETER :: myName = "obj_set1"
 INTEGER(I4B) :: localNode
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -60,14 +60,14 @@ IF (localNode .NE. 0) THEN
   RETURN
 END IF
 
-END PROCEDURE sField_set1
+END PROCEDURE obj_set1
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set2
-CHARACTER(*), PARAMETER :: myName = "sField_set2"
+MODULE PROCEDURE obj_set2
+CHARACTER(*), PARAMETER :: myName = "obj_set2"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 areal = Input(option=scale, default=1.0_DFP)
@@ -85,14 +85,14 @@ ELSE
   CALL set(obj%realVec, VALUE=VALUE)
 END IF
 
-END PROCEDURE sField_set2
+END PROCEDURE obj_set2
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set3
-CHARACTER(*), PARAMETER :: myName = "sField_set3"
+MODULE PROCEDURE obj_set3
+CHARACTER(*), PARAMETER :: myName = "obj_set3"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 areal = Input(option=scale, default=1.0_DFP)
@@ -124,14 +124,14 @@ ELSE
   CALL set(obj%realVec, VALUE=VALUE)
 END IF
 
-END PROCEDURE sField_set3
+END PROCEDURE obj_set3
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set4
-CHARACTER(*), PARAMETER :: myName = "sField_set4"
+MODULE PROCEDURE obj_set4
+CHARACTER(*), PARAMETER :: myName = "obj_set4"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -162,14 +162,14 @@ IF (abool) THEN
 ELSE
   CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
 END IF
-END PROCEDURE sField_set4
+END PROCEDURE obj_set4
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set5
-CHARACTER(*), PARAMETER :: myName = "sField_set5"
+MODULE PROCEDURE obj_set5
+CHARACTER(*), PARAMETER :: myName = "obj_set5"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -206,14 +206,14 @@ ELSE
   CALL set(obj%realVec, nodenum=localNode, VALUE=VALUE)
 END IF
 
-END PROCEDURE sField_set5
+END PROCEDURE obj_set5
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set6
-CHARACTER(*), PARAMETER :: myName = "sField_set6"
+MODULE PROCEDURE obj_set6
+CHARACTER(*), PARAMETER :: myName = "obj_set6"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 jj = 0
@@ -223,14 +223,14 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE sField_set6
+END PROCEDURE obj_set6
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set7
-CHARACTER(*), PARAMETER :: myName = "sField_set7"
+MODULE PROCEDURE obj_set7
+CHARACTER(*), PARAMETER :: myName = "obj_set7"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 jj = 0
@@ -240,22 +240,22 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE sField_set7
+END PROCEDURE obj_set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set8
+MODULE PROCEDURE obj_set8
 CALL set(obj%realVec, VALUE=obj2%realVec)
-END PROCEDURE sField_set8
+END PROCEDURE obj_set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set9
-CHARACTER(*), PARAMETER :: myName = "sField_set9"
+MODULE PROCEDURE obj_set9
+CHARACTER(*), PARAMETER :: myName = "obj_set9"
 
 SELECT CASE (VALUE%vartype)
 CASE (Constant)
@@ -274,22 +274,22 @@ CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
   & 'No case found for Value%vartype, only [Constant and Space is allowed]')
 END SELECT
-END PROCEDURE sField_set9
+END PROCEDURE obj_set9
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set10
+MODULE PROCEDURE obj_set10
 CALL add(obj%realVec, VALUE=obj2%realVec, scale=scale)
-END PROCEDURE sField_set10
+END PROCEDURE obj_set10
 
 !----------------------------------------------------------------------------
 !                                                                      Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set11
-CHARACTER(*), PARAMETER :: myName = "sField_set11"
+MODULE PROCEDURE obj_set11
+CHARACTER(*), PARAMETER :: myName = "obj_set11"
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tsize_value
 INTEGER(I4B) :: ii
@@ -330,7 +330,7 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE sField_set11
+END PROCEDURE obj_set11
 
 !----------------------------------------------------------------------------
 !

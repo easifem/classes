@@ -26,7 +26,7 @@ CONTAINS
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_GetSingle
+MODULE PROCEDURE obj_GetSingle
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -36,14 +36,14 @@ ELSE
   CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stsField_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get1
-CHARACTER(*), PARAMETER :: myName = "stsField_get1"
+MODULE PROCEDURE obj_get1
+CHARACTER(*), PARAMETER :: myName = "obj_get1"
 LOGICAL(LGT) :: bool1, bool2
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
@@ -128,15 +128,15 @@ IF (bool2) THEN
 
 END IF
 
-END PROCEDURE stsField_get1
+END PROCEDURE obj_get1
 
 !----------------------------------------------------------------------------
 !                                                                       get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get2
+MODULE PROCEDURE obj_get2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get2"
+CHARACTER(*), PARAMETER :: myName = "obj_get2"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -171,15 +171,15 @@ DO jj = 1, SIZE(VALUE, 2)
   END DO
 END DO
 
-END PROCEDURE stsField_get2
+END PROCEDURE obj_get2
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get3
+MODULE PROCEDURE obj_get3
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get3"
+CHARACTER(*), PARAMETER :: myName = "obj_get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -228,15 +228,15 @@ DO ii = 1, SIZE(indx)
 END DO
 
 VALUE = RESHAPE(val, [obj%timeCompo, SIZE(globalnode)])
-END PROCEDURE stsField_get3
+END PROCEDURE obj_get3
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get4
+MODULE PROCEDURE obj_get4
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get4"
+CHARACTER(*), PARAMETER :: myName = "obj_get4"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -283,15 +283,15 @@ DO ii = 1, SIZE(indx)
 
 END DO
 
-END PROCEDURE stsField_get4
+END PROCEDURE obj_get4
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get5
+MODULE PROCEDURE obj_get5
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get5"
+CHARACTER(*), PARAMETER :: myName = "obj_get5"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: indx
@@ -330,13 +330,13 @@ CALL lis_vector_get_value( &
 
 CALL CHKERR(ierr)
 
-END PROCEDURE stsField_get5
+END PROCEDURE obj_get5
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get6
+MODULE PROCEDURE obj_get6
 INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -344,13 +344,13 @@ DO ii = istart, iend, stride
   globalnode(jj) = ii
 END DO
 CALL obj%get(globalnode=globalnode, VALUE=VALUE)
-END PROCEDURE stsField_get6
+END PROCEDURE obj_get6
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get7
+MODULE PROCEDURE obj_get7
 INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -358,13 +358,13 @@ DO ii = istart, iend, stride
   globalnode(jj) = ii
 END DO
 CALL obj%get(globalnode=globalnode, VALUE=VALUE, timeCompo=timeCompo)
-END PROCEDURE stsField_get7
+END PROCEDURE obj_get7
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get8
+MODULE PROCEDURE obj_get8
 REAL(DFP), ALLOCATABLE :: val(:, :)
 CALL obj%get(globalNode=globalNode, VALUE=val)
 VALUE = NodalVariable( &
@@ -372,14 +372,14 @@ VALUE = NodalVariable( &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpaceTime)
 DEALLOCATE (val)
-END PROCEDURE stsField_get8
+END PROCEDURE obj_get8
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get9
-CHARACTER(*), PARAMETER :: myName = "stsField_get9"
+MODULE PROCEDURE obj_get9
+CHARACTER(*), PARAMETER :: myName = "obj_get9"
 REAL(DFP) :: aval
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -398,26 +398,26 @@ CLASS DEFAULT
   & 'No case found for the type of value')
 END SELECT
 
-END PROCEDURE stsField_get9
+END PROCEDURE obj_get9
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "stsField_getPointerOfComponent"
+MODULE PROCEDURE obj_getPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "obj_getPointerOfComponent"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for STScalarFieldLis_')
-END PROCEDURE stsField_getPointerOfComponent
+END PROCEDURE obj_getPointerOfComponent
 
 !----------------------------------------------------------------------------
 !                                                                getPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_getPointer
-CHARACTER(*), PARAMETER :: myName = "stsField_getPointer"
+MODULE PROCEDURE obj_getPointer
+CHARACTER(*), PARAMETER :: myName = "obj_getPointer"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for STScalarFieldLis_')
-END PROCEDURE stsField_getPointer
+END PROCEDURE obj_getPointer
 
 END SUBMODULE GetMethods

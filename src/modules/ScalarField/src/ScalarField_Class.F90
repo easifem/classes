@@ -38,7 +38,7 @@ CHARACTER(*), PARAMETER :: myprefix = "ScalarField"
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
 PUBLIC :: SetScalarFieldParam
-PUBLIC :: sField_CheckEssentialParam
+PUBLIC :: ScalarFieldCheckEssentialParam
 PUBLIC :: ScalarFieldInitiate1
 PUBLIC :: ScalarField
 PUBLIC :: ScalarField_Pointer
@@ -62,33 +62,33 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & sField_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => sField_Initiate1
-  FINAL :: sField_Final
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  FINAL :: obj_Final
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: Set1 => sField_Set1
+  PROCEDURE, PASS(obj) :: Set1 => obj_Set1
     !! Set single entry
-  PROCEDURE, PASS(obj) :: Set2 => sField_Set2
+  PROCEDURE, PASS(obj) :: Set2 => obj_Set2
     !! Set all values to a scalar values
-  PROCEDURE, PASS(obj) :: Set3 => sField_Set3
+  PROCEDURE, PASS(obj) :: Set3 => obj_Set3
     !! Set all values to a given vector
-  PROCEDURE, PASS(obj) :: Set4 => sField_Set4
+  PROCEDURE, PASS(obj) :: Set4 => obj_Set4
     !! Set selected values to given scalar
-  PROCEDURE, PASS(obj) :: Set5 => sField_Set5
+  PROCEDURE, PASS(obj) :: Set5 => obj_Set5
     !! Set selected values to given vector
-  PROCEDURE, PASS(obj) :: Set6 => sField_Set6
+  PROCEDURE, PASS(obj) :: Set6 => obj_Set6
     !! Set values to a scalar by using triplet
-  PROCEDURE, PASS(obj) :: Set7 => sField_Set7
+  PROCEDURE, PASS(obj) :: Set7 => obj_Set7
     !! Set values to a vector by using triplet
-  PROCEDURE, PASS(obj) :: Set8 => sField_Set8
+  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
     !! This method is used for assignment operator
-  PROCEDURE, PASS(obj) :: Set9 => sField_Set9
+  PROCEDURE, PASS(obj) :: Set9 => obj_Set9
     !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set10 => sField_Set10
+  PROCEDURE, PASS(obj) :: Set10 => obj_Set10
     !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set11 => sField_Set11
+  PROCEDURE, PASS(obj) :: Set11 => obj_Set11
     !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
     & Set5, Set6, Set7, Set8, Set9, Set10, Set11
@@ -97,35 +97,33 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PASS(obj) :: Get1 => sField_Get1
+  PROCEDURE, PASS(obj) :: Get1 => obj_Get1
     !! Get single entry
-  PROCEDURE, PASS(obj) :: Get2 => sField_Get2
+  PROCEDURE, PASS(obj) :: Get2 => obj_Get2
     !! Get all values in Real vector
-  PROCEDURE, PASS(obj) :: Get3 => sField_Get3
+  PROCEDURE, PASS(obj) :: Get3 => obj_Get3
     !! Get selected values
-  PROCEDURE, PASS(obj) :: Get4 => sField_Get4
+  PROCEDURE, PASS(obj) :: Get4 => obj_Get4
     !! Get values from triplet
-  PROCEDURE, PASS(obj) :: Get5 => sField_Get5
-  PROCEDURE, PASS(obj) :: Get6 => sField_Get6
-  PROCEDURE, PASS(obj) :: Get7 => sField_Get7
+  PROCEDURE, PASS(obj) :: Get5 => obj_Get5
+  PROCEDURE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PASS(obj) :: Get7 => obj_Get7
     !! Get selected values in FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7
   !! Get the entries of scalar field
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => sField_GetFeVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => sField_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, PASS(obj) :: sField_ApplyDirichletBC1
-  PROCEDURE, PASS(obj) :: sField_ApplyDirichletBC2
-  GENERIC, PUBLIC :: ApplyDirichletBC => sField_ApplyDirichletBC1, &
-    & sField_ApplyDirichletBC2
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC2 => obj_ApplyDirichletBC2
 
   ! IO:
   ! @IOMethods
   !! Apply Dirichlet Boundary Condition
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => sField_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
 END TYPE ScalarField_
 
 !----------------------------------------------------------------------------
@@ -181,12 +179,12 @@ END INTERFACE
 ! date: 25 June 2021
 ! summary: This routine Check the essential parameters in param.
 
-INTERFACE
-  MODULE SUBROUTINE sField_CheckEssentialParam(obj, param)
+INTERFACE ScalarFieldCheckEssentialParam
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(ScalarField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE sField_CheckEssentialParam
-END INTERFACE
+  END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE ScalarFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                      Initiate@Constructor
@@ -204,11 +202,11 @@ END INTERFACE
 ! Essential information are described below.
 
 INTERFACE ScalarFieldInitiate1
-  MODULE SUBROUTINE sField_Initiate1(obj, param, dom)
+  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE sField_Initiate1
+  END SUBROUTINE obj_Initiate1
 END INTERFACE ScalarFieldInitiate1
 
 !----------------------------------------------------------------------------
@@ -216,9 +214,9 @@ END INTERFACE ScalarFieldInitiate1
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE sField_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(ScalarField_), INTENT(INOUT) :: obj
-  END SUBROUTINE sField_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -226,9 +224,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE ScalarFieldDeallocate
-  MODULE SUBROUTINE sField_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     TYPE(ScalarField_), INTENT(INOUT) :: obj
-  END SUBROUTINE sField_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE ScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -240,11 +238,11 @@ END INTERFACE ScalarFieldDeallocate
 ! summary:         This function returns an instance of [[ScalarField_]]
 
 INTERFACE ScalarField
-  MODULE FUNCTION sField_Constructor1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     TYPE(ScalarField_) :: ans
-  END FUNCTION sField_Constructor1
+  END FUNCTION obj_Constructor1
 END INTERFACE ScalarField
 
 !----------------------------------------------------------------------------
@@ -256,11 +254,11 @@ END INTERFACE ScalarField
 ! summary:         This function returns an instance of [[ScalarField_]]
 
 INTERFACE ScalarField_Pointer
-  MODULE FUNCTION sField_Constructor_1(param, dom) RESULT(Ans)
+  MODULE FUNCTION obj_Constructor_1(param, dom) RESULT(Ans)
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Domain_), TARGET, INTENT(IN) :: dom
     CLASS(ScalarField_), POINTER :: ans
-  END FUNCTION sField_Constructor_1
+  END FUNCTION obj_Constructor_1
 END INTERFACE ScalarField_Pointer
 
 !----------------------------------------------------------------------------
@@ -272,13 +270,13 @@ END INTERFACE ScalarField_Pointer
 ! summary: This routine Imports the content
 
 INTERFACE ScalarFieldImport
-  MODULE SUBROUTINE sField_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
     TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE sField_Import
+  END SUBROUTINE obj_Import
 END INTERFACE ScalarFieldImport
 
 !----------------------------------------------------------------------------
@@ -290,14 +288,14 @@ END INTERFACE ScalarFieldImport
 ! summary: This routine Sets the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set1(obj, globalNode, VALUE, scale, &
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, VALUE, scale, &
     & addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set1
+  END SUBROUTINE obj_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -309,12 +307,12 @@ END INTERFACE
 ! summary: This routine Sets all the entries of a scalar field
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set2(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set2
+  END SUBROUTINE obj_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -326,12 +324,12 @@ END INTERFACE
 ! summary: This routine Set all the entries by using a fortran vector
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set3(obj, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set3(obj, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set3
+  END SUBROUTINE obj_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -343,13 +341,13 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
- MODULE SUBROUTINE sField_Set4(obj, globalNode, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, globalNode, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set4
+  END SUBROUTINE obj_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -361,13 +359,13 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
- MODULE SUBROUTINE sField_Set5(obj, globalNode, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, globalNode, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set5
+  END SUBROUTINE obj_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -379,7 +377,7 @@ END INTERFACE
 ! summary: This routine Sets the selected entries using triplet
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set6(obj, istart, iend, stride, VALUE, &
+  MODULE SUBROUTINE obj_Set6(obj, istart, iend, stride, VALUE, &
     & scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
@@ -388,7 +386,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set6
+  END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -400,7 +398,7 @@ END INTERFACE
 ! summary: Set the vector vals using triplet
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set7(obj, istart, iend, stride, VALUE, &
+  MODULE SUBROUTINE obj_Set7(obj, istart, iend, stride, VALUE, &
     & scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart
@@ -409,7 +407,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set7
+  END SUBROUTINE obj_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -421,10 +419,10 @@ END INTERFACE
 ! summary: used for assignment operator
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set8(obj, obj2)
+  MODULE SUBROUTINE obj_Set8(obj, obj2)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(ScalarField_), INTENT(IN) :: obj2
-  END SUBROUTINE sField_Set8
+  END SUBROUTINE obj_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -436,14 +434,14 @@ END INTERFACE
 ! summary: This routine Sets the selected entries using [[FEVariable_]]
 
 INTERFACE
- MODULE SUBROUTINE sField_Set9(obj, globalNode, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, globalNode, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     TYPE(FEVariable_), INTENT(IN) :: VALUE
   !! Scalar, Nodal, FEVariable (Space or Constant)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set9
+  END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -455,12 +453,12 @@ END INTERFACE
 ! summary: obj=obj+scalar*obj2
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set10(obj, obj2, scale, addContribution)
+  MODULE SUBROUTINE obj_Set10(obj, obj2, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(ScalarField_), INTENT(IN) :: obj2
     REAL(DFP), INTENT(IN) :: scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set10
+  END SUBROUTINE obj_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -468,7 +466,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE sField_Set11(obj, ivar, idof, VALUE, ivar_value, &
+  MODULE SUBROUTINE obj_Set11(obj, ivar, idof, VALUE, ivar_value, &
     & idof_value, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -478,7 +476,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: idof_value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-  END SUBROUTINE sField_Set11
+  END SUBROUTINE obj_Set11
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -490,11 +488,11 @@ END INTERFACE
 ! summary: This routine returns the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE sField_Get1(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: globalNode
-  END SUBROUTINE sField_Get1
+  END SUBROUTINE obj_Get1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -506,10 +504,10 @@ END INTERFACE
 ! summary: This routine returns all the entries by using given scalar field
 
 INTERFACE
-  MODULE SUBROUTINE sField_Get2(obj, VALUE)
+  MODULE SUBROUTINE obj_Get2(obj, VALUE)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-  END SUBROUTINE sField_Get2
+  END SUBROUTINE obj_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -521,11 +519,11 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE sField_Get3(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE sField_Get3
+  END SUBROUTINE obj_Get3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -537,13 +535,13 @@ END INTERFACE
 ! summary: returns the value using triplet
 
 INTERFACE
-  MODULE SUBROUTINE sField_Get4(obj, VALUE, istart, iend, stride)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, istart, iend, stride)
     CLASS(ScalarField_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     INTEGER(I4B), INTENT(IN) :: istart
     INTEGER(I4B), INTENT(IN) :: iend
     INTEGER(I4B), INTENT(IN) :: stride
-  END SUBROUTINE sField_Get4
+  END SUBROUTINE obj_Get4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -555,12 +553,12 @@ END INTERFACE
 ! summary: returns the selected values in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE sField_Get5(obj, VALUE, globalNode)
+  MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode)
     CLASS(ScalarField_), INTENT(IN) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
   !! Scalar Nodal FEVariable
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
-  END SUBROUTINE sField_Get5
+  END SUBROUTINE obj_Get5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -572,10 +570,10 @@ END INTERFACE
 ! summary: returns the selected values in FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE sField_Get6(obj, VALUE)
+  MODULE SUBROUTINE obj_Get6(obj, VALUE)
     CLASS(ScalarField_), INTENT(IN) :: obj
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
-  END SUBROUTINE sField_Get6
+  END SUBROUTINE obj_Get6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -583,14 +581,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
- MODULE SUBROUTINE sField_Get7(obj, ivar, idof, VALUE, ivar_value, idof_value)
+  MODULE SUBROUTINE obj_Get7(obj, ivar, idof, VALUE, ivar_value, idof_value)
     CLASS(ScalarField_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: idof
     INTEGER(I4B), INTENT(IN) :: ivar_value
     INTEGER(I4B), INTENT(IN) :: idof_value
-  END SUBROUTINE sField_Get7
+  END SUBROUTINE obj_Get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -602,12 +600,12 @@ END INTERFACE
 ! summary: Set single entry
 
 INTERFACE ScalarFieldGetFEVariable
-  MODULE SUBROUTINE sField_GetFeVariable(obj, globalNode, VALUE, ivar)
+  MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, VALUE, ivar)
     CLASS(ScalarField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-  END SUBROUTINE sField_GetFeVariable
+  END SUBROUTINE obj_GetFeVariable
 END INTERFACE ScalarFieldGetFEVariable
 
 !----------------------------------------------------------------------------
@@ -619,10 +617,10 @@ END INTERFACE ScalarFieldGetFEVariable
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION sField_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(ScalarField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION sField_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -634,10 +632,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE sField_ApplyDirichletBC1(obj, dbc)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
-  END SUBROUTINE sField_ApplyDirichletBC1
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -649,10 +648,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE sField_ApplyDirichletBC2(obj, dbc)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-  END SUBROUTINE sField_ApplyDirichletBC2
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+  END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

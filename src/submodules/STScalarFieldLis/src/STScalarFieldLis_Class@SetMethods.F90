@@ -26,7 +26,7 @@ CONTAINS
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_SetSingle
+MODULE PROCEDURE obj_SetSingle
 #include "lisf.h"
 INTEGER(I4B) :: i, ierr
 REAL(DFP) :: value0
@@ -59,13 +59,13 @@ ELSE
   CALL CHKERR(ierr)
 END IF
 
-END PROCEDURE stsField_SetSingle
+END PROCEDURE obj_SetSingle
 
 !----------------------------------------------------------------------------
 !                                                               SetMultiple
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_SetMultiple
+MODULE PROCEDURE obj_SetMultiple
 #include "lisf.h"
 INTEGER(I4B) :: i(SIZE(indx)), ierr, n
 REAL(DFP) :: value0(SIZE(VALUE))
@@ -96,13 +96,13 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stsField_SetMultiple
+END PROCEDURE obj_SetMultiple
 
 !----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_SetAll
+MODULE PROCEDURE obj_SetAll
 #include "lisf.h"
 INTEGER(I4B) :: ierr, ii, n
 REAL(DFP) :: value0
@@ -129,14 +129,14 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stsField_SetAll
+END PROCEDURE obj_SetAll
 
 !----------------------------------------------------------------------------
 !                                                                   Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set1
-CHARACTER(*), PARAMETER :: myName = "stsField_Set1"
+MODULE PROCEDURE obj_Set1
+CHARACTER(*), PARAMETER :: myName = "obj_Set1"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: tsize
 INTEGER(I4B), ALLOCATABLE :: indx(:)
@@ -175,14 +175,14 @@ CALL obj%SetMultiple(&
   & addContribution=addContribution)
 
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
-END PROCEDURE stsField_Set1
+END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set2
-CHARACTER(*), PARAMETER :: myName = "stsField_Set2"
+MODULE PROCEDURE obj_Set2
+CHARACTER(*), PARAMETER :: myName = "obj_Set2"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: tsize
 INTEGER(I4B), ALLOCATABLE :: indx(:)
@@ -217,14 +217,14 @@ END DO
 
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
 
-END PROCEDURE stsField_Set2
+END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
 !                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set3
-CHARACTER(*), PARAMETER :: myName = "stsField_Set3"
+MODULE PROCEDURE obj_Set3
+CHARACTER(*), PARAMETER :: myName = "obj_Set3"
 INTEGER(I4B) :: indx
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: ii
@@ -256,14 +256,14 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stsField_Set3
+END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
 !                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set4
-CHARACTER(*), PARAMETER :: myName = "stsField_Set4"
+MODULE PROCEDURE obj_Set4
+CHARACTER(*), PARAMETER :: myName = "obj_Set4"
 INTEGER(I4B) :: ii, tnodes, aa, jj
 INTEGER(I4B) :: ierr, timeCompo
 
@@ -309,14 +309,14 @@ DO jj = 1, tnodes
   END DO
 END DO
 
-END PROCEDURE stsField_Set4
+END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
 !                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set5
-CHARACTER(*), PARAMETER :: myName = "stsField_Set5"
+MODULE PROCEDURE obj_Set5
+CHARACTER(*), PARAMETER :: myName = "obj_Set5"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: indx
 INTEGER(I4B) :: ierr
@@ -355,15 +355,15 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stsField_Set5
+END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
 !                                                                        Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set6
+MODULE PROCEDURE obj_Set6
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "stsField_Set5"
+CHARACTER(*), PARAMETER :: myName = "obj_Set5"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize1
 INTEGER(I4B) :: tsize
@@ -461,13 +461,13 @@ CLASS DEFAULT
   & 'No case found for the type of Value')
 END SELECT
 
-END PROCEDURE stsField_Set6
+END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set7
+MODULE PROCEDURE obj_Set7
 REAL(DFP) :: val(SIZE(VALUE), SIZE(globalNode))
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
@@ -478,14 +478,14 @@ CALL obj%Set( &
   & globalNode=globalNode, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stsField_Set7
+END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set8
-CHARACTER(*), PARAMETER :: myName = "stsField_Set8"
+MODULE PROCEDURE obj_Set8
+CHARACTER(*), PARAMETER :: myName = "obj_Set8"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: val(SIZE(VALUE))
 INTEGER(I4B) :: indx(SIZE(VALUE))
@@ -534,14 +534,14 @@ CALL obj%SetMultiple(&
 & scale=scale, &
 & addContribution=addContribution)
 
-END PROCEDURE stsField_Set8
+END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set9
-CHARACTER(*), PARAMETER :: myName = "stsField_Set9"
+MODULE PROCEDURE obj_Set9
+CHARACTER(*), PARAMETER :: myName = "obj_Set9"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: indx(SIZE(globalNode))
 INTEGER(I4B) :: ierr, timeCompo0
@@ -588,14 +588,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stsField_Set9
+END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set10
-CHARACTER(*), PARAMETER :: myName = "stsField_Set10"
+MODULE PROCEDURE obj_Set10
+CHARACTER(*), PARAMETER :: myName = "obj_Set10"
 INTEGER(I4B) :: indx
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ierr
@@ -638,14 +638,14 @@ CALL obj%SetSingle(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stsField_Set10
+END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set11
-CHARACTER(*), PARAMETER :: myName = "stsField_Set11"
+MODULE PROCEDURE obj_Set11
+CHARACTER(*), PARAMETER :: myName = "obj_Set11"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -654,14 +654,14 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%Set(globalNode=globalNode, VALUE=VALUE, &
   & scale=scale, addContribution=addContribution)
-END PROCEDURE stsField_Set11
+END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set12
-CHARACTER(*), PARAMETER :: myName = "stsField_Set12"
+MODULE PROCEDURE obj_Set12
+CHARACTER(*), PARAMETER :: myName = "obj_Set12"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -673,14 +673,14 @@ CALL obj%Set( &
   & VALUE=VALUE, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stsField_Set12
+END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set13
-CHARACTER(*), PARAMETER :: myName = "stsField_Set13"
+MODULE PROCEDURE obj_Set13
+CHARACTER(*), PARAMETER :: myName = "obj_Set13"
 
 IF (.NOT. obj%isInitiated) &
   & CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -705,14 +705,14 @@ CASE DEFAULT
     & 'No case found for Value%vartype')
 
 END SELECT
-END PROCEDURE stsField_Set13
+END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Set14
-CHARACTER(*), PARAMETER :: myName = "stsField_Set14"
+MODULE PROCEDURE obj_Set14
+CHARACTER(*), PARAMETER :: myName = "obj_Set14"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -725,7 +725,7 @@ END IF
 
 CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 
-END PROCEDURE stsField_Set14
+END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
 !

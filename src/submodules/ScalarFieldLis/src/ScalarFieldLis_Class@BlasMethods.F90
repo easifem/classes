@@ -24,8 +24,8 @@ CONTAINS
 !                                                                      Norm2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Norm2
-CHARACTER(*), PARAMETER :: myName = "sField_Norm2"
+MODULE PROCEDURE obj_Norm2
+CHARACTER(*), PARAMETER :: myName = "obj_Norm2"
 INTEGER(I4B) :: ierr
 
 #include "lisf.h"
@@ -37,14 +37,14 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'ScalarFieldLis_ is NOT AVAILABLE')
 END IF
-END PROCEDURE sField_Norm2
+END PROCEDURE obj_Norm2
 
 !----------------------------------------------------------------------------
 !                                                                      Norm1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Norm1
-CHARACTER(*), PARAMETER :: myName = "sField_Norm1"
+MODULE PROCEDURE obj_Norm1
+CHARACTER(*), PARAMETER :: myName = "obj_Norm1"
 INTEGER(I4B) :: ierr
 
 #include "lisf.h"
@@ -56,14 +56,14 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'ScalarFieldLis_ is NOT AVAILABLE')
 END IF
-END PROCEDURE sField_Norm1
+END PROCEDURE obj_Norm1
 
 !----------------------------------------------------------------------------
 !                                                                      Normi
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Normi
-CHARACTER(*), PARAMETER :: myName = "sField_Normi"
+MODULE PROCEDURE obj_Normi
+CHARACTER(*), PARAMETER :: myName = "obj_Normi"
 INTEGER(I4B) :: ierr
 
 #include "lisf.h"
@@ -75,6 +75,6 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'ScalarFieldLis_ is NOT AVAILABLE')
 END IF
-END PROCEDURE sField_Normi
+END PROCEDURE obj_Normi
 
 END SUBMODULE BlasMethods

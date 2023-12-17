@@ -24,7 +24,7 @@ CONTAINS
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_setSingle
+MODULE PROCEDURE obj_setSingle
 #include "lisf.h"
 INTEGER(I4B) :: i, ierr
 REAL(DFP) :: value0
@@ -57,13 +57,13 @@ ELSE
   CALL CHKERR(ierr)
 END IF
 
-END PROCEDURE sField_setSingle
+END PROCEDURE obj_setSingle
 
 !----------------------------------------------------------------------------
 !                                                               SetMultiple
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_setMultiple
+MODULE PROCEDURE obj_setMultiple
 #include "lisf.h"
 INTEGER(I4B) :: i(SIZE(indx)), ierr, n
 REAL(DFP) :: value0(SIZE(VALUE))
@@ -94,13 +94,13 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE sField_setMultiple
+END PROCEDURE obj_setMultiple
 
 !----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_setAll
+MODULE PROCEDURE obj_setAll
 #include "lisf.h"
 INTEGER(I4B) :: ierr, ii, n
 REAL(DFP) :: value0
@@ -127,14 +127,14 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE sField_setAll
+END PROCEDURE obj_setAll
 
 !----------------------------------------------------------------------------
 !                                                                   set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set1
-CHARACTER(*), PARAMETER :: myName = "sField_set1"
+MODULE PROCEDURE obj_set1
+CHARACTER(*), PARAMETER :: myName = "obj_set1"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ierr
 
@@ -156,14 +156,14 @@ IF (localNode .NE. 0) THEN
     & addContribution=addContribution)
 END IF
 
-END PROCEDURE sField_set1
+END PROCEDURE obj_set1
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set2
-CHARACTER(*), PARAMETER :: myName = "sField_set2"
+MODULE PROCEDURE obj_set2
+CHARACTER(*), PARAMETER :: myName = "obj_set2"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -180,15 +180,15 @@ CALL obj%setAll(&
   & addContribution=addContribution &
   & )
 
-END PROCEDURE sField_set2
+END PROCEDURE obj_set2
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set3
+MODULE PROCEDURE obj_set3
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_set3"
+CHARACTER(*), PARAMETER :: myName = "obj_set3"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
@@ -242,15 +242,15 @@ ELSE
   END DO
 END IF
 
-END PROCEDURE sField_set3
+END PROCEDURE obj_set3
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set4
+MODULE PROCEDURE obj_set4
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_set4"
+CHARACTER(*), PARAMETER :: myName = "obj_set4"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: value0(SIZE(globalNode))
 INTEGER(I4B) :: ierr
@@ -287,14 +287,14 @@ CALL obj%SetMultiple(&
   & addContribution=addContribution &
   & )
 
-END PROCEDURE sField_set4
+END PROCEDURE obj_set4
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set5
-CHARACTER(*), PARAMETER :: myName = "sField_set5"
+MODULE PROCEDURE obj_set5
+CHARACTER(*), PARAMETER :: myName = "obj_set5"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
@@ -328,14 +328,14 @@ CALL obj%SetMultiple(&
   & addContribution=addContribution &
   & )
 
-END PROCEDURE sField_set5
+END PROCEDURE obj_set5
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set6
-CHARACTER(*), PARAMETER :: myName = "sField_set6"
+MODULE PROCEDURE obj_set6
+CHARACTER(*), PARAMETER :: myName = "obj_set6"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 jj = 0
@@ -345,14 +345,14 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE sField_set6
+END PROCEDURE obj_set6
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set7
-CHARACTER(*), PARAMETER :: myName = "sField_set7"
+MODULE PROCEDURE obj_set7
+CHARACTER(*), PARAMETER :: myName = "obj_set7"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 jj = 0
@@ -362,14 +362,14 @@ DO ii = istart, iend, stride
 END DO
 CALL obj%set(globalNode=globalNode, VALUE=VALUE, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE sField_set7
+END PROCEDURE obj_set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set8
-CHARACTER(*), PARAMETER :: myName = "sField_set8"
+MODULE PROCEDURE obj_set8
+CHARACTER(*), PARAMETER :: myName = "obj_set8"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -416,14 +416,14 @@ CLASS DEFAULT
   & 'Unknown type of ScalarField_::obj2')
 END SELECT
 
-END PROCEDURE sField_set8
+END PROCEDURE obj_set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set9
-CHARACTER(*), PARAMETER :: myName = "sField_set9"
+MODULE PROCEDURE obj_set9
+CHARACTER(*), PARAMETER :: myName = "obj_set9"
 
 SELECT CASE (VALUE%vartype)
 CASE (Constant)
@@ -442,16 +442,16 @@ CASE DEFAULT
   CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'No case found for Value%vartype, only [Constant and Space is allowed]')
 END SELECT
-END PROCEDURE sField_set9
+END PROCEDURE obj_set9
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_set10
+MODULE PROCEDURE obj_set10
 ! obj = obj + scale * obj2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_set10"
+CHARACTER(*), PARAMETER :: myName = "obj_set10"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -498,7 +498,7 @@ CLASS DEFAULT
   & 'Unknown type of ScalarField_::obj2')
 END SELECT
 
-END PROCEDURE sField_set10
+END PROCEDURE obj_set10
 
 !----------------------------------------------------------------------------
 !

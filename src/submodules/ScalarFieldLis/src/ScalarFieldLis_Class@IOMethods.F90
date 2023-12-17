@@ -25,8 +25,8 @@ CONTAINS
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Display
-CHARACTER(*), PARAMETER :: myName = "sField_Display"
+MODULE PROCEDURE obj_Display
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -44,15 +44,15 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'ScalarFieldLis_ is NOT AVAILABLE')
 END IF
-END PROCEDURE sField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Export
+MODULE PROCEDURE obj_Export
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_Export"
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -73,15 +73,15 @@ END IF
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE sField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Import
+MODULE PROCEDURE obj_Import
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "sField_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
@@ -150,6 +150,6 @@ END IF
 ! info
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
-END PROCEDURE sField_Import
+END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods

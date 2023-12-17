@@ -41,16 +41,16 @@ END PROCEDURE SetScalarFieldParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_CheckEssentialParam
+MODULE PROCEDURE obj_CheckEssentialParam
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
-END PROCEDURE sField_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "sField_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 CHARACTER(1) :: names(1)
 TYPE(String) :: astr
 INTEGER(I4B) :: nsd, tdof, ierr, tNodes
@@ -96,40 +96,40 @@ CALL AbstractNodeFieldInitiate( &
 
 astr = ""
 sublist => NULL()
-END PROCEDURE sField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE sField_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                               Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractNodeFieldDeallocate(obj)
-END PROCEDURE sField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                ScalarField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Constructor1
+MODULE PROCEDURE obj_Constructor1
 CALL ans%initiate(param, dom)
-END PROCEDURE sField_Constructor1
+END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
 !                                                         ScalarField_Pointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE sField_Constructor_1
+MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
 CALL ans%initiate(param, dom)
-END PROCEDURE sField_Constructor_1
+END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !

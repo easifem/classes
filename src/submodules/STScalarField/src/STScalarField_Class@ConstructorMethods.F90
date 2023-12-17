@@ -69,21 +69,21 @@ END PROCEDURE SetSTScalarFieldParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "stsField_CheckEssentialParam()"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR] :: timeCompo should be present in param.')
 END IF
-END PROCEDURE stsField_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "stsField_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 CHARACTER(1) :: names(1)
 TYPE(String) :: astr
 INTEGER(I4B) :: nsd, tdof, ierr, tNodes
@@ -128,13 +128,13 @@ CALL AbstractNodeFieldInitiate(obj=obj, param=param, dom=dom)
 
 astr = ""
 sublist => NULL()
-END PROCEDURE stsField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                               Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Initiate2
+MODULE PROCEDURE obj_Initiate2
 CALL AbstractNodeFieldInitiate2(&
   & obj=obj, &
   & obj2=obj2, &
@@ -145,41 +145,41 @@ SELECT TYPE (obj2)
 CLASS IS (STScalarField_)
   obj%timeCompo = obj2%timeCompo
 END SELECT
-END PROCEDURE stsField_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 obj%timeCompo = 0_I4B
 CALL AbstractNodeFieldDeallocate(obj)
-END PROCEDURE stsField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE stsField_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                                STScalarField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Constructor1
+MODULE PROCEDURE obj_Constructor1
 CALL ans%initiate(param, dom)
-END PROCEDURE stsField_Constructor1
+END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
 !                                                        STScalarField_Pointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Constructor_1
+MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
 CALL ans%initiate(param, dom)
-END PROCEDURE stsField_Constructor_1
+END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !

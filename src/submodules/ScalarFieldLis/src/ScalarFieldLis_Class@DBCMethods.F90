@@ -15,42 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(ScalarFieldLis_Class) DBCMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE sField_applyDirichletBC1
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-CALL dbc%get(nodalvalue=nodalvalue, nodenum=nodenum)
-CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1))
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE sField_applyDirichletBC1
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE sField_applyDirichletBC2
-REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
-INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc
-DO ibc = 1, SIZE(dbc)
-  CALL dbc(ibc)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum)
-  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1))
-END DO
-IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
-IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE sField_applyDirichletBC2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-END SUBMODULE DBCMethods
+! SUBMODULE(ScalarFieldLis_Class) DBCMethods
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE DBCMethods

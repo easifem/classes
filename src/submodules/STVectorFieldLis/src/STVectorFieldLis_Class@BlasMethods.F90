@@ -24,9 +24,9 @@ CONTAINS
 !                                                                      Norm2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Norm2
+MODULE PROCEDURE obj_Norm2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stvField_Norm2"
+CHARACTER(*), PARAMETER :: myName = "obj_Norm2"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -36,14 +36,14 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STVectorFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE stvField_Norm2
+END PROCEDURE obj_Norm2
 
 !----------------------------------------------------------------------------
 !                                                                      Norm1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Norm1
-CHARACTER(*), PARAMETER :: myName = "stvField_Norm1"
+MODULE PROCEDURE obj_Norm1
+CHARACTER(*), PARAMETER :: myName = "obj_Norm1"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -53,14 +53,14 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STVectorFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE stvField_Norm1
+END PROCEDURE obj_Norm1
 
 !----------------------------------------------------------------------------
 !                                                                      Normi
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Normi
-CHARACTER(*), PARAMETER :: myName = "stvField_Normi"
+MODULE PROCEDURE obj_Normi
+CHARACTER(*), PARAMETER :: myName = "obj_Normi"
 INTEGER(I4B) :: ierr
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN
@@ -70,7 +70,7 @@ ELSE
   CALL e%raiseInformation(modName//'::'//myName//' - '// &
     & 'STVectorFieldLis_::obj is NOT AVAILABLE')
 END IF
-END PROCEDURE stvField_Normi
+END PROCEDURE obj_Normi
 
 !----------------------------------------------------------------------------
 !
