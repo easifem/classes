@@ -52,20 +52,22 @@ TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
 #ifdef USE_LIS
 CONTAINS
   PRIVATE
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !
+
+  ! SET:
   ! @SetMethods
-  !
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   PROCEDURE, PASS(obj) :: SetAll => obj_SetAll
   PROCEDURE, PASS(obj) :: SetMultiple => obj_SetMultiple
@@ -89,9 +91,10 @@ CONTAINS
     !! Set selected values using FEVariable
   PROCEDURE, PASS(obj) :: Set10 => obj_Set10
     !! Set selected values using FEVariable
-  !
+
+  ! GET:
   ! @GetMethods
-  !
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   PROCEDURE, PASS(obj) :: Get1 => obj_Get1
     !! Get single entry
@@ -104,6 +107,13 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Get5 => obj_Get5
   PROCEDURE, PASS(obj) :: Get6 => obj_Get6
     !! Get selected values in FEVariable
+
+  ! GET:
+  ! @BlasMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
+  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
 #endif
 END TYPE ScalarFieldLis_
 
@@ -201,39 +211,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   Size@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -243,17 +220,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetPointer@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
-    CLASS(ScalarFieldLis_), TARGET, INTENT(IN) :: obj
-    REAL(DFP), POINTER :: ans(:)
-  END FUNCTION obj_GetPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -468,9 +434,9 @@ END INTERFACE
 ! summary: used for assignment operator
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8(obj, obj2)
+  MODULE SUBROUTINE obj_Set8(obj, VALUE)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    CLASS(ScalarField_), INTENT(IN) :: obj2
+    CLASS(ScalarField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set8
 END INTERFACE
 
@@ -508,6 +474,17 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set10
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetPointer@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
+    CLASS(ScalarFieldLis_), TARGET, INTENT(IN) :: obj
+    REAL(DFP), POINTER :: ans(:)
+  END FUNCTION obj_GetPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -621,6 +598,54 @@ INTERFACE
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
   END SUBROUTINE obj_Get6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
+    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
+    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
+    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Normi
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         COPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Copy obj=obj2
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
