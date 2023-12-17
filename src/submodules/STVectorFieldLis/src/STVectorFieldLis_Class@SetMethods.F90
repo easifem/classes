@@ -692,6 +692,95 @@ CALL obj%setAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 END PROCEDURE obj_set14
 
 !----------------------------------------------------------------------------
+!                                                                     Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set18
+CHARACTER(*), PARAMETER :: myName = "obj_Set18()"
+INTEGER(I4B) :: ierr, ii, tsize
+REAL(DFP), POINTER :: realvec(:)
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
+problem = .NOT. obj%isInitiated .OR. (ierr .EQ. LIS_TRUE)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj is not initiated'// &
+  & " or, lis_ptr is not available")
+  RETURN
+END IF
+
+problem = .NOT. VALUE%isInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Either VectorField_::value is not initiated')
+  RETURN
+END IF
+#endif
+
+SELECT TYPE (VALUE)
+TYPE is (STVectorField_)
+  realvec => NULL()
+  realvec => VALUE%GetPointer()
+
+#ifdef DEBUG_VER
+  problem = .NOT. ASSOCIATED(realvec)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Cannot get pointer from value.')
+    RETURN
+  END IF
+#endif
+
+  tsize = SIZE(realvec)
+  DO ii = 1, tsize
+    CALL obj%SetSingle(indx=ii, VALUE=realvec(ii))
+  END DO
+
+  realvec => NULL()
+
+TYPE is (STVectorFieldLis_)
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
+  problem = ierr .EQ. LIS_TRUE
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj%lis_ptr'// &
+    & " is not available")
+  END IF
+
+  problem = obj%SIZE() .NE. VALUE%SIZE()
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Size of obj and value are not same')
+    RETURN
+  END IF
+#endif
+
+  CALL lis_vector_copy(VALUE%lis_ptr, obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Unknown type of VectorField_::value')
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Set18
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
