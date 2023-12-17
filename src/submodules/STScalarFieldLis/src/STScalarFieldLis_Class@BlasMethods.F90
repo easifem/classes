@@ -76,4 +76,31 @@ ELSE
     & 'STScalarFieldLis_::obj is NOT AVAILABLE')
 END IF
 END PROCEDURE obj_Normi
+
+!----------------------------------------------------------------------------
+!                                                                      Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Copy
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+SELECT TYPE (obj2)
+CLASS is (STScalarField_)
+  CALL obj%Set(VALUE=obj2)
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found for obj2 type')
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Copy
 END SUBMODULE BlasMethods
