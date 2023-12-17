@@ -23,9 +23,9 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Display
+MODULE PROCEDURE obj_Display
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "bnField_Display"
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -41,24 +41,24 @@ ELSE
     & 'BlockNodeFieldLis_::obj is NOT AVAILABLE')
 END IF
 
-END PROCEDURE bnField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Import
-CHARACTER(*), PARAMETER :: myName = "bnField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This routine is under construction!')
-END PROCEDURE bnField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Export
-CHARACTER(*), PARAMETER :: myName = "bnField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -79,6 +79,6 @@ END IF
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE bnField_Export
+END PROCEDURE obj_Export
 
 END SUBMODULE IOMethods
