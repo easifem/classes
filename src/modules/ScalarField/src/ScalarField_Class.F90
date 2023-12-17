@@ -632,10 +632,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times, ivar)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(IN) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -648,10 +649,11 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
+  MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times, ivar)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
