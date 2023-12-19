@@ -120,10 +120,11 @@ CONTAINS
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => obj_GetScalarValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => obj_GetVectorValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue1 => obj_GetVectorValue1
   PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
-  GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue, GetMatrixValue, &
-    & GetFEVariable
+  GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue1,  &
+    & GetMatrixValue, GetFEVariable
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
@@ -308,9 +309,26 @@ END INTERFACE
 ! summary: Returns the vector value
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetVectorValue(obj, val, args)
+  MODULE SUBROUTINE obj_GetVectorValue1(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+  END SUBROUTINE obj_GetVectorValue1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Returns the vector value no allocation
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVectorValue(obj, n, val, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: n
+    REAL(DFP), INTENT(INOUT) :: val(n)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
   END SUBROUTINE obj_GetVectorValue
 END INTERFACE

@@ -146,6 +146,26 @@ END PROCEDURE obj_GetScalarValue
 !                                                                        Get
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_GetVectorValue1
+CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue1()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+CALL Reallocate(val, obj%numReturns)
+CALL obj%GetVectorValue(n=obj%numReturns, val=val, args=args)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_GetVectorValue1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_GetVectorValue
 LOGICAL(LGT) :: isOK, isNotOK
 CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue()"
@@ -164,8 +184,15 @@ IF (.NOT. isOK) THEN
   RETURN
 END IF
 
-IF (ALLOCATED(obj%vectorValue)) THEN
-  CALL Reallocate(val, obj%numReturns)
+isOK = obj%numReturns .EQ. n
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: error in numReturns.')
+  RETURN
+END IF
+
+isOK = ALLOCATED(obj%vectorValue)
+IF (isOK) THEN
 #ifdef USE_BLAS95
   CALL Copy(y=val, x=obj%vectorValue)
 #else
@@ -181,7 +208,6 @@ IF (obj%isUserFunctionSet) THEN
       & CHAR_LF//' but obj%vectorFunction is not ASSOCIATED.')
     RETURN
   END IF
-  CALL Reallocate(val, obj%numReturns)
   val = obj%vectorFunction(x=args)
 END IF
 
@@ -190,8 +216,7 @@ END IF
 IF (obj%isLuaScript) THEN
   nargs = obj%numArgs
   nresults = obj%numReturns
-
-  CALL Reallocate(val, obj%numReturns)
+  ! CALL Reallocate(val, obj%numReturns)
 
   IF (PRESENT(args)) THEN
     isNotOK = nargs .NE. SIZE(args)
