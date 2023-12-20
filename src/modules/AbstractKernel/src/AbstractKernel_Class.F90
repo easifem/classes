@@ -392,27 +392,6 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Vector field for nodal acceleration
   CLASS(VectorField_), POINTER :: nodeCoord => NULL()
   !! Vector field for nodal coordinates
-  CLASS(VectorField_), POINTER :: dispBC => NULL()
-  !! Vector field for displacement boundary condition
-  !! if a boundary condition has useExternal=TRUE,
-  !! then we read boundary condition from dispBC.
-  !! user can externally set the boundary condition
-  !! in dispBC, which can be read in the program
-  !! currently, we use this for NitscheBoundary condition
-  CLASS(VectorField_), POINTER :: velBC => NULL()
-  !! Vector field for velocity boundary condition
-  !! If a boundary condition has useExternal=TRUE,
-  !! then we read boundary condition from velBC.
-  !! user can externally set the boundary condition
-  !! in velBC, which can be read in the program
-  !! currently, we use this for NitscheBoundary condition
-  CLASS(VectorField_), POINTER :: accBC => NULL()
-  !! Vector field for acceleration boundary condition.
-  !! If boundary condition has useExternal=TRUE,
-  !! then we read boundary condition from accBC.
-  !! User can externally set the boundary condition
-  !! in dispBC, which can be read in the program.
-  !! Currently, we use this for NitscheBoundary condition.
   TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: solidMechData(:)
   !! Constitutive data for solid materials
   TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: massDensity(:)
@@ -1606,13 +1585,15 @@ END INTERFACE
 ! summary: Apply Dirichlet boundary condition
 
 INTERFACE AbstractKernelApplyDirichletBC
-  MODULE SUBROUTINE obj_ApplyDirichletBC(obj, name, times)
+  MODULE SUBROUTINE obj_ApplyDirichletBC(obj, name, times, extField)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     !! Abstract kernel
     CHARACTER(*), OPTIONAL, INTENT(IN) :: name
     !! name of variable
-    REAL(DFP), INTENT(IN) :: times(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! Time vector
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INout) :: extField
+    !! External field
   END SUBROUTINE obj_ApplyDirichletBC
 END INTERFACE AbstractKernelApplyDirichletBC
 
