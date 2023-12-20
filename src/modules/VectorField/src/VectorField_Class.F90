@@ -30,6 +30,7 @@ USE HDF5File_Class
 USE Domain_Class
 USE DirichletBC_Class
 USE FiniteElement_Class
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
@@ -109,6 +110,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set14 => obj_Set14
   PROCEDURE, PASS(obj) :: Set15 => obj_Set15
   PROCEDURE, PASS(obj) :: Set16 => obj_Set16
+  PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
   !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
@@ -810,6 +812,33 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(VectorField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set16
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-19
+! summary:  Set by user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof,  &
+    & spaceCompo, timeCompo)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+      !! User function
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! If present then its size should be 1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! ivar (not used)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    !! idof (not used)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    !! space component, not used
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+    !! time component, not used
+  END SUBROUTINE obj_SetByFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------

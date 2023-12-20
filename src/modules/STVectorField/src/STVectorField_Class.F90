@@ -29,6 +29,7 @@ USE HDF5File_Class
 USE Domain_Class
 USE DirichletBC_Class
 USE FiniteElement_Class
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STVectorField_Class"
@@ -55,7 +56,7 @@ PUBLIC :: STVectorFieldExport
 ! date: 25 June 2021
 ! summary: STVector field
 !
-!{!pages/docs-api/STVectorField/STVectorField_.md}
+!{!pages/docs-api/STVectorField/STVectorField_.md!}
 
 TYPE, EXTENDS(AbstractNodeField_) :: STVectorField_
   INTEGER(I4B), PUBLIC :: spaceCompo = 0_I4B
@@ -112,6 +113,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set16 => obj_Set16
   PROCEDURE, PASS(obj) :: Set17 => obj_Set17
   PROCEDURE, PASS(obj) :: Set18 => obj_Set18
+  PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  !! Set by function
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
     & Set7, Set8, Set9, Set10, Set11, &
@@ -818,6 +821,29 @@ INTERFACE
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(STVectorField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set18
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof,  &
+    & spaceCompo, timeCompo)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+      !! User function
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! If present then its size should be 1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! ivar (not used)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    !! idof (not used)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    !! space component, not used
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+    !! time component, not used
+  END SUBROUTINE obj_SetByFunction
 END INTERFACE
 
 !----------------------------------------------------------------------------

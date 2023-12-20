@@ -599,4 +599,76 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 END PROCEDURE obj_Set16
 
+!----------------------------------------------------------------------------
+!                                                                      Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetByFunction
+CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1)
+REAL(DFP) :: args(4), xij(3, 1)
+REAL(DFP), ALLOCATABLE :: VALUE(:)
+INTEGER(I4B), PARAMETER :: needed_returnType = Vector
+CLASS(Domain_), POINTER :: dom
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+problem = .FALSE.
+
+args = 0.0_DFP
+IF (istimes) THEN
+  ttime = SIZE(times)
+  args(4) = times(1)
+  problem = ttime .NE. 1_I4B
+END IF
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: times size should be 1.')
+  RETURN
+END IF
+
+returnType = func%GetReturnType()
+problem = returnType .NE. needed_returnType
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Return type of function is not correct.')
+  RETURN
+END IF
+
+dom => NULL()
+dom => obj%domain
+problem = .NOT. ASSOCIATED(dom)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: domain is not ASSOCIATED.')
+  RETURN
+END IF
+
+nsd = dom%GetNSD()
+tnodes = dom%GetTotalNodes()
+
+DO ii = 1, tnodes
+  globalNode = ii
+  CALL dom%GetNodeCoord(globalNode=globalNode, nodeCoord=xij(1:nsd, 1:1))
+  args(1:nsd) = xij(1:nsd, 1)
+  CALL func%Get(val=VALUE, args=args)
+  CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE)
+END DO
+
+IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
+NULLIFY (dom)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_SetByFunction
+
 END SUBMODULE SetMethods

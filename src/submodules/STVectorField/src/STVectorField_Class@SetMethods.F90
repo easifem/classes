@@ -876,4 +876,96 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 END PROCEDURE obj_Set18
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetByFunction
+CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: ttime, nsd, tnodes, ii, globalNode(1), itime, ispace
+REAL(DFP) :: args(4), xij(3, 1)
+REAL(DFP), ALLOCATABLE :: VALUE(:)
+CLASS(Domain_), POINTER :: dom
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+problem = .FALSE.
+
+args = 0.0_DFP
+ttime = 1
+IF (istimes) THEN
+  ttime = SIZE(times)
+  problem = ttime .NE. obj%timeCompo
+END IF
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: size of times should be obj%timeCompo='// &
+    & tostring(obj%timeCompo))
+  RETURN
+END IF
+
+dom => NULL()
+dom => obj%domain
+problem = .NOT. ASSOCIATED(dom)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: domain is not ASSOCIATED.')
+  RETURN
+END IF
+
+nsd = dom%GetNSD()
+tnodes = dom%GetTotalNodes()
+
+IF (istimes) THEN
+  DO ii = 1, tnodes
+    globalNode = ii
+    CALL dom%GetNodeCoord(globalNode=globalNode, nodeCoord=xij(1:nsd, 1:1))
+    args(1:nsd) = xij(1:nsd, 1)
+
+    DO itime = 1, obj%timeCompo
+      args(4) = times(itime)
+      CALL func%Get(val=VALUE, args=args)
+      DO ispace = 1, obj%spaceCompo
+        CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE(ispace),  &
+          & timeCompo=itime, spaceCompo=ispace)
+      END DO
+    END DO
+
+  END DO
+
+END IF
+
+IF (.NOT. istimes) THEN
+
+  DO ii = 1, tnodes
+    globalNode = ii
+    CALL dom%GetNodeCoord(globalNode=globalNode, nodeCoord=xij(1:nsd, 1:1))
+    args(1:nsd) = xij(1:nsd, 1)
+    CALL func%Get(val=VALUE, args=args)
+
+    DO itime = 1, obj%timeCompo
+      DO ispace = 1, obj%spaceCompo
+        CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE(ispace),  &
+          & timeCompo=itime, spaceCompo=ispace)
+      END DO
+    END DO
+  END DO
+
+END IF
+
+IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
+NULLIFY (dom)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_SetByFunction
+
 END SUBMODULE SetMethods

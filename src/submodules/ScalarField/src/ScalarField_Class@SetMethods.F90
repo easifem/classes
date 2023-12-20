@@ -303,13 +303,15 @@ END PROCEDURE obj_Set10
 
 MODULE PROCEDURE obj_Set11
 CHARACTER(*), PARAMETER :: myName = "obj_Set11"
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: tsize_value
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: indx1
-INTEGER(I4B) :: indx2
+INTEGER(I4B) :: tsize, tsize_value, ii, indx1, indx2, ivar_idof(2)
 REAL(DFP) :: avar
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'ScalarNodeField_::obj is not initiated')
@@ -319,12 +321,21 @@ IF (.NOT. VALUE%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & 'AbstractNodeField_ ::value is not initiated')
 END IF
+#endif
 
-tsize = obj%dof.tNodes. [ivar, idof]
-tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+ivar_idof(1) = ivar
+ivar_idof(2) = idof
+
+tsize = obj%dof.tNodes.ivar_idof
+
+ivar_idof(1) = ivar_value
+ivar_idof(2) = idof_value
+tsize_value = VALUE%dof.tNodes.ivar_idof
+
 IF (tsize .NE. tsize_value) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+  RETURN
 END IF
 
 DO ii = 1, tsize
@@ -343,7 +354,84 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE obj_Set11
+
+!----------------------------------------------------------------------------
+!                                                             SetByFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetByFunction
+CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: ttime, returnType, nsd, tnodes, ii, globalNode(1)
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+REAL(DFP) :: args(4), VALUE
+INTEGER(I4B), PARAMETER :: needed_returnType = Scalar
+CLASS(Domain_), POINTER :: dom
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+problem = .FALSE.
+
+args = 0.0_DFP
+IF (istimes) THEN
+  ttime = SIZE(times)
+  args(4) = times(1)
+  problem = ttime .NE. 1_I4B
+END IF
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: times size should be 1.')
+  RETURN
+END IF
+
+returnType = func%GetReturnType()
+problem = returnType .NE. needed_returnType
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Return type of function is not correct.')
+  RETURN
+END IF
+
+dom => NULL()
+dom => obj%domain
+problem = .NOT. ASSOCIATED(dom)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: domain is not ASSOCIATED.')
+  RETURN
+END IF
+
+nsd = dom%GetNSD()
+tnodes = dom%GetTotalNodes()
+CALL reallocate(xij, nsd, 1)
+
+DO ii = 1, tnodes
+  globalNode = ii
+  CALL dom%GetNodeCoord(globalNode=globalNode, nodeCoord=xij)
+  args(1:nsd) = xij(1:nsd, 1)
+  CALL func%Get(val=VALUE, args=args)
+  CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE)
+END DO
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_SetByFunction
 
 !----------------------------------------------------------------------------
 !
