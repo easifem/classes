@@ -16,6 +16,18 @@
 
 SUBMODULE(Domain_Class) IOMethods
 USE BaseMethod
+USE tomlf, ONLY:  &
+  & toml_error,  &
+  & toml_load,  &
+  & toml_parser_config,  &
+  & toml_serialize,  &
+  & toml_get => get_value, &
+  & toml_len => len, &
+  & toml_context,  &
+  & toml_terminal,  &
+  & toml_load,  &
+  & toml_array,  &
+  & toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -494,6 +506,137 @@ CALL e%raiseInformation(modName//"::"//myName//" - "// &
 & "[END] Import()")
 !
 END PROCEDURE Domain_Import
+
+!----------------------------------------------------------------------------
+!                                                              ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "Domain_ImportFromToml()"
+TYPE(HDF5File_) :: meshfile
+CHARACTER(:), ALLOCATABLE :: meshfilename, ext, group
+CHARACTER(*), PARAMETER :: default_meshfilename = "mesh.h5"
+CHARACTER(*), PARAMETER :: default_group = ""
+INTEGER(i4b) :: origin, stat
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ImportFromToml()')
+#endif
+
+CALL toml_get(table, "filename", meshfilename, default_meshfilename,  &
+& origin=origin, stat=stat)
+
+ext = getExtension(meshfilename)
+problem = .NOT. ext .EQ. "h5"
+
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: given filename is not HDF5File. '//  &
+    & 'Extension should be "h5"')
+END IF
+
+CALL toml_get(table, "group", group, default_group,  &
+& origin=origin, stat=stat)
+
+CALL meshfile%Initiate(meshfilename, mode="READ")
+CALL meshfile%OPEN()
+CALL obj%IMPORT(hdf5=meshfile, group=group)
+CALL meshfile%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ImportFromToml()')
+#endif
+
+END PROCEDURE Domain_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                              ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Domain_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "Domain_ImportFromToml2()"
+LOGICAL(LGT) :: isNotOpen, isNotRead
+LOGICAL(LGT), PARAMETER :: color = .TRUE.
+INTEGER(I4B), PARAMETER :: detail = 1
+TYPE(toml_error), ALLOCATABLE :: error
+TYPE(toml_context) :: context
+TYPE(toml_terminal) :: terminal
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ImportFromToml2()')
+#endif
+
+terminal = toml_terminal(color)
+
+IF (PRESENT(afile)) THEN
+  isNotOpen = .NOT. afile%IsOpen()
+  isNotRead = .NOT. afile%IsRead()
+
+  IF (isNotRead .OR. isNotOpen) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: The file is not open or does not have '//  &
+      & 'the access to read!')
+  END IF
+
+  CALL toml_load(table,  &
+    & afile%GetUnitNo(),  &
+    & context=context,  &
+    & config=toml_parser_config(color=terminal, context_detail=detail), &
+    & error=error  &
+    & )
+
+ELSEIF (PRESENT(filename)) THEN
+  CALL toml_load(table,  &
+    & filename,  &
+    & context=context,  &
+    & config=toml_parser_config(color=terminal, context_detail=detail), &
+    & error=error  &
+    & )
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[ARG ERROR] :: either filename or afile should be present!')
+  RETURN
+END IF
+
+IF (ALLOCATED(error)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Some error occured while parsing toml file'//  &
+    & ' with following message: '//error%message)
+END IF
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+  & stat=stat)
+
+IF (.NOT. ASSOCIATED(node)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: following error occured while reading '//  &
+    & 'the toml file :: cannot find '//tomlName//" table in config.")
+END IF
+
+CALL obj%ImportFromToml(table=node)
+
+#ifdef DEBUG_VER
+IF (PRESENT(printToml)) THEN
+  CALL Display(toml_serialize(node),  &
+    & "Domain toml config = "//CHAR_LF,  &
+  & unitNo=stdout)
+END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ImportFromToml2()')
+#endif
+
+END PROCEDURE Domain_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !
