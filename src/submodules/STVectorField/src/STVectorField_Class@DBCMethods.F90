@@ -41,7 +41,8 @@ istimes = PRESENT(times)
 #ifdef DEBUG_VER
 IF (istimes) THEN
   aint = SIZE(times)
-  IF (aint .NE. obj%timeCompo) THEN
+  problem = aint .NE. obj%timeCompo
+  IF (problem) THEN
     CALL e%raiseError(modName//'::'//myName//" - "// &
      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
      & tostring(aint)//' which is not equal to obj%timeCompo '//  &
