@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
+MODULE PROCEDURE obj_ApplyDirichletBC1
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 LOGICAL(LGT) :: istimes, problem
@@ -72,14 +72,14 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
-END PROCEDURE obj_applyDirichletBC1
+END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
+MODULE PROCEDURE obj_ApplyDirichletBC2
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC2()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
 INTEGER(I4B) :: ibc, tsize, aint, idof
@@ -135,7 +135,7 @@ IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
-END PROCEDURE obj_applyDirichletBC2
+END PROCEDURE obj_ApplyDirichletBC2
 
 !----------------------------------------------------------------------------
 !
