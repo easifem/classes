@@ -101,10 +101,50 @@ END PROCEDURE obj_AssembleStiffnessMat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleDampingMat
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleDampingMat"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_AssembleDampingMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleDampingMat()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+IF (obj%isIsotropic) THEN
+  CALL KernelAssembleDampingMatrix(mat=obj%dampingMat,  &
+    & youngsModulus=obj%youngsModulus,  &
+    & shearModulus=obj%shearModulus,  &
+    & massDensity=obj%massDensity,  &
+    & dampCoeff_alpha=obj%dampCoeff_alpha,  &
+    & dampCoeff_beta=obj%dampCoeff_beta,  &
+    & dom=obj%dom,  &
+    & cellFE=obj%cellFE,  &
+    & linCellFE=obj%linCellFE,  &
+    & spaceElemSD=obj%spaceElemSD,  &
+    & linSpaceElemSD=obj%linSpaceElemSD,  &
+    & reset=.TRUE.)
+END IF
+
+IF (.NOT. obj%isIsotropic) THEN
+
+  CALL KernelAssembleDampingMatrix( &
+    & mat=obj%dampingMat,  &
+    & Cijkl=obj%Cijkl,  &
+    & massDensity=obj%massDensity,  &
+    & dampCoeff_alpha=obj%dampCoeff_alpha,  &
+    & dampCoeff_beta=obj%dampCoeff_beta,  &
+    & dom=obj%dom,  &
+    & cellFE=obj%cellFE,  &
+    & linCellFE=obj%linCellFE,  &
+    & spaceElemSD=obj%spaceElemSD,  &
+    & linSpaceElemSD=obj%linSpaceElemSD,  &
+    & reset=.TRUE.)
+
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE obj_AssembleDampingMat
 
 !----------------------------------------------------------------------------

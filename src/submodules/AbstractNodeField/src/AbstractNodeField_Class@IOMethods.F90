@@ -36,13 +36,15 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: abool
 TYPE(ParameterList_) :: param
 
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Import()')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
 CALL AbstractFieldImport( &
   & obj=obj, &
@@ -70,9 +72,10 @@ IF (abool) THEN
   & group=dsetname%chars())
 END IF
 
-! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Import()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 
 END PROCEDURE obj_Import
 
@@ -81,11 +84,13 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 TYPE(String) :: strval, dsetname
 
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Export()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
 CALL AbstractFieldExport(obj=obj, hdf5=hdf5, group=group)
 
@@ -103,8 +108,10 @@ CALL ExportRealVector(obj=obj%realVec, hdf5=hdf5, &
   & group=dsetname%chars())
 
 ! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Export()")
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 
 END PROCEDURE obj_Export
 
@@ -126,7 +133,7 @@ TYPE(FEVariable_) :: fevar
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] WriteData()')
+  & '[START]')
 #endif
 
 NULLIFY (dom, meshPtr)
@@ -252,7 +259,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] WriteData()')
+  & '[END]')
 #endif
 END PROCEDURE obj_WriteData_vtk
 
