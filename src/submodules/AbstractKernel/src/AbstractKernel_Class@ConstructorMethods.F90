@@ -291,15 +291,6 @@ IF (ASSOCIATED(obj%acceleration)) &
 IF (ASSOCIATED(obj%nodeCoord)) &
   & CALL obj%nodeCoord%CheckEssentialParam(param=param)
 
-IF (ASSOCIATED(obj%dispBC)) &
-  & CALL obj%dispBC%CheckEssentialParam(param=param)
-
-IF (ASSOCIATED(obj%velBC)) &
-  & CALL obj%velBC%CheckEssentialParam(param=param)
-
-IF (ASSOCIATED(obj%accBC)) &
-  & CALL obj%accBC%CheckEssentialParam(param=param)
-
 prefix0 = ""
 
 #ifdef DEBUG_VER
@@ -661,24 +652,6 @@ END IF
 IF (ASSOCIATED(obj%nodeCoord)) THEN
   CALL obj%nodeCoord%DEALLOCATE()
   obj%nodeCoord => NULL()
-END IF
-
-! dispBC
-IF (ASSOCIATED(obj%dispBC)) THEN
-  CALL obj%dispBC%DEALLOCATE()
-  obj%dispBC => NULL()
-END IF
-
-! velBC
-IF (ASSOCIATED(obj%velBC)) THEN
-  CALL obj%velBC%DEALLOCATE()
-  obj%velBC => NULL()
-END IF
-
-! accBC
-IF (ASSOCIATED(obj%accBC)) THEN
-  CALL obj%accBC%DEALLOCATE()
-  obj%accBC => NULL()
 END IF
 
 ! stiffnessMat
