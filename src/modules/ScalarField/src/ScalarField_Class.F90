@@ -662,7 +662,7 @@ INTERFACE
     CLASS(DirichletBC_), INTENT(IN) :: dbc
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: extField
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -680,7 +680,7 @@ INTERFACE
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: extField
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
