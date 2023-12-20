@@ -46,7 +46,7 @@ LOGICAL(LGT) :: isNodalValuePresent, isNOTOK
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Get()')
+  & '[START]')
 #endif
 
 IF (.NOT. obj%isInitiated) THEN
@@ -141,7 +141,7 @@ END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Get()')
+  & '[END]')
 #endif
 END PROCEDURE bc_Get
 
@@ -214,7 +214,13 @@ LOGICAL(LGT) :: problem
 
 ! get pointer to nodecoord
 
-IF (.NOT. ASSOCIATED(obj%func)) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+problem = .NOT. ASSOCIATED(obj%func)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & "[INTERNAL ERROR] :: When nodalValueType is "//  &
   & CHAR_LF//"Space and useFunction is specified, "//  &
@@ -314,6 +320,11 @@ CASE (SpaceTime)
   END DO
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 
 END PROCEDURE bc_GetFromUserFunction
 
