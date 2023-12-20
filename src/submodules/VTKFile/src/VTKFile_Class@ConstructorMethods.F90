@@ -29,7 +29,7 @@ CHARACTER(*), PARAMETER :: myName = "InitiateVTKFile()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] InitiateVTKFile()')
+  & '[START]')
 #endif
 
 IF (obj%isInitiated) THEN
@@ -74,9 +74,12 @@ CASE (VTK_Imagedata, VTK_RectilinearGrid, VTK_StructuredGrid, &
   & PARALLEL_VTK_StructuredGrid)
   obj%isStructured = .TRUE.
 
-  IF (.NOT. PRESENT(WholeExtent)) &
-    &  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & ' - In case of structured data set WholeExtent should be given')
+  IF (.NOT. PRESENT(WholeExtent)) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: In case of structured data set WholeExtent'// &
+    & ' should be give')
+    RETURN
+  END IF
 
   ! Unstructured case
 CASE (VTK_Polydata, VTK_UnstructuredGrid, PARALLEL_VTK_Polydata, &
@@ -109,12 +112,14 @@ ELSE
 END IF
 
 CALL obj%WriteRootTag()
+
 CALL obj%WritedataStructureTag(meshdataFormat=meshdataFormat)
+
 CALL obj%OpenScratchFile()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] InitiateVTKFile()')
+  & '[END]')
 #endif
 END PROCEDURE InitiateVTKFile
 
