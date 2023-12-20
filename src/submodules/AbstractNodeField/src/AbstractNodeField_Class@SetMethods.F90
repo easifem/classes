@@ -90,6 +90,16 @@ END IF
 END PROCEDURE obj_SetSingle
 
 !----------------------------------------------------------------------------
+!                                                             SetByFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetByFunction
+CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_SetByFunction
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
