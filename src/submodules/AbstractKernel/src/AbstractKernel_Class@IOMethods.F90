@@ -255,18 +255,6 @@ CALL Display(bool1, "velocity ASSOCIATED: ", unitNo=unitNo)
 bool1 = ASSOCIATED(obj%acceleration)
 CALL Display(bool1, "acceleration ASSOCIATED: ", unitNo=unitNo)
 
-! dispBC
-bool1 = ASSOCIATED(obj%dispBC)
-CALL Display(bool1, "dispBC ASSOCIATED: ", unitNo=unitNo)
-
-! velBC
-bool1 = ASSOCIATED(obj%velBC)
-CALL Display(bool1, "velBC ASSOCIATED: ", unitNo=unitNo)
-
-! accBC
-bool1 = ASSOCIATED(obj%accBC)
-CALL Display(bool1, "accBC ASSOCIATED: ", unitNo=unitNo)
-
 bool1 = ALLOCATED(obj%shearModulus)
 CALL Display(bool1, "obj%shearModulus ALLOCATED: ", unitNo=unitNo)
 

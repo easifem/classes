@@ -51,7 +51,8 @@ IF (isok) THEN
         & '[INTERNAL ERROR] :: displacement is not ASSOCIATED.')
       RETURN
     END IF
-    CALL obj%displacement%ApplyDirichletBC(dbc=obj%dbc, times=times)
+    CALL obj%displacement%ApplyDirichletBC(dbc=obj%dbc, times=times,  &
+      & extField=extField)
 
   CASE ("VEL", "VELOCITY")
     problem = ASSOCIATED(obj%velocity)
@@ -60,7 +61,8 @@ IF (isok) THEN
         & '[INTERNAL ERROR] :: velocity is not ASSOCIATED.')
       RETURN
     END IF
-    CALL obj%velocity%ApplyDirichletBC(dbc=obj%dbc)
+    CALL obj%velocity%ApplyDirichletBC(dbc=obj%dbc, times=times,  &
+      & extField=extField)
 
   CASE ("ACC", "ACCELERATION")
     problem = ASSOCIATED(obj%acceleration)
@@ -69,7 +71,8 @@ IF (isok) THEN
         & '[INTERNAL ERROR] :: acceleration is not ASSOCIATED.')
       RETURN
     END IF
-    CALL obj%acceleration%ApplyDirichletBC(dbc=obj%dbc, times=times)
+    CALL obj%acceleration%ApplyDirichletBC(dbc=obj%dbc, times=times,  &
+    & extField=extField)
 
   CASE DEFAULT
     CALL e%RaiseError(modName//'::'//myName//' - '// &
