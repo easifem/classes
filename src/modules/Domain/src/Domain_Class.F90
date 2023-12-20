@@ -31,6 +31,8 @@ USE MeshPointerVector_Class
 USE ElementFactory
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "Domain_Class"
@@ -170,6 +172,12 @@ CONTAINS
   PROCEDURE, PASS(Obj) :: IMPORT => Domain_Import
   !! Initiates an instance of domain by importing data from meshfile
   !! TODO Add an export method to [[Domain_]] class
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => Domain_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => Domain_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1,  &
+  & ImportFromToml2
+  !! Initiates an instance of domain by importing meshfile name from
+  !! Toml file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => Domain_Display
   !! TODO Add a display method to [[Domain_]] class
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshFacetData => &
@@ -510,6 +518,54 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE Domain_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-20
+! summary:  Initiate an instance of domain by importing meshfile name from
+! Toml file
+!
+! NOTE: default meshfile name is "mesh.h5"
+! and default group in hdf5 is ""
+!
+! NOTE: meshfile (hdf5) is internally initiated and is deallocated
+! after initiation of domain
+
+INTERFACE
+  MODULE SUBROUTINE Domain_ImportFromToml1(obj, table)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE Domain_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml1@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-20
+! summary:  Initiate an instance of domain by importing meshfile name from
+! Toml file
+!
+! NOTE: default meshfile name is "mesh.h5"
+! and default group in hdf5 is ""
+!
+! NOTE: meshfile (hdf5) is internally initiated and is deallocated
+! after initiation of domain
+
+INTERFACE
+  MODULE SUBROUTINE Domain_ImportFromToml2(obj, tomlName, afile, filename,  &
+  & printToml)
+    CLASS(Domain_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE Domain_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------
