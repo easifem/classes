@@ -48,7 +48,7 @@ INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC,  &
 INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
 
 LOGICAL(LGT) :: isConstantMatProp, isIsotropic, isIncompressible,  &
-  & isSymNitsche
+  & isSymNitsche, problem, isok
 REAL(DFP) :: nitscheAlpha, rtoleranceForDisplacement,  &
   & atoleranceForDisplacement, rtoleranceForVelocity,  &
   & atoleranceForVelocity, rtoleranceForResidual, atoleranceForResidual,  &
@@ -75,7 +75,10 @@ CALL toml_get(table, "coordinateSystem", coordinateSystem%raw, &
   & DEFAULT_CoordinateSystem_Char, origin=origin, stat=stat)
 
 CALL toml_get(table, "domainFile", domainFile%raw, origin=origin, stat=stat)
-IF (stat .NE. toml_stat%success) THEN
+problem = stat .NE. toml_stat%success .OR. .NOT. ALLOCATED(domainFile%raw)
+! check the extension
+! GetFileExtension
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[CONFIG ERROR] :: domainFile is missing. It should be a string.')
   RETURN

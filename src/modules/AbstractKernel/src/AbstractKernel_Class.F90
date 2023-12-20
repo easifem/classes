@@ -550,6 +550,9 @@ CONTAINS
     & obj_SetNitscheMeshData
   !! This routine set mesh data necessary for implementing the
   !! Nitsche boundary condition.
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC =>  &
+    & obj_ApplyDirichletBC
+  !! Apply Dirichlet boundary condition
 
   ! SET:
   ! @MaterialMethods
@@ -1593,6 +1596,25 @@ INTERFACE
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetNitscheMeshData
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  ApplyDirichletBC@ApplyDirichletBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-20
+! summary: Apply Dirichlet boundary condition
+
+INTERFACE AbstractKernelApplyDirichletBC
+  MODULE SUBROUTINE obj_ApplyDirichletBC(obj, name, times)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    !! Abstract kernel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
+    !! name of variable
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! Time vector
+  END SUBROUTINE obj_ApplyDirichletBC
+END INTERFACE AbstractKernelApplyDirichletBC
 
 !----------------------------------------------------------------------------
 !                                                   Assemble@AssembleMethods
