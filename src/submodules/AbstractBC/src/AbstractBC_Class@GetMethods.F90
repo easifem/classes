@@ -208,7 +208,7 @@ END PROCEDURE bc_GetPrefix
 
 MODULE PROCEDURE bc_GetFromUserFunction
 CHARACTER(*), PARAMETER :: myName = "bc_GetFromUserFunction()"
-INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes
+INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes, argType
 REAL(DFP) :: xij(4, 1), ans
 LOGICAL(LGT) :: problem
 
@@ -230,8 +230,8 @@ IF (problem) THEN
 END IF
 
 retType = obj%func%GetReturnType()
-
-IF (retType .NE. Scalar) THEN
+problem = retType .NE. Scalar
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: Return type of user function should be '//  &
     & 'scalar.')
@@ -258,6 +258,15 @@ IF (problem) THEN
   RETURN
 END IF
 
+argType = obj%func%GetArgType()
+problem = argType .NE. obj%nodalValueType
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: argType in user function not same '//  &
+    & 'as nodalValueType in AbstractBC_')
+  RETURN
+END IF
+
 tNodes = SIZE(nodeNum)
 nsd = obj%dom%GetNSD()
 
@@ -267,7 +276,7 @@ SELECT CASE (obj%nodalValueType)
 CASE (Constant)
   CALL Reallocate(nodalValue, tNodes, 1)
 
-  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1), &
     & globalNode=nodeNum(1:1))
 
   CALL obj%func%Get(val=ans)
