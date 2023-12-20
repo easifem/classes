@@ -48,7 +48,7 @@ INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC,  &
 INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
 
 LOGICAL(LGT) :: isConstantMatProp, isIsotropic, isIncompressible,  &
-  & isSymNitsche, problem, isok
+  & isSymNitsche, problem
 REAL(DFP) :: nitscheAlpha, rtoleranceForDisplacement,  &
   & atoleranceForDisplacement, rtoleranceForVelocity,  &
   & atoleranceForVelocity, rtoleranceForResidual, atoleranceForResidual,  &

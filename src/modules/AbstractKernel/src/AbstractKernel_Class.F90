@@ -81,6 +81,8 @@ PUBLIC :: AbstractKernelInitiateTangentMatrix
 PUBLIC :: AbstractKernelInitiateFields
 PUBLIC :: AbstractKernelPreCheckError
 PUBLIC :: AbstractKernelPostCheckError
+PUBLIC :: AbstractKernelApplyDirichletBC
+PUBLIC :: AbstractKernelApplyIC
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
@@ -529,8 +531,16 @@ CONTAINS
     & obj_SetNitscheMeshData
   !! This routine set mesh data necessary for implementing the
   !! Nitsche boundary condition.
+
+  ! SET:
+  ! @ApplyDirichletBCMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC =>  &
     & obj_ApplyDirichletBC
+  !! Apply Dirichlet boundary condition
+
+  ! SET:
+  ! @ApplyICMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyIC => obj_ApplyIC
   !! Apply Dirichlet boundary condition
 
   ! SET:
@@ -1592,10 +1602,38 @@ INTERFACE AbstractKernelApplyDirichletBC
     !! name of variable
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! Time vector
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INout) :: extField
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
     !! External field
   END SUBROUTINE obj_ApplyDirichletBC
 END INTERFACE AbstractKernelApplyDirichletBC
+
+!----------------------------------------------------------------------------
+!                                                    ApplyIC@ApplyICMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-20
+! summary: Apply initial conditions to the fields
+
+INTERFACE AbstractKernelApplyIC
+  MODULE SUBROUTINE obj_ApplyIC(obj, name, func, extField, times, ivar,  &
+    & idof, spaceCompo, timeCompo)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    !! Abstract kernel
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
+    !! name of variable
+    CLASS(UserFunction_), OPTIONAL, INTENT(INOUT) :: func
+    !! User function
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
+    !! External field
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! Time vector
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+  END SUBROUTINE obj_ApplyIC
+END INTERFACE AbstractKernelApplyIC
 
 !----------------------------------------------------------------------------
 !                                                   Assemble@AssembleMethods
