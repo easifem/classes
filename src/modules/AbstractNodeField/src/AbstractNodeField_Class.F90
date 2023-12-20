@@ -25,6 +25,7 @@ USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractBC_Class, ONLY: AbstractBC_
 USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
+USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractNodeFieldDisplay
@@ -141,6 +142,9 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
+  PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  !! Set by user function
+  GENERIC, PUBLIC :: Set => SetByFunction
 
   ! SET:
   ! @DirichletBCMethods
@@ -390,6 +394,23 @@ INTERFACE AbstractNodeFieldSetSingle
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_SetSingle
 END INTERFACE AbstractNodeFieldSetSingle
+
+!----------------------------------------------------------------------------
+!                                                   SetByFunction@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof,  &
+    & spaceCompo, timeCompo)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+  END SUBROUTINE obj_SetByFunction
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                       GetSingle@GetMethods
