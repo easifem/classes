@@ -548,6 +548,13 @@ IF (ALLOCATED(obj%quadratureForSpace)) THEN
   DEALLOCATE (obj%quadratureForSpace)
 END IF
 
+IF (ALLOCATED(obj%quadratureForSpace_facet)) THEN
+  DO ii = 1, SIZE(obj%quadratureForSpace_facet)
+    CALL DEALLOCATE (obj%quadratureForSpace_facet(ii))
+  END DO
+  DEALLOCATE (obj%quadratureForSpace_facet)
+END IF
+
 CALL DEALLOCATE (obj%quadratureForTime)
 
 CALL FiniteElementDeallocate(obj%cellFE)
@@ -572,6 +579,7 @@ obj%lambdaForTime = 0
 
 CALL DEALLOCATE (obj%linTimeElemSD)
 CALL DEALLOCATE (obj%timeElemSD)
+
 IF (ALLOCATED(obj%linSpaceElemSD)) THEN
   DO ii = 1, SIZE(obj%linSpaceElemSD)
     CALL DEALLOCATE (obj%linSpaceElemSD(ii))
@@ -584,6 +592,20 @@ IF (ALLOCATED(obj%spaceElemSD)) THEN
     CALL DEALLOCATE (obj%spaceElemSD(ii))
   END DO
   DEALLOCATE (obj%spaceElemSD)
+END IF
+
+IF (ALLOCATED(obj%linSpaceElemSD_facet)) THEN
+  DO ii = 1, SIZE(obj%linSpaceElemSD_facet)
+    CALL DEALLOCATE (obj%linSpaceElemSD_facet(ii))
+  END DO
+  DEALLOCATE (obj%linSpaceElemSD_facet)
+END IF
+
+IF (ALLOCATED(obj%spaceElemSD_facet)) THEN
+  DO ii = 1, SIZE(obj%spaceElemSD_facet)
+    CALL DEALLOCATE (obj%spaceElemSD_facet(ii))
+  END DO
+  DEALLOCATE (obj%spaceElemSD_facet)
 END IF
 
 IF (ALLOCATED(obj%stelemsd)) THEN

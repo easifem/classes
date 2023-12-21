@@ -28,7 +28,6 @@ MODULE PROCEDURE obj_AssembleRHS
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleRHS"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
-! TODO: Implement obj_AssembleRHS
 END PROCEDURE obj_AssembleRHS
 
 !----------------------------------------------------------------------------
@@ -38,8 +37,8 @@ END PROCEDURE obj_AssembleRHS
 MODULE PROCEDURE obj_AssembleBodyForce
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleBodyForce"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_AssembleBodyForce
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
 END PROCEDURE obj_AssembleBodyForce
 
 !----------------------------------------------------------------------------
@@ -49,8 +48,8 @@ END PROCEDURE obj_AssembleBodyForce
 MODULE PROCEDURE obj_AssembleSurfaceForce
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleSurfaceForce"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This module has not been implemented yet')
-! TODO: Implement obj_AssembleSurfaceForce
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
 END PROCEDURE obj_AssembleSurfaceForce
 
 !----------------------------------------------------------------------------

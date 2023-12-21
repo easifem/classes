@@ -64,7 +64,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
   INTEGER(I4B) :: tmesh, nsd, id, nns, iel
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :)
-  TYPE(FEVariable_) :: bodyvar
+  TYPE(FEVariable_) :: forceVar
   TYPE(ElemShapeData_) :: elemsd, linElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
@@ -110,9 +110,9 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
         & geoElemSD=linElemSD)
 
-      CALL func%Get(fevar=bodyvar, xij=xij, times=times)
+      CALL func%Get(fevar=forceVar, xij=xij, times=times)
 
-      fevec = ForceVector(test=elemsd, c=bodyvar,  &
+      fevec = ForceVector(test=elemsd, c=forceVar,  &
         & crank=TypeFEVariableVector)
 
       CALL rhs%Set(globalNode=nptrs, scale=scale,  &
@@ -125,7 +125,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
   NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
-  CALL DEALLOCATE (bodyvar)
+  CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
   CALL DEALLOCATE (linElemSD)
 
@@ -157,8 +157,8 @@ SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
   LOGICAL(LGT) :: problem, isok
   INTEGER(I4B) :: tmesh, nsd, id, nns, iel
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-  REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), aBodyVec(:, :)
-  TYPE(FEVariable_) :: bodyvar
+  REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), forceVec(:, :)
+  TYPE(FEVariable_) :: forceVar
   TYPE(ElemShapeData_) :: elemsd, linElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
@@ -204,11 +204,11 @@ SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
         & geoElemSD=linElemSD)
 
-      CALL bodyVec%Get(VALUE=aBodyVec, globalNode=nptrs)
-      bodyvar = NodalVariable(val=aBodyVec, rank=TypeFEVariableVector,  &
+      CALL bodyVec%Get(VALUE=forceVec, globalNode=nptrs)
+      forceVar = NodalVariable(val=forceVec, rank=TypeFEVariableVector,  &
         & vartype=TypeFEVariableSpace)
 
-      fevec = ForceVector(test=elemsd, c=bodyvar,  &
+      fevec = ForceVector(test=elemsd, c=forceVar,  &
         & crank=TypeFEVariableVector)
 
       CALL rhs%Set(globalNode=nptrs, scale=scale,  &
@@ -221,8 +221,8 @@ SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
   NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
-  IF (ALLOCATED(aBodyVec)) DEALLOCATE (aBodyVec)
-  CALL DEALLOCATE (bodyvar)
+  IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
+  CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
   CALL DEALLOCATE (linElemSD)
 
