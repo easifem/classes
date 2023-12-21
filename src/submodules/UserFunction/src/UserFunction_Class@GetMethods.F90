@@ -487,11 +487,11 @@ CASE (Time)
 
   SELECT CASE (obj%returnType)
   CASE (Scalar)
-    CALL Scalar_Time_GetVariable(obj=obj, fevar=fevar, timeVec=timeVec)
+    CALL Scalar_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
   CASE (Vector)
-    CALL Vector_Time_GetVariable(obj=obj, fevar=fevar, timeVec=timeVec)
+    CALL Vector_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
   CASE (Matrix)
-    CALL Matrix_Time_GetVariable(obj=obj, fevar=fevar, timeVec=timeVec)
+    CALL Matrix_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
   END SELECT
 
 CASE (SpaceTime)
@@ -499,13 +499,13 @@ CASE (SpaceTime)
   SELECT CASE (obj%returnType)
   CASE (Scalar)
     CALL Scalar_SpaceTime_GetVariable(obj=obj, fevar=fevar, xij=xij,  &
-      & timeVec=timeVec)
+      & timeVec=times)
   CASE (Vector)
     CALL Vector_SpaceTime_GetVariable(obj=obj, fevar=fevar, xij=xij,  &
-      & timeVec=timeVec)
+      & timeVec=times)
   CASE (Matrix)
     CALL Matrix_SpaceTime_GetVariable(obj=obj, fevar=fevar, xij=xij,  &
-      & timeVec=timeVec)
+      & timeVec=times)
   END SELECT
 
 END SELECT
@@ -546,20 +546,30 @@ SUBROUTINE Scalar_Space_GetVariable(obj, fevar, xij)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   isxij = PRESENT(xij)
-  IF (isxij) THEN
-    tsize = SIZE(xij, 2)
-    CALL Reallocate(val, tsize)
-    DO ii = 1, tsize
-      CALL obj%Get(val=val(ii), args=xij(:, ii))
-    END DO
-    fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableSpace)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (.NOT. isxij) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: xij should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: xij should be present.')
+  tsize = SIZE(xij, 2)
+  CALL Reallocate(val, tsize)
+  DO ii = 1, tsize
+    CALL obj%Get(val=val(ii), args=xij(:, ii))
+  END DO
+  fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableSpace)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Scalar_Space_GetVariable
 
@@ -578,20 +588,31 @@ SUBROUTINE Scalar_Time_GetVariable(obj, fevar, timeVec)
   LOGICAL(LGT) :: istimevec
   INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   istimevec = PRESENT(timeVec)
-  IF (istimevec) THEN
-    tsize = SIZE(timeVec)
-    CALL Reallocate(val, tsize)
-    DO ii = 1, tsize
-      CALL obj%Get(val=val(ii), args=timeVec(ii:ii))
-    END DO
-    fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableTime)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
+
+  IF (.NOT. istimevec) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: timeVec should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: timeVec should be present.')
+  tsize = SIZE(timeVec)
+  CALL Reallocate(val, tsize)
+  DO ii = 1, tsize
+    CALL obj%Get(val=val(ii), args=timeVec(ii:ii))
+  END DO
+  fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableTime)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Scalar_Time_GetVariable
 
@@ -608,35 +629,43 @@ SUBROUTINE Scalar_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   ! internal variable
   CHARACTER(*), PARAMETER :: myName = "Scalar_SpaceTime_GetVariable()"
   REAL(DFP), ALLOCATABLE :: val(:, :), args(:)
-  LOGICAL(LGT) :: isxij, istimevec
+  LOGICAL(LGT) :: problem
   INTEGER(I4B) :: ii, tspace, ttime, jj, nsd
 
-  isxij = PRESENT(xij)
-  istimevec = PRESENT(timeVec)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
 
-  IF (isxij .AND. istimevec) THEN
-    tspace = SIZE(xij, 2)
-    ttime = SIZE(timeVec)
-    nsd = SIZE(xij, 1)
-
-    CALL Reallocate(val, tspace, ttime)
-    CALL Reallocate(args, obj%numArgs)
-
-    DO jj = 1, ttime
-      args = timeVec(jj)
-      DO ii = 1, tspace
-        args(1:nsd) = xij(1:nsd, ii)
-        CALL obj%Get(val=val(ii, jj), args=args)
-      END DO
-    END DO
-    fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableSpaceTime)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(args)) DEALLOCATE (args)
+  problem = (.NOT. PRESENT(xij)) .OR. (.NOT. PRESENT(timeVec))
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: xij and timeVec should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: xij and timeVec should be present.')
+  tspace = SIZE(xij, 2)
+  ttime = SIZE(timeVec)
+  nsd = SIZE(xij, 1)
+
+  CALL Reallocate(val, tspace, ttime)
+  CALL Reallocate(args, obj%numArgs)
+
+  DO jj = 1, ttime
+    args = timeVec(jj)
+    DO ii = 1, tspace
+      args(1:nsd) = xij(1:nsd, ii)
+      CALL obj%Get(val=val(ii, jj), args=args)
+    END DO
+  END DO
+  fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableSpaceTime)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(args)) DEALLOCATE (args)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Scalar_SpaceTime_GetVariable
 
@@ -671,25 +700,36 @@ SUBROUTINE Vector_Space_GetVariable(obj, fevar, xij)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: nrow, ncol, jj
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   isxij = PRESENT(xij)
-  IF (isxij) THEN
-    nrow = obj%numReturns
-    ncol = SIZE(xij, 2)
-    CALL Reallocate(val, nrow, ncol)
 
-    DO jj = 1, ncol
-      CALL obj%Get(val=r1, args=xij(:, jj))
-      val(1:nrow, jj) = r1(1:nrow)
-    END DO
-
-    fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableSpace)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(r1)) DEALLOCATE (r1)
+  IF (.NOT. isxij) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: xij should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: xij should be present.')
+  nrow = obj%numReturns
+  ncol = SIZE(xij, 2)
+  CALL Reallocate(val, nrow, ncol)
+
+  DO jj = 1, ncol
+    CALL obj%Get(val=r1, args=xij(:, jj))
+    val(1:nrow, jj) = r1(1:nrow)
+  END DO
+
+  fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableSpace)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(r1)) DEALLOCATE (r1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Vector_Space_GetVariable
 
@@ -708,25 +748,35 @@ SUBROUTINE Vector_Time_GetVariable(obj, fevar, timeVec)
   LOGICAL(LGT) :: istimevec
   INTEGER(I4B) :: nrow, ncol, jj
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   istimevec = PRESENT(timeVec)
-  IF (istimevec) THEN
-    nrow = obj%numReturns
-    ncol = SIZE(timeVec)
-    CALL Reallocate(val, nrow, ncol)
-
-    DO jj = 1, ncol
-      CALL obj%Get(val=r1, args=timeVec(jj:jj))
-      val(1:nrow, jj) = r1(1:nrow)
-    END DO
-
-    fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableTime)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(r1)) DEALLOCATE (r1)
+  IF (.NOT. istimevec) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: timeVec should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: timeVec should be present.')
+  nrow = obj%numReturns
+  ncol = SIZE(timeVec)
+  CALL Reallocate(val, nrow, ncol)
+
+  DO jj = 1, ncol
+    CALL obj%Get(val=r1, args=timeVec(jj:jj))
+    val(1:nrow, jj) = r1(1:nrow)
+  END DO
+
+  fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableTime)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(r1)) DEALLOCATE (r1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Vector_Time_GetVariable
 
@@ -746,33 +796,43 @@ SUBROUTINE Vector_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: dim1, dim2, dim3, jj, kk, nsd
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   isxij = PRESENT(xij)
-  IF (isxij) THEN
-    dim1 = obj%numReturns
-    dim2 = SIZE(xij, 2)
-    nsd = SIZE(xij, 1)
-    dim3 = SIZE(timeVec)
-    CALL Reallocate(val, dim1, dim2, dim3)
-    CALL Reallocate(args, obj%numArgs)
-
-    DO kk = 1, dim3
-      args = timeVec(kk)
-      DO jj = 1, dim2
-        args(1:nsd) = xij(1:nsd, jj)
-        CALL obj%Get(val=r1, args=args)
-        val(1:dim1, jj, kk) = r1(1:dim1)
-      END DO
-    END DO
-
-    fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableSpaceTime)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(r1)) DEALLOCATE (r1)
-    IF (ALLOCATED(args)) DEALLOCATE (args)
+  IF (.NOT. isxij) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: xij and timeVec should be present.')
     RETURN
   END IF
+  dim1 = obj%numReturns
+  dim2 = SIZE(xij, 2)
+  nsd = SIZE(xij, 1)
+  dim3 = SIZE(timeVec)
+  CALL Reallocate(val, dim1, dim2, dim3)
+  CALL Reallocate(args, obj%numArgs)
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: xij and timeVec should be present.')
+  DO kk = 1, dim3
+    args = timeVec(kk)
+    DO jj = 1, dim2
+      args(1:nsd) = xij(1:nsd, jj)
+      CALL obj%Get(val=r1, args=args)
+      val(1:dim1, jj, kk) = r1(1:dim1)
+    END DO
+  END DO
+
+  fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableSpaceTime)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(r1)) DEALLOCATE (r1)
+  IF (ALLOCATED(args)) DEALLOCATE (args)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
+
 END SUBROUTINE Vector_SpaceTime_GetVariable
 
 !----------------------------------------------------------------------------
@@ -806,29 +866,39 @@ SUBROUTINE Matrix_Space_GetVariable(obj, fevar, xij)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: jj, dim1, dim2, dim3
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   isxij = PRESENT(xij)
-  IF (isxij) THEN
-    dim1 = obj%returnShape(1)
-    dim2 = obj%returnShape(2)
-    dim3 = SIZE(xij, 2)
-
-    CALL Reallocate(val, dim1, dim2, dim3)
-    CALL Reallocate(args, obj%numArgs)
-
-    DO jj = 1, dim3
-      args(1:obj%numArgs) = xij(1:obj%numArgs, jj)
-      CALL obj%Get(val=r2, args=args)
-      val(1:dim1, 1:dim2, jj) = r2(1:dim1, 1:dim2)
-    END DO
-
-    fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableSpace)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(r2)) DEALLOCATE (r2)
+  IF (.NOT. isxij) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: xij should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: xij should be present.')
+  dim1 = obj%returnShape(1)
+  dim2 = obj%returnShape(2)
+  dim3 = SIZE(xij, 2)
+
+  CALL Reallocate(val, dim1, dim2, dim3)
+  CALL Reallocate(args, obj%numArgs)
+
+  DO jj = 1, dim3
+    args(1:obj%numArgs) = xij(1:obj%numArgs, jj)
+    CALL obj%Get(val=r2, args=args)
+    val(1:dim1, 1:dim2, jj) = r2(1:dim1, 1:dim2)
+  END DO
+
+  fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableSpace)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(r2)) DEALLOCATE (r2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Matrix_Space_GetVariable
 
@@ -847,26 +917,36 @@ SUBROUTINE Matrix_Time_GetVariable(obj, fevar, timeVec)
   LOGICAL(LGT) :: istimevec
   INTEGER(I4B) :: jj, dim1, dim2, dim3
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
+
   istimevec = PRESENT(timeVec)
-  IF (istimevec) THEN
-    dim1 = obj%returnShape(1)
-    dim2 = obj%returnShape(2)
-    dim3 = SIZE(timeVec)
-    CALL Reallocate(val, dim1, dim2, dim3)
-
-    DO jj = 1, dim3
-      CALL obj%Get(val=r2, args=timeVec(jj:jj))
-      val(1:dim1, 1:dim2, jj) = r2(1:dim1, 1:dim2)
-    END DO
-
-    fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableTime)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(r2)) DEALLOCATE (r2)
+  IF (.NOT. istimevec) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: timeVec should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: timeVec should be present.')
+  dim1 = obj%returnShape(1)
+  dim2 = obj%returnShape(2)
+  dim3 = SIZE(timeVec)
+  CALL Reallocate(val, dim1, dim2, dim3)
+
+  DO jj = 1, dim3
+    CALL obj%Get(val=r2, args=timeVec(jj:jj))
+    val(1:dim1, 1:dim2, jj) = r2(1:dim1, 1:dim2)
+  END DO
+
+  fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableTime)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(r2)) DEALLOCATE (r2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Matrix_Time_GetVariable
 
@@ -883,38 +963,48 @@ SUBROUTINE Matrix_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   ! internal variable
   CHARACTER(*), PARAMETER :: myName = "Matrix_SpaceTime_GetVariable()"
   REAL(DFP), ALLOCATABLE :: val(:, :, :, :), r2(:, :), args(:)
-  LOGICAL(LGT) :: isxij, istimevec
+  LOGICAL(LGT) :: problem
   INTEGER(I4B) :: ii, jj, dim1, dim2, dim3, dim4
 
-  isxij = PRESENT(xij)
-  istimevec = PRESENT(timeVec)
-  IF (isxij .AND. istimevec) THEN
-    dim1 = obj%returnShape(1)
-    dim2 = obj%returnShape(2)
-    dim3 = SIZE(xij, 2)
-    dim4 = SIZE(timeVec)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
 
-    CALL Reallocate(val, dim1, dim2, dim3, dim4)
-    CALL Reallocate(args, obj%numArgs)
+  problem = (.NOT. PRESENT(xij)) .OR. (.NOT. PRESENT(timeVec))
 
-    DO jj = 1, dim4
-      args = timeVec(jj)
-      DO ii = 1, dim3
-        args(1:obj%numArgs) = xij(1:obj%numArgs, ii)
-        CALL obj%Get(val=r2, args=args)
-        val(1:dim1, 1:dim2, ii, jj) = r2(1:dim1, 1:dim2)
-      END DO
-    END DO
-
-    fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableSpaceTime)
-    IF (ALLOCATED(val)) DEALLOCATE (val)
-    IF (ALLOCATED(r2)) DEALLOCATE (r2)
-    IF (ALLOCATED(args)) DEALLOCATE (args)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTENRAL ERROR] :: xij should be present.')
     RETURN
   END IF
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTENRAL ERROR] :: xij should be present.')
+  dim1 = obj%returnShape(1)
+  dim2 = obj%returnShape(2)
+  dim3 = SIZE(xij, 2)
+  dim4 = SIZE(timeVec)
+
+  CALL Reallocate(val, dim1, dim2, dim3, dim4)
+  CALL Reallocate(args, obj%numArgs)
+
+  DO jj = 1, dim4
+    args = timeVec(jj)
+    DO ii = 1, dim3
+      args(1:obj%numArgs) = xij(1:obj%numArgs, ii)
+      CALL obj%Get(val=r2, args=args)
+      val(1:dim1, 1:dim2, ii, jj) = r2(1:dim1, 1:dim2)
+    END DO
+  END DO
+
+  fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableSpaceTime)
+  IF (ALLOCATED(val)) DEALLOCATE (val)
+  IF (ALLOCATED(r2)) DEALLOCATE (r2)
+  IF (ALLOCATED(args)) DEALLOCATE (args)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE Matrix_SpaceTime_GetVariable
 
