@@ -258,15 +258,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Setting Cell Finite Element.')
 #endif DEBUG_VER
 
-CALL obj%SetQuadPointsInSpace()
-CALL obj%SetLocalElemShapeDataInSpace()
-
+IF (nsd .GE. 2) THEN
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Setting Facet Finite Element.')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] Setting Facet Finite Element.')
 #endif DEBUG_VER
 
-IF (nsd .GE. 2) THEN
   elemType = obj%dom%GetElemType(dim=nsd - 1)
   order = obj%dom%GetOrder(dim=nsd - 1)
   tsize = SIZE(elemType)
@@ -312,14 +309,18 @@ IF (nsd .GE. 2) THEN
 
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] Setting Facet Finite Element.')
+#endif DEBUG_VER
 END IF
 
+IF (nsd .GE. 3) THEN
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Setting Facet Finite Element.')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] Setting edge Finite Element.')
 #endif DEBUG_VER
 
-IF (nsd .GE. 3) THEN
   elemType = obj%dom%GetElemType(dim=nsd - 2)
   order = obj%dom%GetOrder(dim=nsd - 2)
   tsize = SIZE(elemType)
@@ -363,9 +364,18 @@ IF (nsd .GE. 3) THEN
       & lambda=obj%lambdaForSpace)
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] Setting edge Finite Element.')
+#endif DEBUG_VER
 END IF
 
 IF (obj%nnt .GT. 1_I4B) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] Setting time Finite Element.')
+#endif DEBUG_VER
+
   CALL obj%timeFE%InitiateLagrangeFE( &
     & nsd=nsd,  &
     & elemType=Line2,  &
@@ -392,7 +402,15 @@ IF (obj%nnt .GT. 1_I4B) THEN
 
   CALL obj%SetQuadPointsInTime()
   CALL obj%SetLocalElemShapeDataInTime()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] Setting time Finite Element.')
+#endif DEBUG_VER
 END IF
+
+CALL obj%SetQuadPointsInSpace()
+CALL obj%SetLocalElemShapeDataInSpace()
 
 IF (ALLOCATED(elemType)) DEALLOCATE (elemType)
 IF (ALLOCATED(order)) DEALLOCATE (order)
@@ -456,7 +474,7 @@ NULLIFY (fe)
 isok = ALLOCATED(obj%facetFE)
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%cellFE not allocated')
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%facetFE not allocated')
   RETURN
 END IF
 
