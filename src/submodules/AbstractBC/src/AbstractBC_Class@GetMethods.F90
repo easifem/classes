@@ -177,10 +177,10 @@ END PROCEDURE bc_isuseFunction
 
 MODULE PROCEDURE bc_GetQuery
 CALL obj%boundary%GetQuery(&
-& isSelectionByBox=isSelectionByBox, &
-& isSelectionByMeshID=isSelectionByMeshID, &
-& isSelectionByElemNum=isSelectionByElemNum, &
-& isSelectionByNodeNum=isSelectionByNodeNum)
+  & isSelectionByBox=isSelectionByBox, &
+  & isSelectionByMeshID=isSelectionByMeshID, &
+  & isSelectionByElemNum=isSelectionByElemNum, &
+  & isSelectionByNodeNum=isSelectionByNodeNum)
 
 IF (PRESENT(idof)) idof = obj%idof
 IF (PRESENT(isTangent)) isTangent = obj%isTangent
