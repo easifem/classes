@@ -433,6 +433,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: strain(:)
   !! Strain tensor
   !! This will be a tensor mesh field
+  CLASS(UserFunction_), POINTER :: bodyForceFunc => NULL()
+  !! body force function
 CONTAINS
   PRIVATE
 
@@ -642,6 +644,8 @@ CONTAINS
   ! @AssembleRHSMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
   !! This procedure pointer assembles the right-hand-side vector
+  PROCEDURE, PUBLIC, PASS(obj) :: SetBodyForceFunc => obj_SetBodyForceFunc
+  !! Set body force function
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodyForce => &
     & obj_AssembleBodyForce
   !! This procedure assemble the body force term to RHS
@@ -1746,6 +1750,21 @@ INTERFACE
   MODULE SUBROUTINE obj_AssembleRHS(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_AssembleRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       SetBodyForceFunc@AssembleRHSMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the system of linear equation
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetBodyForceFunc(obj, func)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), TARGET, INTENT(IN) :: func
+  END SUBROUTINE obj_SetBodyForceFunc
 END INTERFACE
 
 !----------------------------------------------------------------------------
