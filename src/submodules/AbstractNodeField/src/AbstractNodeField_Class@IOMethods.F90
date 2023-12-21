@@ -289,18 +289,22 @@ CHARACTER(*), PARAMETER :: myName = "obj_WriteData2_vtk()"
 LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
 TYPE(Domain_), POINTER :: dom
 TYPE(Mesh_), POINTER :: meshPtr
-INTEGER(I4B) :: imesh, tMesh, nsd, tPhysicalVars, tComponents, ivar, &
+INTEGER(I4B) :: imesh, tMesh, nsd, ivar, &
 & tnodes, var_rank, var_vartype, itime
-INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), tPhysicalVars(:)
+TYPE(IntVector_), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
 REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
-CHARACTER(1), ALLOCATABLE :: names(:)
+CHARACTER(1), ALLOCATABLE :: names(:), names_sub(:)
 TYPE(FEVariable_) :: fevar
-INTEGER(I4B) :: tfield, iobj
+INTEGER(I4B) :: tfield, iobj, tsize, aint
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
 CLASS(AbstractNodeField_), POINTER :: obj0
 
 tfield = SIZE(obj)
 ALLOCATE (domains(tfield))
+ALLOCATE (tPhysicalVars(tfield))
+ALLOCATE (spaceCompo(tfield))
+ALLOCATE (timeCompo(tfield))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -351,6 +355,36 @@ END DO
 nsd = dom%GetNSD()
 tMesh = dom%GetTotalMesh(dim=nsd)
 
+tsize = 0
+DO iobj = 1, tfield
+  obj0 => obj(iobj)%ptr
+  IF (.NOT. ASSOCIATED(obj0)) THEN
+    tPhysicalVars(iobj) = 0
+    CALL Initiate(spaceCompo(iobj), 0)
+    CALL Initiate(timeCompo(iobj), 0)
+
+  ELSE
+    tPhysicalVars(iobj) = obj0%GetTotalPhysicalVars()
+    spaceCompo(iobj) = obj0%GetSpaceCompo(tPhysicalVars(iobj))
+    timeCompo(iobj) = obj0%GetTimeCompo(tPhysicalVars(iobj))
+  END IF
+
+  tsize = tsize + tPhysicalVars(iobj)
+END DO
+
+ALLOCATE (names(tsize))
+tsize = 0
+DO iobj = 1, tfield
+  obj0 => obj(iobj)%ptr
+  IF (.NOT. ASSOCIATED(obj0)) CYCLE
+
+  ALLOCATE (names_sub(tPhysicalVars(iobj)))
+  CALL obj0%GetPhysicalNames(names_sub)
+  names(tsize + 1:tsize + tPhysicalVars(iobj)) = names_sub
+  tsize = tsize + tPhysicalVars(iobj)
+  DEALLOCATE (names_sub)
+END DO
+
 DO imesh = 1, tMesh
   meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
 
@@ -364,23 +398,16 @@ DO imesh = 1, tMesh
   nptrs = meshPtr%GetNptrs()
   tnodes = meshPtr%GetTotalNodes()
 
+  tsize = 0
   DO iobj = 1, tfield
     obj0 => obj(iobj)%ptr
     IF (.NOT. ASSOCIATED(obj0)) CYCLE
 
-    tPhysicalVars = obj0%GetTotalPhysicalVars()
-    ALLOCATE (names(tPhysicalVars), spaceCompo(tPhysicalVars),  &
-      & timeCompo(tPhysicalVars))
-    CALL obj0%GetPhysicalNames(names)
-    spaceCompo = obj0%GetSpaceCompo(tPhysicalVars)
-    timeCompo = obj0%GetTimeCompo(tPhysicalVars)
+    aint = tsize + tPhysicalVars(iobj)
+    CALL ExportFieldToVTK(obj0, vtk, nptrs, tPhysicalVars(iobj),  &
+    & names(tsize + 1:aint), spaceCompo(iobj)%val, timeCompo(iobj)%val)
+    tsize = aint
 
-    CALL ExportFieldToVTK(obj0, vtk, nptrs, tPhysicalVars, names,  &
-    & spaceCompo, timeCompo)
-
-    IF (ALLOCATED(names)) DEALLOCATE (names)
-    IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
-    IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
   END DO
 
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
@@ -389,6 +416,10 @@ DO imesh = 1, tMesh
   CALL vtk%WritePiece()
 END DO
 
+DEALLOCATE (tPhysicalVars)
+DEALLOCATE (names)
+DEALLOCATE (spaceCompo)
+DEALLOCATE (timeCompo)
 NULLIFY (meshPtr, dom, obj0)
 
 #ifdef DEBUG_VER
