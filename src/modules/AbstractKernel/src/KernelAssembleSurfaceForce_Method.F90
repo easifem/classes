@@ -37,7 +37,8 @@ CHARACTER(*), PARAMETER :: modName = "KernelAssembleSurfaceForce_Method"
 
 INTERFACE KernelAssembleSurfaceForce
   MODULE PROCEDURE KernelAssembleSurfaceForce1
-  ! MODULE PROCEDURE KernelAssembleSurfaceForce2
+  MODULE PROCEDURE KernelAssembleSurfaceForce2
+  MODULE PROCEDURE KernelAssembleSurfaceForce3
 END INTERFACE KernelAssembleSurfaceForce
 
 CONTAINS
@@ -51,7 +52,7 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbcPtrs(:)
-  CLASS(UserFunction_), INTENT(INOUT) :: func
+  CLASS(UserFunction_), TARGET, INTENT(INOUT) :: func
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
@@ -62,14 +63,58 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce1()"
+  TYPE(UserFunctionPointer_), ALLOCATABLE :: funcPtrs(:)
+  INTEGER(I4B) :: tnbc, ii
+
+  tnbc = SIZE(nbcPtrs)
+
+  ALLOCATE (funcPtrs(tnbc))
+  DO ii = 1, tnbc; funcPtrs(ii)%ptr => func; END DO
+
+  CALL KernelAssembleSurfaceForce2(rhs=rhs, dom=dom, nbcPtrs=nbcPtrs,  &
+    & funcPtrs=funcPtrs, fe=fe, linFE=linFE, spaceElemSD=spaceElemSD,  &
+    & linSpaceElemSD=linSpaceElemSD, reset=reset, scale=scale, times=times)
+
+  DO ii = 1, tnbc; funcPtrs(ii)%ptr => NULL(); END DO
+  DEALLOCATE (funcPtrs)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE KernelAssembleSurfaceForce1
+
+!----------------------------------------------------------------------------
+!                                               KernelAssembleSurfaceForce2
+!----------------------------------------------------------------------------
+
+SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
+  & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  CLASS(VectorField_), INTENT(INOUT) :: rhs
+  CLASS(Domain_), INTENT(INOUT) :: dom
+  TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbcPtrs(:)
+  TYPE(UserFunctionPointer_), INTENT(INOUT) :: funcPtrs(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  LOGICAL(LGT), INTENT(IN) :: reset
+  REAL(DFP), INTENT(IN) :: scale
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce2()"
   TYPE(FEVariable_) :: forceVar
   TYPE(ElemShapeData_) :: elemsd, linElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
   CLASS(NeumannBC_), POINTER :: nbc
-  LOGICAL(LGT) :: problem
-  INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd, returnType
+  CLASS(UserFunction_), POINTER :: func
+  LOGICAL(LGT) :: problem, isNormal, isTangent
+  INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd,  &
+    & returnType, tfunc
   INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshID(:)
   REAL(DFP), ALLOCATABLE :: fevec(:), xij(:, :)
 
@@ -78,26 +123,57 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
     & '[START] ')
 #endif DEBUG_VER
 
-  returnType = func%GetReturnType()
-  problem = returnType .NE. Scalar
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: The return type of func should be a vector.')
-  END IF
-
   IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
 
   tnbc = SIZE(nbcPtrs)
+  tfunc = SIZE(funcPtrs)
+
+  problem = tnbc .NE. tfunc
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+     & '[INTERNAL ERROR] :: Size of nbcPtrs not same as the size of funcPtrs')
+    RETURN
+  END IF
+
   nsd = dom%GetNSD()
-  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE, nbc)
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE, nbc, func)
 
   DO nbcNo = 1, tnbc
+
+    func => NULL(); func => funcPtrs(nbcNo)%ptr
+
+    problem = .NOT. ASSOCIATED(func)
+    IF (problem) CYCLE
+
+    returnType = func%GetReturnType()
+    problem = returnType .NE. Scalar
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: The return type of func should be a vector.')
+    END IF
+
     nbc => nbcPtrs(nbcNo)%ptr
     problem = .NOT. ASSOCIATED(nbc)
     IF (problem) CYCLE
 
-    CALL nbc%boundary%GetParam(isSelectionByMeshID=problem)
+    CALL nbc%boundary%GetParam(isSelectionByMeshID=problem,  &
+      & isNormal=isNormal, isTangent=isTangent)
+
+    IF (problem) THEN
+      CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+        & '[SKIPPING] :: Currently, found isSelectionByMeshID false.')
+      CYCLE
+    END IF
+
+    problem = isNormal .OR. isTangent
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[SKIPPING] :: Currently, normal and tangential boundary '// &
+        & ' conditions are not supported.')
+      RETURN
+    END IF
+
+    CALL nbc%boundary%GetParam(isnor=problem)
 
     IF (problem) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -151,6 +227,159 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
 
   END DO
 
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE, nbc, func)
+
+  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+  IF (ALLOCATED(meshID)) DEALLOCATE (meshID)
+  IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
+  IF (ALLOCATED(xij)) DEALLOCATE (xij)
+
+  CALL DEALLOCATE (forceVar)
+  CALL DEALLOCATE (elemsd)
+  CALL DEALLOCATE (linElemSD)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE KernelAssembleSurfaceForce2
+
+!----------------------------------------------------------------------------
+!                                                 KernelAssembleSurfaceForce
+!----------------------------------------------------------------------------
+
+SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
+  & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  CLASS(VectorField_), INTENT(INOUT) :: rhs
+    !! rhs to assemble
+  CLASS(VectorField_), INTENT(INOUT) :: extField
+    !! Temporary field which will contains the nodal values of
+    !! surface force
+    !! If nbc isExternal is true then it means
+    !! extField will contain the boundary condition
+    !! otherwise we read boundary condition in the extField
+  CLASS(Domain_), INTENT(INOUT) :: dom
+    !! domain
+  TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbcPtrs(:)
+    !! Neumann boundary condition pointers
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  LOGICAL(LGT), INTENT(IN) :: reset
+  REAL(DFP), INTENT(IN) :: scale
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce3()"
+  TYPE(FEVariable_) :: forceVar
+  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  CLASS(Mesh_), POINTER :: meshptr
+  CLASS(ReferenceElement_), POINTER :: refelem
+  CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
+  CLASS(NeumannBC_), POINTER :: nbc
+  LOGICAL(LGT) :: problem, isNormal, isTangent
+  INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd,  &
+    & returnType
+  INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshID(:)
+  REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), forceVec(:, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
+
+  tnbc = SIZE(nbcPtrs)
+  nsd = dom%GetNSD()
+  NULLIFY (meshptr, refelem, spaceFE, linSpaceFE, nbc)
+
+  DO nbcNo = 1, tnbc
+    nbc => nbcPtrs(nbcNo)%ptr
+    problem = .NOT. ASSOCIATED(nbc)
+    IF (problem) CYCLE
+
+    CALL nbc%GetParam(useExternal=problem)
+    IF (problem) CYCLE
+
+    CALL extField%ApplyDirichletBC(dbc=nbc, times=times)
+    nbc => NULL()
+  END DO
+
+  DO nbcNo = 1, tnbc
+    nbc => nbcPtrs(nbcNo)%ptr
+    problem = .NOT. ASSOCIATED(nbc)
+    IF (problem) CYCLE
+
+    CALL nbc%boundary%GetParam(isSelectionByMeshID=problem,  &
+      & isNormal=isNormal, isTangent=isTangent)
+
+    IF (problem) THEN
+      CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+        & '[SKIPPING] :: Currently, found isSelectionByMeshID false.')
+      CYCLE
+    END IF
+
+    problem = isTangent .OR. isNormal
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: Currently, normal and tangential '//  &
+        & ' Neumann boundary condition are not supported.')
+      RETURN
+    END IF
+
+    meshID = nbc%GetMeshID(dim=nsd - 1_I4B)
+    idof = nbc%GetDOFNo()
+    tmesh = SIZE(meshID)
+
+    DO id = 1, tmesh
+      jd = meshID(id)
+      meshptr => dom%GetMeshPointer(dim=nsd - 1_I4B, entityNum=jd)
+
+      problem = meshptr%isEmpty()
+      IF (problem) CYCLE
+
+      spaceFE => fe(jd)%ptr
+      linSpaceFE => linFE(jd)%ptr
+
+      elemsd = spaceElemSD(jd)
+      linElemSD = linSpaceElemSD(jd)
+
+      refelem => meshptr%GetRefElemPointer()
+      nns = (.nne.refelem)
+
+      CALL Reallocate(xij, nsd, nns)
+      CALL Reallocate(fevec, nsd, nns)
+      CALL Reallocate(forceVec, nsd, nns)
+
+      DO iel = meshptr%minElemNum, meshptr%maxElemNum
+
+        problem = .NOT. meshptr%IsElementPresent(iel)
+        IF (problem) CYCLE
+
+        nptrs = meshptr%GetConnectivity(iel)
+        CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
+
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+          & geoElemSD=linElemSD)
+
+        CALL extField%Get(VALUE=forceVec, globalNode=nptrs)
+
+        forceVar = NodalVariable(val=forceVec, rank=TypeFEVariableVector,  &
+          & vartype=TypeFEVariableSpace)
+
+        fevec = ForceVector(test=elemsd, c=forceVar,  &
+          & crank=TypeFEVariableVector)
+
+        CALL rhs%Set(globalNode=nptrs, VALUE=fevec, scale=scale,  &
+          & addContribution=.TRUE.)
+      END DO
+    END DO
+
+  END DO
+
   NULLIFY (meshptr, refelem, spaceFE, linSpaceFE, nbc)
 
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
@@ -167,103 +396,6 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleSurfaceForce1
-
-!----------------------------------------------------------------------------
-!                                                 KernelAssembleSurfaceForce
-!----------------------------------------------------------------------------
-
-! SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, bodyVec, fe,  &
-!   & linFE, spaceElemSD, linSpaceElemSD, reset, scale)
-!   CLASS(VectorField_), INTENT(INOUT) :: rhs
-!   CLASS(Domain_), INTENT(INOUT) :: dom
-!   CLASS(VectorField_), INTENT(INOUT) :: bodyVec
-!   TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
-!   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
-!   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-!   TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
-!   LOGICAL(LGT), INTENT(IN) :: reset
-!   REAL(DFP), INTENT(IN) :: scale
-!
-!   ! internal variables
-!   CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce2()"
-!   LOGICAL(LGT) :: problem
-!   INTEGER(I4B) :: tmesh, nsd, id, nns, iel
-!   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-!   REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), aSurfaceVec(:, :)
-!   TYPE(FEVariable_) :: bodyvar
-!   TYPE(ElemShapeData_) :: elemsd, linElemSD
-!   CLASS(Mesh_), POINTER :: meshptr
-!   CLASS(ReferenceElement_), POINTER :: refelem
-!   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
-!
-! #ifdef DEBUG_VER
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[START] ')
-! #endif DEBUG_VER
-!
-!   IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
-!
-!   nsd = dom%GetNSD()
-!   tmesh = dom%GetTotalMesh(dim=nsd)
-!   NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
-!
-!   DO id = 1, tmesh
-!     meshptr => dom%GetMeshPointer(dim=nsd, entityNum=id)
-!     problem = meshptr%isEmpty()
-!     IF (problem) CYCLE
-!
-!     spaceFE => fe(id)%ptr
-!     linSpaceFE => linFE(id)%ptr
-!
-!     elemsd = spaceElemSD(id)
-!     linElemSD = linSpaceElemSD(id)
-!
-!     refelem => meshptr%GetRefElemPointer()
-!     nns = (.nne.refelem)
-!
-!     CALL Reallocate(xij, nsd, nns)
-!     CALL Reallocate(fevec, nsd, nns)
-!
-!     DO iel = meshptr%minElemNum, meshptr%maxElemNum
-!
-!       problem = meshptr%isElementPresent(iel)
-!       IF (problem) CYCLE
-!
-!       nptrs = meshptr%GetConnectivity(iel)
-!
-!       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
-!
-!       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-!         & geoElemSD=linElemSD)
-!
-!       CALL bodyVec%Get(VALUE=aSurfaceVec, globalNode=nptrs)
-!       bodyvar = NodalVariable(val=aSurfaceVec, rank=TypeFEVariableVector,  &
-!         & vartype=TypeFEVariableSpace)
-!
-!       fevec = ForceVector(test=elemsd, c=bodyvar,  &
-!         & crank=TypeFEVariableVector)
-!
-!       CALL rhs%Set(globalNode=nptrs, scale=scale, addContribution=.TRUE.,  &
-!         & VALUE=fevec)
-!
-!     END DO
-!
-!   END DO
-!
-!   NULLIFY (meshptr, refelem, spaceFE, linSpaceFE)
-!   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-!   IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
-!   IF (ALLOCATED(aSurfaceVec)) DEALLOCATE (aSurfaceVec)
-!   CALL DEALLOCATE (bodyvar)
-!   CALL DEALLOCATE (elemsd)
-!   CALL DEALLOCATE (linElemSD)
-!
-! #ifdef DEBUG_VER
-!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!     & '[END] ')
-! #endif DEBUG_VER
-!
-! END SUBROUTINE KernelAssembleSurfaceForce2
+END SUBROUTINE KernelAssembleSurfaceForce3
 
 END MODULE KernelAssembleSurfaceForce_Method

@@ -50,6 +50,8 @@ name0 = UpperCase(name)
 SELECT CASE (name0%chars())
 CASE ("CONSTANT")
   ans = Constant
+CASE ("TIME")
+  ans = Time
 CASE ("SPACE")
   ans = Space
 CASE ("SPACETIME")

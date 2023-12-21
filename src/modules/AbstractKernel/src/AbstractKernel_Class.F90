@@ -302,7 +302,11 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(String) :: domainFile
   !! Domain file name
   TYPE(QuadraturePoint_), ALLOCATABLE :: quadratureForSpace(:)
-  !! Quadrature points in space element
+  !! Quadrature points in space element (cell element)
+  !! The size of quadratureForSpace is same as the total number of
+  !! mesh in the domain
+  TYPE(QuadraturePoint_), ALLOCATABLE :: quadratureForSpace_facet(:)
+  !! Quadrature points in space element (facet element)
   !! The size of quadratureForSpace is same as the total number of
   !! mesh in the domain
   TYPE(QuadraturePoint_) :: quadratureForTime
@@ -330,8 +334,16 @@ TYPE, ABSTRACT :: AbstractKernel_
     !! Element shape data on time element #STFEM
   TYPE(ElemshapeData_), ALLOCATABLE :: linSpaceElemSD(:)
     !! Element shape data on linear space (simplex) element
+    !! cell data only
   TYPE(ElemshapeData_), ALLOCATABLE :: spaceElemSD(:)
     !! Element shape data on space element
+    !! cell data only
+  TYPE(ElemshapeData_), ALLOCATABLE :: linSpaceElemSD_facet(:)
+    !! Element shape data on linear space (simplex) element
+    !! facet element
+  TYPE(ElemshapeData_), ALLOCATABLE :: spaceElemSD_facet(:)
+    !! Element shape data on space element
+    !! Facet element
   TYPE(STElemshapeData_), ALLOCATABLE :: stelemsd(:, :)
     !! Element shape data on space-time element
   TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
@@ -1761,8 +1773,9 @@ END INTERFACE
 ! summary: This subroutine assembles the surface force terms in RHS
 
 INTERFACE
-  MODULE SUBROUTINE obj_AssembleSurfaceForce(obj)
+  MODULE SUBROUTINE obj_AssembleSurfaceForce(obj, extField)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_AssembleSurfaceForce
 END INTERFACE
 

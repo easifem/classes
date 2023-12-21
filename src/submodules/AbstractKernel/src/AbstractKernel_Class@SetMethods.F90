@@ -449,6 +449,40 @@ END DO
 
 NULLIFY (fe)
 
+!----------------------------------------------------------------------------
+!                                                                   facetFE
+!----------------------------------------------------------------------------
+
+isok = ALLOCATED(obj%facetFE)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%cellFE not allocated')
+  RETURN
+END IF
+
+tCell = SIZE(obj%facetFE)
+fe => NULL()
+
+isok = ALLOCATED(obj%quadratureForSpace_facet)
+IF (.NOT. isok) THEN
+  ALLOCATE (obj%quadratureForSpace_facet(tCell))
+END IF
+
+DO ii = 1, tCell
+  fe => obj%facetFE(ii)%ptr
+  CALL fe%GetParam(order=order)
+  order = order * 2
+  CALL fe%GetQuadraturePoints( &
+    & quad=obj%quadratureForSpace_facet(ii), &
+    & quadratureType=[obj%quadTypeForSpace],  &
+    & order=[order],  &
+    & alpha=[obj%alphaForSpace],  &
+    & beta=[obj%betaForSpace],  &
+    & lambda=[obj%lambdaForSpace])
+END DO
+
+NULLIFY (fe)
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
@@ -547,6 +581,59 @@ DO ii = 1, tCell
   CALL fe%GetLocalElemShapeData( &
     & quad=obj%quadratureForSpace(ii), &
     & elemsd=obj%linSpaceElemSD(ii))
+END DO
+
+NULLIFY (fe)
+
+!----------------------------------------------------------------------------
+!                                                                   facetFE
+!----------------------------------------------------------------------------
+
+isok = ALLOCATED(obj%facetFE)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: AbstractKernel_::obj%facetFE not allocated')
+  RETURN
+END IF
+
+isok = ALLOCATED(obj%quadratureForSpace_facet)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%quadratureForSpace_facet'// &
+  & ' not allocated.')
+  RETURN
+END IF
+
+tCell = SIZE(obj%facetFE)
+fe => NULL()
+
+problem = ALLOCATED(obj%spaceElemSD_facet)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%spaceElemSD_facet'//  &
+  & ' already allocated')
+  RETURN
+END IF
+
+IF (ALLOCATED(obj%linSpaceElemSD_facet)) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[CONFIG ERROR] :: AbstractKernel_::obj%linSpaceElemSD_facet '//  &
+  & ' already allocated')
+  RETURN
+END IF
+
+ALLOCATE (obj%spaceElemSD_facet(tCell), obj%linSpaceElemSD_facet(tCell))
+
+DO ii = 1, tCell
+  fe => obj%facetFE(ii)%ptr
+  CALL fe%GetLocalElemShapeData( &
+    & quad=obj%quadratureForSpace_facet(ii), &
+    & elemsd=obj%spaceElemSD_facet(ii))
+
+  fe => obj%linFacetFE(ii)%ptr
+  CALL fe%GetLocalElemShapeData( &
+    & quad=obj%quadratureForSpace_facet(ii), &
+    & elemsd=obj%linSpaceElemSD_facet(ii))
 END DO
 
 NULLIFY (fe)

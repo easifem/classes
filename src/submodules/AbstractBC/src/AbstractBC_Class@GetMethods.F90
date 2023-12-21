@@ -262,8 +262,10 @@ argType = obj%func%GetArgType()
 problem = argType .NE. obj%nodalValueType
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: argType in user function not same '//  &
-    & 'as nodalValueType in AbstractBC_')
+    & '[INTERNAL ERROR] :: argType='//tostring(argType)//  &
+    & ' in user function is not same '//  &
+    & 'as nodalValueType '//tostring(obj%nodalValueType)//  &
+    & ' in AbstractBC_')
   RETURN
 END IF
 
