@@ -41,6 +41,7 @@ PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
 PUBLIC :: AbstractNodeFieldSetParam
 PUBLIC :: AbstractNodeFieldGetFEVariable
+PUBLIC :: NodeFieldsWriteData
 
 CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractNodeField"
@@ -103,7 +104,10 @@ CONTAINS
   !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData1_vtk
+  PROCEDURE, NOPASS :: WriteData_vtk_ptrs_vec =>  &
+    & obj_WriteData2_vtk
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk_ptrs_vec
   !! Export data in VTKformat
 
   ! GET:
@@ -314,14 +318,33 @@ END INTERFACE AbstractNodeFieldExport
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-24
-! summary:  Export data in vrkfile
+! summary:  Export data in vtkfile
 
-INTERFACE AbstractNodeWriteData
-  MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk)
+INTERFACE AbstractNodeFieldWriteData
+  MODULE SUBROUTINE obj_WriteData1_vtk(obj, vtk)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE obj_WriteData_vtk
-END INTERFACE AbstractNodeWriteData
+  END SUBROUTINE obj_WriteData1_vtk
+END INTERFACE AbstractNodeFieldWriteData
+
+!----------------------------------------------------------------------------
+!                                                       WriteData@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-21
+! summary:  Export data in vtkfile
+
+INTERFACE AbstractNodeFieldWriteData
+  MODULE SUBROUTINE obj_WriteData2_vtk(obj, vtk)
+    CLASS(AbstractNodeFieldPointer_), INTENT(INOUT) :: obj(:)
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+  END SUBROUTINE obj_WriteData2_vtk
+END INTERFACE AbstractNodeFieldWriteData
+
+INTERFACE NodeFieldsWriteData
+  MODULE PROCEDURE obj_WriteData2_vtk
+END INTERFACE NodeFieldsWriteData
 
 !----------------------------------------------------------------------------
 !                                                     GetPointer@GetMethods

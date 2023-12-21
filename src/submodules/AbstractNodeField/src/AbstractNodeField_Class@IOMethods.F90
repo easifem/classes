@@ -115,12 +115,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 END PROCEDURE obj_Export
 
+SUBROUTINE ExportToVTK()
+  IMPLICIT NONE
+
+END SUBROUTINE ExportToVTK
+
 !----------------------------------------------------------------------------
 !                                                             WriteData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_WriteData_vtk
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
+MODULE PROCEDURE obj_WriteData1_vtk
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData1_vtk()"
 LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
 TYPE(Domain_), POINTER :: dom
 TYPE(Mesh_), POINTER :: meshPtr
@@ -261,8 +266,178 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE obj_WriteData_vtk
+END PROCEDURE obj_WriteData1_vtk
 
+!----------------------------------------------------------------------------
+!                                                             WriteData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteData2_vtk
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData2_vtk()"
+LOGICAL(LGT) :: isOK, isSingleDomain, isMultiDomain
+TYPE(Domain_), POINTER :: dom
+TYPE(Mesh_), POINTER :: meshPtr
+INTEGER(I4B) :: imesh, tMesh, nsd, tPhysicalVars, tComponents, ivar, &
+& tnodes, var_rank, var_vartype, itime
+INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
+REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
+CHARACTER(1), ALLOCATABLE :: names(:)
+TYPE(FEVariable_) :: fevar
+INTEGER(I4B) :: tfield, iobj
+TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
+CLASS(AbstractNodeField_), POINTER :: obj0
+
+tfield = SIZE(obj)
+ALLOCATE (domains(tfield))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+NULLIFY (dom, meshPtr, obj0)
+
+isOK = vtk%isOpen()
+IF (.NOT. isOK) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: VTKFile_::vtk is not open.')
+  RETURN
+END IF
+
+DO iobj = 1, tfield
+  obj0 => obj(iobj)%ptr
+  IF (.NOT. ASSOCIATED(obj0)) CYCLE
+
+  isOK = obj0%isInitiated
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractNodeField_:: '// &
+    & 'obj('//tostring(iobj)//') is not Initiated.')
+    RETURN
+  END IF
+
+  isOK = ASSOCIATED(obj0%domain)
+  IF (.NOT. isOK) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: AbstractNodeField_::'// &
+      & 'obj('//tostring(iobj)//')%domain is not associated')
+    RETURN
+  END IF
+
+  IF (.NOT. ASSOCIATED(dom)) THEN
+    dom => obj0%domain
+  ELSE
+    isOK = ASSOCIATED(dom, obj0%domain)
+    IF (.NOT. isOK) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: AbstractNodeField_ :: '//  &
+        & 'associated domain should  be the same ')
+    END IF
+  END IF
+END DO
+
+! here it is already guranteed that all components of obj
+! are associated with the same domain
+nsd = dom%GetNSD()
+tMesh = dom%GetTotalMesh(dim=nsd)
+
+DO imesh = 1, tMesh
+  meshptr => dom%GetMeshPointer(dim=nsd, entityNum=imesh)
+
+  CALL dom%GetNodeCoord(nodeCoord=xij, dim=nsd, entityNum=imesh)
+
+  CALL meshPtr%ExportToVTK(vtkfile=vtk, nodeCoord=xij,  &
+    & openTag=.TRUE., content=.TRUE., closeTag=.FALSE.)
+
+  CALL vtk%WriteDataArray(location=String('node'), action=String('open'))
+
+  nptrs = meshPtr%GetNptrs()
+  tnodes = meshPtr%GetTotalNodes()
+
+  DO iobj = 1, tfield
+    obj0 => obj(iobj)%ptr
+    IF (.NOT. ASSOCIATED(obj0)) CYCLE
+
+    tPhysicalVars = obj0%GetTotalPhysicalVars()
+    ALLOCATE (names(tPhysicalVars), spaceCompo(tPhysicalVars),  &
+      & timeCompo(tPhysicalVars))
+    CALL obj0%GetPhysicalNames(names)
+    spaceCompo = obj0%GetSpaceCompo(tPhysicalVars)
+    timeCompo = obj0%GetTimeCompo(tPhysicalVars)
+
+    DO ivar = 1, tPhysicalVars
+      CALL obj0%GetFEVariable(globalNode=nptrs, VALUE=fevar, ivar=ivar)
+
+      var_rank = .RANK.fevar
+      var_vartype = .vartype.fevar
+
+      SELECT CASE (var_rank)
+      CASE (Scalar)
+        IF (var_vartype .EQ. Space) THEN
+          r1 = Get(fevar, TypeFEVariableScalar, TypeFEVariableSpace)
+          CALL vtk%WriteDataArray( &
+            & name=String(names(ivar)),  &
+            & x=r1,  &
+            & numberOfComponents=spaceCompo(ivar))
+        END IF
+
+        IF (var_vartype .EQ. SpaceTime) THEN
+          r2 = Get(fevar, TypeFEVariableScalar, TypeFEVariableSpaceTime)
+          DO itime = 1, timeCompo(ivar)
+            CALL vtk%WriteDataArray( &
+              & name=String(names(ivar)//"_t"//tostring(itime)),  &
+              & x=r2(itime, :),  &
+              & numberOfComponents=spaceCompo(ivar))
+          END DO
+        END IF
+
+      CASE (Vector)
+        IF (var_vartype .EQ. Space) THEN
+          r2 = Get(fevar, TypeFEVariableVector, TypeFEVariableSpace)
+          CALL vtk%WriteDataArray( &
+            & name=String(names(ivar)),  &
+            & x=r2,  &
+            & numberOfComponents=spaceCompo(ivar))
+        END IF
+
+        IF (var_vartype .EQ. SpaceTime) THEN
+          r3 = Get(fevar, TypeFEVariableVector, TypeFEVariableSpaceTime)
+          DO itime = 1, timeCompo(ivar)
+            CALL vtk%WriteDataArray( &
+              & name=String(names(ivar)//"_t"//tostring(itime)),  &
+              & x=r3(:, :, itime),  &
+              & numberOfComponents=spaceCompo(ivar))
+          END DO
+        END IF
+
+      CASE DEFAULT
+        CALL e%RaiseError(modName//'::'//myName//' - '// &
+          & '[INTERNAL ERROR] :: No case found for fevar')
+      END SELECT
+    END DO
+    CALL DEALLOCATE (fevar)
+    IF (ALLOCATED(r1)) DEALLOCATE (r1)
+    IF (ALLOCATED(r2)) DEALLOCATE (r2)
+    IF (ALLOCATED(r3)) DEALLOCATE (r3)
+    IF (ALLOCATED(names)) DEALLOCATE (names)
+    IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
+    IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
+  END DO
+
+  IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+  IF (ALLOCATED(xij)) DEALLOCATE (xij)
+  CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
+  CALL vtk%WritePiece()
+END DO
+
+NULLIFY (meshPtr, dom, obj0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+
+END PROCEDURE obj_WriteData2_vtk
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
