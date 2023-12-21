@@ -46,7 +46,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
+  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(UserFunction_), INTENT(INOUT) :: func
@@ -56,6 +56,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
   TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodyForce1()"
@@ -109,7 +110,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
         & geoElemSD=linElemSD)
 
-      CALL func%Get(fevar=bodyvar, xij=xij)
+      CALL func%Get(fevar=bodyvar, xij=xij, timeVec=times)
 
       fevec = ForceVector(test=elemsd, c=bodyvar,  &
         & crank=TypeFEVariableVector)
