@@ -535,12 +535,12 @@ END INTERFACE
 ! summary: Set values in AbstractMeshField_
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set2(obj, func, dom, timeVec)
+  MODULE SUBROUTINE obj_Set2(obj, func, dom, times)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
     CLASS(Domain_), INTENT(INOUT) :: dom
     !! domain to access the node coord
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! time vector when the var type is `Time` or `SpaceTime`
   END SUBROUTINE obj_Set2
 END INTERFACE
@@ -554,7 +554,7 @@ END INTERFACE
 ! summary: Set values in AbstractMeshField_ by AbstractMaterial
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set3(obj, material, name, dom, timeVec)
+  MODULE SUBROUTINE obj_Set3(obj, material, name, dom, times)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CLASS(AbstractMaterial_), INTENT(INOUT) :: material
     !! Abstract material
@@ -562,7 +562,7 @@ INTERFACE
     !! name of the AbstractMeshField
     CLASS(Domain_), INTENT(INOUT) :: dom
     !! domain to access the node coord
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! time vector when the var type is `Time` or `SpaceTime`
   END SUBROUTINE obj_Set3
 END INTERFACE

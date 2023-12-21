@@ -45,17 +45,18 @@ CONTAINS
 !                                                   KernelAssembleBodyForce
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleBodyForce1(rhs, dom, bodyFunc, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
+SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
+  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
-  CLASS(UserFunction_), INTENT(INOUT) :: bodyFunc
+  CLASS(UserFunction_), INTENT(INOUT) :: func
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodyForce1()"
@@ -109,7 +110,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, bodyFunc, cellFE,  &
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
         & geoElemSD=linElemSD)
 
-      CALL bodyFunc%Get(fevar=bodyvar, xij=xij)
+      CALL func%Get(fevar=bodyvar, xij=xij, times=times)
 
       fevec = ForceVector(test=elemsd, c=bodyvar,  &
         & crank=TypeFEVariableVector)

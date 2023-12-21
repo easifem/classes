@@ -118,7 +118,7 @@ DO iel = minelem, maxelem
 
   nptrs = mesh%GetConnectivity(globalElement=iel)
   CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
-  CALL func%Get(fevar=fevar, xij=xij, timeVec=timeVec)
+  CALL func%Get(fevar=fevar, xij=xij, times=times)
   CALL obj%Set(fevar=fevar, globalElement=iel)
 END DO
 
@@ -164,7 +164,7 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL obj%Set(func=func, dom=dom, timeVec=timeVec)
+CALL obj%Set(func=func, dom=dom, times=times)
 
 NULLIFY (func)
 

@@ -20,6 +20,7 @@ USE KernelAssembleDampingMatrix_Method
 USE KernelAssembleStiffnessMatrix_Method
 USE KernelAssembleElastoDynaMatrix_Method
 USE KernelAssembleBodyForce_Method
+USE KernelAssembleSurfaceForce_Method
 USE KernelTensorProperty_Method
 USE KernelScalarProperty_Method
 USE KernelMatrixField_Method

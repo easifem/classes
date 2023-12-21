@@ -1745,10 +1745,10 @@ END INTERFACE
 ! summary: This subroutine assembles the system of linear equation
 
 INTERFACE
-  MODULE SUBROUTINE obj_AssembleBodyForce(obj, bodyForceFunc, bodyForceVec)
+  MODULE SUBROUTINE obj_AssembleBodyForce(obj, func, extField)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    CLASS(UserFunction_), OPTIONAL, INTENT(INOUT) :: bodyForceFunc
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: bodyForceVec
+    CLASS(UserFunction_), OPTIONAL, INTENT(INOUT) :: func
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_AssembleBodyForce
 END INTERFACE
 

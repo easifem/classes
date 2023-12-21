@@ -358,11 +358,11 @@ END INTERFACE
 ! summary: Returns the Matrix value
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetFEVariable(obj, fevar, xij, timeVec)
+  MODULE SUBROUTINE obj_GetFEVariable(obj, fevar, xij, times)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
     REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
   END SUBROUTINE obj_GetFEVariable
 END INTERFACE
 

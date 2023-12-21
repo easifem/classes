@@ -129,13 +129,13 @@ END SUBROUTINE KernelInitiateTensorProperty1
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelSetTensorProperty1(vars, materials, dom, varname,  &
-  & matid, timeVec)
+  & matid, times)
   TYPE(AbstractTensorMeshFieldPointer_), INTENT(INOUT) :: vars(:)
   TYPE(SolidMaterialPointer_), INTENT(INOUT) :: materials(:)
   TYPE(Domain_), INTENT(INOUT) :: dom
   CHARACTER(*), INTENT(IN) :: varname
   INTEGER(I4B), INTENT(IN) :: matid
-  REAL(DFP), INTENT(IN) :: timeVec(:)
+  REAL(DFP), INTENT(IN) :: times(:)
 
   ! Define internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelSetTensorProperty1()"
@@ -181,7 +181,7 @@ SUBROUTINE KernelSetTensorProperty1(vars, materials, dom, varname,  &
     isok = material%IsMaterialPresent(name=varname)
     IF (isok) THEN
       var => vars(ii)%ptr
-      CALL var%Set(material=material, dom=dom, name=varname, timeVec=timeVec)
+      CALL var%Set(material=material, dom=dom, name=varname, times=times)
       var => NULL()
     ELSE
       vars(ii)%ptr => NULL()
