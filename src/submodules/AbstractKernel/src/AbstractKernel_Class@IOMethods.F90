@@ -205,6 +205,14 @@ IF (bool1) THEN
   CALL NeumannBCDisplay(obj%nbc, "nbc: ", unitNo=unitNo)
 END IF
 
+! nbcPointSource
+bool1 = ALLOCATED(obj%nbc)
+CALL Display(bool1, "nbcPointSource ALLOCATED: ", unitNo=unitNo)
+IF (bool1) THEN
+  CALL NeumannBCDisplay(obj%nbcPointSource, "nbcPointSource: ",  &
+    & unitNo=unitNo)
+END IF
+
 ! wbc
 bool1 = ALLOCATED(obj%wdbc)
 CALL Display(bool1, "wdbc ALLOCATED: ", unitNo=unitNo)
