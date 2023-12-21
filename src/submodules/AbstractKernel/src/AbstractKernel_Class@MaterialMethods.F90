@@ -261,7 +261,7 @@ CALL e%raiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL KernelSetScalarProperty(vars=obj%massDensity,  &
-  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
   & varname="massDensity", matid=obj%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
@@ -283,15 +283,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 CALL KernelSetScalarProperty(vars=obj%youngsModulus,  &
-  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
   & varname="youngsModulus", matid=obj%SOLID_MATERIAL_ID)
 
 CALL KernelSetScalarProperty(vars=obj%shearModulus,  &
-  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
   & varname="shearModulus", matid=obj%SOLID_MATERIAL_ID)
 
 CALL KernelSetTensorProperty(vars=obj%Cijkl,  &
-  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
   & varname="cijkl", matid=obj%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
@@ -313,11 +313,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif DEBUG_VER
 
 CALL KernelSetScalarProperty(vars=obj%dampCoeff_alpha,  &
-  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
   & varname="rayleigh_alpha", matid=obj%SOLID_MATERIAL_ID)
 
 CALL KernelSetScalarProperty(vars=obj%dampCoeff_beta,  &
-  & materials=obj%solidMaterial, dom=obj%dom, timeVec=obj%timeVec,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
   & varname="rayleigh_beta", matid=obj%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
