@@ -110,7 +110,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
         & geoElemSD=linElemSD)
 
-      CALL func%Get(fevar=bodyvar, xij=xij, timeVec=times)
+      CALL func%Get(fevar=bodyvar, xij=xij, times=times)
 
       fevec = ForceVector(test=elemsd, c=bodyvar,  &
         & crank=TypeFEVariableVector)
