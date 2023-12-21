@@ -156,7 +156,7 @@ SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
     problem = .NOT. ASSOCIATED(nbc)
     IF (problem) CYCLE
 
-    CALL nbc%boundary%GetParam(isSelectionByMeshID=problem,  &
+    CALL nbc%GetParam(isSelectionByMeshID=problem,  &
       & isNormal=isNormal, isTangent=isTangent)
 
     IF (problem) THEN
@@ -168,17 +168,9 @@ SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
     problem = isNormal .OR. isTangent
     IF (problem) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[SKIPPING] :: Currently, normal and tangential boundary '// &
+        & '[INTERNAL ERROR] :: Currently, normal and tangential boundary '// &
         & ' conditions are not supported.')
       RETURN
-    END IF
-
-    CALL nbc%boundary%GetParam(isnor=problem)
-
-    IF (problem) THEN
-      CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-        & '[SKIPPING] :: Currently, found isSelectionByMeshID false.')
-      CYCLE
     END IF
 
     meshID = nbc%GetMeshID(dim=nsd - 1_I4B)
@@ -280,8 +272,7 @@ SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
   CLASS(NeumannBC_), POINTER :: nbc
   LOGICAL(LGT) :: problem, isNormal, isTangent
-  INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd,  &
-    & returnType
+  INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd
   INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshID(:)
   REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), forceVec(:, :)
 
@@ -313,7 +304,7 @@ SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
     problem = .NOT. ASSOCIATED(nbc)
     IF (problem) CYCLE
 
-    CALL nbc%boundary%GetParam(isSelectionByMeshID=problem,  &
+    CALL nbc%GetParam(isSelectionByMeshID=problem,  &
       & isNormal=isNormal, isTangent=isTangent)
 
     IF (problem) THEN
