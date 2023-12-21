@@ -112,7 +112,7 @@ SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
   CLASS(NeumannBC_), POINTER :: nbc
   CLASS(UserFunction_), POINTER :: func
-  LOGICAL(LGT) :: problem, isNormal, isTangent
+  LOGICAL(LGT) :: problem, isNormal, isTangent, isSelectionByMeshID
   INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd,  &
     & returnType, tfunc
   INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshID(:)
@@ -156,9 +156,10 @@ SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
     problem = .NOT. ASSOCIATED(nbc)
     IF (problem) CYCLE
 
-    CALL nbc%GetParam(isSelectionByMeshID=problem,  &
+    CALL nbc%GetParam(isSelectionByMeshID=isSelectionByMeshID,  &
       & isNormal=isNormal, isTangent=isTangent)
 
+    problem = .NOT. isSelectionByMeshID
     IF (problem) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
         & '[SKIPPING] :: Currently, found isSelectionByMeshID false.')
@@ -271,7 +272,7 @@ SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
   CLASS(NeumannBC_), POINTER :: nbc
-  LOGICAL(LGT) :: problem, isNormal, isTangent
+  LOGICAL(LGT) :: problem, isNormal, isTangent, isSelectionByMeshID
   INTEGER(I4B) :: tmesh, nsd, id, nns, iel, tnbc, nbcNo, idof, jd
   INTEGER(I4B), ALLOCATABLE :: nptrs(:), meshID(:)
   REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), forceVec(:, :)
@@ -304,9 +305,10 @@ SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
     problem = .NOT. ASSOCIATED(nbc)
     IF (problem) CYCLE
 
-    CALL nbc%GetParam(isSelectionByMeshID=problem,  &
+    CALL nbc%GetParam(isSelectionByMeshID=isSelectionByMeshID,  &
       & isNormal=isNormal, isTangent=isTangent)
 
+    problem = .NOT. isSelectionByMeshID
     IF (problem) THEN
       CALL e%RaiseInformation(modName//'::'//myName//' - '// &
         & '[SKIPPING] :: Currently, found isSelectionByMeshID false.')
