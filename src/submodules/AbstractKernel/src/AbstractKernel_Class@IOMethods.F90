@@ -236,7 +236,6 @@ IF (bool1) THEN
         & ") : NOT ASSOCIATED", unitNo=unitNo)
     END IF
   END DO
-ELSE
 END IF
 
 ! solidMaterialToMesh
@@ -297,6 +296,9 @@ CALL Display(bool1, "obj%stress ALLOCATED: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%strain)
 CALL Display(bool1, "obj%strain ALLOCATED: ", unitNo=unitNo)
+
+bool1 = ASSOCIATED(obj%bodyForceFunc)
+CALL Display(bool1, "obj%bodyForceFunc ASSOCIATED: ", unitNo=unitNo)
 
 END PROCEDURE obj_Display
 
