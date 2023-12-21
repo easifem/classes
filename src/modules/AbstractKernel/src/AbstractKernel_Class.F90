@@ -350,6 +350,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Dirichlet boundary condition for displacement
   TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
   !! Neumann boundary condition for displacement
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbcPointSource(:)
+  !! Neumann boundary condition for displacement
   TYPE(NitscheBCPointer_), ALLOCATABLE :: wdbc(:)
   !! Weak dirichlet boundary condition for displacement
   INTEGER(I4B), ALLOCATABLE :: nitscheLocalID(:)

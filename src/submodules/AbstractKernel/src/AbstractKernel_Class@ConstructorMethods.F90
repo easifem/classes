@@ -619,6 +619,7 @@ END IF
 
 CALL DirichletBCDeallocate(obj%dbc)
 CALL NeumannBCDeallocate(obj%nbc)
+CALL NeumannBCDeallocate(obj%nbcPointSource)
 CALL NitscheBCDeallocate(obj%wdbc)
 
 obj%isNitsche = .FALSE.
