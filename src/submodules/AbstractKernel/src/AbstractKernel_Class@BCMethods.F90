@@ -26,7 +26,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AddDirichletBC
-CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC"
+CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -48,7 +48,7 @@ END PROCEDURE obj_AddDirichletBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetDirichletBCPointer
-CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCPointer"
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCPointer()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -172,7 +172,7 @@ IF (.NOT. ALLOCATED(obj%nbcPointSource)) THEN
     & 'is not allocated!')
 END IF
 
-ans => GetNeumannBCPointer(nbc=obj%nbc, nbcNo=nbcNo)
+ans => GetNeumannBCPointer(nbc=obj%nbcPointSource, nbcNo=nbcNo)
 ! INFO: This method is defined in NeumannBC_Class
 
 #ifdef DEBUG_VER
@@ -297,7 +297,8 @@ CALL Reallocate(obj%nitscheLocalID, ii)
 CALL Reallocate(tFacetElements, ii)
 
 DO jj = 1, ii
-  tFacetElements(jj) = obj%dom%GetTotalElements(dim=obj%nsd - 1, entityNum=jj)
+  tFacetElements(jj) = obj%dom%GetTotalElements(dim=obj%nsd - 1,  &
+    & entityNum=jj)
 END DO
 
 jj = 0
