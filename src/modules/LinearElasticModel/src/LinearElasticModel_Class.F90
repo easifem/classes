@@ -28,6 +28,7 @@ USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE AbstractSolidMechanicsModel_Class
+USE LinearElasticModelUtility, ONLY: GetShearModulus, GetYoungsModulus
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "LinearElasticModel_Class"
@@ -45,6 +46,8 @@ PUBLIC :: Get_3D_C_InvC
 PUBLIC :: TypeElasticity
 PUBLIC :: ElasticityType_char
 PUBLIC :: ElasticityType_tonumber
+PUBLIC :: GetYoungsModulus
+PUBLIC :: GetShearModulus
 
 INTEGER(I4B), PARAMETER, PUBLIC :: IsoLinearElasticModel = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: AnisoLinearElasticModel = 2
