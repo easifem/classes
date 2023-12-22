@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(NitscheBC_Class) GetMethods
-USE BaseMethod, ONLY: TOSTRING
+USE BaseMethod, ONLY: TOSTRING, Input
 IMPLICIT NONE
 CONTAINS
 
@@ -24,31 +24,31 @@ CONTAINS
 !                                                         GetMinCellEntity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetMinCellEntity
+MODULE PROCEDURE obj_GetMinCellEntity
 IF (ALLOCATED(obj%cellEntity)) THEN
   ans = LBOUND(obj%cellEntity, 1)
 ELSE
   ans = 0
 END IF
-END PROCEDURE bc_GetMinCellEntity
+END PROCEDURE obj_GetMinCellEntity
 
 !----------------------------------------------------------------------------
 !                                                           GetMaxCellEntity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetMaxCellEntity
+MODULE PROCEDURE obj_GetMaxCellEntity
 IF (ALLOCATED(obj%cellEntity)) THEN
   ans = UBOUND(obj%cellEntity, 1) - 1
 ELSE
   ans = 0
 END IF
-END PROCEDURE bc_GetMaxCellEntity
+END PROCEDURE obj_GetMaxCellEntity
 
 !----------------------------------------------------------------------------
 !                                                        IsCellEntityPresent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_IsCellEntityPresent
+MODULE PROCEDURE obj_IsCellEntityPresent
 INTEGER(I4B) :: ii
 
 IF (ALLOCATED(obj%cellEntity)) THEN
@@ -65,68 +65,85 @@ IF (ALLOCATED(obj%cellEntity)) THEN
 ELSE
   ans = .FALSE.
 END IF
-END PROCEDURE bc_IsCellEntityPresent
+END PROCEDURE obj_IsCellEntityPresent
 
 !----------------------------------------------------------------------------
 !                                                             GetStartIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetStartIndex
+MODULE PROCEDURE obj_GetStartIndex
 ans = obj%cellEntity(entityNum)
-END PROCEDURE bc_GetStartIndex
+END PROCEDURE obj_GetStartIndex
 
 !----------------------------------------------------------------------------
 !                                                                GetEndIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetEndIndex
+MODULE PROCEDURE obj_GetEndIndex
 ans = obj%cellEntity(entityNum + 1) - 1
-END PROCEDURE bc_GetEndIndex
+END PROCEDURE obj_GetEndIndex
 
 !----------------------------------------------------------------------------
 !                                                               GetCellElem
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetCellElem
+MODULE PROCEDURE obj_GetCellElem
 ans = obj%cellElem(entityNum)
-END PROCEDURE bc_GetCellElem
+END PROCEDURE obj_GetCellElem
 
 !----------------------------------------------------------------------------
 !                                                            GetLocalFacetID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetLocalFacetID
+MODULE PROCEDURE obj_GetLocalFacetID
 ans = obj%localFacetID(entityNum)
-END PROCEDURE bc_GetLocalFacetID
+END PROCEDURE obj_GetLocalFacetID
 
 !----------------------------------------------------------------------------
 !                                                        GetNitscheBCPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetNitscheBCPointer
-CHARACTER(*), PARAMETER :: myName = "bc_GetNitscheBCPointer"
+MODULE PROCEDURE obj_GetNitscheBCPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetNitscheBCPointer"
+INTEGER(I4B) :: dbcNo0, tsize
 
-IF (dbcNo .GT. SIZE(dbc)) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+tsize = SIZE(dbc)
+
+dbcNo0 = Input(default=tsize, option=dbcNo)
+
+#ifdef DEBUG_VER
+IF (dbcNo0 .GT. tsize) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-   & '[OUT OF BOUND ERROR] :: dbcNo is out of bound for dbc')
+   & '[INTERNAL ERROR] :: dbcNo0 is out of bound for dbc')
 END IF
 
-IF (.NOT. ASSOCIATED(dbc(dbcNo)%ptr)) THEN
+IF (.NOT. ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: obj%dbc( '//TOSTRING(dbcNo) &
+    & '[INTERNAL ERROR] :: dbc( '//TOSTRING(dbcNo0) &
     & //')%ptr is not ASSOCIATED')
 END IF
+#endif
 
-ans => dbc(dbcNo)%ptr
+ans => dbc(dbcNo0)%ptr
 
-END PROCEDURE bc_GetNitscheBCPointer
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_GetNitscheBCPointer
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE bc_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

@@ -25,53 +25,64 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleRHS
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleRHS"
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleRHS()"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_AssembleRHS
 
 !----------------------------------------------------------------------------
-!                                                           SetBodyForceFunc
+!                                                         SetBodySourceFunc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetBodyForceFunc
-CHARACTER(*), PARAMETER :: myName = "obj_SetBodyForceFunc()"
+MODULE PROCEDURE obj_SetBodySourceFunc
+CHARACTER(*), PARAMETER :: myName = "obj_SetBodySourceFunc()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-obj%bodyForceFunc => func
+obj%bodySourceFunc => func
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-END PROCEDURE obj_SetBodyForceFunc
+END PROCEDURE obj_SetBodySourceFunc
 
 !----------------------------------------------------------------------------
-!                                                         AssembleBodyForce
+!                                                         AssembleBodySource
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_AssembleBodyForce
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleBodyForce"
+MODULE PROCEDURE obj_AssembleBodySource
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleBodySource()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
-END PROCEDURE obj_AssembleBodyForce
+END PROCEDURE obj_AssembleBodySource
 
 !----------------------------------------------------------------------------
-!                                                     AssembleSurfaceForce
+!                                                       AssemblePointSource
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_AssembleSurfaceForce
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleSurfaceForce"
+MODULE PROCEDURE obj_AssemblePointSource
+CHARACTER(*), PARAMETER :: myName = "obj_AssemblePointSource()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
-END PROCEDURE obj_AssembleSurfaceForce
+END PROCEDURE obj_AssemblePointSource
+
+!----------------------------------------------------------------------------
+!                                                     AssembleSurfaceSource
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AssembleSurfaceSource
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleSurfaceSource()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
+END PROCEDURE obj_AssembleSurfaceSource
 
 !----------------------------------------------------------------------------
 !

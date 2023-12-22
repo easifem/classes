@@ -41,9 +41,10 @@ TYPE(String) :: name, engine, coordinateSystem, domainFile,  &
   & quadratureTypeForTime, ipTypeForTime, basisTypeForTime,  &
   & problemType, tanmatProp, astr
 
-INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC,  &
+INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC, &
   & tNeumannBC, tMaterialInterfaces, origin, stat, maxIter, nsd, nnt, tdof, &
-  & currentTimeStep, totalTimeStep, postProcessOpt, ii, tOverlappedMaterials
+  & currentTimeStep, totalTimeStep, postProcessOpt, ii,  &
+  & tOverlappedMaterials, tPointSource
 
 INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
 
@@ -274,6 +275,16 @@ IF (tNeumannBC .EQ. 0) THEN
   & origin=origin, stat=stat)
 END IF
 
+CALL toml_get(table, "tPointSource", tPointSource, 0_I4B, &
+  & origin=origin, stat=stat)
+
+IF (tPointSource .EQ. 0) THEN
+  CALL toml_get(table, "pointSourceName", astr%raw,  &
+    & TOML_POINT_SOURCE_NAME, origin=origin, stat=stat)
+  tPointSource = TomlArrayLength(table=table, key=astr%chars(), &
+    & origin=origin, stat=stat)
+END IF
+
 CALL toml_get(table, "isSymNitsche", isSymNitsche, DEFAULT_isSymNitsche, &
 & origin=origin, stat=stat)
 
@@ -322,6 +333,7 @@ CALL SetAbstractKernelParam( &
   & postProcessOpt=postProcessOpt,  &
   & tDirichletBC=tDirichletBC,  &
   & tNeumannBC=tNeumannBC,  &
+  & tPointSource=tPointSource,  &
   & tWeakDirichletBC=tWeakDirichletBC,  &
   & isSymNitsche=isSymNitsche,  &
   & nitscheAlpha=nitscheAlpha,  &
@@ -410,7 +422,7 @@ CALL obj%Initiate(param=param, dom=obj%dom)
 CALL param%DEALLOCATE()
 
 !----------------------------------------------------------------------------
-!                                                   Make boundary conditions
+!                                                         Make Dirichlet BC
 !----------------------------------------------------------------------------
 
 CALL toml_get(table, "diricletBCName", astr%raw,  &
@@ -419,11 +431,29 @@ CALL toml_get(table, "diricletBCName", astr%raw,  &
 CALL DirichletBCImportFromToml(table=table, dom=obj%dom,  &
   & tomlName=astr%chars(), obj=obj%dbc)
 
+!----------------------------------------------------------------------------
+!                                                           Make Neumann BC
+!----------------------------------------------------------------------------
+
 CALL toml_get(table, "neumannBCName", astr%raw,  &
   & TOML_NEUMANN_BC_NAME, origin=origin, stat=stat)
 
 CALL NeumannBCImportFromToml(table=table, dom=obj%dom,  &
   & tomlName=astr%chars(), obj=obj%nbc)
+
+!----------------------------------------------------------------------------
+!                                                         Make Point Source
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, "pointSourceName", astr%raw,  &
+  & TOML_POINT_SOURCE_NAME, origin=origin, stat=stat)
+
+CALL NeumannBCImportFromToml(table=table, dom=obj%dom,  &
+  & tomlName=astr%chars(), obj=obj%nbcPointSource)
+
+!----------------------------------------------------------------------------
+!                                                     Make WearkDirichletBC
+!----------------------------------------------------------------------------
 
 CALL toml_get(table, "weakDirichletBCName", astr%raw,  &
   & TOML_NITSCHE_BC_NAME, origin=origin, stat=stat)

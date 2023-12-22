@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE KernelAssembleBodyForce_Method
+MODULE KernelAssembleBodySource_Method
 USE GlobalData
 USE Field
 USE BaseMethod
@@ -30,22 +30,22 @@ USE UserFunction_Class
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: KernelAssembleBodyForce
+PUBLIC :: KernelAssembleBodySource
 
-CHARACTER(*), PARAMETER :: modName = "KernelAssembleBodyForce_Method"
+CHARACTER(*), PARAMETER :: modName = "KernelAssembleBodySource_Method"
 
-INTERFACE KernelAssembleBodyForce
-  MODULE PROCEDURE KernelAssembleBodyForce1
-  MODULE PROCEDURE KernelAssembleBodyForce2
-END INTERFACE KernelAssembleBodyForce
+INTERFACE KernelAssembleBodySource
+  MODULE PROCEDURE KernelAssembleBodySource1
+  MODULE PROCEDURE KernelAssembleBodySource2
+END INTERFACE KernelAssembleBodySource
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   KernelAssembleBodyForce
+!                                                   KernelAssembleBodySource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
+SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
   & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
@@ -59,7 +59,7 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodyForce1()"
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodySource1()"
   LOGICAL(LGT) :: problem, isok
   INTEGER(I4B) :: tmesh, nsd, id, nns, iel
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
@@ -134,13 +134,13 @@ SUBROUTINE KernelAssembleBodyForce1(rhs, dom, func, cellFE,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleBodyForce1
+END SUBROUTINE KernelAssembleBodySource1
 
 !----------------------------------------------------------------------------
-!                                                   KernelAssembleBodyForce
+!                                                   KernelAssembleBodySource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
+SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
   & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
@@ -153,7 +153,7 @@ SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
   REAL(DFP), INTENT(IN) :: scale
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodyForce2()"
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleBodySource2()"
   LOGICAL(LGT) :: problem, isok
   INTEGER(I4B) :: tmesh, nsd, id, nns, iel
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
@@ -231,6 +231,6 @@ SUBROUTINE KernelAssembleBodyForce2(rhs, dom, bodyVec, cellFE,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleBodyForce2
+END SUBROUTINE KernelAssembleBodySource2
 
-END MODULE KernelAssembleBodyForce_Method
+END MODULE KernelAssembleBodySource_Method

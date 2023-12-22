@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(NeumannBC_Class) GetMethods
-USE BaseMethod, ONLY: TOSTRING
+USE BaseMethod, ONLY: TOSTRING, Input
 IMPLICIT NONE
 CONTAINS
 
@@ -24,28 +24,46 @@ CONTAINS
 !                                                    GetNeumannBCPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetNeumannBCPointer
-CHARACTER(*), PARAMETER :: myName = "bc_GetNeumannBCPointer"
+MODULE PROCEDURE obj_GetNeumannBCPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetNeumannBCPointer()"
+INTEGER(I4B) :: nbcNo0, tsize
 
-IF (nbcNo .GT. SIZE(nbc)) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+tsize = SIZE(nbc)
+
+nbcNo0 = Input(default=tsize, option=nbcNo)
+
+#ifdef DEBUG_VER
+IF (nbcNo0 .GT. tsize) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-   & '[OUT OF BOUND ERROR] :: nbcNo is out of bound for nbc')
+   & '[INTERNAL ERROR] :: nbcNo0 is out of bound for nbc')
 END IF
 
-IF (.NOT. ASSOCIATED(nbc(nbcNo)%ptr)) THEN
+IF (.NOT. ASSOCIATED(nbc(nbcNo0)%ptr)) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: nbc( '//TOSTRING(nbcNo) &
+    & '[INTERNAL ERROR] :: nbc( '//TOSTRING(nbcNo0) &
     & //')%ptr is not ASSOCIATED')
 END IF
-ans => nbc(nbcNo)%ptr
-END PROCEDURE bc_GetNeumannBCPointer
+#endif
+
+ans => nbc(nbcNo0)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
 !                                                               GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE bc_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

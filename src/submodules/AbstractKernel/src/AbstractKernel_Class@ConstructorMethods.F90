@@ -148,6 +148,9 @@ CALL Set(param, TypeIntI4B, prefix, "tDirichletBC",  &
 CALL Set(param, TypeIntI4B, prefix, "tNeumannBC",  &
   & Input(option=tNeumannBC, default=0_I4B))
 
+CALL Set(param, TypeIntI4B, prefix, "tPointSource",  &
+  & Input(option=tPointSource, default=0_I4B))
+
 CALL Set(param, TypeIntI4B, prefix, "tWeakDirichletBC",  &
   & Input(option=tWeakDirichletBC, default=0_I4B))
 
@@ -309,6 +312,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: tDirichletBC
 INTEGER(I4B) :: tWeakDirichletBC
+INTEGER(I4B) :: tPointSource
 INTEGER(I4B) :: tNeumannBC
 LOGICAL(LGT) :: isSymNitsche
 CHARACTER(:), ALLOCATABLE :: prefix
@@ -432,6 +436,9 @@ ALLOCATE (obj%dbc(tDirichletBC))
 
 CALL GetValue(param, prefix, "tNeumannBC", tNeumannBC)
 ALLOCATE (obj%nbc(tNeumannBC))
+
+CALL GetValue(param, prefix, "tPointSource", tPointSource)
+ALLOCATE (obj%nbcPointSource(tPointSource))
 
 tWeakDirichletBC = 0
 CALL GetValue(param, prefix, "tWeakDirichletBC", tWeakDirichletBC)
@@ -705,7 +712,7 @@ CALL AbstractMeshFieldDeallocate(obj%Cijkl)
 CALL AbstractMeshFieldDeallocate(obj%stress)
 CALL AbstractMeshFieldDeallocate(obj%strain)
 
-NULLIFY (obj%bodyForceFunc)
+NULLIFY (obj%bodySourceFunc)
 
 END PROCEDURE obj_Deallocate
 

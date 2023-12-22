@@ -31,8 +31,8 @@ CONTAINS
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 TYPE(toml_table), POINTER :: node
 TYPE(toml_array), POINTER :: array
 INTEGER(I4B) :: origin, stat, tsize, ii, tsize1
@@ -83,14 +83,14 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
-END PROCEDURE bc_ImportFromToml1
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml2()"
+MODULE PROCEDURE obj_ImportFromToml2
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table
 
 #ifdef DEBUG_VER
@@ -115,13 +115,13 @@ CALL NeumannBCImportFromToml(obj=obj, table=table, dom=dom,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ImportParamFromToml()')
 #endif
-END PROCEDURE bc_ImportFromToml2
+END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Display_Vector
+MODULE PROCEDURE obj_Display_Vector
 INTEGER(I4B) :: tsize, ii
 tsize = SIZE(obj)
 CALL Display(msg, unitNo=unitNo)
@@ -129,13 +129,13 @@ CALL Display("nbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
 DO ii = 1, tsize
   CALL obj(ii)%Display("nbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
 END DO
-END PROCEDURE bc_Display_Vector
+END PROCEDURE obj_Display_Vector
 
 !----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Display_Ptr_Vector
+MODULE PROCEDURE obj_Display_Ptr_Vector
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: bool1
 tsize = SIZE(obj)
@@ -148,6 +148,6 @@ DO ii = 1, tsize
     CALL obj(ii)%ptr%Display("nbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
   END IF
 END DO
-END PROCEDURE bc_Display_Ptr_Vector
+END PROCEDURE obj_Display_Ptr_Vector
 
 END SUBMODULE IOMethods

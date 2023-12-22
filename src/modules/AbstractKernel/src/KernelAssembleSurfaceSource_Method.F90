@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE KernelAssembleSurfaceForce_Method
+MODULE KernelAssembleSurfaceSource_Method
 USE GlobalData
 USE Field
 USE BaseMethod
@@ -31,23 +31,23 @@ USE NeumannBC_Class
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: KernelAssembleSurfaceForce
+PUBLIC :: KernelAssembleSurfaceSource
 
-CHARACTER(*), PARAMETER :: modName = "KernelAssembleSurfaceForce_Method"
+CHARACTER(*), PARAMETER :: modName = "KernelAssembleSurfaceSource_Method"
 
-INTERFACE KernelAssembleSurfaceForce
-  MODULE PROCEDURE KernelAssembleSurfaceForce1
-  MODULE PROCEDURE KernelAssembleSurfaceForce2
-  MODULE PROCEDURE KernelAssembleSurfaceForce3
-END INTERFACE KernelAssembleSurfaceForce
+INTERFACE KernelAssembleSurfaceSource
+  MODULE PROCEDURE KernelAssembleSurfaceSource1
+  MODULE PROCEDURE KernelAssembleSurfaceSource2
+  MODULE PROCEDURE KernelAssembleSurfaceSource3
+END INTERFACE KernelAssembleSurfaceSource
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                KernelAssembleSurfaceForce
+!                                                KernelAssembleSurfaceSource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
+SUBROUTINE KernelAssembleSurfaceSource1(rhs, dom, nbcPtrs, func, fe,  &
   & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
@@ -62,7 +62,7 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce1()"
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceSource1()"
   TYPE(UserFunctionPointer_), ALLOCATABLE :: funcPtrs(:)
   INTEGER(I4B) :: tnbc, ii
 
@@ -71,7 +71,7 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
   ALLOCATE (funcPtrs(tnbc))
   DO ii = 1, tnbc; funcPtrs(ii)%ptr => func; END DO
 
-  CALL KernelAssembleSurfaceForce2(rhs=rhs, dom=dom, nbcPtrs=nbcPtrs,  &
+  CALL KernelAssembleSurfaceSource2(rhs=rhs, dom=dom, nbcPtrs=nbcPtrs,  &
     & funcPtrs=funcPtrs, fe=fe, linFE=linFE, spaceElemSD=spaceElemSD,  &
     & linSpaceElemSD=linSpaceElemSD, reset=reset, scale=scale, times=times)
 
@@ -83,13 +83,13 @@ SUBROUTINE KernelAssembleSurfaceForce1(rhs, dom, nbcPtrs, func, fe,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleSurfaceForce1
+END SUBROUTINE KernelAssembleSurfaceSource1
 
 !----------------------------------------------------------------------------
-!                                               KernelAssembleSurfaceForce2
+!                                               KernelAssembleSurfaceSource2
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
+SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
   & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
@@ -104,7 +104,7 @@ SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce2()"
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceSource2()"
   TYPE(FEVariable_) :: forceVar
   TYPE(ElemShapeData_) :: elemsd, linElemSD
   CLASS(Mesh_), POINTER :: meshptr
@@ -236,13 +236,13 @@ SUBROUTINE KernelAssembleSurfaceForce2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleSurfaceForce2
+END SUBROUTINE KernelAssembleSurfaceSource2
 
 !----------------------------------------------------------------------------
-!                                                 KernelAssembleSurfaceForce
+!                                                 KernelAssembleSurfaceSource
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
+SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
   & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
     !! rhs to assemble
@@ -265,7 +265,7 @@ SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceForce3()"
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceSource3()"
   TYPE(FEVariable_) :: forceVar
   TYPE(ElemShapeData_) :: elemsd, linElemSD
   CLASS(Mesh_), POINTER :: meshptr
@@ -389,6 +389,6 @@ SUBROUTINE KernelAssembleSurfaceForce3(rhs, extField, dom, nbcPtrs, fe,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleSurfaceForce3
+END SUBROUTINE KernelAssembleSurfaceSource3
 
-END MODULE KernelAssembleSurfaceForce_Method
+END MODULE KernelAssembleSurfaceSource_Method
