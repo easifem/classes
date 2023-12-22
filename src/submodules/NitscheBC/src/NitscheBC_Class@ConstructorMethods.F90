@@ -24,15 +24,15 @@ CONTAINS
 !                                                            Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE bc_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Deallocate_Vector
+MODULE PROCEDURE obj_Deallocate_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -40,13 +40,13 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE bc_Deallocate_Vector
+END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Deallocate_Ptr_Vector
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -57,14 +57,14 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE bc_Deallocate_Ptr_Vector
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !                                                            AddNitscheBC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_AddNitscheBC
-CHARACTER(*), PARAMETER :: myName = "bc_AddNitscheBC"
+MODULE PROCEDURE obj_AddNitscheBC
+CHARACTER(*), PARAMETER :: myName = "obj_AddNitscheBC"
 
 IF (dbcNo .GT. SIZE(dbc)) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -86,6 +86,58 @@ CALL dbc(dbcNo)%ptr%initiate( &
   & boundary=boundary, &
   & dom=dom)
 
-END PROCEDURE bc_AddNitscheBC
+END PROCEDURE obj_AddNitscheBC
+
+!----------------------------------------------------------------------------
+!                                                           AppendNitscheBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AppendNitscheBC
+CHARACTER(*), PARAMETER :: myName = "obj_AppendNitscheBC()"
+INTEGER(I4B) :: tsize, ii, dbcNo0
+LOGICAL(LGT) :: isExpand
+TYPE(NitscheBCPointer_), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (ALLOCATED(dbc)) THEN
+  tsize = SIZE(dbc)
+ELSE
+  tsize = 0
+END IF
+
+dbcNo0 = Input(default=tsize + 1, option=dbcNo)
+
+isExpand = dbcNo0 .GT. tsize
+
+IF (isExpand) THEN
+  ALLOCATE (temp(tsize))
+  DO ii = 1, tsize; temp(ii)%ptr => dbc(ii)%ptr; END DO
+  DO ii = 1, tsize; dbc(ii)%ptr => NULL(); END DO
+  DEALLOCATE (dbc)
+  ALLOCATE (dbc(dbcNo0))
+  DO ii = 1, tsize; dbc(ii)%ptr => temp(ii)%ptr; END DO
+  DO ii = 1, tsize; temp(ii)%ptr => NULL(); END DO
+  DO ii = tsize + 1, dbcNo0; dbc(ii)%ptr => NULL(); END DO
+END IF
+
+IF (ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & '[ALLOCATION ERROR] :: dbc( '//TOSTRING(dbcNo0)// &
+  &  ')%ptr is already associated, deallocate and nullify it first.')
+END IF
+
+ALLOCATE (dbc(dbcNo0)%ptr)
+CALL dbc(dbcNo0)%ptr%initiate(param=param, boundary=boundary, dom=dom)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_AppendNitscheBC
 
 END SUBMODULE ConstructorMethods
