@@ -33,13 +33,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-IF (.NOT. ALLOCATED(obj%dbc)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: dbc is not allocated!')
-  RETURN
-END IF
-
-CALL AddDirichletBC(dbc=obj%dbc, dbcNo=dbcNo, param=param,  &
+CALL AppendDirichletBC(dbc=obj%dbc, dbcNo=dbcNo, param=param,  &
   & boundary=boundary, dom=obj%dom)
 ! INFO: AddDirichletBC is defined in DirichletBC_Class
 
@@ -63,7 +57,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (.NOT. ALLOCATED(obj%dbc)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: dbc is not allocated!')
+    & '[ALLOCATION ERROR] :: AbstractKernel_::obj%dbc '// &
+    & 'is not allocated!')
 END IF
 
 ans => GetDirichletBCPointer(dbc=obj%dbc, dbcNo=dbcNo)
@@ -87,12 +82,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-IF (.NOT. ALLOCATED(obj%nbc)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: nbc is not allocated!')
-END IF
-
-CALL AddNeumannBC(nbc=obj%nbc, nbcNo=nbcNo, param=param, &
+CALL AppendNeumannBC(nbc=obj%nbc, nbcNo=nbcNo, param=param, &
   & boundary=boundary, dom=obj%dom)
 ! INFO: This method is defined in NeumannBC_Class
 
@@ -101,6 +91,40 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_AddNeumannBC
+
+!----------------------------------------------------------------------------
+!                                                             AddPointSource
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AddPointSource
+CHARACTER(*), PARAMETER :: myName = "obj_AddPointSource()"
+LOGICAL(LGT) :: isSelectionByNode
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+! check boundary for isSelectionByNode
+
+CALL boundary%GetParam(isSelectionByNode=isSelectionByNode)
+
+IF (.NOT. isSelectionByNode) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+   & '[CONFIG ERROR] :: boundary is not configured for isSelectionByNode'//  &
+   & '. In AddPointSource boundary must be configured for isSelectionByNode.')
+  RETURN
+END IF
+
+CALL AppendNeumannBC(nbc=obj%nbcPointSource, nbcNo=nbcNo,  &
+  & param=param, boundary=boundary, dom=obj%dom)
+! INFO: This method is defined in NeumannBC_Class
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_AddPointSource
 
 !----------------------------------------------------------------------------
 !                                                       GetNeumannBCPointer
@@ -115,7 +139,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (.NOT. ALLOCATED(obj%nbc)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: nbc is not allocated!')
+    & '[ALLOCATION ERROR] :: AbstractKernel_::obj%nbc '// &
+    & 'is not allocated!')
 END IF
 
 ans => GetNeumannBCPointer(nbc=obj%nbc, nbcNo=nbcNo)
@@ -128,6 +153,33 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
+!                                                       GetNeumannBCPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointSourcePointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointSourcePointer()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+IF (.NOT. ALLOCATED(obj%nbcPointSource)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[ALLOCATION ERROR] :: AbstractKernel_::obj%nbcPointSource '// &
+    & 'is not allocated!')
+END IF
+
+ans => GetNeumannBCPointer(nbc=obj%nbc, nbcNo=nbcNo)
+! INFO: This method is defined in NeumannBC_Class
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_GetPointSourcePointer
+
+!----------------------------------------------------------------------------
 !                                                               AddNitscheBC
 !----------------------------------------------------------------------------
 
@@ -138,12 +190,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
-IF (.NOT. ALLOCATED(obj%wdbc)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[ALLOCATION ERROR] :: wdbc is not allocated!')
-END IF
-
-CALL AddNitscheBC(dbc=obj%wdbc, dbcNo=dbcNo, param=param, &
+CALL AppendNitscheBC(dbc=obj%wdbc, dbcNo=dbcNo, param=param, &
   & boundary=boundary, dom=obj%dom)
 ! INFO: This method is defined in NitscheBC_Class
 
@@ -166,7 +213,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (.NOT. ALLOCATED(obj%wdbc)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[ALLOCATION ERROR] :: wdbc is not allocated!")
+    & '[ALLOCATION ERROR] :: AbstractKernel_::obj%wdbc '// &
+    & 'is not allocated!')
 END IF
 
 ans => GetNitscheBCPointer(dbc=obj%wdbc, dbcNo=dbcNo)
