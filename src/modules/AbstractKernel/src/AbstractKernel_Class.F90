@@ -651,7 +651,7 @@ CONTAINS
   ! @AssembleRHSMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleRHS => obj_AssembleRHS
   !! This procedure pointer assembles the right-hand-side vector
-  PROCEDURE, PUBLIC, PASS(obj) :: SetBodyForceFunc => obj_SetBodyForceFunc
+  PROCEDURE, PUBLIC, PASS(obj) :: SetBodySourceFunc => obj_SetBodySourceFunc
   !! Set body force function
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodySource => &
     & obj_AssembleBodySource
@@ -1841,10 +1841,10 @@ END INTERFACE
 ! summary: This subroutine assembles the system of linear equation
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetBodyForceFunc(obj, func)
+  MODULE SUBROUTINE obj_SetBodySourceFunc(obj, func)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), TARGET, INTENT(IN) :: func
-  END SUBROUTINE obj_SetBodyForceFunc
+  END SUBROUTINE obj_SetBodySourceFunc
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -31,11 +31,11 @@ CALL e%raiseError(modName//'::'//myName//" - "// &
 END PROCEDURE obj_AssembleRHS
 
 !----------------------------------------------------------------------------
-!                                                           SetBodyForceFunc
+!                                                         SetBodySourceFunc
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetBodyForceFunc
-CHARACTER(*), PARAMETER :: myName = "obj_SetBodyForceFunc()"
+MODULE PROCEDURE obj_SetBodySourceFunc
+CHARACTER(*), PARAMETER :: myName = "obj_SetBodySourceFunc()"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -49,7 +49,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
-END PROCEDURE obj_SetBodyForceFunc
+END PROCEDURE obj_SetBodySourceFunc
 
 !----------------------------------------------------------------------------
 !                                                         AssembleBodySource
