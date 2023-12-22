@@ -64,7 +64,7 @@ CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
   & "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"//&
   & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
   & "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"//  &
-  & "problemType/tOverlappedMaterials/outputPath"
+  & "problemType/tOverlappedMaterials/outputPath/tPointSource"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -529,11 +529,13 @@ CONTAINS
   ! SET:
   ! @BCMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AddDirichletBC => obj_AddDirichletBC
-  !! Add displacement dirichlet boundary conditions
+  !! Add dirichlet boundary conditions
   PROCEDURE, PUBLIC, PASS(obj) :: AddNeumannBC => obj_AddNeumannBC
   !! Add Neumann boundary condition
+  PROCEDURE, PUBLIC, PASS(obj) :: AddPointSource => obj_AddPointSource
+  !! Add point source in the nbcPointSource
   PROCEDURE, PUBLIC, PASS(obj) :: AddNitscheBC => obj_AddNitscheBC
-  !! Add displacement dirichlet boundary conditions
+  !! Add weak dirichlet boundary conditions to wdbc
   PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCPointer => &
     & obj_GetDirichletBCPointer
   !! Get pointer to the pressure dirichlet boundary condition
@@ -543,6 +545,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNeumannBCPointer => &
     & obj_GetNeumannBCPointer
   !! Get pointer to the neumann boundary condition for velocity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointSourcePointer =>  &
+    & obj_GetPointSourcePointer
+  !! Get point source in the nbcPointSource
   PROCEDURE, PUBLIC, PASS(obj) :: SetNitscheMeshData => &
     & obj_SetNitscheMeshData
   !! This routine set mesh data necessary for implementing the
@@ -708,7 +713,7 @@ INTERFACE
     & rtoleranceForDisplacement, atoleranceForDisplacement,  &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
-    & tOverlappedMaterials, outputPath)
+    & tOverlappedMaterials, outputPath, tPointSource)
     CHARACTER(*), INTENT(IN) :: prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
@@ -845,6 +850,9 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tOverlappedMaterials
     !! Total number of overlapped materials
     CHARACTER(*), OPTIONAL, INTENT(IN) :: outputPath
+    !! path where output of kernel will be written
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPointSource
+    !! total number of point sources, size of nbcPointSource
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -1461,9 +1469,9 @@ END INTERFACE
 ! pressure field
 
 INTERFACE
-  MODULE SUBROUTINE obj_AddDirichletBC(obj, dbcNo, param, boundary)
+  MODULE SUBROUTINE obj_AddDirichletBC(obj, param, boundary, dbcNo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Dirichlet boundary nunber
     TYPE(ParameterList_), INTENT(IN) :: param
     !! parameter for constructing [[DirichletBC_]].
@@ -1478,27 +1486,50 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2021
-! summary: This routine sets Neumann BC for displacement field
+! summary: This routine adds Neumann BC in nbc
 !
 !# Introduction
 !
-! - This routine sets the Neumann boundary condition for displacement field
-! in [[AbstractElasticity_]] kernel.
-! - It makes `obj%nbcForDisplacement(nbcNo)`
-!
-! - `nbcNo` should be lesser than total Neumann boundary condition for
-! displacement field
+! - This routine adds the Neumann boundary condition to nbc
 
 INTERFACE
-  MODULE SUBROUTINE obj_AddNeumannBC(obj, nbcNo, param, boundary)
+  MODULE SUBROUTINE obj_AddNeumannBC(obj, param, boundary, nbcNo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: nbcNo
-    !! Neumann boundary nunber
     TYPE(ParameterList_), INTENT(IN) :: param
     !! parameter for constructing [[NeumannBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
+    !! Neumann boundary number
+    !! If nbcNo is not present then the default will be
+    !! size(obj%nbc) + 1
+    !! If nbcNo is not present then this method works as append
+    !! if nbcNo is out of bound then size of nbc is expanded
   END SUBROUTINE obj_AddNeumannBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   AddPointSource@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine adds a point source NBC to nbcPointSource
+!
+!# Introduction
+!
+! - This routine sets the Neumann boundary condition for point source
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddPointSource(obj, param, boundary, nbcNo)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[NeumannBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
+    !! Neumann boundary number
+  END SUBROUTINE obj_AddPointSource
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1510,14 +1541,14 @@ END INTERFACE
 ! summary: This routine sets dirichlet boundary condition for displacement
 
 INTERFACE
-  MODULE SUBROUTINE obj_AddNitscheBC(obj, dbcNo, param, boundary)
+  MODULE SUBROUTINE obj_AddNitscheBC(obj, param, boundary, dbcNo)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Dirichlet boundary nunber
     TYPE(ParameterList_), INTENT(IN) :: param
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
+    !! Dirichlet boundary nunber
   END SUBROUTINE obj_AddNitscheBC
 END INTERFACE
 
@@ -1541,7 +1572,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetDirichletBCPointer(obj, dbcNo) RESULT(ans)
     CLASS(AbstractKernel_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Dirichlet boundary nunber
     CLASS(DirichletBC_), POINTER :: ans
   END FUNCTION obj_GetDirichletBCPointer
@@ -1558,7 +1589,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_GetNitscheBCPointer(obj, dbcNo) RESULT(ans)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: dbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Nitsche boundary nunber
     CLASS(NitscheBC_), POINTER :: ans
   END FUNCTION obj_GetNitscheBCPointer
@@ -1574,20 +1605,50 @@ END INTERFACE
 !
 !# Introduction
 !
-! - This routine returns the pointer to Neumann boundary condition of
-! pressure field in [[AbstractElasticity_]] kernel, that is
-! `obj%NBCForPressure(nbcNo)%ptr`.
+! - This routine returns the pointer to Neumann boundary condition, that is
+! `obj%nbc(nbcNo)%ptr`.
 ! - After obtaining the Neumann boundary condition pointer, user can set the
 ! boundary condition
-! - `nbcNo` should be lesser than total Neumann boundary condition
+! - `nbcNo` should be lesser than total Neumann boundary condition, that
+! is size of `nbc`
+! - if nbcNo is absent then its default value is size of nbc, in this case
+! this method returns the last entry in nbc.
 
 INTERFACE
   MODULE FUNCTION obj_GetNeumannBCPointer(obj, nbcNo) RESULT(ans)
     CLASS(AbstractKernel_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: nbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
     !! Neumann boundary nunber
     CLASS(NeumannBC_), POINTER :: ans
   END FUNCTION obj_GetNeumannBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetPointSourcePointer@BCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine returns the pointer to Neumann boundary condition
+!
+!# Introduction
+!
+! - This routine returns the pointer to Neumann boundary condition, that is
+! `obj%nbcPointSource(nbcNo)%ptr`.
+! - After obtaining the Neumann boundary condition pointer, user can set the
+! boundary condition
+! - `nbcNo` should be lesser than total Neumann boundary condition, that
+! is size of `nbcPointSource`
+! - if nbcNo is absent then its default value is size of nbcPointSource,
+! in this case this method returns the last entry in nbcPointSource.
+
+INTERFACE
+  MODULE FUNCTION obj_GetPointSourcePointer(obj, nbcNo) RESULT(ans)
+    CLASS(AbstractKernel_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
+    !! Neumann boundary nunber
+    CLASS(NeumannBC_), POINTER :: ans
+  END FUNCTION obj_GetPointSourcePointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
