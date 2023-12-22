@@ -132,7 +132,23 @@ CALL ans%initiate(param, dom)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
-!
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_Deallocate_ptr_vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_ptr_vector
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 END SUBMODULE ConstructorMethods

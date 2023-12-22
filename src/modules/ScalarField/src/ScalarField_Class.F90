@@ -222,13 +222,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Final@Constructor
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE ScalarFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     TYPE(ScalarField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE ScalarFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE ScalarFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
+    TYPE(ScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_ptr_vector
 END INTERFACE ScalarFieldDeallocate
 
 !----------------------------------------------------------------------------

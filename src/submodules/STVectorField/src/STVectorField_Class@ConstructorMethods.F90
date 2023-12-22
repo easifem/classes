@@ -183,7 +183,7 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                                STVectorField
+!                                                              STVectorField
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor1
@@ -191,13 +191,30 @@ CALL ans%initiate(param, dom)
 END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
-!                                                        STVectorField_Pointer
+!                                                      STVectorField_Pointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
 CALL ans%initiate(param, dom)
 END PROCEDURE obj_Constructor_1
+
+!----------------------------------------------------------------------------
+!                                                           Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !
