@@ -264,6 +264,16 @@ INTERFACE STScalarFieldDeallocate
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE STScalarFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
+    TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE STScalarFieldDeallocate
+
+!----------------------------------------------------------------------------
 !                                                         Final@Constructor
 !----------------------------------------------------------------------------
 

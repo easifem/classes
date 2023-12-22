@@ -39,6 +39,7 @@ PUBLIC :: TypeBlockNodeField
 PUBLIC :: SetBlockNodeFieldParam
 PUBLIC :: BlockNodeFieldInitiate1
 PUBLIC :: BlockNodeFieldInitiate3
+PUBLIC :: BlockNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                           BlockNodeField_
@@ -141,7 +142,7 @@ TYPE :: BlockNodeFieldPointer_
 END TYPE BlockNodeFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                 SetBlockNodeFieldParam@ConstructorMethod
+!                                 SetBlockNodeFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -188,7 +189,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      checkEssentialParam@ConstructorMethod
+!                                      checkEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -203,7 +204,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 Initiate@ConstructorMethod
+!                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -238,7 +239,7 @@ INTERFACE BlockNodeFieldInitiate1
 END INTERFACE BlockNodeFieldInitiate1
 
 !----------------------------------------------------------------------------
-!                                                 Initiate@ConstructorMethod
+!                                                 Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -266,7 +267,7 @@ INTERFACE BlockNodeFieldInitiate3
 END INTERFACE BlockNodeFieldInitiate3
 
 !----------------------------------------------------------------------------
-!                                                    Final@ConstructorMethod
+!                                                    Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -274,6 +275,16 @@ INTERFACE
     TYPE(BlockNodeField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE BlockNodeFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
+    TYPE(BlockNodeFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE BlockNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods

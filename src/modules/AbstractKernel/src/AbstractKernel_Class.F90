@@ -392,8 +392,12 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! List of vectorfields
   TYPE(VectorFieldPointer_), ALLOCATABLE :: vectorFields(:)
   !! List of vectorfields
+  TYPE(STVectorFieldPointer_), ALLOCATABLE :: stVectorFields(:)
+  !! List of space-time vector fields
   TYPE(ScalarFieldPointer_), ALLOCATABLE :: scalarFields(:)
   !! List of scalarFields
+  TYPE(STScalarFieldPointer_), ALLOCATABLE :: stScalarFields(:)
+  !! List of space-time scalar fields
   CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
   !! Global Stiffness matrix
   CLASS(MatrixField_), POINTER :: massMat => NULL()

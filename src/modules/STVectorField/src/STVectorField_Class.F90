@@ -267,6 +267,16 @@ INTERFACE STVectorFieldDeallocate
 END INTERFACE STVectorFieldDeallocate
 
 !----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE STVectorFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
+    TYPE(STVectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE STVectorFieldDeallocate
+
+!----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
