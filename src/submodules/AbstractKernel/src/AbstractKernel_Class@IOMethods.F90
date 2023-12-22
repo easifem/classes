@@ -120,22 +120,31 @@ CALL Display(bool1, "matIfaceConnectData ALLOCATED: ", unitNo=unitNo)
 
 CALL Display(obj%baseContinuityForSpace, "baseContinuityForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%baseInterpolationForSpace, "baseInterpolationForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%quadratureTypeForSpace, "quadratureTypeForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%quadTypeForSpace, "quadTypeForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%ipTypeForSpace, "ipTypeForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%basisTypeForSpace, "basisTypeForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%alphaForSpace, "alphaForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%betaForSpace, "betaForSpace: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%lambdaForSpace, "lambdaForSpace: ", &
   & unitNo=unitNo)
+
 bool1 = ALLOCATED(obj%quadratureForSpace)
 CALL Display(bool1, "quadratureForSpace ALLOCATED: ", unitNo=unitNo)
 
@@ -144,22 +153,24 @@ CALL Display(bool1, "quadratureForSpace_facet ALLOCATED: ", unitNo=unitNo)
 
 CALL Display(obj%baseContinuityForTime, "baseContinuityForTime: ", &
   & unitNo=unitNo)
+
 CALL Display(obj%baseInterpolationForTime, "baseInterpolationForTime: ", &
   & unitNo=unitNo)
-CALL Display(obj%quadratureTypeForTime, "quadratureTypeForTime: ", &
+
+CALL Display(obj%quadratureTypeForTime, "quadratureTypeForTime: ",  &
   & unitNo=unitNo)
-CALL Display(obj%quadTypeForTime, "quadTypeForTime: ", &
-  & unitNo=unitNo)
-CALL Display(obj%ipTypeForTime, "ipTypeForTime: ", &
-  & unitNo=unitNo)
-CALL Display(obj%basisTypeForTime, "basisTypeForTime: ", &
-  & unitNo=unitNo)
-CALL Display(obj%alphaForTime, "alphaForTime: ", &
-  & unitNo=unitNo)
-CALL Display(obj%betaForTime, "betaForTime: ", &
-  & unitNo=unitNo)
-CALL Display(obj%lambdaForTime, "lambdaForTime: ", &
-  & unitNo=unitNo)
+
+CALL Display(obj%quadTypeForTime, "quadTypeForTime: ", unitNo=unitNo)
+
+CALL Display(obj%ipTypeForTime, "ipTypeForTime: ", unitNo=unitNo)
+
+CALL Display(obj%basisTypeForTime, "basisTypeForTime: ", unitNo=unitNo)
+
+CALL Display(obj%alphaForTime, "alphaForTime: ", unitNo=unitNo)
+
+CALL Display(obj%betaForTime, "betaForTime: ", unitNo=unitNo)
+
+CALL Display(obj%lambdaForTime, "lambdaForTime: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%cellFE)
 CALL Display(bool1, "cellFE ALLOCATED: ", unitNo=unitNo)
@@ -206,7 +217,7 @@ IF (bool1) THEN
 END IF
 
 ! nbcPointSource
-bool1 = ALLOCATED(obj%nbc)
+bool1 = ALLOCATED(obj%nbcPointSource)
 CALL Display(bool1, "nbcPointSource ALLOCATED: ", unitNo=unitNo)
 IF (bool1) THEN
   CALL NeumannBCDisplay(obj%nbcPointSource, "nbcPointSource: ",  &
@@ -284,27 +295,35 @@ CALL Display(bool1, "velocity ASSOCIATED: ", unitNo=unitNo)
 bool1 = ASSOCIATED(obj%acceleration)
 CALL Display(bool1, "acceleration ASSOCIATED: ", unitNo=unitNo)
 
+! shearModulus
 bool1 = ALLOCATED(obj%shearModulus)
 CALL Display(bool1, "obj%shearModulus ALLOCATED: ", unitNo=unitNo)
 
+! youngsModulus
 bool1 = ALLOCATED(obj%youngsModulus)
 CALL Display(bool1, "obj%youngsModulus ALLOCATED: ", unitNo=unitNo)
 
+! dampCoeff_alpha
 bool1 = ALLOCATED(obj%dampCoeff_alpha)
 CALL Display(bool1, "obj%dampCoeff_alpha ALLOCATED: ", unitNo=unitNo)
 
+! dampCoeff_beta
 bool1 = ALLOCATED(obj%dampCoeff_beta)
 CALL Display(bool1, "obj%dampCoeff_beta ALLOCATED: ", unitNo=unitNo)
 
+! Cijkl
 bool1 = ALLOCATED(obj%Cijkl)
 CALL Display(bool1, "obj%Cijkl ALLOCATED: ", unitNo=unitNo)
 
+! stress
 bool1 = ALLOCATED(obj%stress)
 CALL Display(bool1, "obj%stress ALLOCATED: ", unitNo=unitNo)
 
+! strain
 bool1 = ALLOCATED(obj%strain)
 CALL Display(bool1, "obj%strain ALLOCATED: ", unitNo=unitNo)
 
+! bodyForceFunc
 bool1 = ASSOCIATED(obj%bodyForceFunc)
 CALL Display(bool1, "obj%bodyForceFunc ASSOCIATED: ", unitNo=unitNo)
 
