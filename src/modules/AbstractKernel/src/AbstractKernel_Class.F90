@@ -473,8 +473,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarFields =>  &
     & obj_InitiateScalarFields
   !! Initiate scalar fields
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateSTScalarFields =>  &
+    & obj_InitiateSTScalarFields
+  !! Initiate scalar fields
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateVectorFields => &
     & obj_InitiateVectorFields
+  !! Initiate vector fields
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateSTVectorFields => &
+    & obj_InitiateSTVectorFields
   !! Initiate vector fields
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateMatrixFields => &
     & obj_InitiateMatrixFields
@@ -997,6 +1003,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                              InitiateSTScalarFields@InitiateFieldsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Oct 2022
+! summary: This routine initiates the matrix and vector fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateSTScalarFields(obj, names)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: names(:)
+  END SUBROUTINE obj_InitiateSTScalarFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                 InitiateVectorFields@InitiateFieldsMethods
 !----------------------------------------------------------------------------
 
@@ -1009,6 +1030,21 @@ INTERFACE
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: names(:)
   END SUBROUTINE obj_InitiateVectorFields
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                              InitiateSTVectorFields@InitiateFieldsMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 31 Oct 2022
+! summary: This routine initiates the matrix and vector fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateSTVectorFields(obj, names)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: names(:)
+  END SUBROUTINE obj_InitiateSTVectorFields
 END INTERFACE
 
 !----------------------------------------------------------------------------

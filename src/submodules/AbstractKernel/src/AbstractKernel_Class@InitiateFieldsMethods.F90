@@ -18,7 +18,8 @@
 SUBMODULE(AbstractKernel_Class) InitiateFieldsMethods
 USE BaseMethod, ONLY: Reallocate
 USE FieldFactory, ONLY: MatrixFieldFactory, AbstractMatrixFieldFactory,  &
-  & InitiateVectorFields, InitiateScalarFields, InitiateMatrixFields
+  & InitiateVectorFields, InitiateScalarFields, InitiateMatrixFields,  &
+  & InitiateSTScalarFields, InitiateSTVectorFields
 IMPLICIT NONE
 CONTAINS
 
@@ -105,6 +106,55 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_InitiateScalarFields
 
 !----------------------------------------------------------------------------
+!                                                    InitiateSTScalarFields
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateSTScalarFields
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateSTScalarFields()"
+LOGICAL(LGT) :: problem, isok
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+problem = ALLOCATED(obj%stScalarFields)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%stScalarFields'// &
+    & ' already allocated.')
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
+  RETURN
+END IF
+
+problem = (obj%nsd .EQ. 0_I4B) .OR. (obj%nnt .EQ. 0_I4B)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd or obj%nnt is zero.')
+  RETURN
+END IF
+
+tsize = SIZE(names)
+ALLOCATE (obj%stScalarFields(tsize))
+!INFO: Initiate method from FieldFactory
+CALL InitiateSTScalarFields(obj=obj%stScalarFields, names=names,  &
+  & fieldType=typeField%normal, engine=obj%engine%chars(),  &
+  & dom=obj%dom, timeCompo=obj%nnt)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_InitiateSTScalarFields
+
+!----------------------------------------------------------------------------
 !                                                       InitiateVectorFields
 !----------------------------------------------------------------------------
 
@@ -153,6 +203,56 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_InitiateVectorFields
+
+!----------------------------------------------------------------------------
+!                                                     InitiateSTVectorFields
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateSTVectorFields
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateSTVectorFields()"
+LOGICAL(LGT) :: problem, isok
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+problem = ALLOCATED(obj%stVectorFields)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%stVectorFields '// &
+    & ' already allocated.')
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
+  RETURN
+END IF
+
+problem = (obj%nsd .EQ. 0_I4B) .OR. (obj%nnt .EQ. 0_I4B)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd or obj%nnt is zero.')
+  RETURN
+END IF
+
+tsize = SIZE(names)
+ALLOCATE (obj%stVectorFields(tsize))
+
+!INFO: Initiate method from FieldFactory
+CALL InitiateSTVectorFields(obj=obj%stVectorFields, names=names,  &
+  & spaceCompo=obj%nsd, fieldType=typeField%normal,  &
+  & engine=obj%engine%chars(), dom=obj%dom, timeCompo=obj%nnt)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_InitiateSTVectorFields
 
 !----------------------------------------------------------------------------
 !                                                      InitiateMatrixFields
