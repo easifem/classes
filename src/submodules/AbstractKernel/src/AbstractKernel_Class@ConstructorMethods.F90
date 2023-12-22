@@ -712,7 +712,7 @@ CALL AbstractMeshFieldDeallocate(obj%Cijkl)
 CALL AbstractMeshFieldDeallocate(obj%stress)
 CALL AbstractMeshFieldDeallocate(obj%strain)
 
-NULLIFY (obj%bodyForceFunc)
+NULLIFY (obj%bodySourceFunc)
 
 END PROCEDURE obj_Deallocate
 

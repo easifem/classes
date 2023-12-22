@@ -435,7 +435,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: strain(:)
   !! Strain tensor
   !! This will be a tensor mesh field
-  CLASS(UserFunction_), POINTER :: bodyForceFunc => NULL()
+  CLASS(UserFunction_), POINTER :: bodySourceFunc => NULL()
   !! body force function
 CONTAINS
   PRIVATE

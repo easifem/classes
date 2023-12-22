@@ -323,9 +323,9 @@ CALL Display(bool1, "obj%stress ALLOCATED: ", unitNo=unitNo)
 bool1 = ALLOCATED(obj%strain)
 CALL Display(bool1, "obj%strain ALLOCATED: ", unitNo=unitNo)
 
-! bodyForceFunc
-bool1 = ASSOCIATED(obj%bodyForceFunc)
-CALL Display(bool1, "obj%bodyForceFunc ASSOCIATED: ", unitNo=unitNo)
+! bodySourceFunc
+bool1 = ASSOCIATED(obj%bodySourceFunc)
+CALL Display(bool1, "obj%bodySourceFunc ASSOCIATED: ", unitNo=unitNo)
 
 END PROCEDURE obj_Display
 
