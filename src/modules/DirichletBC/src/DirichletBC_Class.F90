@@ -33,6 +33,7 @@ PUBLIC :: DirichletBCDisplay
 PUBLIC :: DirichletBC_
 PUBLIC :: DirichletBCPointer_
 PUBLIC :: AddDirichletBC
+PUBLIC :: AppendDirichletBC
 PUBLIC :: GetDirichletBCPointer
 PUBLIC :: DirichletBCImportFromToml
 
@@ -47,8 +48,8 @@ PUBLIC :: DirichletBCImportFromToml
 TYPE, EXTENDS(AbstractBC_) :: DirichletBC_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
-  FINAL :: bc_Final
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  FINAL :: obj_Final
 END TYPE DirichletBC_
 
 !----------------------------------------------------------------------------
@@ -68,9 +69,9 @@ END TYPE DirichletBCPointer_
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE DirichletBCDeallocate
-  MODULE SUBROUTINE bc_Deallocate_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(DirichletBC_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE bc_Deallocate_Vector
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -82,9 +83,9 @@ END INTERFACE DirichletBCDeallocate
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE DirichletBCDeallocate
-  MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(DirichletBCPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE bc_Deallocate_Ptr_Vector
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -92,9 +93,9 @@ END INTERFACE DirichletBCDeallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(DirichletBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -107,7 +108,7 @@ END INTERFACE
 ! summary: Add dirichlet boundary conditions to the vector of pointer
 
 INTERFACE AddDirichletBC
-  MODULE SUBROUTINE bc_AddDirichletBC(dbc, dbcNo, param, boundary, dom)
+  MODULE SUBROUTINE obj_AddDirichletBC(dbc, dbcNo, param, boundary, dom)
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     !! Dirichlet boundary to form
     INTEGER(I4B), INTENT(IN) :: dbcNo
@@ -117,8 +118,31 @@ INTERFACE AddDirichletBC
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
     CLASS(Domain_), INTENT(IN) :: dom
-  END SUBROUTINE bc_AddDirichletBC
+  END SUBROUTINE obj_AddDirichletBC
 END INTERFACE AddDirichletBC
+
+!----------------------------------------------------------------------------
+!                                                AppendDirichletBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Add Dirichlet boundary conditions to the vector of pointer
+
+INTERFACE AppendDirichletBC
+  MODULE SUBROUTINE obj_AppendDirichletBC(dbc, param, boundary, dom, dbcNo)
+    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: dbc(:)
+    !! Dirichlet boundary to form
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    CLASS(Domain_), INTENT(IN) :: dom
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
+    !! Dirichlet boundary number
+  END SUBROUTINE obj_AppendDirichletBC
+END INTERFACE AppendDirichletBC
 
 !----------------------------------------------------------------------------
 !                                                 GetDirichletBC@GetMethods
@@ -130,12 +154,12 @@ END INTERFACE AddDirichletBC
 ! summary: Get dirichlet boundary conditions to the vector of pointer
 
 INTERFACE GetDirichletBCPointer
-  MODULE FUNCTION bc_GetDirichletBCPointer(dbc, dbcNo) RESULT(ans)
+  MODULE FUNCTION obj_GetDirichletBCPointer(dbc, dbcNo) RESULT(ans)
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-    INTEGER(I4B), INTENT(IN) :: dbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Dirichlet boundary nunber
     CLASS(DirichletBC_), POINTER :: ans
-  END FUNCTION bc_GetDirichletBCPointer
+  END FUNCTION obj_GetDirichletBCPointer
 END INTERFACE GetDirichletBCPointer
 
 !----------------------------------------------------------------------------
@@ -147,10 +171,10 @@ END INTERFACE GetDirichletBCPointer
 ! summary:  Get the prefix
 
 INTERFACE
-  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(DirichletBC_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION bc_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -162,7 +186,7 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE DirichletBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom, tomlName)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -170,7 +194,7 @@ INTERFACE DirichletBCImportFromToml
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
-  END SUBROUTINE bc_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -182,15 +206,15 @@ END INTERFACE DirichletBCImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE DirichletBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile, filename,  &
-    & printToml)
+ MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, filename,  &
+       & printToml)
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE bc_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -202,11 +226,11 @@ END INTERFACE DirichletBCImportFromToml
 ! summary:  Display the vector of NeumannBC_
 
 INTERFACE DirichletBCDisplay
-  MODULE SUBROUTINE bc_Display_Vector(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(DirichletBC_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display_Vector
+  END SUBROUTINE obj_Display_Vector
 END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------
@@ -218,11 +242,11 @@ END INTERFACE DirichletBCDisplay
 ! summary:  Display the vector of NeumannBC_
 
 INTERFACE DirichletBCDisplay
-  MODULE SUBROUTINE bc_Display_Ptr_Vector(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(DirichletBCPointer_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display_Ptr_Vector
+  END SUBROUTINE obj_Display_Ptr_Vector
 END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------
