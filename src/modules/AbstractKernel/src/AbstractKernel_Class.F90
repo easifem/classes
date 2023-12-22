@@ -659,6 +659,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceForce => &
     & obj_AssembleSurfaceForce
   !! This procedure assemble the surface force term to RHS
+  PROCEDURE, PUBLIC, PASS(obj) :: AssemblePointSource => &
+    & obj_AssemblePointSource
+  !! This procedure assemble the point source to rhs
 
   ! GET:
   ! @SolveMethods
@@ -1813,6 +1816,20 @@ INTERFACE
   MODULE SUBROUTINE obj_AssembleRHS(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_AssembleRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     AssemblePointSource@AssembleRHSMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the point sources
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssemblePointSource(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssemblePointSource
 END INTERFACE
 
 !----------------------------------------------------------------------------

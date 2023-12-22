@@ -107,12 +107,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ! check boundary for isSelectionByNode
 
-CALL boundary%GetParam(isSelectionByNode=isSelectionByNode)
+CALL boundary%GetParam(isSelectionByNodeNum=isSelectionByNode)
 
 IF (.NOT. isSelectionByNode) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-   & '[CONFIG ERROR] :: boundary is not configured for isSelectionByNode'//  &
-   & '. In AddPointSource boundary must be configured for isSelectionByNode.')
+   & '[CONFIG ERROR] :: boundary is not configured for '//  &
+   & 'isSelectionByNodeNum. '//  &
+   & 'In AddPointSource boundary must be configured for '//  &
+   & 'isSelectionByNode.')
   RETURN
 END IF
 
