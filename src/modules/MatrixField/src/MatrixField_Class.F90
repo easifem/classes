@@ -617,6 +617,16 @@ INTERFACE MatrixFieldDeallocate
 END INTERFACE MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+INTERFACE MatrixFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
+    TYPE(MatrixFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_ptr_vector
+END INTERFACE MatrixFieldDeallocate
+
+!----------------------------------------------------------------------------
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
