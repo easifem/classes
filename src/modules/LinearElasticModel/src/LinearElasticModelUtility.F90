@@ -17,8 +17,10 @@
 
 MODULE LinearElasticModelUtility
 USE GlobalData, ONLY: DFP, LGT
+USE ExceptionHandler_Class, ONLY: err => e
 IMPLICIT NONE
 PRIVATE
+CHARACTER(*), PARAMETER :: modName = "LinearElasticModelUtility"
 PUBLIC :: GetYoungsModulus
 PUBLIC :: GetShearModulus
 
@@ -33,6 +35,7 @@ FUNCTION GetYoungsModulus(E, G, lambda, mu, nu, K) RESULT(ans)
   REAL(DFP), OPTIONAL, INTENT(IN) :: K
   REAL(DFP) :: ans
 
+  CHARACTER(*), PARAMETER :: myName = "GetYoungsModulus"
   LOGICAL(LGT) :: isK, isE, isLambda, isG, isMu
 
   isE = PRESENT(E)
@@ -101,6 +104,10 @@ FUNCTION GetYoungsModulus(E, G, lambda, mu, nu, K) RESULT(ans)
       RETURN
     END IF
   END IF
+
+  CALL err%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case is found')
+
 END FUNCTION GetYoungsModulus
 
 !----------------------------------------------------------------------------
@@ -116,6 +123,7 @@ FUNCTION GetShearModulus(E, G, lambda, mu, nu, K) RESULT(ans)
   REAL(DFP), OPTIONAL, INTENT(IN) :: K
   REAL(DFP) :: ans
 
+  CHARACTER(*), PARAMETER :: myName = "GetShearModulus"
   LOGICAL(LGT) :: isK, isE, isLambda, isG, isMu
   REAL(DFP) :: r
 
@@ -174,6 +182,9 @@ FUNCTION GetShearModulus(E, G, lambda, mu, nu, K) RESULT(ans)
       RETURN
     END IF
   END IF
+
+  CALL err%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case is found')
 
 END FUNCTION GetShearModulus
 
