@@ -660,6 +660,19 @@ obj%displacementError = 0.0_DFP
 obj%velocityError0 = 0.0_DFP
 obj%velocityError = 0.0_DFP
 
+! matrixField
+CALL MatrixFieldDeallocate(obj%matrixFields)
+
+! VectorField
+CALL VectorFieldDeallocate(obj%vectorFields)
+CALL STVectorFieldDeallocate(obj%stVectorFields)
+
+! ScalarField
+CALL ScalarFieldDeallocate(obj%scalarFields)
+
+! STScalarField
+CALL STScalarFieldDeallocate(obj%stScalarFields)
+
 ! displacement
 IF (ASSOCIATED(obj%displacement)) THEN
   CALL obj%displacement%DEALLOCATE()

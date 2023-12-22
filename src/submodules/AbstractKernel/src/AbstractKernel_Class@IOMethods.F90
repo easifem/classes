@@ -283,6 +283,26 @@ CALL Display(bool1, "massMat ASSOCIATED: ", unitNo=unitNo)
 bool1 = ASSOCIATED(obj%dampingMat)
 CALL Display(bool1, "dampingMat ASSOCIATED: ", unitNo=unitNo)
 
+! matrixFields
+bool1 = ALLOCATED(obj%matrixFields)
+CALL Display(bool1, "matrixFields ALLOCATED: ", unitNo=unitNo)
+
+! vectorFields
+bool1 = ALLOCATED(obj%vectorFields)
+CALL Display(bool1, "vectorFields ALLOCATED: ", unitNo=unitNo)
+
+! scalarFields
+bool1 = ALLOCATED(obj%scalarFields)
+CALL Display(bool1, "scalarFields ALLOCATED: ", unitNo=unitNo)
+
+! stVectorFields
+bool1 = ALLOCATED(obj%stVectorFields)
+CALL Display(bool1, "stVectorFields ALLOCATED: ", unitNo=unitNo)
+
+! stScalarFields
+bool1 = ALLOCATED(obj%stScalarFields)
+CALL Display(bool1, "stScalarFields ALLOCATED: ", unitNo=unitNo)
+
 ! displacement
 bool1 = ASSOCIATED(obj%displacement)
 CALL Display(bool1, "displacement ASSOCIATED: ", unitNo=unitNo)
