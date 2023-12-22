@@ -24,8 +24,9 @@ target_sources(
           ${src_path}/KernelAssembleStiffnessMatrix_Method.F90
           ${src_path}/KernelAssembleDampingMatrix_Method.F90
           ${src_path}/KernelAssembleElastoDynaMatrix_Method.F90
-          ${src_path}/KernelAssembleBodyForce_Method.F90
-          ${src_path}/KernelAssembleSurfaceForce_Method.F90
+          ${src_path}/KernelAssembleBodySource_Method.F90
+          ${src_path}/KernelAssembleSurfaceSource_Method.F90
+          ${src_path}/KernelAssemblePointSource_Method.F90
           ${src_path}/KernelTensorProperty_Method.F90
           ${src_path}/KernelScalarProperty_Method.F90
           ${src_path}/KernelMatrixField_Method.F90
