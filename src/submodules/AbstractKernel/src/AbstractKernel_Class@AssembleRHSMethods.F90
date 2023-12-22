@@ -52,15 +52,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetBodyForceFunc
 
 !----------------------------------------------------------------------------
-!                                                         AssembleBodyForce
+!                                                         AssembleBodySource
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_AssembleBodyForce
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleBodyForce()"
+MODULE PROCEDURE obj_AssembleBodySource
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleBodySource()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
-END PROCEDURE obj_AssembleBodyForce
+END PROCEDURE obj_AssembleBodySource
 
 !----------------------------------------------------------------------------
 !                                                       AssemblePointSource

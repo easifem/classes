@@ -653,8 +653,8 @@ CONTAINS
   !! This procedure pointer assembles the right-hand-side vector
   PROCEDURE, PUBLIC, PASS(obj) :: SetBodyForceFunc => obj_SetBodyForceFunc
   !! Set body force function
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodyForce => &
-    & obj_AssembleBodyForce
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodySource => &
+    & obj_AssembleBodySource
   !! This procedure assemble the body force term to RHS
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceForce => &
     & obj_AssembleSurfaceForce
@@ -1848,19 +1848,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       AssembleBodyForce@AssembleRHSMethods
+!                                       AssembleBodySource@AssembleRHSMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 21 Aug 2021
-! summary: This subroutine assembles the system of linear equation
+! summary: This subroutine assembles the body source to rhs
 
 INTERFACE
-  MODULE SUBROUTINE obj_AssembleBodyForce(obj, func, extField)
+  MODULE SUBROUTINE obj_AssembleBodySource(obj, func, extField)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), OPTIONAL, INTENT(INOUT) :: func
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_AssembleBodyForce
+  END SUBROUTINE obj_AssembleBodySource
 END INTERFACE
 
 !----------------------------------------------------------------------------
