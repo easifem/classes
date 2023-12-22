@@ -1819,20 +1819,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     AssemblePointSource@AssembleRHSMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Aug 2021
-! summary: This subroutine assembles the point sources
-
-INTERFACE
-  MODULE SUBROUTINE obj_AssemblePointSource(obj)
-    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_AssemblePointSource
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                       SetBodyForceFunc@AssembleRHSMethods
 !----------------------------------------------------------------------------
 
@@ -1876,6 +1862,20 @@ INTERFACE
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
   END SUBROUTINE obj_AssembleSurfaceSource
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     AssemblePointSource@AssembleRHSMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Aug 2021
+! summary: This subroutine assembles the point sources
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssemblePointSource(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssemblePointSource
 END INTERFACE
 
 !----------------------------------------------------------------------------
