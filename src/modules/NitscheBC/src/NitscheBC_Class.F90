@@ -37,6 +37,7 @@ PUBLIC :: NitscheBCDisplay
 PUBLIC :: NitscheBCPointer_
 PUBLIC :: NitscheBC_
 PUBLIC :: AddNitscheBC
+PUBLIC :: AppendNitscheBC
 PUBLIC :: GetNitscheBCPointer
 PUBLIC :: NitscheBCImportFromToml
 
@@ -54,17 +55,17 @@ TYPE, EXTENDS(NeumannBC_) :: NitscheBC_
   INTEGER(I4B), ALLOCATABLE :: cellEntity(:)
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: SetCellData => bc_SetCellData
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMinCellEntity => bc_GetMinCellEntity
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxCellEntity => bc_GetMaxCellEntity
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCellData => obj_SetCellData
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinCellEntity => obj_GetMinCellEntity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxCellEntity => obj_GetMaxCellEntity
   PROCEDURE, PUBLIC, PASS(obj) :: IsCellEntityPresent &
-   & => bc_IsCellEntityPresent
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStartIndex => bc_GetStartIndex
-  PROCEDURE, PUBLIC, PASS(obj) :: GetEndIndex => bc_GetEndIndex
-  PROCEDURE, PUBLIC, PASS(obj) :: GetCellElem => bc_GetCellElem
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => bc_GetLocalFacetID
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
-  FINAL :: bc_Final
+   & => obj_IsCellEntityPresent
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStartIndex => obj_GetStartIndex
+  PROCEDURE, PUBLIC, PASS(obj) :: GetEndIndex => obj_GetEndIndex
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCellElem => obj_GetCellElem
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetID => obj_GetLocalFacetID
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  FINAL :: obj_Final
 END TYPE NitscheBC_
 
 !----------------------------------------------------------------------------
@@ -84,9 +85,9 @@ END TYPE NitscheBCPointer_
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE NitscheBCDeallocate
-  MODULE SUBROUTINE bc_Deallocate_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(NitscheBC_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE bc_Deallocate_Vector
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE NitscheBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -98,9 +99,9 @@ END INTERFACE NitscheBCDeallocate
 ! summary:  Deallocate the vector of NeumannBC_
 
 INTERFACE NitscheBCDeallocate
-  MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(NitscheBCPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE bc_Deallocate_Ptr_Vector
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE NitscheBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -108,9 +109,9 @@ END INTERFACE NitscheBCDeallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(NitscheBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -118,14 +119,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_SetCellData(obj, meshID, localID, &
+  MODULE SUBROUTINE obj_SetCellData(obj, meshID, localID, &
     & tFacetElements, domConList)
     CLASS(NitscheBC_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: meshID(:)
     INTEGER(I4B), INTENT(IN) :: localID(:)
     INTEGER(I4B), INTENT(IN) :: tFacetElements(:)
     TYPE(DomainConnectivityPointer_), INTENT(IN) :: domConList(:)
-  END SUBROUTINE bc_SetCellData
+  END SUBROUTINE obj_SetCellData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -133,10 +134,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetMinCellEntity(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetMinCellEntity(obj) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetMinCellEntity
+  END FUNCTION obj_GetMinCellEntity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -144,10 +145,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetMaxCellEntity(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetMaxCellEntity(obj) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetMaxCellEntity
+  END FUNCTION obj_GetMaxCellEntity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -155,11 +156,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_IsCellEntityPresent(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION obj_IsCellEntityPresent(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     LOGICAL(LGT) :: ans
-  END FUNCTION bc_IsCellEntityPresent
+  END FUNCTION obj_IsCellEntityPresent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -167,11 +168,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetStartIndex(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetStartIndex(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetStartIndex
+  END FUNCTION obj_GetStartIndex
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -179,11 +180,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetEndIndex(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetEndIndex(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetEndIndex
+  END FUNCTION obj_GetEndIndex
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -191,11 +192,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetCellElem(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetCellElem(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetCellElem
+  END FUNCTION obj_GetCellElem
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -203,11 +204,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION bc_GetLocalFacetID(obj, entityNum) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetLocalFacetID(obj, entityNum) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: entityNum
     INTEGER(I4B) :: ans
-  END FUNCTION bc_GetLocalFacetID
+  END FUNCTION obj_GetLocalFacetID
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -220,7 +221,7 @@ END INTERFACE
 ! summary: Add Nitsche boundary conditions to the vector of pointer
 
 INTERFACE AddNitscheBC
-  MODULE SUBROUTINE bc_AddNitscheBC(dbc, dbcNo, param, boundary, dom)
+  MODULE SUBROUTINE obj_AddNitscheBC(dbc, dbcNo, param, boundary, dom)
     TYPE(NitscheBCPointer_), INTENT(INOUT) :: dbc(:)
     !! Nitsche boundary to form
     INTEGER(I4B), INTENT(IN) :: dbcNo
@@ -230,8 +231,31 @@ INTERFACE AddNitscheBC
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
     CLASS(Domain_), INTENT(IN) :: dom
-  END SUBROUTINE bc_AddNitscheBC
+  END SUBROUTINE obj_AddNitscheBC
 END INTERFACE AddNitscheBC
+
+!----------------------------------------------------------------------------
+!                                                AppendNitscheBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Add Nitsche boundary conditions to the vector of pointer
+
+INTERFACE AppendNitscheBC
+  MODULE SUBROUTINE obj_AppendNitscheBC(dbc, param, boundary, dom, dbcNo)
+    TYPE(NitscheBCPointer_), ALLOCATABLE, INTENT(INOUT) :: dbc(:)
+    !! Nitsche boundary to form
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[NitscheBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    CLASS(Domain_), INTENT(IN) :: dom
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
+    !! Nitsche boundary number
+  END SUBROUTINE obj_AppendNitscheBC
+END INTERFACE AppendNitscheBC
 
 !----------------------------------------------------------------------------
 !                                                 GetNitscheBC@GetMethods
@@ -243,12 +267,12 @@ END INTERFACE AddNitscheBC
 ! summary: Get dirichlet boundary conditions to the vector of pointer
 
 INTERFACE GetNitscheBCPointer
-  MODULE FUNCTION bc_GetNitscheBCPointer(dbc, dbcNo) RESULT(ans)
+  MODULE FUNCTION obj_GetNitscheBCPointer(dbc, dbcNo) RESULT(ans)
     CLASS(NitscheBCPointer_), INTENT(IN) :: dbc(:)
-    INTEGER(I4B), INTENT(IN) :: dbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Nitsche boundary nunber
     CLASS(NitscheBC_), POINTER :: ans
-  END FUNCTION bc_GetNitscheBCPointer
+  END FUNCTION obj_GetNitscheBCPointer
 END INTERFACE GetNitscheBCPointer
 
 !----------------------------------------------------------------------------
@@ -260,10 +284,10 @@ END INTERFACE GetNitscheBCPointer
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(NitscheBC_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION bc_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -275,7 +299,7 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE NitscheBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom, tomlName)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
     TYPE(NitscheBCPointer_), INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -283,7 +307,7 @@ INTERFACE NitscheBCImportFromToml
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
-  END SUBROUTINE bc_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE NitscheBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -295,7 +319,7 @@ END INTERFACE NitscheBCImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE NitscheBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile,  &
     & filename, printToml)
     TYPE(NitscheBCPointer_), INTENT(INOUT) :: obj(:)
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
@@ -303,7 +327,7 @@ INTERFACE NitscheBCImportFromToml
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE bc_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE NitscheBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -315,11 +339,11 @@ END INTERFACE NitscheBCImportFromToml
 ! summary:  Display the vector of NeumannBC_
 
 INTERFACE NitscheBCDisplay
-  MODULE SUBROUTINE bc_Display_Vector(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(NitscheBC_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display_Vector
+  END SUBROUTINE obj_Display_Vector
 END INTERFACE NitscheBCDisplay
 
 !----------------------------------------------------------------------------
@@ -331,11 +355,11 @@ END INTERFACE NitscheBCDisplay
 ! summary:  Display the vector of NeumannBC_
 
 INTERFACE NitscheBCDisplay
-  MODULE SUBROUTINE bc_Display_Ptr_Vector(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(NitscheBCPointer_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE bc_Display_Ptr_Vector
+  END SUBROUTINE obj_Display_Ptr_Vector
 END INTERFACE NitscheBCDisplay
 
 !----------------------------------------------------------------------------
