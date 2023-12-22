@@ -656,8 +656,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleBodySource => &
     & obj_AssembleBodySource
   !! This procedure assemble the body force term to RHS
-  PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceForce => &
-    & obj_AssembleSurfaceForce
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleSurfaceSource => &
+    & obj_AssembleSurfaceSource
   !! This procedure assemble the surface force term to RHS
   PROCEDURE, PUBLIC, PASS(obj) :: AssemblePointSource => &
     & obj_AssemblePointSource
@@ -1864,7 +1864,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     AssembleSurfaceForce@AssembleRHSMethods
+!                                  AssembleSurfaceSource@AssembleRHSMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1872,10 +1872,10 @@ END INTERFACE
 ! summary: This subroutine assembles the surface force terms in RHS
 
 INTERFACE
-  MODULE SUBROUTINE obj_AssembleSurfaceForce(obj, extField)
+  MODULE SUBROUTINE obj_AssembleSurfaceSource(obj, extField)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: extField
-  END SUBROUTINE obj_AssembleSurfaceForce
+  END SUBROUTINE obj_AssembleSurfaceSource
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -74,15 +74,15 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_AssemblePointSource
 
 !----------------------------------------------------------------------------
-!                                                     AssembleSurfaceForce
+!                                                     AssembleSurfaceSource
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_AssembleSurfaceForce
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleSurfaceForce()"
+MODULE PROCEDURE obj_AssembleSurfaceSource
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleSurfaceSource()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
   & 'child classes')
-END PROCEDURE obj_AssembleSurfaceForce
+END PROCEDURE obj_AssembleSurfaceSource
 
 !----------------------------------------------------------------------------
 !
