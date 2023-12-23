@@ -20,7 +20,7 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) GetMethods
-USE BaseMethod
+USE CSRMatrix_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -39,6 +39,243 @@ END PROCEDURE obj_Size
 MODULE PROCEDURE obj_Shape
 ans = SHAPE(obj%mat)
 END PROCEDURE obj_Shape
+
+!----------------------------------------------------------------------------
+!                                                                      Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get1
+CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+INTEGER(I4B) :: storageFMT0
+INTEGER(I4B) :: nodenum(SIZE(globalNode))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (PRESENT(storageFMT)) THEN
+  storageFMT0 = GetStorageFMT(obj%mat, 1)
+ELSE
+  storageFMT0 = storageFMT
+END IF
+
+nodenum = obj%domain%GetLocalNodeNumber(globalNode)
+CALL GetValue(obj=obj%mat, VALUE=VALUE, nodenum=nodenum,  &
+& storageFMT=storageFMT0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_Get1
+
+!----------------------------------------------------------------------------
+!                                                                       Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get2
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
+INTEGER(I4B) :: iNodeNum0, jNodeNum0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isRectangle) THEN
+  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
+ELSE
+  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
+END IF
+
+CALL GetValue(obj=obj%mat, VALUE=VALUE, idof=idof, jdof=jdof, &
+  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get2
+
+!----------------------------------------------------------------------------
+!                                                                      Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get3
+CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
+INTEGER(I4B) :: iNodeNum0(SIZE(iNodeNum)), jNodeNum0(SIZE(jNodeNum))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isRectangle) THEN
+  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
+ELSE
+  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
+END IF
+
+CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
+  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get3
+
+!----------------------------------------------------------------------------
+!                                                                      Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get4
+CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+INTEGER(I4B) :: iNodeNum0(SIZE(iNodeNum)), jNodeNum0(SIZE(jNodeNum))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isRectangle) THEN
+  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
+ELSE
+  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
+END IF
+
+CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
+  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, idof=idof, jdof=jdof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get4
+
+!----------------------------------------------------------------------------
+!                                                                      Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get5
+CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
+INTEGER(I4B) :: iNodeNum0, jNodeNum0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isRectangle) THEN
+  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
+ELSE
+  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
+END IF
+
+CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
+  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, idof=idof, jdof=jdof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get5
+
+!----------------------------------------------------------------------------
+!                                                                      Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get6
+CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
+INTEGER(I4B) :: iNodeNum0, jNodeNum0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isRectangle) THEN
+  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
+ELSE
+  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
+END IF
+
+CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
+  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, ispacecompo=ispacecompo,  &
+  & jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get6
+
+!----------------------------------------------------------------------------
+!                                                                     Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get7
+CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+IF (obj%isRectangle) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: This method is not tested for rectangle '// &
+    & 'matrix yet.')
+  RETURN
+END IF
+
+SELECT TYPE (VALUE)
+CLASS IS (MatrixField_)
+
+  CALL GetValue(obj1=obj%mat, obj2=VALUE%mat, &
+    & ivar1=ivar1, jvar1=jvar1,  &
+    & ispacecompo1=ispacecompo1, jspacecompo1=jspacecompo1, &
+    & itimecompo1=itimecompo1, jtimecompo1=jtimecompo1, &
+    & ivar2=ivar2, jvar2=jvar2,  &
+    & ispacecompo2=ispacecompo2, jspacecompo2=jspacecompo2, &
+    & itimecompo2=itimecompo2, jtimecompo2=jtimecompo2, ierr=ierr)
+
+  IF (ierr .NE. 0) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Some error occured in calling GetValue.')
+    RETURN
+  END IF
+
+CLASS DEFAULT
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found ')
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !
