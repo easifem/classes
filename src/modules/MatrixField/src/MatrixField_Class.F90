@@ -203,6 +203,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => &
     & obj_ReversePermutation
 
+  ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj) :: Set1 => obj_Set1
   PROCEDURE, PASS(obj) :: Set2 => obj_Set2
@@ -216,6 +217,7 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set10 => obj_Set10
   PROCEDURE, PASS(obj) :: Set11 => obj_Set11
 
+  ! SET:
   ! @SetColMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => obj_SetColumn1
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn2 => obj_SetColumn2
@@ -225,6 +227,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => obj_SetColumn6
   PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => obj_SetColumn7
 
+  ! SET:
   ! @SetRowMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => obj_SetRow1
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow2 => obj_SetRow2
@@ -234,6 +237,17 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => obj_SetRow6
   PROCEDURE, PUBLIC, PASS(obj) :: SetRow7 => obj_SetRow7
 
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
+  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
+  PROCEDURE, PUBLIC, PASS(obj) :: Get3 => obj_Get3
+  PROCEDURE, PUBLIC, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, PUBLIC, PASS(obj) :: Get5 => obj_Get5
+  PROCEDURE, PUBLIC, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PUBLIC, PASS(obj) :: Get7 => obj_Get7
+
+  ! GET:
   ! @GetColMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => obj_GetColumn1
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => obj_GetColumn2
@@ -243,6 +257,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => obj_GetColumn6
   PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => obj_GetColumn7
 
+  ! GET:
   ! @GetRowMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => obj_GetRow1
   PROCEDURE, PUBLIC, PASS(obj) :: GetRow2 => obj_GetRow2
@@ -1971,7 +1986,154 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get1(obj, globalNode, VALUE, storageFMT)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! Storage format of value, if the storageFMT is not
+    !! present then we use same storage format as matrixfield
+  END SUBROUTINE obj_Get1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get2(obj, iNodeNum, jNodeNum, idof, jdof, VALUE)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum
+    INTEGER(I4B), INTENT(IN) :: jNodeNum
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: jdof
+    REAL(DFP), INTENT(INOUT) :: VALUE
+  END SUBROUTINE obj_Get2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get3(obj, iNodeNum, jNodeNum, ivar, jvar, VALUE)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+  END SUBROUTINE obj_Get3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get4(obj, iNodeNum, jNodeNum, ivar, jvar, idof,  &
+    & jdof, VALUE)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: jdof
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+  END SUBROUTINE obj_Get4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get5(obj, iNodeNum, jNodeNum, ivar, jvar, &
+    & idof, jdof, VALUE)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum
+    INTEGER(I4B), INTENT(IN) :: jNodeNum
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: jdof
+    REAL(DFP), INTENT(INOUT) :: VALUE
+  END SUBROUTINE obj_Get5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get6(obj, iNodeNum, jNodeNum, ivar, jvar, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+    & VALUE)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum
+    INTEGER(I4B), INTENT(IN) :: jNodeNum
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: ispacecompo
+    INTEGER(I4B), INTENT(IN) :: itimecompo
+    INTEGER(I4B), INTENT(IN) :: jspacecompo
+    INTEGER(I4B), INTENT(IN) :: jtimecompo
+    REAL(DFP), INTENT(INOUT) :: VALUE
+  END SUBROUTINE obj_Get6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-23
+! summary:  Get matrix into matrix
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get7(obj, VALUE, &
+    & ivar1, jvar1,  &
+    & ispacecompo1, jspacecompo1, &
+    & itimecompo1, jtimecompo1, &
+    & ivar2, jvar2,  &
+    & ispacecompo2, jspacecompo2, &
+    & itimecompo2, jtimecompo2)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar1
+    !! row physical variable obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar1
+    !! col physical variable obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo1
+    !! row space component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo1
+    !! row time component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo1
+    !! col space component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo1
+    !! col time component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar2
+    !! row physical variable obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar2
+    !! col physical variable obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo2
+    !! row space component obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo2
+    !! row time component obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo2
+    !! col space component obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo2
+    !! col time component obj2
+  END SUBROUTINE obj_Get7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetRow@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -1986,7 +2148,7 @@ END INTERFACE
 ! - `globalNode` is the global node number of mesh
 ! - `idof` is the degree of freedom number
 !
-! - If `value` is present then the vector is returned inside the rank 1 vector
+! - If `value` is present then the vector is returned inside the rank 1 vec
 ! - If `nodeFieldVal` is present then the row is returned inside the
 ! node field
 
@@ -2004,7 +2166,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetRow@getMethod
+!                                                          GetRow@getMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -2019,7 +2181,7 @@ END INTERFACE
 ! - `globalNode` is the global node number of mesh
 ! - `idof` is the degree of freedom number
 !
-! - If `value` is present then the vector is returned inside the rank 1 vector
+! - If `value` is present then the vector is returned inside the rank 1 vec
 ! - If `nodeFieldVal` is present then the row is returned inside the
 ! node field
 

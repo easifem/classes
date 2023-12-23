@@ -103,7 +103,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SPY => obj_SPY
   ! SPY
 
-  ! Set:
+  ! SET:
   ! @SetMethods
   PROCEDURE(obj_Set1), DEFERRED, PASS(obj) :: Set1
   PROCEDURE(obj_Set2), DEFERRED, PASS(obj) :: Set2
@@ -119,7 +119,7 @@ CONTAINS
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     & Set6, Set7, Set8, Set9, Set10, Set11
 
-  ! Set:
+  ! SET:
   ! @SetRow
   PROCEDURE(obj_SetRow1), DEFERRED, PASS(obj) :: SetRow1
   PROCEDURE(obj_SetRow2), DEFERRED, PASS(obj) :: SetRow2
@@ -131,7 +131,30 @@ CONTAINS
   GENERIC, PUBLIC :: SetRow => SetRow1, SetRow2, SetRow3, &
     & SetRow4, SetRow5, SetRow6, SetRow7
 
-  ! Get:
+  ! SET:
+  ! @SetColumn
+  PROCEDURE(obj_SetColumn1), DEFERRED, PASS(obj) :: SetColumn1
+  PROCEDURE(obj_SetColumn2), DEFERRED, PASS(obj) :: SetColumn2
+  PROCEDURE(obj_SetColumn3), DEFERRED, PASS(obj) :: SetColumn3
+  PROCEDURE(obj_SetColumn4), DEFERRED, PASS(obj) :: SetColumn4
+  PROCEDURE(obj_SetColumn5), DEFERRED, PASS(obj) :: SetColumn5
+  PROCEDURE(obj_SetColumn6), DEFERRED, PASS(obj) :: SetColumn6
+  PROCEDURE(obj_SetColumn7), DEFERRED, PASS(obj) :: SetColumn7
+  GENERIC, PUBLIC :: SetColumn => SetColumn1, SetColumn2, &
+    & SetColumn3, SetColumn4, SetColumn5, SetColumn6, SetColumn7
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE(obj_Get1), DEFERRED, PASS(obj) :: Get1
+  PROCEDURE(obj_Get2), DEFERRED, PASS(obj) :: Get2
+  PROCEDURE(obj_Get3), DEFERRED, PASS(obj) :: Get3
+  PROCEDURE(obj_Get4), DEFERRED, PASS(obj) :: Get4
+  PROCEDURE(obj_Get5), DEFERRED, PASS(obj) :: Get5
+  PROCEDURE(obj_Get6), DEFERRED, PASS(obj) :: Get6
+  PROCEDURE(obj_Get7), DEFERRED, PASS(obj) :: Get7
+  GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7
+
+  ! GET:
   ! @GetColumn
   PROCEDURE(obj_GetColumn1), DEFERRED, PASS(obj) :: GetColumn1
   PROCEDURE(obj_GetColumn2), DEFERRED, PASS(obj) :: GetColumn2
@@ -143,7 +166,7 @@ CONTAINS
   GENERIC, PUBLIC :: GetColumn => GetColumn1, GetColumn2, &
     & GetColumn3, GetColumn4, GetColumn5, GetColumn6, GetColumn7
 
-  ! Get:
+  ! GET:
   ! @GetRow
   PROCEDURE(obj_GetRow1), DEFERRED, PASS(obj) :: GetRow1
   PROCEDURE(obj_GetRow2), DEFERRED, PASS(obj) :: GetRow2
@@ -154,18 +177,6 @@ CONTAINS
   PROCEDURE(obj_GetRow7), DEFERRED, PASS(obj) :: GetRow7
   GENERIC, PUBLIC :: GetRow => GetRow1, GetRow2, &
     & GetRow3, GetRow4, GetRow5, GetRow6, GetRow7
-
-  ! Set:
-  ! @SetColumn
-  PROCEDURE(obj_SetColumn1), DEFERRED, PASS(obj) :: SetColumn1
-  PROCEDURE(obj_SetColumn2), DEFERRED, PASS(obj) :: SetColumn2
-  PROCEDURE(obj_SetColumn3), DEFERRED, PASS(obj) :: SetColumn3
-  PROCEDURE(obj_SetColumn4), DEFERRED, PASS(obj) :: SetColumn4
-  PROCEDURE(obj_SetColumn5), DEFERRED, PASS(obj) :: SetColumn5
-  PROCEDURE(obj_SetColumn6), DEFERRED, PASS(obj) :: SetColumn6
-  PROCEDURE(obj_SetColumn7), DEFERRED, PASS(obj) :: SetColumn7
-  GENERIC, PUBLIC :: SetColumn => SetColumn1, SetColumn2, &
-    & SetColumn3, SetColumn4, SetColumn5, SetColumn6, SetColumn7
 
   ! GET:
   ! @UnaryMethods
@@ -1298,6 +1309,156 @@ ABSTRACT INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
   END SUBROUTINE obj_SetColumn7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get1(obj, globalNode, VALUE, storageFMT)
+    IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! Storage format of value
+    !! The default value is storage format of obj
+  END SUBROUTINE obj_Get1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get2(obj, iNodeNum, jNodeNum, idof, jdof, VALUE)
+    IMPORT :: AbstractMatrixField_, I4B, DFP
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum
+    INTEGER(I4B), INTENT(IN) :: jNodeNum
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: jdof
+    REAL(DFP), INTENT(INOUT) :: VALUE
+  END SUBROUTINE obj_Get2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get3(obj, iNodeNum, jNodeNum, ivar, jvar, VALUE)
+    IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+  END SUBROUTINE obj_Get3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get4(obj, iNodeNum, jNodeNum, ivar, jvar, idof,  &
+    & jdof, VALUE)
+    IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: jdof
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+  END SUBROUTINE obj_Get4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get5(obj, iNodeNum, jNodeNum, ivar, jvar, &
+    & idof, jdof, VALUE)
+    IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum
+    INTEGER(I4B), INTENT(IN) :: jNodeNum
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN) :: jdof
+    REAL(DFP), INTENT(INOUT) :: VALUE
+  END SUBROUTINE obj_Get5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Get@GetMethod
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get6(obj, iNodeNum, jNodeNum, ivar, jvar, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+    & VALUE)
+    IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: iNodeNum
+    INTEGER(I4B), INTENT(IN) :: jNodeNum
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: ispacecompo
+    INTEGER(I4B), INTENT(IN) :: itimecompo
+    INTEGER(I4B), INTENT(IN) :: jspacecompo
+    INTEGER(I4B), INTENT(IN) :: jtimecompo
+    REAL(DFP), INTENT(INOUT) :: VALUE
+  END SUBROUTINE obj_Get6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Get@GetMethods
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Get7(obj, VALUE, &
+    & ivar1, jvar1,  &
+    & ispacecompo1, jspacecompo1, &
+    & itimecompo1, jtimecompo1, &
+    & ivar2, jvar2,  &
+    & ispacecompo2, jspacecompo2, &
+    & itimecompo2, jtimecompo2)
+    IMPORT :: AbstractMatrixField_, I4B
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar1
+    !! row physical variable obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar1
+    !! col physical variable obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo1
+    !! row space component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo1
+    !! row time component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo1
+    !! col space component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo1
+    !! col time component obj1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar2
+    !! row physical variable obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar2
+    !! col physical variable obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo2
+    !! row space component obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo2
+    !! row time component obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo2
+    !! col space component obj2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo2
+    !! col time component obj2
+  END SUBROUTINE obj_Get7
 END INTERFACE
 
 !----------------------------------------------------------------------------
