@@ -42,7 +42,7 @@ END PROCEDURE obj_GetSingle
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_get1
-CHARACTER(*), PARAMETER :: myName = "obj_get1"
+CHARACTER(*), PARAMETER :: myName = "obj_get1()"
 INTEGER(I4B) :: case_id
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: indx
@@ -52,12 +52,18 @@ INTEGER(I4B) :: jj
 INTEGER(I4B) :: kk
 INTEGER(I4B) :: ierr
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
+  & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
+  RETURN
 END IF
 
 IF (PRESENT(globalnode)) THEN
@@ -167,6 +173,11 @@ CASE DEFAULT
   & ' spaceCompo and timeCompo both should be present'// &
   & ' spaceCompo or timeCompo should be present')
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 
 END PROCEDURE obj_get1
 

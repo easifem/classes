@@ -111,6 +111,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set15 => obj_Set15
   PROCEDURE, PASS(obj) :: Set16 => obj_Set16
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromSTVectorField =>  &
+    & obj_SetFromSTVectorField
   !! Set selected values using FEVariable
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
@@ -822,6 +824,25 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(VectorField_), INTENT(IN) :: VALUE
   END SUBROUTINE obj_Set16
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-03-29
+! summary: Set values
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFromSTVectorField(obj, VALUE, timeCompo,  &
+    & scale, addContribution)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_SetFromSTVectorField
 END INTERFACE
 
 !----------------------------------------------------------------------------
