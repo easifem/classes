@@ -18,6 +18,7 @@
 SUBMODULE(VectorField_Class) SetMethods
 USE BaseMethod
 USE ScalarField_Class
+USE STVectorField_Class
 IMPLICIT NONE
 CONTAINS
 
@@ -598,6 +599,53 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 END PROCEDURE obj_Set16
+
+!----------------------------------------------------------------------------
+!                                                       SetFromSTVectorField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFromSTVectorField
+CHARACTER(*), PARAMETER :: myName = "obj_SetFromSTVectorField()"
+INTEGER(I4B) :: tnodes, ii
+REAL(DFP), ALLOCATABLE :: small_value(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'VectorField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+#endif
+
+SELECT TYPE (VALUE)
+CLASS is (STVectorField_)
+  tnodes = obj%domain%GetTotalNodes()
+  DO ii = 1, tnodes
+    CALL VALUE%Get(VALUE=small_value, globalNode=ii, timeCompo=timeCompo)
+    CALL obj%Set(VALUE=small_value, globalNode=ii, scale=scale,  &
+    & addContribution=addContribution)
+  END DO
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Value should be an instance of STVectorField_')
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_SetFromSTVectorField
 
 !----------------------------------------------------------------------------
 !                                                                      Set

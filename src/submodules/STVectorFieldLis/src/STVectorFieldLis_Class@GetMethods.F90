@@ -41,141 +41,205 @@ END PROCEDURE obj_GetSingle
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get1
-CHARACTER(*), PARAMETER :: myName = "obj_get1"
-INTEGER(I4B) :: case_id
-INTEGER(I4B) :: localNode
-INTEGER(I4B) :: indx
-INTEGER(I4B) :: tNodes
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: kk
-INTEGER(I4B) :: ierr
+MODULE PROCEDURE obj_Get1
+CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+INTEGER(I4B) :: localNode, indx, tNodes, ii, jj, kk, ierr
+CHARACTER(3) :: mycase
+LOGICAL(LGT) :: isnode, isspace, istime
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either VectorFieldLis_::obj is not initiated'// &
+  & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
+  RETURN
 END IF
+#endif
 
-IF (PRESENT(globalnode)) THEN
-  case_id = 1
-ELSE IF (PRESENT(spaceCompo) .AND. PRESENT(timeCompo)) THEN
-  case_id = 2
-ELSE IF (PRESENT(spaceCompo) .AND. .NOT. PRESENT(timeCompo)) THEN
-  case_id = 3
-ELSE IF (PRESENT(timeCompo) .AND. .NOT. PRESENT(spaceCompo)) THEN
-  case_id = 4
+isnode = PRESENT(globalNode)
+isspace = PRESENT(spacecompo)
+istime = PRESENT(timecompo)
+
+mycase = "NNN"
+IF (isnode) THEN
+  localNode = obj%domain%GetLocalNodeNumber(globalnode)
+  mycase(1:1) = "Y"
 END IF
+IF (isspace) mycase(2:2) = "Y"
+IF (istime) mycase(3:3) = "Y"
 
-SELECT CASE (case_id)
-! globalnode
-CASE (1)
+SELECT CASE (mycase)
 
-  CALL Reallocate(VALUE, obj%spaceCompo * obj%timeCompo)
+CASE ("YYY")
+  ! node space time
+  CALL Reallocate(VALUE, 1)
+  indx = GetNodeLoc(&
+    & obj=obj%dof, &
+    & nodenum=localNode, &
+    & ivar=1, &
+    & timecompo=timecompo, &
+    & spacecompo=spacecompo &
+    & )
+  CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(1), ierr)
 
-  SELECT CASE (obj%fieldType)
-  CASE (FIELD_TYPE_CONSTANT)
-    CALL lis_vector_get_values(obj%lis_ptr, 1, SIZE(VALUE, kind=I4B), &
-      & VALUE, ierr)
-    CALL CHKERR(ierr)
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
 
-  CASE (FIELD_TYPE_NORMAL)
-    localNode = obj%domain%getLocalNodeNumber(globalNode=globalNode)
+CASE ("YNN")
+  ! node | no space | no time
+  CALL Reallocate(VALUE, obj%spacecompo * obj%timecompo)
+
+  kk = 0
+  DO jj = 1, obj%timecompo
+    DO ii = 1, obj%spacecompo
+      kk = kk + 1
+      indx = GetNodeLoc(&
+        & obj=obj%dof, &
+        & nodenum=localNode, &
+        & ivar=1, &
+        & timecompo=jj, &
+        & spacecompo=ii &
+        & )
+      CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(kk), ierr)
+
+#ifdef DEBUG_VER
+      CALL CHKERR(ierr)
+#endif
+
+    END DO
+  END DO
+
+CASE ("YYN")
+  ! node | space | no time
+  CALL Reallocate(VALUE, obj%timecompo)
+
+  DO ii = 1, obj%timecompo
     indx = GetNodeLoc(&
       & obj=obj%dof, &
       & nodenum=localNode, &
       & ivar=1, &
-      & timeCompo=1, &
-      & spaceCompo=1 &
+      & timecompo=ii, &
+      & spacecompo=spacecompo &
       & )
-    CALL lis_vector_get_values(obj%lis_ptr, indx, SIZE(VALUE, kind=I4B), &
-      & VALUE, ierr)
+    CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(ii), ierr)
+
+#ifdef DEBUG_VER
     CALL CHKERR(ierr)
+#endif
 
-  END SELECT
+  END DO
 
-! all nodal values of space-timeCompo
-CASE (2)
-  tNodes = obj%domain%getTotalNodes()
+CASE ("YNY")
+  ! node | no space | time
+  CALL Reallocate(VALUE, obj%spacecompo)
+
+  DO ii = 1, obj%spacecompo
+    indx = GetNodeLoc(&
+      & obj=obj%dof, &
+      & nodenum=localNode, &
+      & ivar=1, &
+      & timecompo=obj%timecompo, &
+      & spacecompo=ii &
+      & )
+    CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(ii), ierr)
+
+#ifdef DEBUG_VER
+    CALL CHKERR(ierr)
+#endif
+
+  END DO
+
+CASE ("NYY")
+  tNodes = obj%domain%GetTotalNodes()
   CALL Reallocate(VALUE, tNodes)
   DO ii = 1, tNodes
     indx = GetNodeLoc(&
       & obj=obj%dof, &
       & nodenum=ii, &
       & ivar=1, &
-      & timeCompo=timeCompo, &
-      & spaceCompo=spaceCompo &
+      & timecompo=timecompo, &
+      & spacecompo=spacecompo &
       & )
-    CALL lis_vector_get_value( &
-      & obj%lis_ptr, indx, &
-      & VALUE(ii), ierr)
+    CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(ii), ierr)
+
+#ifdef DEBUG_VER
     CALL CHKERR(ierr)
+#endif
+
   END DO
 
-! all nodal values of spaceCompo
-CASE (3)
+CASE ("NYN")
 
-  tNodes = obj%domain%getTotalNodes()
-  CALL Reallocate(VALUE, tNodes * obj%timeCompo)
+  tNodes = obj%domain%GetTotalNodes()
+  CALL Reallocate(VALUE, tNodes * obj%timecompo)
   kk = 0
   DO ii = 1, tNodes
-    DO jj = 1, obj%timeCompo
+    DO jj = 1, obj%timecompo
       indx = GetNodeLoc(&
         & obj=obj%dof, &
         & nodenum=ii, &
         & ivar=1, &
-        & timeCompo=jj, &
-        & spaceCompo=spaceCompo &
+        & timecompo=jj, &
+        & spacecompo=spacecompo &
         & )
       kk = kk + 1
-      CALL lis_vector_get_value( &
-        & obj%lis_ptr, indx, &
-        & VALUE(kk), ierr)
+      CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(kk), ierr)
+
+#ifdef DEBUG_VER
       CALL CHKERR(ierr)
+#endif
+
     END DO
   END DO
 
-! all nodal values of timeCompoCompo
-CASE (4)
-  tNodes = obj%domain%getTotalNodes()
-  CALL Reallocate(VALUE, tNodes * obj%spaceCompo)
+CASE ("NNY")
+  tNodes = obj%domain%GetTotalNodes()
+  CALL Reallocate(VALUE, tNodes * obj%spacecompo)
   kk = 0
   DO ii = 1, tNodes
-    DO jj = 1, obj%spaceCompo
+    DO jj = 1, obj%spacecompo
       indx = GetNodeLoc(&
         & obj=obj%dof, &
         & nodenum=ii, &
         & ivar=1, &
-        & timeCompo=timeCompo, &
-        & spaceCompo=jj &
+        & timecompo=timecompo, &
+        & spacecompo=jj &
         & )
       kk = kk + 1
-      CALL lis_vector_get_value( &
-        & obj%lis_ptr, indx, &
-        & VALUE(kk), ierr)
+      CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(kk), ierr)
+
+#ifdef DEBUG_VER
       CALL CHKERR(ierr)
+#endif
+
     END DO
   END DO
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'No case found for given arguments'// &
-  & ' Either globalnode should be present'// &
-  & ' spaceCompo and timeCompo both should be present'// &
-  & ' spaceCompo or timeCompo should be present')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found.')
 END SELECT
 
-END PROCEDURE obj_get1
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get2
-CHARACTER(*), PARAMETER :: myName = "obj_get2"
+MODULE PROCEDURE obj_Get2
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 INTEGER(I4B) :: tNodes
 INTEGER(I4B) :: ierr
 
@@ -187,8 +251,8 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   & " or, obj%lis_ptr is not available")
 END IF
 
-tNodes = obj%domain%getTotalNodes()
-CALL reallocate(VALUE, obj%spaceCompo, obj%timeCompo, tNodes)
+tNodes = obj%domain%GetTotalNodes()
+CALL reallocate(VALUE, obj%spacecompo, obj%timecompo, tNodes)
 
 CALL lis_vector_get_values( &
 & obj%lis_ptr, &
@@ -197,14 +261,14 @@ CALL lis_vector_get_values( &
 & VALUE, ierr)
 CALL CHKERR(ierr)
 
-END PROCEDURE obj_get2
+END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get3
-CHARACTER(*), PARAMETER :: myName = "obj_get3"
+MODULE PROCEDURE obj_Get3
+CHARACTER(*), PARAMETER :: myName = "obj_Get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode(SIZE(globalnode))
 INTEGER(I4B) :: ii
@@ -221,7 +285,7 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   & " or, obj%lis_ptr is not available")
 END IF
 
-localNode = obj%domain%getLocalNodeNumber(globalnode=globalnode)
+localNode = obj%domain%GetLocalNodeNumber(globalnode=globalnode)
 
 IF (ANY(localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -230,17 +294,17 @@ END IF
 
 tsize = SIZE(globalnode)
 
-CALL Reallocate(VALUE, obj%spaceCompo, obj%timeCompo, tsize)
+CALL Reallocate(VALUE, obj%spacecompo, obj%timecompo, tsize)
 
 DO ii = 1, tsize
-  DO jj = 1, obj%timeCompo
-    DO kk = 1, obj%spaceCompo
+  DO jj = 1, obj%timecompo
+    DO kk = 1, obj%spacecompo
       indx = GetNodeLoc(&
         & obj=obj%dof, &
         & nodenum=localNode(ii), &
         & ivar=1, &
-        & timeCompo=jj, &
-        & spaceCompo=kk &
+        & timecompo=jj, &
+        & spacecompo=kk &
         & )
       CALL lis_vector_get_value( &
         & obj%lis_ptr, indx, &
@@ -250,14 +314,14 @@ DO ii = 1, tsize
   END DO
 END DO
 
-END PROCEDURE obj_get3
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get4
-CHARACTER(*), PARAMETER :: myName = "obj_get4"
+MODULE PROCEDURE obj_Get4
+CHARACTER(*), PARAMETER :: myName = "obj_Get4"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode(SIZE(globalnode))
 INTEGER(I4B) :: ii
@@ -272,17 +336,17 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (spaceCompo .GT. obj%spaceCompo) THEN
+IF (spacecompo .GT. obj%spacecompo) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'spaceCompo is greater than obj%spaceCompo')
+    & 'spacecompo is greater than obj%spacecompo')
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) THEN
+IF (timecompo .GT. obj%timecompo) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'timeCompo is greater than obj%timeCompo')
+    & 'timecompo is greater than obj%timecompo')
 END IF
 
-localNode = obj%domain%getLocalNodeNumber(globalnode=globalnode)
+localNode = obj%domain%GetLocalNodeNumber(globalnode=globalnode)
 
 IF (ANY(localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -298,8 +362,8 @@ DO ii = 1, tsize
     & obj=obj%dof, &
     & nodenum=localNode(ii), &
     & ivar=1, &
-    & timeCompo=timeCompo, &
-    & spaceCompo=spaceCompo &
+    & timecompo=timecompo, &
+    & spacecompo=spacecompo &
     & )
   CALL lis_vector_get_value( &
     & obj%lis_ptr, indx, &
@@ -307,145 +371,163 @@ DO ii = 1, tsize
   CALL CHKERR(ierr)
 END DO
 
-END PROCEDURE obj_get4
+END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get5
-CHARACTER(*), PARAMETER :: myName = "obj_get5"
+MODULE PROCEDURE obj_Get5
+CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode
-INTEGER(I4B) :: ii
 INTEGER(I4B) :: indx
 
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Either VectorFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
 
-IF (spaceCompo .GT. obj%spaceCompo) THEN
+IF (spacecompo .GT. obj%spacecompo) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'spaceCompo is greater than obj%spaceCompo')
+    & 'spacecompo is greater than obj%spacecompo')
 END IF
 
-IF (timeCompo .GT. obj%timeCompo) THEN
+IF (timecompo .GT. obj%timecompo) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'timeCompo is greater than obj%timeCompo')
+    & 'timecompo is greater than obj%timecompo')
 END IF
+#endif
 
-localNode = obj%domain%getLocalNodeNumber(globalnode=globalnode)
+localNode = obj%domain%GetLocalNodeNumber(globalnode=globalnode)
 
+#ifdef DEBUG_VER
 IF ((localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Globalnode is out of bound')
 END IF
+#endif
 
 indx = GetNodeLoc(&
   & obj=obj%dof, &
   & nodenum=localNode, &
   & ivar=1, &
-  & timeCompo=timeCompo, &
-  & spaceCompo=spaceCompo &
+  & timecompo=timecompo, &
+  & spacecompo=spacecompo &
   & )
-CALL lis_vector_get_value( &
-  & obj%lis_ptr, indx, &
-  & VALUE, ierr)
+CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
-END PROCEDURE obj_get5
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get6
+MODULE PROCEDURE obj_Get6
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get(globalNode=globalNode, VALUE=VALUE)
-END PROCEDURE obj_get6
+CALL obj%Get(globalNode=globalNode, VALUE=VALUE)
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get7
+MODULE PROCEDURE obj_Get7
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalNode(jj) = ii
 END DO
-CALL obj%get( &
+CALL obj%Get( &
   & globalNode=globalNode, &
   & VALUE=VALUE, &
-  & spaceCompo=spaceCompo, &
-  & timeCompo=timeCompo)
-END PROCEDURE obj_get7
+  & spacecompo=spacecompo, &
+  & timecompo=timecompo)
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !                                                                        get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get8
-CHARACTER(*), PARAMETER :: myName = "obj_get8"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: localNode
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: kk
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: indx
+MODULE PROCEDURE obj_Get8
+CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
+INTEGER(I4B) :: ierr, localNode, jj, kk, indx
 
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'Either VectorFieldLis_::obj is not initiated'// &
   & " or, obj%lis_ptr is not available")
 END IF
+#endif
 
-localNode = obj%domain%getLocalNodeNumber(globalnode=globalnode)
+localNode = obj%domain%GetLocalNodeNumber(globalnode=globalnode)
 
+#ifdef DEBUG_VER
 IF ((localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Globalnode is out of bound')
 END IF
+#endif
 
-CALL Reallocate(VALUE, obj%spaceCompo, obj%timeCompo)
+CALL Reallocate(VALUE, obj%spacecompo, obj%timecompo)
 
-DO jj = 1, obj%timeCompo
-  DO kk = 1, obj%spaceCompo
+DO jj = 1, obj%timecompo
+  DO kk = 1, obj%spacecompo
     indx = GetNodeLoc(&
       & obj=obj%dof, &
       & nodenum=localNode, &
       & ivar=1, &
-      & timeCompo=jj, &
-      & spaceCompo=kk &
+      & timecompo=jj, &
+      & spacecompo=kk &
       & )
-    CALL lis_vector_get_value( &
-      & obj%lis_ptr, indx, &
-      & VALUE(kk, jj), ierr)
+    CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE(kk, jj), ierr)
+
+#ifdef DEBUG_VER
     CALL CHKERR(ierr)
+#endif
+
   END DO
 END DO
 
-END PROCEDURE obj_get8
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
 !                                                                      get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get9
+MODULE PROCEDURE obj_Get9
 REAL(DFP), ALLOCATABLE :: m3a(:, :, :), m3b(:, :, :)
-CALL obj%get(VALUE=m3b, globalNode=globalNode)
+CALL obj%Get(VALUE=m3b, globalNode=globalNode)
 
 ! Here m3b is in (i, a, J) format,
 ! so we have to swap the dimensions to (i,J,a)
@@ -455,23 +537,23 @@ VALUE = NodalVariable(m3a, TypeFEVariableVector, &
   & TypeFEVariableSpacetime)
 
 DEALLOCATE (m3a, m3b)
-END PROCEDURE obj_get9
+END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
 !                                                                 Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_get10
-CHARACTER(*), PARAMETER :: myName = "obj_get10"
-INTEGER(I4B) :: case_id
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: tNodes
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: kk
-INTEGER(I4B) :: globalnode
+MODULE PROCEDURE obj_Get10
+CHARACTER(*), PARAMETER :: myName = "obj_Get10()"
+INTEGER(I4B) :: case_id, ierr, tNodes, ii, jj, kk, globalnode
 REAL(DFP) :: avar
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
@@ -484,109 +566,120 @@ IF (.NOT. VALUE%isInitiated) THEN
   & 'Either AbstractNodeField_::value is not initiated'// &
   & "")
 END IF
+#endif
 
-tNodes = obj%domain%getTotalNodes()
+tNodes = obj%domain%GetTotalNodes()
 
-IF (tNodes .NE. VALUE%domain%getTotalNodes()) THEN
+#ifdef DEBUG_VER
+IF (tNodes .NE. VALUE%domain%GetTotalNodes()) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'tNodes of STVectorFieldLis_::obj and'// &
     & ' tNodes of AbstractNodeField_::value are not same')
 END IF
+#endif
 
-IF (PRESENT(spaceCompo) .AND. PRESENT(timeCompo)) THEN
+IF (PRESENT(spacecompo) .AND. PRESENT(timecompo)) THEN
   case_id = 1
-  IF (spaceCompo .GT. obj%spaceCompo) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'spaceCompo is greater than obj%spaceCompo')
-  END IF
-  IF (timeCompo .GT. obj%timeCompo) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'timeCompo is greater than obj%timeCompo')
-  END IF
 
-ELSEIF (PRESENT(spaceCompo) .AND. .NOT. PRESENT(timeCompo)) THEN
+#ifdef DEBUG_VER
+  IF (spacecompo .GT. obj%spacecompo) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'spacecompo is greater than obj%spacecompo')
+  END IF
+  IF (timecompo .GT. obj%timecompo) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'timecompo is greater than obj%timecompo')
+  END IF
+#endif
+
+ELSEIF (PRESENT(spacecompo) .AND. .NOT. PRESENT(timecompo)) THEN
   case_id = 2
-  IF (spaceCompo .GT. obj%spaceCompo) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'spaceCompo is greater than obj%spaceCompo')
-  END IF
 
-ELSEIF (.NOT. PRESENT(spaceCompo) .AND. PRESENT(timeCompo)) THEN
+#ifdef DEBUG_VER
+  IF (spacecompo .GT. obj%spacecompo) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'spacecompo is greater than obj%spacecompo')
+  END IF
+#endif
+
+ELSEIF (.NOT. PRESENT(spacecompo) .AND. PRESENT(timecompo)) THEN
   case_id = 3
-  IF (timeCompo .GT. obj%timeCompo) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'timeCompo is greater than obj%timeCompo')
-  END IF
 
-ELSEIF (.NOT. PRESENT(spaceCompo) .AND. .NOT. PRESENT(timeCompo)) THEN
+#ifdef DEBUG_VER
+  IF (timecompo .GT. obj%timecompo) THEN
+    CALL e%raiseError(modName//'::'//myName//' - '// &
+      & 'timecompo is greater than obj%timecompo')
+  END IF
+#endif
+
+ELSEIF (.NOT. PRESENT(spacecompo) .AND. .NOT. PRESENT(timecompo)) THEN
   case_id = 4
 END IF
 
 SELECT CASE (case_id)
-! spaceCompo and timeCompo are present
+! spacecompo and timecompo are present
 CASE (1)
   SELECT TYPE (VALUE)
   CLASS IS (ScalarField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
-        & spaceCompo=spaceCompo, timeCompo=timeCompo)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+        & spacecompo=spacecompo, timecompo=timecompo)
       CALL VALUE%set(VALUE=avar, globalnode=globalnode)
     END DO
 
   CLASS IS (STScalarField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
-        & spaceCompo=spaceCompo, timeCompo=timeCompo)
-      CALL VALUE%set(VALUE=avar, globalnode=globalnode, timeCompo=timeCompo)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+        & spacecompo=spacecompo, timecompo=timecompo)
+      CALL VALUE%set(VALUE=avar, globalnode=globalnode, timecompo=timecompo)
     END DO
 
   CLASS IS (VectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
-        & spaceCompo=spaceCompo, timeCompo=timeCompo)
-      CALL VALUE%set(VALUE=avar, globalnode=globalnode, spaceCompo=spaceCompo)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+        & spacecompo=spacecompo, timecompo=timecompo)
+      CALL VALUE%set(VALUE=avar, globalnode=globalnode, spacecompo=spacecompo)
     END DO
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      CALL obj%get(VALUE=avar, globalnode=globalnode, &
-        & spaceCompo=spaceCompo, timeCompo=timeCompo)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+        & spacecompo=spacecompo, timecompo=timecompo)
       CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
-        & spaceCompo=spaceCompo, timeCompo=timeCompo)
+        & spacecompo=spacecompo, timecompo=timecompo)
     END DO
 
   CLASS DEFAULT
     CALL e%raiseError(modName//'::'//myName//' - '// &
       & 'No case found for type of value; case_id=1')
-
   END SELECT
 
-! spaceCompo is present
+! spacecompo is present
 CASE (2)
   SELECT TYPE (VALUE)
 
   CLASS IS (STScalarField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      DO jj = 1, obj%timeCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
-          & spaceCompo=spaceCompo, timeCompo=jj)
-        CALL VALUE%set(VALUE=avar, globalnode=globalnode, timeCompo=jj)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      DO jj = 1, obj%timecompo
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+          & spacecompo=spacecompo, timecompo=jj)
+        CALL VALUE%set(VALUE=avar, globalnode=globalnode, timecompo=jj)
       END DO
     END DO
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      DO jj = 1, obj%timeCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
-          & spaceCompo=spaceCompo, timeCompo=jj)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      DO jj = 1, obj%timecompo
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+          & spacecompo=spacecompo, timecompo=jj)
         CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
-          & spaceCompo=spaceCompo, timeCompo=jj)
+          & spacecompo=spacecompo, timecompo=jj)
       END DO
     END DO
 
@@ -596,28 +689,28 @@ CASE (2)
 
   END SELECT
 
-! timeCompo is present
+! timecompo is present
 CASE (3)
   SELECT TYPE (VALUE)
 
   CLASS IS (VectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      DO jj = 1, obj%spaceCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
-          & spaceCompo=jj, timeCompo=timeCompo)
-        CALL VALUE%set(VALUE=avar, globalnode=globalnode, spaceCompo=jj)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      DO jj = 1, obj%spacecompo
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+          & spacecompo=jj, timecompo=timecompo)
+        CALL VALUE%set(VALUE=avar, globalnode=globalnode, spacecompo=jj)
       END DO
     END DO
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      DO jj = 1, obj%spaceCompo
-        CALL obj%get(VALUE=avar, globalnode=globalnode, &
-          & spaceCompo=jj, timeCompo=timeCompo)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      DO jj = 1, obj%spacecompo
+        CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+          & spacecompo=jj, timecompo=timecompo)
         CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
-          & spaceCompo=jj, timeCompo=timeCompo)
+          & spacecompo=jj, timecompo=timecompo)
       END DO
     END DO
 
@@ -627,19 +720,19 @@ CASE (3)
 
   END SELECT
 
-! spaceCompo and timeCompo are not present
+! spacecompo and timecompo are not present
 CASE (4)
   SELECT TYPE (VALUE)
 
   CLASS IS (STVectorField_)
     DO ii = 1, tNodes
-      globalnode = obj%domain%getGlobalNodeNumber(localNode=ii)
-      DO jj = 1, obj%timeCompo
-        DO kk = 1, obj%spaceCompo
-          CALL obj%get(VALUE=avar, globalnode=globalnode, &
-            & spaceCompo=kk, timeCompo=jj)
+      globalnode = obj%domain%GetGlobalNodeNumber(localNode=ii)
+      DO jj = 1, obj%timecompo
+        DO kk = 1, obj%spacecompo
+          CALL obj%Get(VALUE=avar, globalnode=globalnode, &
+            & spacecompo=kk, timecompo=jj)
           CALL VALUE%set(VALUE=avar, globalnode=globalnode, &
-            & spaceCompo=kk, timeCompo=jj)
+            & spacecompo=kk, timecompo=jj)
         END DO
       END DO
     END DO
@@ -655,27 +748,27 @@ CASE default
   & 'No case found for given arguments')
 END SELECT
 
-END PROCEDURE obj_get10
+END PROCEDURE obj_Get10
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_getPointer
-CHARACTER(*), PARAMETER :: myName = "obj_getPointer"
+MODULE PROCEDURE obj_GetPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointer"
 CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method is not available for STVectorFieldLis_')
-END PROCEDURE obj_getPointer
+  & '[Internal ERROR] :: This method is not available for STVectorFieldLis_')
+END PROCEDURE obj_GetPointer
 
 !----------------------------------------------------------------------------
 !                                                     getPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "obj_getPointerOfComponent"
+MODULE PROCEDURE obj_GetPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointerOfComponent"
 CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'This method is not available for STVectorFieldLis_')
-END PROCEDURE obj_getPointerOfComponent
+  & '[INTERNAL ERROR] :: This method is not available for STVectorFieldLis_')
+END PROCEDURE obj_GetPointerOfComponent
 
 !----------------------------------------------------------------------------
 !
