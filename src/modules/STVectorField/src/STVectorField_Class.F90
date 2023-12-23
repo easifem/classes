@@ -114,6 +114,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set17 => obj_Set17
   PROCEDURE, PASS(obj) :: Set18 => obj_Set18
   PROCEDURE, PUBLIC, PASS(obj) :: SetByFunction => obj_SetByFunction
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromVectorField =>  &
+    & obj_SetFromVectorField
   !! Set by function
   GENERIC, PUBLIC :: Set => &
     & Set1, Set2, Set3, Set4, Set5, Set6, &
@@ -533,6 +535,25 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-24
+! summary: This routine Set all nodal values of a given space-time component
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFromVectorField(obj, VALUE, timeCompo,  &
+    & scale, addContribution)
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    INTEGER(I4B), INTENT(IN) :: timeCompo
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_SetFromVectorField
 END INTERFACE
 
 !----------------------------------------------------------------------------
