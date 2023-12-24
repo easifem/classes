@@ -389,6 +389,56 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_set6
 
 !----------------------------------------------------------------------------
+!                                                         SetFromVectorField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFromVectorField
+CHARACTER(*), PARAMETER :: myName = "obj_SetFromVectorField()"
+INTEGER(I4B) :: tnodes, ii, jj
+REAL(DFP), ALLOCATABLE :: small_value(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (.NOT. obj%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'STVectorField_::obj is not initiated')
+END IF
+
+IF (.NOT. VALUE%isInitiated) THEN
+  CALL e%raiseError(modName//'::'//myName//" - "// &
+  & 'AbstractNodeField_ ::value is not initiated')
+END IF
+#endif
+
+SELECT TYPE (VALUE)
+CLASS is (VectorField_)
+  tnodes = obj%domain%GetTotalNodes()
+  DO ii = 1, tnodes
+    CALL VALUE%Get(VALUE=small_value, globalNode=ii)
+    DO jj = 1, obj%spaceCompo
+      CALL obj%Set(VALUE=small_value(jj), globalNode=ii, scale=scale,  &
+        & addContribution=addContribution, timeCompo=timeCompo,  &
+        & spaceCompo=jj)
+    END DO
+  END DO
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Value should be an instance of VectorField_')
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_SetFromVectorField
+
+!----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 

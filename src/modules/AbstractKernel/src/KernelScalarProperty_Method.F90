@@ -128,7 +128,7 @@ SUBROUTINE KernelInitiateScalarProperty1(vars, materials, dom, nnt,  &
       vars(ii)%ptr => ScalarMeshFieldFactory(engine=engine, name=name)
       var => vars(ii)%ptr
       CALL var%Initiate(material=material, mesh=amesh, name=varname,  &
-        & engine=engine)
+        & engine=engine, nnt=nnt)
       var => NULL()
     END IF
 
