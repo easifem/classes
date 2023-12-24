@@ -147,6 +147,7 @@ TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
 CONTAINS
   PRIVATE
 
+  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     & MatrixFieldCheckEssentialParam
@@ -161,6 +162,7 @@ CONTAINS
   FINAL :: obj_Final
   !! Deallocate the field
 
+  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
@@ -216,6 +218,8 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set9 => obj_Set9
   PROCEDURE, PASS(obj) :: Set10 => obj_Set10
   PROCEDURE, PASS(obj) :: Set11 => obj_Set11
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromSTMatrix => obj_SetFromSTMatrix
+  PROCEDURE, PUBLIC, PASS(obj) :: SetToSTMatrix => obj_SetToSTMatrix
 
   ! SET:
   ! @SetColMethods
@@ -1530,6 +1534,67 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                             Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-16
+! summary:  Set matrix field from space-time matrix field
+!
+!# Introduction
+!
+! obj denotes a space matrix
+! value denotes a space time matrix
+!
+! The space components in obj and value should be same
+!
+! This routine takes (a,b) block (a=itimecompo, b=jtimecompo)
+! from value and put it in the obj
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFromSTMatrix(obj, VALUE, a, b)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    !! Space-time matrix field
+    INTEGER(I4B), INTENT(IN) :: a
+    !! itimecompo
+    INTEGER(I4B), INTENT(IN) :: b
+    !! jtimecompo
+  END SUBROUTINE obj_SetFromSTMatrix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-16
+! summary:  Set matrix field from space-time matrix field
+!
+!# Introduction
+!
+! obj denotes a space-time matrix
+! value denotes a space matrix
+!
+! The space components in obj and value should be same
+!
+! This routine sets (a,b) block (a=itimecompo, b=jtimecompo)
+! in the obj from the obj
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetToSTMatrix(obj, VALUE, a, b)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    !! Space-Time matrix
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    !! Space matrix field
+    INTEGER(I4B), INTENT(IN) :: a
+    !! itimecompo
+    INTEGER(I4B), INTENT(IN) :: b
+    !! jtimecompo
+  END SUBROUTINE obj_SetToSTMatrix
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
@@ -2091,44 +2156,20 @@ END INTERFACE
 !                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-23
-! summary:  Get matrix into matrix
-
 INTERFACE
-  MODULE SUBROUTINE obj_Get7(obj, VALUE, &
-    & ivar1, jvar1,  &
-    & ispacecompo1, jspacecompo1, &
-    & itimecompo1, jtimecompo1, &
-    & ivar2, jvar2,  &
-    & ispacecompo2, jspacecompo2, &
-    & itimecompo2, jtimecompo2)
+  MODULE SUBROUTINE obj_Get7(obj, iNodeNum, jNodeNum, ivar, jvar, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+    & VALUE)
     CLASS(MatrixField_), INTENT(IN) :: obj
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar1
-    !! row physical variable obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar1
-    !! col physical variable obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo1
-    !! row space component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo1
-    !! row time component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo1
-    !! col space component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo1
-    !! col time component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar2
-    !! row physical variable obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar2
-    !! col physical variable obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo2
-    !! row space component obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo2
-    !! row time component obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo2
-    !! col space component obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo2
-    !! col time component obj2
+    INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: ispacecompo
+    INTEGER(I4B), INTENT(IN) :: itimecompo
+    INTEGER(I4B), INTENT(IN) :: jspacecompo
+    INTEGER(I4B), INTENT(IN) :: jtimecompo
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
   END SUBROUTINE obj_Get7
 END INTERFACE
 
