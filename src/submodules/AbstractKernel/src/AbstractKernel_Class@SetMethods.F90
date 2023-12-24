@@ -722,4 +722,15 @@ CALL e%RaiseWarning(modName//'::'//myName//' - '// &
   & '[WIP WARNING] :: This routine has been implemented yet.')
 END PROCEDURE obj_SetFacetFiniteElements
 
+!----------------------------------------------------------------------------
+!                                                         SetAlgoParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetAlgoParam
+CHARACTER(*), PARAMETER :: myName = "obj_SetAlgoParam"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
+END PROCEDURE obj_SetAlgoParam
+
 END SUBMODULE SetMethods

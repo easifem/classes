@@ -237,9 +237,9 @@ END SUBROUTINE KernelAssembleElastoDynaMatrix1
 !                                           KernelAssembleElastoDynaMatrix2
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleElastoDynaMatrix2(massMat, dampMat, stiffMat, massDensity, Cijkl, &
-    & dampCoeff_alpha, dampCoeff_beta, dom, cellFE, linCellFE,  &
-    & spaceElemSD, linSpaceElemSD, reset)
+SUBROUTINE KernelAssembleElastoDynaMatrix2(massMat, dampMat, stiffMat,  &
+    & massDensity, Cijkl, dampCoeff_alpha, dampCoeff_beta, dom,  &
+    & cellFE, linCellFE, spaceElemSD, linSpaceElemSD, reset)
 
   CLASS(MatrixField_), INTENT(INOUT) :: massMat
   CLASS(MatrixField_), INTENT(INOUT) :: dampMat

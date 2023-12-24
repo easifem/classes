@@ -89,7 +89,7 @@ CONTAINS
   ! ConstructorMethods
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => AbstractFileDeallocate
 
-  ! Set:
+  ! SET:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFilePath => aFile_SetFilePath
   PROCEDURE, PUBLIC, PASS(obj) :: SetFileName => aFile_SetFileName
@@ -99,21 +99,21 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetReadStat => aFile_SetReadStat
   PROCEDURE, PUBLIC, PASS(obj) :: SetWriteStat => aFile_SetWriteStat
 
-  ! Get:
+  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetFilePath => aFile_GetFilePath
   PROCEDURE, PUBLIC, PASS(obj) :: GetFileName => aFile_GetFileName
   PROCEDURE, PUBLIC, PASS(obj) :: GetFileExt => aFile_GetFileExt
   PROCEDURE, PUBLIC, PASS(obj) :: GetFileParts => aFile_GetFileParts
 
-  ! Get:
+  ! GET:
   ! @EnquireMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IsOpen => aFile_IsOpen
   PROCEDURE, PUBLIC, PASS(obj) :: IsEOF => aFile_IsEOF
   PROCEDURE, PUBLIC, PASS(obj) :: IsRead => aFile_IsRead
   PROCEDURE, PUBLIC, PASS(obj) :: IsWrite => aFile_IsWrite
 
-  ! Set:
+  ! SET:
   ! Deferred Methods
   PROCEDURE(aFile_open), PUBLIC, DEFERRED, PASS(obj) :: OPEN
   PROCEDURE(aFile_close), PUBLIC, DEFERRED, PASS(obj) :: CLOSE
