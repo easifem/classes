@@ -232,7 +232,7 @@ END PROCEDURE obj_Get6
 
 MODULE PROCEDURE obj_Get7
 CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: iNodeNum0(SIZE(iNodeNum)), jNodeNum0(SIZE(jNodeNum))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -240,35 +240,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 IF (obj%isRectangle) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: This method is not tested for rectangle '// &
-    & 'matrix yet.')
-  RETURN
+  iNodeNum0 = obj%domains(1)%ptr%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domains(2)%ptr%GetLocalNodeNumber(jNodeNum)
+ELSE
+  iNodeNum0 = obj%domain%GetLocalNodeNumber(iNodeNum)
+  jNodeNum0 = obj%domain%GetLocalNodeNumber(jNodeNum)
 END IF
 
-SELECT TYPE (VALUE)
-CLASS IS (MatrixField_)
-
-  CALL GetValue(obj1=obj%mat, obj2=VALUE%mat, &
-    & ivar1=ivar1, jvar1=jvar1,  &
-    & ispacecompo1=ispacecompo1, jspacecompo1=jspacecompo1, &
-    & itimecompo1=itimecompo1, jtimecompo1=jtimecompo1, &
-    & ivar2=ivar2, jvar2=jvar2,  &
-    & ispacecompo2=ispacecompo2, jspacecompo2=jspacecompo2, &
-    & itimecompo2=itimecompo2, jtimecompo2=jtimecompo2, ierr=ierr)
-
-  IF (ierr .NE. 0) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: Some error occured in calling GetValue.')
-    RETURN
-  END IF
-
-CLASS DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found ')
-  RETURN
-END SELECT
+CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
+  & iNodeNum=iNodeNum0, jNodeNum=jNodeNum0, ispacecompo=ispacecompo,  &
+  & jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
