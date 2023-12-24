@@ -25,10 +25,10 @@ CONTAINS
 !                                                                   set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set1
-CHARACTER(*), PARAMETER :: myName = "obj_set1()"
-INTEGER(I4B) :: localNode
-REAL(DFP) :: areal
+MODULE PROCEDURE obj_Set1
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+INTEGER(I4B) :: localNode(1), conversion(1)
+REAL(DFP) :: areal, value0(SIZE(VALUE))
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
@@ -39,6 +39,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -51,34 +52,40 @@ IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo])) THEN
    & ' to [obj%spaceCompo, obj%timeCompo]')
   RETURN
 END IF
+#endif
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
+localNode(1) = obj%domain%getLocalNodeNumber(globalNode)
 
-IF (localNode .EQ. 0) THEN
+#ifdef DEBUG_VER
+IF (localNode(1) .EQ. 0) THEN
   CALL e%RaiseError(modName//'::'//myName//" - " &
     & //'globalNode :: '//tostring(globalNode) &
     & //" is out of bound for the domain.")
   RETURN
 END IF
+#endif
+
+value0 = RESHAPE(VALUE, [SIZE(VALUE)])
+conversion(1) = NONE
 
 IF (abool) THEN
 
-  CALL add( &
+  CALL Add( &
     & obj=obj%realVec, &
     & dofobj=obj%dof, &
-    & nodenum=[localNode], &
-    & VALUE=RESHAPE(VALUE, [SIZE(VALUE)]), &
-    & conversion=[NONE], &
+    & nodenum=localNode, &
+    & VALUE=value0, &
+    & conversion=conversion, &
     & scale=areal)
 
 ELSE
 
-  CALL set( &
+  CALL Set( &
     & obj=obj%realVec, &
     & dofobj=obj%dof, &
-    & nodenum=[localNode], &
-    & VALUE=RESHAPE(VALUE, [SIZE(VALUE)]), &
-    & conversion=[NONE])
+    & nodenum=localNode, &
+    & VALUE=value0, &
+    & conversion=conversion)
 
 END IF
 
@@ -87,15 +94,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set1
+END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set2
+MODULE PROCEDURE obj_Set2
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_set2"
+CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 INTEGER(I4B) :: ii, aa, idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -108,6 +115,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -120,6 +128,7 @@ IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo])) THEN
     & ' to [obj%spaceCompo, obj%timeCompo]')
   RETURN
 END IF
+#endif
 
 idof = 0
 
@@ -152,15 +161,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set2
+END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set3
+MODULE PROCEDURE obj_Set3
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_set3"
+CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
 INTEGER(I4B) :: idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -173,6 +182,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -186,6 +196,7 @@ IF (ANY([spaceCompo, timeCompo]  &
     & ' to obj%spaceCompo and obj%timeCompo')
   RETURN
 END IF
+#endif
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
@@ -203,14 +214,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set3
+END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set4
-CHARACTER(*), PARAMETER :: myName = "obj_set4"
+MODULE PROCEDURE obj_Set4
+CHARACTER(*), PARAMETER :: myName = "obj_Set4"
 INTEGER(I4B) :: tnodes
 REAL(DFP), ALLOCATABLE :: vec(:)
 REAL(DFP) :: areal
@@ -224,20 +235,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
   RETURN
 END IF
+#endif
 
 tnodes = obj%domain%getTotalNodes()
 
+#ifdef DEBUG_VER
 IF (ANY(SHAPE(VALUE)  &
   & .NE. [obj%spaceCompo, obj%timeCompo, tNodes])) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'The shape of value is not compatible')
   RETURN
 END IF
+#endif
 
 vec = RESHAPE(VALUE, [SIZE(VALUE)])
 
@@ -254,15 +269,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set4
+END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set5
+MODULE PROCEDURE obj_Set5
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_set5"
+CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 INTEGER(I4B) :: idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -275,6 +290,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -288,12 +304,13 @@ IF (ANY([spaceCompo, timeCompo]  &
     & ' to obj%spaceCompo and obj%timeCompo')
   RETURN
 END IF
-!
+
 IF (SIZE(VALUE) .NE. obj%domain%getTotalNodes()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Size of value should be equal to the total number of nodes')
   RETURN
 END IF
+#endif
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
@@ -310,16 +327,16 @@ vecPointer => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE obj_set5
+END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set6
+MODULE PROCEDURE obj_Set6
 REAL(DFP), POINTER :: vecPointer(:)
 REAL(DFP) :: vec(1)
-CHARACTER(*), PARAMETER :: myName = "obj_set6"
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
 INTEGER(I4B) :: idof
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
@@ -332,6 +349,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated .OR. .NOT. VALUE%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -351,6 +369,7 @@ IF (VALUE%domain%getTotalNodes() .NE. obj%domain%getTotalNodes()) THEN
     & 'Size of value should be equal to the total number of nodes')
   RETURN
 END IF
+#endif
 
 SELECT TYPE (VALUE)
 TYPE is (ScalarField_)
@@ -386,7 +405,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set6
+END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
 !                                                         SetFromVectorField
@@ -442,7 +461,7 @@ END PROCEDURE obj_SetFromVectorField
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set7
+MODULE PROCEDURE obj_Set7
 REAL(DFP) :: val(SIZE(VALUE, 1), SIZE(VALUE, 2), SIZE(globalNode))
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
@@ -450,14 +469,14 @@ DO ii = 1, SIZE(globalNode)
 END DO
 CALL obj%set(VALUE=val, globalNode=globalNode, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE obj_set7
+END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set8
-CHARACTER(*), PARAMETER :: myName = "obj_set8"
+MODULE PROCEDURE obj_Set8
+CHARACTER(*), PARAMETER :: myName = "obj_Set8"
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: val(SIZE(VALUE))
 REAL(DFP) :: areal
@@ -471,6 +490,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Scalar field object is not initiated')
@@ -483,14 +503,17 @@ IF (ANY(SHAPE(VALUE) .NE. [obj%spaceCompo, obj%timeCompo, &
     & 'Incompatible shape and size of value')
   RETURN
 END IF
+#endif
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
+#ifdef DEBUG_VER
 IF (ANY(localNode .EQ. 0)) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Some of the globalNode are out of bound')
   RETURN
 END IF
+#endif
 
 val = RESHAPE(VALUE, [SIZE(VALUE)])
 
@@ -516,15 +539,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set8
+END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set9
+MODULE PROCEDURE obj_Set9
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_set9"
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
 INTEGER(I4B) :: idof
 INTEGER(I4B) :: localNode(SIZE(globalNode))
 REAL(DFP) :: areal
@@ -538,6 +561,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -556,14 +580,17 @@ IF (SIZE(VALUE) .NE. SIZE(globalNode)) THEN
     & 'Size of value should be equal to size of globalNode')
   RETURN
 END IF
+#endif
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
+#ifdef DEBUG_VER
 IF (ANY(localNode .GT. obj%domain%getTotalNodes())) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'Some of the global node num are out of bound')
   RETURN
 END IF
+#endif
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
@@ -580,15 +607,15 @@ vecPointer => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE obj_set9
+END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set10
+MODULE PROCEDURE obj_Set10
 REAL(DFP), POINTER :: vecPointer(:)
-CHARACTER(*), PARAMETER :: myName = "obj_set9"
+CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
 INTEGER(I4B) :: idof
 INTEGER(I4B) :: localNode
 REAL(DFP) :: areal
@@ -602,6 +629,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
@@ -614,14 +642,17 @@ IF (ANY([spaceCompo, timeCompo] .GT. [obj%spaceCompo, obj%timeCompo])) THEN
     & ' to obj%spaceCompo and obj%timeCompo')
   RETURN
 END IF
+#endif
 
 localNode = obj%domain%getLocalNodeNumber(globalNode)
 
+#ifdef DEBUG_VER
 IF (localNode .GT. obj%domain%getTotalNodes()) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'The given global node num are out of bound')
   RETURN
 END IF
+#endif
 
 idof = (timeCompo - 1) * obj%spaceCompo + spaceCompo
 vecPointer => getPointer(obj%realVec, obj%dof, idof)
@@ -639,14 +670,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set10
+END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set11
-CHARACTER(*), PARAMETER :: myName = "obj_set11"
+MODULE PROCEDURE obj_Set11
+CHARACTER(*), PARAMETER :: myName = "obj_Set11"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 #ifdef DEBUG_VER
@@ -670,14 +701,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set11
+END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set12
-CHARACTER(*), PARAMETER :: myName = "obj_set12()"
+MODULE PROCEDURE obj_Set12
+CHARACTER(*), PARAMETER :: myName = "obj_Set12()"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 
 #ifdef DEBUG_VER
@@ -698,14 +729,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set12
+END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set13
-CHARACTER(*), PARAMETER :: myName = "obj_set13()"
+MODULE PROCEDURE obj_Set13
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -729,61 +760,84 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
-END PROCEDURE obj_set13
+END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set14
-CHARACTER(*), PARAMETER :: myName = "obj_set14"
+MODULE PROCEDURE obj_Set14
+CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
 areal = Input(option=scale, default=1.0_DFP)
 abool = Input(option=addContribution, default=.FALSE.)
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
   RETURN
 END IF
+#endif
 
 IF (abool) THEN
   CALL Add(obj=obj%realvec, VALUE=VALUE, scale=areal)
 ELSE
   CALL Set(obj=obj%realvec, VALUE=VALUE)
 END IF
-END PROCEDURE obj_set14
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
 !                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set15
-CHARACTER(*), PARAMETER :: myName = "obj_set15"
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: tsize_value
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: indx1
-INTEGER(I4B) :: indx2
+MODULE PROCEDURE obj_Set15
+CHARACTER(*), PARAMETER :: myName = "obj_Set15()"
+INTEGER(I4B) :: tsize, tsize_value, ii, indx1, indx2
 REAL(DFP) :: avar
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'STVectorField_::obj is not initiated')
+  RETURN
 END IF
 
 IF (.NOT. VALUE%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'AbstractNodeField_ ::value is not initiated')
+  RETURN
 END IF
+#endif
 
 tsize = obj%dof.tNodes. [ivar, idof]
 tsize_value = VALUE%dof.tNodes. [ivar_value, idof_value]
+
+#ifdef DEBUG_VER
 IF (tsize .NE. tsize_value) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'tSize of obj(ivar, idof) is equal to value(ivar_value, idof_value)')
+  RETURN
 END IF
+#endif
 
 DO ii = 1, tsize
   indx1 = GetNodeLoc(&
@@ -801,14 +855,18 @@ DO ii = 1, tsize
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE obj_set15
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_Set15
 
 !----------------------------------------------------------------------------
 !                                                                      set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set16
-CHARACTER(*), PARAMETER :: myName = "obj_set16()"
+MODULE PROCEDURE obj_Set16
+CHARACTER(*), PARAMETER :: myName = "obj_Set16()"
 INTEGER(I4B) :: ii, aint, bint
 LOGICAL(LGT) :: problem
 
@@ -817,13 +875,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR] :: STVectorField_::obj is not initiated')
   RETURN
 END IF
+#endif
 
 aint = SIZE(spaceCompo)
+
+#ifdef DEBUG_VER
+
 problem = (aint .GT. obj%spaceCompo) .OR. (timeCompo .GT. obj%timeCompo)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -832,14 +895,18 @@ IF (problem) THEN
     & ' to obj%spaceCompo and obj%timeCompo')
   RETURN
 END IF
+#endif
 
 bint = obj%domain%GetTotalNodes()
+
+#ifdef DEBUG_VER
 problem = (SIZE(VALUE, 1) .NE. aint) .OR. (SIZE(VALUE, 2) .NE. bint)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR] :: The shape of value is not compatible')
   RETURN
 END IF
+#endif
 
 DO ii = 1, aint
   CALL obj%Set(VALUE=VALUE(ii, :), spaceCompo=spaceCompo(ii),  &
@@ -851,14 +918,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set16
+END PROCEDURE obj_Set16
 
 !----------------------------------------------------------------------------
 !                                                                    set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_set17
-CHARACTER(*), PARAMETER :: myName = "obj_set17()"
+MODULE PROCEDURE obj_Set17
+CHARACTER(*), PARAMETER :: myName = "obj_Set17()"
 INTEGER(I4B) :: ii, aint, bint
 LOGICAL(LGT) :: problem
 
@@ -867,15 +934,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif DEBUG_VER
 
+#ifdef DEBUG_VER
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR] :: STVectorField_::obj is not initiated')
   RETURN
 END IF
+#endif
 
 bint = SIZE(timeCompo)
-problem = (spaceCompo .GT. obj%spaceCompo) .OR. (bint .GT. obj%timeCompo)
 
+#ifdef DEBUG_VER
+problem = (spaceCompo .GT. obj%spaceCompo) .OR. (bint .GT. obj%timeCompo)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR] :: given spaceCompo and size of timeCompo'// &
@@ -883,15 +953,18 @@ IF (problem) THEN
     & ' to obj%spaceCompo and obj%timeCompo')
   RETURN
 END IF
+#endif
 
 aint = obj%domain%GetTotalNodes()
-problem = (SIZE(VALUE, 1) .NE. obj%timeCompo) .OR. (SIZE(VALUE, 2) .NE. aint)
 
+#ifdef DEBUG_VER
+problem = (SIZE(VALUE, 1) .NE. obj%timeCompo) .OR. (SIZE(VALUE, 2) .NE. aint)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[INTERNAL ERROR] :: The shape of value is not compatible')
   RETURN
 END IF
+#endif
 
 DO ii = 1, bint
   CALL obj%Set(VALUE=VALUE(ii, :), spaceCompo=spaceCompo,  &
@@ -904,7 +977,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE obj_set17
+END PROCEDURE obj_Set17
 
 !----------------------------------------------------------------------------
 !                                                                 Set
