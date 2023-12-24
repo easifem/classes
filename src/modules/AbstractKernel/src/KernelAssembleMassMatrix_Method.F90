@@ -31,6 +31,10 @@ PRIVATE
 
 PUBLIC :: KernelAssembleMassMatrix
 
+INTERFACE KernelAssembleMassMatrix
+  MODULE PROCEDURE KernelAssembleMassMatrix1
+END INTERFACE KernelAssembleMassMatrix
+
 CHARACTER(*), PARAMETER :: modName = "KernelAssembleMassMatrix_Method"
 
 !----------------------------------------------------------------------------
@@ -43,7 +47,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE KernelAssembleMassMatrix(mat, massDensity, dom, cellFE,  &
+SUBROUTINE KernelAssembleMassMatrix1(mat, massDensity, dom, cellFE,  &
   & linCellFE, spaceElemSD, linSpaceElemSD, problemType, reset)
   CLASS(MatrixField_), INTENT(INOUT) :: mat
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: massDensity(:)
@@ -56,7 +60,7 @@ SUBROUTINE KernelAssembleMassMatrix(mat, massDensity, dom, cellFE,  &
   LOGICAL(LGT), INTENT(IN) :: reset
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "KernelAssembleMassMatrix()"
+  CHARACTER(*), PARAMETER :: myName = "KernelAssembleMassMatrix1()"
   INTEGER(I4B) :: id, tmesh, nsd, telems, nns, tdof, iel
   TYPE(ElemShapeData_) :: elemsd, linElemSD
   TYPE(FEVariable_) :: fevar
@@ -137,6 +141,6 @@ SUBROUTINE KernelAssembleMassMatrix(mat, massDensity, dom, cellFE,  &
     & '[END] ')
 #endif DEBUG_VER
 
-END SUBROUTINE KernelAssembleMassMatrix
+END SUBROUTINE KernelAssembleMassMatrix1
 
 END MODULE KernelAssembleMassMatrix_Method
