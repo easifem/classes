@@ -83,6 +83,14 @@ PUBLIC :: AbstractKernelPreCheckError
 PUBLIC :: AbstractKernelPostCheckError
 PUBLIC :: AbstractKernelApplyDirichletBC
 PUBLIC :: AbstractKernelApplyIC
+PUBLIC :: AbstractAlgoParam_
+
+!----------------------------------------------------------------------------
+!                                                        AbstractAlgoParam_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractAlgoParam_
+END TYPE AbstractAlgoParam_
 
 !----------------------------------------------------------------------------
 !                                                           AbstractKernel_
@@ -535,6 +543,10 @@ CONTAINS
   !! TODO: Implement SetFacetFiniteElements method
   PROCEDURE, PUBLIC, PASS(obj) :: SetMatIFaceConnectData =>  &
     & obj_SetMatIFaceConnectData
+  !! Set material to facet connection data
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAlgorithm => obj_SetAlgoParam
+  !! Set algorithm param
+  !! This routine should be implemented by subclasses
 
   ! SET:
   ! @BCMethods
@@ -1324,6 +1336,17 @@ INTERFACE
   MODULE SUBROUTINE obj_SetMatIFaceConnectData(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_SetMatIFaceConnectData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetAlgoParam@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE SUBROUTINE obj_SetAlgoParam( obj, algoParam )
+  CLASS( AbstractKernel_ ), INTENT( INOUT ) :: obj 
+  CLASS( AbstractAlgoParam_ ), INTENT( IN ) :: algoParam
+END SUBROUTINE obj_SetAlgoParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
