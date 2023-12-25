@@ -118,6 +118,8 @@ CONTAINS
   PROCEDURE(obj_Set11), DEFERRED, PASS(obj) :: Set11
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     & Set6, Set7, Set8, Set9, Set10, Set11
+PROCEDURE(obj_SetFromSTMatrix), DEFERRED, PUBLIC, PASS(obj) :: SetFromSTMatrix
+  PROCEDURE(obj_SetToSTMatrix), DEFERRED, PUBLIC, PASS(obj) :: SetToSTMatrix
 
   ! SET:
   ! @SetRow
@@ -821,6 +823,41 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                               SetFromSTMatrix@SetMethods
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_SetFromSTMatrix(obj, VALUE, a, b)
+    IMPORT :: AbstractMatrixField_, I4B
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    !! Space-time matrix field
+    INTEGER(I4B), INTENT(IN) :: a
+    !! itimecompo
+    INTEGER(I4B), INTENT(IN) :: b
+    !! jtimecompo
+  END SUBROUTINE obj_SetFromSTMatrix
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetToSTMatrix@SetMethods
+!----------------------------------------------------------------------------
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_SetToSTMatrix(obj, VALUE, a, b)
+    IMPORT :: AbstractMatrixField_, I4B
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! Space-time matrix
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
+    !! Space matrix field
+    INTEGER(I4B), INTENT(IN) :: a
+    !! itimecompo
+    INTEGER(I4B), INTENT(IN) :: b
+    !! jtimecompo
+  END SUBROUTINE obj_SetToSTMatrix
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                          SetRow@SetMethod
 !----------------------------------------------------------------------------
 
@@ -1424,40 +1461,20 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 ABSTRACT INTERFACE
-  SUBROUTINE obj_Get7(obj, VALUE, &
-    & ivar1, jvar1,  &
-    & ispacecompo1, jspacecompo1, &
-    & itimecompo1, jtimecompo1, &
-    & ivar2, jvar2,  &
-    & ispacecompo2, jspacecompo2, &
-    & itimecompo2, jtimecompo2)
-    IMPORT :: AbstractMatrixField_, I4B
+  SUBROUTINE obj_Get7(obj, iNodeNum, jNodeNum, ivar, jvar, &
+    & ispacecompo, itimecompo, jspacecompo, jtimecompo, &
+    & VALUE)
+    IMPORT :: AbstractMatrixField_, I4B, DFP, LGT
     CLASS(AbstractMatrixField_), INTENT(IN) :: obj
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar1
-    !! row physical variable obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar1
-    !! col physical variable obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo1
-    !! row space component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo1
-    !! row time component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo1
-    !! col space component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo1
-    !! col time component obj1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar2
-    !! row physical variable obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jvar2
-    !! col physical variable obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ispacecompo2
-    !! row space component obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: itimecompo2
-    !! row time component obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jspacecompo2
-    !! col space component obj2
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: jtimecompo2
-    !! col time component obj2
+    INTEGER(I4B), INTENT(IN) :: iNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: jNodeNum(:)
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN) :: jvar
+    INTEGER(I4B), INTENT(IN) :: ispacecompo
+    INTEGER(I4B), INTENT(IN) :: itimecompo
+    INTEGER(I4B), INTENT(IN) :: jspacecompo
+    INTEGER(I4B), INTENT(IN) :: jtimecompo
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
   END SUBROUTINE obj_Get7
 END INTERFACE
 

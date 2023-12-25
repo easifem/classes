@@ -197,7 +197,7 @@ SUBROUTINE SetGmshStructuredMeshParam1( &
   REAL(DFP), OPTIONAL, INTENT(IN) :: coefOnAxis3(:)
 
   ! internal variables
-  INTEGER(I4B) :: tPoints(3), tVolumes, aint, bint, nsd
+  INTEGER(I4B) :: tPoints(3), tVolumes, aint, bint, nsd, ii
   REAL(DFP), ALLOCATABLE :: pointsOnAxis3_(:, :)
   REAL(DFP), ALLOCATABLE :: coefOnAxis1_(:)
   REAL(DFP), ALLOCATABLE :: coefOnAxis2_(:)
@@ -209,7 +209,7 @@ SUBROUTINE SetGmshStructuredMeshParam1( &
   REAL(DFP), PARAMETER :: r2type(1, 1) = 0, r1type(1) = 0.0_DFP
   INTEGER(I4B), PARAMETER :: i1type(1) = 0
   CHARACTER(*), PARAMETER :: myName = "SetGmshStructuredMeshParam1()"
-  LOGICAL(LGT) :: recombineAll_
+  LOGICAL(LGT) :: recombineAll_, is3present
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -252,7 +252,8 @@ SUBROUTINE SetGmshStructuredMeshParam1( &
   tPoints(1) = SIZE(pointsOnAxis1, 2)
   tPoints(2) = SIZE(pointsOnAxis2, 2)
 
-  IF (PRESENT(pointsOnAxis3)) THEN
+  is3present = PRESENT(pointsOnAxis3)
+  IF (is3present) THEN
     nsd = 3
     aint = SIZE(pointsOnAxis3, 1)
     IF (aint .NE. 3_I4B) THEN
@@ -281,10 +282,12 @@ SUBROUTINE SetGmshStructuredMeshParam1( &
     transfinitePointsOnAxis3_ = transfinitePointsOnAxis3
   ELSE
     nsd = 2
-    CALL Reallocate(pointsOnAxis3_, 3_I4B, 1_I4B)
+    aint = SIZE(pointsOnAxis1, 1)
+    CALL Reallocate(pointsOnAxis3_, aint, 1_I4B)
     CALL Reallocate(transfinitePointsOnAxis3_, 1_I4B)
-    pointsOnAxis3_ = pointsOnAxis1(:, 1:1)
-    transfinitePointsOnAxis3_ = [1]
+    pointsOnAxis3_(1:aint, 1) = pointsOnAxis1(1:aint, 1)
+    transfinitePointsOnAxis3_(1) = 1
+    tPoints(3) = 1
   END IF
 
   IF (PRESENT(meshTypeOnAxis1)) THEN
@@ -328,8 +331,10 @@ SUBROUTINE SetGmshStructuredMeshParam1( &
     END IF
     meshTypeOnAxis3_ = meshTypeOnAxis3
   ELSE
-    CALL Reallocate(meshTypeOnAxis3_, tPoints(3) - 1)
-    meshTypeOnAxis3_ = Progression
+    CALL Reallocate(meshTypeOnAxis3_, MAX(tPoints(3) - 1, 1))
+    DO ii = 1, SIZE(meshTypeOnAxis3_)
+      meshTypeOnAxis3_(ii) = Progression
+    END DO
   END IF
 
   IF (PRESENT(coefOnAxis1)) THEN
@@ -373,7 +378,7 @@ SUBROUTINE SetGmshStructuredMeshParam1( &
     END IF
     coefOnAxis3_ = coefOnAxis3
   ELSE
-    CALL Reallocate(coefOnAxis3_, tPoints(3) - 1)
+    CALL Reallocate(coefOnAxis3_, MAX(tPoints(3) - 1, 1))
     coefOnAxis3_ = 1.0_DFP
   END IF
 
@@ -486,9 +491,15 @@ SUBROUTINE SetGmshStructuredMeshParam2( &
   REAL(DFP), OPTIONAL, INTENT(IN) :: coefOnAxis2(:)
   REAL(DFP), OPTIONAL, INTENT(IN) :: coefOnAxis3(:)
 
+  CHARACTER(*), PARAMETER :: myName = "SetGmshStructuredMeshParam2()"
   LOGICAL(LGT) :: is3present
   INTEGER(I4B) :: tsize
   REAL(DFP), ALLOCATABLE :: p1(:, :), p2(:, :), p3(:, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif
 
   is3present = PRESENT(pointsOnAxis3)
 
@@ -535,6 +546,11 @@ SUBROUTINE SetGmshStructuredMeshParam2( &
   IF (ALLOCATED(p1)) DEALLOCATE (p1)
   IF (ALLOCATED(p2)) DEALLOCATE (p2)
   IF (ALLOCATED(p3)) DEALLOCATE (p3)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif
 
 END SUBROUTINE SetGmshStructuredMeshParam2
 
