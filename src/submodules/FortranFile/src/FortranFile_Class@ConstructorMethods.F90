@@ -676,9 +676,13 @@ IF (.NOT. isDarwin) THEN
 END IF
 
 IF (isDarwin) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
+  CALL obj%CLOSE()
+  CALL obj%OPEN()
+  CALL obj%SetEOFstat(.FALSE.)
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[BUG] :: REWIND() function does not work with GNU Fortran. '// &
-    & 'We are working on this issue. ')
+    & 'We are working on this issue. '// &
+    & 'Currently, we are reopening the file for rewind.')
   RETURN
 END IF
 
