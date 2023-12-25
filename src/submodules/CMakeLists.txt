@@ -18,6 +18,9 @@
 # ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 
+# CPUTime
+include(${CMAKE_CURRENT_LIST_DIR}/CPUTime/CMakeLists.txt)
+
 # AbstractFile
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFile/CMakeLists.txt)
 

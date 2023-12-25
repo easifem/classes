@@ -36,6 +36,10 @@ END PROCEDURE obj_AssembleRHS
 
 MODULE PROCEDURE obj_SetBodySourceFunc
 CHARACTER(*), PARAMETER :: myName = "obj_SetBodySourceFunc()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -49,6 +53,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetBodySourceFunc
 
 !----------------------------------------------------------------------------

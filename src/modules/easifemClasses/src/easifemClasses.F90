@@ -16,6 +16,7 @@
 !
 
 MODULE easifemClasses
+USE CPUTime_Class
 USE Gmsh_Class
 USE GmshStructuredMesh_Class
 

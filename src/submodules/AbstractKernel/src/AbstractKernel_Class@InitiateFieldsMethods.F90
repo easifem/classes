@@ -30,6 +30,9 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateTangentMatrix
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateTangentMatrix()"
 LOGICAL(LGT) :: isok
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -54,6 +57,13 @@ CALL KernelInitiateTangentMatrix(mat=obj%tanmat,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateTangentMatrix
 
 !----------------------------------------------------------------------------
@@ -64,6 +74,9 @@ MODULE PROCEDURE obj_InitiateScalarFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarFields()"
 LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -103,6 +116,13 @@ CALL InitiateScalarFields(obj=obj%scalarFields, names=names,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateScalarFields
 
 !----------------------------------------------------------------------------
@@ -113,6 +133,9 @@ MODULE PROCEDURE obj_InitiateSTScalarFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateSTScalarFields()"
 LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -152,6 +175,13 @@ CALL InitiateSTScalarFields(obj=obj%stScalarFields, names=names,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateSTScalarFields
 
 !----------------------------------------------------------------------------
@@ -162,6 +192,9 @@ MODULE PROCEDURE obj_InitiateVectorFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateVectorFields()"
 LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -202,6 +235,13 @@ CALL InitiateVectorFields(obj=obj%vectorFields, names=names,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateVectorFields
 
 !----------------------------------------------------------------------------
@@ -212,6 +252,9 @@ MODULE PROCEDURE obj_InitiateSTVectorFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateSTVectorFields()"
 LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -252,6 +295,13 @@ CALL InitiateSTVectorFields(obj=obj%stVectorFields, names=names,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateSTVectorFields
 
 !----------------------------------------------------------------------------
@@ -265,6 +315,9 @@ INTEGER(I4B) :: tnames, ii
 INTEGER(I4B), ALLOCATABLE :: fieldType(:)
 TYPE(String), ALLOCATABLE :: engine(:)
 TYPE(DomainPointer_), ALLOCATABLE :: dom(:)
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -327,6 +380,13 @@ DEALLOCATE (engine)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateMatrixFields
 
 !----------------------------------------------------------------------------
@@ -334,7 +394,11 @@ END PROCEDURE obj_InitiateMatrixFields
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFields
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateFields"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFields()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -347,6 +411,13 @@ CALL obj%InitiateMaterialProperties()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateFields
 
 !----------------------------------------------------------------------------

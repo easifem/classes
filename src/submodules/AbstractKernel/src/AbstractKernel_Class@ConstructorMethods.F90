@@ -243,6 +243,9 @@ CALL Set(param, .TRUE., prefix, "isIncompressible",  &
   & Input(option=isIncompressible, default=DEFAULT_isIncompressible))
 ! INFO: DEFAULT_isIncompressible is definedin AbstractElasticityParam module
 
+CALL Set(param, .TRUE., prefix, "showTime",  &
+  & Input(option=showTime, default=.FALSE.))
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
@@ -315,8 +318,11 @@ INTEGER(I4B) :: tWeakDirichletBC
 INTEGER(I4B) :: tPointSource
 INTEGER(I4B) :: tNeumannBC
 LOGICAL(LGT) :: isSymNitsche
-CHARACTER(:), ALLOCATABLE :: prefix
+CHARACTER(:), ALLOCATABLE :: prefix, temp_str
 INTEGER(I4B) :: tMaterialInterfaces
+TYPE(CPUTime_) :: TypeCPUTime
+
+CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -489,11 +495,29 @@ CALL GetValue(param, prefix, "rtoleranceForResidual",  &
 
 obj%tDOF = obj%nsd * obj%nnt
 
+CALL GetValue(param, prefix, "showTime", obj%showTime)
+
+IF (obj%showTime) THEN
+  temp_str = obj%outputPath//obj%name//"_time_stat.csv"
+  CALL obj%showTimeFile%Initiate(filename=temp_str,  &
+    & status="REPLACE", action="WRITE", separator=",")
+  CALL obj%showTimeFile%OPEN()
+  temp_str = ""
+  temp_str = "currentTimeStep, currentTime, method, cpu-time"
+  CALL obj%showTimeFile%WRITE(val=temp_str)
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -502,6 +526,7 @@ END PROCEDURE obj_Initiate
 
 MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ii, jj
+
 obj%tOverlappedMaterials = 0
 obj%outputPath = ""
 obj%tanmatProp = ""
@@ -727,6 +752,9 @@ CALL AbstractMeshFieldDeallocate(obj%strain)
 
 NULLIFY (obj%bodySourceFunc)
 
+obj%showTime = .FALSE.
+CALL obj%showTimeFile%DEALLOCATE()
+
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -759,6 +787,16 @@ IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & '[WRONG CONFIG] AbstractKernel_::obj%problemType is not set.')
   RETURN
+END IF
+
+IF (obj%showTime) THEN
+  problem = .NOT. obj%showTimeFile%isOpen()
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: you have set showTime=true, '//  &
+      & 'but showTimeFile is not opened')
+    RETURN
+  END IF
 END IF
 END PROCEDURE obj_PreCheckError
 

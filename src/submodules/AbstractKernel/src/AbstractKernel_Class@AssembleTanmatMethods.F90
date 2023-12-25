@@ -37,6 +37,9 @@ END PROCEDURE obj_AssembleTanmat
 MODULE PROCEDURE obj_AssembleMassMat
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleMassMat()"
 LOGICAL(LGT) :: isok
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -61,6 +64,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_AssembleMassMat
 
 !----------------------------------------------------------------------------
@@ -69,6 +78,9 @@ END PROCEDURE obj_AssembleMassMat
 
 MODULE PROCEDURE obj_AssembleStiffnessMat
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleStiffnessMat()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -94,6 +106,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_AssembleStiffnessMat
 
 !----------------------------------------------------------------------------
@@ -102,6 +120,9 @@ END PROCEDURE obj_AssembleStiffnessMat
 
 MODULE PROCEDURE obj_AssembleDampingMat
 CHARACTER(*), PARAMETER :: myName = "obj_AssembleDampingMat()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -145,6 +166,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+
 END PROCEDURE obj_AssembleDampingMat
 
 !----------------------------------------------------------------------------
@@ -152,7 +180,7 @@ END PROCEDURE obj_AssembleDampingMat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AssembleNitscheMat
-CHARACTER(*), PARAMETER :: myName = "obj_AssembleNitscheMat"
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleNitscheMat()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This module has not been implemented yet')
 ! TODO: Implement obj_AssembleNitscheMat

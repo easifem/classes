@@ -25,9 +25,13 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC
-CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC"
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC()"
 CHARACTER(:), ALLOCATABLE :: name0
 LOGICAL(LGT) :: isok, problem
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -86,6 +90,17 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_ApplyDirichletBC
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE ApplyDirichletMethods

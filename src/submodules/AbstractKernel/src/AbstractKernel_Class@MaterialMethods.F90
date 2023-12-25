@@ -25,8 +25,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AddSolidMaterial
-CHARACTER(*), PARAMETER :: myName = "obj_AddSolidMaterial"
+CHARACTER(*), PARAMETER :: myName = "obj_AddSolidMaterial()"
 LOGICAL(LGT) :: isok
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -62,6 +65,13 @@ CALL AddSolidMaterial(obj=obj%solidMaterial,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_AddSolidMaterial
 
 !----------------------------------------------------------------------------
@@ -69,8 +79,12 @@ END PROCEDURE obj_AddSolidMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSolidMaterialPointer
-CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer"
+CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer()"
 LOGICAL(LGT) :: isok
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -92,6 +106,13 @@ ans => GetSolidMaterialPointer(obj=obj%solidMaterial, materialNo=materialNo)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_GetSolidMaterialPointer
 
 !----------------------------------------------------------------------------
@@ -102,6 +123,9 @@ MODULE PROCEDURE obj_InitiateMassDensity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMassDensity()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -135,6 +159,13 @@ CALL KernelInitiateScalarProperty(vars=obj%massDensity,  &
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateMassDensity
 
 !----------------------------------------------------------------------------
@@ -145,6 +176,9 @@ MODULE PROCEDURE obj_InitiateElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElasticityProperties()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -200,6 +234,13 @@ CALL KernelInitiateConstantElasticityProperties(youngsModulus=obj%youngsModulus,
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateElasticityProperties
 
 !----------------------------------------------------------------------------
@@ -209,6 +250,9 @@ END PROCEDURE obj_InitiateElasticityProperties
 MODULE PROCEDURE obj_InitiateDampingProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateDampingProperties()"
 INTEGER(I4B) :: ii, tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -236,6 +280,13 @@ CALL KernelInitiateScalarProperty(vars=obj%dampCoeff_beta,  &
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_InitiateDampingProperties
 
 !----------------------------------------------------------------------------
@@ -254,6 +305,9 @@ END PROCEDURE obj_InitiateMaterialProperties
 
 MODULE PROCEDURE obj_SetMassDensity
 CHARACTER(*), PARAMETER :: myName = "obj_SetMassDensity()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -268,6 +322,13 @@ CALL KernelSetScalarProperty(vars=obj%massDensity,  &
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetMassDensity
 
 !----------------------------------------------------------------------------
@@ -276,6 +337,9 @@ END PROCEDURE obj_SetMassDensity
 
 MODULE PROCEDURE obj_SetElasticityProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetElasticityProperties()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -298,6 +362,13 @@ CALL KernelSetTensorProperty(vars=obj%Cijkl,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetElasticityProperties
 
 !----------------------------------------------------------------------------
@@ -306,11 +377,14 @@ END PROCEDURE obj_SetElasticityProperties
 
 MODULE PROCEDURE obj_SetDampingProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetDampingProperties()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
-#endif DEBUG_VER
+#endif
 
 CALL KernelSetScalarProperty(vars=obj%dampCoeff_alpha,  &
   & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
@@ -323,7 +397,14 @@ CALL KernelSetScalarProperty(vars=obj%dampCoeff_beta,  &
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
-#endif DEBUG_VER
+#endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetDampingProperties
 
 !----------------------------------------------------------------------------
@@ -332,6 +413,10 @@ END PROCEDURE obj_SetDampingProperties
 
 MODULE PROCEDURE obj_SetMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_SetConstantMatProp"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -345,6 +430,13 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetMaterialProperties
 
 !----------------------------------------------------------------------------
@@ -357,6 +449,9 @@ INTEGER(I4B) :: ii, kk, jj, nsd
 INTEGER(I4B), ALLOCATABLE :: indx(:)
 LOGICAL(LGT) :: isok
 CLASS(Domain_), POINTER :: dom
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -416,6 +511,13 @@ NULLIFY (dom)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetMaterialToDomain
 
 !----------------------------------------------------------------------------
@@ -426,6 +528,10 @@ MODULE PROCEDURE obj_SetElementToMatID
 CHARACTER(*), PARAMETER :: myName = "obj_SetElementToMatID()"
 INTEGER(I4B) :: ii
 INTEGER(I4B), ALLOCATABLE :: indx(:)
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
@@ -443,6 +549,13 @@ IF (ALLOCATED(indx)) DEALLOCATE (indx)
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetElementToMatID
 
 END SUBMODULE MaterialMethods

@@ -21,6 +21,7 @@
 
 MODULE AbstractKernel_Class
 USE BaseType
+USE CPUTime_Class
 USE String_Class, ONLY: String
 USE AbstractKernelParam
 USE AbstractMatrixField_Class
@@ -43,6 +44,7 @@ USE FiniteElement_Class
 USE tomlf, ONLY: toml_table
 USE SolidMaterial_Class
 USE Field
+USE TxtFile_Class
 USE KernelUtility
 USE UserFunction_Class
 
@@ -64,7 +66,7 @@ CHARACTER(*), PARAMETER :: AbstractKernelEssentialParam =&
   & "rtoleranceForResidual/atoleranceForDisplacement/tanmatProp/"//&
   & "atoleranceForResidual/rtoleranceForVelocity/atoleranceForVelocity/"//  &
   & "isConstantMatProp/isIsotropic/isIncompressible/algorithm/"//  &
-  & "problemType/tOverlappedMaterials/outputPath/tPointSource"
+  & "problemType/tOverlappedMaterials/outputPath/tPointSource/showTime"
 
 PUBLIC :: AbstractKernel_
 PUBLIC :: AbstractKernelPointer_
@@ -101,6 +103,11 @@ END TYPE AbstractAlgoParam_
 ! summary: Abstract class for kernel
 
 TYPE, ABSTRACT :: AbstractKernel_
+  LOGICAL(LGT) :: showTime = .FALSE.
+  !! If it is set to true then we create a file called
+  !! KernelName_time_stat.csv
+  !! This file contains the statics of time taken by the kernel
+  !! It will be helpful in improving the kernel
   LOGICAL(LGT) :: isConstantMatProp = DEFAULT_isConstantMatProp
   !! Set it to True if the material properties are constant
   LOGICAL(LGT) :: isInitiated = .FALSE.
@@ -449,6 +456,12 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! This will be a tensor mesh field
   CLASS(UserFunction_), POINTER :: bodySourceFunc => NULL()
   !! body force function
+
+  TYPE(TxtFile_) :: showTimeFile
+    !! File which keeps the time statics of the kernel (performance related)
+    !! This file is created when showTime is set to true.
+    !! The name of this file will be
+    !! outputPath / name + _time_stat.csv
 CONTAINS
   PRIVATE
 
@@ -502,6 +515,7 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
   PROCEDURE, PUBLIC, PASS(obj) :: PreSet => obj_PreSet
   !! Perform final check, before starting the actual computations
   PROCEDURE, PUBLIC, PASS(obj) :: PostSet => obj_PostSet
@@ -738,7 +752,7 @@ INTERFACE
     & rtoleranceForDisplacement, atoleranceForDisplacement,  &
     & rtoleranceForVelocity, atoleranceForVelocity,  &
     & rtoleranceForResidual, atoleranceForResidual, tanmatProp,  &
-    & tOverlappedMaterials, outputPath, tPointSource)
+    & tOverlappedMaterials, outputPath, tPointSource, showTime)
     CHARACTER(*), INTENT(IN) :: prefix
     INTEGER(I4B), INTENT(IN) :: problemType
     !! Kernel problem type. Problem can be scalar, vector, or multi-physics
@@ -878,6 +892,8 @@ INTERFACE
     !! path where output of kernel will be written
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPointSource
     !! total number of point sources, size of nbcPointSource
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: showTime
+    !! Show time of each steps
   END SUBROUTINE SetAbstractKernelParam
 END INTERFACE
 
@@ -1091,6 +1107,21 @@ INTERFACE AbstractKernelInitiateFields
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateFields
 END INTERFACE AbstractKernelInitiateFields
+
+!----------------------------------------------------------------------------
+!                                                     SetShowTime@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-25
+! summary:  Set show time
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetShowTime(obj, showTime)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: showTime
+  END SUBROUTINE obj_SetShowTime
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -1343,10 +1374,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE SUBROUTINE obj_SetAlgoParam( obj, algoParam )
-  CLASS( AbstractKernel_ ), INTENT( INOUT ) :: obj 
-  CLASS( AbstractAlgoParam_ ), INTENT( IN ) :: algoParam
-END SUBROUTINE obj_SetAlgoParam
+  MODULE SUBROUTINE obj_SetAlgoParam(obj, algoParam)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CLASS(AbstractAlgoParam_), INTENT(IN) :: algoParam
+  END SUBROUTINE obj_SetAlgoParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
