@@ -52,7 +52,7 @@ oldcnt = e%getCounter(EXCEPTION_ERROR)
 ! check
 !
 IF (obj%initstat) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'Fortran file has already been initialized!')
 ELSE
   !
@@ -67,28 +67,28 @@ ELSE
   !
   fext = file_%extension()
   fname = file_%basename(extension=fext%chars(), sep=CHAR_SLASH)
-  CALL obj%setFilePath(fpath)
-  CALL obj%setFileName(fname)
-  CALL obj%setFileExt(fext)
+  CALL obj%SetFilePath(fpath)
+  CALL obj%SetFileName(fname)
+  CALL obj%SetFileExt(fext)
   !
   IF (PRESENT(unit)) THEN
     !
     IF (unit == stdout) THEN
       !
-      CALL e%raiseError(modName//'::'//myName// &
+      CALL e%RaiseError(modName//'::'//myName// &
         & ' - Illegal '// &
         & 'value for optional input argument UNIT! Value is equal to '// &
         & 'default OUTPUT_UNIT.')
       !
     ELSEIF (unit == stderr) THEN
       !
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value for optional input argument UNIT! Value is equal to '// &
         & 'default ERROR_UNIT.')
       !
     ELSEIF (unit == stdin) THEN
       !
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value for optional input argument UNIT! Value is equal to '// &
         & 'default INPUT_UNIT.')
       !
@@ -98,7 +98,7 @@ ELSE
       !
       IF (ostat) THEN
         !
-        CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+        CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
           & 'value for optional input argument UNIT! Unit is being used'// &
           & ' by another file!')
         !
@@ -126,7 +126,7 @@ ELSE
   IF (TRIM(statusval) .NE. 'OLD') THEN
     ierr = system_mkdir(fpath//'', RWX_U)
     IF (ierr .NE. 0_I4B .AND. ierr .NE. -1_I4B) THEN
-      CALL e%raiseError(modName//'::'//myName//' - '// &
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
         & 'error occured while creating the directory')
     END IF
   END IF
@@ -145,7 +145,7 @@ ELSE
       !File has streaming access !F2003, might have problems.
       accessval = access
     CASE DEFAULT
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value ('//access//') for optional input argument ACCESS!')
     END SELECT
   ELSE
@@ -164,7 +164,7 @@ ELSE
       !File a binary file
       formval = form
     CASE DEFAULT
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value ('//form//') for optional input argument FORM!')
     END SELECT
   ELSE
@@ -186,7 +186,7 @@ ELSE
       !File opens with file pointer as is
       obj%posopt = position
     CASE DEFAULT
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value ('//position//') for optional input argument POSITION!')
     END SELECT
   ELSE
@@ -204,7 +204,7 @@ ELSE
     CASE ('READWRITE') !File opens with read write access
       actionval = action
     CASE DEFAULT
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value ('//action//') for optional input argument ACTION!')
     END SELECT
   ELSE
@@ -221,7 +221,7 @@ ELSE
     CASE ('NO') !File is not padded
       padval = pad
     CASE DEFAULT
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value ('//pad//') for optional input argument PAD!')
     END SELECT
   ELSE
@@ -233,7 +233,7 @@ ELSE
   !
   IF (PRESENT(recl)) THEN
     IF (recl < 1) THEN
-      CALL e%raiseError(modName//'::'//myName//' - Illegal '// &
+      CALL e%RaiseError(modName//'::'//myName//' - Illegal '// &
         & 'value for input option RECL must be set to greater than 0!')
     ELSE
       obj%reclval = recl
@@ -260,7 +260,7 @@ ELSE
   !
   ! setStatus
   !
-  CALL obj%setStatus(statusval)
+  CALL obj%SetStatus(statusval)
   !
   ! IF (TRIM(statusval) .NE. 'OLD') THEN
   !   obj%newstat = .TRUE.
@@ -272,24 +272,24 @@ ELSE
   !
   IF (TRIM(accessval) == 'DIRECT' .OR. TRIM(accessval) == 'STREAM') THEN
     obj%accessstat = .TRUE.
-    IF (obj%reclval < 1) CALL e%raiseError(modName//'::'// &
+    IF (obj%reclval < 1) CALL e%RaiseError(modName//'::'// &
       & myName//' - Record length must be set to greater than 0 for '// &
       & 'direct access files!')
   END IF
   !
   IF (TRIM(actionval) == 'READ') THEN
-    CALL obj%setReadStat(.TRUE.)
-    IF (obj%newstat) CALL e%raiseError(modName//'::'// &
+    CALL obj%SetReadStat(.TRUE.)
+    IF (obj%newstat) CALL e%RaiseError(modName//'::'// &
       & myName//' - Cannot have a new file with a read only status!')
   ELSEIF (TRIM(actionval) == 'WRITE') THEN
-    CALL obj%setWriteStat(.TRUE.)
+    CALL obj%SetWriteStat(.TRUE.)
   ELSEIF (TRIM(actionval) == 'READWRITE') THEN
-    CALL obj%setReadStat(.TRUE.)
-    CALL obj%setWriteStat(.TRUE.)
+    CALL obj%SetReadStat(.TRUE.)
+    CALL obj%SetWriteStat(.TRUE.)
   END IF
   !
   IF (oldcnt < e%getCounter(EXCEPTION_ERROR)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - Exceptions '// &
+    CALL e%RaiseError(modName//'::'//myName//' - Exceptions '// &
       & 'during file initialization! File not initialized!')
     !Reset all attributes if initialization failed.
     obj%unitno = -1
@@ -300,13 +300,13 @@ ELSE
     obj%reclval = -1
     obj%padstat = .FALSE.
     obj%posopt = 'ASIS  '
-    CALL obj%setFilePath(string(''))
-    CALL obj%setFileName(string(''))
-    CALL obj%setFileExt(string(''))
-    CALL obj%setEOFstat(.FALSE.)
-    CALL obj%setOpenStat(.FALSE.)
-    CALL obj%setReadStat(.FALSE.)
-    CALL obj%setWriteStat(.FALSE.)
+    CALL obj%SetFilePath(string(''))
+    CALL obj%SetFileName(string(''))
+    CALL obj%SetFileExt(string(''))
+    CALL obj%SetEOFstat(.FALSE.)
+    CALL obj%SetOpenStat(.FALSE.)
+    CALL obj%SetReadStat(.FALSE.)
+    CALL obj%SetWriteStat(.FALSE.)
   ELSE
     obj%initstat = .TRUE.
   END IF
@@ -377,16 +377,16 @@ INTEGER(I4B) :: ioerr
 
 !Get the appropriate clause values for the OPEN statement
 IF (obj%initstat) THEN
-  IF (obj%isOpen()) THEN
+  IF (obj%IsOpen()) THEN
     WRITE (iomsg, '(a,i4,a)') 'Cannot open file (UNIT=', &
       obj%unitno, ') File is already open!'
-    CALL e%raiseError(modName//'::'//myName//' - '//TRIM(iomsg))
+    CALL e%RaiseError(modName//'::'//myName//' - '//TRIM(iomsg))
   ELSE
     path = obj%getFilePath()
     filename = obj%getFileName()
     ext = obj%getFileExt()
     !STATUS clause value
-    IF (.NOT. obj%isNew()) THEN
+    IF (.NOT. obj%IsNew()) THEN
       statusvar = 'OLD'
     ELSE
       IF (obj%overwrite) THEN
@@ -396,13 +396,13 @@ IF (obj%initstat) THEN
       END IF
     END IF
     !FORM clause value
-    IF (obj%isFormatted()) THEN
+    IF (obj%IsFormatted()) THEN
       formvar = 'FORMATTED'
     ELSE
       formvar = 'UNFORMATTED'
     END IF
     !ACCESS clause value
-    IF (obj%isDirect()) THEN
+    IF (obj%IsDirect()) THEN
       accessvar = 'DIRECT'
       reclval = obj%reclval
     ELSE
@@ -410,11 +410,11 @@ IF (obj%initstat) THEN
       reclval = 0
     END IF
     !ACTION clause value
-    IF (obj%isRead() .AND. .NOT. obj%isWrite()) THEN
+    IF (obj%IsRead() .AND. .NOT. obj%isWrite()) THEN
       actionvar = 'READ'
-    ELSEIF (.NOT. obj%isRead() .AND. obj%isWrite()) THEN
+    ELSEIF (.NOT. obj%IsRead() .AND. obj%isWrite()) THEN
       actionvar = 'WRITE'
-    ELSEIF (obj%isRead() .AND. obj%isWrite()) THEN
+    ELSEIF (obj%IsRead() .AND. obj%isWrite()) THEN
       actionvar = 'READWRITE'
     END IF
     !PAD clause value
@@ -427,8 +427,8 @@ IF (obj%initstat) THEN
     !the file is DIRECT access.
     !The PAD clause is illegal to use in the OPEN statement if the file
     !is UNFORMATTED.
-    IF (obj%isDirect()) THEN
-      IF (obj%isFormatted()) THEN
+    IF (obj%IsDirect()) THEN
+      IF (obj%IsFormatted()) THEN
         !Omit the POSITION clause, and include the PAD clause
         IF (obj%getNewUnit) THEN
           OPEN ( &
@@ -460,7 +460,7 @@ IF (obj%initstat) THEN
         END IF
       END IF
     ELSE
-      IF (obj%isFormatted()) THEN
+      IF (obj%IsFormatted()) THEN
         !Include the POSITION clause, and the PAD clause
         IF (obj%getNewUnit) THEN
           OPEN ( &
@@ -499,15 +499,15 @@ IF (obj%initstat) THEN
           & TRIM(path%chars())// &
           & TRIM(filename%chars())//TRIM(ext%chars()) &
           & //'" (UNIT=', obj%unitno, ') IOSTAT=', ioerr
-      CALL e%raiseError(modName//'::'//myName//' - '//TRIM(emesg) &
+      CALL e%RaiseError(modName//'::'//myName//' - '//TRIM(emesg) &
         & //' IOMSG="'//TRIM(iomsg)//'"')
     ELSE
-      CALL obj%setOpenStat(.TRUE.)
-      CALL obj%setEOFStat(.FALSE.)
+      CALL obj%SetOpenStat(.TRUE.)
+      CALL obj%SetEOFStat(.FALSE.)
     END IF
   END IF
 ELSE
-  CALL e%raiseError(modName//'::'//myName//' - '// &
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'Cannot open file! Object has not been initialized!')
 END IF
 END PROCEDURE ff_open
@@ -522,22 +522,22 @@ CHARACTER(maxStrLen) :: emesg, iomsg
 INTEGER(I4B) :: ioerr
 !
 IF (obj%initstat) THEN
-  IF (obj%isOpen()) THEN
+  IF (obj%IsOpen()) THEN
     CLOSE (UNIT=obj%unitno, STATUS='KEEP', IOSTAT=ioerr)
     IF (ioerr /= 0) THEN
       WRITE (emesg, '(a,i4,a,i4)') 'Error closing file (UNIT=', &
         & obj%unitno, ') IOSTAT=', ioerr
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
     ELSE
-      CALL obj%setOpenStat(.FALSE.)
+      CALL obj%SetOpenStat(.FALSE.)
     END IF
   ELSE
     WRITE (emesg, '(a,i4,a)') 'Cannot close file (UNIT=', &
       & obj%unitno, ') File is not open!'
-    CALL e%raiseDebug(modName//'::'//myName//' - '//emesg)
+    CALL e%RaiseDebug(modName//'::'//myName//' - '//emesg)
   END IF
 ELSE
-  CALL e%raiseDebug(modName//'::'//myName//' - '// &
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
     & 'Cannot close file! File object has not been initialized!')
 END IF
 END PROCEDURE ff_close
@@ -553,14 +553,14 @@ CHARACTER(maxStrLen) :: emesg, iomsg
 INTEGER(I4B) :: ioerr
 
 IF (obj%initstat) THEN
-  IF (obj%isOpen()) THEN
+  IF (obj%IsOpen()) THEN
     CLOSE (UNIT=obj%unitno, STATUS='DELETE', IOSTAT=ioerr)
     IF (ioerr /= 0) THEN
       WRITE (emesg, '(a,i4,a,i4)') 'Error deleting file (UNIT=', &
         & obj%unitno, ') IOSTAT=', ioerr
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
     ELSE
-      CALL obj%setOpenStat(.FALSE.)
+      CALL obj%SetOpenStat(.FALSE.)
     END IF
   ELSE
     path = obj%getFilePath()
@@ -578,19 +578,19 @@ IF (obj%initstat) THEN
       WRITE (emesg, '(a,i4,a,i4)') &
         & 'Error deleting file (UNIT=', &
         & obj%unitno, ') IOSTAT=', ioerr
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
     END IF
     CLOSE (UNIT=obj%unitno, STATUS='DELETE', IOSTAT=ioerr)
     IF (ioerr /= 0) THEN
       WRITE (emesg, '(a,i4,a,i4)') 'Error deleting file (UNIT=', &
         & obj%unitno, ') IOSTAT=', ioerr
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
     ELSE
-      CALL obj%setOpenStat(.FALSE.)
+      CALL obj%SetOpenStat(.FALSE.)
     END IF
   END IF
 ELSE
-  CALL e%raiseDebug(modName//'::'//myName//' - '// &
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
     & 'Cannot delete file! File object has not been initialized!')
 END IF
 END PROCEDURE ff_delete
@@ -606,22 +606,22 @@ CHARACTER(maxStrLen) :: emesg, iomsg
 INTEGER(I4B) :: ioerr
 
 IF (obj%initstat) THEN
-  IF (obj%isOpen()) THEN
+  IF (obj%IsOpen()) THEN
     BACKSPACE (UNIT=obj%unitno, IOSTAT=ioerr, IOMSG=iomsg)
     IF (ioerr .NE. 0) THEN
       WRITE (emesg, '(a,i4,a,i4,a)') 'Error backspacing file (UNIT=', &
         & obj%unitno, ') IOSTAT=', ioerr, ' IOMSG='//TRIM(iomsg)
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
+      CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
     ELSE
-      IF (obj%isEOF()) CALL obj%setEOFstat(.FALSE.)
+      IF (obj%IsEOF()) CALL obj%SetEOFstat(.FALSE.)
     END IF
   ELSE
     WRITE (emesg, '(a,i4,a)') 'Cannot backspace file (UNIT=', obj%unitno, &
       & '). File not is not open!'
-    CALL e%raiseDebug(modName//'::'//myName//' - '//emesg)
+    CALL e%RaiseDebug(modName//'::'//myName//' - '//emesg)
   END IF
 ELSE
-  CALL e%raiseDebug(modName//'::'//myName//' - '// &
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
     & 'Cannot backspace file! File object has not been initialized!')
 END IF
 END PROCEDURE ff_backspace
@@ -631,54 +631,60 @@ END PROCEDURE ff_backspace
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ff_rewind
-CHARACTER(*), PARAMETER :: myName = 'ff_rewind'
+CHARACTER(*), PARAMETER :: myName = 'ff_rewind()'
 CHARACTER(maxStrLen) :: emesg, iomsg
 INTEGER(I4B) :: ioerr
+LOGICAL(LGT) :: problem, isDarwin
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
-  & '[START] Rewind()')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
 #endif
 
-#ifdef Darwin_SYSTEM 
-CALL e%RaiseError(modName //'::'//myName// ' - '// &
-  & '[BUG] :: REWIND() function does not work with GNU Fortran. ' // &
-  & 'We are working on this issue. ')
-#else 
+problem = .NOT. obj%initstat
 
-IF (obj%initstat) THEN
-  IF (obj%isOpen()) THEN
-    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
-      & '[1] ' // tostring(obj%unitno) )
-    REWIND (UNIT=obj%unitno, IOSTAT=ioerr, IOMSG=iomsg)
-    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
-      & '[2]')
-    CALL obj%setEOFstat(.FALSE.)
-    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
-      & '[3]')
-    IF (ioerr /= 0) THEN
-      WRITE (emesg, '(a,i4,a,i4,a)') 'Error rewinding file (UNIT=', &
-        & obj%unitno, ') IOSTAT=', ioerr, ' IOMSG='//TRIM(iomsg)
-      CALL e%raiseError(modName//'::'//myName//' - '//emesg)
-    END IF
-    CALL e%RaiseDebug(modName //'::'//myName// ' - '// &
-      & '[4]')
-  ELSE
-    WRITE (emesg, '(a,i4,a)') 'Cannot rewind file (UNIT=', obj%unitno, &
-      & '). File not is not open!'
-    CALL e%raiseError(modName//'::'//myName//' - '//emesg)
-  END IF
-ELSE
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Cannot rewind file! File object has not been initialized!')
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Cannot rewind file, file not initialized.')
+  RETURN
 END IF
 
+problem = .NOT. (obj%IsOpen())
+IF (problem) THEN
+  WRITE (emesg, '(a,i4,a)') 'Cannot rewind file (UNIT=', obj%unitno, &
+    & '). File not is not open!'
+  CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
+  RETURN
+END IF
+
+#ifdef Darwin_SYSTEM
+isDarwin = .TRUE.
+#else
+isDarwin = .FALSE.
 #endif
 
+IF (.NOT. isDarwin) THEN
+  REWIND (UNIT=obj%unitno, IOSTAT=ioerr, IOMSG=iomsg)
+  CALL obj%SetEOFstat(.FALSE.)
+
+  IF (ioerr .NE. 0) THEN
+    WRITE (emesg, '(a,i4,a,i4,a)') 'Error rewinding file (UNIT=', &
+      & obj%unitno, ') IOSTAT=', ioerr, ' IOMSG='//TRIM(iomsg)
+    CALL e%RaiseError(modName//'::'//myName//' - '//emesg)
+    RETURN
+  END IF
+END IF
+
+IF (isDarwin) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[BUG] :: REWIND() function does not work with GNU Fortran. '// &
+    & 'We are working on this issue. ')
+  RETURN
+END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName //'::'//myName// ' - '// &
-  & '[END] Rewind()')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
 #endif
 END PROCEDURE ff_rewind
 
