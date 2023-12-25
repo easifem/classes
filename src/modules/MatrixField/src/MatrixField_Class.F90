@@ -1263,11 +1263,6 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
 ! summary: This routine Sets data to matrix field
-!
-!# Introduction
-!
-! See [[CSRMatrix_Method:Set6]]
-! See [[CSRMatrix_Method:Add6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set4(obj, iNodeNum, jNodeNum, ivar, &
@@ -1292,11 +1287,6 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 July 2021
 ! summary: This routine Sets data to matrix field
-!
-!# Introduction
-!
-! See [[CSRMatrix_Method:Set6]]
-! See [[CSRMatrix_Method:Add6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set5(obj, iNodeNum, jNodeNum, ivar, &
@@ -1307,7 +1297,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
+    !! You can get idof by  using
+    !! GetIDOF(ispacecompo, itimecompo, tspacecompo)
     INTEGER(I4B), INTENT(IN) :: jdof
+    !! You can get idof by  using
+    !! GetIDOF(jspacecompo, jtimecompo, tspacecompo)
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1345,7 +1339,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B), INTENT(IN) :: jvar
     INTEGER(I4B), INTENT(IN) :: idof
+    !! You can get idof by  using
+    !! GetIDOF(ispacecompo, itimecompo, tspacecompo)
     INTEGER(I4B), INTENT(IN) :: jdof
+    !! You can get idof by  using
+    !! GetIDOF(jspacecompo, jtimecompo, tspacecompo)
     REAL(DFP), INTENT(IN) :: VALUE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
