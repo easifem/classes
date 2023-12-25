@@ -83,45 +83,45 @@ TYPE, EXTENDS(TxtFile_) :: CSVFile_
     !! row numbers to skip
 CONTAINS
   PRIVATE
-  !!
-  !! @ConstructorMethods
-  !!
-  PROCEDURE, PUBLIC, PASS(obj) :: initiate => txt_initiate
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => txt_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => txt_Deallocate
   FINAL :: txt_final
-  !!
-  !! @SetMethods
-  !!
+
+  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetCSVFileProperties => &
     & txt_SetCSVFileProperties
   PROCEDURE, PUBLIC, PASS(obj) :: SetSkipRows => &
     & txt_SetSkipRows
   PROCEDURE, PUBLIC, PASS(obj) :: SetHeaderIndx => &
     & txt_SetHeaderIndx
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Getnrows => txt_Getnrows
+  PROCEDURE, PUBLIC, PASS(obj) :: Getncols => txt_Getncols
+  PROCEDURE, PUBLIC, PASS(obj) :: GetChunkSize => txt_GetChunkSize
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDataTypes => txt_GetDataTypes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetValue => txt_GetValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn => txt_GetColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRealColumn => txt_GetRealColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRealVectorColumn => &
+    & txt_GetRealVectorColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntColumn => txt_GetIntColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntVectorColumn => &
+    & txt_GetIntVectorColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStringColumn => txt_GetStringColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLogicalColumn => txt_GetLogicalColumn
   !!
-  !! @GetMethods
-  !!
-  PROCEDURE, PUBLIC, PASS(obj) :: getnrows => txt_getnrows
-  PROCEDURE, PUBLIC, PASS(obj) :: getncols => txt_getncols
-  PROCEDURE, PUBLIC, PASS(obj) :: getChunkSize => txt_getChunkSize
-  PROCEDURE, PUBLIC, PASS(obj) :: getDataTypes => txt_getDataTypes
-  PROCEDURE, PUBLIC, PASS(obj) :: getValue => txt_getValue
-  PROCEDURE, PUBLIC, PASS(obj) :: getColumn => txt_getColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: getRealColumn => txt_getRealColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: getRealVectorColumn => &
-    & txt_getRealVectorColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: getIntColumn => txt_getIntColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: getIntVectorColumn => &
-    & txt_getIntVectorColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: getStringColumn => txt_getStringColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: getLogicalColumn => txt_getLogicalColumn
-  !!
-  GENERIC, PUBLIC :: get => getValue, getRealColumn, &
-    & getIntColumn, getStringColumn, getLogicalColumn, &
-    & getIntVectorColumn, getRealVectorColumn
-  !!
-  !! @ReadMethods
-  !!
+  GENERIC, PUBLIC :: Get => GetValue, GetRealColumn, &
+    & GetIntColumn, GetStringColumn, GetLogicalColumn, &
+    & GetIntVectorColumn, GetRealVectorColumn
+
+  ! IO:
+  ! @ReadMethods
   PROCEDURE, PUBLIC, PASS(obj) :: csvFileRead => txt_CSVFileRead
   GENERIC, PUBLIC :: READ => csvFileRead
 END TYPE CSVFile_
