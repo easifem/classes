@@ -27,6 +27,10 @@ CONTAINS
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -217,6 +221,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------

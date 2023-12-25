@@ -27,6 +27,10 @@ CONTAINS
 
 MODULE PROCEDURE obj_AddDirichletBC
 CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -41,6 +45,13 @@ CALL AppendDirichletBC(dbc=obj%dbc, dbcNo=dbcNo, param=param,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_AddDirichletBC
 
 !----------------------------------------------------------------------------
@@ -77,6 +88,11 @@ END PROCEDURE obj_GetDirichletBCPointer
 
 MODULE PROCEDURE obj_AddNeumannBC
 CHARACTER(*), PARAMETER :: myName = "obj_AddNeumannBC()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -90,6 +106,13 @@ CALL AppendNeumannBC(nbc=obj%nbc, nbcNo=nbcNo, param=param, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_AddNeumannBC
 
 !----------------------------------------------------------------------------
@@ -99,6 +122,10 @@ END PROCEDURE obj_AddNeumannBC
 MODULE PROCEDURE obj_AddPointSource
 CHARACTER(*), PARAMETER :: myName = "obj_AddPointSource()"
 LOGICAL(LGT) :: isSelectionByNode
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -126,6 +153,13 @@ CALL AppendNeumannBC(nbc=obj%nbcPointSource, nbcNo=nbcNo,  &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_AddPointSource
 
 !----------------------------------------------------------------------------
@@ -134,6 +168,7 @@ END PROCEDURE obj_AddPointSource
 
 MODULE PROCEDURE obj_GetNeumannBCPointer
 CHARACTER(*), PARAMETER :: myName = "obj_GetNeumannBCPointer()"
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -152,6 +187,7 @@ ans => GetNeumannBCPointer(nbc=obj%nbc, nbcNo=nbcNo)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
 END PROCEDURE obj_GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
@@ -187,6 +223,11 @@ END PROCEDURE obj_GetPointSourcePointer
 
 MODULE PROCEDURE obj_AddNitscheBC
 CHARACTER(*), PARAMETER :: myName = "obj_AddNitscheBC()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -200,6 +241,14 @@ CALL AppendNitscheBC(dbc=obj%wdbc, dbcNo=dbcNo, param=param, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+
 END PROCEDURE obj_AddNitscheBC
 
 !----------------------------------------------------------------------------
@@ -240,6 +289,10 @@ CLASS(DomainConnectivity_), POINTER :: domCon
 INTEGER(I4B), ALLOCATABLE :: intvec(:), meshID(:), tFacetElements(:)
 LOGICAL(LGT) :: isVar
 CLASS(Mesh_), POINTER :: facetMesh
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -341,6 +394,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+
 END PROCEDURE obj_SetNitscheMeshData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE BCMethods

@@ -21,6 +21,14 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                               SetShowTime
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetShowTime
+obj%showTime = showTime
+END PROCEDURE obj_SetShowTime
+
+!----------------------------------------------------------------------------
 !                                                                    PreSet
 !----------------------------------------------------------------------------
 
@@ -47,6 +55,10 @@ END PROCEDURE obj_PostSet
 MODULE PROCEDURE obj_Set
 CHARACTER(*), PARAMETER :: myName = "obj_Set()"
 TYPE(BoundingBox_) :: bbox
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -99,6 +111,13 @@ CALL obj%PostCheckError()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
@@ -122,7 +141,12 @@ END PROCEDURE obj_SetIterationNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMeshData
-CHARACTER(*), PARAMETER :: myName = "obj_SetMeshData"
+CHARACTER(*), PARAMETER :: myName = "obj_SetMeshData()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
@@ -150,6 +174,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetMeshData
 
 !----------------------------------------------------------------------------
@@ -161,6 +191,11 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetMatIFaceConnectData()"
 INTEGER(I4B) :: ii, jj, tsize
 CLASS(Mesh_), POINTER :: amesh
 CLASS(Domain_), POINTER :: dom
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
@@ -184,6 +219,13 @@ NULLIFY (amesh, dom)
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetMatIFaceConnectData
 
 !----------------------------------------------------------------------------
@@ -191,10 +233,14 @@ END PROCEDURE obj_SetMatIFaceConnectData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFiniteElements
-CHARACTER(*), PARAMETER :: myName = "kernel_SetFiniteElements()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetFiniteElements()"
 INTEGER(I4B), ALLOCATABLE :: order(:), elemType(:)
 INTEGER(I4B) :: tsize, ii, nsd
 LOGICAL(LGT) :: problem
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -420,6 +466,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetFiniteElements
 
 !----------------------------------------------------------------------------
@@ -427,10 +479,14 @@ END PROCEDURE obj_SetFiniteElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetQuadPointsInSpace
-CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInSpace"
+CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInSpace()"
 INTEGER(I4B) :: ii, tCell, order
 LOGICAL(LGT) :: isok
 CLASS(FiniteElement_), POINTER :: fe
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -506,6 +562,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetQuadPointsInSpace
 
 !----------------------------------------------------------------------------
@@ -515,6 +577,10 @@ END PROCEDURE obj_SetQuadPointsInSpace
 MODULE PROCEDURE obj_SetQuadPointsInTime
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadPointsInTime()"
 INTEGER(I4B) :: order
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -537,6 +603,13 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetQuadPointsInTime
 
 !----------------------------------------------------------------------------
@@ -551,6 +624,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInSpace()"
 INTEGER(I4B) :: ii, tCell
 CLASS(FiniteElement_), POINTER :: fe
 LOGICAL(LGT) :: isok, problem
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -661,6 +738,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetLocalElemShapeDataInSpace
 
 !----------------------------------------------------------------------------
@@ -672,6 +755,10 @@ END PROCEDURE obj_SetLocalElemShapeDataInSpace
 ! The quadrature points should be initiated before calling this routine.
 MODULE PROCEDURE obj_SetLocalElemShapeDataInTime
 CHARACTER(*), PARAMETER :: myName = "obj_SetLocalElemShapeDataInTime()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -690,6 +777,13 @@ CALL obj%linTimeFE%GetLocalElemShapeData( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_SetLocalElemShapeDataInTime
 
 !----------------------------------------------------------------------------

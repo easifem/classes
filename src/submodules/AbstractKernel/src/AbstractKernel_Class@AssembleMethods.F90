@@ -25,9 +25,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Assemble
-CHARACTER(*), PARAMETER :: myName = "obj_Assemble"
+CHARACTER(*), PARAMETER :: myName = "obj_Assemble()"
 CALL e%RaiseError(modName//'::'//myName//" - "// &
-& '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
+  & '[IMPLEMENTATION ERROR] :: the routine should be implemented by subclass')
 END PROCEDURE obj_Assemble
 
 END SUBMODULE AssembleMethods

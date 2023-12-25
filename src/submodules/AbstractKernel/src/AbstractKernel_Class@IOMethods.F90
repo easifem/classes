@@ -27,10 +27,16 @@ CONTAINS
 MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 INTEGER(I4B) :: aint, ii
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInitiated, "Kernel initiated: ", unitNo=unitNo)
 IF (.NOT. obj%isInitiated) RETURN
+CALL Display(obj%showTime, "showTime: ", unitNo=unitNo)
 CALL Display(obj%isConstantMatProp, "isConstantMatProp: ", unitNo=unitNo)
 CALL Display(obj%isCommonDomain, "isCommonDomain: ", unitNo=unitNo)
 CALL Display(obj%isIncompressible, "isIncompressible: ", unitNo=unitNo)
@@ -347,6 +353,12 @@ CALL Display(bool1, "obj%strain ALLOCATED: ", unitNo=unitNo)
 bool1 = ASSOCIATED(obj%bodySourceFunc)
 CALL Display(bool1, "obj%bodySourceFunc ASSOCIATED: ", unitNo=unitNo)
 
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -357,6 +369,10 @@ MODULE PROCEDURE obj_WriteData_hdf5
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5()"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: isok, problem
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -406,6 +422,13 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_WriteData_hdf5
 
 !----------------------------------------------------------------------------
@@ -417,6 +440,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
 LOGICAL(LGT) :: isok, problem
 TYPE(VTKFile_) :: avtk
 TYPE(String) :: filename
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -461,6 +488,13 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------

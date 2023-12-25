@@ -31,7 +31,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
 TYPE(toml_table), POINTER :: linsolve_toml
 CLASS(AbstractLinSolver_), POINTER :: temp_linsolve_ptr
 TYPE(String) :: name, engine, coordinateSystem, domainFile,  &
@@ -49,7 +49,7 @@ INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC, &
 INTEGER(I4B), ALLOCATABLE :: materialInterfaces(:)
 
 LOGICAL(LGT) :: isConstantMatProp, isIsotropic, isIncompressible,  &
-  & isSymNitsche, problem
+  & isSymNitsche, problem, showTime
 REAL(DFP) :: nitscheAlpha, rtoleranceForDisplacement,  &
   & atoleranceForDisplacement, rtoleranceForVelocity,  &
   & atoleranceForVelocity, rtoleranceForResidual, atoleranceForResidual,  &
@@ -84,6 +84,8 @@ IF (problem) THEN
     & '[CONFIG ERROR] :: domainFile is missing. It should be a string.')
   RETURN
 END IF
+
+CALL toml_get(table, "showTime", showTime, .FALSE., origin=origin, stat=stat)
 
 CALL toml_get(table, "isCommonDomain", isCommonDomain,  &
   & DEFAULT_isCommonDomain, origin=origin, stat=stat)
@@ -350,7 +352,8 @@ CALL SetAbstractKernelParam( &
   & rtoleranceForResidual=rtoleranceForResidual,  &
   & atoleranceForResidual=atoleranceForResidual,  &
   & tanmatProp=tanmatProp%chars(),  &
-  & tOverlappedMaterials=tOverlappedMaterials)
+  & tOverlappedMaterials=tOverlappedMaterials,  &
+  & showTime=showTime)
 
 ! linesolve
 linsolve_toml => NULL()
@@ -497,6 +500,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
+TYPE(CPUTime_) :: TypeCPUTime
+
+
+CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -531,6 +538,13 @@ NULLIFY (node)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
