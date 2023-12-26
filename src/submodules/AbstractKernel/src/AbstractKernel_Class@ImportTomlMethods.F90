@@ -425,6 +425,18 @@ CALL obj%Initiate(param=param, dom=obj%dom)
 CALL param%DEALLOCATE()
 
 !----------------------------------------------------------------------------
+!                                                       Make solid materials
+!----------------------------------------------------------------------------
+
+CALL toml_get(table, "materialName", astr%raw,  &
+  & TOML_SOLID_MATERIAL_NAME, origin=origin, stat=stat)
+
+CALL SolidMaterialImportFromToml(table=table,  &
+  & tomlName=astr%chars(), obj=obj%solidMaterial,  &
+  & solidMaterialToMesh=obj%solidMaterialToMesh, dom=obj%dom)
+! NOTE: SolidMaterialImportFromToml is defined in SolidMaterial_Class
+
+!----------------------------------------------------------------------------
 !                                                         Make Dirichlet BC
 !----------------------------------------------------------------------------
 
@@ -465,17 +477,6 @@ CALL NitscheBCImportFromToml(table=table, dom=obj%dom,  &
   & tomlName=astr%chars(), obj=obj%wdbc)
 
 !----------------------------------------------------------------------------
-!                                                       Make solid materials
-!----------------------------------------------------------------------------
-
-CALL toml_get(table, "materialName", astr%raw,  &
-  & TOML_SOLID_MATERIAL_NAME, origin=origin, stat=stat)
-
-CALL SolidMaterialImportFromToml(table=table,  &
-  & tomlName=astr%chars(), obj=obj%solidMaterial,  &
-  & solidMaterialToMesh=obj%solidMaterialToMesh, dom=obj%dom)
-
-!----------------------------------------------------------------------------
 !                                                               Set
 !----------------------------------------------------------------------------
 
@@ -501,7 +502,6 @@ TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
 TYPE(CPUTime_) :: TypeCPUTime
-
 
 CALL TypeCPUTime%SetStartTime()
 
