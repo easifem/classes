@@ -296,7 +296,8 @@ END PROCEDURE obj_InitiateDampingProperties
 MODULE PROCEDURE obj_InitiateMaterialProperties
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMaterialProperties"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by subclass')
+  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+  & 'child classes')
 END PROCEDURE obj_InitiateMaterialProperties
 
 !----------------------------------------------------------------------------
@@ -528,6 +529,7 @@ MODULE PROCEDURE obj_SetElementToMatID
 CHARACTER(*), PARAMETER :: myName = "obj_SetElementToMatID()"
 INTEGER(I4B) :: ii
 INTEGER(I4B), ALLOCATABLE :: indx(:)
+LOGICAL(LGT) :: problem
 TYPE(CPUTime_) :: TypeCPUTime
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -536,6 +538,13 @@ IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
+
+problem = obj%SOLID_MATERIAL_ID .EQ. 0
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: SOLID_MATERIAL_ID cannot be zero')
+  RETURN
+END IF
 
 ii = obj%dom%GetTotalElements()
 CALL Reallocate(obj%elemToMatId, ii, obj%tOverlappedMaterials)
