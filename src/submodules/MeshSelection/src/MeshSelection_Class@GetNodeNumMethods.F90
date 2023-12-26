@@ -99,14 +99,14 @@ END PROCEDURE meshSelect_GetnodeNum2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_GetnodeNum3
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum3"
+CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum3()"
 TYPE(IntVector_) :: aintvec
 INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
 INTEGER(I4B) :: ii, dim, nsd
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] GetnodeNum()')
+  & '[START]')
 #endif
 
 ! isSelectionBynodeNum
@@ -156,7 +156,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] GetnodeNum()')
+  & '[END]')
 #endif
 END PROCEDURE meshSelect_GetnodeNum3
 
