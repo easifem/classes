@@ -93,13 +93,14 @@ IF (obj%isIsotropic) THEN
     & cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
     & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
     & reset=.TRUE.)
-  RETURN
-END IF
 
-CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
-  & Cijkl=obj%Cijkl, dom=obj%dom, cellFE=obj%cellFE,  &
-  & linCellFE=obj%linCellFE, spaceElemSD=obj%spaceElemSD,  &
-  & linSpaceElemSD=obj%linSpaceElemSD, reset=.TRUE.)
+ELSE
+
+  CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
+    & Cijkl=obj%Cijkl, dom=obj%dom, cellFE=obj%cellFE,  &
+    & linCellFE=obj%linCellFE, spaceElemSD=obj%spaceElemSD,  &
+    & linSpaceElemSD=obj%linSpaceElemSD, reset=.TRUE.)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
