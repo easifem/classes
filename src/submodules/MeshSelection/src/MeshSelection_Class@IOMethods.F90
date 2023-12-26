@@ -517,7 +517,7 @@ INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]()')
 #endif
 
 CALL param%Initiate()
@@ -681,7 +681,7 @@ CALL obj%Set()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportFromToml()')
+  & '[END]()')
 #endif
 END PROCEDURE meshSelect_ImportFromToml1
 
@@ -697,7 +697,7 @@ INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
 IF (PRESENT(afile)) THEN
@@ -731,7 +731,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE meshSelect_ImportFromToml2
 
