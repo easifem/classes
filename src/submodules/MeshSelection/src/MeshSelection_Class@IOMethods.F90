@@ -472,7 +472,7 @@ LOGICAL(LGT) :: isSelectionByElemNum, isSelectionByNodeNum,  &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportParamFromToml()')
+  & '[START]')
 #endif
 
 CALL toml_get(table, "isSelectionByMeshID", isSelectionByMeshID,  &
@@ -498,7 +498,7 @@ CALL SetMeshSelectionParam( &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE meshSelect_ImportParamFromToml
 
