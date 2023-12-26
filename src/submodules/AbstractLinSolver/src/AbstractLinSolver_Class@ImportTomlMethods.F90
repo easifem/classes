@@ -134,9 +134,10 @@ p_iluc_drop = default_iluc_drop
 p_iluc_rate = default_iluc_rate
 
 IF (ASSOCIATED(node)) THEN
-  CALL toml_get(node, "option", preconditionOption%raw, origin=origin, &
-    & stat=stat)
-  CALL toml_get(node, "name", p_name%raw, origin=origin, stat=stat)
+  CALL toml_get(node, "option", preconditionOption%raw, default_preconditionOption_char,  &
+  & origin=origin, stat=stat)
+  CALL toml_get(node, "name", p_name%raw, default_p_name_char,  &
+  & origin=origin, stat=stat)
 
   child => NULL()
   CALL toml_get(node, "ilu", child, origin=origin, stat=stat, &
