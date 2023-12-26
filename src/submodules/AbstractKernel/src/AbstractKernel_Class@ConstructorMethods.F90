@@ -503,7 +503,7 @@ IF (obj%showTime) THEN
     & status="REPLACE", action="WRITE", separator=",")
   CALL obj%showTimeFile%OPEN()
   temp_str = ""
-  temp_str = "currentTimeStep, currentTime, method, cpu-time"
+  temp_str = "currentTimeStep,currentTime,method,cpu-time"
   CALL obj%showTimeFile%WRITE(val=temp_str)
 END IF
 
