@@ -101,7 +101,8 @@ SUBROUTINE KernelInitiateScalarProperty1(vars, materials, dom, nnt,  &
     id = amesh%GetMaterial(matid)
     IF (id .EQ. 0_I4B) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[INTERNAL ERROR] :: For mesh('//tostring(ii)//') found  id = 0.')
+        & '[INTERNAL ERROR] :: For mesh('//tostring(ii)//') and '//  &
+        & ' material-id = '//tostring(matid)//' found id = 0')
       RETURN
     END IF
 

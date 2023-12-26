@@ -29,12 +29,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_GetnodeNum1
-IF (isAllocated(obj%nodeNum)) THEN
-  CALL Reallocate(ans, SIZE(obj%nodeNum))
+CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum1()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: aint
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+isok = isAllocated(obj%nodeNum)
+IF (isok) THEN
+  aint = SIZE(obj%nodeNum)
+  CALL Reallocate(ans, aint)
   ans = obj%nodeNum
 ELSE
-  CALL reallocate(ans, 0_I4B)
+  CALL Reallocate(ans, 0_I4B)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
 END PROCEDURE meshSelect_GetnodeNum1
 
 !----------------------------------------------------------------------------
@@ -49,7 +66,7 @@ INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] GetnodeNum()')
+  & '[START]')
 #endif
 
 ! isSelectionBynodeNum
@@ -99,18 +116,19 @@ END PROCEDURE meshSelect_GetnodeNum2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_GetnodeNum3
-CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum3"
+CHARACTER(*), PARAMETER :: myName = "meshSelect_GetnodeNum3()"
 TYPE(IntVector_) :: aintvec
 INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
 INTEGER(I4B) :: ii, dim, nsd
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] GetnodeNum()')
+  & '[START]')
 #endif
 
 ! isSelectionBynodeNum
-IF (obj%isSelectionBynodeNum) THEN
+IF (obj%isSelectionByNodeNum) THEN
   nptrs = obj%GetnodeNum()
   IF (ALLOCATED(nptrs)) THEN
     CALL APPEND(aintvec, nptrs)
@@ -120,14 +138,22 @@ END IF
 
 ! isSelectionByMeshID
 IF (obj%isSelectionByMeshID) THEN
+
   nsd = domain%GetNSD()
   DO dim = 0, nsd
-    IF (obj%isMeshIDAllocated(dim=dim)) THEN
+
+    isok = obj%isMeshIDAllocated(dim=dim)
+    IF (isok) THEN
+
       indx = obj%GetMeshID(dim=dim)
+
       nptrs = domain%GetNptrs(dim=dim, entityNum=indx)
+
       IF (ALLOCATED(nptrs)) THEN
+
         CALL APPEND(aintvec, nptrs)
         DEALLOCATE (nptrs)
+
       END IF
       IF (ALLOCATED(indx)) DEALLOCATE (indx)
     END IF
@@ -156,7 +182,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] GetnodeNum()')
+  & '[END]')
 #endif
 END PROCEDURE meshSelect_GetnodeNum3
 

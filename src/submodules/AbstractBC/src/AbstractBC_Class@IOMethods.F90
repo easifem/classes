@@ -337,7 +337,7 @@ TYPE(String) :: nodalValueType_string, name, astr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportParamFromToml()')
+  & '[START]')
 #endif
 
 CALL toml_get(table, "isUserFunction", isUserFunction,  &
@@ -392,7 +392,7 @@ nodalValueType_string = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE bc_ImportParamFromToml
 
@@ -401,7 +401,7 @@ END PROCEDURE bc_ImportParamFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE bc_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "meshSelect_ImportFromToml1()"
+CHARACTER(*), PARAMETER :: myName = "bc_ImportFromToml1()"
 TYPE(ParameterList_) :: param
 TYPE(toml_table), POINTER :: node
 TYPE(MeshSelection_) :: boundary
@@ -412,7 +412,7 @@ REAL(DFP) :: constantValue
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 CALL param%Initiate()
 
@@ -508,7 +508,7 @@ END SELECT
 CALL param%DEALLOCATE()
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE bc_ImportFromToml1
 
@@ -524,7 +524,7 @@ INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
+  & '[START]')
 #endif
 
 CALL GetValue(table=table, afile=afile, filename=filename)
@@ -550,7 +550,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
+  & '[END]')
 #endif
 END PROCEDURE bc_ImportFromToml2
 

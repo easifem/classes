@@ -420,20 +420,44 @@ END PROCEDURE Domain_GetGlobalToLocalNodeNumPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE Domain_GetNptrs
-INTEGER(I4B) :: ii
+CHARACTER(*), PARAMETER :: myName = "Domain_GetNptrs()"
+INTEGER(I4B) :: ii, tentity, tnodes
 CLASS(Mesh_), POINTER :: meshptr
 TYPE(IntVector_) :: intvec
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+LOGICAL(LGT) :: problem
+
 meshptr => NULL()
-DO ii = 1, SIZE(entityNum)
+tentity = SIZE(entityNum)
+DO ii = 1, tentity
+
   meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum(ii))
-  IF (ASSOCIATED(meshptr)) THEN
-    CALL APPEND(intvec, meshptr%getNptrs())
-  END IF
+
+  problem = .NOT. ASSOCIATED(meshptr)
+  IF (problem) CYCLE
+
+  problem = meshptr%isEmpty()
+  IF (problem) CYCLE
+
+  nptrs = meshptr%GetNptrs()
+
+  CALL APPEND(intvec, nptrs)
+
 END DO
+
 CALL RemoveDuplicates(intvec)
-ans = intvec
+
+IF (isAllocated(intvec)) THEN
+  ans = intvec
+ELSE
+  CALL reallocate(ans, 0)
+END IF
+
 CALL DEALLOCATE (intvec)
+
 NULLIFY (meshptr)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+
 END PROCEDURE Domain_GetNptrs
 
 !----------------------------------------------------------------------------
