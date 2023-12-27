@@ -33,6 +33,199 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                        ilu_import_from_toml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ilu_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  INTEGER(I4B) :: p_ilu_lfil, p_ilu_mbloc, p_ilu_fill
+  REAL(DFP) :: p_ilu_droptol, p_ilu_permtol, p_ilu_alpha
+
+  CALL toml_get(table, "lfil", p_ilu_lfil, default_ilu_lfil,  &
+              & origin=origin, stat=stat)
+  CALL toml_get(table, "mbloc", p_ilu_mbloc, default_ilu_mbloc,  &
+              & origin=origin, stat=stat)
+  CALL toml_get(table, "fill", p_ilu_fill, default_ilu_fill,  &
+              & origin=origin, stat=stat)
+  CALL toml_get(table, "droptol", p_ilu_droptol, default_ilu_droptol,  &
+              & origin=origin, stat=stat)
+  CALL toml_get(table, "permtol", p_ilu_permtol, default_ilu_permtol, &
+              & origin=origin, stat=stat)
+  CALL toml_get(table, "alpha", p_ilu_alpha, default_ilu_alpha,  &
+              & origin=origin, stat=stat)
+
+  CALL SetPrecondIluParam(param=param, prefix=prefix,  &
+    & p_ilu_lfil=p_ilu_lfil, p_ilu_mbloc=p_ilu_mbloc,  &
+    & p_ilu_droptol=p_ilu_droptol, p_ilu_permtol=p_ilu_permtol,  &
+    & p_ilu_alpha=p_ilu_alpha, p_ilu_fill=p_ilu_fill)
+
+END SUBROUTINE ilu_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        hybrid_import_from_toml
+!----------------------------------------------------------------------------
+
+SUBROUTINE hybrid_import_from_toml(obj, param, prefix, table)
+  CLASS(AbstractLinSolver_), INTENT(IN) :: obj
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  TYPE(String) :: p_hybrid_i
+  INTEGER(I4B) :: p_hybrid_maxiter, p_hybrid_ell, p_hybrid_restart
+  REAL(DFP) :: p_hybrid_tol, p_hybrid_omega
+
+  CALL toml_get(table, "name", p_hybrid_i%raw, default_hybrid_i_char,  &
+    & origin=origin, stat=stat)
+  CALL toml_get(table, "maxIter", p_hybrid_maxiter,  &
+    & default_hybrid_maxiter, origin=origin, stat=stat)
+  CALL toml_get(table, "ell", p_hybrid_ell,  &
+    & default_hybrid_ell, origin=origin, stat=stat)
+  CALL toml_get(table, "restart",  &
+    & p_hybrid_restart,  &
+    & default_hybrid_restart, origin=origin, stat=stat)
+  CALL toml_get(table, "tol", p_hybrid_tol,  &
+    & default_hybrid_tol, origin=origin, stat=stat)
+  CALL toml_get(table, "omega",  &
+    & p_hybrid_omega,  &
+    & default_hybrid_omega, origin=origin, stat=stat)
+
+  CALL SetPrecondHybridParam(param=param, prefix=prefix,  &
+    & p_hybrid_i=obj%solverName_ToInteger(p_hybrid_i%chars()), &
+    & p_hybrid_maxiter=p_hybrid_maxiter,  &
+    & p_hybrid_tol=p_hybrid_tol, p_hybrid_omega=p_hybrid_omega,  &
+    & p_hybrid_ell=p_hybrid_ell, p_hybrid_restart=p_hybrid_restart)
+
+END SUBROUTINE hybrid_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        is_import_from_toml
+!----------------------------------------------------------------------------
+
+SUBROUTINE is_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  INTEGER(I4B) :: p_is_m
+  REAL(DFP) :: p_is_alpha
+
+  CALL toml_get(table, "m", p_is_m,  &
+    & default_is_m, origin=origin, stat=stat)
+  CALL toml_get(table, "p_is_alpha", p_is_alpha,  &
+    & default_is_alpha, origin=origin, stat=stat)
+
+  CALL SetPrecondIsParam(param=param, prefix=prefix,  &
+    & p_is_m=p_is_m, p_is_alpha=p_is_alpha)
+
+END SUBROUTINE is_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        ssor_import_from_toml
+!----------------------------------------------------------------------------
+
+SUBROUTINE adds_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  INTEGER(I4B) :: p_adds_iter
+  LOGICAL(LGT) :: p_adds
+
+  CALL toml_get(table, "iter", p_adds_iter, origin=origin, stat=stat)
+  CALL toml_get(table, "isAdditiveSchwarz", p_adds,  &
+    & origin=origin, stat=stat)
+
+  CALL SetPrecondAddsParam(param=param, prefix=prefix,  &
+    & p_adds_iter=p_adds_iter, p_adds=p_adds)
+
+END SUBROUTINE adds_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        ssor_import_from_toml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ssor_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  REAL(DFP) :: p_ssor_omega
+
+  CALL toml_get(table, "omega", p_ssor_omega, origin=origin, stat=stat)
+
+  CALL SetPrecondSsorParam(param=param, prefix=prefix,  &
+      & p_ssor_omega=p_ssor_omega)
+END SUBROUTINE ssor_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        sainv_import_from_tom
+!----------------------------------------------------------------------------
+
+SUBROUTINE sainv_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  REAL(DFP) :: p_sainv_drop
+
+  CALL toml_get(table, "drop", p_sainv_drop, origin=origin, stat=stat)
+
+  CALL SetPrecondSainvParam(param=param, prefix=prefix,  &
+      & p_sainv_drop=p_sainv_drop)
+
+END SUBROUTINE sainv_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        saamg_import_from_tom
+!----------------------------------------------------------------------------
+
+SUBROUTINE saamg_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  REAL(DFP) :: p_saamg_theta
+  LOGICAL(LGT) :: p_saamg_unsym
+
+  CALL toml_get(table, "theta", p_saamg_theta, origin=origin, stat=stat)
+  CALL toml_get(table, "unsym", p_saamg_unsym, origin=origin, stat=stat)
+
+  CALL SetPrecondSaamgParam(param=param, prefix=prefix,  &
+    & p_saamg_theta=p_saamg_theta, p_saamg_unsym=p_saamg_unsym)
+
+END SUBROUTINE saamg_import_from_toml
+
+!----------------------------------------------------------------------------
+!                                                        iluc_import_from_tom
+!----------------------------------------------------------------------------
+
+SUBROUTINE iluc_import_from_toml(param, prefix, table)
+  TYPE(ParameterList_), INTENT(INOUT) :: param
+  CHARACTER(*), INTENT(IN) :: prefix
+  TYPE(toml_table), POINTER, INTENT(IN) :: table
+  INTEGER(I4B) :: origin, stat
+
+  REAL(DFP) :: p_iluc_drop, p_iluc_rate
+
+  CALL toml_get(table, "drop", p_iluc_drop, origin=origin, stat=stat)
+  CALL toml_get(table, "rate", p_iluc_rate, origin=origin, stat=stat)
+
+  CALL SetPrecondIlucParam(param=param, prefix=prefix,  &
+    & p_iluc_rate=p_iluc_rate, p_iluc_drop=p_iluc_drop)
+
+END SUBROUTINE iluc_import_from_toml
+!----------------------------------------------------------------------------
 !                                                     ImportParamFromToml
 !----------------------------------------------------------------------------
 
@@ -40,6 +233,7 @@ MODULE PROCEDURE als_ImportParamFromToml
 CHARACTER(*), PARAMETER :: myName = "als_ImportParamFromToml()"
 INTEGER(I4B) :: origin, stat
 TYPE(toml_table), POINTER :: child, node
+CHARACTER(:), ALLOCATABLE :: prefix
 
 TYPE(String) :: engine, solverName, preconditionOption,  &
   & p_name, convergenceIn, convergenceType, scale,  &
@@ -105,17 +299,7 @@ CALL toml_get(table, "sor_omega", sor_omega,  &
   & default_sor_omega, origin=origin, stat=stat)
 
 node => NULL()
-CALL toml_get(table, "precondition", node, origin=origin,  &
-  & stat=stat, requested=.FALSE.)
 
-preconditionOption = default_preconditionOption_char
-p_name = default_p_name_char
-p_ilu_lfil = default_ilu_lfil
-p_ilu_mbloc = default_ilu_mbloc
-p_ilu_fill = default_ilu_fill
-p_ilu_droptol = default_ilu_droptol
-p_ilu_permtol = default_ilu_permtol
-p_ilu_alpha = default_ilu_alpha
 p_hybrid_i = default_hybrid_i_char
 p_hybrid_maxiter = default_hybrid_maxiter
 p_hybrid_ell = default_hybrid_ell
@@ -133,102 +317,23 @@ p_saamg_unsym = default_saamg_unsym
 p_iluc_drop = default_iluc_drop
 p_iluc_rate = default_iluc_rate
 
+CALL toml_get(table, "precondition", node, origin=origin,  &
+  & stat=stat, requested=.FALSE.)
+
 IF (ASSOCIATED(node)) THEN
-  CALL toml_get(node, "option", preconditionOption%raw, origin=origin, &
-    & stat=stat)
-  CALL toml_get(node, "name", p_name%raw, origin=origin, stat=stat)
-
-  child => NULL()
-  CALL toml_get(node, "ilu", child, origin=origin, stat=stat, &
-  & requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "lfil", p_ilu_lfil, origin=origin, stat=stat)
-
-    CALL toml_get(child, "mbloc", p_ilu_mbloc, origin=origin, stat=stat)
-
-    CALL toml_get(child, "fill", p_ilu_fill, origin=origin, stat=stat)
-
-    CALL toml_get(child, "droptol", p_ilu_droptol, origin=origin, stat=stat)
-
-    CALL toml_get(child, "permtol", p_ilu_permtol, origin=origin, stat=stat)
-
-    CALL toml_get(child, "alpha", p_ilu_alpha, origin=origin, stat=stat)
-
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "hybrid", child, origin=origin, stat=stat,  &
-    & requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "name", p_hybrid_i%raw, default_hybrid_i_char,  &
-      & origin=origin, stat=stat)
-    CALL toml_get(child, "maxIter", p_hybrid_maxiter,  &
-      & default_hybrid_maxiter, origin=origin, stat=stat)
-    CALL toml_get(child, "ell", p_hybrid_ell,  &
-      & default_hybrid_ell, origin=origin, stat=stat)
-    CALL toml_get(child, "restart",  &
-      & p_hybrid_restart,  &
-      & default_hybrid_restart, origin=origin, stat=stat)
-    CALL toml_get(child, "tol", p_hybrid_tol,  &
-      & default_hybrid_tol, origin=origin, stat=stat)
-    CALL toml_get(child, "omega",  &
-      & p_hybrid_omega,  &
-      & default_hybrid_omega, origin=origin, stat=stat)
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "is", child, origin=origin, stat=stat,  &
-    & requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "m", p_is_m,  &
-      & default_is_m, origin=origin, stat=stat)
-    CALL toml_get(child, "p_is_alpha", p_is_alpha,  &
-      & default_is_alpha, origin=origin, stat=stat)
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "adds", child, origin=origin,  &
-    & stat=stat, requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "iter", p_adds_iter, origin=origin, stat=stat)
-    CALL toml_get(child, "isAdditiveSchwarz", p_adds,  &
-      & origin=origin, stat=stat)
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "ssor", child, origin=origin,  &
-    & stat=stat, requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "omega", p_ssor_omega, origin=origin, stat=stat)
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "sainv", child, origin=origin,  &
-    & stat=stat, requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "drop", p_sainv_drop, origin=origin, stat=stat)
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "saamg", child, origin=origin,  &
-    & stat=stat, requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "theta", p_saamg_theta, origin=origin, stat=stat)
-    CALL toml_get(child, "unsym", p_saamg_unsym, origin=origin, stat=stat)
-  END IF
-
-  child => NULL()
-  CALL toml_get(node, "iluc", child, origin=origin,  &
-    & stat=stat, requested=.FALSE.)
-  IF (ASSOCIATED(child)) THEN
-    CALL toml_get(child, "drop", p_iluc_drop, origin=origin, stat=stat)
-    CALL toml_get(child, "rate", p_iluc_rate, origin=origin, stat=stat)
-  END IF
+  CALL toml_get(node, "option", preconditionOption%raw,  &
+        & default_preconditionOption_char, origin=origin, stat=stat)
+  CALL toml_get(node, "name", p_name%raw, default_p_name_char,  &
+        & origin=origin, stat=stat)
+ELSE
+  preconditionOption = default_preconditionOption_char
+  p_name = default_p_name_char
 END IF
 
+prefix = obj%GetPrefix()
 CALL SetAbstractLinSolverParam( &
     & param=param, &
-    & prefix=obj%GetPrefix(), &
+    & prefix=prefix, &
     & engine=engine%chars(), &
     & solverName=obj%solverName_ToInteger(solverName%chars()), &
     & preconditionOption= &
@@ -270,6 +375,36 @@ CALL SetAbstractLinSolverParam( &
     & p_adds=p_adds, &
     & p_adds_iter=p_adds_iter &
 & )
+
+child => NULL()
+CALL toml_get(node, LowerCase(p_name%chars()), child, origin=origin,  &
+  & stat=stat, requested=.FALSE.)
+IF (ASSOCIATED(child)) THEN
+  SELECT CASE (p_name%chars())
+  CASE ("none", "NONE")
+    ! do nothing
+  CASE ("ilu", "ILU")
+    CALL ilu_import_from_toml(param=param, prefix=prefix, table=child)
+  CASE ("hybrid", "HYBRID")
+    CALL hybrid_import_from_toml(obj=obj, param=param, prefix=prefix,  &
+     & table=child)
+  CASE ("is", "IS")
+    CALL is_import_from_toml(param=param, prefix=prefix, table=child)
+  CASE ("adds", "ADDS")
+    CALL adds_import_from_toml(param=param, prefix=prefix, table=child)
+  CASE ("ssor", "SSOR")
+    CALL ssor_import_from_toml(param=param, prefix=prefix, table=child)
+  CASE ("sainv", "SAINV")
+    CALL sainv_import_from_toml(param=param, prefix=prefix, table=child)
+  CASE ("saamg", "SAAMG")
+    CALL saamg_import_from_toml(param=param, prefix=prefix, table=child)
+  CASE ("iluc", "ILUC")
+    CALL iluc_import_from_toml(param=param, prefix=prefix, table=child)
+  END SELECT
+  child => NULL()
+END IF
+
+DEALLOCATE (prefix)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -355,7 +490,7 @@ END IF
 
 IF (ALLOCATED(error)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Some error occured while parsing toml file'//  &
+   & '[INTERNAL ERROR] :: Some error occured while parsing toml file'//  &
     & ' with following message: '//error%message)
 END IF
 
