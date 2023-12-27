@@ -46,11 +46,10 @@ PUBLIC :: BlockNodeFieldPointer_
 ! date: 06 Jan 2022
 ! summary: This nodal field is designed for the multiphysics applications
 !
-!{!pages/BlockNodeFieldLis_.md}
+!{!pages/docs-api/BlockNodeField/BlockNodeFieldLis_.md!}
 
 TYPE, EXTENDS(BlockNodeField_) :: BlockNodeFieldLis_
 
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -113,7 +112,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
   PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-#endif
+  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
 END TYPE BlockNodeFieldLis_
 
 TYPE(BlockNodeFieldLis_), PARAMETER :: TypeBlockNodeFieldLis = &
@@ -126,8 +125,6 @@ TYPE(BlockNodeFieldLis_), PARAMETER :: TypeBlockNodeFieldLis = &
 TYPE :: BlockNodeFieldLisPointer_
   CLASS(BlockNodeFieldLis_), POINTER :: ptr => NULL()
 END TYPE BlockNodeFieldLisPointer_
-
-#ifdef USE_LIS
 
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethod
@@ -820,7 +817,22 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
   END SUBROUTINE obj_Copy
 END INTERFACE
-#endif
+
+!----------------------------------------------------------------------------
+!                                                 DOT_PRODUCT@BlasMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-27
+! summary:  dot DOT_PRODUCT
+
+INTERFACE
+  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
+    CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    REAL(DFP) :: ans
+  END FUNCTION obj_DOT_PRODUCT
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
