@@ -278,10 +278,14 @@ END PROCEDURE obj_GetFEVariable
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "obj_GetPointerOfComponent"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointerOfComponent()"
+
+#ifdef DEBUG_VER
 IF (spaceCompo .GT. obj%spaceCompo) &
   & CALL e%raiseError(modName//'::'//myName//" - "// &
   & 'given spaceCompo should be less than or equal to obj%spaceCompo')
+#endif
+
 ans => GetPointer( &
   & obj=obj%realvec, &
   & dofobj=obj%dof, &
