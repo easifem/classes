@@ -104,4 +104,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 END PROCEDURE obj_Copy
 
+!----------------------------------------------------------------------------
+!                                                           DOT_PRODUCT
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DOT_PRODUCT
+CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
+INTEGER(I4B) :: ierr
+
+#include "lisf.h"
+
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CALL CHKERR(ierr)
+
+CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+CALL CHKERR(ierr)
+#endif
+
+CALL lis_vector_dot(obj%lis_ptr, obj2%lis_ptr, ans, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+END PROCEDURE obj_DOT_PRODUCT
+
 END SUBMODULE BlasMethods
