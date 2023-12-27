@@ -39,7 +39,6 @@ PUBLIC :: STScalarFieldLisPointer_
 PUBLIC :: STScalarFieldLis
 PUBLIC :: STScalarFieldLis_Pointer
 PUBLIC :: TypeSTScalarField
-PUBLIC :: STScalarFieldLisDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         STScalarFieldLis_
@@ -52,7 +51,6 @@ PUBLIC :: STScalarFieldLisDeallocate
 !{!pages/docs-api/STScalarFieldLis/STScalarFieldLis_.md}
 
 TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -105,13 +103,6 @@ CONTAINS
     !! obj1 = obj2
 
   ! GET:
-  ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
@@ -131,7 +122,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => &
     & obj_GetPointer
   !! Get pointer
-#endif
+
+  ! GET:
+  ! @BlasMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
+  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
+
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -180,8 +179,6 @@ INTERFACE STScalarFieldLis_Pointer
     CLASS(STScalarFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STScalarFieldLis_Pointer
-
-#ifdef USE_LIS
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -1040,8 +1037,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                 DOT_PRODUCT@BlasMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-27
+! summary:  dot DOT_PRODUCT
+
+INTERFACE
+  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
+    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    REAL(DFP) :: ans
+  END FUNCTION obj_DOT_PRODUCT
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-#endif
 END MODULE STScalarFieldLis_Class
