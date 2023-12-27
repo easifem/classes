@@ -117,8 +117,6 @@ CONTAINS
   !! This function should be called for Native engine only
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the length of data stored inside the fortran vector
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  !! Returns the L2 norm
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
@@ -160,8 +158,19 @@ CONTAINS
   ! GET:
   ! @BlasMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AXPY => obj_AXPY
+  !! Y = Y + scale * X
   PROCEDURE, PUBLIC, PASS(obj) :: SCAL => obj_SCAL
+  !! X = scale * X
   PROCEDURE, PUBLIC, PASS(obj) :: COPY => obj_Copy
+  !! Y = X
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
+  !! Returns the L2 norm
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
+  !! Returns the L1 norm
+  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
+  !! Returns the infinity norm
+  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
+  !! dot product
 
 END TYPE AbstractNodeField_
 
@@ -360,21 +369,6 @@ INTERFACE AbstractNodeFieldGetPointer
     REAL(DFP), POINTER :: ans(:)
   END FUNCTION obj_GetPointer
 END INTERFACE AbstractNodeFieldGetPointer
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: This function returns NORM2
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                       SetParam@SetMethods
@@ -688,6 +682,67 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
   END SUBROUTINE obj_Copy
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: This function returns NORM2
+
+INTERFACE
+  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm1@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: This function returns first norm (absolute some)
+
+INTERFACE
+  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Normi@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: This function returns infinity norm
+
+INTERFACE
+  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_Normi
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Norm2@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-27
+! summary:  performs dot product
+
+INTERFACE
+  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    REAL(DFP) :: ans
+  END FUNCTION obj_DOT_PRODUCT
 END INTERFACE
 
 !----------------------------------------------------------------------------
