@@ -51,7 +51,6 @@ PUBLIC :: VectorFieldLis_Pointer
 !{!pages/VectorFieldLis_.md}
 
 TYPE, EXTENDS(VectorField_) :: VectorFieldLis_
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -130,15 +129,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
   PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
 
-#endif
 END TYPE VectorFieldLis_
 
 TYPE(VectorFieldLis_), PARAMETER :: TypeVectorFieldLis =  &
   & VectorFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
-!                                                       VectorFieldLisPointer_
+!                                                     VectorFieldLisPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: VectorFieldLisPointer_
@@ -162,7 +161,7 @@ INTERFACE VectorFieldLis
 END INTERFACE VectorFieldLis
 
 !----------------------------------------------------------------------------
-!                                           VectorFieldLis_Pointer@Constructor
+!                                         VectorFieldLis_Pointer@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -176,8 +175,6 @@ INTERFACE VectorFieldLis_Pointer
     CLASS(VectorFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE VectorFieldLis_Pointer
-
-#ifdef USE_LIS
 
 !----------------------------------------------------------------------------
 !                                                    Size@ConstructorMethods
@@ -1043,8 +1040,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                 DOT_PRODUCT@BlasMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-27
+! summary:  dot DOT_PRODUCT
+
+INTERFACE
+  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
+    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    REAL(DFP) :: ans
+  END FUNCTION obj_DOT_PRODUCT
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-#endif
 END MODULE VectorFieldLis_Class
