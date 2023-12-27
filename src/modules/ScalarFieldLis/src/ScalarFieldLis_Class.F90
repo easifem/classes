@@ -46,10 +46,9 @@ PUBLIC :: ScalarFieldLis_Pointer
 ! date: 25 June 2021
 ! summary: LIS Scalar field
 !
-!{!pages/ScalarFieldLis_.md}
+!{!pages/docs-api/ScalarFieldLis/ScalarFieldLis_.md!}
 
 TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -114,7 +113,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
   PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-#endif
+  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
 END TYPE ScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -173,8 +172,6 @@ INTERFACE ScalarFieldLis_Pointer
     CLASS(ScalarFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE ScalarFieldLis_Pointer
-
-#ifdef USE_LIS
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -649,9 +646,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                   DOT_PRODUCT@BlasMethods
 !----------------------------------------------------------------------------
 
-#endif
+INTERFACE
+  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
+    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    REAL(DFP) :: ans
+  END FUNCTION obj_DOT_PRODUCT
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE ScalarFieldLis_Class
