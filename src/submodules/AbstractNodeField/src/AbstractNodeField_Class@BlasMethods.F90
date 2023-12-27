@@ -123,6 +123,70 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_COPY
 
 !----------------------------------------------------------------------------
+!                                                                    NORM2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Norm2
+CHARACTER(*), PARAMETER :: myName = "obj_Norm2()"
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ans = NORM2(obj=obj%realvec)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+    & 'child classes')
+  ans = 0.0_DFP
+END IF
+END PROCEDURE obj_Norm2
+
+!----------------------------------------------------------------------------
+!                                                                    NORM1
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Norm1
+CHARACTER(*), PARAMETER :: myName = "obj_Norm1()"
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ans = NORM1(obj=obj%realvec)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+    & 'child classes')
+  ans = 0.0_DFP
+END IF
+END PROCEDURE obj_Norm1
+
+!----------------------------------------------------------------------------
+!                                                                    NORM2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Normi
+CHARACTER(*), PARAMETER :: myName = "obj_Normi()"
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ans = NORMi(obj=obj%realvec)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+    & 'child classes')
+  ans = 0.0_DFP
+END IF
+END PROCEDURE obj_Normi
+
+!----------------------------------------------------------------------------
+!                                                               DOT_PRODUCT
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_DOT_PRODUCT
+CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ans = DOT_PRODUCT(obj1=obj%realvec, obj2=obj2%realvec)
+ELSE
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
+    & 'child classes')
+  ans = 0.0_DFP
+END IF
+END PROCEDURE obj_DOT_PRODUCT
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
