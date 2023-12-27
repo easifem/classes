@@ -45,8 +45,6 @@ ALLOCATE (ans)
 CALL ans%initiate(param, dom)
 END PROCEDURE obj_Constructor_1
 
-#ifdef USE_LIS
-
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
@@ -99,5 +97,4 @@ END PROCEDURE obj_Size
 !
 !----------------------------------------------------------------------------
 
-#endif
 END SUBMODULE ConstructorMethods
