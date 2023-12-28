@@ -63,6 +63,7 @@ PUBLIC :: AbstractField_
 PUBLIC :: AbstractFieldInitiate2
 PUBLIC :: FIELD_TYPE_NAME
 PUBLIC :: TypeField
+PUBLIC :: TypeEngineName
 
 !----------------------------------------------------------------------------
 !                                                                TypeField
@@ -76,6 +77,22 @@ TYPE :: TypeField_
 END TYPE TypeField_
 
 TYPE(TypeField_), PARAMETER :: TypeField = TypeField_()
+
+!----------------------------------------------------------------------------
+!                                                                TypeField
+!----------------------------------------------------------------------------
+
+TYPE :: EngineName_
+  CHARACTER(13) :: native_serial = "NATIVE_SERIAL"
+  CHARACTER(10) :: native_omp = "NATIVE_OMP"
+  CHARACTER(10) :: native_mpi = "NATIVE_MPI"
+  CHARACTER(7) :: lis_omp = "LIS_OMP"
+  CHARACTER(7) :: lis_mpi = "LIS_MPI"
+  CHARACTER(9) :: petsc_omp = "PETSC_OMP"
+  CHARACTER(9) :: petsc_mpi = "PETSC_MPI"
+END TYPE EngineName_
+
+TYPE(EngineName_), PARAMETER :: TypeEngineName = EngineName_()
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_

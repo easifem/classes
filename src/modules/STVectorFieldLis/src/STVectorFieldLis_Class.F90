@@ -50,7 +50,6 @@ PUBLIC :: STVectorFieldLis_Pointer
 !{!pages/docs-api/STVectorFieldLis/STVectorFieldLis_.md!}
 
 TYPE, EXTENDS(STVectorField_) :: STVectorFieldLis_
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -121,21 +120,13 @@ CONTAINS
     & obj_GetPointerOfComponent
     !! Get the entries of STVector field
 
-  ! GET:
-  ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-
-#endif
 END TYPE STVectorFieldLis_
 
 TYPE(STVectorFieldLis_), PARAMETER :: TypeSTVectorFieldLis =  &
   & STVectorFieldLis_(domains=NULL())
 
 !---------------------------------------------------------------------------
-!                                                     STVectorFieldLisPointer_
+!                                                   STVectorFieldLisPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: STVectorFieldLisPointer_
@@ -143,7 +134,7 @@ TYPE :: STVectorFieldLisPointer_
 END TYPE STVectorFieldLisPointer_
 
 !----------------------------------------------------------------------------
-!                                                         STVector@Constructor
+!                                                      STVector@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -159,7 +150,7 @@ INTERFACE STVectorFieldLis
 END INTERFACE STVectorFieldLis
 
 !----------------------------------------------------------------------------
-!                                          STVectorFieldLis_Pointer@Constructor
+!                                       STVectorFieldLis_Pointer@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -173,68 +164,6 @@ INTERFACE STVectorFieldLis_Pointer
     CLASS(STVectorFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STVectorFieldLis_Pointer
-
-#ifdef USE_LIS
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-26
-! summary: Returns L2 norm
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-26
-! summary: Returns L1 norm
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-26
-! summary: Returns infinity norm
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         COPY@BlasMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Copy obj=obj2
-
-INTERFACE
-  MODULE SUBROUTINE obj_Copy(obj, obj2)
-    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-  END SUBROUTINE obj_Copy
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    Size@ConstructorMethods
@@ -1037,10 +966,8 @@ INTERFACE
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE obj_GetSingle
 END INTERFACE
-#endif
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
 END MODULE STVectorFieldLis_Class

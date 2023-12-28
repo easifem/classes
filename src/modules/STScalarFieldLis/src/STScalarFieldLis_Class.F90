@@ -39,7 +39,6 @@ PUBLIC :: STScalarFieldLisPointer_
 PUBLIC :: STScalarFieldLis
 PUBLIC :: STScalarFieldLis_Pointer
 PUBLIC :: TypeSTScalarField
-PUBLIC :: STScalarFieldLisDeallocate
 
 !----------------------------------------------------------------------------
 !                                                         STScalarFieldLis_
@@ -52,7 +51,6 @@ PUBLIC :: STScalarFieldLisDeallocate
 !{!pages/docs-api/STScalarFieldLis/STScalarFieldLis_.md}
 
 TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -105,13 +103,6 @@ CONTAINS
     !! obj1 = obj2
 
   ! GET:
-  ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
@@ -131,7 +122,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => &
     & obj_GetPointer
   !! Get pointer
-#endif
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -180,8 +170,6 @@ INTERFACE STScalarFieldLis_Pointer
     CLASS(STScalarFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE STScalarFieldLis_Pointer
-
-#ifdef USE_LIS
 
 !----------------------------------------------------------------------------
 !                                                         Final@Constructor
@@ -992,56 +980,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         COPY@BlasMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Copy obj=obj2
-
-INTERFACE
-  MODULE SUBROUTINE obj_Copy(obj, obj2)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-  END SUBROUTINE obj_Copy
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-#endif
 END MODULE STScalarFieldLis_Class

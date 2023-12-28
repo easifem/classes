@@ -15,12 +15,14 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/VectorFieldLis_Class@ConstructorMethods.F90
-          ${src_path}/VectorFieldLis_Class@IOMethods.F90
-          ${src_path}/VectorFieldLis_Class@SetMethods.F90
-          ${src_path}/VectorFieldLis_Class@GetMethods.F90
-          ${src_path}/VectorFieldLis_Class@DBCMethods.F90
-          ${src_path}/VectorFieldLis_Class@BlasMethods.F90)
+if(USE_LIS)
+  set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+  target_sources(
+    ${PROJECT_NAME}
+    PRIVATE ${src_path}/VectorFieldLis_Class@ConstructorMethods.F90
+            ${src_path}/VectorFieldLis_Class@IOMethods.F90
+            ${src_path}/VectorFieldLis_Class@SetMethods.F90
+            ${src_path}/VectorFieldLis_Class@GetMethods.F90
+            ${src_path}/VectorFieldLis_Class@DBCMethods.F90
+            ${src_path}/VectorFieldLis_Class@BlasMethods.F90)
+endif()

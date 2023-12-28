@@ -174,17 +174,6 @@ END PROCEDURE obj_size
 !                                                                     Norm2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Norm2
-CHARACTER(*), PARAMETER :: myName = "obj_Norm2"
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-  ans = NORM2(obj=obj%realvec)
-ELSE
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This method has been implemented for NATIVE engines')
-  ans = 0.0_DFP
-END IF
-END PROCEDURE obj_Norm2
-
 !----------------------------------------------------------------------------
 !                                                                 GetSingle
 !----------------------------------------------------------------------------

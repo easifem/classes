@@ -41,17 +41,16 @@ PUBLIC :: VectorFieldLis
 PUBLIC :: VectorFieldLis_Pointer
 
 !----------------------------------------------------------------------------
-!                                                              VectorFieldLis_
+!                                                           VectorFieldLis_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: Vector field
 !
-!{!pages/VectorFieldLis_.md}
+!{!pages/docs-api/VectorField/VectorFieldLis_.md}
 
 TYPE, EXTENDS(VectorField_) :: VectorFieldLis_
-#ifdef USE_LIS
 CONTAINS
   PRIVATE
 
@@ -124,21 +123,13 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Get10 => obj_Get10
     !! Get the entries of Vector field
 
-  ! GET:
-  ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-
-#endif
 END TYPE VectorFieldLis_
 
 TYPE(VectorFieldLis_), PARAMETER :: TypeVectorFieldLis =  &
   & VectorFieldLis_(domains=NULL())
 
 !----------------------------------------------------------------------------
-!                                                       VectorFieldLisPointer_
+!                                                     VectorFieldLisPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: VectorFieldLisPointer_
@@ -162,7 +153,7 @@ INTERFACE VectorFieldLis
 END INTERFACE VectorFieldLis
 
 !----------------------------------------------------------------------------
-!                                           VectorFieldLis_Pointer@Constructor
+!                                         VectorFieldLis_Pointer@Constructor
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -176,8 +167,6 @@ INTERFACE VectorFieldLis_Pointer
     CLASS(VectorFieldLis_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE VectorFieldLis_Pointer
-
-#ifdef USE_LIS
 
 !----------------------------------------------------------------------------
 !                                                    Size@ConstructorMethods
@@ -995,56 +984,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         COPY@BlasMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Copy obj=obj2
-
-INTERFACE
-  MODULE SUBROUTINE obj_Copy(obj, obj2)
-    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-  END SUBROUTINE obj_Copy
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-#endif
 END MODULE VectorFieldLis_Class

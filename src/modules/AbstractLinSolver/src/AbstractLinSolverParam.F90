@@ -23,16 +23,15 @@ PRIVATE
 CHARACTER(*), PARAMETER, PUBLIC :: default_engine = "NATIVE_SERIAL"
 CHARACTER(*), PARAMETER, PUBLIC :: default_solverName_char = "CG"
 INTEGER(I4B), PARAMETER, PUBLIC :: default_solverName = lis_cg
-CHARACTER(*), PARAMETER, PUBLIC :: default_preconditionOption_char = &
-  & "NO_PRECONDITION"
+CHARACTER(*), PARAMETER, PUBLIC :: default_preconditionOption_char = "NO"
 INTEGER(I4B), PARAMETER, PUBLIC :: default_preconditionOption =  &
   & NO_PRECONDITION
 CHARACTER(*), PARAMETER, PUBLIC :: default_p_name_char = &
-  & "ILU"
-INTEGER(I4B), PARAMETER, PUBLIC :: default_p_name = PRECOND_ILU
+  & "NONE"
+INTEGER(I4B), PARAMETER, PUBLIC :: default_p_name = PRECOND_NONE
 
 INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceIn = convergenceInRes
-CHARACTER(*) , PARAMETER, PUBLIC :: default_convergenceIn_char="RESIDUAL"
+CHARACTER(*), PARAMETER, PUBLIC :: default_convergenceIn_char = "RESIDUAL"
 
 INTEGER(I4B), PARAMETER, PUBLIC :: default_convergenceType &
   & = relativeConvergence
@@ -56,7 +55,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: scale_none = 0
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_jacobi = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: scale_symm_diag = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: default_scale = scale_none
-CHARACTER(*) , PARAMETER, PUBLIC :: default_scale_char = "NONE"
+CHARACTER(*), PARAMETER, PUBLIC :: default_scale_char = "NONE"
 
 LOGICAL(LGT), PARAMETER, PUBLIC :: default_initx_zeros = .TRUE.
 
@@ -70,7 +69,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: default_ilu_fill = 5
 REAL(DFP), PARAMETER, PUBLIC :: default_ssor_omega = 1.0
 
 INTEGER(I4B), PARAMETER, PUBLIC :: default_hybrid_i = LIS_SOR
-CHARACTER(*) , PARAMETER, PUBLIC :: default_hybrid_i_char = "SOR"
+CHARACTER(*), PARAMETER, PUBLIC :: default_hybrid_i_char = "SOR"
 INTEGER(I4B), PARAMETER, PUBLIC :: default_hybrid_maxiter = 25
 REAL(DFP), PARAMETER, PUBLIC :: default_hybrid_tol = 1.0E-3
 REAL(DFP), PARAMETER, PUBLIC :: default_hybrid_omega = 1.5
