@@ -168,10 +168,10 @@ CASE (TypeEngineName%lis_omp)
 
 #ifdef DEBUG_VER
   CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHECKERR(ierr)
+  CALL CHKERR(ierr)
 
   CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-  CALL CHECKERR(ierr)
+  CALL CHKERR(ierr)
 #endif
 
   CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
