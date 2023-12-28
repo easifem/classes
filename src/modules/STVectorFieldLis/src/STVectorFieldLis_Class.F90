@@ -120,14 +120,6 @@ CONTAINS
     & obj_GetPointerOfComponent
     !! Get the entries of STVector field
 
-  ! GET:
-  ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
-
 END TYPE STVectorFieldLis_
 
 TYPE(STVectorFieldLis_), PARAMETER :: TypeSTVectorFieldLis =  &
@@ -976,79 +968,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-26
-! summary: Returns L2 norm
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-26
-! summary: Returns L1 norm
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-26
-! summary: Returns infinity norm
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         COPY@BlasMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Copy obj=obj2
-
-INTERFACE
-  MODULE SUBROUTINE obj_Copy(obj, obj2)
-    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-  END SUBROUTINE obj_Copy
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   DOT_PRODUCT@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-    REAL(DFP) :: ans
-  END FUNCTION obj_DOT_PRODUCT
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
 END MODULE STVectorFieldLis_Class

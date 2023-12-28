@@ -171,6 +171,10 @@ CONTAINS
   !! Returns the infinity norm
   PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
   !! dot product
+  PROCEDURE, PUBLIC, PASS(obj) :: PMUL => obj_PMUL
+  !! z = x * y
+  PROCEDURE, PUBLIC, PASS(obj) :: Reciprocal => obj_Reciprocal
+  !! y = 1/x
 
 END TYPE AbstractNodeField_
 
@@ -730,7 +734,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
+!                                                    DOT_PRODUCT@BlasMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -743,6 +747,36 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
     REAL(DFP) :: ans
   END FUNCTION obj_DOT_PRODUCT
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           PMUL@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-27
+! summary:  obj = obj1 * obj2
+
+INTERFACE
+  MODULE SUBROUTINE obj_PMUL(obj, obj1, obj2)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj1
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_PMUL
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     Reciprocal@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2023-12-27
+! summary:  obj = 1.0 / obj
+
+INTERFACE
+  MODULE SUBROUTINE obj_Reciprocal(obj)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Reciprocal
 END INTERFACE
 
 !----------------------------------------------------------------------------

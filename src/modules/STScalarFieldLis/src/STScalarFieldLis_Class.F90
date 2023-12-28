@@ -122,15 +122,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => &
     & obj_GetPointer
   !! Get pointer
-
-  ! GET:
-  ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
-  PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
-  PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-  PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
-
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -986,70 +977,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(OUT) :: VALUE
   END SUBROUTINE obj_GetSingle
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Norm1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_Normi(obj) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_Normi
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         COPY@BlasMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-12-17
-! summary: Copy obj=obj2
-
-INTERFACE
-  MODULE SUBROUTINE obj_Copy(obj, obj2)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-  END SUBROUTINE obj_Copy
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 DOT_PRODUCT@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-27
-! summary:  dot DOT_PRODUCT
-
-INTERFACE
-  MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
-    CLASS(STScalarFieldLis_), INTENT(IN) :: obj
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-    REAL(DFP) :: ans
-  END FUNCTION obj_DOT_PRODUCT
 END INTERFACE
 
 !----------------------------------------------------------------------------
