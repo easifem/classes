@@ -20,7 +20,7 @@
 
 MODULE STVectorFieldLis_Class
 USE GlobalData
-USE BaSetype
+USE Basetype
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE STVectorField_Class
@@ -65,8 +65,8 @@ FUNCTION STVectorFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
   TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(STVectorFieldLis_) :: ans
-  CALL obj%Initiate(param, dom)
-END FUNCTION obj_Constructor1
+  CALL ans%Initiate(param, dom)
+END FUNCTION
 
 FUNCTION STVectorFieldLis_Pointer(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param

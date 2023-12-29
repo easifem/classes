@@ -20,7 +20,7 @@
 
 MODULE VectorFieldLis_Class
 USE GlobalData
-USE BaSetype
+USE Basetype
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
@@ -78,7 +78,7 @@ FUNCTION VectorFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
   TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(VectorFieldLis_) :: ans
-  CALL obj%Initiate(dom)
+  CALL ans%Initiate(param, dom)
 END FUNCTION VectorFieldLis
 
 FUNCTION VectorFieldLis_Pointer(param, dom) RESULT(Ans)

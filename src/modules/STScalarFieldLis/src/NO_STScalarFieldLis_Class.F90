@@ -20,7 +20,7 @@
 
 MODULE STScalarFieldLis_Class
 USE GlobalData
-USE BaSetype
+USE Basetype
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class
@@ -74,7 +74,7 @@ FUNCTION STScalarFieldLis(param, dom) RESULT(Ans)
   TYPE(ParameterList_), INTENT(IN) :: param
   TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(STScalarFieldLis_) :: ans
-  CALL obj%Initiate(dom)
+  CALL ans%Initiate(param=param, dom=dom)
 END FUNCTION STScalarFieldLis
 
 FUNCTION STScalarFieldLis_Pointer(param, dom) RESULT(Ans)

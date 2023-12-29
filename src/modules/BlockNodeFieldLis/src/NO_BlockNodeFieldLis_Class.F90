@@ -20,7 +20,7 @@
 
 MODULE BlockNodeFieldLis_Class
 USE GlobalData
-USE BaSetype
+USE Basetype
 USE String_Class
 USE AbstractField_Class
 USE AbstractNodeField_Class

@@ -21,7 +21,7 @@
 MODULE ScalarFieldLis_Class
 USE GlobalData
 USE String_Class
-USE BaSetype
+USE Basetype
 USE AbstractField_Class
 USE AbstractNodeField_Class
 USE ScalarField_Class
@@ -93,7 +93,7 @@ FUNCTION ScalarFieldLis(param, dom) RESULT(Ans)
   TYPE(Domain_), TARGET, INTENT(IN) :: dom
   TYPE(ScalarFieldLis_) :: ans
   CALL ans%initiate(param, dom)
-END FUNCTION obj_Constructor1
+END FUNCTION
 
 !----------------------------------------------------------------------------
 !                                         ScalarFieldLis_Pointer@Constructor
@@ -108,6 +108,6 @@ FUNCTION ScalarFieldLis_Pointer(param, dom) RESULT(Ans)
   TYPE(Domain_), TARGET, INTENT(IN) :: dom
   CLASS(ScalarFieldLis_), POINTER :: ans
   CALL ans%initiate(param, dom)
-END FUNCTION ScalarFieldLis_Pointer
+END FUNCTION
 
 END MODULE ScalarFieldLis_Class
