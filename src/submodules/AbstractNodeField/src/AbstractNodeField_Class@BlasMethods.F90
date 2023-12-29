@@ -24,11 +24,11 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                     AXPY
+!                                                                     AXPY1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_AXPY
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY()"
+MODULE PROCEDURE obj_AXPY1
+CHARACTER(*), PARAMETER :: myName = "obj_AXPY1()"
 LOGICAL(LGT) :: problem
 INTEGER(I4B) :: ierr
 
@@ -83,7 +83,146 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 #endif
-END PROCEDURE obj_AXPY
+END PROCEDURE obj_AXPY1
+
+!----------------------------------------------------------------------------
+!                                                                   AXPY2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AXPY2
+CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
+LOGICAL(LGT) :: problem
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+SELECT CASE (obj%engine%chars())
+CASE (TypeEngineName%native_serial)
+
+#ifdef DEBUG_VER
+  problem = x1%engine .NE. "NATIVE_SERIAL" .OR.  &
+          & x2%engine .NE. "NATIVE_SERIAL"
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: engine of x1 and x2'// &
+      & 'should be NATIVE_SERIAL.')
+    RETURN
+  END IF
+#endif
+
+  CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
+  CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
+
+#ifdef USE_LIS
+CASE (TypeEngineName%lis_omp)
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x1%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  ! alpha, x, y, ierr
+  CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#endif
+
+CASE DEFAULT
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found given engine = '//  &
+    & obj%engine%chars())
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_AXPY2
+
+!----------------------------------------------------------------------------
+!                                                                   AXPY3
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AXPY3
+CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
+LOGICAL(LGT) :: problem
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+SELECT CASE (obj%engine%chars())
+CASE (TypeEngineName%native_serial)
+
+#ifdef DEBUG_VER
+  problem = x1%engine .NE. "NATIVE_SERIAL" .OR.  &
+          & x2%engine .NE. "NATIVE_SERIAL" .OR. &
+          & x3%engine .NE. "NATIVE_SERIAL"
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: engine of x1, x2 and x3'// &
+      & 'should be NATIVE_SERIAL.')
+    RETURN
+  END IF
+#endif
+
+  CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
+  CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
+  CALL AXPY(X=x3%realvec, Y=obj%realvec, A=a3)
+
+#ifdef USE_LIS
+CASE (TypeEngineName%lis_omp)
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x1%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x3%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  ! alpha, x, y, ierr
+  CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a3, x3%lis_ptr, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#endif
+
+CASE DEFAULT
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found given engine = '//  &
+    & obj%engine%chars())
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+END PROCEDURE obj_AXPY3
 
 !----------------------------------------------------------------------------
 !                                                                     SCAL
