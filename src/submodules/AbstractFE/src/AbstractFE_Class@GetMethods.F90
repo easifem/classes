@@ -16,7 +16,6 @@
 
 SUBMODULE(AbstractFE_Class) GetMethods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 
@@ -24,11 +23,19 @@ CONTAINS
 !                                                    GetLocalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData()"
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NOT INITIATED] It seems AbstractFE_::obj is not initiated.')
+MODULE PROCEDURE obj_GetLocalElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+isok = obj%isInitiated
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractFE_::obj is not initiated.')
   RETURN
 END IF
 
@@ -42,21 +49,36 @@ CLASS is (HCURL_)
 CLASS IS (DG_)
   CALL obj%GetLocalElemShapeData_DG(elemsd=elemsd, quad=quad)
 CLASS DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of  &
-    & AbstractFE_::obj%baseContinuity')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: No case found for type of '//  &
+    & '  AbstractFE_::obj%baseContinuity')
+  RETURN
 END SELECT
-END PROCEDURE fe_GetLocalElemShapeData
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_GetLocalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                    GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData()"
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NOT INITIATED] It seems AbstractFE_::obj is not initiated.')
+MODULE PROCEDURE obj_GetGlobalElemShapeData
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData()"
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+isok = obj%isInitiated
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: It seems AbstractFE_::obj is not initiated.')
   RETURN
 END IF
 
@@ -74,21 +96,104 @@ CLASS IS (DG_)
   CALL obj%GetGlobalElemShapeData_DG(elemsd=elemsd, xij=xij,  &
     & geoElemsd=geoElemsd)
 CLASS DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[NO CASE FOUND] No case found for type of  &
-    & AbstractFE_::obj%baseContinuity')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[NO CASE FOUND] No case found for type of  '//  &
+    & 'AbstractFE_::obj%baseContinuity.')
+  RETURN
 END SELECT
-END PROCEDURE fe_GetGlobalElemShapeData
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_GetGlobalElemShapeData
 
 !----------------------------------------------------------------------------
 !                                                                GetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetParam
-CHARACTER(*), PARAMETER :: myName = "fe_GetParam()"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-  & '[WORK IN PROGRESS]')
-END PROCEDURE fe_GetParam
+MODULE PROCEDURE obj_GetParam
+CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+IF (PRESENT(nsd)) nsd = obj%nsd
+IF (PRESENT(order)) order = obj%order
+IF (PRESENT(anisoOrder)) anisoOrder = obj%anisoOrder
+
+IF (PRESENT(edgeOrder)) THEN
+  CALL Reallocate(edgeOrder, obj%tEdgeOrder)
+  DO ii = 1, obj%tEdgeOrder
+    edgeOrder(ii) = obj%edgeOrder(ii)
+  END DO
+END IF
+
+IF (PRESENT(faceOrder)) THEN
+  CALL Reallocate(faceOrder, obj%tfaceOrder)
+  DO ii = 1, obj%tfaceOrder
+    faceOrder(ii) = obj%faceOrder(ii)
+  END DO
+END IF
+
+IF (PRESENT(cellOrder)) THEN
+  CALL Reallocate(cellOrder, obj%tcellOrder)
+  DO ii = 1, obj%tcellOrder
+    cellOrder(ii) = obj%cellOrder(ii)
+  END DO
+END IF
+
+IF (PRESENT(feType)) feType = obj%feType
+IF (PRESENT(elemType)) elemType = obj%elemType
+IF (PRESENT(ipType)) ipType = obj%ipType
+
+IF (PRESENT(dofType)) dofType = obj%dofType
+IF (PRESENT(transformType)) transformType = obj%transformType
+
+IF (PRESENT(baseContinuity)) THEN
+  baseContinuity = obj%baseContinuity0
+END IF
+
+IF (PRESENT(baseInterpolation)) THEN
+  baseInterpolation = obj%baseInterpolation0
+END IF
+
+IF (PRESENT(refElemDomain)) refElemDomain = obj%refElemDomain
+IF (PRESENT(isIsotropicOrder)) isIsotropicOrder = obj%isIsotropicOrder
+IF (PRESENT(isAnisotropicOrder)) isAnisotropicOrder = obj%isAnisotropicOrder
+IF (PRESENT(isEdgeOrder)) isEdgeOrder = obj%isEdgeOrder
+IF (PRESENT(isFaceOrder)) isFaceOrder = obj%isFaceOrder
+IF (PRESENT(isCellOrder)) isCellOrder = obj%isCellOrder
+
+IF (PRESENT(tEdgeOrder)) tEdgeOrder = obj%tEdgeOrder
+IF (PRESENT(tFaceOrder)) tFaceOrder = obj%tFaceOrder
+IF (PRESENT(tCellOrder)) tCellOrder = obj%tCellOrder
+
+IF (PRESENT(basisType)) basisType = obj%basisType
+IF (PRESENT(alpha)) alpha = obj%alpha
+IF (PRESENT(beta)) beta = obj%beta
+IF (PRESENT(lambda)) lambda = obj%lambda
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                             GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !

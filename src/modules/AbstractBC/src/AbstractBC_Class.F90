@@ -370,7 +370,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-12
-! summary: Get the node number and nodal value
+! summary: Get the dirichlet boundary condition in FEVariable
 
 INTERFACE
   MODULE SUBROUTINE bc_GetFEVar(obj, fevar, globalNode,  &
@@ -386,7 +386,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetFromFunction@GetMethods
+!                                                GetFromFunction@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

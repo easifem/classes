@@ -27,9 +27,9 @@ CONTAINS
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate1
+MODULE PROCEDURE obj_Initiate1
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
@@ -61,14 +61,14 @@ CALL CHKERR(ierr)
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
-END PROCEDURE mField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate2
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate2"
+MODULE PROCEDURE obj_Initiate2
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
@@ -106,14 +106,14 @@ CALL CHKERR(ierr)
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
 
-END PROCEDURE mField_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Initiate3
-CHARACTER(*), PARAMETER :: myName = "mField_Initiate3"
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
 INTEGER(I4B), PARAMETER :: tVar = 2
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
@@ -145,13 +145,13 @@ CALL CHKERR(ierr)
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
 CALL CHKERR(ierr)
-END PROCEDURE mField_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ierr
 CALL lis_matrix_unset(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
@@ -160,14 +160,14 @@ CALL CHKERR(ierr)
 IF (ALLOCATED(obj%lis_ia)) DEALLOCATE (obj%lis_ia)
 IF (ALLOCATED(obj%lis_ja)) DEALLOCATE (obj%lis_ja)
 CALL MatrixFieldDeallocate(obj)
-END PROCEDURE mField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE mField_Final
+END PROCEDURE obj_Final
 
 END SUBMODULE ConstructorMethods

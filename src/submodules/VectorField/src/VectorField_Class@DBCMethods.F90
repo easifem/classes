@@ -24,42 +24,99 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "vField_applyDirichletBC1"
+MODULE PROCEDURE obj_applyDirichletBC1
+CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-CALL dbc%get( &
-  & nodalvalue=nodalvalue, &
-  & nodenum=nodenum)
-CALL obj%Set( &
-  & globalNode=nodenum, &
-  & VALUE=nodalvalue(:, 1), &
-  & spaceCompo=dbc%getDOFNo())
+LOGICAL(LGT) :: istimes, problem
+INTEGER(I4B) :: aint, spaceCompo
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+
+aint = 0
+#ifdef DEBUG_VER
+IF (istimes) THEN
+  aint = SIZE(times)
+  problem = aint .NE. 1
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+      & tostring(aint)//' which is not equal to 1 ')
+    RETURN
+  END IF
+END IF
+#endif
+
+CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
+spaceCompo = dbc%GetDOFNo()
+CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
+  & spaceCompo=spaceCompo)
+
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE vField_applyDirichletBC1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_applyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE vField_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "vField_applyDirichletBC2"
+MODULE PROCEDURE obj_applyDirichletBC2
+CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof
-DO idof = 1, SIZE(dbc)
-  CALL dbc(idof)%ptr%get( &
-    & nodalvalue=nodalvalue, &
-    & nodenum=nodenum)
-  CALL obj%Set( &
-    & globalNode=nodenum, &
-    & VALUE=nodalvalue(:, 1), &
-    & spaceCompo=dbc(idof)%ptr%getDOFNo())
+INTEGER(I4B) :: idof, tsize, aint, spaceCompo
+LOGICAL(LGT) :: istimes, problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+#ifdef DEBUG_VER
+IF (istimes) THEN
+  aint = SIZE(times)
+  problem = aint .NE. 1
+  IF (problem) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+      & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+      & tostring(aint)//' which is not equal to 1 ')
+    RETURN
+  END IF
+END IF
+#endif
+
+tsize = SIZE(dbc)
+
+DO idof = 1, tsize
+  spaceCompo = dbc(idof)%ptr%GetDOFNo()
+
+  CALL dbc(idof)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum,  &
+    & times=times)
+
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+    & spaceCompo=spaceCompo)
 END DO
+
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE vField_applyDirichletBC2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------
 !

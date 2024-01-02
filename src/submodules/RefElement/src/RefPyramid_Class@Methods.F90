@@ -26,7 +26,12 @@ CONTAINS
 
 MODULE PROCEDURE refelem_RefCoord
 TYPE(String) :: baseContinuity0, baseInterpolation0
-CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
+CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 baseContinuity0 = UpperCase(baseContinuity)
 baseInterpolation0 = UpperCase(baseInterpolation)
@@ -72,6 +77,11 @@ CASE DEFAULT
     & 'Currently, only baseContinuity=H1 allowed!')
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_RefCoord
 
 !----------------------------------------------------------------------------
@@ -89,6 +99,13 @@ END PROCEDURE refelem_GetName
 MODULE PROCEDURE refelem_GetFacetElements
 INTEGER(I4B), PARAMETER :: n = 5_I4B
 INTEGER(I4B) :: ii
+CHARACTER(*), PARAMETER :: myName = "refelem_GetFacetElements()"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 ALLOCATE (ans(n))
 ALLOCATE (RefQuadrangle_ :: ans(1)%ptr)
 CALL ans(1)%ptr%Initiate(nsd=obj%getNSD())
@@ -96,6 +113,12 @@ DO ii = 2, 5
   ALLOCATE (RefTriangle_ :: ans(ii)%ptr)
   CALL ans(ii)%ptr%Initiate(nsd=obj%getNSD())
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------

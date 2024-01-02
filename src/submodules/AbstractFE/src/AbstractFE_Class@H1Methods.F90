@@ -16,15 +16,14 @@
 
 SUBMODULE(AbstractFE_Class) H1Methods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 
 INTERFACE GetLocalElemShapeData_H1
-  MODULE PROCEDURE fe_GetLocalElemshapeData_H1_Lagrange
-  MODULE PROCEDURE fe_GetLocalElemshapeData_H1_Orthogonal
-  MODULE PROCEDURE fe_GetLocalElemshapeData_H1_Hierarchy
-  MODULE PROCEDURE fe_GetLocalElemshapeData_H1_Hermit
-  MODULE PROCEDURE fe_GetLocalElemshapeData_H1_Serendipity
+  MODULE PROCEDURE obj_GetLocalElemshapeData_H1_Lagrange
+  MODULE PROCEDURE obj_GetLocalElemshapeData_H1_Orthogonal
+  MODULE PROCEDURE obj_GetLocalElemshapeData_H1_Hierarchy
+  MODULE PROCEDURE obj_GetLocalElemshapeData_H1_Hermit
+  MODULE PROCEDURE obj_GetLocalElemshapeData_H1_Serendipity
 END INTERFACE GetLocalElemShapeData_H1
 
 CONTAINS
@@ -33,7 +32,7 @@ CONTAINS
 !                                                 GetLocalElemShapeData_H1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData_H1_Master
+MODULE PROCEDURE obj_GetLocalElemShapeData_H1_Master
 CHARACTER(*), PARAMETER :: myName = "GetLocalElemShapeData_H1_Master()"
 
 SELECT TYPE (baseInterpolation => obj%baseInterpolation)
@@ -51,14 +50,14 @@ CLASS DEFAULT
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[NO CASE FOUND] no case found for AbstractFE_::obj%baseInterpolation')
 END SELECT
-END PROCEDURE fe_GetLocalElemShapeData_H1_Master
+END PROCEDURE obj_GetLocalElemShapeData_H1_Master
 
 !----------------------------------------------------------------------------
 !                                                 GetGlobalElemShapeData_H1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData_H1_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData_H1_Master"
+MODULE PROCEDURE obj_GetGlobalElemShapeData_H1_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData_H1_Master"
 IF (SIZE(xij, 1) .NE. obj%nsd) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & '[WRONG ARGS] size(xij, 1) .NE. obj%nsd')
@@ -76,19 +75,20 @@ IF (SIZE(xij, 2) .NE. SIZE(elemsd%N, 1)) THEN
     & '[WRONG ARGS] size(xij, 2) .NE. size(elemsd%N, 1)')
 END IF
 CALL Set(obj=elemsd, val=xij, N=elemsd%N, dNdXi=elemsd%dNdXi)
-END PROCEDURE fe_GetGlobalElemShapeData_H1_Master
+END PROCEDURE obj_GetGlobalElemShapeData_H1_Master
 
 !----------------------------------------------------------------------------
 !                                         GetLocalElemshapeData_H1_Lagrange
 !----------------------------------------------------------------------------
 
-SUBROUTINE fe_GetLocalElemshapeData_H1_Lagrange(obj, elemsd, quad,  &
+SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange(obj, elemsd, quad,  &
   & baseInterpolation)
   CLASS(AbstractFE_), INTENT(INOUT) :: obj
   CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
   CLASS(QuadraturePoint_), INTENT(IN) :: quad
   CLASS(LagrangeInterpolation_), INTENT(IN) :: baseInterpolation
-  CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Lagrange"
+  CHARACTER(*), PARAMETER :: myName = "GetLocalElemshapeData_H1_Lagrange()"
+
   IF (obj%isIsotropicOrder) THEN
     CALL Initiate( &
       & obj=elemsd,  &
@@ -107,17 +107,18 @@ SUBROUTINE fe_GetLocalElemshapeData_H1_Lagrange(obj, elemsd, quad,  &
     obj%firstCall = .TRUE.
     RETURN
   END IF
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[WIP] This routine at present support isIsotropicOrder  &
-    & for H1 Lagrange shape functions')
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[WIP ERROR] :: This routine is under development')
 ! TODO: Implement GetLocalElemshapeData_H1_Lagrange for anisotropic order
-END SUBROUTINE fe_GetLocalElemshapeData_H1_Lagrange
+
+END SUBROUTINE obj_GetLocalElemshapeData_H1_Lagrange
 
 !----------------------------------------------------------------------------
 !                                         GetLocalElemshapeData_H1_Orthogonal
 !----------------------------------------------------------------------------
 
-SUBROUTINE fe_GetLocalElemshapeData_H1_Orthogonal(obj, elemsd, quad,  &
+SUBROUTINE obj_GetLocalElemshapeData_H1_Orthogonal(obj, elemsd, quad,  &
   & baseInterpolation)
   CLASS(AbstractFE_), INTENT(INOUT) :: obj
   CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -149,13 +150,13 @@ SUBROUTINE fe_GetLocalElemshapeData_H1_Orthogonal(obj, elemsd, quad,  &
 
 ! TODO: Implement GetLocalElemshapeData_H1_Orthogonal for anisotropic order
 
-END SUBROUTINE fe_GetLocalElemshapeData_H1_Orthogonal
+END SUBROUTINE obj_GetLocalElemshapeData_H1_Orthogonal
 
 !----------------------------------------------------------------------------
 !                                         GetLocalElemshapeData_H1_Hierarchy
 !----------------------------------------------------------------------------
 
-SUBROUTINE fe_GetLocalElemshapeData_H1_Hierarchy(obj, elemsd, quad,  &
+SUBROUTINE obj_GetLocalElemshapeData_H1_Hierarchy(obj, elemsd, quad,  &
   & baseInterpolation)
   CLASS(AbstractFE_), INTENT(INOUT) :: obj
   CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -187,13 +188,13 @@ SUBROUTINE fe_GetLocalElemshapeData_H1_Hierarchy(obj, elemsd, quad,  &
     & for H1 Lagrange shape functions')
 
 ! TODO: Implement GetLocalElemshapeData_H1_Hierarchy for anisotropic order
-END SUBROUTINE fe_GetLocalElemshapeData_H1_Hierarchy
+END SUBROUTINE obj_GetLocalElemshapeData_H1_Hierarchy
 
 !----------------------------------------------------------------------------
 !                                         GetLocalElemshapeData_H1_Hermit
 !----------------------------------------------------------------------------
 
-SUBROUTINE fe_GetLocalElemshapeData_H1_Serendipity(obj, elemsd, quad,  &
+SUBROUTINE obj_GetLocalElemshapeData_H1_Serendipity(obj, elemsd, quad,  &
   & baseInterpolation)
   CLASS(AbstractFE_), INTENT(INOUT) :: obj
   CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -226,13 +227,13 @@ SUBROUTINE fe_GetLocalElemshapeData_H1_Serendipity(obj, elemsd, quad,  &
     & for H1 Lagrange shape functions')
 
 ! TODO: Implement GetLocalElemshapeData_H1_Serendipity for anisotropic order
-END SUBROUTINE fe_GetLocalElemshapeData_H1_Serendipity
+END SUBROUTINE obj_GetLocalElemshapeData_H1_Serendipity
 
 !----------------------------------------------------------------------------
 !                                         GetLocalElemshapeData_H1_Serendipity
 !----------------------------------------------------------------------------
 
-SUBROUTINE fe_GetLocalElemshapeData_H1_Hermit(obj, elemsd, quad,  &
+SUBROUTINE obj_GetLocalElemshapeData_H1_Hermit(obj, elemsd, quad,  &
   & baseInterpolation)
   CLASS(AbstractFE_), INTENT(INOUT) :: obj
   CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -265,19 +266,19 @@ SUBROUTINE fe_GetLocalElemshapeData_H1_Hermit(obj, elemsd, quad,  &
 
 ! TODO: Implement GetLocalElemshapeData_H1_Serendipity
 ! for anisotropic order
-END SUBROUTINE fe_GetLocalElemshapeData_H1_Hermit
+END SUBROUTINE obj_GetLocalElemshapeData_H1_Hermit
 
 !----------------------------------------------------------------------------
 !                                               GetLocalFacetElemShapeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalFacetElemShapeData
-CHARACTER(*), PARAMETER :: myName="get_GetLocalFacetElemShapeData"
+MODULE PROCEDURE obj_GetLocalFacetElemShapeData
+CHARACTER(*), PARAMETER :: myName = "get_GetLocalFacetElemShapeData"
 
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WIP] This routine is not avaiable yet.')
 
-! TODO: Implement fe_GetLocalFacetElemShapeData
+! TODO: Implement obj_GetLocalFacetElemShapeData
 ! for anisotropic order
 
 ! CALL Set(  &
@@ -288,6 +289,6 @@ CALL e%raiseError(modName//'::'//myName//' - '// &
 ! & celldNdXi=celldNdXi, &
 ! & facetN=facetN, &
 ! & ffacetdNdXi=facetdNdXi)
-END PROCEDURE fe_GetLocalFacetElemShapeData
+END PROCEDURE obj_GetLocalFacetElemShapeData
 
 END SUBMODULE H1Methods

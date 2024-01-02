@@ -15,65 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(STScalarFieldLis_Class) BlasMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                      Norm2
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE stsField_Norm2
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Norm2"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  CALL lis_vector_nrm2(obj%lis_ptr, ans, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'STScalarFieldLis_::obj is NOT AVAILABLE')
-END IF
-END PROCEDURE stsField_Norm2
-
-!----------------------------------------------------------------------------
-!                                                                      Norm1
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE stsField_Norm1
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Norm1"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  CALL lis_vector_nrm1(obj%lis_ptr, ans, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'STScalarFieldLis_::obj is NOT AVAILABLE')
-END IF
-END PROCEDURE stsField_Norm1
-
-!----------------------------------------------------------------------------
-!                                                                      Normi
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE stsField_Normi
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_Normi"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  CALL lis_vector_nrmi(obj%lis_ptr, ans, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'STScalarFieldLis_::obj is NOT AVAILABLE')
-END IF
-END PROCEDURE stsField_Normi
-END SUBMODULE BlasMethods
+! SUBMODULE(STScalarFieldLis_Class) BlasMethods
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE BlasMethods

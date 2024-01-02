@@ -31,7 +31,8 @@ CHARACTER(*), PARAMETER :: modName = "AbstractRefElement_Class"
 
 PUBLIC :: AbstractRefElement_
 PUBLIC :: AbstractRefElementPointer_
-PUBLIC :: Display
+PUBLIC :: AbstractRefElementDisplay
+PUBLIC :: AbstractRefElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                                       AbstractRefElement_
@@ -62,7 +63,7 @@ TYPE, ABSTRACT :: AbstractRefElement_
   !! HierarchyInterpolation
   !! OrthogonalInterpolation
 CONTAINS
-  
+
   ! @DeferredMethods
   PROCEDURE(refelem_RefCoord), DEFERRED, PUBLIC, PASS(obj) :: &
     & RefCoord
@@ -157,7 +158,7 @@ END INTERFACE
 ! by the child class.
 
 ABSTRACT INTERFACE
-  PURE FUNCTION refelem_GetName(obj) RESULT(ans)
+  FUNCTION refelem_GetName(obj) RESULT(ans)
     IMPORT AbstractRefElement_, I4B
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
@@ -194,12 +195,8 @@ END INTERFACE
 ! summary: Initiate the instance of Reference element
 
 INTERFACE
-  MODULE SUBROUTINE refelem_Initiate( &
-    & obj,  &
-    & nsd, &
-    & baseContinuity,  &
-    & baseInterpolation,  &
-    & xij)
+  MODULE SUBROUTINE refelem_Initiate(obj, nsd, baseContinuity,  &
+    & baseInterpolation, xij)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: nsd
       !! Spatial dimension of element
@@ -245,7 +242,7 @@ END INTERFACE
 !- This routine returns the topology of [[AbstractRefElement_]]
 
 INTERFACE
-  MODULE PURE FUNCTION refelem_GetTopology(obj, xidim) RESULT(ans)
+  MODULE FUNCTION refelem_GetTopology(obj, xidim) RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: xidim
     TYPE(ReferenceTopology_), ALLOCATABLE :: ans(:)
@@ -281,15 +278,11 @@ END INTERFACE
 ! date: 1 March 2022
 ! summary: Deallocates the data stored inside the [[AbstractRefElement_]]
 
-INTERFACE
-  MODULE PURE SUBROUTINE refelem_Deallocate(obj)
+INTERFACE AbstractRefElementDeallocate
+  MODULE SUBROUTINE refelem_Deallocate(obj)
     CLASS(AbstractRefElement_), INTENT(INOUT) :: obj
   END SUBROUTINE refelem_Deallocate
-END INTERFACE
-
-INTERFACE DEALLOCATE
-  MODULE PROCEDURE refelem_Deallocate
-END INTERFACE
+END INTERFACE AbstractRefElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                                            Display@Methods
@@ -299,7 +292,7 @@ END INTERFACE
 ! date: 20 May 2022
 ! summary: Display the AbstractRefElement
 
-INTERFACE
+INTERFACE AbstractRefElementDisplay
   MODULE SUBROUTINE refelem_Display(obj, msg, unitno, notFull)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
@@ -307,11 +300,7 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
     !! if present and true then only a summary is printed
   END SUBROUTINE refelem_Display
-END INTERFACE
-
-INTERFACE Display
-  MODULE PROCEDURE refelem_Display
-END INTERFACE Display
+END INTERFACE AbstractRefElementDisplay
 
 !----------------------------------------------------------------------------
 !                                                          MdEncode@Methods
@@ -412,7 +401,7 @@ END INTERFACE
 ! summary: Returns the connectivity of reference element
 
 INTERFACE
-  MODULE PURE FUNCTION refelem_GetNptrs(obj) RESULT(ans)
+  MODULE FUNCTION refelem_GetNptrs(obj) RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION refelem_GetNptrs
@@ -438,7 +427,7 @@ END INTERFACE
 ! - 4 to NNS + 3 => Local Nptrs
 
 INTERFACE
-  MODULE PURE FUNCTION refelem_GetFacetMatrix(obj) RESULT(ans)
+  MODULE FUNCTION refelem_GetFacetMatrix(obj) RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:, :)
   END FUNCTION refelem_GetFacetMatrix
@@ -453,7 +442,7 @@ END INTERFACE
 ! summary: Returns the node coordinate of a reference element
 
 INTERFACE
-  MODULE PURE FUNCTION refelem_GetNodeCoord(obj) RESULT(ans)
+  MODULE FUNCTION refelem_GetNodeCoord(obj) RESULT(ans)
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     REAL(DFP), ALLOCATABLE :: ans(:, :)
   END FUNCTION refelem_GetNodeCoord

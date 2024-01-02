@@ -23,7 +23,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_SetCellData
+MODULE PROCEDURE obj_SetCellData
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: tmeshID
 INTEGER(I4B) :: tcell
@@ -33,7 +33,7 @@ INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
 INTEGER(I4B) :: maxCellEntity
 LOGICAL(LGT) :: isVar
-CHARACTER(*), PARAMETER :: myName = "bc_SetCellData"
+CHARACTER(*), PARAMETER :: myName = "obj_SetCellData"
 CLASS(DomainConnectivity_), POINTER :: domCon
 INTEGER(I4B), ALLOCATABLE :: dimTag(:, :)
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
@@ -100,6 +100,6 @@ domCon => NULL()
 IF (ALLOCATED(intvec)) DEALLOCATE (intvec)
 IF (ALLOCATED(dimTag)) DEALLOCATE (dimTag)
 
-END PROCEDURE bc_SetCellData
+END PROCEDURE obj_SetCellData
 
 END SUBMODULE SetMethods

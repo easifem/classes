@@ -44,6 +44,14 @@ PUBLIC :: AbstractLinSolverDeallocate
 PUBLIC :: AbstractLinSolverImportParamFromToml
 PUBLIC :: AbstractLinSolverImportFromToml
 PUBLIC :: SetAbstractLinSolverParam
+PUBLIC :: SetPrecondIluParam
+PUBLIC :: SetPrecondHybridParam
+PUBLIC :: SetPrecondIsParam
+PUBLIC :: SetPrecondAddsParam
+PUBLIC :: SetPrecondSsorParam
+PUBLIC :: SetPrecondSainvParam
+PUBLIC :: SetPrecondSaamgParam
+PUBLIC :: SetPrecondIlucParam
 
 CHARACTER(*), PARAMETER :: modName = "AbstractLinSolver_Class"
 CHARACTER(*), PARAMETER :: myprefix = "AbstractLinSolver"
@@ -475,6 +483,200 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                          SetPrecondIluParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for ilu preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondIluParam( &
+    & param, prefix, p_ilu_lfil, &
+    & p_ilu_mbloc, p_ilu_droptol, p_ilu_permtol, &
+    & p_ilu_alpha, p_ilu_fill)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_lfil
+    !! Sparsekit, ilu
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_mbloc
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_droptol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_permtol
+    !! Sparsekit, ilu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ilu_alpha
+    !! Sparsekit, ilu, alpha
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_ilu_fill
+  END SUBROUTINE SetPrecondIluParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondHybridParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for hybrid preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondHybridParam( &
+    & param, prefix, p_hybrid_i, &
+    & p_hybrid_maxiter, p_hybrid_tol, p_hybrid_omega, &
+    & p_hybrid_ell, p_hybrid_restart)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_i
+    !! Hybrid, the linear solver, for example, SSOR, GMRES,
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_maxiter
+    !! Hybrid, maximum number of iterations
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_tol
+    !! Hybrid, convergence tolerance
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_hybrid_omega
+    !! Hybrid, The relaxation coefficient omega of the SOR
+    !! omega should be in (0.0, 2.0)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_ell
+    !!Hybrid, The degree l of the BiCGSTAB(l)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_hybrid_restart
+    !! Hybrid, The restart value of GMRES and Orthomin
+  END SUBROUTINE SetPrecondHybridParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          SetPrecondIsParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for Is preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondIsParam( &
+    & param, prefix, p_is_m, p_is_alpha)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_is_alpha
+    !! I+S, The parameter alpha of $I + \alpha {S}^{m}$
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_is_m
+    !! I+S, The parameter m of $I + \alpha {S}^{m}$
+  END SUBROUTINE SetPrecondIsParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          SetPrecondAddsParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for Adds preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondAddsParam( &
+    & param, prefix, p_adds_iter, p_adds)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: p_adds_iter
+    !! default value is 1
+    !! ILUT Additive Schwarz number of iteration
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_adds
+    !! ilut Additive Schwarz, default is true
+  END SUBROUTINE SetPrecondAddsParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         SetPrecondSsorParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for SSOR preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondSsorParam( &
+    & param, prefix, p_ssor_omega)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_ssor_omega
+    !! The relaxation coefficient omega in (0.0, 2.0)
+  END SUBROUTINE SetPrecondSsorParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetPrecondSainvParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for Sainv preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondSainvParam( &
+    & param, prefix, p_sainv_drop)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_sainv_drop
+    !! SA-AMG, The drop criteria
+  END SUBROUTINE SetPrecondSainvParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetPrecondSaamgParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for Saamg preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondSaamgParam( &
+    & param, prefix, p_saamg_theta, p_saamg_unsym)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_saamg_theta
+    !! SA-AMG, The drop criteria
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: p_saamg_unsym
+    !! SA-AMG, Select the unsymmetric version
+    !! The matrix structure must be symmetric
+  END SUBROUTINE SetPrecondSaamgParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetPrecondIlucParam
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-27
+! summary:  Set param for Iluc preconditioner
+!
+! note : param should be allocated
+
+INTERFACE
+  MODULE SUBROUTINE SetPrecondIlucParam( &
+    & param, prefix, p_iluc_drop, p_iluc_rate)
+    TYPE(ParameterList_), INTENT(INOUT) :: param
+    CHARACTER(*), INTENT(IN) :: prefix
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_drop
+    !! Crout ILU, default is 0.05, The drop criteria
+    REAL(DFP), OPTIONAL, INTENT(IN) :: p_iluc_rate
+    !! Crout ILU, The ratio of the maximum fill-in
+  END SUBROUTINE SetPrecondIlucParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
@@ -572,7 +774,7 @@ INTERFACE AbstractLinSolverDisplay
 END INTERFACE AbstractLinSolverDisplay
 
 !----------------------------------------------------------------------------
-!                                                             Import@Methods
+!                                                   Import@ImportHDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -588,7 +790,7 @@ INTERFACE AbstractLinSolverImport
 END INTERFACE AbstractLinSolverImport
 
 !----------------------------------------------------------------------------
-!                                              ImportParamFromToml@IOMethods
+!                                     ImportParamFromToml@ImportTomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -604,7 +806,7 @@ INTERFACE AbstractLinSolverImportParamFromToml
 END INTERFACE AbstractLinSolverImportParamFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                         ImportFromToml@ImportTomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -619,7 +821,7 @@ INTERFACE AbstractLinSolverImportFromToml
 END INTERFACE AbstractLinSolverImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                           ImportFromToml@ImportTomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -638,7 +840,7 @@ INTERFACE AbstractLinSolverImportFromToml
 END INTERFACE AbstractLinSolverImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                             Export@Methods
+!                                                   Export@ExportHDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

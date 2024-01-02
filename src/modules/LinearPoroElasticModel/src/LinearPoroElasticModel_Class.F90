@@ -30,6 +30,8 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "LinearPoroElasticModel_Class"
 CHARACTER(*), PARAMETER :: myPrefix = "LinearPoroElasticModel"
+CHARACTER(*), PARAMETER, PUBLIC :: LinearPoroElasticModel_Prefix  &
+  & = myPrefix
 PUBLIC :: LinearPoroElasticModel_
 PUBLIC :: TypeLinearPoroElasticModel
 PUBLIC :: LinearPoroElasticModelPointer_
@@ -221,13 +223,15 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE SUBROUTINE lpem_GetElasticParam(obj, PoissonRatio, &
-    & ShearModulus, lambda, YoungsModulus, stiffnessPower)
+    & ShearModulus, lambda, YoungsModulus, stiffnessPower, C, invC)
     CLASS(LinearPoroElasticModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: PoissonRatio
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: ShearModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: YoungsModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(:, :)
   END SUBROUTINE lpem_GetElasticParam
 END INTERFACE
 

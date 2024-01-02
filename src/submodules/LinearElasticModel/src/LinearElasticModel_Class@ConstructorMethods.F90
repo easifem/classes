@@ -31,18 +31,18 @@ TYPE(String) :: name0
 
 name0 = UpperCase(name)
 SELECT CASE (name0%chars())
-CASE ("ISO")
+CASE ("ISO", "ISOTROPIC")
   ans = TypeElasticity%Isotropic
-CASE ("ANISO")
+CASE ("ANISO", "ANISOTROPIC")
   ans = TypeElasticity%Anisotropic
-CASE ("ORTHO")
+CASE ("ORTHO", "ORTHOTROPIC")
   ans = TypeElasticity%Orthotropic
-CASE ("TRANS")
+CASE ("TRANS", "TRANSISOTROPIC")
   ans = TypeElasticity%TransIsotropic
 CASE default
+  ans = 0
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'NO CASE FOUND for name = '//name0)
-  RETURN
 END SELECT
 
 name0 = ""
@@ -77,10 +77,16 @@ END PROCEDURE ElasticityType_char
 
 MODULE PROCEDURE SetLinearElasticModelParam
 CHARACTER(*), PARAMETER :: myName = "SetLinearElasticModelParam()"
-INTEGER(I4B) :: ierr
-REAL(DFP) :: lam, EE, nu, G
+INTEGER(I4B) :: ierr, nc
+REAL(DFP) :: lam, EE, nu, G, def_c(6, 6), def_c_inv(6, 6), shapeOfC(2)
 TYPE(String) :: astr
-LOGICAL(LGT) :: isIsotropic
+LOGICAL(LGT) :: isIsotropic, problem, isPlaneStrain0, isPlaneStress0,  &
+  & shapeProblem(2), is2D
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
 CALL Set(obj=param, datatype="char", prefix=myprefix, key="name",  &
   & VALUE=myprefix)
@@ -90,50 +96,83 @@ astr = ElasticityType_char(elasticityType)
 CALL Set(obj=param, datatype="char", prefix=myprefix,  &
   & key="elasticityType", VALUE=astr%chars())
 
+astr = ""
+
+nc = 6
+isPlaneStrain0 = INPUT(option=isPlaneStrain, default=.FALSE.)
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStrain",  &
-  & VALUE=INPUT(option=isPlaneStrain, default=.FALSE.))
+  & VALUE=isPlaneStrain0)
+IF (isPlaneStrain0) nc = SIZE_C_PLANE_STRAIN
 
+isPlaneStress0 = input(option=isPlaneStress, default=.FALSE.)
 CALL Set(obj=param, datatype=.TRUE., prefix=myprefix, key="isPlaneStress",  &
-  & VALUE=input(option=isPlaneStress, default=.FALSE.))
+  & VALUE=isPlaneStress0)
+IF (isPlaneStress0) nc = SIZE_C_PLANE_STRESS
 
-isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
-
-IF (isIsotropic) THEN
-  CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
-    & ShearModulus=ShearModulus, YoungsModulus=YoungsModulus, &
-    & PoissonRatio=PoissonRatio, lambda=lambda)
-
-  CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix, key="lambda",  &
-    & VALUE=lam)
-  CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
-    & key="shearModulus", VALUE=G)
-  CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
-    & key="poissonRatio", VALUE=nu)
-  CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
-    & key="youngsModulus", VALUE=EE)
-
-END IF
-
-IF (.NOT. isIsotropic) THEN
-
-  IF (.NOT. PRESENT(C)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[CONFIG ERROR] :: In case of Anisotropic '//  &
-      & CHAR_LF//' Elasticity C and invC should be present.')
-  END IF
-
-  IF (.NOT. PRESENT(invC)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[CONFIG ERROR] :: In case of Anisotropic Elasticity '//  &
-      & 'C and invC should be present')
-  END IF
-
-  ierr = param%Set(key=myprefix//"/c", VALUE=C)
-  ierr = param%Set(key=myprefix//"/invC", VALUE=invC)
-END IF
+is2D = (isPlaneStress0 .OR. isPlaneStrain0)
 
 CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix, key="stiffnessPower",&
   & VALUE=INPUT(option=stiffnessPower, default=0.0_DFP))
+
+lam = 1.0; G = 1.0; EE = 1.0; nu = 0.3
+isIsotropic = elasticityType .EQ. TypeElasticity%Isotropic
+IF (isIsotropic) THEN
+  CALL GetElasticParam(lam=lam, G=G, EE=EE, nu=nu, &
+    & shearModulus=shearModulus, youngsModulus=youngsModulus, &
+    & poissonRatio=poissonRatio, lambda=lambda)
+END IF
+
+CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix, key="lambda",  &
+  & VALUE=lam)
+CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
+  & key="shearModulus", VALUE=G)
+CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
+  & key="poissonRatio", VALUE=nu)
+CALL Set(obj=param, datatype=1.0_DFP, prefix=myprefix,  &
+  & key="youngsModulus", VALUE=EE)
+
+IF (PRESENT(c)) THEN
+  shapeOfC = SHAPE(c)
+  shapeProblem = shapeOfC .LT. [nc, nc]
+  problem = is2D .AND. ANY(shapeProblem)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR] :: The shape of c should be '// &
+      & 'at least [3,3] in case of plane-stress or plane-strain. '//  &
+      & 'In 3D case it should be [6,6]. '//  &
+      & 'But it is '//tostring(shapeOfC))
+    RETURN
+  END IF
+  def_c(1:nc, 1:nc) = c(1:nc, 1:nc)
+ELSE
+  def_c = 0.0_DFP
+END IF
+
+ierr = param%Set(key=myprefix//"/c", VALUE=def_c)
+
+IF (PRESENT(invC)) THEN
+  shapeOfC = SHAPE(invC)
+  shapeProblem = shapeOfC .LT. [nc, nc]
+  problem = ANY(shapeProblem)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR] :: The shape of invC should be '// &
+      & 'at least [3,3] in case of plane-stress or plane-strain. '//  &
+      & 'In 3D case it should be [6,6]. '//  &
+      & 'But it is '//tostring(shapeOfC))
+    RETURN
+  END IF
+  def_c_inv(1:nc, 1:nc) = invC(1:nc, 1:nc)
+ELSE
+  def_c_inv = 0.0_DFP
+END IF
+
+ierr = param%Set(key=myprefix//"/invC", VALUE=def_c_inv)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 
 END PROCEDURE SetLinearElasticModelParam
 
@@ -141,100 +180,50 @@ END PROCEDURE SetLinearElasticModelParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "lem_CheckEssentialParam()"
-CHARACTER(15) :: charVar
-INTEGER(I4B) :: ierr, cc
-INTEGER(I4B), ALLOCATABLE :: shapeOfC(:)
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
+INTEGER(I4B) :: ierr, ii
 LOGICAL(LGT) :: isPlaneStress, isPlaneStrain
+TYPE(String), ALLOCATABLE :: essentialParam(:)
+TYPE(String) :: astr
 
-IF (.NOT. param%IsPresent(key=myprefix//"/name")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/name should be present in param')
-END IF
+astr = '/name/elasticityType/isPlaneStress/isPlaneStrain/'//  &
+& 'elasticityType/youngsModulus/lambda/shearModulus/poissonRatio/c/invC'
 
-IF (.NOT. param%IsPresent(key=myprefix//"/elasticityType")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/elasticityType should be present in param')
-END IF
+CALL astr%Split(essentialParam, sep='/')
+CALL CheckEssentialParam(obj=param,  &
+  & keys=essentialParam,  &
+  & prefix=myprefix,  &
+  & myName=myName,  &
+  & modName=modName)
+!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
 
-IF (param%IsPresent(key=myprefix//"/isPlaneStress")) THEN
-  ierr = param%get(key=myprefix//"/isPlaneStress", &
-    & VALUE=isPlaneStress)
+IF (ALLOCATED(essentialParam)) THEN
+  DO ii = 1, SIZE(essentialParam)
+    essentialParam(ii) = ''
+  END DO
+  DEALLOCATE (essentialParam)
 END IF
+astr = ''
 
-IF (param%IsPresent(key=myprefix//"/isPlaneStrain")) THEN
-  ierr = param%get(key=myprefix//"/isPlaneStrain", &
-    & VALUE=isPlaneStrain)
-END IF
+ierr = param%Get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
+ierr = param%Get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 
 IF (isPlaneStress .AND. isPlaneStrain) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'Both '//myprefix//'/isPlaneStress and '//myprefix//'/ &
-    & isPlaneStrain parameters are true, which is conflicting with each &
-    & other. Choose one.')
+    & '[INTERNAL ERROR] :: both isPlaneStress and isPlaneStrain '//  &
+    & 'parameters are true. Please choose one.')
+  RETURN
 END IF
 
-ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
-cc = 0
-
-IF (TRIM(charVar) .EQ. TypeElasticity%Isotropic_char) THEN
-  IF (.NOT. param%IsPresent(key=myprefix//"/lambda")) &
-    & CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/lambda should be present in param')
-
-  IF (.NOT. param%IsPresent(key=myprefix//"/shearModulus")) &
-    & CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/shearModulus should be present in param')
-
-  IF (.NOT. param%IsPresent(key=myprefix//"/poissonRatio")) &
-    & CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/poissonRatio should be present in param')
-
-  IF (.NOT. param%IsPresent(key=myprefix//"/youngsModulus")) &
-    & CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/youngsModulus should be present in param')
-
-ELSE
-
-  IF (.NOT. param%IsPresent(key=myprefix//"/c")) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/c should be present for anisotropic elasticity')
-    RETURN
-  END IF
-
-  ierr = param%GetShape(key=myprefix//"/c", shape=shapeOfC)
-  IF (ANY(shapeOfC .NE. [6, 6])) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The shape of '//myprefix//'/c should be [6,6]')
-    RETURN
-  END IF
-
-  IF (.NOT. param%IsPresent(key=myprefix//"/invC")) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & myprefix//'/invC should be present for anisotropic elasticity')
-    RETURN
-  END IF
-
-  ierr = param%GetShape(key=myprefix//"/invC", shape=shapeOfC)
-  IF (ANY(shapeOfC .NE. [6, 6])) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The shape of '//myprefix//'/invC should be [6,6]')
-    RETURN
-  END IF
-
-END IF
-
-IF (ALLOCATED(shapeOfC)) DEALLOCATE (shapeOfC)
-
-END PROCEDURE lem_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Initiate
-CHARACTER(*), PARAMETER :: myName = "lem_Initiate()"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 CHARACTER(15) :: charVar
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isPlaneStress
@@ -251,20 +240,22 @@ CALL obj%CheckEssentialParam(param)
 CALL obj%SetIsInitiated(.TRUE.)
 CALL obj%SetName(myprefix)
 
-ierr = param%get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
+ierr = param%Get(key=myprefix//"/isPlaneStress", VALUE=isPlaneStress)
 CALL obj%SetPlaneStress(isPlaneStress)
+IF (isPlaneStress) obj%nc = SIZE_C_PLANE_STRESS
 
-ierr = param%get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
+ierr = param%Get(key=myprefix//"/isPlaneStrain", VALUE=isPlaneStrain)
 CALL obj%SetPlaneStrain(isPlaneStrain)
+IF (isPlaneStrain) obj%nc = SIZE_C_PLANE_STRAIN
 
-ierr = param%get(key=myprefix//"/elasticityType", VALUE=charVar)
+ierr = param%Get(key=myprefix//"/elasticityType", VALUE=charVar)
 obj%elasticityType = elasticityType_tonumber(charVar)
 
 IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
-  ierr = param%get(key=myprefix//"/lambda", VALUE=obj%lambda)
-  ierr = param%get(key=myprefix//"/shearModulus", VALUE=obj%G)
-  ierr = param%get(key=myprefix//"/youngsModulus", VALUE=obj%E)
-  ierr = param%get(key=myprefix//"/poissonRatio", VALUE=obj%nu)
+  ierr = param%Get(key=myprefix//"/lambda", VALUE=obj%lambda)
+  ierr = param%Get(key=myprefix//"/shearModulus", VALUE=obj%G)
+  ierr = param%Get(key=myprefix//"/youngsModulus", VALUE=obj%E)
+  ierr = param%Get(key=myprefix//"/poissonRatio", VALUE=obj%nu)
   IF (isPlaneStress) THEN
     CALL Get_PlaneStress_C_InvC(C=obj%C, invC=obj%invC,  &
       & youngsModulus=obj%E, nu=obj%nu)
@@ -276,24 +267,24 @@ IF (obj%elasticityType .EQ. IsoLinearElasticModel) THEN
       & youngsModulus=obj%E, nu=obj%nu)
   END IF
 ELSE
-  ierr = param%get(key=myprefix//"/c", VALUE=obj%C)
-  ierr = param%get(key=myprefix//"/invC", VALUE=obj%invC)
+  ierr = param%Get(key=myprefix//"/c", VALUE=obj%C)
+  ierr = param%Get(key=myprefix//"/invC", VALUE=obj%invC)
 END IF
 
-ierr = param%get(key=myprefix//"/stiffnessPower", VALUE=obj%stiffnessPower)
+ierr = param%Get(key=myprefix//"/stiffnessPower", VALUE=obj%stiffnessPower)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
 
-END PROCEDURE lem_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractSolidMechanicsModelDeallocate(obj)
 obj%elasticityType = -1
 obj%nu = 0.0
@@ -303,14 +294,15 @@ obj%lambda = 0.0
 obj%C = 0.0_DFP
 obj%invC = 0.0_DFP
 obj%stiffnessPower = 0.0_DFP
-END PROCEDURE lem_Deallocate
+obj%nc = 6
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE lem_Final
+END PROCEDURE obj_Final
 
 END SUBMODULE ConstructorMethods

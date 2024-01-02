@@ -66,8 +66,8 @@ END PROCEDURE SetSTVectorFieldParam
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "stvField_checkEssentialParam"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_checkEssentialParam"
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
 IF (.NOT. param%IsPresent(key=myprefix//"/spaceCompo")) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -77,14 +77,14 @@ IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
     & 'timeCompo should be present in param.')
 END IF
-END PROCEDURE stvField_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                               Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "stvField_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 CHARACTER(1) :: names(1)
 TYPE(String) :: astr
 INTEGER(I4B) :: nsd, tdof, ierr, tNodes
@@ -144,13 +144,13 @@ sublist => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
-END PROCEDURE stvField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                             Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Initiate2
+MODULE PROCEDURE obj_Initiate2
 CALL AbstractNodeFieldInitiate2(&
   & obj=obj, &
   & obj2=obj2, &
@@ -162,42 +162,59 @@ CLASS IS (STVectorField_)
   obj%spaceCompo = obj2%spaceCompo
   obj%timeCompo = obj2%timeCompo
 END SELECT
-END PROCEDURE stvField_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 obj%spaceCompo = 0_I4B
 obj%timeCompo = 0_I4B
 CALL AbstractNodeFieldDeallocate(obj)
-END PROCEDURE stvField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE stvField_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                                STVectorField
+!                                                              STVectorField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Constructor1
+MODULE PROCEDURE obj_Constructor1
 CALL ans%initiate(param, dom)
-END PROCEDURE stvField_Constructor1
+END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
-!                                                        STVectorField_Pointer
+!                                                      STVectorField_Pointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Constructor_1
+MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
 CALL ans%initiate(param, dom)
-END PROCEDURE stvField_Constructor_1
+END PROCEDURE obj_Constructor_1
+
+!----------------------------------------------------------------------------
+!                                                           Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !

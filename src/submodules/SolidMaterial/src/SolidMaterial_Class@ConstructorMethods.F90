@@ -26,29 +26,40 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSolidMaterialParam
+CHARACTER(*), PARAMETER :: myName = "SetSolidMaterialParam()"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 CALL SetAbstractMaterialParam(param=param, prefix=myprefix, name=name)
 CALL Set(obj=param, prefix=myprefix, key="stressStrainModel",  &
   & VALUE=stressStrainModel, dataType="char")
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE SetSolidMaterialParam
 
 !----------------------------------------------------------------------------
 !                                                        CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "solid_CheckEssentialParam()"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & myprefix//'/name should be present in param')
 END IF
-END PROCEDURE solid_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_Initiate
-CHARACTER(*), PARAMETER :: myName = "solid_Initiate()"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 TYPE(String) :: prefix0, stressStrainModel
 LOGICAL(LGT) :: bool1
 ! main
@@ -91,27 +102,27 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
-END PROCEDURE solid_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractMaterialDeallocate(obj)
 IF (ASSOCIATED(obj%stressStrainModel)) THEN
   CALL obj%stressStrainModel%DEALLOCATE()
   obj%stressStrainModel => NULL()
 END IF
-END PROCEDURE solid_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE solid_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

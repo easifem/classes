@@ -42,11 +42,15 @@ USE ExceptionHandler_Class, ONLY: e
 USE Domain_Class
 IMPLICIT NONE
 PRIVATE
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 1
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = 2
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = 3
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = 4
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 100
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = Constant
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACE = Space
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_TIME = Time
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = Time
+INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = Space
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "AbstractField"
+
 PUBLIC :: AbstractFieldInitiate
 PUBLIC :: AbstractFieldDisplay
 PUBLIC :: AbstractFieldImport
@@ -58,6 +62,37 @@ PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
 PUBLIC :: AbstractFieldInitiate2
 PUBLIC :: FIELD_TYPE_NAME
+PUBLIC :: TypeField
+PUBLIC :: TypeEngineName
+
+!----------------------------------------------------------------------------
+!                                                                TypeField
+!----------------------------------------------------------------------------
+
+TYPE :: TypeField_
+  INTEGER(I4B) :: normal = FIELD_TYPE_NORMAL
+  INTEGER(I4B) :: constant = FIELD_TYPE_CONSTANT
+  INTEGER(I4B) :: space = FIELD_TYPE_SPACE
+  INTEGER(I4B) :: time = FIELD_TYPE_TIME
+END TYPE TypeField_
+
+TYPE(TypeField_), PARAMETER :: TypeField = TypeField_()
+
+!----------------------------------------------------------------------------
+!                                                                TypeField
+!----------------------------------------------------------------------------
+
+TYPE :: EngineName_
+  CHARACTER(13) :: native_serial = "NATIVE_SERIAL"
+  CHARACTER(10) :: native_omp = "NATIVE_OMP"
+  CHARACTER(10) :: native_mpi = "NATIVE_MPI"
+  CHARACTER(7) :: lis_omp = "LIS_OMP"
+  CHARACTER(7) :: lis_mpi = "LIS_MPI"
+  CHARACTER(9) :: petsc_omp = "PETSC_OMP"
+  CHARACTER(9) :: petsc_mpi = "PETSC_MPI"
+END TYPE EngineName_
+
+TYPE(EngineName_), PARAMETER :: TypeEngineName = EngineName_()
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -123,7 +158,6 @@ CONTAINS
   !! Initiate  block fields (different physical variables) defined
   !! over different order of meshes.
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-  GENERIC, PUBLIC :: Copy => Initiate2
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
   !! Deallocate the field
 

@@ -320,6 +320,47 @@ CALL Set(obj=param, prefix=prefix, key="/Precond/name",  &
 & datatype=1_I4B,  &
 & VALUE=p_name0)
 
+CALL SetPrecondIluParam(param=param, prefix=prefix,  &
+  & p_ilu_lfil=p_ilu_lfil, p_ilu_mbloc=p_ilu_mbloc,  &
+  & p_ilu_droptol=p_ilu_droptol, p_ilu_permtol=p_ilu_permtol,  &
+  & p_ilu_alpha=p_ilu_alpha, p_ilu_fill=p_ilu_fill)
+
+CALL SetPrecondSsorParam(param=param, prefix=prefix,  &
+    & p_ssor_omega=p_ssor_omega)
+
+CALL SetPrecondHybridParam(param=param, prefix=prefix,  &
+  & p_hybrid_i=p_hybrid_i, p_hybrid_maxiter=p_hybrid_maxiter,  &
+  & p_hybrid_tol=p_hybrid_tol, p_hybrid_omega=p_hybrid_omega,  &
+  & p_hybrid_ell=p_hybrid_ell, p_hybrid_restart=p_hybrid_restart)
+
+CALL SetPrecondIsParam(param=param, prefix=prefix,  &
+  & p_is_m=p_is_m, p_is_alpha=p_is_alpha)
+
+CALL SetPrecondSainvParam(param=param, prefix=prefix,  &
+    & p_sainv_drop=p_sainv_drop)
+
+CALL SetPrecondSaamgParam(param=param, prefix=prefix,  &
+  & p_saamg_theta=p_saamg_theta, p_saamg_unsym=p_saamg_unsym)
+
+CALL SetPrecondIlucParam(param=param, prefix=prefix,  &
+  & p_iluc_rate=p_iluc_rate, p_iluc_drop=p_iluc_drop)
+
+CALL SetPrecondAddsParam(param=param, prefix=prefix,  &
+  & p_adds_iter=p_adds_iter, p_adds=p_adds)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] SetAbstractLinSolverParam')
+#endif
+END PROCEDURE SetAbstractLinSolverParam
+
+!----------------------------------------------------------------------------
+!                                                          SetPrecondIluParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondIluParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondIluParam"
+
 ! p_ilu_lfil
 CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_lfil",  &
 & datatype=1_I4B,  &
@@ -350,10 +391,14 @@ CALL Set(obj=param, prefix=prefix, key="/Precond/ilu_fill",  &
 & datatype=1_I4B,  &
 & VALUE=INPUT(option=p_ilu_fill, default=default_ilu_fill))
 
-! p_ssor_omega
-CALL Set(obj=param, prefix=prefix, key="/Precond/ssor_omega",  &
-& datatype=1.0_DFP,  &
-& VALUE=INPUT(option=p_ssor_omega, default=default_ssor_omega))
+END PROCEDURE SetPrecondIluParam
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondHybridParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondHybridParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondHybridParam"
 
 ! p_hybrid_i
 CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_i",  &
@@ -385,41 +430,33 @@ CALL Set(obj=param, prefix=prefix, key="/Precond/hybrid_restart",  &
 & datatype=1_I4B,  &
 & VALUE=INPUT(option=p_hybrid_restart, default=default_hybrid_restart))
 
+END PROCEDURE SetPrecondHybridParam
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondIsParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondIsParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondIsParam"
+
 ! p_is_alpha
 CALL Set(obj=param, prefix=prefix, key="/Precond/is_alpha",  &
 & datatype=1.0_DFP,  &
 & VALUE=INPUT(option=p_is_alpha, default=default_is_alpha))
 
-!
 ! p_is_m
 CALL Set(obj=param, prefix=prefix, key="/Precond/is_m",  &
 & datatype=1_I4B,  &
 & VALUE=INPUT(option=p_is_m, default=default_is_m))
 
-! p_sainv_drop
-CALL Set(obj=param, prefix=prefix, key="/Precond/sainv_drop",  &
-& datatype=1.0_DFP,  &
-& VALUE=INPUT(option=p_sainv_drop, default=default_sainv_drop))
+END PROCEDURE SetPrecondIsParam
 
-! p_saamg_unsym
-CALL Set(obj=param, prefix=prefix, key="/Precond/saamg_unsym",  &
-& datatype=.TRUE.,  &
-& VALUE=INPUT(option=p_saamg_unsym, default=default_saamg_unsym))
+!----------------------------------------------------------------------------
+!                                                      SetPrecondAddsParam
+!----------------------------------------------------------------------------
 
-! p_saamg_theta
-CALL Set(obj=param, prefix=prefix, key="/Precond/saamg_theta",  &
-& datatype=1.0_DFP,  &
-& VALUE=INPUT(option=p_saamg_theta, default=default_saamg_theta))
-
-! p_iluc_drop
-CALL Set(obj=param, prefix=prefix, key="/Precond/iluc_drop",  &
-& datatype=1.0_DFP,  &
-& VALUE=INPUT(option=p_iluc_drop, default=default_iluc_drop))
-
-! p_iluc_rate
-CALL Set(obj=param, prefix=prefix, key="/Precond/iluc_rate",  &
-& datatype=1.0_DFP,  &
-& VALUE=INPUT(option=p_iluc_rate, default=default_iluc_rate))
+MODULE PROCEDURE SetPrecondAddsParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondAddsParam"
 
 ! p_adds
 CALL Set(obj=param, prefix=prefix, key="/Precond/adds",  &
@@ -431,10 +468,72 @@ CALL Set(obj=param, prefix=prefix, key="/Precond/adds_iter",  &
 & datatype=1_I4B,  &
 & VALUE=INPUT(option=p_adds_iter, default=default_adds_iter))
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] SetAbstractLinSolverParam')
-#endif
-END PROCEDURE SetAbstractLinSolverParam
+END PROCEDURE SetPrecondAddsParam
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondSsorParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondSsorParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondSsorParam"
+
+! p_ssor_omega
+CALL Set(obj=param, prefix=prefix, key="/Precond/ssor_omega",  &
+& datatype=1.0_DFP,  &
+& VALUE=INPUT(option=p_ssor_omega, default=default_ssor_omega))
+
+END PROCEDURE SetPrecondSsorParam
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondSainvParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondSainvParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondSainvParam"
+
+! p_sainv_drop
+CALL Set(obj=param, prefix=prefix, key="/Precond/sainv_drop",  &
+& datatype=1.0_DFP,  &
+& VALUE=INPUT(option=p_sainv_drop, default=default_sainv_drop))
+
+END PROCEDURE SetPrecondSainvParam
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondSaamgParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondSaamgParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondSaamgParam"
+
+! p_saamg_unsym
+CALL Set(obj=param, prefix=prefix, key="/Precond/saamg_unsym",  &
+& datatype=.TRUE.,  &
+& VALUE=INPUT(option=p_saamg_unsym, default=default_saamg_unsym))
+
+! p_saamg_theta
+CALL Set(obj=param, prefix=prefix, key="/Precond/saamg_theta",  &
+& datatype=1.0_DFP,  &
+& VALUE=INPUT(option=p_saamg_theta, default=default_saamg_theta))
+
+END PROCEDURE SetPrecondSaamgParam
+
+!----------------------------------------------------------------------------
+!                                                      SetPrecondIlucParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE SetPrecondIlucParam
+CHARACTER(*), PARAMETER :: myName = "SetPrecondIlucParam"
+
+! p_iluc_drop
+CALL Set(obj=param, prefix=prefix, key="/Precond/iluc_drop",  &
+& datatype=1.0_DFP,  &
+& VALUE=INPUT(option=p_iluc_drop, default=default_iluc_drop))
+
+! p_iluc_rate
+CALL Set(obj=param, prefix=prefix, key="/Precond/iluc_rate",  &
+& datatype=1.0_DFP,  &
+& VALUE=INPUT(option=p_iluc_rate, default=default_iluc_rate))
+
+END PROCEDURE SetPrecondIlucParam
 
 END SUBMODULE SetMethods

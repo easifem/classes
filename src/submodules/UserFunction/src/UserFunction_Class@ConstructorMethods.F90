@@ -50,6 +50,8 @@ name0 = UpperCase(name)
 SELECT CASE (name0%chars())
 CASE ("CONSTANT")
   ans = Constant
+CASE ("TIME")
+  ans = Time
 CASE ("SPACE")
   ans = Space
 CASE ("SPACETIME")
@@ -209,8 +211,8 @@ END PROCEDURE SetUserFunctionParam
 !                                                        CheckEssentiaParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "auf_CheckEssentialParam()"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 INTEGER(I4B) :: ii
 TYPE(String), ALLOCATABLE :: essentialParam(:)
 TYPE(String) :: astr
@@ -233,13 +235,13 @@ IF (ALLOCATED(essentialParam)) THEN
   DEALLOCATE (essentialParam)
 END IF
 astr = ""
-END PROCEDURE auf_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Deallocate
+MODULE PROCEDURE obj_Deallocate
 !> main
 obj%isInitiated = .FALSE.
 obj%isUserFunctionSet = .FALSE.
@@ -258,21 +260,21 @@ IF (ALLOCATED(obj%matrixValue)) DEALLOCATE (obj%matrixValue)
 IF (ASSOCIATED(obj%scalarFunction)) obj%scalarFunction => NULL()
 IF (ASSOCIATED(obj%vectorFunction)) obj%vectorFunction => NULL()
 IF (ASSOCIATED(obj%matrixFunction)) obj%matrixFunction => NULL()
-END PROCEDURE auf_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE auf_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Initiate
+MODULE PROCEDURE obj_Initiate
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
 
@@ -303,7 +305,7 @@ CALL GetValue(obj=param, prefix=myprefix, key="numReturns",  &
 CALL GetValue(obj=param, prefix=myprefix, key="returnShape",  &
   & VALUE=obj%returnShape)
 obj%isInitiated = .TRUE.
-END PROCEDURE auf_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !

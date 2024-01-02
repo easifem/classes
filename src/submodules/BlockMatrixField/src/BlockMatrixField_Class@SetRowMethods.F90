@@ -25,30 +25,30 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    setRow
+!                                                                    SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow1
-CHARACTER(*), PARAMETER :: myName = "mField_setRow1"
+MODULE PROCEDURE obj_SetRow1
+CHARACTER(*), PARAMETER :: myName = "obj_SetRow1"
 CALL e%raiseError(modName//'::'//myName//" - "// &
 & 'This routine is not callable for BlockMatrixField')
-END PROCEDURE mField_setRow1
+END PROCEDURE obj_SetRow1
 
 !----------------------------------------------------------------------------
-!                                                                 setRow
+!                                                                 SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow2
+MODULE PROCEDURE obj_SetRow2
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(scalarVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
   & idof=idof, &
   & VALUE=scalarVal)
 IF (PRESENT(vecVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -56,7 +56,7 @@ IF (PRESENT(vecVal)) &
   & VALUE=vecVal)
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
-  CALL setRow( &
+  CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -64,16 +64,16 @@ IF (PRESENT(nodeFieldVal)) THEN
   & VALUE=realvec)
 END IF
 realvec => NULL()
-END PROCEDURE mField_setRow2
+END PROCEDURE obj_SetRow2
 
 !----------------------------------------------------------------------------
-!                                                                 setRow
+!                                                                 SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow3
+MODULE PROCEDURE obj_SetRow3
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(scalarVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -81,7 +81,7 @@ IF (PRESENT(scalarVal)) &
   & timecompo=timecompo, &
   & VALUE=scalarVal)
 IF (PRESENT(vecVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -90,7 +90,7 @@ IF (PRESENT(vecVal)) &
   & VALUE=vecVal)
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
-  CALL setRow( &
+  CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -99,16 +99,16 @@ IF (PRESENT(nodeFieldVal)) THEN
   & VALUE=realvec)
 END IF
 realvec => NULL()
-END PROCEDURE mField_setRow3
+END PROCEDURE obj_SetRow3
 
 !----------------------------------------------------------------------------
-!                                                                    setRow
+!                                                                    SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow4
+MODULE PROCEDURE obj_SetRow4
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(scalarVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -116,7 +116,7 @@ IF (PRESENT(scalarVal)) &
   & timecompo=timecompo, &
   & VALUE=scalarVal)
 IF (PRESENT(vecVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -125,7 +125,7 @@ IF (PRESENT(vecVal)) &
   & VALUE=vecVal)
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
-  CALL setRow( &
+  CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -134,16 +134,16 @@ IF (PRESENT(nodeFieldVal)) THEN
   & VALUE=realvec)
 END IF
 realvec => NULL()
-END PROCEDURE mField_setRow4
+END PROCEDURE obj_SetRow4
 
 !----------------------------------------------------------------------------
-!                                                                    setRow
+!                                                                    SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow5
+MODULE PROCEDURE obj_SetRow5
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(scalarVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -151,7 +151,7 @@ IF (PRESENT(scalarVal)) &
   & timecompo=timecompo, &
   & VALUE=scalarVal)
 IF (PRESENT(vecVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -160,7 +160,7 @@ IF (PRESENT(vecVal)) &
   & VALUE=vecVal)
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
-  CALL setRow( &
+  CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -169,16 +169,16 @@ IF (PRESENT(nodeFieldVal)) THEN
   & VALUE=realvec)
 END IF
 realvec => NULL()
-END PROCEDURE mField_setRow5
+END PROCEDURE obj_SetRow5
 
 !----------------------------------------------------------------------------
-!                                                                    setRow
+!                                                                    SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow6
+MODULE PROCEDURE obj_SetRow6
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(scalarVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -186,7 +186,7 @@ IF (PRESENT(scalarVal)) &
   & timecompo=timecompo, &
   & VALUE=scalarVal)
 IF (PRESENT(vecVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -195,7 +195,7 @@ IF (PRESENT(vecVal)) &
   & VALUE=vecVal)
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
-  CALL setRow( &
+  CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -204,16 +204,16 @@ IF (PRESENT(nodeFieldVal)) THEN
   & VALUE=realvec)
 END IF
 realvec => NULL()
-END PROCEDURE mField_setRow6
+END PROCEDURE obj_SetRow6
 
 !----------------------------------------------------------------------------
-!                                                                    setRow
+!                                                                    SetRow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_setRow7
+MODULE PROCEDURE obj_SetRow7
 REAL(DFP), POINTER :: realvec(:)
 IF (PRESENT(scalarVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -221,7 +221,7 @@ IF (PRESENT(scalarVal)) &
   & timecompo=timecompo, &
   & VALUE=scalarVal)
 IF (PRESENT(vecVal)) &
-  & CALL setRow( &
+  & CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -230,7 +230,7 @@ IF (PRESENT(vecVal)) &
   & VALUE=vecVal)
 IF (PRESENT(nodeFieldVal)) THEN
   realvec => nodeFieldVal%getPointer()
-  CALL setRow( &
+  CALL SetRow( &
   & obj=obj%mat, &
   & nodenum=obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode), &
   & ivar=ivar, &
@@ -239,7 +239,7 @@ IF (PRESENT(nodeFieldVal)) THEN
   & VALUE=realvec)
 END IF
 realvec => NULL()
-END PROCEDURE mField_setRow7
+END PROCEDURE obj_SetRow7
 
 !----------------------------------------------------------------------------
 !

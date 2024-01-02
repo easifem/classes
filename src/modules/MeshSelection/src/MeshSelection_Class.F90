@@ -32,12 +32,13 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
 CHARACTER(*), PARAMETER :: myprefix = "MeshSelection"
-PUBLIC :: DEALLOCATE
+PUBLIC :: MeshSelectionDeallocate
 PUBLIC :: MeshSelection_
 PUBLIC :: MeshSelectionPointer_
 PUBLIC :: MeshSelectionImportParamFromToml
 PUBLIC :: MeshSelectionImportFromToml
 PUBLIC :: SetMeshSelectionParam
+PUBLIC :: MeshSelectionSet
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
@@ -77,16 +78,16 @@ TYPE :: MeshSelection_
     !! Element number in mesh of volume
   TYPE(IntVector_) :: pointNodeNum
     !! Global Node numbers in pointEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: curveNodeNum
     !! Global Node numbers in cuveEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: surfaceNodeNum
     !! Global Node numbers in surfaceEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: volumeNodeNum
     !! Global Node numbers in volumeEntity
-    !! INFO: Currently, we are not using this (futuristic) 
+    !! INFO: Currently, we are not using this (futuristic)
   TYPE(IntVector_) :: nodeNum
     !! Global Node numbers
   TYPE(BoundingBox_), ALLOCATABLE :: pointBox(:)
@@ -173,8 +174,8 @@ CONTAINS
     & meshSelect_GetNodeNum2, &
     & meshSelect_GetNodeNum3
     !! Returns the node number if available
-  PROCEDURE, PUBLIC, PASS(obj) :: isMeshIDAllocated => &
-    & meshSelect_isMeshIDAllocated
+  PROCEDURE, PUBLIC, PASS(obj) :: IsMeshIDAllocated => &
+    & meshSelect_IsMeshIDAllocated
     !! returns true if selection by meshID is allocated
   PROCEDURE, PUBLIC, PASS(obj) :: isElemNumAllocated => &
     & meshSelect_isElemNumAllocated
@@ -211,11 +212,11 @@ END TYPE MeshSelectionPointer_
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE MeshSelectionDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(MeshSelection_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE MeshSelectionDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -225,11 +226,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE MeshSelectionDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(MeshSelectionPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE MeshSelectionDeallocate
 
 !----------------------------------------------------------------------------
 !                                     CheckEssentialParam@ConstructorMethods
@@ -389,6 +390,20 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 28 Aug 2021
+! summary: This routine adds data to the meshSelection
+
+INTERFACE MeshSelectionSet
+  MODULE SUBROUTINE meshSelection_Set_Vec(obj)
+    CLASS(MeshSelection_), INTENT(INOUT) :: obj(:)
+  END SUBROUTINE meshSelection_Set_Vec
+END INTERFACE MeshSelectionSet
+
+!----------------------------------------------------------------------------
 !                                                          Import@IOMethods
 !----------------------------------------------------------------------------
 
@@ -506,7 +521,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              isMeshIDAllocated@GetMethods
+!                                              IsMeshIDAllocated@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

@@ -52,33 +52,32 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & lem_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => lem_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => lem_Deallocate
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => lem_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => lem_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => lem_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => lem_ImportFromToml1
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => lem_ImportFromToml2
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => lem_GetElasticParam
-  PROCEDURE, PUBLIC, PASS(obj) :: GetC => lem_GetC
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => lem_GetInvC
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => obj_GetElasticParam
+  PROCEDURE, PUBLIC, PASS(obj) :: GetC => obj_GetC
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => obj_GetInvC
   PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => &
-    & lem_GetElasticityType
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => lem_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStrain => lem_isPlaneStrain
-  PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStress => lem_isPlaneStress
+    & obj_GetElasticityType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStrain => obj_isPlaneStrain
+  PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStress => obj_isPlaneStress
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStress => lem_SetPlaneStress
-  PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStrain => lem_SetPlaneStrain
+  PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStress => obj_SetPlaneStress
+  PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStrain => obj_SetPlaneStrain
 END TYPE AbstractSolidMechanicsModel_
 
 !----------------------------------------------------------------------------
@@ -90,10 +89,10 @@ END TYPE AbstractSolidMechanicsModel_
 ! summary: Check the essential parameter
 
 INTERFACE
-  MODULE SUBROUTINE lem_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE lem_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -105,10 +104,10 @@ END INTERFACE
 ! summary: This routine initiates the model
 
 INTERFACE
-  MODULE SUBROUTINE lem_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj, param)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE lem_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -120,9 +119,9 @@ END INTERFACE
 ! summary: Deallocate data
 
 INTERFACE AbstractSolidMechanicsModelDeallocate
-  MODULE SUBROUTINE lem_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE lem_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractSolidMechanicsModelDeallocate
 
 !----------------------------------------------------------------------------
@@ -134,11 +133,11 @@ END INTERFACE AbstractSolidMechanicsModelDeallocate
 ! summary: Initiate the model by import
 
 INTERFACE
-  MODULE SUBROUTINE lem_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE lem_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -150,11 +149,11 @@ END INTERFACE
 ! summary: Export the model
 
 INTERFACE
-  MODULE SUBROUTINE lem_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE lem_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -166,11 +165,11 @@ END INTERFACE
 ! summary: Displays the content of model
 
 INTERFACE
-  MODULE SUBROUTINE lem_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE lem_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -182,29 +181,10 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE lem_ImportFromToml1(obj, table)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE lem_ImportFromToml1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE lem_ImportFromToml2(obj, tomlName, afile, filename,  &
-    & printToml)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE lem_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -216,15 +196,17 @@ END INTERFACE
 ! summary:  Get elastic parameter
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetElasticParam(obj, poissonRatio, &
-     & shearModulus, lambda, youngsModulus, stiffnessPower)
+  MODULE SUBROUTINE obj_GetElasticParam(obj, poissonRatio, &
+     & shearModulus, lambda, youngsModulus, stiffnessPower, C, invC)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: poissonRatio
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: shearModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: lambda
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: youngsModulus
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
-  END SUBROUTINE lem_GetElasticParam
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(:, :)
+    REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(:, :)
+  END SUBROUTINE obj_GetElasticParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -236,10 +218,10 @@ END INTERFACE
 ! summary:  Get the elastic tangent matrix
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetC(obj, C)
+  MODULE SUBROUTINE obj_GetC(obj, C)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: C(:, :)
-  END SUBROUTINE lem_GetC
+  END SUBROUTINE obj_GetC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -251,10 +233,10 @@ END INTERFACE
 ! summary:  Get inverse of elastic tangent matrix
 
 INTERFACE
-  MODULE SUBROUTINE lem_GetInvC(obj, InvC)
+  MODULE SUBROUTINE obj_GetInvC(obj, InvC)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: invC(:, :)
-  END SUBROUTINE lem_GetInvC
+  END SUBROUTINE obj_GetInvC
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -266,10 +248,10 @@ END INTERFACE
 ! summary:  Get elasticity type
 
 INTERFACE
-  MODULE FUNCTION lem_GetElasticityType(obj) RESULT(Ans)
+  MODULE FUNCTION obj_GetElasticityType(obj) RESULT(Ans)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION lem_GetElasticityType
+  END FUNCTION obj_GetElasticityType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -281,10 +263,10 @@ END INTERFACE
 ! summary:  Get prefix
 
 INTERFACE
-  MODULE FUNCTION lem_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION lem_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -296,10 +278,10 @@ END INTERFACE
 ! summary:  Returns true if the problem is plane stress
 
 INTERFACE
-  MODULE FUNCTION lem_isPlaneStress(obj) RESULT(ans)
+  MODULE FUNCTION obj_isPlaneStress(obj) RESULT(ans)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION lem_isPlaneStress
+  END FUNCTION obj_isPlaneStress
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -311,10 +293,10 @@ END INTERFACE
 ! summary:  Returns true if the problem is plane strain
 
 INTERFACE
-  MODULE FUNCTION lem_isPlaneStrain(obj) RESULT(ans)
+  MODULE FUNCTION obj_isPlaneStrain(obj) RESULT(ans)
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION lem_isPlaneStrain
+  END FUNCTION obj_isPlaneStrain
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -322,10 +304,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE lem_SetPlaneStress(obj, VALUE)
+  MODULE SUBROUTINE obj_SetPlaneStress(obj, VALUE)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(IN) :: VALUE
-  END SUBROUTINE lem_SetPlaneStress
+  END SUBROUTINE obj_SetPlaneStress
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -333,10 +315,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE lem_SetPlaneStrain(obj, VALUE)
+  MODULE SUBROUTINE obj_SetPlaneStrain(obj, VALUE)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(IN) :: VALUE
-  END SUBROUTINE lem_SetPlaneStrain
+  END SUBROUTINE obj_SetPlaneStrain
 END INTERFACE
 
 END MODULE AbstractSolidMechanicsModel_Class

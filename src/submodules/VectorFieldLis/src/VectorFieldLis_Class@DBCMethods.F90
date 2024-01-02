@@ -15,8 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(VectorFieldLis_Class) DBCMethods
-IMPLICIT NONE
-CONTAINS
-
-END SUBMODULE DBCMethods
+! SUBMODULE(VectorFieldLis_Class) DBCMethods
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE DBCMethods

@@ -25,17 +25,17 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Display
+MODULE PROCEDURE obj_Display
 CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL Display(obj%timeCompo, msg="# timeCompo = ", unitno=unitno)
-END PROCEDURE stsField_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                 Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Import
-CHARACTER(*), PARAMETER :: myName = "stsField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3)
 TYPE(ParameterList_) :: param
@@ -88,14 +88,14 @@ END IF
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Import()")
 
-END PROCEDURE stsField_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                 Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_Export
-CHARACTER(*), PARAMETER :: myName = "stsField_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname
 
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
@@ -109,10 +109,10 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%timeCompo)
 
 CALL e%raiseInformation(modName//"::"//myName//" - "// &
   & "[END] Export()")
-END PROCEDURE stsField_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
-!                                                                 
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods

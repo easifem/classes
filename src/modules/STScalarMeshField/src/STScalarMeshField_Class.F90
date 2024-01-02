@@ -23,10 +23,15 @@ USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STScalarMeshField_Class"
-PUBLIC :: DEALLOCATE
+CHARACTER(*), PARAMETER :: myprefix = "STScalarMeshField"
+PUBLIC :: STScalarMeshFieldDeallocate
+PUBLIC :: STScalarMeshField_
+PUBLIC :: SetSTScalarMeshFieldParam
+PUBLIC :: STScalarMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                                     STScalarMeshField_Class
@@ -36,17 +41,13 @@ PUBLIC :: DEALLOCATE
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: STScalarMeshField_
+TYPE, EXTENDS(AbstractScalarMeshField_) :: STScalarMeshField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate from user function
 END TYPE STScalarMeshField_
-
-PUBLIC :: STScalarMeshField_
 
 !----------------------------------------------------------------------------
 !
@@ -55,8 +56,6 @@ PUBLIC :: STScalarMeshField_
 TYPE :: STScalarMeshFieldPointer_
   CLASS(STScalarMeshField_), POINTER :: ptr => NULL()
 END TYPE STScalarMeshFieldPointer_
-
-PUBLIC :: STScalarMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                              setAbstractMeshFieldParam@ConstructorMethods
@@ -83,37 +82,29 @@ INTERFACE
   END SUBROUTINE SetSTScalarMeshFieldParam
 END INTERFACE
 
-PUBLIC :: SetSTScalarMeshFieldParam
-
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: Initiate from UserFunction_
 
 INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
-    CLASS(STScalarMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
     CLASS(STScalarMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
+    !! AbstractMeshField
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -124,11 +115,11 @@ END INTERFACE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE STScalarMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Vector(obj)
     TYPE(STScalarMeshField_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE STScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -138,10 +129,25 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE STScalarMeshFieldDeallocate
   MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
     TYPE(STScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE STScalarMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(STScalarMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE STScalarMeshField_Class

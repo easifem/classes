@@ -26,7 +26,7 @@ CONTAINS
 !                                                                 GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_GetSingle
+MODULE PROCEDURE obj_GetSingle
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -36,14 +36,14 @@ ELSE
   CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stsField_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get1
-CHARACTER(*), PARAMETER :: myName = "stsField_get1"
+MODULE PROCEDURE obj_Get1
+CHARACTER(*), PARAMETER :: myName = "obj_Get1"
 LOGICAL(LGT) :: bool1, bool2
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
@@ -83,7 +83,7 @@ IF (bool1) THEN
 
   CASE (FIELD_TYPE_NORMAL)
 
-    localNode = obj%domain%getLocalNodeNumber(globalNode=globalNode)
+    localNode = obj%domain%GetLocalNodeNumber(globalNode=globalNode)
     CALL Reallocate(VALUE, obj%timeCompo)
     indx = GetNodeLoc(&
       & obj=obj%dof, &
@@ -103,15 +103,15 @@ IF (bool1) THEN
   END SELECT
 END IF
 
-!> get all values of timeCompo
+!> Get all values of timeCompo
 IF (bool2) THEN
 
-  ii = obj%domain%getTotalNodes()
+  ii = obj%domain%GetTotalNodes()
   CALL Reallocate(VALUE, ii)
 
   DO ii = 1, SIZE(VALUE)
 
-    indx(1) = getNodeLoc(&
+    indx(1) = GetNodeLoc(&
       & obj=obj%dof, &
       & nodenum=ii, &
       & idof=timeCompo)
@@ -128,15 +128,15 @@ IF (bool2) THEN
 
 END IF
 
-END PROCEDURE stsField_get1
+END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
-!                                                                       get
+!                                                                       Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get2
+MODULE PROCEDURE obj_Get2
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get2"
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -150,8 +150,8 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
     & " or, obj%lis_ptr is not available")
 END IF
 
-!> get all values of timeCompo
-ii = obj%domain%getTotalNodes()
+!> Get all values of timeCompo
+ii = obj%domain%GetTotalNodes()
 CALL Reallocate(VALUE, obj%timeCompo, ii)
 
 indx = 0
@@ -171,15 +171,15 @@ DO jj = 1, SIZE(VALUE, 2)
   END DO
 END DO
 
-END PROCEDURE stsField_get2
+END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get3
+MODULE PROCEDURE obj_Get3
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get3"
+CHARACTER(*), PARAMETER :: myName = "obj_Get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -195,8 +195,8 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
     & " or, obj%lis_ptr is not available")
 END IF
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-ii = obj%domain%getTotalNodes()
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
+ii = obj%domain%GetTotalNodes()
 
 IF (ANY(localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -204,10 +204,10 @@ IF (ANY(localNode .EQ. 0_I4B)) THEN
     & " STScalarFieldLis_::obj")
 END IF
 
-!> get all values of timeCompo
+!> Get all values of timeCompo
 CALL Reallocate(VALUE, obj%timeCompo, SIZE(globalNode))
 
-indx = getNodeLoc(&
+indx = GetNodeLoc(&
   & obj=obj%dof, &
   & nodenum=localNode, &
   & ivar=1, &
@@ -228,15 +228,15 @@ DO ii = 1, SIZE(indx)
 END DO
 
 VALUE = RESHAPE(val, [obj%timeCompo, SIZE(globalnode)])
-END PROCEDURE stsField_get3
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get4
+MODULE PROCEDURE obj_Get4
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get4"
+CHARACTER(*), PARAMETER :: myName = "obj_Get4"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -251,8 +251,8 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
     & " or, obj%lis_ptr is not available")
 END IF
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-ii = obj%domain%getTotalNodes()
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
+ii = obj%domain%GetTotalNodes()
 
 IF (ANY(localNode .EQ. 0_I4B) .OR. ANY(localNode .GT. ii)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -260,10 +260,10 @@ IF (ANY(localNode .EQ. 0_I4B) .OR. ANY(localNode .GT. ii)) THEN
     & " STScalarFieldLis_::obj")
 END IF
 
-!> get all values of timeCompo
+!> Get all values of timeCompo
 CALL Reallocate(VALUE, SIZE(globalNode))
 
-indx = getNodeLoc(&
+indx = GetNodeLoc(&
   & obj=obj%dof, &
   & nodenum=localNode, &
   & ivar=1, &
@@ -283,15 +283,15 @@ DO ii = 1, SIZE(indx)
 
 END DO
 
-END PROCEDURE stsField_get4
+END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get5
+MODULE PROCEDURE obj_Get5
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stsField_get5"
+CHARACTER(*), PARAMETER :: myName = "obj_Get5"
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: indx
@@ -305,8 +305,8 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
     & " or, obj%lis_ptr is not available")
 END IF
 
-localNode = obj%domain%getLocalNodeNumber(globalNode)
-ii = obj%domain%getTotalNodes()
+localNode = obj%domain%GetLocalNodeNumber(globalNode)
+ii = obj%domain%GetTotalNodes()
 
 IF ((localNode .EQ. 0_I4B) .OR. (localNode .GT. ii)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -314,7 +314,7 @@ IF ((localNode .EQ. 0_I4B) .OR. (localNode .GT. ii)) THEN
     & " STScalarFieldLis_::obj")
 END IF
 
-indx = getNodeLoc(&
+indx = GetNodeLoc(&
   & obj=obj%dof, &
   & nodenum=localNode, &
   & ivar=1, &
@@ -330,56 +330,56 @@ CALL lis_vector_get_value( &
 
 CALL CHKERR(ierr)
 
-END PROCEDURE stsField_get5
+END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get6
+MODULE PROCEDURE obj_Get6
 INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalnode(jj) = ii
 END DO
-CALL obj%get(globalnode=globalnode, VALUE=VALUE)
-END PROCEDURE stsField_get6
+CALL obj%Get(globalnode=globalnode, VALUE=VALUE)
+END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get7
+MODULE PROCEDURE obj_Get7
 INTEGER(I4B) :: globalnode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
   jj = jj + 1
   globalnode(jj) = ii
 END DO
-CALL obj%get(globalnode=globalnode, VALUE=VALUE, timeCompo=timeCompo)
-END PROCEDURE stsField_get7
+CALL obj%Get(globalnode=globalnode, VALUE=VALUE, timeCompo=timeCompo)
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get8
+MODULE PROCEDURE obj_Get8
 REAL(DFP), ALLOCATABLE :: val(:, :)
-CALL obj%get(globalNode=globalNode, VALUE=val)
+CALL obj%Get(globalNode=globalNode, VALUE=val)
 VALUE = NodalVariable( &
   & val, &
   & TypeFEVariableScalar, &
   & TypeFEVariableSpaceTime)
 DEALLOCATE (val)
-END PROCEDURE stsField_get8
+END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
-!                                                                        get
+!                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_get9
-CHARACTER(*), PARAMETER :: myName = "stsField_get9"
+MODULE PROCEDURE obj_Get9
+CHARACTER(*), PARAMETER :: myName = "obj_Get9"
 REAL(DFP) :: aval
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -387,10 +387,10 @@ INTEGER(I4B) :: tsize
 
 SELECT TYPE (VALUE)
 CLASS IS (ScalarField_)
-  tsize = obj%domain%getTotalNodes()
+  tsize = obj%domain%GetTotalNodes()
   DO ii = 1, tsize
-    jj = obj%domain%getGlobalNodeNumber(ii)
-    CALL obj%get(VALUE=aval, globalNode=jj, timeCompo=timeCompo)
+    jj = obj%domain%GetGlobalNodeNumber(ii)
+    CALL obj%Get(VALUE=aval, globalNode=jj, timeCompo=timeCompo)
     CALL VALUE%set(VALUE=aval, globalNode=jj)
   END DO
 CLASS DEFAULT
@@ -398,26 +398,26 @@ CLASS DEFAULT
   & 'No case found for the type of value')
 END SELECT
 
-END PROCEDURE stsField_get9
+END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
-!                                                     getPointerOfComponent
+!                                                     GetPointerOfComponent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_getPointerOfComponent
-CHARACTER(*), PARAMETER :: myName = "stsField_getPointerOfComponent"
+MODULE PROCEDURE obj_GetPointerOfComponent
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointerOfComponent"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for STScalarFieldLis_')
-END PROCEDURE stsField_getPointerOfComponent
+END PROCEDURE obj_GetPointerOfComponent
 
 !----------------------------------------------------------------------------
-!                                                                getPointer
+!                                                                GetPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stsField_getPointer
-CHARACTER(*), PARAMETER :: myName = "stsField_getPointer"
+MODULE PROCEDURE obj_GetPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointer"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This method is not available for STScalarFieldLis_')
-END PROCEDURE stsField_getPointer
+END PROCEDURE obj_GetPointer
 
 END SUBMODULE GetMethods

@@ -23,75 +23,75 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetElasticParam
-CHARACTER(*), PARAMETER :: myName = "lem_GetElasticParam()"
+MODULE PROCEDURE obj_GetElasticParam
+CHARACTER(*), PARAMETER :: myName = "obj_GetElasticParam()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_GetElasticParam
+END PROCEDURE obj_GetElasticParam
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetC
-CHARACTER(*), PARAMETER :: myName = "lem_GetC()"
+MODULE PROCEDURE obj_GetC
+CHARACTER(*), PARAMETER :: myName = "obj_GetC()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
 C = 0.0_DFP
-END PROCEDURE lem_GetC
+END PROCEDURE obj_GetC
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetInvC
-CHARACTER(*), PARAMETER :: myName = "lem_GetInvC()"
+MODULE PROCEDURE obj_GetInvC
+CHARACTER(*), PARAMETER :: myName = "obj_GetInvC()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
 InvC = 0.0_DFP
-END PROCEDURE lem_GetInvC
+END PROCEDURE obj_GetInvC
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetElasticityType
-CHARACTER(*), PARAMETER :: myName = "lem_GetElasticityType()"
+MODULE PROCEDURE obj_GetElasticityType
+CHARACTER(*), PARAMETER :: myName = "obj_GetElasticityType()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
 ans = 0
-END PROCEDURE lem_GetElasticityType
+END PROCEDURE obj_GetElasticityType
 
 !----------------------------------------------------------------------------
 !                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "lem_GetPrefix()"
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
 ans = ""
-END PROCEDURE lem_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                             isPlaneStress
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_isPlaneStress
+MODULE PROCEDURE obj_isPlaneStress
 ans = obj%isPStress
-END PROCEDURE lem_isPlaneStress
+END PROCEDURE obj_isPlaneStress
 
 !----------------------------------------------------------------------------
 !                                                            isPlaneStrain
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_isPlaneStrain
+MODULE PROCEDURE obj_isPlaneStrain
 ans = obj%isPStrain
-END PROCEDURE lem_isPlaneStrain
+END PROCEDURE obj_isPlaneStrain
 
 END SUBMODULE GetMethods

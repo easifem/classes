@@ -19,14 +19,17 @@ MODULE STTensorMeshField_Class
 USE GlobalData
 USE BaseType
 USE FPL, ONLY: ParameterList_
-USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE Mesh_Class, ONLY: Mesh_
+USE UserFunction_Class
+
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STTensorMeshField_Class"
-PUBLIC :: DEALLOCATE
+CHARACTER(*), PARAMETER :: myprefix = "STTensorMeshField"
+PUBLIC :: STTensorMeshFieldDeallocate
 PUBLIC :: STTensorMeshField_
 PUBLIC :: STTensorMeshFieldPointer_
 PUBLIC :: SetSTTensorMeshFieldParam
@@ -39,14 +42,11 @@ PUBLIC :: SetSTTensorMeshFieldParam
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: STTensorMeshField_
+TYPE, EXTENDS(AbstractTensorMeshField_) :: STTensorMeshField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
 END TYPE STTensorMeshField_
 
 !----------------------------------------------------------------------------
@@ -76,42 +76,39 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: defineOn
     !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: dim1
+    !! size in dim1
     INTEGER(I4B), INTENT(IN) :: dim2
+    !! size in dim2
     INTEGER(I4B), INTENT(IN) :: nns
+    !! number of nodes in space
     INTEGER(I4B), INTENT(IN) :: nnt
     !! Number of node in space
   END SUBROUTINE SetSTTensorMeshFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
-    CLASS(STTensorMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-05
+! summary:  Initiate STTensorMeshField using user function
 
 INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
     CLASS(STTensorMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
+    !! AbstractMeshField
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -122,11 +119,11 @@ END INTERFACE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+INTERFACE STTensorMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(STTensorMeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE STTensorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -136,10 +133,25 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+INTERFACE STTensorMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(STTensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE STTensorMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(STTensorMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE STTensorMeshField_Class

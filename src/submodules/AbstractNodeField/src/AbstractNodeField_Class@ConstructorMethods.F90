@@ -111,7 +111,7 @@ END PROCEDURE AbstractNodeFieldCheckError
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_Initiate1
+MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate1()"
 CHARACTER(:), ALLOCATABLE :: prefix
 
@@ -157,14 +157,14 @@ prefix = ""
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] AbstractNodeFieldInitiate()')
 #endif
-END PROCEDURE anf_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_Initiate2
-CHARACTER(*), PARAMETER :: myName = "anf_Initiate2"
+MODULE PROCEDURE obj_Initiate2
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2"
 INTEGER(I4B) :: ii, tsize
 
 CALL obj%DEALLOCATE()
@@ -180,13 +180,13 @@ SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
   obj%realVec = obj2%realVec
   obj%dof = obj2%dof
 END SELECT
-END PROCEDURE anf_Initiate2
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                            anf_Initiate3
+!                                                            obj_Initiate3
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_Initiate3
+MODULE PROCEDURE obj_Initiate3
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldInitiate2()"
 INTEGER(I4B) :: ivar, tvar
 LOGICAL(LGT) :: isNOTOK
@@ -234,13 +234,13 @@ prefix = ""
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] AbstractNodeFieldInitiate()')
 #endif
-END PROCEDURE anf_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_Deallocate
+MODULE PROCEDURE obj_Deallocate
 CALL AbstractFieldDeallocate(obj)
 obj%dof_tPhysicalVars = 0
 obj%dof_storageFMT = NODES_FMT
@@ -251,7 +251,7 @@ IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 obj%tSize = 0
 CALL DEALLOCATE (obj%realVec)
 CALL DEALLOCATE (obj%dof)
-END PROCEDURE anf_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !

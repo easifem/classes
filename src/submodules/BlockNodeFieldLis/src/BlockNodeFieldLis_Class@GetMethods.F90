@@ -24,7 +24,7 @@ CONTAINS
 !                                                             GetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_GetSingle
+MODULE PROCEDURE obj_GetSingle
 #include "lisf.h"
 INTEGER(I4B) :: ierr
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
@@ -34,14 +34,14 @@ ELSE
   CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE bnField_GetSingle
+END PROCEDURE obj_GetSingle
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_get1
-CHARACTER(*), PARAMETER :: myName = "bnField_get1"
+MODULE PROCEDURE obj_Get1
+CHARACTER(*), PARAMETER :: myName = "obj_Get1"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: indx
@@ -54,13 +54,13 @@ IF (.NOT. obj%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
   & " or, obj%lis_ptr is not available")
 END IF
 
-localNode = obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode)
+localNode = obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode)
 IF (localNode .EQ. 0_I4B) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'globalNode is out of bound')
 END IF
 
-indx = getNodeLoc(&
+indx = GetNodeLoc(&
   & obj=obj%dof, &
   & ivar=ivar, &
   & idof=idof, &
@@ -68,14 +68,14 @@ indx = getNodeLoc(&
 
 CALL obj%GetSingle(indx=indx, VALUE=VALUE)
 
-END PROCEDURE bnField_get1
+END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_get2
-CHARACTER(*), PARAMETER :: myName = "bnField_get2"
+MODULE PROCEDURE obj_Get2
+CHARACTER(*), PARAMETER :: myName = "obj_Get2"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
 
@@ -90,14 +90,14 @@ tsize = obj%SIZE()
 CALL reallocate(VALUE, tsize)
 CALL lis_vector_gather(obj%lis_ptr, VALUE, ierr)
 CALL CHKERR(ierr)
-END PROCEDURE bnField_get2
+END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_get3
-CHARACTER(*), PARAMETER :: myName = "bnField_get3"
+MODULE PROCEDURE obj_Get3
+CHARACTER(*), PARAMETER :: myName = "obj_Get3"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: localNode(SIZE(globalNode))
@@ -115,7 +115,7 @@ END IF
 tsize = SIZE(globalNode)
 CALL reallocate(VALUE, tsize)
 
-localNode = obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode)
+localNode = obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode)
 
 IF (ANY(localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -129,14 +129,14 @@ DO ii = 1, tsize
   CALL obj%GetSingle(indx=indx(ii), VALUE=VALUE(ii))
 END DO
 
-END PROCEDURE bnField_get3
+END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_get7
-CHARACTER(*), PARAMETER :: myName = "bnField_get7"
+MODULE PROCEDURE obj_Get7
+CHARACTER(*), PARAMETER :: myName = "obj_Get7"
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: tsize
 INTEGER(I4B) :: localNode(SIZE(globalNode))
@@ -154,7 +154,7 @@ END IF
 tsize = SIZE(globalNode)
 CALL reallocate(VALUE, tsize)
 
-localNode = obj%domains(ivar)%ptr%getLocalNodeNumber(globalNode)
+localNode = obj%domains(ivar)%ptr%GetLocalNodeNumber(globalNode)
 
 IF (ANY(localNode .EQ. 0_I4B)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
@@ -169,7 +169,7 @@ DO ii = 1, tsize
   CALL obj%GetSingle(indx=indx(ii), VALUE=VALUE(ii))
 END DO
 
-END PROCEDURE bnField_get7
+END PROCEDURE obj_Get7
 
 !----------------------------------------------------------------------------
 !

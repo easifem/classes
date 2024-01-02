@@ -24,58 +24,101 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetTensorMeshFieldParam
-IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix=myPrefix, &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=constant, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2])
-ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix=myPrefix, &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2, nns])
+INTEGER(I4B) :: s(3), n
+CHARACTER(*), PARAMETER :: myName = "SetTensorMeshFieldParam()"
+
+IF (varType .EQ. SpaceTime) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] :: For ScalarMeshField varType cannot be SpaceTime.'// &
+    & ' In this situation you should use STTensorMeshField_Class.')
+  RETURN
 END IF
-END PROCEDURE SetTensorMeshFieldParam
 
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
+IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
+  n = 2; s(1:n) = [dim1, dim2]
+ELSE
+  n = 3; s(1:n) = [dim1, dim2, nns]
+END IF
 
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam( &
-  & obj=obj, &
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
   & prefix=myPrefix, &
-  & param=param)
-END PROCEDURE aField_CheckEssentialParam
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=constant, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Matrix, &
+  & s=s(1:n))
+END PROCEDURE SetTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate( &
-  & obj=obj, &
-  & prefix=myPrefix, &
-  & param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
+MODULE PROCEDURE obj_Initiate4
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: returnType, argType, nns, varType, fieldType,  &
+  & numReturns, dims(2)
+TYPE(ParameterList_) :: param
+CLASS(ReferenceElement_), POINTER :: refelem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+refelem => NULL()
+refelem => mesh%GetRefElemPointer()
+isok = ASSOCIATED(refelem)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: refelem pointer not found.')
+  RETURN
+END IF
+nns = (.NNE.refelem)
+
+returnType = func%GetReturnType()
+
+isok = returnType .EQ. Matrix
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: returnType should be Matrix')
+  RETURN
+END IF
+
+argType = func%GetArgType()
+numReturns = func%GetNumReturns()
+dims = func%GetReturnShape()
+fieldType = TypeField%normal
+varType = argType
+IF (argType .EQ. Constant) THEN
+  fieldType = TypeField%constant
+  varType = Constant
+END IF
+
+CALL param%Initiate()
+CALL SetTensorMeshFieldParam(param=param, name=name,  &
+   & fieldType=fieldType, varType=varType, engine=engine,  &
+   & defineOn=Nodal, dim1=dims(1), dim2=dims(2), nns=nns)
+CALL obj%Initiate(param=param, mesh=mesh)
+CALL param%DEALLOCATE()
+
+NULLIFY (refelem)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Vector
+MODULE PROCEDURE obj_Deallocate_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -83,13 +126,13 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Vector
+END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Ptr_Vector
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -100,7 +143,15 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Ptr_Vector
+END PROCEDURE obj_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                                GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !

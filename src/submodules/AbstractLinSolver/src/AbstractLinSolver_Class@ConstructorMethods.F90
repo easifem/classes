@@ -17,6 +17,7 @@
 
 SUBMODULE(AbstractLinSolver_Class) ConstructorMethods
 USE BaseMethod
+USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 

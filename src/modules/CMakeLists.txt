@@ -21,6 +21,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/Fhash/CMakeLists.txt)
 # ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 
+# CPUTime
+include(${CMAKE_CURRENT_LIST_DIR}/CPUTime/CMakeLists.txt)
+
 # CommandLineArg
 include(${CMAKE_CURRENT_LIST_DIR}/CommandLineArg/CMakeLists.txt)
 
@@ -359,5 +362,17 @@ include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
 # porousMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
 
+# SolidMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
+
 # easifemMaterials
 include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# KERNELS
+# ----------------------------------------------------------------------------
+
+# AbstractKernel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
+# easifemKernels
+include(${CMAKE_CURRENT_LIST_DIR}/easifemKernels/CMakeLists.txt)

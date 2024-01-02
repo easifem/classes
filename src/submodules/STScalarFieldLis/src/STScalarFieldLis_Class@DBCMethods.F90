@@ -15,8 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(STScalarFieldLis_Class) DBCMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-END SUBMODULE DBCMethods
+! SUBMODULE(STScalarFieldLis_Class) DBCMethods
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE DBCMethods

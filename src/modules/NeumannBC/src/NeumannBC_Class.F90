@@ -32,8 +32,10 @@ CHARACTER(*), PARAMETER :: modName = "NeumannBC_CLASS"
 CHARACTER(*), PARAMETER :: myprefix = "NeumannBC"
 PUBLIC :: NeumannBC_
 PUBLIC :: NeumannBCPointer_
-PUBLIC :: DEALLOCATE
+PUBLIC :: NeumannBCDeallocate
+PUBLIC :: NeumannBCDisplay
 PUBLIC :: AddNeumannBC
+PUBLIC :: AppendNeumannBC
 PUBLIC :: GetNeumannBCPointer
 PUBLIC :: NeumannBCImportFromToml
 
@@ -48,8 +50,8 @@ PUBLIC :: NeumannBCImportFromToml
 TYPE, EXTENDS(DirichletBC_) :: NeumannBC_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => bc_GetPrefix
-  FINAL :: bc_Final
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  FINAL :: obj_Final
 END TYPE NeumannBC_
 
 !----------------------------------------------------------------------------
@@ -68,11 +70,11 @@ END TYPE NeumannBCPointer_
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE bc_Deallocate_Vector(obj)
+INTERFACE NeumannBCDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(NeumannBC_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE bc_Deallocate_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE NeumannBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -82,20 +84,20 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE bc_Deallocate_Ptr_Vector(obj)
+INTERFACE NeumannBCDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(NeumannBCPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE bc_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE NeumannBCDeallocate
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE bc_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(NeumannBC_), INTENT(INOUT) :: obj
-  END SUBROUTINE bc_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -108,7 +110,7 @@ END INTERFACE
 ! summary: Add Neumann boundary conditions to the vector of pointer
 
 INTERFACE AddNeumannBC
-  MODULE SUBROUTINE bc_AddNeumannBC(nbc, nbcNo, param, boundary, dom)
+  MODULE SUBROUTINE obj_AddNeumannBC(nbc, nbcNo, param, boundary, dom)
     TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
     !! Dirichlet boundary to form
     INTEGER(I4B), INTENT(IN) :: nbcNo
@@ -118,8 +120,31 @@ INTERFACE AddNeumannBC
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
     CLASS(Domain_), INTENT(IN) :: dom
-  END SUBROUTINE bc_AddNeumannBC
+  END SUBROUTINE obj_AddNeumannBC
 END INTERFACE AddNeumannBC
+
+!----------------------------------------------------------------------------
+!                                                AppendNeumannBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! update: 2023-09-10
+! summary: Add Neumann boundary conditions to the vector of pointer
+
+INTERFACE AppendNeumannBC
+  MODULE SUBROUTINE obj_AppendNeumannBC(nbc, param, boundary, dom, nbcNo)
+    TYPE(NeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: nbc(:)
+    !! Dirichlet boundary to form
+    TYPE(ParameterList_), INTENT(IN) :: param
+    !! parameter for constructing [[DirichletBC_]].
+    TYPE(MeshSelection_), INTENT(IN) :: boundary
+    !! Boundary region
+    CLASS(Domain_), INTENT(IN) :: dom
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
+    !! Dirichlet boundary number
+  END SUBROUTINE obj_AppendNeumannBC
+END INTERFACE AppendNeumannBC
 
 !----------------------------------------------------------------------------
 !                                                 GetNeumannBC@GetMethods
@@ -131,12 +156,12 @@ END INTERFACE AddNeumannBC
 ! summary: Get dirichlet boundary conditions to the vector of pointer
 
 INTERFACE GetNeumannBCPointer
-  MODULE FUNCTION bc_GetNeumannBCPointer(nbc, nbcNo) RESULT(ans)
+  MODULE FUNCTION obj_GetNeumannBCPointer(nbc, nbcNo) RESULT(ans)
     CLASS(NeumannBCPointer_), INTENT(IN) :: nbc(:)
-    INTEGER(I4B), INTENT(IN) :: nbcNo
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nbcNo
     !! Neumann boundary nunber
     CLASS(NeumannBC_), POINTER :: ans
-  END FUNCTION bc_GetNeumannBCPointer
+  END FUNCTION obj_GetNeumannBCPointer
 END INTERFACE GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
@@ -148,10 +173,10 @@ END INTERFACE GetNeumannBCPointer
 ! summary:  This function returns the prefix
 
 INTERFACE
-  MODULE FUNCTION bc_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
     CLASS(NeumannBC_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION bc_GetPrefix
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -163,7 +188,7 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE NeumannBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml1(obj, table, dom, tomlName)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
     TYPE(NeumannBCPointer_), INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -171,7 +196,7 @@ INTERFACE NeumannBCImportFromToml
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
-  END SUBROUTINE bc_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE NeumannBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -183,7 +208,7 @@ END INTERFACE NeumannBCImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE NeumannBCImportFromToml
-  MODULE SUBROUTINE bc_ImportFromToml2(obj, dom, tomlName, afile,  &
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile,  &
     & filename, printToml)
     TYPE(NeumannBCPointer_), INTENT(INOUT) :: obj(:)
     CLASS(Domain_), TARGET, INTENT(IN) :: dom
@@ -191,7 +216,43 @@ INTERFACE NeumannBCImportFromToml
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE bc_ImportFromToml2
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE NeumannBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE NeumannBCDisplay
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
+    TYPE(NeumannBC_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Vector
+END INTERFACE NeumannBCDisplay
+
+!----------------------------------------------------------------------------
+!                                                         Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Display the vector of NeumannBC_
+
+INTERFACE NeumannBCDisplay
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(NeumannBCPointer_) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE NeumannBCDisplay
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE NeumannBC_Class

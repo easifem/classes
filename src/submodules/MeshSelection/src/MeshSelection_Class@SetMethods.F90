@@ -28,12 +28,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE meshSelect_Add
-CHARACTER(*), PARAMETER :: myName = "meshSelect_Add"
+CHARACTER(*), PARAMETER :: myName = "meshSelect_Add()"
 LOGICAL(LGT) :: bool1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Add()')
+  & '[START]')
 #endif
 
 bool1 = PRESENT(dim) .AND. PRESENT(meshID)
@@ -69,7 +69,7 @@ END IF
 bool1 = PRESENT(nodeNum) .AND. (.NOT. PRESENT(dim))
 IF (bool1) THEN
   obj%isSelectionByNodeNum = .TRUE.
-  CALL Append(obj%NodeNum, nodeNum)
+  CALL Append(obj%nodeNum, nodeNum)
 END IF
 
 bool1 = PRESENT(nodeNum) .AND. (PRESENT(dim))
@@ -103,7 +103,7 @@ END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Add()')
+  & '[END]')
 #endif
 END PROCEDURE meshSelect_Add
 
@@ -136,9 +136,40 @@ END IF
 IF (isAllocated(obj%volumeElemNum)) THEN
   CALL RemoveDuplicates(obj%volumeElemNum)
 END IF
-IF (isAllocated(obj%NodeNum)) THEN
-  CALL RemoveDuplicates(obj%NodeNum)
+IF (isAllocated(obj%pointNodeNum)) CALL Append(obj%nodeNum, obj%pointNodeNum)
+IF (isAllocated(obj%curveNodeNum)) CALL Append(obj%nodeNum, obj%curveNodeNum)
+if(isAllocated(obj%surfaceNodeNum) ) CALL Append(obj%nodeNum, obj%surfaceNodeNum)
+if(isAllocated(obj%volumeNodeNum) ) CALL Append(obj%nodeNum, obj%volumeNodeNum)
+IF (isAllocated(obj%nodeNum)) THEN
+  CALL RemoveDuplicates(obj%nodeNum)
 END IF
 END PROCEDURE meshSelect_Set
+
+!----------------------------------------------------------------------------
+!                                                         MeshSelectionSet
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE meshSelection_Set_Vec
+CHARACTER(*), PARAMETER :: myName = "meshSelection_Set_Vec()"
+INTEGER(I4B) :: ii, tMaterials
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+tMaterials = SIZE(obj)
+DO ii = 1, tMaterials
+  CALL obj(ii)%Set()
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE meshSelection_Set_Vec
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE SetMethods

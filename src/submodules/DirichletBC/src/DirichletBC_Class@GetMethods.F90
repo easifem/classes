@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(DirichletBC_Class) GetMethods
-USE BaseMethod, ONLY: TOSTRING
+USE BaseMethod, ONLY: TOSTRING, Input
 IMPLICIT NONE
 CONTAINS
 
@@ -24,30 +24,46 @@ CONTAINS
 !                                                    GetDirichletBCPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetDirichletBCPointer
-CHARACTER(*), PARAMETER :: myName = "bc_GetDirichletBCPointer"
+MODULE PROCEDURE obj_GetDirichletBCPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCPointer()"
+INTEGER(I4B) :: dbcNo0, tsize
 
-IF (dbcNo .GT. SIZE(dbc)) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+tsize = SIZE(dbc)
+
+dbcNo0 = Input(default=tsize, option=dbcNo)
+
+#ifdef DEBUG_VER
+IF (dbcNo0 .GT. tsize) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-   & '[OUT OF BOUND ERROR] :: dbcNo is out of bound for dbc')
+   & '[INTERNAL ERROR] :: dbcNo0 is out of bound for dbc')
 END IF
 
-IF (.NOT. ASSOCIATED(dbc(dbcNo)%ptr)) THEN
+IF (.NOT. ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[ALLOCATION ERROR] :: dbc( '//TOSTRING(dbcNo) &
+    & '[INTERNAL ERROR] :: dbc( '//TOSTRING(dbcNo0) &
     & //')%ptr is not ASSOCIATED')
 END IF
+#endif
 
-ans => dbc(dbcNo)%ptr
+ans => dbc(dbcNo0)%ptr
 
-END PROCEDURE bc_GetDirichletBCPointer
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_GetDirichletBCPointer
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix 
+!                                                                 GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetPrefix
-  ans = myprefix
-END PROCEDURE bc_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

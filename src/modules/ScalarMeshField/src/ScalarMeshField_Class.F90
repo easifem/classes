@@ -19,17 +19,19 @@ MODULE ScalarMeshField_Class
 USE GlobalData
 USE BaSetype
 USE FPL, ONLY: ParameterList_
-USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE UserFunction_Class
+USE Mesh_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "ScalarMeshField_Class"
+CHARACTER(*), PARAMETER :: myprefix = "ScalarMeshField"
 PUBLIC :: ScalarMeshField_
 PUBLIC :: ScalarMeshFieldPointer_
 PUBLIC :: SetScalarMeshFieldParam
-PUBLIC :: DEALLOCATE
+PUBLIC :: ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                     ScalarMeshField_Class
@@ -39,14 +41,11 @@ PUBLIC :: DEALLOCATE
 ! date: 20 Feb 2022
 ! summary: Scalar mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: ScalarMeshField_
+TYPE, EXTENDS(AbstractScalarMeshField_) :: ScalarMeshField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & aField_CheckEssentialParam
-    !! Check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
 END TYPE ScalarMeshField_
 
 !----------------------------------------------------------------------------
@@ -65,11 +64,11 @@ END TYPE ScalarMeshFieldPointer_
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+INTERFACE ScalarMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(ScalarMeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -79,11 +78,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+INTERFACE ScalarMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(ScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE ScalarMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                              SetAbstractMeshFieldParam@ConstructorMethods
@@ -94,49 +93,58 @@ END INTERFACE DEALLOCATE
 ! summary: This routine Check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, &
-    & fieldType, varType, engine, defineOn, nns)
+  MODULE SUBROUTINE SetScalarMeshFieldParam(param, name, fieldType, varType, &
+    & engine, defineOn, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
     CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
-  !! Nodal, Quadrature
+    !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: nns
-  !! Number of node in space
+    !! Number of node in space
   END SUBROUTINE SetScalarMeshFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
+! summary: Initiate from abstractMaterials
 
 INTERFACE
-  MODULE SUBROUTINE aField_CheckEssentialParam(obj, param)
-    CLASS(ScalarMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_CheckEssentialParam
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
+    CLASS(ScalarMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                              GetPrefix
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
 
 INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
-    CLASS(ScalarMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(ScalarMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 END MODULE ScalarMeshField_Class

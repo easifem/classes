@@ -24,58 +24,104 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetSTTensorMeshFieldParam
+INTEGER(I4B) :: s(4), n
+
 IF (fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  CALL SetAbstractMeshFieldParam( &
-      & param=param, &
-      & prefix="STTensorMeshField", &
-      & name=name, &
-      & fieldType=fieldType, &
-      & varType=constant, &
-      & engine=engine, &
-      & defineOn=defineOn, &
-      & rank=Matrix, &
-      & s=[dim1, dim2])
+  n = 2; s(1:n) = [dim1, dim2]
 ELSE
-  CALL SetAbstractMeshFieldParam( &
-    & param=param, &
-    & prefix="STTensorMeshField", &
-    & name=name, &
-    & fieldType=fieldType, &
-    & varType=varType, &
-    & engine=engine, &
-    & defineOn=defineOn, &
-    & rank=Matrix, &
-    & s=[dim1, dim2, nns, nnt])
+  n = 4; s(1:n) = [dim1, dim2, nns, nnt]
 END IF
-END PROCEDURE SetSTTensorMeshFieldParam
 
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aField_CheckEssentialParam
-CALL AbstractMeshFieldCheckEssentialParam( &
-  & obj=obj, &
+CALL SetAbstractMeshFieldParam( &
+  & param=param, &
   & prefix="STTensorMeshField", &
-  & param=param)
-END PROCEDURE aField_CheckEssentialParam
+  & name=name, &
+  & fieldType=fieldType, &
+  & varType=varType, &
+  & engine=engine, &
+  & defineOn=defineOn, &
+  & rank=Matrix, &
+  & s=s(1:n))
+END PROCEDURE SetSTTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Initiate1
-CALL AbstractMeshFieldInitiate( &
-  & obj=obj, &
-  & prefix="STTensorMeshField", &
-  & param=param, mesh=mesh)
-END PROCEDURE aField_Initiate1
+MODULE PROCEDURE obj_Initiate4
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: returnType, argType, nns, varType, fieldType,  &
+  & numReturns, dims(2)
+TYPE(ParameterList_) :: param
+CLASS(ReferenceElement_), POINTER :: refelem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+refelem => NULL()
+refelem => mesh%GetRefElemPointer()
+isok = ASSOCIATED(refelem)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: refelem pointer not found.')
+  RETURN
+END IF
+nns = (.NNE.refelem)
+
+returnType = func%GetReturnType()
+
+isok = returnType .EQ. Matrix
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: returnType should be Matrix')
+  RETURN
+END IF
+
+argType = func%GetArgType()
+numReturns = func%GetNumReturns()
+dims = func%GetReturnShape()
+fieldType = TypeField%normal
+varType = argType
+IF (argType .EQ. Constant) THEN
+  fieldType = TypeField%constant
+  varType = Constant
+END IF
+
+isok = PRESENT(nnt)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: NNT should be present when varType'//  &
+    & ' is Time or SpaceTime')
+  RETURN
+END IF
+
+CALL param%Initiate()
+
+CALL SetSTTensorMeshFieldParam(param=param, name=name,  &
+  & fieldType=fieldType, varType=varType, engine=engine, &
+  & defineOn=Nodal, dim1=dims(1), dim2=dims(2), nns=nns, nnt=nnt)
+
+CALL obj%Initiate(param=param, mesh=mesh)
+
+CALL param%DEALLOCATE()
+
+NULLIFY (refelem)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Vector
+MODULE PROCEDURE obj_Deallocate_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -83,13 +129,13 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Vector
+END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aField_Deallocate_Ptr_Vector
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 INTEGER(I4B) :: ii
 IF (ALLOCATED(obj)) THEN
   DO ii = 1, SIZE(obj)
@@ -100,8 +146,15 @@ IF (ALLOCATED(obj)) THEN
   END DO
   DEALLOCATE (obj)
 END IF
-END PROCEDURE aField_Deallocate_Ptr_Vector
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
+!----------------------------------------------------------------------------
+!                                                                 GetPrefix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPrefix
+ans = myprefix
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !

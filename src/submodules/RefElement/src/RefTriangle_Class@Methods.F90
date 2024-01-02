@@ -29,6 +29,11 @@ MODULE PROCEDURE refelem_RefCoord
 TYPE(String) :: baseContinuity0, baseInterpolation0
 CHARACTER(*), PARAMETER :: myName = "refelem_RefCoord"
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
 baseContinuity0 = UpperCase(baseContinuity)
 baseInterpolation0 = UpperCase(baseInterpolation)
 
@@ -47,7 +52,7 @@ CASE ("H1")
 
   CASE ("HERMITPOLYNOMIAL", "HERMIT", "HERMITINTERPOLATION")
 
-    CALL e%raiseError(modName//'::'//myName//' - '// &
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
       & 'NOT IMPLEMETED! WIP! baseInterpolation='//baseInterpolation0)
 
   CASE ( &
@@ -64,13 +69,16 @@ CASE ("H1")
     ans = RefCoord_Triangle("BIUNIT")
 
   CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'NO CASE FOUND! for baseContinuity='//baseContinuity0)
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: NO CASE FOUND! for baseContinuity=' &
+      & //baseContinuity0)
+    RETURN
   END SELECT
 
 CASE DEFAULT
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Currently, only baseContinuity=H1 allowed!')
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Currently, only baseContinuity=H1 allowed!')
+  RETURN
 END SELECT
 
 END PROCEDURE refelem_RefCoord
@@ -88,34 +96,36 @@ END PROCEDURE refelem_GetName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE refelem_GetFacetElements
+CHARACTER(*), PARAMETER :: myName = "refelem_GetFacetElements()"
 INTEGER(I4B), PARAMETER :: tfacet = 3_I4B
 INTEGER(I4B) :: ii
 TYPE(string) :: baseContinuity0, baseInterpolation0
-REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B) :: faceCon(2, 3)
 
-CALL obj%getParam( &
-  & baseInterpolation=baseInterpolation0, &
-  & baseContinuity=baseContinuity0, &
-  & xij=xij)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
 
-faceCon = FacetConnectivity_Triangle( &
-  & baseInterpolation0%chars(), &
+CALL obj%GetParam(baseInterpolation=baseInterpolation0, &
+  & baseContinuity=baseContinuity0)
+
+faceCon = FacetConnectivity_Triangle(baseInterpolation0%chars(), &
   & baseContinuity0%chars())
 
 ALLOCATE (ans(tfacet))
 
 DO ii = 1, tfacet
   ALLOCATE (RefLine_ :: ans(ii)%ptr)
-  CALL ans(ii)%ptr%Initiate( &
-    & nsd=obj%getNSD(),  &
+  CALL ans(ii)%ptr%Initiate(nsd=obj%GetNSD(),  &
     & baseContinuity=baseContinuity0%chars(),  &
-    & baseInterpolation=baseInterpolation0%chars(), &
-    & xij=xij(:, faceCon(:, ii)) &
-    & )
+    & baseInterpolation=baseInterpolation0%chars())
 END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
 END PROCEDURE refelem_GetFacetElements
 
 !----------------------------------------------------------------------------

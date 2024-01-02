@@ -17,7 +17,6 @@
 
 SUBMODULE(AbstractFE_Class) QuadratureMethods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 
@@ -25,7 +24,7 @@ CONTAINS
 !                                                    GetQuadraturePoints1
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetQuadraturePoints1
+MODULE PROCEDURE obj_GetQuadraturePoints1
 CHARACTER(*), PARAMETER :: myName = "GetQuadraturePoints1"
 INTEGER(I4B) :: order0(3), nips0(3), quadratureType0(3)
 REAL(DFP) :: alpha0(3), beta0(3), lambda0(3)
@@ -139,6 +138,6 @@ IF (PRESENT(nips)) THEN
     & )
   RETURN
 END IF
-END PROCEDURE fe_GetQuadraturePoints1
+END PROCEDURE obj_GetQuadraturePoints1
 
 END SUBMODULE QuadratureMethods

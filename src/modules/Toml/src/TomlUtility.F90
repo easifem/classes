@@ -24,6 +24,7 @@ IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "TomlUtility"
 PUBLIC :: GetValue
+PUBLIC :: TomlArrayLength
 
 !----------------------------------------------------------------------------
 !                                                           GetValue@Methods
@@ -39,8 +40,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT8), ALLOCATABLE, INTENT(OUT) :: VALUE(:)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_int8_r1
 END INTERFACE GetValue
@@ -159,8 +160,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT8), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_int8_r2
 END INTERFACE GetValue
@@ -179,8 +180,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT16), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_int16_r2
 END INTERFACE GetValue
@@ -199,8 +200,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT32), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_int32_r2
 END INTERFACE GetValue
@@ -219,8 +220,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT64), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_int64_r2
 END INTERFACE GetValue
@@ -239,8 +240,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL32), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_real32_r2
 END INTERFACE GetValue
@@ -259,8 +260,8 @@ INTERFACE GetValue
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL64), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INout) :: stat
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE toml_get_real64_r2
 END INTERFACE GetValue
@@ -273,12 +274,12 @@ END INTERFACE GetValue
 ! date:  2023-11-08
 ! summary:  Initiate table from toml file
 
-INTERFACE GetValue
+INTERFACE
   MODULE SUBROUTINE toml_get_from_file(table, afile)
     TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
     TYPE(TxtFile_), INTENT(INOUT) :: afile
   END SUBROUTINE toml_get_from_file
-END INTERFACE GetValue
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                         GetValue@IOMethods
@@ -288,12 +289,46 @@ END INTERFACE GetValue
 ! date:  2023-11-08
 ! summary:  Initiate table from toml file
 
-INTERFACE GetValue
+INTERFACE
   MODULE SUBROUTINE toml_get_from_filename(table, filename)
     TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: filename
   END SUBROUTINE toml_get_from_filename
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetValue@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate table from toml file
+
+INTERFACE GetValue
+  MODULE SUBROUTINE toml_get_from_file_master(table, afile, filename)
+    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  END SUBROUTINE toml_get_from_file_master
 END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                        GetValue@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate table from toml file
+
+INTERFACE TomlArrayLength
+  MODULE FUNCTION toml_array_length(table, key, origin, stat) RESULT(ans)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(I4B) :: ans
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+  END FUNCTION toml_array_length
+END INTERFACE TomlArrayLength
 
 !----------------------------------------------------------------------------
 !

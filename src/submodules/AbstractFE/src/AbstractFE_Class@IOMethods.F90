@@ -16,7 +16,6 @@
 
 SUBMODULE(AbstractFE_Class) IOMethods
 USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 
@@ -24,7 +23,7 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_Display
+MODULE PROCEDURE obj_Display
 IF (.NOT. obj%isInitiated) THEN
   CALL Display("Element is Empty", unitno=unitno)
 END IF
@@ -90,14 +89,14 @@ IF (obj%isCellOrder) THEN
   END IF
 END IF
 
-END PROCEDURE fe_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                                MdEncode
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_MdEncode
-CHARACTER(*), PARAMETER :: myName = "fe_MdEncode"
+MODULE PROCEDURE obj_MdEncode
+CHARACTER(*), PARAMETER :: myName = "obj_MdEncode"
 INTEGER(I4B), PARAMETER :: jj = 21
 TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
@@ -144,14 +143,14 @@ ans = MdEncode( &
   & ch=colTitle)//char_lf//"**Reference Element**"// &
   & char_lf//char_lf//obj%refelem%MdEncode()
 
-END PROCEDURE fe_MdEncode
+END PROCEDURE obj_MdEncode
 
 !----------------------------------------------------------------------------
 !                                                                MdEncode
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_ReactEncode
-CHARACTER(*), PARAMETER :: myName = "fe_ReactEncode"
+MODULE PROCEDURE obj_ReactEncode
+CHARACTER(*), PARAMETER :: myName = "obj_ReactEncode"
 INTEGER(I4B), PARAMETER :: jj = 21
 TYPE(String) :: rowTitle(jj), colTitle(1), astr(jj)
 
@@ -244,6 +243,6 @@ ans = ans//React_StartTabItem(VALUE="0", label="Finite Element")//char_lf// &
   & React_StartTabItem(VALUE="1", label="Reference Element")//char_lf// &
   & char_lf//obj%refelem%ReactEncode()//char_lf// &
   & React_EndTabItem()//char_lf//React_EndTabs()//char_lf
-END PROCEDURE fe_ReactEncode
+END PROCEDURE obj_ReactEncode
 
 END SUBMODULE IOMethods

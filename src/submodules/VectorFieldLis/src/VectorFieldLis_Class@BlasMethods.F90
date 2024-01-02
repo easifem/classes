@@ -15,68 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(VectorFieldLis_Class) BlasMethods
-USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                      Norm2
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE vField_Norm2
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "vField_Norm2"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  CALL lis_vector_nrm2(obj%lis_ptr, ans, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'VectorFieldLis_::obj is NOT AVAILABLE')
-END IF
-END PROCEDURE vField_Norm2
-
-!----------------------------------------------------------------------------
-!                                                                      Norm1
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE vField_Norm1
-CHARACTER(*), PARAMETER :: myName = "vField_Norm1"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  CALL lis_vector_nrm1(obj%lis_ptr, ans, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'VectorFieldLis_::obj is NOT AVAILABLE')
-END IF
-END PROCEDURE vField_Norm1
-
-!----------------------------------------------------------------------------
-!                                                                      Normi
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE vField_Normi
-CHARACTER(*), PARAMETER :: myName = "vField_Normi"
-INTEGER(I4B) :: ierr
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  CALL lis_vector_nrmi(obj%lis_ptr, ans, ierr)
-  CALL CHKERR(ierr)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'VectorFieldLis_::obj is NOT AVAILABLE')
-END IF
-END PROCEDURE vField_Normi
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-END SUBMODULE BlasMethods
+! SUBMODULE(VectorFieldLis_Class) BlasMethods
+! USE BaseMethod
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE BlasMethods

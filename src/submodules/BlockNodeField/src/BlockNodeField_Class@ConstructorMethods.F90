@@ -84,8 +84,8 @@ END PROCEDURE SetBlockNodeFieldParam
 !                                                       CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "bnField_CheckEssentialParam"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
 INTEGER(I4B) :: ii, n
 
 CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
@@ -120,14 +120,14 @@ DO ii = 1, n
   END IF
 END DO
 
-END PROCEDURE bnField_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Initiate1
-CHARACTER(*), PARAMETER :: myName = "bnField_Initiate1()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
 INTEGER(I4B) :: tPhysicalVarNames, ii, ierr
 TYPE(ParameterList_), POINTER :: sublist
@@ -174,14 +174,14 @@ sublist => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
-END PROCEDURE bnField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Initiate3
-CHARACTER(*), PARAMETER :: myName = "bnField_Initiate3"
+MODULE PROCEDURE obj_Initiate3
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
 CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
 TYPE(String) :: astr
 INTEGER(I4B) :: tPhysicalVarNames, ii, ierr, storageFMT, tSize
@@ -291,14 +291,31 @@ IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
 IF (ALLOCATED(tNodes)) DEALLOCATE (tNodes)
 sublist => NULL()
-END PROCEDURE bnField_Initiate3
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                      Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE bnField_Final
+END PROCEDURE obj_Final
+
+!----------------------------------------------------------------------------
+!                                                           Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+INTEGER(I4B) :: ii
+IF (ALLOCATED(obj)) THEN
+  DO ii = 1, SIZE(obj)
+    IF (ASSOCIATED(obj(ii)%ptr)) THEN
+      CALL obj(ii)%ptr%DEALLOCATE()
+      obj(ii)%ptr => NULL()
+    END IF
+  END DO
+  DEALLOCATE (obj)
+END IF
+END PROCEDURE obj_Deallocate_Ptr_Vector
 
 END SUBMODULE ConstructorMethods

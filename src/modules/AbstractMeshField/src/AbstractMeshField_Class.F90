@@ -20,20 +20,32 @@ USE BaSetype
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE Mesh_Class, ONLY: Mesh_
+USE Domain_Class, ONLY: Domain_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE HDF5File_Class
 USE VTKFile_Class
+USE AbstractMaterial_Class
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
+CHARACTER(*), PARAMETER :: AbstractMeshFieldEssential = "/name/fieldType"// &
+  & "/engine/defineOn/varType/rank/s/totalShape"
+
 PUBLIC :: AbstractMeshField_
 PUBLIC :: AbstractMeshFieldPointer_
 PUBLIC :: SetAbstractMeshFieldParam
 PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
-PUBLIC :: DEALLOCATE
+
+PUBLIC :: AbstractScalarMeshField_
+PUBLIC :: AbstractScalarMeshFieldPointer_
+PUBLIC :: AbstractVectorMeshField_
+PUBLIC :: AbstractVectorMeshFieldPointer_
+PUBLIC :: AbstractTensorMeshField_
+PUBLIC :: AbstractTensorMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                                                         AbstractMeshField_
@@ -82,43 +94,112 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! based on the information stored in s(:)
   TYPE(Mesh_), POINTER :: mesh => NULL()
   !! Domain contains the information of the finite element meshes.
+
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-  !! check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    & obj_CheckEssentialParam
+  !! Check essential parameters
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the field by reading param and a given mesh
-  PROCEDURE, PASS(obj) :: Initiate2 => aField_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
+  !! Initiate from Abstract materials
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate from user function
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3,  &
+    & Initiate4
   !! Generic initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => aField_Display
-  !! Display the field
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => aField_Import
-  !! Import data from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => aField_Export
-  !! Export data in hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportInVTK => aField_ExportInVTK
-  !! Export data in vtkFile
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => aField_getPointer
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the field
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data from hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export data in hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportInVTK => obj_ExportInVTK
+  !! Export data in vtkFile
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! Return pointer to val
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => aField_Size
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns size
-  PROCEDURE, PUBLIC, PASS(obj) :: Shape => aField_Shape
+  PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
-  PROCEDURE, PUBLIC, PASS(obj) :: Add => aField_Add
-  !! Adding a value
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => aField_Set
-  !! Setting the value
-  PROCEDURE, PUBLIC, PASS(obj) :: Get => aField_Get
+  PROCEDURE, PUBLIC, PASS(obj) :: Get => obj_Get
   !! Getting the value
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Add => obj_Add
+  !! Adding a value
+  PROCEDURE, PUBLIC, PASS(obj) :: Set1 => obj_Set1
+  !! Setting the value by using FEVariable_
+  PROCEDURE, PUBLIC, PASS(obj) :: Set2 => obj_Set2
+  !! Setting the value by using UserFunction_
+  PROCEDURE, PUBLIC, PASS(obj) :: Set3 => obj_Set3
+  !! Setting the value by using material
+  GENERIC, PUBLIC :: Set => Set1, Set2, Set3
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
-!
+!                                                 AbstractScalarMeshField_
+!----------------------------------------------------------------------------
+
+TYPE, EXTENDS(AbstractMeshField_) :: AbstractScalarMeshField_
+END TYPE AbstractScalarMeshField_
+
+!----------------------------------------------------------------------------
+!                                           AbstractScalarMeshFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractScalarMeshFieldPointer_
+  CLASS(AbstractScalarMeshField_), POINTER :: ptr => NULL()
+END TYPE AbstractScalarMeshFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 AbstractVectorMeshField_
+!----------------------------------------------------------------------------
+
+TYPE, EXTENDS(AbstractMeshField_) :: AbstractVectorMeshField_
+END TYPE AbstractVectorMeshField_
+
+!----------------------------------------------------------------------------
+!                                           AbstractVectorMeshFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractVectorMeshFieldPointer_
+  CLASS(AbstractVectorMeshField_), POINTER :: ptr => NULL()
+END TYPE AbstractVectorMeshFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 AbstractTensorMeshField_
+!----------------------------------------------------------------------------
+
+TYPE, EXTENDS(AbstractMeshField_) :: AbstractTensorMeshField_
+END TYPE AbstractTensorMeshField_
+
+!----------------------------------------------------------------------------
+!                                           AbstractTensorMeshFieldPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractTensorMeshFieldPointer_
+  CLASS(AbstractTensorMeshField_), POINTER :: ptr => NULL()
+END TYPE AbstractTensorMeshFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                                 AbstractMeshFieldPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: AbstractMeshFieldPointer_
@@ -131,7 +212,7 @@ END TYPE AbstractMeshFieldPointer_
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
 INTERFACE
   MODULE SUBROUTINE SetAbstractMeshFieldParam(param, prefix, name, &
@@ -149,67 +230,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
+!                                     CheckEssentialParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
+! summary: This routine Check the essential parameters in param.
 
-INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
+INTERFACE AbstractMeshFieldCheckEssentialParam
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractMeshFieldCheckEssentialParam(obj, prefix, param)
-    CLASS(AbstractMeshField_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: prefix
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE AbstractMeshFieldCheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Oct 2021
-! summary: Deallocates data in [[AbstractMeshField_]]
-
-INTERFACE
-  MODULE SUBROUTINE aField_Deallocate(obj)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-  END SUBROUTINE aField_Deallocate
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE aField_Deallocate
-END INTERFACE AbstractMeshFieldDeallocate
-
-!----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
-
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
-    TYPE(AbstractMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_CheckEssentialParam
+END INTERFACE AbstractMeshFieldCheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -219,30 +252,13 @@ END INTERFACE DEALLOCATE
 ! date: 17 Feb 2022
 ! summary: Initiate the field by reading param and given domain
 
-INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
+INTERFACE AbstractMeshFieldInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE AbstractMeshFieldInitiate(obj, prefix, param, mesh)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: prefix
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE AbstractMeshFieldInitiate
-END INTERFACE
+  END SUBROUTINE obj_Initiate1
+END INTERFACE AbstractMeshFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
@@ -253,60 +269,180 @@ END INTERFACE
 ! summary: Initiate by copying other fields, and different options
 
 INTERFACE
-  MODULE SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
+  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
     & usePointer)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE aField_Initiate2
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetPointer@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Returns the pointer to a fortran real vector stored inside realVec
+! summary: Initiate from abstractMaterials
 
 INTERFACE
-  MODULE FUNCTION aField_GetPointer(obj) RESULT(ans)
+  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Initiate from UserFunction_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Oct 2021
+! summary: Deallocates data in [[AbstractMeshField_]]
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE AbstractMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(AbstractMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE AbstractMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Scalar(obj)
+    TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector_Scalar
+END INTERFACE AbstractMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Vector(obj)
+    TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector_Vector
+END INTERFACE AbstractMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-12
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE AbstractMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector_Tensor(obj)
+    TYPE(AbstractTensorMeshFieldPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector_Tensor
+END INTERFACE AbstractMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                     GetPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Returns the pointer to a fortran real vector
+
+INTERFACE
+  MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
     CLASS(AbstractMeshField_), TARGET, INTENT(IN) :: obj
     REAL(DFP), POINTER :: ans(:, :)
-  END FUNCTION aField_GetPointer
+  END FUNCTION obj_GetPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Size@ConstructorMethods
+!                                                           Size@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This function returns the size of the field
+! summary: This function returns the size of data
 
 INTERFACE
-  MODULE FUNCTION aField_Size(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_Size(obj, dim) RESULT(ans)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL :: dim
     INTEGER(I4B) :: ans
-  END FUNCTION aField_Size
+  END FUNCTION obj_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Shape@ConstructorMethods
+!                                                           Shape@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: This function returns the size of the field
+! summary: This function returns the shape of data
 
 INTERFACE
-  MODULE FUNCTION aField_Shape(obj) RESULT(ans)
+  MODULE FUNCTION obj_Shape(obj) RESULT(ans)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION aField_Shape
+  END FUNCTION obj_Shape
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -318,11 +454,11 @@ END INTERFACE
 ! summary: Display the content
 
 INTERFACE
-  MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE aField_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -334,12 +470,12 @@ END INTERFACE
 ! summary: Import from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE aField_Import(obj, hdf5, group, mesh)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     CLASS(Mesh_), TARGET, OPTIONAL, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -351,11 +487,11 @@ END INTERFACE
 ! summary: Export to hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE aField_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -367,60 +503,116 @@ END INTERFACE
 ! summary: Export to hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE aField_ExportInVTK(obj, vtk, group)
+  MODULE SUBROUTINE obj_ExportInVTK(obj, vtk, group)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_ExportInVTK
+  END SUBROUTINE obj_ExportInVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Export to hdf5file
+! summary: Set values in AbstractMeshField_
 
 INTERFACE
-  MODULE SUBROUTINE aField_Set(obj, globalElement, fevar)
+  MODULE SUBROUTINE obj_Set1(obj, globalElement, fevar)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
     TYPE(FEVariable_), INTENT(IN) :: fevar
-  END SUBROUTINE aField_Set
+  END SUBROUTINE obj_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Export to hdf5file
+! summary: Set values in AbstractMeshField_
 
 INTERFACE
-  MODULE SUBROUTINE aField_Add(obj, globalElement, scale, fevar)
+  MODULE SUBROUTINE obj_Set2(obj, func, dom, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    CLASS(Domain_), INTENT(INOUT) :: dom
+    !! domain to access the node coord
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Set2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Set values in AbstractMeshField_ by AbstractMaterial
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set3(obj, material, name, dom, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CLASS(Domain_), INTENT(INOUT) :: dom
+    !! domain to access the node coord
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Set3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Add@SetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 17 Feb 2022
+! summary: Add values to AbstractMeshField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Add(obj, globalElement, scale, fevar)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
     REAL(DFP), INTENT(IN) :: scale
     TYPE(FEVariable_), INTENT(IN) :: fevar
-  END SUBROUTINE aField_Add
+  END SUBROUTINE obj_Add
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Export@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 17 Feb 2022
-! summary: Export to hdf5file
+! summary: Get the values from AbstractMeshField_
 
 INTERFACE
-  MODULE SUBROUTINE aField_Get(obj, globalElement, fevar)
+  MODULE SUBROUTINE obj_Get(obj, globalElement, fevar)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
-  END SUBROUTINE aField_Get
+  END SUBROUTINE obj_Get
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-03
+! summary:  Get the prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

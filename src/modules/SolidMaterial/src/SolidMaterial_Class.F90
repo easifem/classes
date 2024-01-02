@@ -37,16 +37,22 @@ USE FPL, ONLY: ParameterList_
 USE AbstractMaterial_Class
 USE AbstractSolidMechanicsModel_Class
 USE MeshSelection_Class
+USE Domain_Class, ONLY: Domain_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "SolidMaterial_Class"
 CHARACTER(*), PARAMETER :: myprefix = "SolidMaterial"
+CHARACTER(*), PARAMETER :: default_stress_strain_toml = "stressStrainModel"
 PUBLIC :: SolidMaterial_
 PUBLIC :: SolidMaterialPointer_
-PUBLIC :: DEALLOCATE
+PUBLIC :: SolidMaterialDeallocate
 PUBLIC :: SetSolidMaterialParam
 PUBLIC :: AddSolidMaterial
+PUBLIC :: GetSolidMaterialPointer
 PUBLIC :: TypeSolidMaterial
+PUBLIC :: SolidMaterialImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                            SolidMaterial_
@@ -69,22 +75,23 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & solid_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => solid_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => solid_Deallocate
-  FINAL :: solid_Final
+    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_Final
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => solid_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => solid_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => solid_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
 
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
-    & solid_GetStressStrainModelPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => solid_GetPrefix
+    & obj_GetStressStrainModelPointer
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE SolidMaterial_
 
 !----------------------------------------------------------------------------
@@ -146,10 +153,10 @@ END INTERFACE
 ! - `SolidMaterial/stresStrainModel`
 
 INTERFACE
-  MODULE SUBROUTINE solid_CheckEssentialParam(obj, param)
+  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE solid_CheckEssentialParam
+  END SUBROUTINE obj_CheckEssentialParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -177,39 +184,12 @@ END INTERFACE
 !@endwarning
 
 INTERFACE
-  MODULE SUBROUTINE solid_Initiate(obj, param, prefix)
+  MODULE SUBROUTINE obj_Initiate(obj, param, prefix)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     TYPE(ParameterList_), INTENT(IN) :: param
     CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE solid_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        AddSolidMaterial@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-11
-! summary:  Add a solid material to the vector of SolidMaterialPointer_
-
-INTERFACE AddSolidMaterial
-  MODULE SUBROUTINE solid_AddSolidMaterial( &
-    & obj, &
-    & tMaterials,   &
-    & materialNo, &
-    & materialName,  &
-    & solidMaterialToMesh, &
-    & param, &
-    & region)
-    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
-    INTEGER(I4B), INTENT(IN) :: tMaterials
-    INTEGER(I4B), INTENT(IN) :: materialNo
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
-    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: solidMaterialToMesh(:)
-  END SUBROUTINE solid_AddSolidMaterial
-END INTERFACE AddSolidMaterial
 
 !----------------------------------------------------------------------------
 !                                          Deallocate@ConstructorMethods
@@ -230,9 +210,9 @@ END INTERFACE AddSolidMaterial
 !@endwarning
 
 INTERFACE
-  MODULE SUBROUTINE solid_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE solid_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -243,11 +223,11 @@ END INTERFACE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector
 
-INTERFACE DEALLOCATE
+INTERFACE SolidMaterialDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(SolidMaterial_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE SolidMaterialDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -257,11 +237,11 @@ END INTERFACE DEALLOCATE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of pointer
 
-INTERFACE DEALLOCATE
+INTERFACE SolidMaterialDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(SolidMaterialPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+END INTERFACE SolidMaterialDeallocate
 
 !----------------------------------------------------------------------------
 !                                          Final@ConstructorMethods
@@ -272,9 +252,78 @@ END INTERFACE DEALLOCATE
 ! summary: This routine deallocates the instance
 
 INTERFACE
-  MODULE SUBROUTINE solid_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(SolidMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE solid_Final
+  END SUBROUTINE obj_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        AddSolidMaterial@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-11
+! summary:  Add a solid material to the vector of SolidMaterialPointer_
+
+INTERFACE AddSolidMaterial
+  MODULE SUBROUTINE obj_AddSolidMaterial( &
+    & obj, &
+    & tMaterials,   &
+    & materialNo, &
+    & materialName,  &
+    & solidMaterialToMesh, &
+    & param, &
+    & region)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tMaterials
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
+    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: solidMaterialToMesh(:)
+  END SUBROUTINE obj_AddSolidMaterial
+END INTERFACE AddSolidMaterial
+
+!----------------------------------------------------------------------------
+!                                        GetSolidMaterialPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-08
+! summary:  Get a solid material pointer
+
+INTERFACE GetSolidMaterialPointer
+  MODULE FUNCTION obj_GetSolidMaterialPointer(obj, materialNo) RESULT(ans)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CLASS(SolidMaterial_), POINTER :: ans
+  END FUNCTION obj_GetSolidMaterialPointer
+END INTERFACE GetSolidMaterialPointer
+
+!----------------------------------------------------------------------------
+!                                    GetStressStrainModelPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-10
+! summary: Get stressStrainModel pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
+    CLASS(SolidMaterial_), INTENT(IN) :: obj
+    CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
+  END FUNCTION obj_GetStressStrainModelPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(SolidMaterial_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -291,11 +340,11 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE SUBROUTINE solid_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE solid_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -307,11 +356,11 @@ END INTERFACE
 ! summary: This routine exports the information to external hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE solid_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE solid_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -323,38 +372,85 @@ END INTERFACE
 ! summary: This routine displays the content of the instance
 
 INTERFACE
-  MODULE SUBROUTINE solid_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE solid_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                    GetStressStrainModelPointer@GetMethods
+!                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-02-10
-! summary: Get stressStrainModel pointer
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE FUNCTION solid_GetStressStrainModelPointer(obj) RESULT(ans)
-    CLASS(SolidMaterial_), INTENT(IN) :: obj
-    CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
-  END FUNCTION solid_GetStressStrainModelPointer
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(SolidMaterial_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
+!                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
-  MODULE FUNCTION solid_GetPrefix(obj) RESULT(ans)
-    CLASS(SolidMaterial_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION solid_GetPrefix
-END INTERFACE
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE SolidMaterialImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, table, tomlName)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    CHARACTER(*), INTENT(IN) :: tomlName
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE SolidMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE SolidMaterialImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename,  &
+      & printToml)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml3
+END INTERFACE SolidMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE SolidMaterialImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml4(obj, table, tomlName,  &
+      & solidMaterialToMesh, dom)
+    TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(MeshSelection_), INTENT(INOUT) :: solidMaterialToMesh(:)
+    TYPE(Domain_), OPTIONAL, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportFromToml4
+END INTERFACE SolidMaterialImportFromToml
 
 !----------------------------------------------------------------------------
 !

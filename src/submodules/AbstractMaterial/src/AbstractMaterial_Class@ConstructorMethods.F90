@@ -25,11 +25,11 @@ CONTAINS
 !                                                     CheckEssentialParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "am_CheckEssentialParam()"
+MODULE PROCEDURE obj_CheckEssentialParam
+CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & 'This routine does nothing... It should be implemented by child class.')
-END PROCEDURE am_CheckEssentialParam
+END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                SetAbstractMaterialParam
@@ -43,8 +43,8 @@ END PROCEDURE SetAbstractMaterialParam
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_Initiate
-CHARACTER(*), PARAMETER :: myName = "am_Initiate()"
+MODULE PROCEDURE obj_Initiate
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 CHARACTER(:), ALLOCATABLE :: prefix0
 
 ! main
@@ -72,18 +72,18 @@ CALL GetValue(obj=param, prefix=prefix0, key="name", VALUE=obj%name)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Initiate()')
 #endif
-END PROCEDURE am_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE am_Deallocate
+MODULE PROCEDURE obj_Deallocate
 obj%isInit = .FALSE.
 obj%name = ""
 obj%tProperties = 0
 ! CALL Deallocate(obj%matProps)
 ! CALL tbl%Deallocate()
-END PROCEDURE am_Deallocate
+END PROCEDURE obj_Deallocate
 
 END SUBMODULE ConstructorMethods

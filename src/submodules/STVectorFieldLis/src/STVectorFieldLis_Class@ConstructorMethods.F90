@@ -24,27 +24,26 @@ CONTAINS
 !                                                              STVectorField
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Constructor1
+MODULE PROCEDURE obj_Constructor1
 CALL ans%initiate(param, dom)
-END PROCEDURE stvField_Constructor1
+END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
 !                                                      STVectorField_Pointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Constructor_1
+MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (ans)
 CALL ans%initiate(param, dom)
-END PROCEDURE stvField_Constructor_1
+END PROCEDURE obj_Constructor_1
 
-#ifdef USE_LIS
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Initiate1
+MODULE PROCEDURE obj_Initiate1
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "stvField_Initiate1"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
 INTEGER(I4B) :: ierr
 
 CALL STVectorFieldInitiate1(obj=obj, param=param, dom=dom)
@@ -63,37 +62,36 @@ CALL lis_vector_get_range( &
 & ierr &
 & )
 CALL CHKERR(ierr)
-END PROCEDURE stvField_Initiate1
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Deallocate
+MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ierr
 CALL lis_vector_destroy(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 CALL STVectorFieldDeallocate(obj)
-END PROCEDURE stvField_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                     Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE stvField_Final
+END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
 !                                                                       Size
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_Size
+MODULE PROCEDURE obj_Size
 ans = obj%local_n
-END PROCEDURE stvField_Size
+END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-#endif
 END SUBMODULE ConstructorMethods

@@ -23,53 +23,43 @@ CONTAINS
 !                                                                   Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Import
-CHARACTER(*), PARAMETER :: myName = "lem_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                                    Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Export
-CHARACTER(*), PARAMETER :: myName = "lem_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_Display
-CHARACTER(*), PARAMETER :: myName = "lem_Display"
+MODULE PROCEDURE obj_Display
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine should be implemented by child of '//  &
   & 'AbstractSolidMechanicsModel_')
-END PROCEDURE lem_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE lem_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "lem_ImportFromToml1()"
+MODULE PROCEDURE obj_ImportFromToml1
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This method is under development.')
-END PROCEDURE lem_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE lem_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "lem_ImportFromToml2()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This method is under development.')
-END PROCEDURE lem_ImportFromToml2
+END PROCEDURE obj_ImportFromToml1
 
 END SUBMODULE IOMethods

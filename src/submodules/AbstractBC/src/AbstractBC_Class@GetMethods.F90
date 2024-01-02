@@ -46,7 +46,7 @@ LOGICAL(LGT) :: isNodalValuePresent, isNOTOK
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Get()')
+  & '[START]')
 #endif
 
 IF (.NOT. obj%isInitiated) THEN
@@ -141,7 +141,7 @@ END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Get()')
+  & '[END]')
 #endif
 END PROCEDURE bc_Get
 
@@ -177,10 +177,10 @@ END PROCEDURE bc_isuseFunction
 
 MODULE PROCEDURE bc_GetQuery
 CALL obj%boundary%GetQuery(&
-& isSelectionByBox=isSelectionByBox, &
-& isSelectionByMeshID=isSelectionByMeshID, &
-& isSelectionByElemNum=isSelectionByElemNum, &
-& isSelectionByNodeNum=isSelectionByNodeNum)
+  & isSelectionByBox=isSelectionByBox, &
+  & isSelectionByMeshID=isSelectionByMeshID, &
+  & isSelectionByElemNum=isSelectionByElemNum, &
+  & isSelectionByNodeNum=isSelectionByNodeNum)
 
 IF (PRESENT(idof)) idof = obj%idof
 IF (PRESENT(isTangent)) isTangent = obj%isTangent
@@ -208,13 +208,19 @@ END PROCEDURE bc_GetPrefix
 
 MODULE PROCEDURE bc_GetFromUserFunction
 CHARACTER(*), PARAMETER :: myName = "bc_GetFromUserFunction()"
-INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes
+INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes, argType
 REAL(DFP) :: xij(4, 1), ans
 LOGICAL(LGT) :: problem
 
 ! get pointer to nodecoord
 
-IF (.NOT. ASSOCIATED(obj%func)) THEN
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+problem = .NOT. ASSOCIATED(obj%func)
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
   & "[INTERNAL ERROR] :: When nodalValueType is "//  &
   & CHAR_LF//"Space and useFunction is specified, "//  &
@@ -224,8 +230,8 @@ IF (.NOT. ASSOCIATED(obj%func)) THEN
 END IF
 
 retType = obj%func%GetReturnType()
-
-IF (retType .NE. Scalar) THEN
+problem = retType .NE. Scalar
+IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: Return type of user function should be '//  &
     & 'scalar.')
@@ -252,6 +258,17 @@ IF (problem) THEN
   RETURN
 END IF
 
+argType = obj%func%GetArgType()
+problem = argType .NE. obj%nodalValueType
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: argType='//tostring(argType)//  &
+    & ' in user function is not same '//  &
+    & 'as nodalValueType '//tostring(obj%nodalValueType)//  &
+    & ' in AbstractBC_')
+  RETURN
+END IF
+
 tNodes = SIZE(nodeNum)
 nsd = obj%dom%GetNSD()
 
@@ -261,7 +278,7 @@ SELECT CASE (obj%nodalValueType)
 CASE (Constant)
   CALL Reallocate(nodalValue, tNodes, 1)
 
-  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
+  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1), &
     & globalNode=nodeNum(1:1))
 
   CALL obj%func%Get(val=ans)
@@ -314,6 +331,11 @@ CASE (SpaceTime)
   END DO
 
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 
 END PROCEDURE bc_GetFromUserFunction
 

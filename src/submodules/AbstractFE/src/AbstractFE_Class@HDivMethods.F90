@@ -16,7 +16,6 @@
 
 SUBMODULE(AbstractFE_Class) HDivMethods
 ! USE BaseMethod
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 CONTAINS
 
@@ -24,23 +23,23 @@ CONTAINS
 !                                                 GetLocalElemShapeData_HDiv
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetLocalElemShapeData_HDiv_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetLocalElemShapeData_HDiv()"
+MODULE PROCEDURE obj_GetLocalElemShapeData_HDiv_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalElemShapeData_HDiv()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-!TODO: Implement fe_GetLocalElemShapeData_HDiv_Master
-END PROCEDURE fe_GetLocalElemShapeData_HDiv_Master
+!TODO: Implement obj_GetLocalElemShapeData_HDiv_Master
+END PROCEDURE obj_GetLocalElemShapeData_HDiv_Master
 
 !----------------------------------------------------------------------------
 !                                                 GetGlobalElemShapeData_HDiv
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE fe_GetGlobalElemShapeData_HDiv_Master
-CHARACTER(*), PARAMETER :: myName = "fe_GetGlobalElemShapeData_HDiv()"
+MODULE PROCEDURE obj_GetGlobalElemShapeData_HDiv_Master
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData_HDiv()"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & '[WORK IN PROGRESS]')
-!TODO: Implement fe_GetGlobalElemShapeData_HDiv_Master
-END PROCEDURE fe_GetGlobalElemShapeData_HDiv_Master
+!TODO: Implement obj_GetGlobalElemShapeData_HDiv_Master
+END PROCEDURE obj_GetGlobalElemShapeData_HDiv_Master
 
 !----------------------------------------------------------------------------
 !

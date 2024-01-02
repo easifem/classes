@@ -23,8 +23,8 @@ CONTAINS
 !                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bnField_Import
-CHARACTER(*), PARAMETER :: myName = "bnField_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'This routine is under construction!')
 ! TYPE(String) :: dsetname
@@ -94,6 +94,6 @@ CALL e%raiseError(modName//'::'//myName//' - '// &
 ! CALL e%raiseInformation(modName//"::"//myName//" - "// &
 !   & "[END] Import()")
 !
-END PROCEDURE bnField_Import
+END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods

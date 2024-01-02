@@ -16,23 +16,54 @@
 !
 
 SUBMODULE(SolidMaterial_Class) GetMethods
+USE BaseMethod, ONLY: Tostring
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    Display
+!                                                   GetSolidMaterialPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_GetStressStrainModelPointer
+MODULE PROCEDURE obj_GetSolidMaterialPointer
+CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer"
+LOGICAL(LGT) :: problem
+INTEGER(I4B) :: tsize
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+tsize = SIZE(obj)
+problem = materialNo .GT. tsize
+ans => NULL()
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: materialNo = '//Tostring(materialNo)//  &
+    & ' is greater than total materials = '//Tostring(tsize))
+  RETURN
+END IF
+ans => obj(materialNo)%ptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+END PROCEDURE obj_GetSolidMaterialPointer
+
+!----------------------------------------------------------------------------
+!                                                GetStressStrainModelPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetStressStrainModelPointer
 ans => obj%stressStrainModel
-END PROCEDURE solid_GetStressStrainModelPointer
+END PROCEDURE obj_GetStressStrainModelPointer
 
 !----------------------------------------------------------------------------
-!                                                             GetPrefix
+!                                                                  GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE solid_GetPrefix
+MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
-END PROCEDURE solid_GetPrefix
+END PROCEDURE obj_GetPrefix
 
 END SUBMODULE GetMethods

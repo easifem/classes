@@ -25,8 +25,8 @@ PRIVATE
 PUBLIC :: FiniteElement_
 PUBLIC :: FiniteElementPointer_
 PUBLIC :: SetFiniteElementParam
-PUBLIC :: DEALLOCATE
-PUBLIC :: Initiate
+PUBLIC :: FiniteElementDeallocate
+PUBLIC :: FiniteElementInitiate
 CHARACTER(*), PARAMETER :: modName = "FiniteElement_Class"
 CHARACTER(*), PARAMETER :: myprefix = "FiniteElement"
 
@@ -43,13 +43,9 @@ CHARACTER(*), PARAMETER :: myprefix = "FiniteElement"
 TYPE, EXTENDS(AbstractFE_) :: FiniteElement_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => fe_Initiate
-  !! Constructor method for AbstractFE element
-  !! This method can be overloaded by Subclass of this abstract class.
-  PROCEDURE, PUBLIC, PASS( obj ) :: InitiateLagrangeFE =>  &
-    & fe_InitiateLagrangeFE
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & fe_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateLagrangeFE =>  &
+    & obj_InitiateLagrangeFE
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE FiniteElement_
 
 !----------------------------------------------------------------------------
@@ -61,22 +57,7 @@ TYPE :: FiniteElementPointer_
 END TYPE FiniteElementPointer_
 
 !----------------------------------------------------------------------------
-!                                               CheckEssentialParam@Methods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-08-11
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE fe_CheckEssentialParam(obj, param)
-    CLASS(FiniteElement_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE fe_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                               Initiate@ConstrucorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -84,22 +65,7 @@ END INTERFACE
 ! summary: Initiates an instance of the finite element
 
 INTERFACE
-  MODULE SUBROUTINE fe_Initiate(obj, param)
-    CLASS(FiniteElement_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE fe_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Initiate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
-
-INTERFACE
-  MODULE SUBROUTINE fe_InitiateLagrangeFE(obj, nsd,  &
+  MODULE SUBROUTINE obj_InitiateLagrangeFE(obj, nsd,  &
     & elemType, baseContinuity, baseInterpolation, ipType,  &
     & basisType, alpha, beta, lambda, order)
     CLASS(FiniteElement_), INTENT(INOUT) :: obj
@@ -131,126 +97,67 @@ INTERFACE
       !! Ultraspherical parameters
     INTEGER(I4B), INTENT(IN) :: order
       !! Isotropic Order of finite element
-  END SUBROUTINE fe_InitiateLagrangeFE
+  END SUBROUTINE obj_InitiateLagrangeFE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-25
-! summary:  Deallocate a vector of FiniteElement
-
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(FiniteElement_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE DEALLOCATE
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-09
-! summary:  Deallocate the vector of NeumannBC_
-
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(FiniteElementPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
-
-!----------------------------------------------------------------------------
-!                                                SetAbstractFEParam@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-11
-! summary:  Sets the parameters for initiating abstract finite element
-
-INTERFACE
-  MODULE SUBROUTINE SetFiniteElementParam( &
-    & param, &
-    & nsd, &
-    & elemType, &
-    & baseContinuity, &
-    & baseInterpolation, &
-    & ipType, &
-    & basisType, &
-    & alpha, &
-    & beta, &
-    & lambda, &
-    & order,  &
-    & anisoOrder,  &
-    & edgeOrder,  &
-    & faceOrder,  &
-    & cellOrder)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    INTEGER(I4B), INTENT(IN) :: nsd
-      !! Number of spatial dimension
-    INTEGER(I4B), INTENT(IN) :: elemType
-      !! Type of finite element
-      !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
-      !! Hexahedron
-    CHARACTER(*), INTENT(IN) :: baseContinuity
-      !! Continuity or Conformity of basis function.
-      !! H1* (default), HDiv, HCurl, DG
-    CHARACTER(*), INTENT(IN) :: baseInterpolation
-      !! Basis function family used for interpolation.
-      !! This parameter is used to determine the nodal coordinates of
-      !! reference element, when xij is not present.
-      !! If xij is present then this parameter is ignored
-      !! LagrangeInterpolation, LagrangePolynomial
-      !! SerendipityInterpolation, SerendipityPolynomial
-      !! HierarchyInterpolation, HierarchyPolynomial
-      !! OrthogonalInterpolation, OrthogonalPolynomial
-      !! HermitInterpolation, HermitPolynomial
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-      !! Interpolation point type, It is required when
-      !! baseInterpol is LagrangePolynomial
-      !! Legendre, Chebyshev, Ultraspherical, Equidistance
-      !! Jacobi
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-      !! Basis type:
-      !! Legendre, Lobatto, Ultraspherical,
-      !! Jacobi, Monomial
-      !! Basis in x, y, and z direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-      !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-      !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-      !! Ultraspherical parameters
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-      !! Isotropic Order of finite element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! Anisotropic order, order in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-      !! Order of approximation along edges
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
-      !! Order of approximation along face
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-      !! Order of approximation along cell
-  END SUBROUTINE SetFiniteElementParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-22
 ! summary:  Initiate vector of FiniteElement pointers
 
-INTERFACE Initiate
-  MODULE SUBROUTINE fe_Initiate1(obj, param, dom, dim)
+INTERFACE FiniteElementInitiate
+  MODULE SUBROUTINE obj_Initiate1(obj, param, dom, dim)
     TYPE(FiniteElementPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     TYPE(ParameterList_), INTENT(IN) :: param
     CLASS(Domain_), INTENT(IN) :: dom
     INTEGER(I4B), INTENT(IN) :: dim
-  END SUBROUTINE fe_Initiate1
-END INTERFACE Initiate
+  END SUBROUTINE obj_Initiate1
+END INTERFACE FiniteElementInitiate
+
+!----------------------------------------------------------------------------
+!                                             Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-25
+! summary:  Deallocate a vector of FiniteElement
+
+INTERFACE FiniteElementDeallocate
+  MODULE SUBROUTINE Deallocate_Vector(obj)
+    TYPE(FiniteElement_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE Deallocate_Vector
+END INTERFACE FiniteElementDeallocate
+
+!----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of NeumannBC_
+
+INTERFACE FiniteElementDeallocate
+  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
+    TYPE(FiniteElementPointer_), ALLOCATABLE :: obj(:)
+  END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE FiniteElementDeallocate
+
+!----------------------------------------------------------------------------
+!                                                     GetPrefix@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-11
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(FiniteElement_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE FiniteElement_Class

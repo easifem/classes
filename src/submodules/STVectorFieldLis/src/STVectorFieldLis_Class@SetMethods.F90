@@ -25,7 +25,7 @@ CONTAINS
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_setSingle
+MODULE PROCEDURE obj_setSingle
 #include "lisf.h"
 INTEGER(I4B) :: i, ierr
 REAL(DFP) :: value0
@@ -58,13 +58,13 @@ ELSE
   CALL CHKERR(ierr)
 END IF
 
-END PROCEDURE stvField_setSingle
+END PROCEDURE obj_setSingle
 
 !----------------------------------------------------------------------------
 !                                                               SetMultiple
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_setMultiple
+MODULE PROCEDURE obj_setMultiple
 INTEGER(I4B) :: i(SIZE(indx)), ierr, n
 REAL(DFP) :: value0(SIZE(VALUE))
 
@@ -94,13 +94,13 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stvField_setMultiple
+END PROCEDURE obj_setMultiple
 
 !----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_setAll
+MODULE PROCEDURE obj_setAll
 INTEGER(I4B) :: ierr, ii, n
 REAL(DFP) :: value0
 
@@ -126,14 +126,14 @@ ELSE
     & )
   CALL CHKERR(ierr)
 END IF
-END PROCEDURE stvField_setAll
+END PROCEDURE obj_setAll
 
 !----------------------------------------------------------------------------
 !                                                                   set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set1
-CHARACTER(*), PARAMETER :: myName = "stvField_set1"
+MODULE PROCEDURE obj_set1
+CHARACTER(*), PARAMETER :: myName = "obj_set1"
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: indx(obj%spaceCompo)
@@ -180,14 +180,14 @@ DO ii = 1, obj%timeCompo
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stvField_set1
+END PROCEDURE obj_set1
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set2
-CHARACTER(*), PARAMETER :: myName = "stvField_set2"
+MODULE PROCEDURE obj_set2
+CHARACTER(*), PARAMETER :: myName = "obj_set2"
 LOGICAL(LGT) :: bools(2)
 INTEGER(I4B) :: localNode
 INTEGER(I4B) :: ii
@@ -232,14 +232,14 @@ DO jj = 1, tNodes
   END DO
 END DO
 
-END PROCEDURE stvField_set2
+END PROCEDURE obj_set2
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set3
-CHARACTER(*), PARAMETER :: myName = "stvField_set3"
+MODULE PROCEDURE obj_set3
+CHARACTER(*), PARAMETER :: myName = "obj_set3"
 LOGICAL(LGT) :: bools(2)
 INTEGER(I4B) :: tNodes
 INTEGER(I4B) :: indx
@@ -279,14 +279,14 @@ DO ii = 1, tNodes
     & addContribution=addContribution)
 END DO
 
-END PROCEDURE stvField_set3
+END PROCEDURE obj_set3
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set4
-CHARACTER(*), PARAMETER :: myName = "stvField_set4"
+MODULE PROCEDURE obj_set4
+CHARACTER(*), PARAMETER :: myName = "obj_set4"
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: bools(3)
 INTEGER(I4B) :: localNode
@@ -331,14 +331,14 @@ DO jj = 1, tNodes
       & addContribution=addContribution)
   END DO
 END DO
-END PROCEDURE stvField_set4
+END PROCEDURE obj_set4
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set5
-CHARACTER(*), PARAMETER :: myName = "stvField_set5"
+MODULE PROCEDURE obj_set5
+CHARACTER(*), PARAMETER :: myName = "obj_set5"
 LOGICAL(LGT) :: bools
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: tNodes
@@ -375,14 +375,14 @@ DO ii = 1, tNodes
     & scale=scale, &
     & addContribution=addContribution)
 END DO
-END PROCEDURE stvField_set5
+END PROCEDURE obj_set5
 
 !----------------------------------------------------------------------------
 !                                                                        set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set6
-CHARACTER(*), PARAMETER :: myName = "stvField_set6"
+MODULE PROCEDURE obj_set6
+CHARACTER(*), PARAMETER :: myName = "obj_set6"
 LOGICAL(LGT) :: bools(2)
 INTEGER(I4B) :: ii
 INTEGER(I4B) :: jj
@@ -435,13 +435,13 @@ CLASS default
     & 'No case found for the type of AbstractNodeField_')
 END SELECT
 
-END PROCEDURE stvField_set6
+END PROCEDURE obj_set6
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set7
+MODULE PROCEDURE obj_set7
 REAL(DFP) :: val(SIZE(VALUE, 1), SIZE(VALUE, 2), SIZE(globalNode))
 INTEGER(I4B) :: ii
 DO ii = 1, SIZE(globalNode)
@@ -449,14 +449,14 @@ DO ii = 1, SIZE(globalNode)
 END DO
 CALL obj%set(VALUE=val, globalNode=globalNode, scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stvField_set7
+END PROCEDURE obj_set7
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set8
-CHARACTER(*), PARAMETER :: myName = "stvField_set8"
+MODULE PROCEDURE obj_set8
+CHARACTER(*), PARAMETER :: myName = "obj_set8"
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: bools(3)
 INTEGER(I4B) :: localNode(SIZE(globalNode))
@@ -507,14 +507,14 @@ DO jj = 1, SIZE(VALUE, 3)
   END DO
 END DO
 
-END PROCEDURE stvField_set8
+END PROCEDURE obj_set8
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set9
-CHARACTER(*), PARAMETER :: myName = "stvField_set8"
+MODULE PROCEDURE obj_set9
+CHARACTER(*), PARAMETER :: myName = "obj_set8"
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: bools(3)
 INTEGER(I4B) :: localNode(SIZE(globalNode))
@@ -561,14 +561,14 @@ CALL obj%SetMultiple(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stvField_set9
+END PROCEDURE obj_set9
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set10
-CHARACTER(*), PARAMETER :: myName = "stvField_set8"
+MODULE PROCEDURE obj_set10
+CHARACTER(*), PARAMETER :: myName = "obj_set8"
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: bools(2)
 INTEGER(I4B) :: localNode
@@ -610,14 +610,14 @@ CALL obj%SetSingle(&
   & scale=scale, &
   & addContribution=addContribution)
 
-END PROCEDURE stvField_set10
+END PROCEDURE obj_set10
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set11
-CHARACTER(*), PARAMETER :: myName = "stvField_set11"
+MODULE PROCEDURE obj_set11
+CHARACTER(*), PARAMETER :: myName = "obj_set11"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -629,14 +629,14 @@ CALL obj%set( &
   & VALUE=VALUE, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stvField_set11
+END PROCEDURE obj_set11
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set12
-CHARACTER(*), PARAMETER :: myName = "stvField_set12"
+MODULE PROCEDURE obj_set12
+CHARACTER(*), PARAMETER :: myName = "obj_set12"
 INTEGER(I4B) :: globalNode(INT(1 + (iend - istart) / stride)), ii, jj
 jj = 0
 DO ii = istart, iend, stride
@@ -648,14 +648,14 @@ CALL obj%set( &
   & VALUE=VALUE, &
   & scale=scale, &
   & addContribution=addContribution)
-END PROCEDURE stvField_set12
+END PROCEDURE obj_set12
 
 !----------------------------------------------------------------------------
 !                                                                       set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set13
-CHARACTER(*), PARAMETER :: myName = "stvField_set13"
+MODULE PROCEDURE obj_set13
+CHARACTER(*), PARAMETER :: myName = "obj_set13"
 
 SELECT CASE (VALUE%vartype)
 CASE (SpaceTime)
@@ -669,14 +669,14 @@ CASE DEFAULT
   CALL e%raiseError(modName//'::'//myName//' - '// &
   & 'No case found for Value%vartype only SpaceTime allowed')
 END SELECT
-END PROCEDURE stvField_set13
+END PROCEDURE obj_set13
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_set14
-CHARACTER(*), PARAMETER :: myName = "stvField_set14"
+MODULE PROCEDURE obj_set14
+CHARACTER(*), PARAMETER :: myName = "obj_set14"
 INTEGER(I4B) :: ierr
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
@@ -689,7 +689,96 @@ END IF
 
 CALL obj%setAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
 
-END PROCEDURE stvField_set14
+END PROCEDURE obj_set14
+
+!----------------------------------------------------------------------------
+!                                                                     Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set18
+CHARACTER(*), PARAMETER :: myName = "obj_Set18()"
+INTEGER(I4B) :: ierr, ii, tsize
+REAL(DFP), POINTER :: realvec(:)
+LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
+problem = .NOT. obj%isInitiated .OR. (ierr .EQ. LIS_TRUE)
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj is not initiated'// &
+  & " or, lis_ptr is not available")
+  RETURN
+END IF
+
+problem = .NOT. VALUE%isInitiated
+IF (problem) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Either VectorField_::value is not initiated')
+  RETURN
+END IF
+#endif
+
+SELECT TYPE (VALUE)
+TYPE is (STVectorField_)
+  realvec => NULL()
+  realvec => VALUE%GetPointer()
+
+#ifdef DEBUG_VER
+  problem = .NOT. ASSOCIATED(realvec)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Cannot get pointer from value.')
+    RETURN
+  END IF
+#endif
+
+  tsize = SIZE(realvec)
+  DO ii = 1, tsize
+    CALL obj%SetSingle(indx=ii, VALUE=realvec(ii))
+  END DO
+
+  realvec => NULL()
+
+TYPE is (STVectorFieldLis_)
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(VALUE%lis_ptr, ierr)
+  problem = ierr .EQ. LIS_TRUE
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: Either VectorFieldLis_::obj%lis_ptr'// &
+    & " is not available")
+  END IF
+
+  problem = obj%SIZE() .NE. VALUE%SIZE()
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: Size of obj and value are not same')
+    RETURN
+  END IF
+#endif
+
+  CALL lis_vector_copy(VALUE%lis_ptr, obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+CLASS DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: Unknown type of VectorField_::value')
+  RETURN
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+
+END PROCEDURE obj_Set18
 
 !----------------------------------------------------------------------------
 !

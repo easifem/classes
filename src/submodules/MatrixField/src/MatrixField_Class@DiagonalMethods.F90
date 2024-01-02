@@ -24,8 +24,8 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mField_GetDiagonal
+MODULE PROCEDURE obj_GetDiagonal
 CALL GetDiagonal(obj=obj%mat, diag=diag)
-END PROCEDURE mField_GetDiagonal
+END PROCEDURE obj_GetDiagonal
 
 END SUBMODULE DiagonalMethods

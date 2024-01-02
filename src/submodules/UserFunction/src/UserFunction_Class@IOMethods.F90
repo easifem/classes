@@ -16,13 +16,6 @@
 
 SUBMODULE(UserFunction_Class) IOMethods
 USE BaseMethod
-USE TomlUtility
-USE tomlf, ONLY:  &
-  & toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_len => len, &
-  & toml_array,  &
-  & toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -30,7 +23,7 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Display
+MODULE PROCEDURE obj_Display
 LOGICAL(LGT) :: bool1
 CALL Display(msg, unitNo=unitNo)
 CALL Display(obj%isInitiated, "isInitiated: ", unitNo=unitNo)
@@ -87,14 +80,14 @@ IF (obj%argType .EQ. CONSTANT) THEN
   END SELECT
 END IF
 
-END PROCEDURE auf_Display
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Import
-CHARACTER(*), PARAMETER :: myName = "auf_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
@@ -192,14 +185,14 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Import()')
 #endif
-END PROCEDURE auf_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE auf_Export
-CHARACTER(*), PARAMETER :: myName = "auf_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
@@ -278,283 +271,7 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] Export()')
 #endif
-END PROCEDURE auf_Export
-
-!----------------------------------------------------------------------------
-!                                                        ImportParamFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_ImportParamFromToml
-CHARACTER(*), PARAMETER :: myName = "auf_ImportParamFromToml()"
-INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: bool1, isLuaScript, isFound
-INTEGER(I4B) :: argType, returnType, numReturns, numArgs
-TYPE(String) :: astr, luaScript, luaFunctionName, name
-INTEGER(I4B), ALLOCATABLE :: returnShape(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportParamFromToml()')
-#endif
-
-CALL toml_get(table, "returnType", astr%raw, origin=origin, stat=stat)
-bool1 = stat .NE. toml_stat%success
-IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: returnType should be present, and '//  &
-    & 'it is a string.')
-  RETURN
-END IF
-returnType = UserFunctionGetReturnType(astr%chars())
-
-astr = ""
-CALL toml_get(table, "name", astr%raw, origin=origin, stat=stat)
-bool1 = stat .NE. toml_stat%success
-IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] ::  name should be present, and '//  &
-    & 'it is a string.')
-  RETURN
-END IF
-name = astr%chars()
-
-CALL Reallocate(returnShape, 2)
-returnShape = [0, 0]
-IF (returnType .EQ. Matrix) THEN
-  CALL GetValue(table=table, key="returnShape", VALUE=returnShape,  &
-    & origin=origin, stat=stat, isFound=isFound)
-  bool1 = (stat .NE. toml_stat%success) .OR. (.NOT. isFound)
-  IF (bool1) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: when returnType is Matrix, then '//  &
-      & 'returnShape should be present. It is a vector of integers'//  &
-      & ' and size 2.')
-    RETURN
-  END IF
-END IF
-
-CALL toml_get(table, "argType", astr%raw, origin=origin, stat=stat)
-bool1 = stat .NE. toml_stat%success
-IF (bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: argType should be present, and '//  &
-    & 'it is a string.')
-  RETURN
-END IF
-argType = UserFunctionGetArgType(astr%chars())
-
-CALL toml_get(table, "numArgs", numArgs, origin=origin, stat=stat)
-bool1 = stat .NE. toml_stat%success
-IF (bool1) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'If numArgs should not present, '//  &
-    & 'the default values are used')
-
-  SELECT CASE (argType)
-  CASE (Constant)
-    numArgs = DEFAULT_NUM_ARG_CONSTANT
-  CASE (Space)
-    numArgs = DEFAULT_NUM_ARG_SPACE
-  CASE (Time)
-    numArgs = DEFAULT_NUM_ARG_TIME
-  CASE (SpaceTime)
-    numArgs = DEFAULT_NUM_ARG_SPACETIME
-  CASE default
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[Config Error]:: No case found for argType')
-    RETURN
-  END SELECT
-END IF
-
-CALL toml_get(table, "numReturns", numReturns, origin=origin, stat=stat)
-bool1 = stat .NE. toml_stat%success
-IF (bool1) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'numReturns should is not present, and '//  &
-    & 'using default value for numReturns.')
-
-  SELECT CASE (returnType)
-  CASE (Scalar)
-    numReturns = DEFAULT_NUM_ARG_SCALAR
-  CASE (Vector)
-    numReturns = DEFAULT_NUM_ARG_VECTOR
-  CASE (Matrix)
-    numReturns = DEFAULT_NUM_ARG_MATRIX
-  CASE default
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: no case found for returnType, and '//  &
-      & 'numReturns should be present, and '//  &
-      & 'it is a scalar integer number.')
-    RETURN
-  END SELECT
-END IF
-
-CALL toml_get(table, "luaScript", luaScript%raw, origin=origin, stat=stat)
-isLuaScript = stat .EQ. toml_stat%success
-
-IF (isLuaScript) THEN
-  CALL toml_get(table, "luaFunctionName", luaFunctionName%raw,  &
-    & origin=origin, stat=stat)
-  bool1 = stat .NE. toml_stat%success
-  IF (bool1) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] ::  when you specify luaScript you should also '//  &
-      & 'specify luaFunctionName.')
-    RETURN
-  END IF
-END IF
-
-IF (isLuaScript) THEN
-  CALL SetUserFunctionParam(param=param,   &
-    & name=name%chars(), &
-    & returnType=returnType,  &
-    & returnShape=returnShape, &
-    & argType=argType,  &
-    & numArgs=numArgs,  &
-    & numReturns=numReturns, &
-    & luaScript=luaScript%chars(),  &
-    & luaFunctionName=luaFunctionName%chars())
-ELSE
-  CALL SetUserFunctionParam(param=param,   &
-    & name=name%chars(), &
-    & returnType=returnType,  &
-    & returnShape=returnShape, &
-    & argType=argType,  &
-    & numArgs=numArgs,  &
-    & numReturns=numReturns)
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
-#endif
-END PROCEDURE auf_ImportParamFromToml
-
-!----------------------------------------------------------------------------
-!                                                        ImportParamFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "auf_ImportFromToml1()"
-TYPE(ParameterList_) :: param
-INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: bool1, isFound
-REAL(DFP) :: scalarValue
-REAL(DFP), ALLOCATABLE :: vectorValue(:), matrixValue(:, :)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
-#endif
-
-CALL param%Initiate()
-CALL obj%ImportParamFromToml(param=param, table=table)
-CALL obj%Initiate(param=param)
-
-IF (.NOT. obj%isLuaScript) THEN
-  SELECT CASE (obj%returnType)
-  CASE (Scalar)
-    CALL toml_get(table, "value", scalarValue,  &
-    & origin=origin, stat=stat)
-    IF (stat .NE. toml_stat%success) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[CONFIG ERROR] :: returnType is Scalar, and '//  &
-        & CHAR_LF//'argType is Constant. '//  &
-        & CHAR_LF//'Therefore, value should be present.')
-      RETURN
-    END IF
-    CALL obj%Set(scalarValue=scalarValue)
-
-  CASE (Vector)
-    CALL GetValue(table=table, key="value",  &
-      & VALUE=vectorValue, origin=origin, stat=stat, isFound=isFound)
-
-    bool1 = (.NOT. isFound) .OR. (stat .NE. toml_stat%success)
-    IF (bool1) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[CONFIG ERROR] :: returnType is Vector, and '//  &
-        & CHAR_LF//'argType is Constant. '//  &
-        & CHAR_LF//'Therefore, value should be present.')
-      RETURN
-    END IF
-
-    CALL obj%Set(vectorValue=vectorValue)
-    IF (ALLOCATED(vectorValue)) DEALLOCATE (vectorValue)
-
-  CASE (Matrix)
-    CALL GetValue(table=table, key="value",  &
-      & VALUE=matrixValue, origin=origin, stat=stat, isFound=isFound)
-
-    bool1 = (.NOT. isFound) .OR. (stat .NE. toml_stat%success)
-    IF (bool1) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & '[CONFIG ERROR] :: returnType is Matrix, and '//  &
-        & CHAR_LF//'argType is Constant. '//  &
-        & CHAR_LF//'Therefore, value should be present.')
-      RETURN
-    END IF
-
-    CALL obj%Set(matrixValue=matrixValue)
-    IF (ALLOCATED(matrixValue)) DEALLOCATE (matrixValue)
-  END SELECT
-END IF
-
-CALL param%DEALLOCATE()
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportFromToml()')
-#endif
-END PROCEDURE auf_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                        ImportParamFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE auf_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "auf_ImportFromToml2()"
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ImportFromToml()')
-#endif
-
-IF (PRESENT(afile)) THEN
-  CALL GetValue(table=table, afile=afile)
-ELSEIF (PRESENT(filename)) THEN
-  CALL GetValue(table=table, filename=filename)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: either filename or afile should be present!')
-  RETURN
-END IF
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
-  & stat=stat)
-
-IF (.NOT. ASSOCIATED(node)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: following error occured while reading '//  &
-    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
-END IF
-
-CALL obj%ImportFromToml(table=node)
-
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
-    & unitNo=stdout)
-END IF
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
-#endif
-END PROCEDURE auf_ImportFromToml2
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !

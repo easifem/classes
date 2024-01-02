@@ -15,22 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: 	This module contains the content of `libeasifemMaterials`
-!
-!# Introduction
-!
-! This is the module which a user should use to get the content of
-! `libeasifemMaterials`
-!
-!
-!## Usage
-!
-!```fortran
-!	USE easifemMaterials
-!```
-
 MODULE easifemMaterials
 USE AbstractMaterialModel_Class
 USE AbstractSolidMechanicsModel_Class
@@ -44,4 +28,5 @@ USE SolidMaterial_Class
 USE FluidMaterial_Class
 USE PorousMaterial_Class
 USE MaterialFactory
+USE SolidMechanicsModelUtility
 END MODULE easifemMaterials

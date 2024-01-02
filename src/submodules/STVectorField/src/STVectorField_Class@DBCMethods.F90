@@ -24,72 +24,129 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_applyDirichletBC1
-CHARACTER(*), PARAMETER :: myName = "stvField_applyDirichletBC1"
+MODULE PROCEDURE obj_applyDirichletBC1
+CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC1()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: idof
+INTEGER(I4B) :: idof, aint
+LOGICAL(LGT) :: istimes, problem
 
-CALL dbc%get(nodalvalue=nodalvalue, nodenum=nodenum)
-IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
-  DO idof = 1, obj%timecompo
-    CALL obj%Set( &
-      & globalNode=nodenum, &
-      & VALUE=nodalvalue(:, 1), &
-      & timecompo=idof, &
-      & spacecompo=dbc%getDOFNo())
-  END DO
-ELSE
-  IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) &
-    & CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
-  DO idof = 1, obj%timecompo
-    CALL obj%Set( &
-      & globalNode=nodenum, &
-      & VALUE=nodalvalue(:, idof), &
-      & timecompo=idof, &
-      & spacecompo=dbc%getDOFNo())
-  END DO
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+
+#ifdef DEBUG_VER
+IF (istimes) THEN
+  aint = SIZE(times)
+  problem = aint .NE. obj%timeCompo
+  IF (problem) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+     & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+     & tostring(aint)//' which is not equal to obj%timeCompo '//  &
+     & ' which is '//tostring(obj%timeCompo))
+    RETURN
+  END IF
 END IF
+#endif
+
+CALL dbc%Get(nodalvalue=nodalvalue, nodenum=nodenum, times=times)
+
+IF (istimes) THEN
+  aint = dbc%GetDOFNo()
+  DO idof = 1, obj%timeCompo
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
+      & timeCompo=idof, spacecompo=aint)
+  END DO
+  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+  RETURN
+END IF
+
+DO idof = 1, obj%timecompo
+  aint = dbc%GetDOFNo()
+  CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1), &
+    & timecompo=idof, spacecompo=aint)
+END DO
+
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE stvField_applyDirichletBC1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_applyDirichletBC1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE stvField_applyDirichletBC2
-CHARACTER(*), PARAMETER :: myName = "stvField_applyDirichletBC2"
+MODULE PROCEDURE obj_applyDirichletBC2
+CHARACTER(*), PARAMETER :: myName = "obj_applyDirichletBC2()"
 REAL(DFP), ALLOCATABLE :: nodalvalue(:, :)
 INTEGER(I4B), ALLOCATABLE :: nodenum(:)
-INTEGER(I4B) :: ibc, idof
-DO ibc = 1, SIZE(dbc)
-  CALL dbc(ibc)%ptr%get(nodalvalue=nodalvalue, nodenum=nodenum)
-  IF (SIZE(nodalvalue, 2) .EQ. 1) THEN
-    DO idof = 1, obj%timecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & VALUE=nodalvalue(:, 1), &
-        & timecompo=idof, &
-        & spacecompo=dbc(ibc)%ptr%getDOFNo())
-    END DO
-  ELSE
-    IF (SIZE(nodalvalue, 2) .NE. obj%timeCompo) &
-      & CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'SIZE( nodalvalue, 2 ) .NE. obj%timeCompo')
-    DO idof = 1, obj%timecompo
-      CALL obj%Set( &
-        & globalNode=nodenum, &
-        & VALUE=nodalvalue(:, idof), &
-        & timecompo=idof, &
-        & spacecompo=dbc(ibc)%ptr%getDOFNo())
-    END DO
+INTEGER(I4B) :: ibc, idof, aint, tsize
+LOGICAL(LGT) :: istimes
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
+istimes = PRESENT(times)
+
+#ifdef DEBUG_VER
+IF (istimes) THEN
+  aint = SIZE(times)
+  IF (aint .NE. obj%timeCompo) THEN
+    CALL e%raiseError(modName//'::'//myName//" - "// &
+     & '[INERNAL ERROR] :: SIZE( times ) is '//  &
+     & tostring(aint)//' which is not equal to obj%timeCompo '//  &
+     & ' which is '//tostring(obj%timeCompo))
+    RETURN
   END IF
+END IF
+#endif
+
+tsize = SIZE(dbc)
+
+IF (istimes) THEN
+  DO ibc = 1, tsize
+    CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum,  &
+      & times=times)
+    aint = dbc(ibc)%ptr%GetDOFNo()
+
+    DO idof = 1, obj%timecompo
+      CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, idof),  &
+        & timecompo=idof, spacecompo=aint)
+    END DO
+  END DO
+
+  IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
+  IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
+  RETURN
+END IF
+
+DO ibc = 1, tsize
+  CALL dbc(ibc)%ptr%Get(nodalvalue=nodalvalue, nodenum=nodenum)
+  aint = dbc(ibc)%ptr%GetDOFNo()
+  DO idof = 1, obj%timecompo
+    CALL obj%Set(globalNode=nodenum, VALUE=nodalvalue(:, 1),  &
+      & timecompo=idof, spacecompo=aint)
+  END DO
 END DO
+
 IF (ALLOCATED(nodalvalue)) DEALLOCATE (nodalvalue)
 IF (ALLOCATED(nodenum)) DEALLOCATE (nodenum)
-END PROCEDURE stvField_applyDirichletBC2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_applyDirichletBC2
 
 !----------------------------------------------------------------------------
 !

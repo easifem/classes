@@ -24,7 +24,7 @@ CONTAINS
 !                                                             SetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_SetParam
+MODULE PROCEDURE obj_SetParam
 INTEGER(I4B) :: ii, tsize1
 
 IF (PRESENT(dof_tPhysicalVars)) THEN
@@ -61,27 +61,43 @@ IF (PRESENT(dof_names_char)) THEN
   END DO
 END IF
 
-END PROCEDURE anf_SetParam
+END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
 !                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE anf_SetSingle
+MODULE PROCEDURE obj_SetSingle
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+areal = Input(option=scale, default=1.0_DFP)
+abool = Input(option=addContribution, default=.FALSE.)
 IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=1, VALUE=VALUE, scale=scale)
+  IF (abool) THEN
+    CALL add(obj%realVec, nodenum=1, VALUE=VALUE, scale=areal)
   ELSE
     CALL set(obj%realVec, nodenum=1, VALUE=VALUE)
   END IF
-ELSE
-  IF (PRESENT(addContribution)) THEN
-    CALL add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=scale)
-  ELSE
-    CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
-  END IF
+  RETURN
 END IF
-END PROCEDURE anf_SetSingle
+
+IF (abool) THEN
+  CALL add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
+ELSE
+  CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
+END IF
+
+END PROCEDURE obj_SetSingle
+
+!----------------------------------------------------------------------------
+!                                                             SetByFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetByFunction
+CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_SetByFunction
 
 !----------------------------------------------------------------------------
 !

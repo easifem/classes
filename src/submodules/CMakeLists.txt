@@ -18,6 +18,9 @@
 # ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 
+# CPUTime
+include(${CMAKE_CURRENT_LIST_DIR}/CPUTime/CMakeLists.txt)
+
 # AbstractFile
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFile/CMakeLists.txt)
 
@@ -289,3 +292,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
 
 # porousMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# KERNELS
+# ----------------------------------------------------------------------------
+
+# AbstractKernel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)

@@ -23,10 +23,15 @@ USE Mesh_Class, ONLY: Mesh_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class
 USE AbstractMeshField_Class
+USE UserFunction_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "VectorMeshField_Class"
-PUBLIC :: DEALLOCATE
+CHARACTER(*), PARAMETER :: myprefix = "VectorMeshField"
+PUBLIC :: VectorMeshField_
+PUBLIC :: VectorMeshFieldPointer_
+PUBLIC :: SetVectorMeshFieldParam
+PUBLIC :: VectorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                                     VectorMeshField_Class
@@ -34,19 +39,15 @@ PUBLIC :: DEALLOCATE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 20 Feb 2022
-! summary: Scalar mesh field
+! summary: Vector mesh field
 
-TYPE, EXTENDS(AbstractMeshField_) :: VectorMeshField_
+TYPE, EXTENDS(AbstractVectorMeshField_) :: VectorMeshField_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & aField_checkEssentialParam
-    !! check essential parameters
-  PROCEDURE, PASS(obj) :: Initiate1 => aField_Initiate1
-    !! Initiate the field by reading param and a given mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate from user function
 END TYPE VectorMeshField_
-
-PUBLIC :: VectorMeshField_
 
 !----------------------------------------------------------------------------
 !
@@ -55,8 +56,6 @@ PUBLIC :: VectorMeshField_
 TYPE :: VectorMeshFieldPointer_
   CLASS(VectorMeshField_), POINTER :: ptr => NULL()
 END TYPE VectorMeshFieldPointer_
-
-PUBLIC :: VectorMeshFieldPointer_
 
 !----------------------------------------------------------------------------
 !                              setAbstractMeshFieldParam@ConstructorMethods
@@ -67,52 +66,45 @@ PUBLIC :: VectorMeshFieldPointer_
 ! summary: This routine check the essential parameters in param.
 
 INTERFACE
-  MODULE SUBROUTINE setVectorMeshFieldParam(param, name, &
+  MODULE SUBROUTINE SetVectorMeshFieldParam(param, name, &
     & fieldType, varType, engine, defineOn, spaceCompo, nns)
     TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(LEN=*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: fieldType
     INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(LEN=*), INTENT(IN) :: engine
+    CHARACTER(*), INTENT(IN) :: engine
     INTEGER(I4B), INTENT(IN) :: defineOn
-  !! Nodal, Quadrature
+    !! Nodal, Quadrature
     INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! space compo
     INTEGER(I4B), INTENT(IN) :: nns
-  !! Number of node in space
-  END SUBROUTINE setVectorMeshFieldParam
-END INTERFACE
-
-PUBLIC :: setVectorMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE aField_checkEssentialParam(obj, param)
-    CLASS(VectorMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_checkEssentialParam
+    !! Number of node in space
+  END SUBROUTINE SetVectorMeshFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-05
+! summary:  Initiate by using function
 
 INTERFACE
-  MODULE SUBROUTINE aField_Initiate1(obj, param, mesh)
+  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
     CLASS(VectorMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
+    !! AbstractMeshField
     TYPE(Mesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE aField_Initiate1
+    !! mesh
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -121,13 +113,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
+! summary:  Deallocate the vector of VectorMeshField_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Vector(obj)
+INTERFACE VectorMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(VectorMeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE VectorMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
@@ -135,12 +127,27 @@ END INTERFACE DEALLOCATE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-12
-! summary:  Deallocate the vector of NeumannBC_
+! summary:  Deallocate the vector of VectorMeshFieldPointer_
 
-INTERFACE DEALLOCATE
-  MODULE SUBROUTINE aField_Deallocate_Ptr_Vector(obj)
+INTERFACE VectorMeshFieldDeallocate
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE aField_Deallocate_Ptr_Vector
-END INTERFACE DEALLOCATE
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE VectorMeshFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              GetPrefix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-04
+! summary:  Get prefix
+
+INTERFACE
+  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
+    CLASS(VectorMeshField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetPrefix
+END INTERFACE
 
 END MODULE VectorMeshField_Class

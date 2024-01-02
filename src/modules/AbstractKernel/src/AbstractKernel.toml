@@ -1,0 +1,147 @@
+[kernel]
+name = "StaticLinearElasticity"
+# Name of the kernel
+
+engine = "NATIVE_SERIAL"
+# Name of the engine of the kernel
+
+coordinateSystem = "CARTESIAN"
+# coordinate system
+
+domainFile = "./mesh.h5"
+# name of mesh file
+
+isCommonDomain = true
+# common domain, it may be false for multi-physics problem
+
+gravity = [0, 0, 0]
+
+tanmatProp = "UNSYM"
+# problem is symmetric or unsymmetric
+
+problemType = "Vector"
+# problem type
+
+timeDependency = "Static"
+# time dependency
+
+algorithm = 0
+# algorithm
+
+tOverlappedMaterials = 1
+# total overlapped materials
+
+tMaterialInterfaces = 0
+# total number of material interfaces
+# If tMaterialInterfaces is not zero  then
+# we should provide the array called materialInterfaces
+# materialInterfaces = [1,2,3]
+
+isConstantMatProp = true
+# Set to true if all the material properties are constant
+
+isIsotropic = true
+# Set to true if the problem is isotropic
+
+isIncompressible = true
+# Set to true if the material is incompressible
+
+nsd = 3
+nnt = 1
+startTime = 0.0
+endTime = 0.0
+dt = 0.01
+currentTime = 0.0
+currentTimeStep = 1
+totalTimeStep = 1
+maxIter = 100
+tdof = 3
+postProcessOpt = 1
+rtoleranceForDisplacement = 1.0e-10
+atoleranceForDisplacement = 1.0e-10
+rtoleranceForVelocity = 1.0e-10
+atoleranceForVelocity = 1.0e-10
+rtoleranceForResidual = 1.0e-10
+atoleranceForResidual = 1.0e-10
+
+baseInterpolationForSpace = "LagrangeInterpolation"
+baseContinuityForSpace = "H1"
+quadratureTypeForSpace = "GaussLegendre"
+ipTypeForSpace = "Equidistance"
+basisTypeForSpace = "Monomial"
+alphaForSpace = 0.0
+betaForSpace = 0.0
+lambdaForSpace = 0.5
+
+baseInterpolationForTime = "LagrangeInterpolation"
+baseContinuityForTime = "H1"
+quadratureTypeForTime = "GaussLegendre"
+ipTypeForTime = "Equidistance"
+basisTypeForTime = "Monomial"
+alphaForTime = 0.0
+betaForTime = 0.0
+lambdaForTime = 0.0
+
+tSolidMaterials = 1
+# Total number of solid materials present in the problem
+
+tDirichletBC = 0
+tWeakDirichletBC = 0
+isSymNitsche = true
+nitscheAlpha = 100.0
+tNeumannBC = 0
+
+[kernel.linSolver]
+engine = "NATIVE_SERIAL"
+solverName = "GMRES"
+convergenceIn = "RESIDUAL"
+convergenceType = "RELATIVE"
+scale = "NONE"
+maxIter = 1000
+krylovSubspaceSize = 50
+bicgstab_ell = 2
+atol = 0.0000000099999999
+rtol = 0.0000000099999999
+relativeToRHS = false
+initx_zeros = true
+sor_omega = 1.8999999999999999
+[linSolver.precondition]
+option = "RIGHT_PRECONDITION"
+name = "ILU"
+ilu = { lfil = 5, mbloc = 10, fill = 5, droptol = 0.0050000000000000, permtol = 0.1000000000000000, alpha = 1.0000000000000000 }
+
+[[kernel.dirichletBC]]
+name = "DirichletBC"
+idof = 1
+nodalValueType = "Constant" # Time, SpaceTime, Space
+value = 20.0 # when nodalValueType=Constant
+
+[kernel.dirichletBC.boundary]
+isSelectionByMeshID = true
+
+[kernel.dirichletBC.boundary.meshID]
+surface = [1, 2, 3, 4] # "filename.txt"
+
+[[kernel.dirichletBC]]
+name = "DirichletBC"
+idof = 2
+nodalValueType = "Constant" # Time, SpaceTime, Space
+value = 20.0 # when nodalValueType=Constant
+
+[kernel.dirichletBC.boundary]
+isSelectionByMeshID = true
+
+[kernel.dirichletBC.boundary.meshID]
+surface = [1, 2, 3, 4] # "filename.txt"
+
+[[kernel.dirichletBC]]
+name = "DirichletBC"
+idof = 3
+nodalValueType = "Constant" # Time, SpaceTime, Space
+value = 20.0 # when nodalValueType=Constant
+
+[kernel.dirichletBC.boundary]
+isSelectionByMeshID = true
+
+[kernel.dirichletBC.boundary.meshID]
+surface = [1, 2, 3, 4] # "filename.txt"

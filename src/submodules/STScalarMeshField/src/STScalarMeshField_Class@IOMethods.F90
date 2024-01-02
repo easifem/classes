@@ -14,9 +14,6 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(STScalarMeshField_Class) IOMethods
-! USE BaseMethod
-IMPLICIT NONE
-CONTAINS
-
-END SUBMODULE IOMethods
+! SUBMODULE(STScalarMeshField_Class) IOMethods
+! ! USE BaseMethod
+! END SUBMODULE IOMethods

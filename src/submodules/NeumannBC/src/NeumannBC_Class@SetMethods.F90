@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(NeumannBC_Class) SetMethods
-IMPLICIT NONE
-CONTAINS
-END SUBMODULE SetMethods
+! SUBMODULE(NeumannBC_Class) SetMethods
+! IMPLICIT NONE
+! CONTAINS
+! END SUBMODULE SetMethods
