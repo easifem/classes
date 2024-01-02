@@ -157,8 +157,11 @@ CONTAINS
 
   ! GET:
   ! @BlasMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: AXPY => obj_AXPY
-  !! Y = Y + scale * X
+  PROCEDURE, PASS(obj) :: AXPY1 => obj_AXPY1
+  PROCEDURE, PASS(obj) :: AXPY2 => obj_AXPY2
+  PROCEDURE, PASS(obj) :: AXPY3 => obj_AXPY3
+  GENERIC, PUBLIC :: AXPY => AXPY1, AXPY2, AXPY3
+  !! Y = Y + scale * X ...
   PROCEDURE, PUBLIC, PASS(obj) :: SCAL => obj_SCAL
   !! X = scale * X
   PROCEDURE, PUBLIC, PASS(obj) :: COPY => obj_Copy
@@ -651,20 +654,58 @@ END INTERFACE
 ! summary:  y = y + s * x
 
 INTERFACE
-  MODULE SUBROUTINE obj_AXPY(obj, x, scale)
+  MODULE SUBROUTINE obj_AXPY1(obj, x, scale)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x
     REAL(DFP), INTENT(IN) :: scale
-  END SUBROUTINE obj_AXPY
+  END SUBROUTINE obj_AXPY1
 END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                          AXPY@BlasMethods
 !----------------------------------------------------------------------------
 
+!> author: Shion Shimizu
+! date:   2023-12-29
+! summary:  y = y + a1 * x1 + a2 * x2
+
+INTERFACE
+  MODULE SUBROUTINE obj_AXPY2(obj, x1, x2, a1, a2)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: x1
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: x2
+    REAL(DFP), INTENT(IN) :: a1
+    REAL(DFP), INTENT(IN) :: a2
+  END SUBROUTINE obj_AXPY2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          AXPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2023-12-29
+! summary:  y = y + a1 * x1 + a2 * x2 + a3 * x3
+
+INTERFACE
+  MODULE SUBROUTINE obj_AXPY3(obj, x1, x2, x3, a1, a2, a3)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: x1
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: x2
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: x3
+    REAL(DFP), INTENT(IN) :: a1
+    REAL(DFP), INTENT(IN) :: a2
+    REAL(DFP), INTENT(IN) :: a3
+  END SUBROUTINE obj_AXPY3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          ACAL@BlasMethods
+!----------------------------------------------------------------------------
+
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-12-17
-! summary:  y = y + s * x
+! summary: scaling y = s * y
 
 INTERFACE
   MODULE SUBROUTINE obj_SCAL(obj, scale)
