@@ -416,7 +416,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
   !! Global Stiffness matrix
   CLASS(MatrixField_), POINTER :: diffusionMat => NULL()
-  !! Global Stiffness matrix
+  !! Global diffusion matrix
   CLASS(MatrixField_), POINTER :: massMat => NULL()
   !! Global mass matrix
   CLASS(MatrixField_), POINTER :: dampingMat => NULL()
@@ -462,7 +462,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: strain(:)
   !! Strain tensor
   !! This will be a tensor mesh field
-  ! TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: phase_velocity(:)
+  ! TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE, target:: phase_velocity(:)
   !! phase_velocity
   !! This will be a scalar mesh field
   TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: scalarCoefficient(:)
@@ -645,6 +645,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetDampingProperties =>  &
     & obj_SetDampingProperties
   !! Set Lame parameters for isotropic elasticity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarCoefficient =>  &
+    & obj_InitiateScalarCoefficient
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarCoefficient =>  &
+    & obj_SetScalarCoefficient
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
     & obj_SetMaterialToDomain
   !! Set material to mesh
@@ -1564,6 +1570,33 @@ INTERFACE
   END SUBROUTINE obj_SetDampingProperties
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                          obj_InitiateScalarCoefficient@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-01-06
+! summary: Initiate scalar coefficient for diffusion matrix
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateScalarCoefficient(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateScalarCoefficient
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                          obj_SetScalarCoefficient@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-01-06
+! summary: Set scalar coefficient for diffusion matrix
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetScalarCoefficient(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetScalarCoefficient
+END INTERFACE
 !----------------------------------------------------------------------------
 !                                                   AddDirichletBC@BCMethods
 !----------------------------------------------------------------------------

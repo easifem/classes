@@ -301,6 +301,59 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 END PROCEDURE obj_InitiateMaterialProperties
 
 !----------------------------------------------------------------------------
+!                                                  InitiateScalarCoefficient
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateScalarCoefficient
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarCoefficient()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+isok = ALLOCATED(obj%solidMaterial)
+IF (.NOT. isok) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[NOTHING TODO] :: AbstractKernel_::obj%solidMaterial is not allocated.')
+  RETURN
+END IF
+
+isok = ASSOCIATED(obj%dom)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom not ASSOCIATED.')
+  RETURN
+END IF
+
+tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
+ALLOCATE (obj%scalarCoefficient(tsize))
+DO ii = 1, tsize; obj%scalarCoefficient(ii)%ptr => NULL(); END DO
+
+CALL KernelInitiateScalarProperty(vars=obj%scalarCoefficient,  &
+  & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
+  & varname="scalarCoefficient", matid=obj%SOLID_MATERIAL_ID,  &
+  & engine=obj%engine%chars())
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+END PROCEDURE obj_InitiateScalarCoefficient
+
+!----------------------------------------------------------------------------
 !                                                             SetMassDensity
 !----------------------------------------------------------------------------
 
@@ -407,6 +460,38 @@ IF (obj%showTime) THEN
   & methodName=myName))
 END IF
 END PROCEDURE obj_SetDampingProperties
+
+!----------------------------------------------------------------------------
+!                                                        SetScalarCoefficient
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetScalarCoefficient
+CHARACTER(*), PARAMETER :: myName = "obj_SetScalarCoefficient()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[START]')
+#endif
+
+CALL KernelSetScalarProperty(vars=obj%scalarCoefficient,  &
+  & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
+  & varname="scalarCoefficient", matid=obj%SOLID_MATERIAL_ID)
+
+#ifdef DEBUG_VER
+CALL e%raiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+END PROCEDURE obj_SetScalarCoefficient
 
 !----------------------------------------------------------------------------
 !                                                       SetConstantMatProps
