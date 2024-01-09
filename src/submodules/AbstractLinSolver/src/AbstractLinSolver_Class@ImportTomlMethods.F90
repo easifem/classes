@@ -377,31 +377,33 @@ CALL SetAbstractLinSolverParam( &
 & )
 
 child => NULL()
-CALL toml_get(node, LowerCase(p_name%chars()), child, origin=origin,  &
-  & stat=stat, requested=.FALSE.)
-IF (ASSOCIATED(child)) THEN
-  SELECT CASE (p_name%chars())
-  CASE ("none", "NONE")
-    ! do nothing
-  CASE ("ilu", "ILU")
-    CALL ilu_import_from_toml(param=param, prefix=prefix, table=child)
-  CASE ("hybrid", "HYBRID")
-    CALL hybrid_import_from_toml(obj=obj, param=param, prefix=prefix,  &
-     & table=child)
-  CASE ("is", "IS")
-    CALL is_import_from_toml(param=param, prefix=prefix, table=child)
-  CASE ("adds", "ADDS")
-    CALL adds_import_from_toml(param=param, prefix=prefix, table=child)
-  CASE ("ssor", "SSOR")
-    CALL ssor_import_from_toml(param=param, prefix=prefix, table=child)
-  CASE ("sainv", "SAINV")
-    CALL sainv_import_from_toml(param=param, prefix=prefix, table=child)
-  CASE ("saamg", "SAAMG")
-    CALL saamg_import_from_toml(param=param, prefix=prefix, table=child)
-  CASE ("iluc", "ILUC")
-    CALL iluc_import_from_toml(param=param, prefix=prefix, table=child)
-  END SELECT
-  child => NULL()
+IF (ASSOCIATED(node)) THEN
+  CALL toml_get(node, LowerCase(p_name%chars()), child, origin=origin,  &
+    & stat=stat, requested=.FALSE.)
+  IF (ASSOCIATED(child)) THEN
+    SELECT CASE (p_name%chars())
+    CASE ("none", "NONE")
+      ! do nothing
+    CASE ("ilu", "ILU")
+      CALL ilu_import_from_toml(param=param, prefix=prefix, table=child)
+    CASE ("hybrid", "HYBRID")
+      CALL hybrid_import_from_toml(obj=obj, param=param, prefix=prefix,  &
+       & table=child)
+    CASE ("is", "IS")
+      CALL is_import_from_toml(param=param, prefix=prefix, table=child)
+    CASE ("adds", "ADDS")
+      CALL adds_import_from_toml(param=param, prefix=prefix, table=child)
+    CASE ("ssor", "SSOR")
+      CALL ssor_import_from_toml(param=param, prefix=prefix, table=child)
+    CASE ("sainv", "SAINV")
+      CALL sainv_import_from_toml(param=param, prefix=prefix, table=child)
+    CASE ("saamg", "SAAMG")
+      CALL saamg_import_from_toml(param=param, prefix=prefix, table=child)
+    CASE ("iluc", "ILUC")
+      CALL iluc_import_from_toml(param=param, prefix=prefix, table=child)
+    END SELECT
+    child => NULL()
+  END IF
 END IF
 
 DEALLOCATE (prefix)
