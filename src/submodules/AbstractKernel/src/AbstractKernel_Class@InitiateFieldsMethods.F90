@@ -30,6 +30,7 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateTangentMatrix
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateTangentMatrix()"
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: nsd0
 TYPE(CPUTime_) :: TypeCPUTime
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -48,10 +49,23 @@ IF (.NOT. isok) THEN
     & name="MATRIX")
 END IF
 
+SELECT CASE (obj%problemType)
+CASE (KernelProblemType%scalar)
+  nsd0 = 1_I4B
+CASE (KernelProblemType%vector)
+  nsd0 = obj%nsd
+CASE (KernelProblemType%multiPhysics)
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[WIP] :: not implemented yet')
+CASE default
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: no case found for KernelProblemType')
+END SELECT
+
 CALL KernelInitiateTangentMatrix(mat=obj%tanmat,  &
-  & linsol=obj%linsol, dom=obj%dom, nsd=obj%nsd, nnt=obj%nnt,  &
-  & engine=obj%engine%chars(), name="tanmat",  &
-  & matrixProp=obj%tanmatProp%chars())
+    & linsol=obj%linsol, dom=obj%dom, nsd=nsd0, nnt=obj%nnt,  &
+    & engine=obj%engine%chars(), name="tanmat",  &
+    & matrixProp=obj%tanmatProp%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

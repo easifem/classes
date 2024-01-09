@@ -1579,8 +1579,9 @@ END INTERFACE
 ! summary: Initiate scalar coefficient for diffusion matrix
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateScalarCoefficient(obj)
+  MODULE SUBROUTINE obj_InitiateScalarCoefficient(obj, varname)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: varname
   END SUBROUTINE obj_InitiateScalarCoefficient
 END INTERFACE
 
@@ -1593,8 +1594,9 @@ END INTERFACE
 ! summary: Set scalar coefficient for diffusion matrix
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetScalarCoefficient(obj)
+  MODULE SUBROUTINE obj_SetScalarCoefficient(obj, varname)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: varname
   END SUBROUTINE obj_SetScalarCoefficient
 END INTERFACE
 !----------------------------------------------------------------------------

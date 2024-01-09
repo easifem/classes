@@ -36,6 +36,7 @@ CHARACTER(*), PARAMETER :: modName = "KernelAssemblePointSource_Method"
 
 INTERFACE KernelAssemblePointSource
   MODULE PROCEDURE KernelAssemblePointSource1
+  MODULE PROCEDURE KernelAssemblePointSource2
 END INTERFACE KernelAssemblePointSource
 
 CONTAINS
@@ -112,5 +113,77 @@ SUBROUTINE KernelAssemblePointSource1(rhs, nbcPtrs, reset, scale, times)
 #endif DEBUG_VER
 
 END SUBROUTINE KernelAssemblePointSource1
+
+!----------------------------------------------------------------------------
+!                                                   KernelAssemblePointSource
+!----------------------------------------------------------------------------
+
+SUBROUTINE KernelAssemblePointSource2(rhs, nbcPtrs, reset, scale, times)
+  CLASS(ScalarField_), INTENT(INOUT) :: rhs
+  TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbcPtrs(:)
+  LOGICAL(LGT), INTENT(IN) :: reset
+  REAL(DFP), INTENT(IN) :: scale
+  REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "KernelAssemblePointSource2()"
+  CLASS(NeumannBC_), POINTER :: nbc
+  LOGICAL(LGT) :: problem, isSelectionByNodeNum, istimes
+  INTEGER(I4B) :: tnbc, nbcNo, idof
+  INTEGER(I4B), ALLOCATABLE :: nodeNum(:)
+  REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START] ')
+#endif DEBUG_VER
+
+  IF (reset) CALL rhs%Set(VALUE=0.0_DFP)
+
+  istimes = PRESENT(times)
+  IF (istimes) THEN
+    nbcNo = SIZE(times)
+    problem = nbcNo .NE. 1_I4B
+    IF (problem) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+        & '[INTERNAL ERROR] :: size of times should be 1.')
+      RETURN
+    END IF
+  END IF
+
+  tnbc = SIZE(nbcPtrs)
+  NULLIFY (nbc)
+
+  DO nbcNo = 1, tnbc
+    nbc => NULL()
+    nbc => nbcPtrs(nbcNo)%ptr
+
+    problem = .NOT. ASSOCIATED(nbc)
+    IF (problem) CYCLE
+    CALL nbc%GetParam(isSelectionByNodeNum=isSelectionByNodeNum)
+    problem = .NOT. isSelectionByNodeNum
+    IF (problem) CYCLE
+
+    CALL nbc%Get(nodeNum=nodeNum, nodalValue=nodalValue, times=times)
+    idof = nbc%GetDOFNo()
+
+    CALL rhs%Set(globalNode=nodeNum, VALUE=nodalValue(:, 1),  &
+      & scale=scale, addContribution=.TRUE.)
+  END DO
+
+  NULLIFY (nbc)
+  IF (ALLOCATED(nodeNum)) DEALLOCATE (nodeNum)
+  IF (ALLOCATED(nodalValue)) DEALLOCATE (nodalValue)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END] ')
+#endif DEBUG_VER
+
+END SUBROUTINE KernelAssemblePointSource2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE KernelAssemblePointSource_Method

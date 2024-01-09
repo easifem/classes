@@ -308,6 +308,7 @@ MODULE PROCEDURE obj_InitiateScalarCoefficient
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateScalarCoefficient()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, tsize
+CHARACTER(:), ALLOCATABLE :: varname0
 TYPE(CPUTime_) :: TypeCPUTime
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -331,13 +332,19 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
+IF (PRESENT(varname)) THEN
+  varname0 = varname
+ELSE
+  varname0 = "scalarCoefficient"
+END IF
+
 tsize = obj%dom%GetTotalMesh(dim=obj%nsd)
 ALLOCATE (obj%scalarCoefficient(tsize))
 DO ii = 1, tsize; obj%scalarCoefficient(ii)%ptr => NULL(); END DO
 
 CALL KernelInitiateScalarProperty(vars=obj%scalarCoefficient,  &
   & materials=obj%solidMaterial, dom=obj%dom, nnt=obj%nnt,  &
-  & varname="scalarCoefficient", matid=obj%SOLID_MATERIAL_ID,  &
+  & varname=varname0, matid=obj%SOLID_MATERIAL_ID,  &
   & engine=obj%engine%chars())
 
 #ifdef DEBUG_VER
@@ -468,6 +475,7 @@ END PROCEDURE obj_SetDampingProperties
 MODULE PROCEDURE obj_SetScalarCoefficient
 CHARACTER(*), PARAMETER :: myName = "obj_SetScalarCoefficient()"
 TYPE(CPUTime_) :: TypeCPUTime
+CHARACTER(:), ALLOCATABLE :: varname0
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
@@ -476,9 +484,15 @@ CALL e%raiseInformation(modName//'::'//myName//' - '// &
   & '[START]')
 #endif
 
+IF (PRESENT(varname)) THEN
+  varname0 = varname
+ELSE
+  varname0 = "scalarCoefficient"
+END IF
+
 CALL KernelSetScalarProperty(vars=obj%scalarCoefficient,  &
   & materials=obj%solidMaterial, dom=obj%dom, times=obj%timeVec,  &
-  & varname="scalarCoefficient", matid=obj%SOLID_MATERIAL_ID)
+  & varname=varname0, matid=obj%SOLID_MATERIAL_ID)
 
 #ifdef DEBUG_VER
 CALL e%raiseInformation(modName//'::'//myName//' - '// &
