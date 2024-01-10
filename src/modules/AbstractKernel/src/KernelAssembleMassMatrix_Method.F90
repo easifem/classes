@@ -115,8 +115,9 @@ SUBROUTINE KernelAssembleMassMatrix1(mat, massDensity, dom, cellFE,  &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+      ! CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+      !   & geoElemSD=linElemSD)
+      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij)
 
       Mmat = MassMatrix(test=elemsd, trial=elemsd, opt=tdof,  &
         & rho=fevar, rhorank=TypeFEVariableScalar)

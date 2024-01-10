@@ -129,8 +129,9 @@ SUBROUTINE KernelAssembleIsoDiffMat(mat, coefficient, dom, cellFE, &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+      ! CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+      !   & geoElemSD=linElemSD)
+      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij)
 
       Mmat = DiffusionMatrix(test=elemsd, trial=elemsd, k=coefVar,  &
              & krank=TypeFEVariableScalar)
