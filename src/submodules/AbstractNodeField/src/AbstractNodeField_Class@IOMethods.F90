@@ -115,22 +115,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 END PROCEDURE obj_Export
 
-SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
+SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames,  &
            & spaceCompo, timeCompo)
   IMPLICIT NONE
   CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   TYPE(VTKFile_), INTENT(INOUT) :: vtk
   INTEGER(I4B), INTENT(IN) :: nptrs(:), spaceCompo(:), timeCompo(:)
   INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-  CHARACTER(1), INTENT(IN) :: names(:)
+  CHARACTER(1), INTENT(IN) :: dofNames(:)
   INTEGER(I4B) :: ivar, var_rank, var_vartype, itime
   REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :)
   TYPE(FEVariable_) :: fevar
   CHARACTER(*), PARAMETER :: myName = "ExportToVTK"
+  CHARACTER(:), ALLOCATABLE :: name
 
   DO ivar = 1, tPhysicalVars
     CALL obj%GetFEVariable(globalNode=nptrs, VALUE=fevar, ivar=ivar)
 
+    name = obj%name%raw//"_"//dofNames(ivar)
     var_rank = .RANK.fevar
     var_vartype = .vartype.fevar
 
@@ -139,7 +141,7 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
       IF (var_vartype .EQ. Space) THEN
         r1 = Get(fevar, TypeFEVariableScalar, TypeFEVariableSpace)
         CALL vtk%WriteDataArray( &
-          & name=String(names(ivar)),  &
+          & name=String(name),  &
           & x=r1,  &
           & numberOfComponents=spaceCompo(ivar))
       END IF
@@ -148,7 +150,7 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
         r2 = Get(fevar, TypeFEVariableScalar, TypeFEVariableSpaceTime)
         DO itime = 1, timeCompo(ivar)
           CALL vtk%WriteDataArray( &
-            & name=String(names(ivar)//"_t"//tostring(itime)),  &
+            & name=String(name//"_t"//tostring(itime)),  &
             & x=r2(itime, :),  &
             & numberOfComponents=spaceCompo(ivar))
         END DO
@@ -158,7 +160,7 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
       IF (var_vartype .EQ. Space) THEN
         r2 = Get(fevar, TypeFEVariableVector, TypeFEVariableSpace)
         CALL vtk%WriteDataArray( &
-          & name=String(names(ivar)),  &
+          & name=String(name),  &
           & x=r2,  &
           & numberOfComponents=spaceCompo(ivar))
       END IF
@@ -167,7 +169,7 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
         r3 = Get(fevar, TypeFEVariableVector, TypeFEVariableSpaceTime)
         DO itime = 1, timeCompo(ivar)
           CALL vtk%WriteDataArray( &
-            & name=String(names(ivar)//"_t"//tostring(itime)),  &
+            & name=String(name//"_t"//tostring(itime)),  &
             & x=r3(:, :, itime),  &
             & numberOfComponents=spaceCompo(ivar))
         END DO
@@ -177,6 +179,7 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
       CALL e%RaiseError(modName//'::'//myName//' - '// &
         & '[INTERNAL ERROR] :: No case found for fevar')
     END SELECT
+    DEALLOCATE (name)
   END DO
   CALL DEALLOCATE (fevar)
   IF (ALLOCATED(r1)) DEALLOCATE (r1)
@@ -198,7 +201,7 @@ INTEGER(I4B) :: imesh, tMesh, nsd, tPhysicalVars, tComponents, ivar, &
 & tnodes, var_rank, var_vartype, itime
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), spaceCompo(:), timeCompo(:)
 REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
-CHARACTER(1), ALLOCATABLE :: names(:)
+CHARACTER(1), ALLOCATABLE :: dofNames(:)
 TYPE(FEVariable_) :: fevar
 
 #ifdef DEBUG_VER
@@ -233,9 +236,9 @@ IF (.NOT. isOK) THEN
 END IF
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
-ALLOCATE (names(tPhysicalVars), spaceCompo(tPhysicalVars),  &
+ALLOCATE (dofNames(tPhysicalVars), spaceCompo(tPhysicalVars),  &
   & timeCompo(tPhysicalVars))
-CALL obj%GetPhysicalNames(names)
+CALL obj%GetPhysicalNames(dofNames)
 spaceCompo = obj%GetSpaceCompo(tPhysicalVars)
 timeCompo = obj%GetTimeCompo(tPhysicalVars)
 
@@ -257,7 +260,7 @@ IF (isSingleDomain) THEN
     nptrs = meshPtr%GetNptrs()
     tnodes = meshPtr%GetTotalNodes()
 
-    CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, names,  &
+    CALL ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames,  &
     & spaceCompo, timeCompo)
 
     CALL vtk%WriteDataArray(location=String('node'), action=String('close'))
@@ -267,7 +270,7 @@ IF (isSingleDomain) THEN
 
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
-  IF (ALLOCATED(names)) DEALLOCATE (names)
+  IF (ALLOCATED(dofNames)) DEALLOCATE (dofNames)
   IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
   IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
   NULLIFY (meshPtr, dom)
@@ -294,7 +297,7 @@ INTEGER(I4B) :: imesh, tMesh, nsd, ivar, &
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), tPhysicalVars(:)
 TYPE(IntVector_), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
 REAL(DFP), ALLOCATABLE :: r1(:), r2(:, :), r3(:, :, :), xij(:, :)
-CHARACTER(1), ALLOCATABLE :: names(:), names_sub(:)
+CHARACTER(1), ALLOCATABLE :: dofNames(:), dofNames_sub(:)
 TYPE(FEVariable_) :: fevar
 INTEGER(I4B) :: tfield, iobj, tsize, aint
 TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
@@ -372,17 +375,17 @@ DO iobj = 1, tfield
   tsize = tsize + tPhysicalVars(iobj)
 END DO
 
-ALLOCATE (names(tsize))
+ALLOCATE (dofNames(tsize))
 tsize = 0
 DO iobj = 1, tfield
   obj0 => obj(iobj)%ptr
   IF (.NOT. ASSOCIATED(obj0)) CYCLE
 
-  ALLOCATE (names_sub(tPhysicalVars(iobj)))
-  CALL obj0%GetPhysicalNames(names_sub)
-  names(tsize + 1:tsize + tPhysicalVars(iobj)) = names_sub
+  ALLOCATE (dofNames_sub(tPhysicalVars(iobj)))
+  CALL obj0%GetPhysicalNames(dofNames_sub)
+  dofNames(tsize + 1:tsize + tPhysicalVars(iobj)) = dofNames_sub
   tsize = tsize + tPhysicalVars(iobj)
-  DEALLOCATE (names_sub)
+  DEALLOCATE (dofNames_sub)
 END DO
 
 DO imesh = 1, tMesh
@@ -405,7 +408,7 @@ DO imesh = 1, tMesh
 
     aint = tsize + tPhysicalVars(iobj)
     CALL ExportFieldToVTK(obj0, vtk, nptrs, tPhysicalVars(iobj),  &
-    & names(tsize + 1:aint), spaceCompo(iobj)%val, timeCompo(iobj)%val)
+        & dofNames(tsize + 1:aint), spaceCompo(iobj)%val, timeCompo(iobj)%val)
     tsize = aint
 
   END DO
@@ -417,7 +420,7 @@ DO imesh = 1, tMesh
 END DO
 
 DEALLOCATE (tPhysicalVars)
-DEALLOCATE (names)
+DEALLOCATE (dofNames)
 DEALLOCATE (spaceCompo)
 DEALLOCATE (timeCompo)
 NULLIFY (meshPtr, dom, obj0)
