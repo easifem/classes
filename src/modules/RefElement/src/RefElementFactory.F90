@@ -16,7 +16,7 @@
 !
 
 MODULE RefElementFactory
-USE GlobalData
+USE BaseMethod
 USE Topology_Class
 USE AbstractRefElement_Class
 USE RefPoint_Class
@@ -42,8 +42,11 @@ CONTAINS
 FUNCTION RefElement_Pointer(elemType) RESULT(ans)
   INTEGER(I4B), INTENT(IN) :: elemType
   CLASS(AbstractRefElement_), POINTER :: ans
+  INTEGER(I4B) :: topoType
+
   ans => NULL()
-  SELECT CASE (elemType)
+  topoType = ElementTopology(elemType)
+  SELECT CASE (topoType)
   CASE (Point)
     ALLOCATE (RefPoint_ :: ans)
   CASE (Line)

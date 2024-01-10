@@ -384,13 +384,15 @@ SUBROUTINE SetFEParam_BasisType( &
   CHARACTER(*), INTENT(IN) :: prefix
 
   CHARACTER(*), PARAMETER :: myName = "SetFEParam_BasisType()"
+  INTEGER(I4B) :: topoType
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
     & '[START] ')
 #endif DEBUG_VER
 
-  SELECT CASE (elemType)
+  topoType = ElementTopology(elemType)
+  SELECT CASE (topoType)
   CASE (Line)
     CALL SetFEParam_BasisType_Line( &
       & param, elemType, nsd, baseContinuity0, baseInterpol0, &
