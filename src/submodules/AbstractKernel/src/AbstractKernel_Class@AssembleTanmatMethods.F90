@@ -116,6 +116,41 @@ END IF
 END PROCEDURE obj_AssembleStiffnessMat
 
 !----------------------------------------------------------------------------
+!                                                       AssembleDiffusionMat
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AssembleDiffusionMat
+CHARACTER(*), PARAMETER :: myName = "obj_AssembleDiffusionMat()"
+TYPE(CPUTime_) :: TypeCPUTime
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif DEBUG_VER
+
+! NOTE: this is for isotropic one
+CALL KernelAssembleDiffusionMatrix(mat=obj%diffusionMat,  &
+  & coefficient=obj%scalarCoefficient, dom=obj%dom,  &
+  & cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
+  & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
+  & reset=.TRUE.)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif DEBUG_VER
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
+  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+  & methodName=myName))
+END IF
+END PROCEDURE obj_AssembleDiffusionMat
+
+!----------------------------------------------------------------------------
 !                                                     AssembleDampingMatrix
 !----------------------------------------------------------------------------
 

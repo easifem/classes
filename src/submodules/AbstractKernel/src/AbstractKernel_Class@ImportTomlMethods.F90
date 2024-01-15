@@ -39,7 +39,7 @@ TYPE(String) :: name, engine, coordinateSystem, domainFile,  &
   & baseContinuityForSpace, quadratureTypeForSpace, ipTypeForSpace, &
   & basisTypeForSpace, baseInterpolationForTime, baseContinuityForTime,  &
   & quadratureTypeForTime, ipTypeForTime, basisTypeForTime,  &
-  & problemType, tanmatProp, astr
+  & problemType, tanmatProp, astr, outputPath
 
 INTEGER(I4B) :: algorithm, tSolidMaterials, tDirichletBC, tWeakDirichletBC, &
   & tNeumannBC, tMaterialInterfaces, origin, stat, maxIter, nsd, nnt, tdof, &
@@ -103,6 +103,10 @@ END IF
 
 CALL toml_get(table, "tanmatProp",   &
   & tanmatProp%raw, DEFAULT_TANMAT_PROP, &
+  & origin=origin, stat=stat)
+
+CALL toml_get(table, "outputPath",   &
+  & outputPath%raw, DEFAULT_OUTPUT_PATH, &
   & origin=origin, stat=stat)
 
 CALL toml_get(table, "problemType", problemType%raw,  &
@@ -352,6 +356,7 @@ CALL SetAbstractKernelParam( &
   & rtoleranceForResidual=rtoleranceForResidual,  &
   & atoleranceForResidual=atoleranceForResidual,  &
   & tanmatProp=tanmatProp%chars(),  &
+  & outputPath=outputPath%chars(),  &
   & tOverlappedMaterials=tOverlappedMaterials,  &
   & showTime=showTime)
 

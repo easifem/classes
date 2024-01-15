@@ -415,6 +415,8 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! List of space-time scalar fields
   CLASS(MatrixField_), POINTER :: stiffnessMat => NULL()
   !! Global Stiffness matrix
+  CLASS(MatrixField_), POINTER :: diffusionMat => NULL()
+  !! Global diffusion matrix
   CLASS(MatrixField_), POINTER :: massMat => NULL()
   !! Global mass matrix
   CLASS(MatrixField_), POINTER :: dampingMat => NULL()
@@ -427,6 +429,12 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Vector field for nodal acceleration
   CLASS(VectorField_), POINTER :: nodeCoord => NULL()
   !! Vector field for nodal coordinates
+  CLASS(ScalarField_), POINTER :: pressure => NULL()
+  !! scalar field for nodal pressure
+  CLASS(ScalarField_), POINTER :: p_velocity => NULL()
+  !! scalar field for nodal pressure
+  CLASS(ScalarField_), POINTER :: p_acceleration => NULL()
+  !! scalar field for nodal pressure
   TYPE(VectorMeshFieldPointer_), ALLOCATABLE :: solidMechData(:)
   !! Constitutive data for solid materials
   TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: massDensity(:)
@@ -454,6 +462,12 @@ TYPE, ABSTRACT :: AbstractKernel_
   TYPE(AbstractVectorMeshFieldPointer_), ALLOCATABLE :: strain(:)
   !! Strain tensor
   !! This will be a tensor mesh field
+  ! TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE, target:: phase_velocity(:)
+  !! phase_velocity
+  !! This will be a scalar mesh field
+  TYPE(AbstractScalarMeshFieldPointer_), ALLOCATABLE :: scalarCoefficient(:)
+  !! it can be phase velocity or coefficient of permiabillity for isotropic medium
+  !! this will be a scalar mesh field
   CLASS(UserFunction_), POINTER :: bodySourceFunc => NULL()
   !! body force function
 
@@ -631,6 +645,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetDampingProperties =>  &
     & obj_SetDampingProperties
   !! Set Lame parameters for isotropic elasticity
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateScalarCoefficient =>  &
+    & obj_InitiateScalarCoefficient
+
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarCoefficient =>  &
+    & obj_SetScalarCoefficient
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterialToDomain =>  &
     & obj_SetMaterialToDomain
   !! Set material to mesh
@@ -678,6 +698,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleMassMat => obj_AssembleMassMat
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleStiffnessMat =>  &
     & obj_AssembleStiffnessMat
+  PROCEDURE, PUBLIC, PASS(obj) :: AssembleDiffusionMat =>  &
+    & obj_AssembleDiffusionMat
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleDampingMat =>  &
     & obj_AssembleDampingMat
   PROCEDURE, PUBLIC, PASS(obj) :: AssembleNitscheMat =>  &
@@ -1549,6 +1571,35 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                          obj_InitiateScalarCoefficient@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-01-06
+! summary: Initiate scalar coefficient for diffusion matrix
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateScalarCoefficient(obj, varname)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: varname
+  END SUBROUTINE obj_InitiateScalarCoefficient
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                          obj_SetScalarCoefficient@MaterialMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-01-06
+! summary: Set scalar coefficient for diffusion matrix
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetScalarCoefficient(obj, varname)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: varname
+  END SUBROUTINE obj_SetScalarCoefficient
+END INTERFACE
+!----------------------------------------------------------------------------
 !                                                   AddDirichletBC@BCMethods
 !----------------------------------------------------------------------------
 
@@ -1868,6 +1919,20 @@ INTERFACE
   MODULE SUBROUTINE obj_AssembleStiffnessMat(obj)
     CLASS(AbstractKernel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_AssembleStiffnessMat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 AssembleDiffusionMat@AssembleTanmatMethods
+!----------------------------------------------------------------------------
+
+!> authors: Shion Shimizu
+! date: 2024-01-04
+! summary: This subroutine assembles the diffusion matrix of the system
+
+INTERFACE
+  MODULE SUBROUTINE obj_AssembleDiffusionMat(obj)
+    CLASS(AbstractKernel_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AssembleDiffusionMat
 END INTERFACE
 
 !----------------------------------------------------------------------------

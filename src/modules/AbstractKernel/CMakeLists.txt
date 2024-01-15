@@ -22,6 +22,7 @@ target_sources(
           ${src_path}/AbstractKernel_Class.F90
           ${src_path}/KernelAssembleMassMatrix_Method.F90
           ${src_path}/KernelAssembleStiffnessMatrix_Method.F90
+          ${src_path}/KernelAssembleDiffusionMatrix_Method.F90
           ${src_path}/KernelAssembleDampingMatrix_Method.F90
           ${src_path}/KernelAssembleElastoDynaMatrix_Method.F90
           ${src_path}/KernelAssembleSTElastoDynaMatrix_Method.F90
