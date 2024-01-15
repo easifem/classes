@@ -49,8 +49,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleDampingMatrix1(mat, massDensity, youngsModulus,  &
-  & shearModulus, dampCoeff_alpha, dampCoeff_beta, dom, cellFE, linCellFE,  &
-  & spaceElemSD, linSpaceElemSD, reset)
+  & shearModulus, dampCoeff_alpha, dampCoeff_beta, dom, cellFE, geoCellFE,  &
+  & spaceElemSD, geoSpaceElemSD, reset)
 
   CLASS(MatrixField_), INTENT(INOUT) :: mat
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: massDensity(:)
@@ -60,15 +60,15 @@ SUBROUTINE KernelAssembleDampingMatrix1(mat, massDensity, youngsModulus,  &
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: dampCoeff_beta(:)
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleDampingMatrix1()"
   INTEGER(I4B) :: id, tmesh, nsd, nns, tdof, iel
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   TYPE(FEVariable_) :: muVar, youngsVar, alphaVar, betaVar, rhoVar
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -107,10 +107,10 @@ SUBROUTINE KernelAssembleDampingMatrix1(mat, massDensity, youngsModulus,  &
     IF (problem) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.NNE.refelem)
@@ -183,7 +183,7 @@ SUBROUTINE KernelAssembleDampingMatrix1(mat, massDensity, youngsModulus,  &
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+        & geoElemSD=geoElemSD)
 
       Amat = MassMatrix(test=elemsd, trial=elemsd, opt=tdof,  &
         & rho=rhoVar, rhorank=TypeFEVariableScalar)
@@ -206,7 +206,7 @@ SUBROUTINE KernelAssembleDampingMatrix1(mat, massDensity, youngsModulus,  &
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
   CALL DEALLOCATE (youngsVar)
   CALL DEALLOCATE (muVar)
   CALL DEALLOCATE (rhoVar)
@@ -224,8 +224,8 @@ END SUBROUTINE KernelAssembleDampingMatrix1
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleDampingMatrix2(mat, massDensity, Cijkl, &
-    & dampCoeff_alpha, dampCoeff_beta, dom, cellFE, linCellFE,  &
-    & spaceElemSD, linSpaceElemSD, reset)
+    & dampCoeff_alpha, dampCoeff_beta, dom, cellFE, geoCellFE,  &
+    & spaceElemSD, geoSpaceElemSD, reset)
   CLASS(MatrixField_), INTENT(INOUT) :: mat
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: massDensity(:)
   CLASS(AbstractTensorMeshFieldPointer_), INTENT(INOUT) :: Cijkl(:)
@@ -233,15 +233,15 @@ SUBROUTINE KernelAssembleDampingMatrix2(mat, massDensity, Cijkl, &
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: dampCoeff_beta(:)
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleDampingMatrix2()"
   INTEGER(I4B) :: id, tmesh, nsd, telems, nns, tdof, iel
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   TYPE(FEVariable_) :: CijklVar, alphaVar, betaVar, rhoVar
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -283,10 +283,10 @@ SUBROUTINE KernelAssembleDampingMatrix2(mat, massDensity, Cijkl, &
     telems = meshptr%GetTotalElements()
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.NNE.refelem)
@@ -349,8 +349,8 @@ SUBROUTINE KernelAssembleDampingMatrix2(mat, massDensity, Cijkl, &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,   &
-        & geoElemSD=linElemSD)
+      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+        & geoElemSD=geoElemSD)
 
       Amat = MassMatrix(test=elemsd, trial=elemsd, opt=tdof,  &
         & rho=rhoVar, rhorank=TypeFEVariableScalar)
@@ -369,7 +369,7 @@ SUBROUTINE KernelAssembleDampingMatrix2(mat, massDensity, Cijkl, &
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
   CALL DEALLOCATE (CijklVar)
   CALL DEALLOCATE (rhoVar)
   CALL DEALLOCATE (alphaVar)

@@ -276,7 +276,7 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! Domain of the problem
   TYPE(ReferenceLine_) :: refTimeElem
   !! reference element for time domain
-  TYPE(ReferenceLine_) :: refLinTimeElem
+  TYPE(ReferenceLine_) :: refGeoTimeElem
   !! reference element for time domain
   TYPE(String) :: baseContinuityForSpace
   !! Continuity of basis function in space
@@ -329,31 +329,31 @@ TYPE, ABSTRACT :: AbstractKernel_
   !! INFO: This is used in space-time computation
   TYPE(FiniteElementPointer_), ALLOCATABLE :: cellFE(:)
   !! Cell finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: linCellFE(:)
+  TYPE(FiniteElementPointer_), ALLOCATABLE :: geoCellFE(:)
   !! Linear cell finite element
   TYPE(FiniteElementPointer_), ALLOCATABLE :: facetFE(:)
   !! Facet finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: linFacetFE(:)
+  TYPE(FiniteElementPointer_), ALLOCATABLE :: geoFacetFE(:)
   !! Linear facet finite element
   TYPE(FiniteElementPointer_), ALLOCATABLE :: edgeFE(:)
   !! Edge finite element
-  TYPE(FiniteElementPointer_), ALLOCATABLE :: linEdgeFE(:)
+  TYPE(FiniteElementPointer_), ALLOCATABLE :: geoEdgeFE(:)
   !! Linear edge finite element
   TYPE(FiniteElement_) :: timeFE
   !! Time finite element
-  TYPE(FiniteElement_) :: linTimeFE
+  TYPE(FiniteElement_) :: geoTimeFE
   !! Linear time finite element
-  TYPE(ElemshapeData_) :: linTimeElemSD
+  TYPE(ElemshapeData_) :: geoTimeElemSD
     !! Element shape data on linear time element #STFEM
   TYPE(ElemshapeData_) :: timeElemSD
     !! Element shape data on time element #STFEM
-  TYPE(ElemshapeData_), ALLOCATABLE :: linSpaceElemSD(:)
+  TYPE(ElemshapeData_), ALLOCATABLE :: geoSpaceElemSD(:)
     !! Element shape data on linear space (simplex) element
     !! cell data only
   TYPE(ElemshapeData_), ALLOCATABLE :: spaceElemSD(:)
     !! Element shape data on space element
     !! cell data only
-  TYPE(ElemshapeData_), ALLOCATABLE :: linSpaceElemSD_facet(:)
+  TYPE(ElemshapeData_), ALLOCATABLE :: geoSpaceElemSD_facet(:)
     !! Element shape data on linear space (simplex) element
     !! facet element
   TYPE(ElemshapeData_), ALLOCATABLE :: spaceElemSD_facet(:)

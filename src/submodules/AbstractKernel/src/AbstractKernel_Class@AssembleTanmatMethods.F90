@@ -55,8 +55,8 @@ IF (.NOT. isok) THEN
 END IF
 
 CALL KernelAssembleMassMatrix(mat=obj%massMat, massDensity=obj%massDensity, &
-  & dom=obj%dom, cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
-  & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
+  & dom=obj%dom, cellFE=obj%cellFE, geoCellFE=obj%geoCellFE,  &
+  & spaceElemSD=obj%spaceElemSD, geoSpaceElemSD=obj%geoSpaceElemSD,  &
   & problemType=obj%problemType, reset=.TRUE.)
 
 #ifdef DEBUG_VER
@@ -90,16 +90,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 IF (obj%isIsotropic) THEN
   CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
     & youngsModulus=obj%youngsModulus, shearModulus=obj%shearModulus, dom=obj%dom,  &
-    & cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
-    & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
+    & cellFE=obj%cellFE, geoCellFE=obj%geoCellFE,  &
+    & spaceElemSD=obj%spaceElemSD, geoSpaceElemSD=obj%geoSpaceElemSD,  &
     & reset=.TRUE.)
 
 ELSE
 
   CALL KernelAssembleStiffnessMatrix(mat=obj%stiffnessMat,  &
     & Cijkl=obj%Cijkl, dom=obj%dom, cellFE=obj%cellFE,  &
-    & linCellFE=obj%linCellFE, spaceElemSD=obj%spaceElemSD,  &
-    & linSpaceElemSD=obj%linSpaceElemSD, reset=.TRUE.)
+    & geoCellFE=obj%geoCellFE, spaceElemSD=obj%spaceElemSD,  &
+    & geoSpaceElemSD=obj%geoSpaceElemSD, reset=.TRUE.)
 END IF
 
 #ifdef DEBUG_VER
@@ -133,8 +133,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! NOTE: this is for isotropic one
 CALL KernelAssembleDiffusionMatrix(mat=obj%diffusionMat,  &
   & coefficient=obj%scalarCoefficient, dom=obj%dom,  &
-  & cellFE=obj%cellFE, linCellFE=obj%linCellFE,  &
-  & spaceElemSD=obj%spaceElemSD, linSpaceElemSD=obj%linSpaceElemSD,  &
+  & cellFE=obj%cellFE, geoCellFE=obj%geoCellFE,  &
+  & spaceElemSD=obj%spaceElemSD, geoSpaceElemSD=obj%geoSpaceElemSD,  &
   & reset=.TRUE.)
 
 #ifdef DEBUG_VER
@@ -174,9 +174,9 @@ IF (obj%isIsotropic) THEN
     & dampCoeff_beta=obj%dampCoeff_beta,  &
     & dom=obj%dom,  &
     & cellFE=obj%cellFE,  &
-    & linCellFE=obj%linCellFE,  &
+    & geoCellFE=obj%geoCellFE,  &
     & spaceElemSD=obj%spaceElemSD,  &
-    & linSpaceElemSD=obj%linSpaceElemSD,  &
+    & geoSpaceElemSD=obj%geoSpaceElemSD,  &
     & reset=.TRUE.)
 END IF
 
@@ -190,9 +190,9 @@ IF (.NOT. obj%isIsotropic) THEN
     & dampCoeff_beta=obj%dampCoeff_beta,  &
     & dom=obj%dom,  &
     & cellFE=obj%cellFE,  &
-    & linCellFE=obj%linCellFE,  &
+    & geoCellFE=obj%geoCellFE,  &
     & spaceElemSD=obj%spaceElemSD,  &
-    & linSpaceElemSD=obj%linSpaceElemSD,  &
+    & geoSpaceElemSD=obj%geoSpaceElemSD,  &
     & reset=.TRUE.)
 
 END IF

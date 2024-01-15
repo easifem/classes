@@ -181,32 +181,32 @@ CALL Display(obj%lambdaForTime, "lambdaForTime: ", unitNo=unitNo)
 bool1 = ALLOCATED(obj%cellFE)
 CALL Display(bool1, "cellFE ALLOCATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%linCellFE)
-CALL Display(bool1, "linCellFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%geoCellFE)
+CALL Display(bool1, "geoCellFE ALLOCATED: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%facetFE)
 CALL Display(bool1, "facetFE ALLOCATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%linFacetFE)
-CALL Display(bool1, "linFacetFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%geoFacetFE)
+CALL Display(bool1, "geoFacetFE ALLOCATED: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%edgeFE)
 CALL Display(bool1, "edgeFE ALLOCATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%linEdgeFE)
-CALL Display(bool1, "linEdgeFE ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%geoEdgeFE)
+CALL Display(bool1, "geoEdgeFE ALLOCATED: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%spaceElemSD)
 CALL Display(bool1, "spaceElemSD ALLOCATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%linSpaceElemSD)
-CALL Display(bool1, "linSpaceElemSD ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%geoSpaceElemSD)
+CALL Display(bool1, "geoSpaceElemSD ALLOCATED: ", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%spaceElemSD_facet)
 CALL Display(bool1, "spaceElemSD_facet ALLOCATED: ", unitNo=unitNo)
 
-bool1 = ALLOCATED(obj%linSpaceElemSD_facet)
-CALL Display(bool1, "linSpaceElemSD_facet ALLOCATED: ", unitNo=unitNo)
+bool1 = ALLOCATED(obj%geoSpaceElemSD_facet)
+CALL Display(bool1, "geoSpaceElemSD_facet ALLOCATED: ", unitNo=unitNo)
 
 ! dbc
 bool1 = ALLOCATED(obj%dbc)

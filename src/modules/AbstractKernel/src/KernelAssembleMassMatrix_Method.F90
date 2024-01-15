@@ -48,21 +48,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleMassMatrix1(mat, massDensity, dom, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, problemType, reset)
+  & geoCellFE, spaceElemSD, geoSpaceElemSD, problemType, reset)
   CLASS(MatrixField_), INTENT(INOUT) :: mat
   CLASS(AbstractScalarMeshFieldPointer_), INTENT(INOUT) :: massDensity(:)
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   INTEGER(I4B), INTENT(IN) :: problemType
   LOGICAL(LGT), INTENT(IN) :: reset
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleMassMatrix1()"
   INTEGER(I4B) :: id, tmesh, nsd, telems, nns, tdof, iel
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   TYPE(FEVariable_) :: fevar
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -92,10 +92,10 @@ SUBROUTINE KernelAssembleMassMatrix1(mat, massDensity, dom, cellFE,  &
     IF (telems .EQ. 0_I4B) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.NNE.refelem)
@@ -116,7 +116,7 @@ SUBROUTINE KernelAssembleMassMatrix1(mat, massDensity, dom, cellFE,  &
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+        & geoElemSD=geoElemSD)
 
       Mmat = MassMatrix(test=elemsd, trial=elemsd, opt=tdof,  &
         & rho=fevar, rhorank=TypeFEVariableScalar)
@@ -131,7 +131,7 @@ SUBROUTINE KernelAssembleMassMatrix1(mat, massDensity, dom, cellFE,  &
   IF (ALLOCATED(xij)) DEALLOCATE (xij)
   IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
   CALL DEALLOCATE (fevar)
 
   NULLIFY (meshptr, spaceFE, rhoField, refelem, linSpaceFE)
