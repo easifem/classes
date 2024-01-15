@@ -26,6 +26,7 @@ target_sources(
           ${src_path}/KernelAssembleDampingMatrix_Method.F90
           ${src_path}/KernelAssembleElastoDynaMatrix_Method.F90
           ${src_path}/KernelAssembleSTElastoDynaMatrix_Method.F90
+          ${src_path}/KernelAssembleSTAcousticMatrix_Method.F90
           ${src_path}/KernelAssembleBodySource_Method.F90
           ${src_path}/KernelAssembleSurfaceSource_Method.F90
           ${src_path}/KernelAssemblePointSource_Method.F90

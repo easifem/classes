@@ -48,14 +48,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(UserFunction_), INTENT(INOUT) :: func
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -67,7 +67,7 @@ SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :)
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -89,10 +89,10 @@ SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
     IF (problem) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.nne.refelem)
@@ -110,7 +110,7 @@ SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
       CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+        & geoElemSD=geoElemSD)
 
       CALL func%Get(fevar=forceVar, xij=xij, times=times)
 
@@ -129,7 +129,7 @@ SUBROUTINE KernelAssembleBodySource1(rhs, dom, func, cellFE,  &
   IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -143,14 +143,14 @@ END SUBROUTINE KernelAssembleBodySource1
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
+  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(VectorField_), INTENT(INOUT) :: bodyVec
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
 
@@ -161,7 +161,7 @@ SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   REAL(DFP), ALLOCATABLE :: fevec(:, :), xij(:, :), forceVec(:, :)
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -183,10 +183,10 @@ SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
     IF (problem) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.nne.refelem)
@@ -204,8 +204,12 @@ SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+      IF (SIZE(xij, 2) .EQ. SIZE(geoElemSD%N, 1)) THEN
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+          & geoElemSD=geoElemSD)
+      ELSE
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij)
+      END IF
 
       CALL bodyVec%Get(VALUE=forceVec, globalNode=nptrs)
       forceVar = NodalVariable(val=forceVec, rank=TypeFEVariableVector,  &
@@ -227,7 +231,7 @@ SUBROUTINE KernelAssembleBodySource2(rhs, dom, bodyVec, cellFE,  &
   IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -241,14 +245,14 @@ END SUBROUTINE KernelAssembleBodySource2
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(ScalarField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(UserFunction_), INTENT(INOUT) :: func
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -260,7 +264,7 @@ SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   REAL(DFP), ALLOCATABLE :: fevec(:), xij(:, :)
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -282,10 +286,10 @@ SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
     IF (problem) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.nne.refelem)
@@ -302,8 +306,12 @@ SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+      IF (SIZE(xij, 2) .EQ. SIZE(geoElemSD%N, 1)) THEN
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+          & geoElemSD=geoElemSD)
+      ELSE
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij)
+      END IF
 
       CALL func%Get(fevar=forceVar, xij=xij, times=times)
 
@@ -322,7 +330,7 @@ SUBROUTINE KernelAssembleBodySource3(rhs, dom, func, cellFE,  &
   IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -336,14 +344,14 @@ END SUBROUTINE KernelAssembleBodySource3
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleBodySource4(rhs, dom, bodyVec, cellFE,  &
-  & linCellFE, spaceElemSD, linSpaceElemSD, reset, scale)
+  & geoCellFE, spaceElemSD, geoSpaceElemSD, reset, scale)
   CLASS(ScalarField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   CLASS(ScalarField_), INTENT(INOUT) :: bodyVec
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: cellFE(:)
-  TYPE(FiniteElementPointer_), INTENT(INOUT) :: linCellFE(:)
+  TYPE(FiniteElementPointer_), INTENT(INOUT) :: geoCellFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
 
@@ -354,7 +362,7 @@ SUBROUTINE KernelAssembleBodySource4(rhs, dom, bodyVec, cellFE,  &
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
   REAL(DFP), ALLOCATABLE :: fevec(:), xij(:, :), forceVec(:)
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -376,10 +384,10 @@ SUBROUTINE KernelAssembleBodySource4(rhs, dom, bodyVec, cellFE,  &
     IF (problem) CYCLE
 
     spaceFE => cellFE(id)%ptr
-    linSpaceFE => linCellFE(id)%ptr
+    linSpaceFE => geoCellFE(id)%ptr
 
     elemsd = spaceElemSD(id)
-    linElemSD = linSpaceElemSD(id)
+    geoElemSD = geoSpaceElemSD(id)
 
     refelem => meshptr%GetRefElemPointer()
     nns = (.nne.refelem)
@@ -397,8 +405,12 @@ SUBROUTINE KernelAssembleBodySource4(rhs, dom, bodyVec, cellFE,  &
 
       CALL dom%GetNodeCoord(globalNode=nptrs, nodeCoord=xij)
 
-      CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-        & geoElemSD=linElemSD)
+      IF (SIZE(xij, 2) .EQ. SIZE(geoElemSD%N, 1)) THEN
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
+          & geoElemSD=geoElemSD)
+      ELSE
+        CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij)
+      END IF
 
       CALL bodyVec%Get(VALUE=forceVec, globalNode=nptrs)
 
@@ -421,7 +433,7 @@ SUBROUTINE KernelAssembleBodySource4(rhs, dom, bodyVec, cellFE,  &
   IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

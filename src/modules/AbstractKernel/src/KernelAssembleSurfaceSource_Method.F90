@@ -49,7 +49,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleSurfaceSource1(rhs, dom, nbcPtrs, func, fe,  &
-  & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  & linFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbcPtrs(:)
@@ -57,7 +57,7 @@ SUBROUTINE KernelAssembleSurfaceSource1(rhs, dom, nbcPtrs, func, fe,  &
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -74,7 +74,7 @@ SUBROUTINE KernelAssembleSurfaceSource1(rhs, dom, nbcPtrs, func, fe,  &
 
   CALL KernelAssembleSurfaceSource2(rhs=rhs, dom=dom, nbcPtrs=nbcPtrs,  &
     & funcPtrs=funcPtrs, fe=fe, linFE=linFE, spaceElemSD=spaceElemSD,  &
-    & linSpaceElemSD=linSpaceElemSD, reset=reset, scale=scale, times=times)
+    & geoSpaceElemSD=geoSpaceElemSD, reset=reset, scale=scale, times=times)
 
   DO ii = 1, tnbc; funcPtrs(ii)%ptr => NULL(); END DO
   DEALLOCATE (funcPtrs)
@@ -91,7 +91,7 @@ END SUBROUTINE KernelAssembleSurfaceSource1
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
-  & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  & linFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
   CLASS(Domain_), INTENT(INOUT) :: dom
   TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbcPtrs(:)
@@ -99,7 +99,7 @@ SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -107,7 +107,7 @@ SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceSource2()"
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -190,7 +190,7 @@ SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
       linSpaceFE => linFE(jd)%ptr
 
       elemsd = spaceElemSD(jd)
-      linElemSD = linSpaceElemSD(jd)
+      geoElemSD = geoSpaceElemSD(jd)
 
       refelem => meshptr%GetRefElemPointer()
       nns = (.nne.refelem)
@@ -207,7 +207,7 @@ SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
         CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
 
         CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-          & geoElemSD=linElemSD)
+          & geoElemSD=geoElemSD)
 
         CALL func%Get(fevar=forceVar, xij=xij, times=times)
 
@@ -230,7 +230,7 @@ SUBROUTINE KernelAssembleSurfaceSource2(rhs, dom, nbcPtrs, funcPtrs, fe,  &
 
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -244,7 +244,7 @@ END SUBROUTINE KernelAssembleSurfaceSource2
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
-  & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  & linFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(VectorField_), INTENT(INOUT) :: rhs
     !! rhs to assemble
   CLASS(VectorField_), INTENT(INOUT) :: extField
@@ -260,7 +260,7 @@ SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -268,7 +268,7 @@ SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceSource3()"
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -339,7 +339,7 @@ SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
       linSpaceFE => linFE(jd)%ptr
 
       elemsd = spaceElemSD(jd)
-      linElemSD = linSpaceElemSD(jd)
+      geoElemSD = geoSpaceElemSD(jd)
 
       refelem => meshptr%GetRefElemPointer()
       nns = (.nne.refelem)
@@ -357,7 +357,7 @@ SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
         CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
 
         CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-          & geoElemSD=linElemSD)
+          & geoElemSD=geoElemSD)
 
         CALL extField%Get(VALUE=forceVec, globalNode=nptrs)
 
@@ -383,7 +383,7 @@ SUBROUTINE KernelAssembleSurfaceSource3(rhs, extField, dom, nbcPtrs, fe,  &
 
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -397,7 +397,7 @@ END SUBROUTINE KernelAssembleSurfaceSource3
 !----------------------------------------------------------------------------
 
 SUBROUTINE KernelAssembleSurfaceSource4(rhs, extField, dom, nbcPtrs, fe,  &
-  & linFE, spaceElemSD, linSpaceElemSD, reset, scale, times)
+  & linFE, spaceElemSD, geoSpaceElemSD, reset, scale, times)
   CLASS(ScalarField_), INTENT(INOUT) :: rhs
   CLASS(ScalarField_), INTENT(INOUT) :: extField
   CLASS(Domain_), INTENT(INOUT) :: dom
@@ -405,7 +405,7 @@ SUBROUTINE KernelAssembleSurfaceSource4(rhs, extField, dom, nbcPtrs, fe,  &
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: fe(:)
   TYPE(FiniteElementPointer_), INTENT(INOUT) :: linFE(:)
   TYPE(ElemShapeData_), INTENT(INOUT) :: spaceElemSD(:)
-  TYPE(ElemShapeData_), INTENT(INOUT) :: linSpaceElemSD(:)
+  TYPE(ElemShapeData_), INTENT(INOUT) :: geoSpaceElemSD(:)
   LOGICAL(LGT), INTENT(IN) :: reset
   REAL(DFP), INTENT(IN) :: scale
   REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -413,7 +413,7 @@ SUBROUTINE KernelAssembleSurfaceSource4(rhs, extField, dom, nbcPtrs, fe,  &
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "KernelAssembleSurfaceSource4()"
   TYPE(FEVariable_) :: forceVar
-  TYPE(ElemShapeData_) :: elemsd, linElemSD
+  TYPE(ElemShapeData_) :: elemsd, geoElemSD
   CLASS(Mesh_), POINTER :: meshptr
   CLASS(ReferenceElement_), POINTER :: refelem
   CLASS(FiniteElement_), POINTER :: spaceFE, linSpaceFE
@@ -484,7 +484,7 @@ SUBROUTINE KernelAssembleSurfaceSource4(rhs, extField, dom, nbcPtrs, fe,  &
       linSpaceFE => linFE(jd)%ptr
 
       elemsd = spaceElemSD(jd)
-      linElemSD = linSpaceElemSD(jd)
+      geoElemSD = geoSpaceElemSD(jd)
 
       refelem => meshptr%GetRefElemPointer()
       nns = (.nne.refelem)
@@ -502,7 +502,7 @@ SUBROUTINE KernelAssembleSurfaceSource4(rhs, extField, dom, nbcPtrs, fe,  &
         CALL dom%GetNodeCoord(nodeCoord=xij, globalNode=nptrs)
 
         CALL spaceFE%GetGlobalElemShapeData(elemsd=elemsd, xij=xij,  &
-          & geoElemSD=linElemSD)
+          & geoElemSD=geoElemSD)
 
         CALL extField%Get(VALUE=forceVec, globalNode=nptrs)
 
@@ -528,7 +528,7 @@ SUBROUTINE KernelAssembleSurfaceSource4(rhs, extField, dom, nbcPtrs, fe,  &
 
   CALL DEALLOCATE (forceVar)
   CALL DEALLOCATE (elemsd)
-  CALL DEALLOCATE (linElemSD)
+  CALL DEALLOCATE (geoElemSD)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
