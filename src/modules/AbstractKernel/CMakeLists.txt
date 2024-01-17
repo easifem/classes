@@ -34,4 +34,6 @@ target_sources(
           ${src_path}/KernelScalarProperty_Method.F90
           ${src_path}/KernelMatrixField_Method.F90
           ${src_path}/KernelElasticityProperties_Method.F90
+          ${src_path}/SDAlgorithms.F90
+          ${src_path}/VST2Algorithms.F90
           ${src_path}/KernelUtility.F90)
