@@ -77,6 +77,15 @@ TYPE, EXTENDS(AbstractAlgoParam_) :: SDAlgoParam_
   !! rhs = rhs + rhs_f2 *dt *dt * force2
   LOGICAL(LGT) :: rhs_f2_zero = .TRUE.
 
+  REAL(DFP) :: dis(4) = 0.0_DFP
+  !! dis coefficient for velocity update
+  !! displacement = vel(1)*u / dt + vel(2) * v + vel(3) * a *dt + vel(4)*sol/dt
+  !! dis(1) coefficient of displacement
+  !! dis(2) coefficient of velocity
+  !! dis(3) coefficient of acceleration
+  !! dis(4) coefficient of solution
+  LOGICAL(LGT) :: dis_zero(4) = .TRUE.
+
   REAL(DFP) :: vel(4) = 0.0_DFP
   !! vel coefficient for velocity update
   !! velocity = vel(1)*u / dt + vel(2) * v + vel(3) * a *dt + vel(4)*sol/dt
@@ -179,6 +188,7 @@ SUBROUTINE obj_MakeZeros(obj)
   obj%rhs_a1_zero = obj%rhs_a1.approxeq.myzero
   obj%rhs_f1_zero = obj%rhs_f1.approxeq.myzero
   obj%rhs_f2_zero = obj%rhs_f2.approxeq.myzero
+  obj%dis_zero = obj%dis.approxeq.myzero
   obj%vel_zero = obj%vel.approxeq.myzero
   obj%acc_zero = obj%acc.approxeq.myzero
 END SUBROUTINE obj_MakeZeros
@@ -220,6 +230,10 @@ SUBROUTINE obj_Display(obj, msg, unitno)
   CALL Display(obj%rhs_f2_zero, "rhs_f2_zero: ", unitno=unitno)
 
   CALL BlankLines(unitno=unitno)
+  CALL Display(obj%dis, "dis: ", unitno=unitno, advance="NO")
+  CALL Display(obj%dis_zero, "dis_zero: ", unitno=unitno)
+
+  CALL BlankLines(unitno=unitno)
   CALL Display(obj%vel, "vel: ", unitno=unitno, advance="NO")
   CALL Display(obj%vel_zero, "vel_zero: ", unitno=unitno)
 
@@ -252,9 +266,11 @@ SUBROUTINE obj_Deallocate(obj)
   obj%rhs_f2 = 0.0_DFP
   obj%rhs_f2_zero = .TRUE.
 
+  obj%dis = 0.0_DFP
   obj%vel = 0.0_DFP
   obj%acc = 0.0_DFP
 
+  obj%dis_zero = .TRUE.
   obj%vel_zero = .TRUE.
   obj%acc_zero = .TRUE.
 
@@ -378,6 +394,26 @@ SUBROUTINE obj_ImportFromToml1(obj, table)
         & stat=stat)
 
       CALL toml_get(node2, "F2", obj%rhs_f2, 0.0_DFP, origin=origin, &
+        & stat=stat)
+    END IF
+
+    CALL toml_get(node, "dis", node2, origin=origin, requested=.FALSE., &
+      & stat=stat)
+
+    IF (.NOT. ASSOCIATED(node2)) THEN
+      obj%dis = 0.0_DFP
+    ELSE
+
+      CALL toml_get(node2, "U1", obj%dis(1), 0.0_DFP, origin=origin, &
+        & stat=stat)
+
+      CALL toml_get(node2, "U2", obj%dis(4), 0.0_DFP, origin=origin, &
+        & stat=stat)
+
+      CALL toml_get(node2, "V1", obj%dis(2), 0.0_DFP, origin=origin, &
+        & stat=stat)
+
+      CALL toml_get(node2, "A1", obj%dis(3), 0.0_DFP, origin=origin, &
         & stat=stat)
     END IF
 
