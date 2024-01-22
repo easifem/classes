@@ -25,7 +25,6 @@ USE Domain_Class
 USE Mesh_Class
 USE FiniteElement_Class
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractKernelParam, ONLY: KernelProblemType
 USE UserFunction_Class
 USE NeumannBC_Class
 IMPLICIT NONE
