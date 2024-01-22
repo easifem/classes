@@ -115,6 +115,7 @@ SUBROUTINE KernelAssembleIsoStiffMat(mat, youngsModulus, shearModulus,  &
     youngsModulusField => youngsModulus(id)%ptr
     shearModulusField => shearModulus(id)%ptr
 
+#ifdef DEBUG_VER
     isok = ASSOCIATED(youngsModulusField)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -128,6 +129,7 @@ SUBROUTINE KernelAssembleIsoStiffMat(mat, youngsModulus, shearModulus,  &
         & '[INTERNAL ERROR] :: shearModulus('//tostring(id)//') is NULL.')
       RETURN
     END IF
+#endif
 
     DO iel = meshptr%minElemNum, meshptr%maxElemNum
 
