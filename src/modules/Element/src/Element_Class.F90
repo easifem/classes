@@ -27,7 +27,7 @@ USE FPL, ONLY: ParameterList_
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(LEN=*), PARAMETER :: modName = "Element_Class"
+CHARACTER(*), PARAMETER :: modName = "Element_Class"
 !! TYPE(ExceptionHandler_), SAVE, PUBLIC :: eElement
 !!$OMP THREADPRIVATE(eElement)
 
@@ -66,7 +66,7 @@ CONTAINS
     !! Set Material Type
   PROCEDURE, PUBLIC, PASS(obj) :: getMaterialType => elem_getMaterialType
     !! Set Material Type
-  PROCEDURE, PUBLIC, PASS(obj) :: Deallocate => elem_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => elem_Deallocate
   PROCEDURE, PUBLIC, PASS(Obj) :: DeallocateElement => elem_Deallocate
     !! Deallocate
   FINAL :: elem_final

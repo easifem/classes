@@ -75,6 +75,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
 # IntList
 include(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
 
+# BinaryTree
+include(${CMAKE_CURRENT_LIST_DIR}/BinaryTree/CMakeLists.txt)
+
 # RealList
 include(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
 

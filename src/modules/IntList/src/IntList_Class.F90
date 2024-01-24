@@ -15,13 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define FTL_TEMPLATE_TYPE INTEGER( I4B )
 #define FTL_TEMPLATE_TYPE_NAME Int
+#define FTL_TEMPLATE_TYPE INTEGER( I4B )
 #define FTL_INSTANTIATE_TEMPLATE
 
-#ifdef USE_CMAKE
-! MODULE ftlListInt_Class
 MODULE IntList_Class
-#endif
-
 #include "../../ftlMacros/ftlList.inc"
+END MODULE IntList_Class
