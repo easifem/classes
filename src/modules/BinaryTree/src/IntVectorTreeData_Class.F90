@@ -16,21 +16,13 @@
 !
 
 MODULE IntTreeData_Class
-USE GlobalData, ONLY: I4B, LGT
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE Display_Method, ONLY: Display
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: IntTreeData_
-PUBLIC :: IntTreeData_Pointer
-PUBLIC :: IntTreeData_DEALLOCATE
-PUBLIC :: IntTreeData_Display
-PUBLIC :: IntTreeData_lt
-PUBLIC :: IntTreeData_eq
 
-INTERFACE Initiate
-  MODULE PROCEDURE IntTreeData_Initiate
-END INTERFACE Initiate
-PUBLIC :: Initiate
+INTEGER(I4B), PARAMETER :: INT_SIZE_IN_TREE_DATA = 1
 
 !----------------------------------------------------------------------------
 !                                                              IntTreeData_
@@ -41,7 +33,18 @@ PUBLIC :: Initiate
 ! summary:  TreeData stored at each node level
 
 TYPE IntTreeData_
-  INTEGER(I4B) :: VALUE = 0
+  PRIVATE
+  INTEGER(I4B) :: VALUE(INT_SIZE_IN_TREE_DATA)
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: lt => obj_lt
+  PROCEDURE, PUBLIC, PASS(obj) :: gt => obj_gt
+  PROCEDURE, PUBLIC, PASS(obj) :: eq => obj_eq
+
+  ! Not so necessary data
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
 END TYPE IntTreeData_
 
 CONTAINS
@@ -54,55 +57,10 @@ CONTAINS
 ! date:  2024-01-23
 ! summary:  Deallocate tree data
 
-SUBROUTINE IntTreeData_Deallocate(obj)
-  TYPE(IntTreeData_), INTENT(INOUT) :: obj
-  obj%VALUE = 0
-END SUBROUTINE IntTreeData_Deallocate
-
-!----------------------------------------------------------------------------
-!                                                               Display
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-23
-! summary:  Display data
-
-SUBROUTINE IntTreeData_Display(obj, msg, unitno)
-  TYPE(IntTreeData_), INTENT(IN) :: obj
-  CHARACTER(*), INTENT(IN) :: msg
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  CALL Display(obj%VALUE, msg, unitno=unitno)
-END SUBROUTINE IntTreeData_Display
-
-!----------------------------------------------------------------------------
-!                                                                      lt
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-23
-! summary:  Lesser than
-
-FUNCTION IntTreeData_lt(obj, obj2) RESULT(ans)
-  TYPE(IntTreeData_), INTENT(IN) :: obj
-  TYPE(IntTreeData_), INTENT(IN) :: obj2
-  LOGICAL(LGT) :: ans
-  ans = obj%VALUE .LT. obj2%VALUE
-END FUNCTION IntTreeData_lt
-
-!----------------------------------------------------------------------------
-!                                                                      eq
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-23
-! summary:  equality
-
-FUNCTION IntTreeData_eq(obj, obj2) RESULT(ans)
-  TYPE(IntTreeData_), INTENT(IN) :: obj
-  TYPE(IntTreeData_), INTENT(IN) :: obj2
-  LOGICAL(LGT) :: ans
-  ans = obj%VALUE .EQ. obj2%VALUE
-END FUNCTION IntTreeData_eq
+SUBROUTINE obj_Deallocate(obj)
+  CLASS(IntTreeData_), INTENT(INOUT) :: obj
+  obj%VALUE = 0.0_DFP
+END SUBROUTINE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                               Initiate
@@ -112,11 +70,61 @@ END FUNCTION IntTreeData_eq
 ! date:  2024-01-23
 ! summary:  Initiate
 
-SUBROUTINE IntTreeData_Initiate(obj, VALUE)
-  TYPE(IntTreeData_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: VALUE
-  obj%VALUE = VALUE
-END SUBROUTINE IntTreeData_Initiate
+SUBROUTINE obj_Initiate(obj, VALUE)
+  CLASS(IntTreeData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: VALUE(INT_SIZE_IN_TREE_DATA)
+
+  ! internal variables
+  INTEGER(I4B) :: ii
+  DO ii = 1, INT_SIZE_IN_TREE_DATA
+    obj%VALUE(ii) = VALUE(ii)
+  END DO
+END SUBROUTINE obj_Initiate
+
+!----------------------------------------------------------------------------
+!                                                               Display
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Display data
+
+SUBROUTINE obj_Display(obj, msg, unitno)
+  CLASS(IntTreeData_), INTENT(IN) :: obj
+  CHARACTER(*), INTENT(IN) :: msg
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  CALL Display(obj%VALUE, msg//"%value: ", unitno=unitno)
+END SUBROUTINE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                                      lt
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Lesser than
+
+FUNCTION obj_lt(obj, obj2) RESULT(ans)
+  CLASS(IntTreeData_), INTENT(IN) :: obj
+  CLASS(IntTreeData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = obj%VALUE(1) .LE. obj2%VALUE(1)
+END FUNCTION obj_lt
+
+!----------------------------------------------------------------------------
+!                                                                      gt
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Greater than
+
+FUNCTION obj_gt(obj, obj2) RESULT(ans)
+  CLASS(IntTreeData_), INTENT(IN) :: obj
+  CLASS(IntTreeData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = obj%VALUE(1) .GT. obj2%VALUE(1)
+END FUNCTION obj_gt
 
 !----------------------------------------------------------------------------
 !                                                                      eq
@@ -126,11 +134,11 @@ END SUBROUTINE IntTreeData_Initiate
 ! date:  2024-01-23
 ! summary:  equality
 
-FUNCTION IntTreeData_Pointer(VALUE) RESULT(ans)
-  INTEGER(I4B), INTENT(IN) :: VALUE
-  TYPE(IntTreeData_), POINTER :: ans
-  ALLOCATE (ans)
-  CALL IntTreeData_Initiate(ans, VALUE)
-END FUNCTION IntTreeData_Pointer
+FUNCTION obj_eq(obj, obj2) RESULT(ans)
+  CLASS(IntTreeData_), INTENT(IN) :: obj
+  CLASS(IntTreeData_), INTENT(IN) :: obj2
+  LOGICAL(LGT) :: ans
+  ans = ALL(obj%VALUE .EQ. obj2%VALUE)
+END FUNCTION obj_eq
 
 END MODULE IntTreeData_Class

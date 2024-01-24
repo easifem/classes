@@ -1,8 +1,8 @@
 
-=> Following properties of input file _Delete_test_3.F90 is used: 
+=> Following properties of input file _Remove_test_4.F90 is used: 
 => Absolute parent: /home/easifem/Dropbox/easifem/easifem-classes/src/modules/BinaryTree/test
-=> Absolute path  : /home/easifem/Dropbox/easifem/easifem-classes/src/modules/BinaryTree/test/_Delete_test_3
-=> File basename  : _Delete_test_3.F90
+=> Absolute path  : /home/easifem/Dropbox/easifem/easifem-classes/src/modules/BinaryTree/test/_Remove_test_4
+=> File basename  : _Remove_test_4.F90
 => File ext       : .F90
 
 ╭─────────────────────────╮
@@ -10,7 +10,7 @@
 ╰─────────────────────────╯
 test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  Found /home/easifem/temp/tests/build/, removing it
 test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━=> Calling /usr/bin/cmake with following args ...
-test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━=> /usr/bin/cmake -G Ninja -B /home/easifem/temp/tests/build/ -DFILE=/home/easifem/Dropbox/easifem/easifem-classes/src/modules/BinaryTree/test/_Delete_test_3.F90
+test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━=> /usr/bin/cmake -G Ninja -B /home/easifem/temp/tests/build/ -DFILE=/home/easifem/Dropbox/easifem/easifem-classes/src/modules/BinaryTree/test/_Remove_test_4.F90
 test ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╭────────────╮
 │ ✔️R SUCCESS │
 ╰────────────╯
@@ -38,7 +38,7 @@ test ━━━━━━━━━━━━━╸━━━━━━━━━━━
 -- Found OpenMP_CXX: -fopenmp (found version "4.5") 
 -- Found OpenMP_Fortran: -fopenmp (found version "4.5") 
 -- Found OpenMP: TRUE (found version "4.5")  
--- Configuring done (2.5s)
+-- Configuring done (2.4s)
 -- Generating done (0.0s)
 -- Build files have been written to: /home/easifem/temp/tests/build
 
@@ -51,9 +51,9 @@ test ━━━━━━━━━━━━━╸━━━━━━━━━━━
 test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Building App => Command output: 
 
-test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[1/4] Building Fortran preprocessed CMakeFiles/test.dir/_Delete_test_3.F90-pp.f90
+test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[1/4] Building Fortran preprocessed CMakeFiles/test.dir/_Remove_test_4.F90-pp.f90
 [2/4] Generating Fortran dyndep file CMakeFiles/test.dir/Fortran.dd
-[3/4] Building Fortran object CMakeFiles/test.dir/_Delete_test_3.F90.o
+[3/4] Building Fortran object CMakeFiles/test.dir/_Remove_test_4.F90.o
 [4/4] Linking Fortran executable test
 
 test ━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━test ━━━━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╭────────────╮
@@ -63,45 +63,17 @@ test ━━━━━━━━━━━━━━━━━━━━━━━━━
  Running App => Command output: 
 
 test ━━━━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━after delete
-node%left:%value: 
-------------------
-        2         
-        0         
-node%left:%value: 
-------------------
-        4         
-        0         
-node%left:%value: 
-------------------
-        6         
-        0         
-node()%right:%value: 
----------------------
-          7          
-          0          
-node%left:%value: 
-------------------
-        9         
-        0         
-node()%right:%value: 
----------------------
-         13          
-          0          
-%value: 
---------
-   15   
-    0   
-node%left:%value: 
-------------------
-        17        
-         0        
-node()%right:%value: 
----------------------
-         18          
-          0          
-node()%right:%value: 
----------------------
-         20          
-          0          
+tsize: 11
+Tree Data:
+node%left:2
+node%left:3
+node%right:4
+node%left:6
+node%right:7
+node%left:9
+node%right:13
+node%root:15
+node%right:18
+node%right:20
 
 test ━━━━━━━━━━━━━━━━━━━━━━━━━━━╸━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

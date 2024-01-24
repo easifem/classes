@@ -22,41 +22,44 @@ USE IntTreeData_Class
 USE IntBinaryTree_Class
 
 TYPE(IntBinaryTree_) :: obj
-TYPE(IntTreeData_), POINTER :: VALUE
+TYPE(IntTreeData_), POINTER :: value_ptr
 INTEGER(I4B) :: tsize
 
-ALLOCATE (VALUE)
-CALL VALUE%Initiate(VALUE=[1, 2])
-CALL obj%Insert(VALUE)
+CALL obj%Initiate()
 
-tsize = obj%SIZE()
-CALL OK(tsize .EQ. 1, "size: ")
+value_ptr => IntTreeData_Pointer(15)
+CALL obj%Insert(value_ptr)
 
-ALLOCATE (VALUE)
-CALL VALUE%Initiate(VALUE=[1, 7])
-CALL obj%Insert(VALUE)
-tsize = obj%SIZE()
-CALL OK(tsize .EQ. 2, "size: ")
+value_ptr => IntTreeData_Pointer(6)
+CALL obj%Insert(value_ptr)
 
-ALLOCATE (VALUE)
-CALL VALUE%Initiate(VALUE=[2, 3])
-CALL obj%Insert(VALUE)
-tsize = obj%SIZE()
-CALL OK(tsize .EQ. 3, "size: ")
+value_ptr => IntTreeData_Pointer(18)
+CALL obj%Insert(value_ptr)
 
-ALLOCATE (VALUE)
-CALL VALUE%Initiate(VALUE=[2, 8])
-CALL obj%Insert(VALUE)
-tsize = obj%SIZE()
-CALL OK(tsize .EQ. 4, "size: ")
+value_ptr => IntTreeData_Pointer(17)
+CALL obj%Insert(value_ptr)
 
-ALLOCATE (VALUE)
-CALL VALUE%Initiate(VALUE=[2, 8])
-CALL obj%Insert(VALUE)
-tsize = obj%SIZE()
-CALL OK(tsize .EQ. 4, "size: ")
-CALL Display(tsize, "tsize: ")
+value_ptr => IntTreeData_Pointer(20)
+CALL obj%Insert(value_ptr)
 
-CALL obj%Display("btree: ")
+value_ptr => IntTreeData_Pointer(3)
+CALL obj%Insert(value_ptr)
+
+value_ptr => IntTreeData_Pointer(7)
+CALL obj%Insert(value_ptr)
+
+value_ptr => IntTreeData_Pointer(2)
+CALL obj%Insert(value_ptr)
+
+value_ptr => IntTreeData_Pointer(4)
+CALL obj%Insert(value_ptr)
+
+value_ptr => IntTreeData_Pointer(13)
+CALL obj%Insert(value_ptr)
+
+value_ptr => IntTreeData_Pointer(9)
+CALL obj%Insert(value_ptr)
+
+CALL obj%Display("Tree")
 
 END PROGRAM main
