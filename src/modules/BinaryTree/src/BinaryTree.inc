@@ -47,6 +47,11 @@
 !   LOGICAL(LGT) :: ans
 ! END FUNCTION obj_eq
 
+! if you want to update the id then you sould define
+! Binary_Tree_Activate_SetID_Method
+! In this case TreeData_ should define TreeData_SetID method
+! In this case SetID method is available in BinaryTree
+
 #if !defined(Binary_Tree_Type_Name)
 #error Binary_Tree_Type_Name must be defined
 #endif
@@ -78,12 +83,15 @@ TYPE Binary_Tree_Type_Name
 
 CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: ASSOCIATED => obj_ASSOCIATED
+  !! Returns true if sentinel is ASSOCIATED
+
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
-  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
 
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Unlink => obj_Unlink
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   PROCEDURE, PASS(obj) :: SetSize => obj_SetSize
 
@@ -92,13 +100,33 @@ CONTAINS
   GENERIC, PUBLIC :: Insert => Insert_1, Insert_2
 
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNode => obj_GetNode
+  !! Display the content
+
+  PROCEDURE, PASS(obj) :: GetNode1 => obj_GetNode_1
+  !! Get the node of the tree an an instance Binary_Tree_Type_Name (subtree)
+  !! by specifying the key
+  PROCEDURE, PASS(obj) :: GetNode2 => obj_GetNode_2
+  !! Get the node of the tree an an instance Binary_Tree_Type_Name (subtree)
+  GENERIC, PUBLIC :: GetNode => GetNode1, GetNode2
+
+  PROCEDURE, PASS(obj) :: GetValuePointer1 => obj_GetValuePointer_1
+  !! Get pointer to value from the tree by specifying the tree
+  PROCEDURE, PASS(obj) :: GetValuePointer2 => obj_GetValuePointer_2
+  !! Get pointer to value stored in the node
+  GENERIC, PUBLIC :: GetValuePointer => GetValuePointer1,  &
+    & GetValuePointer2
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetMax => obj_GetMax
   PROCEDURE, PUBLIC, PASS(obj) :: GetMin => obj_GetMin
   PROCEDURE, PUBLIC, PASS(obj) :: GetSuccessor => obj_GetSuccessor
   PROCEDURE, PUBLIC, PASS(obj) :: GetPredecessor => obj_GetPredecessor
-  ! PROCEDURE, PASS(obj) :: SetRoot => obj_SetRoot
-  PROCEDURE, PUBLIC, PASS(obj) :: Remove => obj_Remove
+  PROCEDURE, PASS(obj) :: Remove_1 => obj_Remove_1
+  PROCEDURE, PASS(obj) :: Remove_2 => obj_Remove_2
+  GENERIC, PUBLIC :: Remove => Remove_1, Remove_2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetID => obj_SetID
+  !! To update the ids of the node of binary tree
+  !! This make sense when Binary_Tree_Activate_SetID_Method is defined
+  !! In this case TreeData_SetID method is called for TreeData_ (value)
 
 END TYPE Binary_Tree_Type_Name
 
@@ -107,6 +135,16 @@ END TYPE Binary_Tree_Type_Name
 !----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             ASSOCIATED
+!----------------------------------------------------------------------------
+
+FUNCTION obj_ASSOCIATED(obj) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  LOGICAL(LGT) :: ans
+  ans = ASSOCIATED(obj%sentinel)
+END FUNCTION obj_ASSOCIATED
 
 !----------------------------------------------------------------------------
 !                                                               Initiate
@@ -119,7 +157,6 @@ CONTAINS
 SUBROUTINE obj_Initiate1(obj)
   CLASS(Binary_Tree_Type_Name), INTENT(INOUT) :: obj
   !! Tree to be initiated
-  CALL obj%DEALLOCATE()
   ALLOCATE (obj%sentinel)
 END SUBROUTINE obj_Initiate1
 
@@ -129,7 +166,7 @@ END SUBROUTINE obj_Initiate1
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-01-22
-! summary:  Intitiate tree
+! summary:  Intitiate by copy
 
 SUBROUTINE obj_Initiate2(obj, other)
   CLASS(Binary_Tree_Type_Name), INTENT(INOUT) :: obj
@@ -141,24 +178,18 @@ SUBROUTINE obj_Initiate2(obj, other)
 END SUBROUTINE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                               Initiate
+!                                                             Deallocate
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-01-23
-! summary:  Intitiate tree
+! summary:  Deallocate entire tree
 
-SUBROUTINE obj_Initiate3(obj, VALUE)
+SUBROUTINE obj_Unlink(obj)
   CLASS(Binary_Tree_Type_Name), INTENT(INOUT) :: obj
-  !! Tree to be initiated
-  TYPE(TreeData_), TARGET, INTENT(IN) :: VALUE
-  !! value should be a target to a pointer obj%value
-
-  CALL obj%Initiate()
-  obj%sentinel%VALUE => VALUE
-  obj%tsize = 1_I4B
-
-END SUBROUTINE obj_Initiate3
+  obj%tsize = 0
+  obj%sentinel => NULL()
+END SUBROUTINE obj_Unlink
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
@@ -422,7 +453,9 @@ SUBROUTINE obj_Insert_2(obj, VALUE)
   TYPE(Binary_Tree_Type_Name), POINTER :: newNode
 
   ALLOCATE (newNode)
-  CALL newNode%Initiate(VALUE=VALUE)
+  CALL newNode%Initiate()
+  newNode%sentinel%VALUE => VALUE
+  newNode%tsize = 1
   CALL obj%Insert(newNode)
   newNode => NULL()
 
@@ -434,20 +467,142 @@ END SUBROUTINE obj_Insert_2
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-01-23
-! summary:  Get node pointer
+! summary:  Get node by specifying the value
 
-FUNCTION obj_GetNode(obj, VALUE) RESULT(ans)
+FUNCTION obj_GetNode_1(obj, VALUE) RESULT(ans)
   CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
   TYPE(TreeData_), INTENT(IN) :: VALUE
   TYPE(Binary_Tree_Type_Name) :: ans
-
-  ! internal variable
 
   CALL ans%Initiate()
   IF (.NOT. ASSOCIATED(obj%sentinel)) RETURN
   ans%sentinel => TreeNodeGetNodePointer(obj%sentinel, VALUE)
   CALL ans%SetSize()
-END FUNCTION obj_GetNode
+END FUNCTION obj_GetNode_1
+
+!----------------------------------------------------------------------------
+!                                                             GetNode
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Get node stored at the sentinel level
+
+FUNCTION obj_GetNode_2(obj, opt) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: opt
+  !! -2 for parent
+  !! -1 for left
+  !! 0 for sentinel
+  !! 1 for right
+  TYPE(Binary_Tree_Type_Name) :: ans
+
+  CALL ans%Initiate()
+  IF (.NOT. ASSOCIATED(obj%sentinel)) RETURN
+
+  SELECT CASE (opt)
+  CASE (-2)
+    ans%sentinel => obj%sentinel%parent
+  CASE (-1)
+    ans%sentinel => obj%sentinel%left
+  CASE (0)
+    ans%sentinel => obj%sentinel
+  CASE (1)
+    ans%sentinel => obj%sentinel%right
+  END SELECT
+END FUNCTION obj_GetNode_2
+
+!----------------------------------------------------------------------------
+!                                                             GetValuePointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Get the pointer to the value by specifying the key
+
+FUNCTION obj_GetValuePointer_1(obj, VALUE) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  TYPE(TreeData_), INTENT(IN) :: VALUE
+  TYPE(TreeData_), POINTER :: ans
+
+  ans => NULL()
+  IF (.NOT. ASSOCIATED(obj%sentinel)) RETURN
+  ans => TreeNodeGetValuePointer(obj%sentinel, VALUE)
+END FUNCTION obj_GetValuePointer_1
+
+!----------------------------------------------------------------------------
+!                                                             GetValuePointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Get the pointer to the value stored at the node level
+
+FUNCTION obj_GetValuePointer_2(obj) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  TYPE(TreeData_), POINTER :: ans
+
+  ans => NULL()
+  IF (.NOT. ASSOCIATED(obj%sentinel)) RETURN
+  ans => obj%sentinel%VALUE
+END FUNCTION obj_GetValuePointer_2
+
+!----------------------------------------------------------------------------
+!                                                   TreeNodeGetValuePointer
+!----------------------------------------------------------------------------
+
+FUNCTION TreeNodeGetValuePointer(obj, VALUE) RESULT(ans)
+  TYPE(TreeNode_), POINTER, INTENT(IN) :: obj
+  TYPE(TreeData_), INTENT(IN) :: VALUE
+  TYPE(TreeData_), POINTER :: ans
+
+  ! internal variable
+  LOGICAL(LGT) :: isok, is_nil
+  TYPE(TreeNode_), POINTER :: x
+
+  x => NULL()
+  ans => NULL()
+
+  is_nil = .NOT. ASSOCIATED(obj%VALUE)
+  IF (is_nil) RETURN
+
+  isok = TreeData_eq(VALUE, obj%VALUE)
+  IF (isok) THEN
+    ans => obj%VALUE
+    RETURN
+  END IF
+
+  IF (TreeData_lt(VALUE, obj%VALUE)) THEN
+    x => obj%left
+  ELSE
+    x => obj%right
+  END IF
+
+  DO
+
+    isok = ASSOCIATED(x)
+    IF (isok) THEN
+      ans => x%VALUE
+    ELSE
+      EXIT
+    END IF
+
+    isok = TreeData_eq(VALUE, ans)
+    IF (isok) EXIT
+
+    IF (TreeData_lt(VALUE, ans)) THEN
+      x => x%left
+
+    ELSE
+      x => x%right
+
+    END IF
+
+  END DO
+
+  NULLIFY (x)
+
+END FUNCTION TreeNodeGetValuePointer
 
 !----------------------------------------------------------------------------
 !
@@ -717,7 +872,7 @@ END SUBROUTINE TreeNodeTransplant
 !                                                                   Remove
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_Remove(obj, z)
+SUBROUTINE obj_Remove_1(obj, z)
   CLASS(Binary_Tree_Type_Name), INTENT(INOUT) :: obj
   TYPE(Binary_Tree_Type_Name), INTENT(INOUT) :: z
 
@@ -725,7 +880,22 @@ SUBROUTINE obj_Remove(obj, z)
   IF (.NOT. ASSOCIATED(z%sentinel)) RETURN
 
   CALL TreeNodeRemove(obj%sentinel, z%sentinel)
-END SUBROUTINE obj_Remove
+  obj%tsize = obj%tsize - 1
+END SUBROUTINE obj_Remove_1
+
+!----------------------------------------------------------------------------
+!                                                                   Remove
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_Remove_2(obj, VALUE)
+  CLASS(Binary_Tree_Type_Name), INTENT(INOUT) :: obj
+  TYPE(TreeData_), INTENT(IN) :: VALUE
+
+  TYPE(Binary_Tree_Type_Name) :: x
+  x = obj%GetNode(VALUE)
+  CALL obj%Remove(x)
+  CALL x%Unlink()
+END SUBROUTINE obj_Remove_2
 
 !----------------------------------------------------------------------------
 !                                                                 Remove
@@ -766,3 +936,33 @@ SUBROUTINE TreeNodeRemove(obj, z)
 
   y => NULL()
 END SUBROUTINE TreeNodeRemove
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_SetID(obj)
+  CLASS(Binary_Tree_Type_Name), INTENT(INOUT) :: obj
+  INTEGER(I4B) :: id
+  IF (.NOT. ASSOCIATED(obj%sentinel)) RETURN
+  id = 0
+  CALL TreeNode_SetID(obj%sentinel, id)
+END SUBROUTINE obj_SetID
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+RECURSIVE SUBROUTINE TreeNode_SetID(obj, id)
+  TYPE(TreeNode_), POINTER, INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(INOUT) :: id
+
+#ifdef Binary_Tree_Activate_SetID_Method
+  IF (.NOT. ASSOCIATED(obj)) RETURN
+  IF (ASSOCIATED(obj%left)) CALL TreeNode_SetID(obj%left, id)
+  id = id + 1
+  CALL TreeData_SetID(obj%VALUE, id)
+  IF (ASSOCIATED(obj%right)) CALL TreeNode_SetID(obj%right, id)
+#endif
+
+END SUBROUTINE TreeNode_SetID

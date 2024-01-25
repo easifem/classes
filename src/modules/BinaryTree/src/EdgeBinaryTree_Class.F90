@@ -15,16 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define  Binary_Tree_Type_Name IntBinaryTree_
-MODULE IntBinaryTree_Class
-USE IntTreeData_Class, ONLY: TreeData_ => IntTreeData_,  &
-  & TreeData_Deallocate => IntTreeData_Deallocate,  &
-  & TreeData_Display => IntTreeData_Display,  &
-  & TreeData_lt => IntTreeData_lt,  &
-  & TreeData_eq => IntTreeData_eq
+#define  Binary_Tree_Type_Name EdgeBinaryTree_
+#define Binary_Tree_Activate_SetID_Method
+MODULE EdgeBinaryTree_Class
+USE EdgeTreeData_Class, ONLY: TreeData_ => EdgeTreeData_,  &
+  & TreeData_Deallocate => EdgeTreeData_Deallocate,  &
+  & TreeData_Display => EdgeTreeData_Display,  &
+  & TreeData_lt => EdgeTreeData_lt,  &
+  & TreeData_eq => EdgeTreeData_eq,  &
+  & TreeData_SetID => EdgeTreeData_SetID
 
 #include "./BinaryTree.inc"
-
-END MODULE IntBinaryTree_Class
+END MODULE EdgeBinaryTree_Class
 
 #undef Binary_Tree_Type_Name
+#undef Binary_Tree_Activate_SetID_Method
