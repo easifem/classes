@@ -69,10 +69,10 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
-  PROCEDURE, PUBLIC, PASS(obj) :: gammaBathe => obj_gammaBatheU
-  ! PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  ! PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
-  ! GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+  PROCEDURE, PUBLIC, PASS(obj) :: Bathe => obj_Bathe_master
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 END TYPE CSDAlgoParam_
 
 !----------------------------------------------------------------------------
@@ -82,196 +82,171 @@ END TYPE CSDAlgoParam_
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                               getbparams
+!                                                       GetBParams_gammaBathe
 !----------------------------------------------------------------------------
 
-SUBROUTINE GetBParams(bParams, theta, rhoInf, beta1)
-  REAL(DFP), INTENT(inout) :: bParams(3)
-  REAL(DFP), OPTIONAL, INTENT(in) :: theta
+SUBROUTINE GetBParams_gammaBathe(bParams, gamma)
+  REAL(DFP), INTENT(INOUT) :: bParams(3)
+  REAL(DFP), OPTIONAL, INTENT(in) :: gamma
+
+  CHARACTER(*), PARAMETER :: myName = "GetBParams_gammaBathe"
+  REAL(DFP) :: gamma0, areal
+
+  gamma0 = Input(default=0.50_DFP, option=gamma)
+
+  IF (gamma0.approxeq.2.0_DFP) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+     & '[CONFIG ERROR] gamma = 2.0 is not allowed')
+    RETURN
+  END IF
+
+  areal = 2.0_DFP - gamma0
+  bParams(1) = 0.50_DFP / areal
+  bParams(2) = bParams(1)
+  bParams(3) = (1.0_DFP - gamma0) / areal
+
+END SUBROUTINE GetBParams_gammaBathe
+
+!----------------------------------------------------------------------------
+!                                                        GetBParams_betaBathe
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetBParams_betaBathe(bParams, gamma, beta1, beta2)
+  REAL(DFP), INTENT(INOUT) :: bParams(3)
+  REAL(DFP), OPTIONAL, INTENT(in) :: gamma
+  REAL(DFP), OPTIONAL, INTENT(in) :: beta1
+  REAL(DFP), OPTIONAL, INTENT(in) :: beta2
+
+  CHARACTER(*), PARAMETER :: myName = "GetBParams_betaBathe"
+  REAL(DFP) :: gamma0, beta1_0, beta2_0, areal
+
+  gamma0 = Input(default=0.50_DFP, option=gamma)
+  beta1_0 = Input(default=1.0_DFP / 3.0_DFP, option=beta1)
+  beta2_0 = Input(default=1.0_DFP - beta1_0, option=beta2)
+
+  bParams(1) = (1.0_DFP - beta1_0) * gamma0
+  bParams(2) = (1.0_DFP - beta2_0) * (1.0_DFP - gamma0) + beta1_0 * gamma0
+  bParams(3) = (1.0_DFP - gamma0) * beta2_0
+
+END SUBROUTINE GetBParams_betaBathe
+
+!----------------------------------------------------------------------------
+!                                                        GetBParams_rhoBathe
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetBParams_rhoBathe(bParams, gamma, rhoInf)
+  REAL(DFP), INTENT(INOUT) :: bParams(3)
+  REAL(DFP), OPTIONAL, INTENT(in) :: gamma
+  REAL(DFP), OPTIONAL, INTENT(in) :: rhoInf
+
+  CHARACTER(*), PARAMETER :: myName = "GetBParams_rhoBathe"
+  REAL(DFP) :: gamma0, rhoInf0, areal
+
+  gamma0 = Input(default=0.50_DFP, option=gamma)
+  rhoInf0 = Input(default=0.0_DFP, option=rhoInf)
+
+  IF (rhoInf0 .LT. 0.0_DFP) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] asymptotic spectral radius must be positive')
+    RETURN
+  END IF
+
+  areal = 2.0_DFP * gamma0 * (rhoInf0 - 1.0_DFP) + 4.0_DFP
+  bParams(2) = (rhoInf0 + 1.0_DFP) / areal
+  bParams(1) = 0.50_DFP + (gamma0 - 1.0_DFP) * bParams(2)
+  bParams(3) = 0.50_DFP - gamma0 * bParams(2)
+
+END SUBROUTINE GetBParams_rhoBathe
+
+!----------------------------------------------------------------------------
+!                                                        GetBParams_master
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetBParams_master(bParams, gamma, rhoInf, beta1, beta2)
+  REAL(DFP), INTENT(INOUT) :: bParams(3)
+  REAL(DFP), OPTIONAL, INTENT(in) :: gamma
   REAL(DFP), OPTIONAL, INTENT(in) :: rhoInf
   REAL(DFP), OPTIONAL, INTENT(in) :: beta1
+  REAL(DFP), OPTIONAL, INTENT(in) :: beta2
 
-  CHARACTER(*), PARAMETER :: myName = "GetBParams"
-  LOGICAL(LGT) :: isTheta, isRhoInf, isBeta1, abool
-  REAL(DFP) :: areal
+  CHARACTER(*), PARAMETER :: myName = "GetBParams_master"
+  LOGICAL(LGT) :: isGamma, isRhoInf, isBeta1, isBeta2, problem
 
-  isTheta = PRESENT(theta)
+  isGamma = PRESENT(gamma)
   isRhoInf = PRESENT(rhoInf)
   isBeta1 = PRESENT(beta1)
+  isBeta2 = PRESENT(beta2)
 
-  abool = (isTheta .AND. isRhoInf .AND. isBeta1)
+  problem = isGamma .AND. isRhoInf .AND. isBeta1 .AND. isBeta2
 
-  IF (abool) THEN
+  IF (problem) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
-     & '[CONFIG ERROR] too many parameters present')
-    RETURN
-  END IF
-
-  IF (isTheta .AND. isRhoInf) THEN
-    !! rhoInfBathe setting
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[WIP] not implemented yet')
-    RETURN
-  END IF
-
-  IF (isBeta1) THEN
-    !! b1b2Bathe 1st order ver
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[WIP] not implemented yet')
+      & '[CONFIG ERROR] too much parameters are passed')
     RETURN
   END IF
 
   IF (isRhoInf) THEN
-    !! b1b2Bathe 2nd order ver
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[WIP] not implemented yet')
+    CALL GetBParams_rhoBathe(bParams, gamma=gamma, rhoInf=rhoInf)
     RETURN
   END IF
 
-  IF (isTheta) THEN
-    !! gammaBathe
-    areal = 2.0_DFP - theta
-    bParams(1) = 0.50_DFP / areal
-    bParams(2) = bParams(1)
-    bParams(3) = (1.0_DFP - theta) / areal
+  IF (isBeta1 .OR. isBeta2) THEN
+    CALL GetBParams_rhoBathe(bParams, gamma=gamma, rhoInf=rhoInf)
     RETURN
   END IF
 
-END SUBROUTINE GetBParams
+  IF (isGamma) THEN
+    CALL GetBParams_gammaBathe(bParams, gamma=gamma)
+    RETURN
+  END IF
+
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[CONFIG ERROR] no case is found ')
+
+END SUBROUTINE GetBParams_master
 
 !----------------------------------------------------------------------------
-!                                                               gammaBathe
+!                                                               Bathe_master
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_gammaBatheA(obj, splitRatio)
+SUBROUTINE obj_Bathe_master(obj, gamma, rhoInf, beta1, beta2)
   CLASS(CSDAlgoParam_), INTENT(INOUT) :: obj
-  REAL(DFP), OPTIONAL, INTENT(IN) :: splitRatio
-  !! Default is 0.5
+  REAL(DFP), OPTIONAL, INTENT(IN) :: gamma
+  REAL(DFP), OPTIONAL, INTENT(IN) :: rhoInf
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta1
+  REAL(DFP), OPTIONAL, INTENT(IN) :: beta2
   REAL(DFP) :: bParams(3)
 
   ! internal varibales
-  CHARACTER(*), PARAMETER :: myName = "obj_gammaBathe"
-  REAL(DFP) :: splitRatio0
+  CHARACTER(*), PARAMETER :: myName = "obj_Bathe_master"
+  REAL(DFP) :: gamma0, gamma2, b0, b1, b2
 
   CALL obj%DEALLOCATE()
 
-  splitRatio0 = Input(default=0.5_DFP, option=splitRatio)
+  gamma0 = Input(default=0.5_DFP, option=gamma)
 
-  IF (splitRatio0.approxeq.2.0_DFP) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] split ratio cannot be 2.0 in gamma Bathe')
-    RETURN
-  END IF
+  obj%splitRatio = gamma0
+  gamma2 = gamma0 * gamma0
 
-  obj%splitRatio = splitRatio0
-
-  ! obj%algoParams(1)%NewmarkBeta(beta=0.25_DFP, gamma=0.50_DFP)
   !! sub-step 1
   !! equivalent to Trapezoidal rule
   obj%subAlgoParams(1)%tanmat(1) = 1.0_DFP
-  obj%subAlgoParams(1)%tanmat(2) = splitRatio0 * 0.50_DFP
-  obj%subAlgoParams(1)%tanmat(3) = splitRatio0**2 * 0.25_DFP
+  obj%subAlgoParams(1)%tanmat(2) = gamma0 * 0.50_DFP
+  obj%subAlgoParams(1)%tanmat(3) = gamma2 * 0.25_DFP
 
-  obj%rhs_subf(1) = 1.0_DFP
-
-  obj%subAlgoParams(1)%rhs_u1(3) = -1.0_DFP
-
-  obj%subAlgoParams(1)%rhs_v1(2) = -1.0_DFP
-  obj%subAlgoParams(1)%rhs_v1(3) = -splitRatio0
-
-  obj%subAlgoParams(1)%rhs_a1(2) = -splitRatio0 * 0.50_DFP
-  obj%subAlgoParams(1)%rhs_a1(3) = -splitRatio0**2 * 0.25_DFP
-
-  !! sub-step 2
-  !! equivalent to three point backward euler
-  CALL GetBParams(bParams, theta=splitRatio0)
-  obj%subAlgoParams(2)%tanmat(1) = 1.0_DFP
-  obj%subAlgoParams(2)%tanmat(2) = bParams(3)
-  obj%subAlgoParams(2)%tanmat(3) = bParams(3)**2
-
-  obj%subAlgoParams(2)%rhs_f2 = 1.0_DFP
-
-  obj%subAlgoParams(2)%rhs_u1(1) = 1.0_DFP
-  obj%subAlgoParams(2)%rhs_u1(2) = bParams(3)
-
-  obj%rhs_subsol(2, 2) = -bParams(2)
-  obj%rhs_subsol(3, 2) = -bParams(2)*splitRatio0*0.50_DFP - bParams(2)*bParams(3)
-
-  obj%subAlgoParams(2)%rhs_v1(2) = -1.0_DFP
-  obj%subAlgoParams(2)%rhs_v1(3) = -(bParams(1) + bParams(2) + bParams(3))
-
-  obj%subAlgoParams(2)%rhs_a1(2) = -bParams(1)
-  obj%subAlgoParams(2)%rhs_a1(3) = -bParams(2) * splitRatio0 * 0.50_DFP  &
-                              & - bParams(1) * bParams(3)
-
-  obj%subAlgoParams(2)%dis(1) = 1.0_DFP
-  obj%subAlgoParams(2)%dis(2) = -(bParams(1) + bParams(2) + bParams(3))
-  obj%subAlgoParams(2)%dis(3) = bParams(2) * splitRatio0 * 0.50_DFP  &
-                              & + bParams(1) * bParams(3)
-  obj%subAlgoParams(2)%dis(4) = bParams(3)**2
-
-  obj%dis_subsol = bParams(2) * splitRatio0 * 0.50_DFP  &
-                & + bParams(2) * bParams(3)
-
-  obj%subAlgoParams(2)%vel(2) = 1.0_DFP
-  obj%subAlgoParams(2)%vel(3) = bParams(1)
-  obj%subAlgoParams(2)%vel(4) = bParams(3)
-
-  obj%vel_subsol = bParams(2)
-
-  obj%subAlgoParams(2)%acc(4) = 1.0_DFP
-
-  CALL obj%MakeZeros()
-
-END SUBROUTINE obj_gammaBatheA
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_gammaBatheU(obj, splitRatio)
-  CLASS(CSDAlgoParam_), INTENT(INOUT) :: obj
-  REAL(DFP), OPTIONAL, INTENT(IN) :: splitRatio
-  !! Default is 0.5
-  REAL(DFP) :: bParams(3)
-
-  ! internal varibales
-  CHARACTER(*), PARAMETER :: myName = "obj_gammaBathe"
-  REAL(DFP) :: theta, theta2, b0, b1, b2
-
-  CALL obj%DEALLOCATE()
-
-  theta = Input(default=0.5_DFP, option=splitRatio)
-
-  IF (theta.approxeq.2.0_DFP) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] split ratio cannot be 2.0 in gamma Bathe')
-    RETURN
-  END IF
-
-  obj%splitRatio = theta
-  theta2 = theta * theta
-
-  ! obj%algoParams(1)%NewmarkBeta(beta=0.25_DFP, gamma=0.50_DFP)
-  !! sub-step 1
-  !! equivalent to Trapezoidal rule
-  obj%subAlgoParams(1)%tanmat(1) = 1.0_DFP
-  obj%subAlgoParams(1)%tanmat(2) = theta * 0.50_DFP
-  obj%subAlgoParams(1)%tanmat(3) = theta2 * 0.25_DFP
-
-  obj%rhs_subf(1) = theta2 * 0.25_DFP
+  obj%rhs_subf(1) = gamma2 * 0.25_DFP
 
   obj%subAlgoParams(1)%rhs_u1(1) = 1.0_DFP
-  obj%subAlgoParams(1)%rhs_u1(2) = 0.50_DFP * theta
+  obj%subAlgoParams(1)%rhs_u1(2) = 0.50_DFP * gamma0
 
-  obj%subAlgoParams(1)%rhs_v1(1) = theta
-  obj%subAlgoParams(1)%rhs_v1(2) = theta2 * 0.25_DFP
+  obj%subAlgoParams(1)%rhs_v1(1) = gamma0
+  obj%subAlgoParams(1)%rhs_v1(2) = gamma2 * 0.25_DFP
 
-  obj%subAlgoParams(1)%rhs_a1(1) = theta2 * 0.25_DFP
+  obj%subAlgoParams(1)%rhs_a1(1) = gamma2 * 0.25_DFP
 
   !! sub-step 2
-  !! equivalent to three point backward euler
-  CALL GetBParams(bParams, theta=theta)
+  CALL GetBParams_master(bParams, gamma=gamma0, rhoInf=rhoInf, &
+                        & beta1=beta1, beta2=beta2)
   b0 = bParams(1)
   b1 = bParams(2)
   b2 = bParams(3)
@@ -282,35 +257,35 @@ SUBROUTINE obj_gammaBatheU(obj, splitRatio)
 
   obj%subAlgoParams(2)%rhs_f2 = b2**2
 
-  obj%subAlgoParams(2)%rhs_u1(1) = -2.0_DFP * b1 / theta  &
-          & - 4.0_DFP * b1 * b2 / theta2 + 1.0_DFP
-  obj%subAlgoParams(2)%rhs_u1(2) = -2.0_DFP * b1 * b2 / theta + b2
+  obj%subAlgoParams(2)%rhs_u1(1) = -2.0_DFP * b1 / gamma0  &
+          & - 4.0_DFP * b1 * b2 / gamma2 + 1.0_DFP
+  obj%subAlgoParams(2)%rhs_u1(2) = -2.0_DFP * b1 * b2 / gamma0 + b2
 
-  obj%rhs_subsol(1, 2) = 2.0_DFP * b1 / theta + &
-                      & 4.0_DFP * b1 * b2 / theta2
-  obj%rhs_subsol(2, 2) = 2.0_DFP * b1 * b2 / theta
+  obj%rhs_subsol(1, 2) = 2.0_DFP * b1 / gamma0 + &
+                      & 4.0_DFP * b1 * b2 / gamma2
+  obj%rhs_subsol(2, 2) = 2.0_DFP * b1 * b2 / gamma0
 
   obj%subAlgoParams(2)%rhs_v1(1) = -b0 + b1 + b2 -  &
-                          & 4.0_DFP * b1 * b2 / theta
+                          & 4.0_DFP * b1 * b2 / gamma0
   obj%subAlgoParams(2)%rhs_v1(2) = -b2 * (b1 - b0)
 
   obj%subAlgoParams(2)%rhs_a1(1) = -b2 * (b1 - b0)
 
-  obj%subAlgoParams(2)%acc(1) = 2.0_DFP * b1 / (b2**2 * theta)  &
-                & - 1.0_DFP / b2**2 + 4.0_DFP * b1 / (b2 * theta2)
+  obj%subAlgoParams(2)%acc(1) = 2.0_DFP * b1 / (b2**2 * gamma0)  &
+                & - 1.0_DFP / b2**2 + 4.0_DFP * b1 / (b2 * gamma2)
   obj%subAlgoParams(2)%acc(2) = (b1 - b0) / b2**2 - 1.0_DFP / b2  &
-                & + 4.0_DFP * b1 / (b2 * theta)
+                & + 4.0_DFP * b1 / (b2 * gamma0)
   obj%subAlgoParams(2)%acc(3) = (b1 - b0) / b2
   obj%subAlgoParams(2)%acc(4) = 1.0_DFP / b2**2
 
-  obj%acc_subsol = -2.0_DFP*b1 / (b2**2*theta) - 4.0_DFP*b1 /(b2*theta2)
+  obj%acc_subsol = -2.0_DFP*b1 / (b2**2*gamma0) - 4.0_DFP*b1 /(b2*gamma2)
 
-  obj%subAlgoParams(2)%vel(1) = 2.0_DFP * b1 / (b2 * theta) - 1.0_DFP / b2
+  obj%subAlgoParams(2)%vel(1) = 2.0_DFP * b1 / (b2 * gamma0) - 1.0_DFP / b2
   obj%subAlgoParams(2)%vel(2) = (b1 - b0) / b2
   obj%subAlgoParams(2)%vel(3) = 0.0_DFP
   obj%subAlgoParams(2)%vel(4) = 1.0_DFP / b2
 
-  obj%vel_subsol = -2.0_DFP * b1 / (b2 * theta)
+  obj%vel_subsol = -2.0_DFP * b1 / (b2 * gamma0)
 
   obj%subAlgoParams(2)%dis(4) = 1.0_DFP
 
@@ -318,7 +293,7 @@ SUBROUTINE obj_gammaBatheU(obj, splitRatio)
 
   CALL obj%MakeZeros()
 
-END SUBROUTINE obj_gammaBatheU
+END SUBROUTINE obj_Bathe_master
 
 !----------------------------------------------------------------------------
 !
@@ -418,7 +393,155 @@ SUBROUTINE obj_Deallocate(obj)
 END SUBROUTINE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!
+!                                                             ImportFromToml1
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_ImportFromToml1(obj, table)
+  CLASS(CSDAlgoParam_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+  TYPE(toml_table), POINTER :: node, node2
+  INTEGER(I4B) :: origin, stat
+  REAL(DFP) :: gamma, rhoInf, beta1, beta2
+  CHARACTER(:), ALLOCATABLE :: str1, algorithm
+  LOGICAL(LGT) :: problem
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START]')
+#endif
+
+  CALL obj%DEALLOCATE()
+
+  CALL toml_get(table, "algorithm", algorithm, origin=origin, stat=stat)
+
+  problem = (.NOT. ALLOCATED(algorithm)) .OR. (stat .NE. toml_stat%success)
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: cannot find algorithm field in toml table. '  &
+      & //'algorithm specifies the name of algorithm.')
+    RETURN
+  END IF
+
+  str1 = UpperCase(algorithm)
+
+  SELECT CASE (str1)
+  CASE ("GAMMABATHE", "GBATHE", "BATHE")
+
+    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
+      & stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      gamma = 0.50_DFP
+    ELSE
+      CALL toml_get(node, "gamma", gamma, 0.5_DFP,   &
+        & origin=origin, stat=stat)
+    END IF
+    CALL obj%Bathe(gamma=gamma)
+
+  CASE ("BETABATHE", "BBATHE")
+
+    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
+      & stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      gamma = 0.50_DFP
+      beta1 = 1.0_DFP / 3.0_DFP
+      beta2 = 1.0_DFP - beta1
+    ELSE
+      CALL toml_get(node, "gamma", gamma, 0.5_DFP,   &
+        & origin=origin, stat=stat)
+      CALL toml_get(node, "beta1", beta1, 1.0_DFP / 3.0_DFP, &
+        & origin=origin, stat=stat)
+      CALL toml_get(node, "beta2", beta2, 1.0_DFP - beta1, &
+        & origin=origin, stat=stat)
+    END IF
+    CALL obj%Bathe(gamma=gamma, beta1=beta1, beta2=beta2)
+
+  CASE ("RHOBATHE", "RBATHE")
+
+    CALL toml_get(table, algorithm, node, origin=origin, requested=.FALSE., &
+      & stat=stat)
+
+    IF (.NOT. ASSOCIATED(node)) THEN
+      gamma = 0.50_DFP
+      rhoInf = 0.0_DFP
+    ELSE
+      CALL toml_get(node, "gamma", gamma, 0.5_DFP,   &
+        & origin=origin, stat=stat)
+      CALL toml_get(node, "rhoInf", rhoInf, 0.0_DFP, &
+        & origin=origin, stat=stat)
+    END IF
+    CALL obj%Bathe(gamma=gamma, rhoInf=rhoInf)
+
+  CASE DEFAULT
+
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] no case is found ')
+
+  END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END]')
+#endif
+
+END SUBROUTINE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml2
+!----------------------------------------------------------------------------
+
+SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile,  &
+  & filename, printToml)
+  CLASS(CSDAlgoParam_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: tomlName
+  TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  ! internal variables
+  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+  TYPE(toml_table), ALLOCATABLE :: table
+  TYPE(toml_table), POINTER :: node
+  INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[START]')
+#endif
+
+  CALL GetValue(table=table, afile=afile, filename=filename)
+
+  node => NULL()
+  CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
+    & stat=stat)
+
+  IF (.NOT. ASSOCIATED(node)) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+      & '[CONFIG ERROR] :: following error occured while reading '//  &
+      & 'the toml file :: cannot find ['//tomlName//"] table in config.")
+  END IF
+
+  CALL obj%ImportFromToml(table=node)
+
+#ifdef DEBUG_VER
+  IF (PRESENT(printToml)) THEN
+    CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
+      & unitNo=stdout)
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    & '[END]')
+#endif
+
+END SUBROUTINE obj_ImportFromToml2
+
 !----------------------------------------------------------------------------
 !
+!----------------------------------------------------------------------------
+
 END MODULE CSDAlgorithms
