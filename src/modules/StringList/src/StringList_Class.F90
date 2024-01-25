@@ -20,9 +20,6 @@
 #define FTL_TEMPLATE_TYPE_NAME String
 #define FTL_INSTANTIATE_TEMPLATE
 
-#ifdef USE_CMAKE
-! MODULE ftlListInt_Class
 MODULE StringList_Class
-#endif
-
 #include "../../ftlMacros/ftlList.inc"
+END MODULE StringList_Class

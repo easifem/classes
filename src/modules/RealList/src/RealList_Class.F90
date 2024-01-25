@@ -19,9 +19,6 @@
 #define FTL_TEMPLATE_TYPE_NAME Real
 #define FTL_INSTANTIATE_TEMPLATE
 
-#ifdef USE_CMAKE
-! MODULE ftlListInt_Class
 MODULE RealList_Class
-#endif
-
 #include "../../ftlMacros/ftlList.inc"
+END MODULE RealList_Class

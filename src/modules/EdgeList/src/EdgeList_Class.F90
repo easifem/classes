@@ -22,6 +22,6 @@
 #define FTL_TEMPLATE_TYPE_NAME Element
 #define FTL_INSTANTIATE_TEMPLATE
 
-MODULE ElementList_Class
+MODULE EdgeList_Class
 #include "../../ftlMacros/ftlList.inc"
-END MODULE ElementList_Class
+END MODULE EdgeList_Class
