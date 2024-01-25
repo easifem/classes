@@ -15,34 +15,43 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-MODULE IntTreeData_Class
-USE GlobalData, ONLY: I4B, LGT
-USE Display_Method, ONLY: Display
+MODULE EdgeTreeData_Class
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE Display_Method, ONLY: Display, tostring
 IMPLICIT NONE
 PRIVATE
-PUBLIC :: IntTreeData_
-PUBLIC :: IntTreeData_Pointer
-PUBLIC :: IntTreeData_DEALLOCATE
-PUBLIC :: IntTreeData_Display
-PUBLIC :: IntTreeData_lt
-PUBLIC :: IntTreeData_eq
+PUBLIC :: EdgeTreeData_
+PUBLIC :: EdgeTreeData_Pointer
+PUBLIC :: EdgeTreeData_DEALLOCATE
+PUBLIC :: EdgeTreeData_Display
+PUBLIC :: EdgeTreeData_lt
+PUBLIC :: EdgeTreeData_eq
+PUBLIC :: EdgeTreeData_SetID
+PUBLIC :: Initiate
+PUBLIC :: ASSIGNMENT(=)
 
 INTERFACE Initiate
-  MODULE PROCEDURE IntTreeData_Initiate
+  MODULE PROCEDURE EdgeTreeData_Initiate
 END INTERFACE Initiate
-PUBLIC :: Initiate
+
+INTERFACE ASSIGNMENT(=)
+  MODULE PROCEDURE EdgeTreeData_Initiate
+END INTERFACE
+
+INTEGER(I4B), PARAMETER :: INT_SIZE_IN_TREE_DATA = 2
 
 !----------------------------------------------------------------------------
-!                                                              IntTreeData_
+!                                                              EdgeTreeData_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-01-23
 ! summary:  TreeData stored at each node level
 
-TYPE IntTreeData_
-  INTEGER(I4B) :: VALUE = 0
-END TYPE IntTreeData_
+TYPE EdgeTreeData_
+  INTEGER(I4B) :: VALUE(INT_SIZE_IN_TREE_DATA)
+  INTEGER(I4B) :: id = 0
+END TYPE EdgeTreeData_
 
 CONTAINS
 
@@ -54,10 +63,11 @@ CONTAINS
 ! date:  2024-01-23
 ! summary:  Deallocate tree data
 
-SUBROUTINE IntTreeData_Deallocate(obj)
-  TYPE(IntTreeData_), INTENT(INOUT) :: obj
+SUBROUTINE EdgeTreeData_Deallocate(obj)
+  TYPE(EdgeTreeData_), INTENT(INOUT) :: obj
   obj%VALUE = 0
-END SUBROUTINE IntTreeData_Deallocate
+  obj%id = 0
+END SUBROUTINE EdgeTreeData_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                               Display
@@ -67,12 +77,12 @@ END SUBROUTINE IntTreeData_Deallocate
 ! date:  2024-01-23
 ! summary:  Display data
 
-SUBROUTINE IntTreeData_Display(obj, msg, unitno)
-  TYPE(IntTreeData_), INTENT(IN) :: obj
+SUBROUTINE EdgeTreeData_Display(obj, msg, unitno)
+  TYPE(EdgeTreeData_), INTENT(IN) :: obj
   CHARACTER(*), INTENT(IN) :: msg
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  CALL Display(obj%VALUE, msg, unitno=unitno)
-END SUBROUTINE IntTreeData_Display
+  CALL Display(obj%VALUE, msg//"("//tostring(obj%id)//"):", unitno=unitno)
+END SUBROUTINE EdgeTreeData_Display
 
 !----------------------------------------------------------------------------
 !                                                                      lt
@@ -82,12 +92,12 @@ END SUBROUTINE IntTreeData_Display
 ! date:  2024-01-23
 ! summary:  Lesser than
 
-FUNCTION IntTreeData_lt(obj, obj2) RESULT(ans)
-  TYPE(IntTreeData_), INTENT(IN) :: obj
-  TYPE(IntTreeData_), INTENT(IN) :: obj2
+FUNCTION EdgeTreeData_lt(obj, obj2) RESULT(ans)
+  TYPE(EdgeTreeData_), INTENT(IN) :: obj
+  TYPE(EdgeTreeData_), INTENT(IN) :: obj2
   LOGICAL(LGT) :: ans
-  ans = obj%VALUE .LT. obj2%VALUE
-END FUNCTION IntTreeData_lt
+  ans = obj%VALUE(1) .LT. obj2%VALUE(1)
+END FUNCTION EdgeTreeData_lt
 
 !----------------------------------------------------------------------------
 !                                                                      eq
@@ -97,40 +107,59 @@ END FUNCTION IntTreeData_lt
 ! date:  2024-01-23
 ! summary:  equality
 
-FUNCTION IntTreeData_eq(obj, obj2) RESULT(ans)
-  TYPE(IntTreeData_), INTENT(IN) :: obj
-  TYPE(IntTreeData_), INTENT(IN) :: obj2
+FUNCTION EdgeTreeData_eq(obj, obj2) RESULT(ans)
+  TYPE(EdgeTreeData_), INTENT(IN) :: obj
+  TYPE(EdgeTreeData_), INTENT(IN) :: obj2
   LOGICAL(LGT) :: ans
-  ans = obj%VALUE .EQ. obj2%VALUE
-END FUNCTION IntTreeData_eq
+  ans = ALL(obj%VALUE .EQ. obj2%VALUE)
+END FUNCTION EdgeTreeData_eq
 
 !----------------------------------------------------------------------------
-!                                                               Initiate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-01-23
-! summary:  Initiate
-
-SUBROUTINE IntTreeData_Initiate(obj, VALUE)
-  TYPE(IntTreeData_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: VALUE
-  obj%VALUE = VALUE
-END SUBROUTINE IntTreeData_Initiate
-
-!----------------------------------------------------------------------------
-!                                                                      eq
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-01-23
-! summary:  equality
+! summary:  Initiate the data
 
-FUNCTION IntTreeData_Pointer(VALUE) RESULT(ans)
-  INTEGER(I4B), INTENT(IN) :: VALUE
-  TYPE(IntTreeData_), POINTER :: ans
+SUBROUTINE EdgeTreeData_Initiate(obj, VALUE)
+  TYPE(EdgeTreeData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: VALUE(INT_SIZE_IN_TREE_DATA)
+
+  ! internal variables
+  INTEGER(I4B) :: ii
+  DO ii = 1, INT_SIZE_IN_TREE_DATA
+    obj%VALUE(ii) = VALUE(ii)
+  END DO
+END SUBROUTINE EdgeTreeData_Initiate
+
+!----------------------------------------------------------------------------
+!                                                       EdgeTreeData_Pointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  EdgeTreeData_Pointer
+
+FUNCTION EdgeTreeData_Pointer(VALUE) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: VALUE(INT_SIZE_IN_TREE_DATA)
+  TYPE(EdgeTreeData_), POINTER :: ans
   ALLOCATE (ans)
-  CALL IntTreeData_Initiate(ans, VALUE)
-END FUNCTION IntTreeData_Pointer
+  CALL EdgeTreeData_Initiate(ans, VALUE)
+END FUNCTION EdgeTreeData_Pointer
 
-END MODULE IntTreeData_Class
+!----------------------------------------------------------------------------
+!                                                                  SetID
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-23
+! summary:  Initiate the data
+
+SUBROUTINE EdgeTreeData_SetID(obj, id)
+  TYPE(EdgeTreeData_), INTENT(INOUT) :: obj
+  INTEGER(I4B), INTENT(IN) :: id
+  obj%id = id
+END SUBROUTINE EdgeTreeData_SetID
+
+END MODULE EdgeTreeData_Class
