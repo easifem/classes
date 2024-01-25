@@ -22,4 +22,5 @@ target_sources(
           ${src_path}/IntBinaryTree_Class.F90
           ${src_path}/EdgeTreeData_Class.F90
           ${src_path}/EdgeBinaryTree_Class.F90
-          ${src_path}/EdgeBinaryTreeUtility.F90)
+          ${src_path}/EdgeBinaryTreeUtility.F90
+          ${src_path}/BinaryTrees.F90)
