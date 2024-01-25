@@ -128,10 +128,12 @@ TYPE :: Mesh_
     !! List of local element numbers, the lowerbound is `minElemNum`
     !! and upper bound is `maxElemNum`. In this way, local_elemNumber(iel)
     !! returns the local element number of global element number iel.
+
   INTEGER(I4B), ALLOCATABLE :: local_Nptrs(:)
     !! Returns local node number from a global node number
     !! Its length is from 1 to maxNptrs
     !! Helpul in finding if a global node is present inside the mesh or not
+
   INTEGER(I4B), ALLOCATABLE :: material(:)
     !! materials mapped to the mesh
     !! material(1) is the material id of medium 1
@@ -143,8 +145,10 @@ TYPE :: Mesh_
     !! fluid is a medium n =2
     !! then material(1) denotes the type of soil => clay, sand, silt
     !! and material(2) denotes the type of fluid, water, oil, air
+
   TYPE(ReferenceElement_), PUBLIC, ALLOCATABLE :: facetElements(:)
     !! Facet Elements in the reference element
+
   INTEGER(I4B), ALLOCATABLE :: facetElementType(:, :)
   !! Number of rows of this array is same as the total number of
   !! facets present in the mesh-reference elements
@@ -172,66 +176,6 @@ TYPE :: Mesh_
   REAL(DFP), ALLOCATABLE :: quality(:, :)
     !! number of rows are meshquality
     !! number of columns are elements
-  INTEGER(I4B), PUBLIC :: ipType = Equidistance
-    !! interpolation point type
-
-  ! Following variables are required during processing time
-  TYPE(QuadraturePoint_), PUBLIC :: quadForTime
-    !! quadrature point for time domain #STFEM
-  TYPE(ElemshapeData_), PUBLIC :: linTimeElemSD
-    !! Element shape data on linear time element #STFEM
-  TYPE(ElemshapeData_), PUBLIC :: timeElemSD
-    !! Element shape data on time element #STFEM
-  TYPE(String) :: quadTypeForTime
-    !! quadrature type for time
-  TYPE(String) :: continuityTypeForTime
-    !! continuity of base function for time
-  TYPE(String) :: interpolTypeForTime
-    !! interpolation of base function for time
-  INTEGER(I4B) :: orderTime
-    !! order for time
-
-  ! space (cell)
-  TYPE(QuadraturePoint_), PUBLIC :: quadForSpace
-    !! quadrature point for space
-  TYPE(ElemshapeData_), PUBLIC :: linSpaceElemSD
-    !! Element shape data on linear space (simplex) element
-  TYPE(ElemshapeData_), PUBLIC :: spaceElemSD
-    !! Element shape data on space element
-  TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: stelemsd(:)
-    !! Element shape data on space-time element
-  TYPE(String) :: quadTypeForSpace
-    !! quadrature type for space
-  TYPE(String) :: continuityTypeForSpace
-    !! continuity of base function for space
-  TYPE(String) :: interpolTypeForSpace
-    !! interoplation type of base function for space
-  INTEGER(I4B) :: orderSpace
-    !! order for space
-
-  ! space (facets)
-  TYPE(QuadraturePoint_), ALLOCATABLE, PUBLIC :: quadForFacet(:)
-    !! quadrature point for facet elements
-  TYPE(QuadraturePoint_), ALLOCATABLE, PUBLIC :: quadForFacetCell(:)
-    !! quadrature point for facet-cell elements
-  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: linFacetElemSD(:)
-    !! Element shape data on linear facet (simplex) element
-  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: linFacetCellElemSD(:)
-    !! Element shape data on linear facet (simplex) cell element
-  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: facetElemSD(:)
-    !! Element shape data on facet element
-  TYPE(ElemshapeData_), ALLOCATABLE, PUBLIC :: facetCellElemSD(:)
-    !! Element shape data on facet cell element
-  TYPE(String) :: quadTypeForFacet
-    !! quadrature type for facet element
-  TYPE(String) :: continuityTypeForFacet
-    !! continuity of base function for facet element
-  TYPE(String) :: interpolTypeForFacet
-    !! interoplation type of base function for facet element
-  INTEGER(I4B) :: orderFacet
-    !! order for facet element
-  TYPE(STElemshapeData_), ALLOCATABLE, PUBLIC :: facetSTelemsd(:, :)
-    !! Element shape data on facet element
 
 CONTAINS
   PRIVATE
@@ -271,8 +215,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
     & obj_DisplayBoundaryFacetData
     !! Display mesh facet data
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElemSD => &
-    & obj_DisplayFacetElemSD
     !! Display facet element shape data
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
     & obj_DisplayFacetElements
@@ -545,25 +487,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
     !! Set mesh quality
 
-  ! SET:
-  ! @ShapeDataMethods
-  PROCEDURE, PASS(obj) :: InitiateElemSD1 => obj_initiateElemSD1
-  PROCEDURE, PASS(obj) :: InitiateElemSD2 => obj_initiateElemSD2
-  PROCEDURE, PASS(obj) :: InitiateElemSD3 => obj_initiateElemSD3
-  PROCEDURE, PASS(obj) :: InitiateElemSD4 => obj_initiateElemSD4
-  GENERIC, PUBLIC :: InitiateElemSD => &
-    & InitiateElemSD1, &
-    & InitiateElemSD2, &
-    & InitiateElemSD3, &
-    & InitiateElemSD4
-  PROCEDURE, PASS(obj) :: InitiateFacetElemSD1 => obj_initiateFacetElemSD1
-  PROCEDURE, PASS(obj) :: InitiateFacetElemSD2 => obj_initiateFacetElemSD2
-  PROCEDURE, PASS(obj) :: InitiateFacetElemSD3 => obj_initiateFacetElemSD3
-  GENERIC, PUBLIC :: InitiateFacetElemSD => &
-    & InitiateFacetElemSD1, &
-    & InitiateFacetElemSD2, &
-    & InitiateFacetElemSD3
-  !! Initiating local shape data for mesh
 END TYPE Mesh_
 
 !----------------------------------------------------------------------------
@@ -615,22 +538,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
     !! location in HDF5 file
   END SUBROUTINE obj_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   Mesh@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 March 2021
-! summary: Function for constructing an instance of [[Mesh_]]
-
-INTERFACE
-  MODULE FUNCTION obj_Constructor1(hdf5, group) RESULT(ans)
-    TYPE(Mesh_) :: ans
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END FUNCTION obj_Constructor1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -922,22 +829,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_DisplayFacetElements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              DisplayFacetElemSD@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 23 May 2022
-! summary: Display the facet element shape data.
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayFacetElemSD(obj, msg, unitno)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_DisplayFacetElemSD
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2489,264 +2380,6 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
     INTEGER(I4B), INTENT(IN) :: local_nptrs(:)
   END SUBROUTINE obj_SetQuality
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Sets the local shape data for the mesh
-!
-!# Introduction
-!
-! This routine sets the local shape data in space (linSpaceElemSD and
-! spaceElemSD) for the mesh. It also creates the quadrature points in space.
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateElemSD1(obj, &
-    & orderSpace,  &
-    & linSpaceElem, &
-    & spaceElem, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: orderSpace
-      !! integrand order in space
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem
-      !! linear (simplex) space element
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
-      !! space element
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-      !! quadrature for space
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-      !! continuity for base in space
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-      !! interpolation type for base in space
-  END SUBROUTINE obj_InitiateElemSD1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateElemSD2(obj, &
-    & orderSpace,  &
-    & linSpaceElem, &
-    & spaceElem, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeForTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime, &
-    & tvec)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: orderSpace
-      !! integrand order in space
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem
-      !! linear space element
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
-      !! space element
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-      !! quadrature type for space
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-      !! continuity type of base in space
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-      !! interpol type of base in space
-    INTEGER(I4B), INTENT(IN) :: orderTime
-      !! integrand order in time
-    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
-      !! linear time element
-    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-      !! time element
-    CHARACTER(*), INTENT(IN) :: quadTypeForTime
-      !! quadrature type of base in time
-    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
-      !! continuity type of base in time
-    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
-      !! interpol type of base in time
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE obj_InitiateElemSD2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateElemSD3(obj, &
-    & orderSpace,  &
-    & linSpaceElem, &
-    & spaceElem, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeForTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: orderSpace
-      !! integrand order in space
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem
-      !! linear space element
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem
-      !! space element
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-      !! quadrature type of base in space
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-      !! continuity type of base in space
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-      !! interpolation type of base in space
-    INTEGER(I4B), INTENT(IN) :: orderTime
-      !! integrand order in time
-    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
-      !! linear time element
-    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-      !! time element
-    CHARACTER(*), INTENT(IN) :: quadTypeForTime
-      !! quadrature type of base in time
-    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
-      !! continuity type of base in time
-    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
-      !! interpolation type of base in time
-  END SUBROUTINE obj_InitiateElemSD3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateElemSD4(obj, tvec)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE obj_InitiateElemSD4
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! summary: Sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateFacetElemSD1(obj, &
-    & orderSpace,  &
-    & linSpaceElem, &
-    & spaceElem, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: orderSpace
-      !! integrand order in space
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem(:)
-      !! linear (simplex) space element for each face
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem(:)
-      !! space element for each face
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-      !! quadrature for space
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-      !! continuity for base in space
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-      !! interpolation type for base in space
-  END SUBROUTINE obj_InitiateFacetElemSD1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 20 May 2022
-! summary: Sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateFacetElemSD2(obj, &
-    & orderSpace,  &
-    & linSpaceElem, &
-    & spaceElem, &
-    & quadTypeForSpace, &
-    & continuityTypeForSpace, &
-    & interpolTypeForSpace, &
-    & orderTime, &
-    & linTimeElem, &
-    & timeElem, &
-    & quadTypeForTime, &
-    & continuityTypeForTime, &
-    & interpolTypeForTime, &
-    & tvec)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: orderSpace
-      !! integrand order in space
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: linSpaceElem(:)
-      !! linear space element for each face
-    CLASS(ReferenceElement_), TARGET, INTENT(IN) :: spaceElem(:)
-      !! space element for each face
-    CHARACTER(*), INTENT(IN) :: quadTypeForSpace
-      !! quadrature type for space
-    CHARACTER(*), INTENT(IN) :: continuityTypeForSpace
-      !! continuity type of base in space
-    CHARACTER(*), INTENT(IN) :: interpolTypeForSpace
-      !! interpol type of base in space
-    INTEGER(I4B), INTENT(IN) :: orderTime
-      !! integrand order in time
-    TYPE(ReferenceLine_), INTENT(IN) :: linTimeElem
-      !! linear time element
-    TYPE(ReferenceLine_), INTENT(IN) :: timeElem
-      !! time element
-    CHARACTER(*), INTENT(IN) :: quadTypeForTime
-      !! quadrature type of base in time
-    CHARACTER(*), INTENT(IN) :: continuityTypeForTime
-      !! continuity type of base in time
-    CHARACTER(*), INTENT(IN) :: interpolTypeForTime
-      !! interpol type of base in time
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE obj_InitiateFacetElemSD2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            InitiateElemSD@ShapeDataMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-09
-! update: 2021-12-09
-! summary: Sets the local shape data for the mesh
-
-INTERFACE
-  MODULE SUBROUTINE obj_InitiateFacetElemSD3(obj, tvec)
-    CLASS(Mesh_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: tvec(:)
-  END SUBROUTINE obj_InitiateFacetElemSD3
 END INTERFACE
 
 !----------------------------------------------------------------------------
