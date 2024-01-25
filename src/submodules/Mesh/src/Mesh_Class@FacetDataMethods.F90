@@ -24,8 +24,8 @@ CONTAINS
 !                                                     InitiateFacetElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_InitiateFacetElements
-CHARACTER(*), PARAMETER :: myName = "mesh_InitiateFacetElements()"
+MODULE PROCEDURE obj_InitiateFacetElements
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetElements()"
 INTEGER(I4B) :: iel, ii, jj, iintface, idomainFace, kk, telements, &
   & tIntFace, tDomainFace
 INTEGER(I4B), ALLOCATABLE :: e2e(:, :), indx(:), cellNptrs(:)
@@ -134,7 +134,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif DEBUG_VER
 
-END PROCEDURE mesh_InitiateFacetElements
+END PROCEDURE obj_InitiateFacetElements
 
 !----------------------------------------------------------------------------
 !

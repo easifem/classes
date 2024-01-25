@@ -24,92 +24,49 @@ CONTAINS
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_initiate
-!
-CHARACTER(*), PARAMETER :: myName = "mesh_initiate"
-!
-!
-!
+MODULE PROCEDURE obj_initiate
+CHARACTER(*), PARAMETER :: myName = "obj_initiate()"
+
 obj%readFromFile = .TRUE.
 obj%isInitiated = .TRUE.
-!
-! Import
-!
-CALL e%raiseInformation(modName//'::'//myName//" - "// &
-  & '[START] Importing mesh')
-!
-! Import
-!
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
+
 CALL obj%IMPORT(hdf5, group)
-!
-! raiseInformation
-!
-CALL e%raiseInformation(modName//'::'//myName//" - "// &
-  & 'Mesh imported')
-!
-!
-!
-! IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) THEN
-!   RETURN
-! ELSE
-!     !
-!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
-!     & 'InitiateNodeToElements()')
-!   CALL obj%InitiateNodeToElements()
-!     !
-!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
-!     & 'InitiateNodeToNodes()')
-!   CALL obj%InitiateNodeToNodes()
-!     !
-!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
-!     & 'InitiateElementToElements()')
-!   CALL obj%InitiateElementToElements()
-!     !
-!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
-!     & 'InitiateBoundaryData()')
-!   CALL obj%InitiateBoundaryData()
-!     !
-!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
-!     & 'InitiateFacetElements()')
-!   CALL obj%InitiateFacetElements()
-!     !
-!   CALL e%raiseInformation(modName//'::'//myName//" - "// &
-!     & 'InitiateExtraNodeToNodes()')
-!   CALL obj%InitiateExtraNodeToNodes()
-!     !
-! END IF
-!
-!
-!
-CALL e%raiseInformation(modName//'::'//myName//" - "// &
-  & '[END] Importing mesh [OK!]')
-!
-END PROCEDURE mesh_initiate
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
+END PROCEDURE obj_initiate
 
 !----------------------------------------------------------------------------
 !                                                                      Mesh
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_Constructor1
+MODULE PROCEDURE obj_Constructor1
 CALL ans%Initiate(hdf5, group)
-END PROCEDURE mesh_Constructor1
+END PROCEDURE obj_Constructor1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_Constructor_1
+MODULE PROCEDURE obj_Constructor_1
 ALLOCATE (Mesh_ :: ans)
 CALL ans%Initiate(hdf5, group)
-END PROCEDURE mesh_Constructor_1
+END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_Deallocate
-CHARACTER(*), PARAMETER :: myName = "mesh_Deallocate"
-!
+MODULE PROCEDURE obj_Deallocate
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+
 obj%readFromFile = .FALSE.
 obj%isInitiated = .FALSE.
 obj%isNodeToElementsInitiated = .FALSE.
@@ -177,13 +134,13 @@ obj%continuityTypeForFacet = ""
 obj%interpolTypeForFacet = ""
 obj%orderFacet = 0
 ! CALL e%reset()
-END PROCEDURE mesh_Deallocate
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    isEmpty
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_isEmpty
+MODULE PROCEDURE obj_isEmpty
 ans = .FALSE.
 IF (obj%tElements .LE. 0_I4B) THEN
   ans = .TRUE.
@@ -192,14 +149,14 @@ END IF
 IF (obj%tNodes .LE. 0_I4B) THEN
   ans = .TRUE.
 END IF
-END PROCEDURE mesh_isEmpty
+END PROCEDURE obj_isEmpty
 
 !----------------------------------------------------------------------------
 !                                                                    Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_final
+MODULE PROCEDURE obj_final
 CALL obj%DEALLOCATE()
-END PROCEDURE mesh_final
+END PROCEDURE obj_final
 
 END SUBMODULE ConstructorMethods
