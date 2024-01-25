@@ -26,141 +26,29 @@ USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
 USE VTKFile_Class
+USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
+  & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode, NodeData_Display
+USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
+  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem, ElemData_Display
+USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
+  & InternalFacetData_Display, BoundaryFacetData_Display
+
 IMPLICIT NONE
 PRIVATE
+
+PUBLIC :: INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE,  &
+  & GHOST_NODE, TypeNode
+
+PUBLIC :: INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT,  &
+  & GHOST_ELEMENT, TypeElem
+
 PUBLIC :: Mesh_
 PUBLIC :: MeshPointer_
-! PUBLIC :: Mesh
 PUBLIC :: Mesh_Pointer
 PUBLIC :: DEALLOCATE
 PUBLIC :: MeshDisplay
+
 CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
-INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
-INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
-INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_NODE = -2
-INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_NODE = -3
-INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
-INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
-INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
-INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
-
-!----------------------------------------------------------------------------
-!                                                                 NodeData_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Data type for storing node data
-
-TYPE :: NodeData_
-  INTEGER(I4B) :: globalNodeNum = 0
-    !! Global node number
-  INTEGER(I4B) :: localNodeNum = 0
-    !! local node number
-  INTEGER(I4B) :: nodeType = INTERNAL_NODE
-    !! node type; INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE
-  INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
-    !! It contains the global node number surrouding the node
-    !! It does not contain self global node number
-  INTEGER(I4B), ALLOCATABLE :: globalElements(:)
-    !! It contains the global element number surrounding the node
-  INTEGER(I4B), ALLOCATABLE :: extraGlobalNodes(:)
-    !! These global nodes required in facet-element-data
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => nodeData_Display
-    !! Display the content of an instance of NodeData
-END TYPE NodeData_
-
-!----------------------------------------------------------------------------
-!                                                                 ElemData_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Data type for storing element data
-
-TYPE :: ElemData_
-  INTEGER(I4B) :: globalElemNum = 0
-    !! global element number
-  INTEGER(I4B) :: localElemNum = 0
-    !! local element number
-  INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
-    !! BOUNDARY_ELEMENT: If the element contqains the boundary node
-    !! it will be called the boundary element
-    !! INTERNAL_ELEMENT: If the element does not contain the boundary node
-    !! then it will be called the internal element
-  INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
-    !! nodes contained in the element, connectivity
-  INTEGER(I4B), ALLOCATABLE :: globalElements(:)
-    !! Contains the information about the element surrounding an element
-    !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
-    !! surrounds a local element ielem (its global element number is
-    !! globalElem), then globalElements( [1,2,3] ) contains globalElem1,
-    !! pFace, nFace, globalElements( [4,5,6] ) contains globalElem2,
-    !! pFace, nFace, globalElements( [7,8,9] ) contains globalElem3,
-    !! pFace, nFace.
-    !! Here, pFace is the local facet number of parent element
-    !! globalElem (ielem) which is connected to the nFace of the neighbor
-    !! element
-    !! All element numbers are global element number
-  INTEGER(I4B), ALLOCATABLE :: boundaryData(:)
-    !! If `iel` is boundary element, then boudnaryData contains
-    !! the local facet number of iel which concides with the
-    !! mesh boundary.
-    !! If an element contains the boundary node then it is considered
-    !! as a boundary element.
-    !! It may happen that a boundary element has no boundary face, in which
-    !! case boundaryData will have zero size
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => elemData_Display
-  !! Display the content of elemdata
-END TYPE ElemData_
-
-!----------------------------------------------------------------------------
-!                                                         InternalFacetData_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Data storage for internal facets of mesh
-
-TYPE InternalFacetData_
-  INTEGER(I4B) :: masterCellNumber = 0
-    !! master cell nubmer
-  INTEGER(I4B) :: slaveCellNumber = 0
-    !! slave cell number
-  INTEGER(I4B) :: masterLocalFacetID = 0
-    !! local facet ID in master cell
-  INTEGER(I4B) :: slaveLocalFacetID = 0
-    !! slave facet ID in slave cell
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => InternalFacetData_Display
-  !! Display the content of an instance of InternalFacetData_
-END TYPE InternalFacetData_
-
-!----------------------------------------------------------------------------
-!                                                                 FacetData_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 May 2022
-! summary: Data storage for Domain facet data
-!
-!# Introduction
-!
-! DomainFacet elements are those boundary elements which are located
-! on the boundary of the domain. Ofcourse domainFacet elements are
-! located on the mesh Boundary with only difference that these elements do
-! not have slaveCellNumber
-
-TYPE BoundaryFacetData_
-  INTEGER(I4B) :: masterCellNumber = 0
-  INTEGER(I4B) :: masterLocalFacetID = 0
-  INTEGER(I4B) :: elementType = 0
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => BoundaryFacetData_Display
-  !! Display the content of boundary facetdata
-END TYPE BoundaryFacetData_
 
 !----------------------------------------------------------------------------
 !                                                                     Mesh_
@@ -287,8 +175,7 @@ TYPE :: Mesh_
   INTEGER(I4B), PUBLIC :: ipType = Equidistance
     !! interpolation point type
 
-  ! Following variables are required during processing.
-  ! time
+  ! Following variables are required during processing time
   TYPE(QuadraturePoint_), PUBLIC :: quadForTime
     !! quadrature point for time domain #STFEM
   TYPE(ElemshapeData_), PUBLIC :: linTimeElemSD
@@ -419,68 +306,85 @@ CONTAINS
     & obj_InitiateFacetElements
   !! Initiate boundary data
 
-  ! GET:
+  !  GET:
+  ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Get number of nodes in an element
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNNE => obj_GetMaxNNE
   !! Get maximum number of nodes in an element
 
-  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryNode => &
-    & obj_isBoundaryNode
-  !! Returns true if a given global node number is a boundary node
-  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryElement => &
-    & obj_isBoundaryElement
-  !! Returns true if a given global element number is a boundary element
-  PROCEDURE, PUBLIC, PASS(obj) :: isDomainBoundaryElement => &
-    & obj_isDomainBoundaryElement
-  !! Returns true if a given global element number is a boundary element
-  PROCEDURE, PUBLIC, PASS(obj) :: isDomainFacetElement => &
-    & obj_isDomainFacetElement
-  !! Returns true if a given global element number is a boundary element
-  PROCEDURE, PUBLIC, PASS(obj) :: isNodePresent => &
-    & obj_isNodePresent
-  !! Returns true if a node number is present
-  PROCEDURE, PUBLIC, PASS(obj) :: isAnyNodePresent => &
-    & obj_isAnyNodePresent
-  !! Returns true if any of the node number is present
-  PROCEDURE, PUBLIC, PASS(obj) :: isAllNodePresent => &
-    & obj_isAllNodePresent
-  !! Returns true if All of the node number is present
-  PROCEDURE, PUBLIC, PASS(obj) :: isElementPresent => &
-    & obj_isElementPresent
-  !! Returns true if a given element number is present
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_size
   !! Returns the size of the mesh (total number of elements)
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemNum => obj_GetElemNum
-  !! returns global element number in the mesh
+  !! Returns global element number in the mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetRefElemPointer =>  &
     & obj_GetRefElemPointer
   !! Returns pointer to the reference element
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_size
-  !! Returns the size of the mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingEntity => &
     & obj_GetBoundingEntity
   !! Returns the nodal coordinates
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Returns the node number of mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     & obj_GetInternalNptrs
   !! Returns a vector of internal node numbers
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundaryNptrs => &
     & obj_GetBoundaryNptrs
   !! Returns a vector of boundary node numbers
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryNode => &
+    & obj_isBoundaryNode
+  !! Returns true if a given global node number is a boundary node
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isNodePresent => &
+    & obj_isNodePresent
+  !! Returns true if a node number is present
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isAnyNodePresent => &
+    & obj_isAnyNodePresent
+  !! Returns true if any of the node number is present
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isAllNodePresent => &
+    & obj_isAllNodePresent
+  !! Returns true if All of the node number is present
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isElementPresent => &
+    & obj_isElementPresent
+  !! Returns true if a given element number is present
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isBoundaryElement => &
+    & obj_isBoundaryElement
+  !! Returns true if a given global element number is a boundary element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isDomainBoundaryElement => &
+    & obj_isDomainBoundaryElement
+  !! Returns true if a given global element number is a boundary element
+
+  PROCEDURE, PUBLIC, PASS(obj) :: isDomainFacetElement => &
+    & obj_isDomainFacetElement
+  !! Returns true if a given global element number is a boundary element
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInternalNodes => &
     & obj_GetTotalInternalNodes
   !! Returns the total number of internal nodes
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
   !! Returns the total number of nodes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryNodes =>  &
-    & obj_GetTotalBoundaryNodes
-  !! Returns the total number of boundary nodes
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_size
+  !! Returns the size of the mesh
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryElements => &
     & obj_GetTotalBoundaryElements
   !! Returns the total number of boundary element
+
   PROCEDURE, PASS(obj) :: GetBoundingBox1 => obj_GetBoundingBox1
   !! Returns the bounding box of the mesh
   PROCEDURE, PASS(obj) :: GetBoundingBox2 => obj_GetBoundingBox2
@@ -488,6 +392,7 @@ CONTAINS
   GENERIC, PUBLIC :: GetBoundingBox => GetBoundingBox1,  &
     & GetBoundingBox2
   !! Return the bounding box
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => &
     & obj_GetConnectivity
   !! Returns  node numbers in an element
@@ -510,6 +415,10 @@ CONTAINS
   !! Returns the global node number of a local node number
   GENERIC, PUBLIC :: GetGlobalNodeNumber => obj_GetGlobalNodeNumber1, &
     & obj_GetGlobalNodeNumber2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalBoundaryNodes =>  &
+    & obj_GetTotalBoundaryNodes
+  !! Returns the total number of boundary nodes
 
   PROCEDURE, PASS(obj) :: obj_GetGlobalElemNumber1
   PROCEDURE, PASS(obj) :: obj_GetGlobalElemNumber2
@@ -930,70 +839,6 @@ INTERFACE MeshDisplay
     !! unit number of ouput file
   END SUBROUTINE obj_display
 END INTERFACE MeshDisplay
-
-!----------------------------------------------------------------------------
-!                                                         Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Display a single instance of NodeData_
-
-INTERFACE
-  MODULE SUBROUTINE nodeData_Display(obj, msg, unitno)
-    CLASS(NodeData_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE nodeData_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Display a single instance of element data
-
-INTERFACE
-  MODULE SUBROUTINE elemData_Display(obj, msg, unitno)
-    CLASS(ElemData_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE elemData_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Display the instance of InternalFacetData
-
-INTERFACE
-  MODULE SUBROUTINE InternalFacetData_Display(obj, msg, unitno)
-    CLASS(InternalFacetData_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE InternalFacetData_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         Display@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 13 April 2022
-! summary: Display the instance of DomainFacetData_
-
-INTERFACE
-  MODULE SUBROUTINE BoundaryFacetData_Display(obj, msg, unitno)
-    CLASS(BoundaryFacetData_), INTENT(IN) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE BoundaryFacetData_Display
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              DisplayNodeData@IOMethods
@@ -2903,4 +2748,5 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
 END MODULE Mesh_Class
