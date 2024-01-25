@@ -517,8 +517,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => &
     & obj_GetMaxNodeNumber
 
+  ! SET:
   ! @SetMethods
-  !! Returns the order of reference element
+
   PROCEDURE, PASS(obj) :: SetBoundingBox1 => obj_setBoundingBox1
   !! Set the bounding box of the mesh
   PROCEDURE, PASS(obj) :: SetBoundingBox2 => obj_setBoundingBox2
@@ -526,12 +527,14 @@ CONTAINS
   GENERIC, PUBLIC :: SetBoundingBox => setBoundingBox1,  &
     & SetBoundingBox2
   !! Set the bounding box
+
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => obj_setSparsity1
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity2 => obj_setSparsity2
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity3 => obj_setSparsity3
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity4 => obj_setSparsity4
   GENERIC, PUBLIC :: SetSparsity => setSparsity1, setSparsity2,  &
     & SetSparsity3, setSparsity4
+
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMaterial => obj_SetTotalMaterial
   !! Adding a material ID of a medium which is mapped to the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_setMaterial
@@ -542,6 +545,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_setQuality
     !! Set mesh quality
 
+  ! SET:
   ! @ShapeDataMethods
   PROCEDURE, PASS(obj) :: InitiateElemSD1 => obj_initiateElemSD1
   PROCEDURE, PASS(obj) :: InitiateElemSD2 => obj_initiateElemSD2
