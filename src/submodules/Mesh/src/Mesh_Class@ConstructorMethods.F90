@@ -44,14 +44,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_initiate
 
 !----------------------------------------------------------------------------
-!                                                                      Mesh
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%Initiate(hdf5, group)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -106,34 +98,6 @@ IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
 IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
 IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 obj%refelem => NULL()
-obj%ipType = Equidistance
-CALL DEALLOCATE (obj%quadForTime)
-CALL DEALLOCATE (obj%linTimeElemSD)
-CALL DEALLOCATE (obj%timeElemSD)
-obj%quadTypeForTime = ""
-obj%continuityTypeForTime = ""
-obj%interpolTypeForTime = ""
-obj%orderTime = 0
-CALL DEALLOCATE (obj%quadForSpace)
-CALL DEALLOCATE (obj%linSpaceElemSD)
-CALL DEALLOCATE (obj%spaceElemSD)
-IF (ALLOCATED(obj%stelemsd)) DEALLOCATE (obj%stelemsd)
-obj%quadTypeForSpace = ""
-obj%continuityTypeForSpace = ""
-obj%interpolTypeForSpace = ""
-obj%orderSpace = 0
-IF (ALLOCATED(obj%quadForFacet)) DEALLOCATE (obj%quadForFacet)
-IF (ALLOCATED(obj%quadForFacetCell)) DEALLOCATE (obj%quadForFacetCell)
-IF (ALLOCATED(obj%linFacetElemSD)) DEALLOCATE (obj%linFacetElemSD)
-IF (ALLOCATED(obj%linFacetCellElemSD)) DEALLOCATE (obj%linFacetCellElemSD)
-IF (ALLOCATED(obj%facetElemSD)) DEALLOCATE (obj%facetElemSD)
-IF (ALLOCATED(obj%facetCellElemSD)) DEALLOCATE (obj%facetCellElemSD)
-IF (ALLOCATED(obj%facetSTelemsd)) DEALLOCATE (obj%facetSTelemsd)
-obj%quadTypeForFacet = ""
-obj%continuityTypeForFacet = ""
-obj%interpolTypeForFacet = ""
-obj%orderFacet = 0
-! CALL e%reset()
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
