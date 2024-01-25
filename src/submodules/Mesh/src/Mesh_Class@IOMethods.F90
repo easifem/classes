@@ -621,7 +621,7 @@ ELSE
   CALL hdf5%READ(TRIM(dsetname)//"/physicalTag", obj%physicalTag)
   ! IF (e%isLogActive()) THEN
   !   CALL Display(obj%physicalTag, "physicalTag = ",  &
-  !   & unitno=e%getLogFileUnit())
+  !   & unitno=e%GetLogFileUnit())
   ! END IF
 END IF
 
@@ -639,7 +639,7 @@ ELSE
   CALL hdf5%READ(TRIM(dsetname)//"/elemNumber", elemNumber)
   ! IF (e%isLogActive()) THEN
   !   CALL Display(elemNumber, "elemNumber = ", &
-  !     & unitno=e%getLogFileUnit())
+  !     & unitno=e%GetLogFileUnit())
   ! END IF
   IF (ALLOCATED(elemNumber) .AND. SIZE(elemNumber) .NE. 0) THEN
     obj%maxElemNum = MAXVAL(elemNumber)
@@ -711,10 +711,10 @@ ELSE
   !   DO ii = 1, SIZE(connectivity, 1)
   !     CALL DISP(title="Node-"//TRIM(str(ii, .TRUE.)), &
   !       & x=connectivity(ii, :), &
-  !       & unit=e%getLogFileUnit(), style="UNDERLINE", &
+  !       & unit=e%GetLogFileUnit(), style="UNDERLINE", &
   !       & advance="NO")
   !   END DO
-  !   CALL DISP(title='', x='', unit=e%getLogFileUnit(), &
+  !   CALL DISP(title='', x='', unit=e%GetLogFileUnit(), &
   !     & advance="DOUBLE")
   ! END IF
 
@@ -739,14 +739,14 @@ ELSE
   CALL hdf5%READ(TRIM(dsetname)//"/intNodeNumber", InternalNptrs)
   ! IF (e%isLogActive()) THEN
   !   CALL Display(InternalNptrs, "InternalNptrs = ", &
-  !     & unitno=e%getLogFileUnit())
+  !     & unitno=e%GetLogFileUnit())
   ! END IF
   IF (obj%elemType .EQ. Point1 .OR. obj%elemType .EQ. 0) THEN
     obj%nodeData(1)%globalNodeNum = InternalNptrs(1)
     obj%nodeData(1)%nodeType = INTERNAL_NODE
   ELSE
     DO ii = 1, SIZE(InternalNptrs)
-      jj = obj%getLocalNodeNumber(InternalNptrs(ii))
+      jj = obj%GetLocalNodeNumber(InternalNptrs(ii))
       obj%nodeData(jj)%globalNodeNum = InternalNptrs(ii)
       obj%nodeData(jj)%nodeType = INTERNAL_NODE
     END DO
@@ -760,7 +760,7 @@ IF (isok) THEN
   CALL hdf5%READ(TRIM(dsetname)//"/boundingEntity", obj%boundingEntity)
   ! IF (e%isLogActive()) THEN
   !   CALL Display(obj%boundingEntity, "boundingEntity = ", &
-  !     & unitno=e%getLogFileUnit())
+  !     & unitno=e%GetLogFileUnit())
   ! END IF
 END IF
 
@@ -799,11 +799,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                              getNodeCoord
+!                                                              GetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_getNodeCoord
-CHARACTER(*), PARAMETER :: myName = "obj_getNodeCoord"
+MODULE PROCEDURE obj_GetNodeCoord
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord"
 TYPE(String) :: dsetname
 INTEGER(I4B) :: ii, jj
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -833,14 +833,14 @@ IF (.NOT. hdf5%pathExists(dsetname%chars())) &
 ! build nodeCoord
 !
 CALL hdf5%READ(dsetname%chars(), xij)
-CALL Reallocate(nodeCoord, 3_I4B, obj%getTotalNodes())
+CALL Reallocate(nodeCoord, 3_I4B, obj%GetTotalNodes())
 jj = SIZE(xij, 1)
 DO ii = 1, SIZE(nodeCoord, 2)
-  nodeCoord(1:jj, ii) = xij(1:jj, obj%getGlobalNodeNumber(ii))
+  nodeCoord(1:jj, ii) = xij(1:jj, obj%GetGlobalNodeNumber(ii))
 END DO
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 !
-END PROCEDURE obj_getNodeCoord
+END PROCEDURE obj_GetNodeCoord
 
 !----------------------------------------------------------------------------
 !                                                                     Export
@@ -876,8 +876,8 @@ IF (.NOT. vtkFile%isInitiated) THEN
   END IF
 END IF
 !
-nCells = obj%getTotalElements()
-nPoints = obj%getTotalNodes()
+nCells = obj%GetTotalElements()
+nPoints = obj%GetTotalNodes()
 OpenTag_ = INPUT(default=.TRUE., option=OpenTag)
 CloseTag_ = INPUT(default=.TRUE., option=CloseTag)
 Content_ = INPUT(default=.TRUE., option=Content)
@@ -892,7 +892,7 @@ IF (PRESENT(nodeCoord)) THEN
 END IF
 ! Write Cells
 IF (Content_) THEN
-  CALL getVTKelementType(elemType=obj%elemType, &
+  CALL GetVTKelementType(elemType=obj%elemType, &
     & vtk_type=vtkType, Nptrs=vtkIndx)
   nne = SIZE(vtkIndx)
   ALLOCATE (types(nCells), offsets(nCells), &
@@ -904,8 +904,8 @@ IF (Content_) THEN
   DO ii = obj%minElemNum, obj%maxElemNum
     IF (obj%isElementPresent(ii)) THEN
       jj = jj + 1
-      localNptrs = obj%getLocalNodeNumber( &
-        & obj%getConnectivity(globalElement=ii))
+      localNptrs = obj%GetLocalNodeNumber( &
+        & obj%GetConnectivity(globalElement=ii))
      connectivity(offsets(jj) - nne + 1:offsets(jj)) = localNptrs(vtkIndx) - 1
     END IF
   END DO
@@ -922,150 +922,24 @@ IF (ALLOCATED(localNptrs)) DEALLOCATE (localNptrs)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
-!                                                                  Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE elemData_Display
-CALL Display(TRIM(msg), unitno=unitno)
-CALL Display(obj%globalElemNum, msg="# globalElemNum=", unitno=unitno)
-CALL Display(obj%localElemNum, msg="# localElemNum=", unitno=unitno)
-!
-SELECT CASE (obj%elementType)
-CASE (INTERNAL_ELEMENT)
-  CALL Display("# elementType=INTERNAL_ELEMENT", unitno=unitno)
-CASE (BOUNDARY_ELEMENT)
-  CALL Display("# elementType=BOUNDARY_ELEMENT", unitno=unitno)
-CASE (DOMAIN_BOUNDARY_ELEMENT)
-  CALL Display("# elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
-CASE (GHOST_ELEMENT)
-  CALL Display("# elementType=GHOST_ELEMENT", unitno=unitno)
-END SELECT
-!
-! globalNodes
-!
-IF (ALLOCATED(obj%globalNodes)) THEN
-  CALL Display(obj%globalNodes, msg="# globalNodes=", unitno=unitno)
-END IF
-!
-! globalElements
-!
-IF (ALLOCATED(obj%globalElements)) THEN
-  CALL Display(obj%globalElements, msg="# globalElements=", unitno=unitno)
-END IF
-!
-! boundaryData
-!
-IF (ALLOCATED(obj%boundaryData)) THEN
-  CALL Display(obj%boundaryData, msg="# boundaryData=", unitno=unitno)
-END IF
-!
-END PROCEDURE elemData_Display
-
-!----------------------------------------------------------------------------
-!                                                                  Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE nodeData_Display
-!
-CALL Display(TRIM(msg), unitno=unitno)
-CALL Display(obj%globalNodeNum, msg="# globalNodeNum=", unitno=unitno)
-CALL Display(obj%localNodeNum, msg="# localNodeNum=", unitno=unitno)
-!
-SELECT CASE (obj%nodeType)
-CASE (INTERNAL_NODE)
-  CALL Display("# nodeType=INTERNAL_NODE", unitno=unitno)
-CASE (BOUNDARY_NODE)
-  CALL Display("# nodeType=BOUNDARY_NODE", unitno=unitno)
-CASE (DOMAIN_BOUNDARY_NODE)
-  CALL Display("# nodeType=DOMAIN_BOUNDARY_NODE", unitno=unitno)
-CASE (GHOST_NODE)
-  CALL Display("# nodeType=GHOST_NODE", unitno=unitno)
-END SELECT
-!
-CALL Display(obj%localNodeNum, msg="# localNodeNum=", unitno=unitno)
-!
-! globalNodes
-!
-IF (ALLOCATED(obj%globalNodes)) THEN
-  CALL Display(obj%globalNodes, msg="# globalNodes=", unitno=unitno)
-END IF
-!
-! extraGlobalNodes
-!
-IF (ALLOCATED(obj%extraGlobalNodes)) THEN
-  CALL Display(obj%extraGlobalNodes, msg="# extraGlobalNodes=", &
-    & unitno=unitno)
-END IF
-!
-! globalElements
-!
-IF (ALLOCATED(obj%globalElements)) THEN
-  CALL Display(obj%globalElements, msg="# globalElements=", unitno=unitno)
-END IF
-!
-END PROCEDURE nodeData_Display
-
-!----------------------------------------------------------------------------
-!                                                 InternalFacetData_Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE InternalFacetData_Display
-!
-CALL Display(TRIM(msg), unitno=unitno)
-CALL Display("# elementType=INTERNAL_ELEMENT", unitno=unitno)
-CALL Display(obj%masterCellNumber, msg="# masterCellNumber=", &
-  & unitno=unitno)
-CALL Display(obj%slaveCellNumber, msg="# slaveCellNumber=", &
-  & unitno=unitno)
-CALL Display(obj%masterlocalFacetID, msg="# masterlocalFacetID=", &
-  & unitno=unitno)
-CALL Display(obj%slavelocalFacetID, msg="# slavelocalFacetID=", &
-  & unitno=unitno)
-!
-END PROCEDURE InternalFacetData_Display
-
-!----------------------------------------------------------------------------
-!                                                   BoundaryFacetData_Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE BoundaryFacetData_Display
-!
-CALL Display(TRIM(msg), unitno=unitno)
-!
-SELECT CASE (obj%elementType)
-CASE (INTERNAL_ELEMENT)
-  CALL Display("# elementType=INTERNAL_ELEMENT", unitno=unitno)
-CASE (BOUNDARY_ELEMENT)
-  CALL Display("# elementType=BOUNDARY_ELEMENT", unitno=unitno)
-CASE (DOMAIN_BOUNDARY_ELEMENT)
-  CALL Display("# elementType=DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
-END SELECT
-!
-CALL Display(obj%masterCellNumber, msg="# masterCellNumber=", &
-  & unitno=unitno)
-CALL Display(obj%masterLocalFacetID, msg="# masterlocalFacetID=", &
-  & unitno=unitno)
-!
-END PROCEDURE BoundaryFacetData_Display
-
-!----------------------------------------------------------------------------
 !                                                        DisplayElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayElementData
-!
 INTEGER(I4B) :: ii, telements
-!
-telements = obj%getTotalElements()
-!
+
+telements = obj%GetTotalElements()
+
 CALL Display(TRIM(msg), unitno=unitno)
-!
+
 DO ii = 1, telements
-  CALL obj%elementData(ii)%Display(msg="# elementData( "//tostring(ii) &
+  CALL elemData_Display(  &
+    & obj=obj%elementData(ii),  &
+    & msg="# elementData( "//tostring(ii) &
     & //" )=", unitno=unitno)
   CALL BlankLines(nol=2, unitno=unitno)
 END DO
-!
+
 END PROCEDURE obj_DisplayElementData
 
 !----------------------------------------------------------------------------
@@ -1073,19 +947,15 @@ END PROCEDURE obj_DisplayElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayNodeData
-!
 INTEGER(I4B) :: ii, tNodes
-!
-tNodes = obj%getTotalNodes()
-!
+tNodes = obj%GetTotalNodes()
 CALL Display(TRIM(msg), unitno=unitno)
-!
 DO ii = 1, tNodes
-  CALL obj%nodeData(ii)%Display(msg="# nodeData( "//tostring(ii) &
+  CALL nodeData_Display(obj%nodeData(ii),  &
+    & msg="# nodeData( "//tostring(ii) &
     & //" )=", unitno=unitno)
   CALL BlankLines(nol=2, unitno=unitno)
 END DO
-!
 END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
@@ -1102,7 +972,8 @@ IF (ALLOCATED(obj%internalFacetData)) THEN
   telements = SIZE(obj%internalFacetData)
 
   DO ii = 1, telements
-    CALL obj%internalFacetData(ii)%Display( &
+    CALL InternalFacetData_Display(  &
+      & obj=obj%internalFacetData(ii),  &
       & msg="# internalFacetData( "//tostring(ii) &
       & //" )=", unitno=unitno)
     CALL BlankLines(nol=2, unitno=unitno)
@@ -1126,7 +997,8 @@ CALL Display(TRIM(msg), unitno=unitno)
 IF (ALLOCATED(obj%boundaryFacetData)) THEN
 
   DO ii = 1, SIZE(obj%boundaryFacetData)
-    CALL obj%boundaryFacetData(ii)%Display( &
+    CALL BoundaryFacetData_Display(  &
+      & obj=obj%boundaryFacetData(ii),  &
       & msg="# boundaryFacetData( "//tostring(ii) &
       & //" )=", unitno=unitno)
     CALL BlankLines(nol=2, unitno=unitno)
