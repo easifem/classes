@@ -24,11 +24,11 @@ CONTAINS
 !                                                       InitiateBoundaryData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_InitiateBoundaryData
+MODULE PROCEDURE obj_InitiateBoundaryData
 ! Define internal variables
 INTEGER(I4B) :: iel, tFace, ii, jj, kk
 INTEGER(I4B), ALLOCATABLE :: global_nptrs(:), ElemToElem(:, :)
-CHARACTER(*), PARAMETER :: myName = "mesh_InitiateBoundaryData"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData"
 
 ! check
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
@@ -98,7 +98,7 @@ ELSE
 END IF
 IF (ALLOCATED(global_nptrs)) DEALLOCATE (global_nptrs)
 IF (ALLOCATED(ElemToElem)) DEALLOCATE (ElemToElem)
-END PROCEDURE mesh_InitiateBoundaryData
+END PROCEDURE obj_InitiateBoundaryData
 
 !----------------------------------------------------------------------------
 !

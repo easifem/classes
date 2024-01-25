@@ -24,7 +24,7 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_display
+MODULE PROCEDURE obj_display
 CALL Display(msg, unitno=unitno)
 
 IF (.NOT. obj%isInitiated) THEN
@@ -373,14 +373,14 @@ CALL Display(obj%interpolTypeForFacet, "interpolTypeForFacet = ", &
 ! orderFacet
 CALL Display(obj%orderFacet, "orderFacet = ", unitno=unitno)
 
-END PROCEDURE mesh_display
+END PROCEDURE obj_display
 
 !----------------------------------------------------------------------------
 !                                                                     Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_Import
-CHARACTER(*), PARAMETER :: myName = "mesh_Import"
+MODULE PROCEDURE obj_Import
+CHARACTER(*), PARAMETER :: myName = "obj_Import"
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
 TYPE(String) :: dsetname
@@ -796,14 +796,14 @@ IF (ALLOCATED(InternalNptrs)) DEALLOCATE (InternalNptrs)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END]')
 
-END PROCEDURE mesh_Import
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
 !                                                              getNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_getNodeCoord
-CHARACTER(*), PARAMETER :: myName = "mesh_getNodeCoord"
+MODULE PROCEDURE obj_getNodeCoord
+CHARACTER(*), PARAMETER :: myName = "obj_getNodeCoord"
 TYPE(String) :: dsetname
 INTEGER(I4B) :: ii, jj
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -840,24 +840,24 @@ DO ii = 1, SIZE(nodeCoord, 2)
 END DO
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 !
-END PROCEDURE mesh_getNodeCoord
+END PROCEDURE obj_getNodeCoord
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_Export
-CHARACTER(*), PARAMETER :: myName = "mesh_Export"
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
 CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "[WIP]: This routine has not been implemented yet.")
-END PROCEDURE mesh_Export
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_ExportToVTK
-CHARACTER(*), PARAMETER :: myName = "mesh_ExportToVTK"
+MODULE PROCEDURE obj_ExportToVTK
+CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK"
 LOGICAL(LGT) :: OpenTag_, CloseTag_, Content_
 INTEGER(INT8) :: vtkType
 INTEGER(INT8), ALLOCATABLE :: types(:)
@@ -919,7 +919,7 @@ IF (ALLOCATED(vtkIndx)) DEALLOCATE (vtkIndx)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
 IF (ALLOCATED(offsets)) DEALLOCATE (offsets)
 IF (ALLOCATED(localNptrs)) DEALLOCATE (localNptrs)
-END PROCEDURE mesh_ExportToVTK
+END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
 !                                                                  Display
@@ -1052,7 +1052,7 @@ END PROCEDURE BoundaryFacetData_Display
 !                                                        DisplayElementData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DisplayElementData
+MODULE PROCEDURE obj_DisplayElementData
 !
 INTEGER(I4B) :: ii, telements
 !
@@ -1066,13 +1066,13 @@ DO ii = 1, telements
   CALL BlankLines(nol=2, unitno=unitno)
 END DO
 !
-END PROCEDURE mesh_DisplayElementData
+END PROCEDURE obj_DisplayElementData
 
 !----------------------------------------------------------------------------
 !                                                            DisplayNodeData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DisplayNodeData
+MODULE PROCEDURE obj_DisplayNodeData
 !
 INTEGER(I4B) :: ii, tNodes
 !
@@ -1086,13 +1086,13 @@ DO ii = 1, tNodes
   CALL BlankLines(nol=2, unitno=unitno)
 END DO
 !
-END PROCEDURE mesh_DisplayNodeData
+END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
 !                                                  DisplayInternalFacetData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DisplayInternalFacetData
+MODULE PROCEDURE obj_DisplayInternalFacetData
 INTEGER(I4B) :: ii, telements
 
 CALL Display(TRIM(msg), unitno=unitno)
@@ -1112,13 +1112,13 @@ ELSE
   CALL Display("# internalFacetData NOT ALLOCATED", unitno=unitno)
 END IF
 
-END PROCEDURE mesh_DisplayInternalFacetData
+END PROCEDURE obj_DisplayInternalFacetData
 
 !----------------------------------------------------------------------------
 !                                                   DisplayBoundaryFacetData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DisplayBoundaryFacetData
+MODULE PROCEDURE obj_DisplayBoundaryFacetData
 INTEGER(I4B) :: ii
 
 CALL Display(TRIM(msg), unitno=unitno)
@@ -1136,13 +1136,13 @@ ELSE
   CALL Display("# boundaryFacetData NOT ALLOCATED", unitno=unitno)
 END IF
 
-END PROCEDURE mesh_DisplayBoundaryFacetData
+END PROCEDURE obj_DisplayBoundaryFacetData
 
 !----------------------------------------------------------------------------
 !                                                         DisplayFacetElemSD
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DisplayFacetElemSD
+MODULE PROCEDURE obj_DisplayFacetElemSD
 INTEGER(I4B) :: ii
 
 CALL Display(msg, unitno=unitno)
@@ -1173,13 +1173,13 @@ ELSE
 
 END IF
 
-END PROCEDURE mesh_DisplayFacetElemSD
+END PROCEDURE obj_DisplayFacetElemSD
 
 !----------------------------------------------------------------------------
 !                                                      DisplayFacetElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_DisplayFacetElements
+MODULE PROCEDURE obj_DisplayFacetElements
 INTEGER(I4B) :: ii
 
 CALL Display(msg, unitno=unitno)
@@ -1200,6 +1200,6 @@ ELSE
 
 END IF
 
-END PROCEDURE mesh_DisplayFacetElements
+END PROCEDURE obj_DisplayFacetElements
 
 END SUBMODULE IOMethods

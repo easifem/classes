@@ -24,68 +24,63 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setBoundingBox1
+MODULE PROCEDURE obj_setBoundingBox1
 obj%minX = (.Xmin.box)
 obj%minY = (.Ymin.box)
 obj%minZ = (.Zmin.box)
 obj%maxX = (.Xmax.box)
 obj%maxY = (.Ymax.box)
 obj%maxZ = (.Zmax.box)
-END PROCEDURE mesh_setBoundingBox1
+END PROCEDURE obj_setBoundingBox1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setBoundingBox2
+MODULE PROCEDURE obj_setBoundingBox2
 TYPE(BoundingBox_) :: box
 Box = obj%getBoundingBox(nodes=nodes, local_nptrs=local_nptrs)
 CALL obj%setBoundingBox(box=box)
 CALL DEALLOCATE (box)
-END PROCEDURE mesh_setBoundingBox2
+END PROCEDURE obj_setBoundingBox2
 
 !----------------------------------------------------------------------------
 !                                                                setSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setSparsity1
-CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity1"
-!
-! check
-!
+MODULE PROCEDURE obj_setSparsity1
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!
+
 ! if the mesh is empty then return
-!
 IF (obj%getTotalElements() .EQ. 0_I4B) THEN
   CALL e%raiseWarning(modName//'::'//myName//' - '// &
   & 'Empty mesh found, returning')
   RETURN
 END IF
-!
+
 ! check
-!
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!
+
 ! Call from MeshUtility
-!
 CALL SetSparsity1(obj=obj, mat=mat, localNodeNumber=localNodeNumber, &
   & lbound=lbound, ubound=ubound)
-!
-END PROCEDURE mesh_setSparsity1
+
+END PROCEDURE obj_setSparsity1
 
 !----------------------------------------------------------------------------
 !                                                                setSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setSparsity2
-CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity2"
+MODULE PROCEDURE obj_setSparsity2
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
 !
 ! check
 !
@@ -105,14 +100,14 @@ END IF
 !
 CALL SetSparsity2(obj=obj, mat=mat)
 !
-END PROCEDURE mesh_setSparsity2
+END PROCEDURE obj_setSparsity2
 
 !----------------------------------------------------------------------------
 !                                                               SetSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_SetSparsity3
-CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity3"
+MODULE PROCEDURE obj_SetSparsity3
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity3()"
 !
 ! check
 !
@@ -147,59 +142,50 @@ END IF
 CALL SetSparsity3(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
   & mat=mat, ivar=ivar, jvar=jvar)
 !
-END PROCEDURE mesh_SetSparsity3
+END PROCEDURE obj_SetSparsity3
 
 !----------------------------------------------------------------------------
 !                                                                setSparsity
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setSparsity4
-CHARACTER(*), PARAMETER :: myName = "mesh_setSparsity4"
-!
-! Check
-!
+MODULE PROCEDURE obj_setSparsity4
+CHARACTER(*), PARAMETER :: myName = "obj_setSparsity4()"
+
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!
-! Check
-!
+
 IF (.NOT. colMesh%isInitiated) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "colMesh data is not initiated, first initiate")
 END IF
-!
-! Check
-!
+
 IF (SIZE(nodeToNode) .LT. obj%maxNptrs) THEN
   CALL e%raiseError(modName//"::"//myName//" - "// &
     & "SIZE( nodeToNode ) .LT. obj%maxNptrs [easifemClasses ISSUE#63]")
 END IF
-!
-! check
-!
+
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!
-! Call from MeshUtility
-!
+
+! NOTE: Call from MeshUtility
 CALL SetSparsity4(obj=obj, colMesh=colMesh, nodeToNode=nodeToNode, &
   & mat=mat, rowGlobalToLocalNodeNum=rowGlobalToLocalNodeNum, &
   & colGlobalToLocalNodeNum=colGlobalToLocalNodeNum, &
   & rowLBOUND=rowLBOUND, rowUBOUND=rowUBOUND, &
   & colLBOUND=colLBOUND, colUBOUND=colUBOUND, &
   & ivar=ivar, jvar=jvar)
-!
-END PROCEDURE mesh_setSparsity4
+
+END PROCEDURE obj_setSparsity4
 
 !----------------------------------------------------------------------------
 !                                                           setTotalMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setTotalMaterial
+MODULE PROCEDURE obj_setTotalMaterial
 INTEGER(I4B), ALLOCATABLE :: temp_material(:)
 INTEGER(I4B) :: n0
 
@@ -211,33 +197,33 @@ IF (ALLOCATED(obj%material)) THEN
 ELSE
   CALL reallocate(obj%material, n)
 END IF
-END PROCEDURE mesh_setTotalMaterial
+END PROCEDURE obj_setTotalMaterial
 
 !----------------------------------------------------------------------------
 !                                                                setMaterial
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setMaterial
+MODULE PROCEDURE obj_setMaterial
 obj%material(medium) = material
-END PROCEDURE mesh_setMaterial
+END PROCEDURE obj_setMaterial
 
 !----------------------------------------------------------------------------
 !                                                        setFacetElementType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setFacetElementType
+MODULE PROCEDURE obj_setFacetElementType
 INTEGER(I4B) :: localElem
 localElem = obj%getLocalElemNumber(globalElement=globalElement)
 obj%facetElementType(iface, localElem) = facetElementType
 obj%elementData(localElem)%elementType = facetElementType
-END PROCEDURE mesh_setFacetElementType
+END PROCEDURE obj_setFacetElementType
 
 !----------------------------------------------------------------------------
 !                                                           setQuality
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE mesh_setQuality
-CHARACTER(*), PARAMETER :: myName = "mesh_setQuality"
+MODULE PROCEDURE obj_setQuality
+CHARACTER(*), PARAMETER :: myName = "obj_setQuality()"
 INTEGER(I4B) :: a, b, c, tsize, telements, iel, ii, nsd
 INTEGER(I4B), ALLOCATABLE :: indx(:), nptrs(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :)
@@ -296,7 +282,7 @@ IF (ALLOCATED(indx)) DEALLOCATE (indx)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 
-END PROCEDURE mesh_setQuality
+END PROCEDURE obj_setQuality
 
 !----------------------------------------------------------------------------
 !

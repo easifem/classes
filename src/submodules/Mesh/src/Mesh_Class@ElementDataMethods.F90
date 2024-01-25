@@ -26,8 +26,8 @@ CONTAINS
 
 ! nodeToElements
 
-MODULE PROCEDURE mesh_InitiateElementToElements
-CHARACTER(*), PARAMETER :: myName = "mesh_InitiateElementToElements()"
+MODULE PROCEDURE obj_InitiateElementToElements
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
 INTEGER(I4B) :: i, j, r, iel1, tFace, iFace1, NNS1, pt1, &
   & iel2, iFace2, NNS2, localElem1
 INTEGER(I4B), ALLOCATABLE :: global_nptrs1(:),   &
@@ -137,7 +137,7 @@ IF (ALLOCATED(global_nptrs2)) DEALLOCATE (global_nptrs2)
 IF (ALLOCATED(global_nptrsFace1)) DEALLOCATE (global_nptrsFace1)
 IF (ALLOCATED(global_nptrsFace2)) DEALLOCATE (global_nptrsFace2)
 IF (ALLOCATED(n2e1)) DEALLOCATE (n2e1)
-END PROCEDURE mesh_InitiateElementToElements
+END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------
 !
