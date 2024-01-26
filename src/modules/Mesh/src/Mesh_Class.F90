@@ -32,6 +32,7 @@ USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
   & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem, ElemData_Display
 USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
   & InternalFacetData_Display, BoundaryFacetData_Display
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
 PRIVATE
@@ -60,91 +61,12 @@ CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 !
 !{!pages/docs-api/Mesh/Mesh_.md!}
 
-TYPE :: Mesh_
-  PRIVATE
-  LOGICAL(LGT) :: readFromFile = .TRUE.
-    !! True if the mesh is read from a file
-  LOGICAL(LGT) :: isInitiated = .FALSE.
-    !! logical flag denoting for whether mesh data is Initiated or not
-  LOGICAL(LGT) :: isNodeToElementsInitiated = .FALSE.
-    !! Node to elements mapping
-  LOGICAL(LGT) :: isNodeToNodesInitiated = .FALSE.
-    !! Node to nodes mapping
-  LOGICAL(LGT) :: isExtraNodeToNodesInitiated = .FALSE.
-    !! Node to nodes mapping
-  LOGICAL(LGT) :: isElementToElementsInitiated = .FALSE.
-    !! Element to elements mapping
-  LOGICAL(LGT) :: isBoundaryDataInitiated = .FALSE.
-    !! Boundary data
-  LOGICAL(LGT), PUBLIC :: isFacetDataInitiated = .FALSE.
-    !! FacetData
-    !! TODO: Make isFacetDataInitiated PRIVATE
-  INTEGER(I4B) :: uid = 0
-    !! Unique id of the mesh
+TYPE, EXTENDS(AbstractMesh_) :: Mesh_
   INTEGER(I4B) :: xidim = 0
     !! xidimension of elements present inside the mesh
+
   INTEGER(I4B) :: elemType = 0
     !! type of element present inside the mesh
-  INTEGER(I4B) :: nsd = 0
-    !! number of spatial dimension of the mesh
-  INTEGER(I4B), PUBLIC :: maxNptrs = 0
-    !! largest node number present inside the mesh
-  INTEGER(I4B), PUBLIC :: minNptrs = 0
-    !! minimum node number present inside the mesh
-  INTEGER(I4B), PUBLIC :: maxElemNum = 0
-    !! largest element number present inside the mesh
-  INTEGER(I4B), PUBLIC :: minElemNum = 0
-    !! minimum element number present inside the mesh
-  INTEGER(I4B) :: tNodes = 0
-    !! total number of nodes present inside the mesh
-  INTEGER(I4B) :: tIntNodes = 0
-    !! total number of internal nodes inside the mesh
-  INTEGER(I4B) :: tElements = 0
-    !! total number of elements present inside the mesh
-    !! It is the size of elemNumber vector
-  REAL(DFP) :: minX = 0.0
-    !! minimum value of x coordinate
-  REAL(DFP) :: maxX = 0.0
-    !! maximum value of x coordinate
-  REAL(DFP) :: minY = 0.0
-    !! minimum value of y coordinate
-  REAL(DFP) :: maxY = 0.0
-    !! maximum value of y coordinate
-  REAL(DFP) :: minZ = 0.0
-    !! minimum value of z coordinate
-  REAL(DFP) :: maxZ = 0.0
-    !! maximum value of z coordinate
-  REAL(DFP) :: X = 0.0
-    !! x coorindate of centroid
-  REAL(DFP) :: Y = 0.0
-    !! y coordinate of centroid
-  REAL(DFP) :: Z = 0.0
-    !! z coordinate of centroid
-  INTEGER(I4B), ALLOCATABLE :: physicalTag(:)
-    !! Physical entities associated with the current entity (mesh)
-  INTEGER(I4B), ALLOCATABLE :: boundingEntity(:)
-    !! Bounding entity numbers of the current entity
-  INTEGER(I4B), ALLOCATABLE :: local_elemNumber(:)
-    !! List of local element numbers, the lowerbound is `minElemNum`
-    !! and upper bound is `maxElemNum`. In this way, local_elemNumber(iel)
-    !! returns the local element number of global element number iel.
-
-  INTEGER(I4B), ALLOCATABLE :: local_Nptrs(:)
-    !! Returns local node number from a global node number
-    !! Its length is from 1 to maxNptrs
-    !! Helpul in finding if a global node is present inside the mesh or not
-
-  INTEGER(I4B), ALLOCATABLE :: material(:)
-    !! materials mapped to the mesh
-    !! material(1) is the material id of medium 1
-    !! material(2) is the material id of medium 2
-    !! ...
-    !! material(n) is the material id of medium n
-    !!
-    !! For example, soil is a porous medium n = 1,
-    !! fluid is a medium n =2
-    !! then material(1) denotes the type of soil => clay, sand, silt
-    !! and material(2) denotes the type of fluid, water, oil, air
 
   TYPE(ReferenceElement_), PUBLIC, ALLOCATABLE :: facetElements(:)
     !! Facet Elements in the reference element
@@ -161,11 +83,14 @@ TYPE :: Mesh_
 
   TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
     !! Node data
+
   TYPE(ElemData_), ALLOCATABLE :: elementData(:)
     !! element data
+
   TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData(:)
     !! Internal facet data
     !! INFO: This data is initiated by InitiateFacetElements method
+
   TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
     !! Domain Facet Data
     !! INFO: This data is initiated by InitiateFacetElements method
