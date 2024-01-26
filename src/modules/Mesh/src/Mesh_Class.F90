@@ -158,6 +158,7 @@ TYPE :: Mesh_
   !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
   !! If the face is a part of the mesh boundary then it will be called
   !! the BOUNDARY_ELEMENT
+
   TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
     !! Node data
   TYPE(ElemData_), ALLOCATABLE :: elementData(:)

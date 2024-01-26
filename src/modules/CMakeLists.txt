@@ -90,6 +90,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
 # ElementPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/ElementPointerVector/CMakeLists.txt)
 
+# AbstractMesh
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
+
 # Mesh
 include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
 
