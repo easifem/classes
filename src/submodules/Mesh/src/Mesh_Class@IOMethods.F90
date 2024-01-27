@@ -25,216 +25,33 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-CALL Display(msg, unitno=unitno)
+LOGICAL(LGT) :: abool
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL Display("Mesh object is empty, noting to display", msg, &
-    & unitno=unitno)
-  RETURN
-END IF
+CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 
-! readFromFile
-CALL Display(obj%readFromFile, "readFromFile : ", unitno=unitno)
+CALL Display(obj%xidim, "xidim: ", unitno=unitno)
+CALL Display(obj%elemType, "elemType: ", unitno=unitno)
 
-! isNodeToElementsInitiated
-CALL Display(obj%isNodeToElementsInitiated,  &
-  & "isNodeToElementsInitiated : ", unitno=unitno)
+abool = ALLOCATED(obj%facetElements)
+CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
 
-! isNodeToNodesInitiated
-CALL Display(obj%isNodeToNodesInitiated,  &
-  & "isNodeToNodesInitiated : ", unitno=unitno)
+abool = ALLOCATED(obj%facetElementType)
+CALL Display(abool, "facetElementType ALLOCATED: ", unitno=unitno)
 
-! isElementToElementsInitiated
-CALL Display(obj%isElementToElementsInitiated,  &
-  & "isElementToElementsInitiated : ", unitno=unitno)
+abool = ALLOCATED(obj%nodeData)
+CALL Display(abool, "nodeData ALLOCATED: ", unitno=unitno)
 
-! isBoundaryDataInitiated
-CALL Display(obj%isBoundaryDataInitiated,  &
-  & "isBoundaryDataInitiated : ", unitno=unitno)
+abool = ALLOCATED(obj%elementData)
+CALL Display(abool, "elementData ALLOCATED: ", unitno=unitno)
 
-! isFacetDataInitiated
-CALL Display(obj%isFacetDataInitiated,  &
-  & "isFacetDataInitiated : ", unitno=unitno)
+abool = ALLOCATED(obj%internalFacetData)
+CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
 
-! uid
-CALL Display(obj%uid,  &
-  & "uid : ", unitno=unitno)
+abool = ALLOCATED(obj%boundaryFacetData)
+CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
 
-! xidim
-CALL Display(obj%xidim,  &
-  & "xidim : ", unitno=unitno)
-
-! elemType
-CALL Display(obj%elemType,  &
-  & "elemType : ", unitno=unitno)
-
-! nsd
-CALL Display(obj%nsd,  &
-  & "nsd : ", unitno=unitno)
-
-! maxNptrs
-CALL Display(obj%maxNptrs,  &
-  & "maxNptrs : ", unitno=unitno)
-
-! minNptrs
-CALL Display(obj%minNptrs,  &
-  & "minNptrs : ", unitno=unitno)
-
-! maxElemNum
-CALL Display(obj%maxElemNum,  &
-  & "maxElemNum : ", unitno=unitno)
-
-! minElemNum
-CALL Display(obj%minElemNum,  &
-  & "minElemNum : ", unitno=unitno)
-
-! tNodes
-CALL Display(obj%tNodes,  &
-  & "tNodes : ", unitno=unitno)
-
-! tIntNodes
-CALL Display(obj%tIntNodes,  &
-  & "tIntNodes : ", unitno=unitno)
-
-! tElements
-CALL Display(obj%tElements,  &
-  & "tElements : ", unitno=unitno)
-
-! minX
-CALL Display(obj%minX,  &
-  & "minX : ", unitno=unitno)
-
-! maxX
-CALL Display(obj%maxX,  &
-  & "maxX : ", unitno=unitno)
-
-! minY
-CALL Display(obj%minY,  &
-  & "minY : ", unitno=unitno)
-
-! maxY
-CALL Display(obj%maxY,  &
-  & "maxY : ", unitno=unitno)
-
-! minZ
-CALL Display(obj%minZ,  &
-  & "minZ : ", unitno=unitno)
-
-! maxZ
-CALL Display(obj%maxZ,  &
-  & "maxZ : ", unitno=unitno)
-
-! X
-CALL Display(obj%X,  &
-  & "X : ", unitno=unitno)
-
-! Y
-CALL Display(obj%Y,  &
-  & "Y : ", unitno=unitno)
-
-! Z
-CALL Display(obj%Z,  &
-  & "Z : ", unitno=unitno)
-
-! physicalTag
-IF (ALLOCATED(obj%physicalTag)) THEN
-  CALL Display(obj%physicalTag,  &
-    & "physicalTag : ", unitno=unitno)
-ELSE
-  CALL Display("physicalTag : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! boundingEntity
-IF (ALLOCATED(obj%boundingEntity)) THEN
-  CALL Display(obj%boundingEntity,  &
-    & "boundingEntity : ", unitno=unitno)
-ELSE
-  CALL Display("boundingEntity : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! local_elemNumber
-
-IF (ALLOCATED(obj%local_elemNumber)) THEN
-  CALL Display("local_elemNumber : ALLOCATED ", unitno=unitno)
-ELSE
-  CALL Display("local_elemNumber : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! local_Nptrs
-IF (ALLOCATED(obj%local_Nptrs)) THEN
-  CALL Display("local_Nptrs : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("local_Nptrs : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! material
-IF (ALLOCATED(obj%material)) THEN
-  CALL Display(obj%material,  &
-    & "material : ", unitno=unitno)
-ELSE
-  CALL Display("material : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! facetElements
-IF (ALLOCATED(obj%facetElements)) THEN
-  CALL Display("facetElements : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("facetElements : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! facetElementType
-IF (ALLOCATED(obj%facetElementType)) THEN
-  CALL Display("facetElementType : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("facetElementType : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! nodeData
-IF (ALLOCATED(obj%nodeData)) THEN
-  CALL Display("nodeData : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("nodeData : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! elementData
-IF (ALLOCATED(obj%elementData)) THEN
-  CALL Display("elementData : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("elementData : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! internalFacetData
-IF (ALLOCATED(obj%internalFacetData)) THEN
-  CALL Display("internalFacetData : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("internalFacetData : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! boundaryFacetData
-IF (ALLOCATED(obj%boundaryFacetData)) THEN
-  CALL Display("boundaryFacetData : ALLOCATED", unitno=unitno)
-ELSE
-  CALL Display("boundaryFacetData : NOT ALLOCATED", &
-    & unitno=unitno)
-END IF
-
-! refElem
-IF (ASSOCIATED(obj%refElem)) THEN
-  CALL Display("refElem : ASSOCIATED", unitno=unitno)
-ELSE
-  CALL Display("refElem : NOT ASSOCIATED", &
-    & unitno=unitno)
-END IF
+abool = ASSOCIATED(obj%refElem)
+CALL Display(abool, "refElem ASSOCIATED: ", unitno=unitno)
 
 END PROCEDURE obj_Display
 
@@ -260,21 +77,21 @@ dsetname = TRIM(group)
 isok = hdf5%isOpen()
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: HDF5 file is not opened')
+    & '[INTERNAL ERROR]:: HDF5 file is not opened')
   RETURN
 END IF
 
 isok = hdf5%isRead()
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+    & '[INTERNAL ERROR]:: HDF5 file does not have read permission')
   RETURN
 END IF
 
 isok = hdf5%isGroup(dsetname%chars())
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)//  &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)//  &
     & ' is not a group; it should be a group which contains the meshEntity')
   RETURN
 END IF
@@ -282,7 +99,7 @@ END IF
 isok = hdf5%pathExists(dsetname%chars())
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)//  &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)//  &
     & ' path does not exists')
   RETURN
 END IF
@@ -291,7 +108,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/uid")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[INTERNAL ERROR] :: "//TRIM(dsetname)// &
+    & "[INTERNAL ERROR]:: "//TRIM(dsetname)// &
     & "/uid"//' path does not exists')
   RETURN
 ELSE
@@ -302,7 +119,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/xidim")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[INTERNAL ERROR] :: "//TRIM(dsetname)//"/xidim"//  &
+    & "[INTERNAL ERROR]:: "//TRIM(dsetname)//"/xidim"//  &
     & ' path does not exists')
   RETURN
 ELSE
@@ -313,7 +130,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/elemType")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[INTERNAL ERROR] :: "//TRIM(dsetname)//"/elemType"// &
+    & "[INTERNAL ERROR]:: "//TRIM(dsetname)//"/elemType"// &
     & ' path does not exists')
   RETURN
 ELSE
@@ -324,7 +141,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/nsd")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)//"/nsd"// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)//"/nsd"// &
     & ' path does not exists')
   RETURN
 ELSE
@@ -335,7 +152,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/tIntNodes")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/tIntNodes path does not exists')
   RETURN
 ELSE
@@ -346,7 +163,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/tElements")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/tElements path does not exists')
   RETURN
 ELSE
@@ -362,7 +179,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/minX")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/minX path does not exists')
   RETURN
 ELSE
@@ -373,7 +190,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/minY")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/minY path does not exists')
 ELSE
   CALL hdf5%READ(TRIM(dsetname)//"/minY", obj%minY)
@@ -383,7 +200,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/minZ")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[INTERNAL ERROR] :: "//TRIM(dsetname)// &
+    & "[INTERNAL ERROR]:: "//TRIM(dsetname)// &
     & '/minZ path does not exists')
   RETURN
 ELSE
@@ -394,7 +211,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/maxX")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/maxX path does not exists.')
   RETURN
 ELSE
@@ -405,7 +222,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/maxY")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)//  &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)//  &
     & '/maxY path does not exists.')
   RETURN
 ELSE
@@ -416,7 +233,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/maxZ")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/maxZ path does not exists.')
   RETURN
 ELSE
@@ -427,7 +244,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/x")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/x path does not exists.')
   RETURN
 ELSE
@@ -438,7 +255,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/y")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] ::'//TRIM(dsetname)//  &
+    & '[INTERNAL ERROR]::'//TRIM(dsetname)//  &
     & '/y path does not exists.')
   RETURN
 ELSE
@@ -449,7 +266,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/z")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/z path does not exists')
   RETURN
 ELSE
@@ -461,7 +278,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/physicalTag")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/physicalTag path does not exists')
   RETURN
 ELSE
@@ -475,7 +292,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/elemNumber")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/elemNumber path does not exists')
   RETURN
 ELSE
@@ -503,7 +320,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/connectivity")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/connectivity path does not exists')
   RETURN
 ELSE
@@ -557,7 +374,7 @@ END IF
 isok = hdf5%pathExists(TRIM(dsetname)//"/intNodeNumber")
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: '//TRIM(dsetname)// &
+    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
     & '/intNodeNumber path does not exists')
   RETURN
 ELSE
@@ -836,7 +653,7 @@ IF (ALLOCATED(obj%facetElements)) THEN
     CALL BlankLines(nol=2, unitno=unitno)
   END DO
 ELSE
-  CALL Display("facetElements : NOT ALLOCATED", unitno=unitno)
+  CALL Display("facetElements: NOT ALLOCATED", unitno=unitno)
 END IF
 
 END PROCEDURE obj_DisplayFacetElements
