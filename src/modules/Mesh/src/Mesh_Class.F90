@@ -434,6 +434,32 @@ TYPE :: MeshPointer_
 END TYPE MeshPointer_
 
 !----------------------------------------------------------------------------
+!                                           Mesh_Pointer@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 18 June 2021
+! summary: This function returns a pointer to an instance of obj_ object
+
+INTERFACE Mesh_Pointer
+  MODULE FUNCTION obj_Constructor_1(hdf5, group) RESULT(ans)
+    CLASS(Mesh_), POINTER :: ans
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END FUNCTION obj_Constructor_1
+END INTERFACE Mesh_Pointer
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_final(obj)
+    TYPE(Mesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_final
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -465,22 +491,6 @@ INTERFACE
     !! location in HDF5 file
   END SUBROUTINE obj_Initiate
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           Mesh_Pointer@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
-! summary: This function returns a pointer to an instance of obj_ object
-
-INTERFACE Mesh_Pointer
-  MODULE FUNCTION obj_Constructor_1(hdf5, group) RESULT(ans)
-    CLASS(Mesh_), POINTER :: ans
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END FUNCTION obj_Constructor_1
-END INTERFACE Mesh_Pointer
 
 !----------------------------------------------------------------------------
 !                                                    Deallocate@Constructor
@@ -518,16 +528,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_final(obj)
-    TYPE(Mesh_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_final
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
@@ -561,7 +561,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetNodeCoord@IOMethods
+!                                                    GetNodeCoord@IOMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
