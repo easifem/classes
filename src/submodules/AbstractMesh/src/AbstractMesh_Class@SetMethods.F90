@@ -116,7 +116,9 @@ END PROCEDURE obj_SetMaterial
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
-
+CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------

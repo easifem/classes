@@ -27,10 +27,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNNE
-! ans = 0
-! IF (ASSOCIATED(obj%refelem)) THEN
-!   ans = .NNE.obj%refelem
-! END IF
+CHARACTER(*), PARAMETER :: myName = "obj_GetNNE()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNNE
 
 !----------------------------------------------------------------------------
@@ -38,10 +38,10 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNNE
-! ans = 0
-! IF (ASSOCIATED(obj%refelem)) THEN
-!   ans = .NNE.obj%refelem
-! END IF
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNNE()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetMaxNNE
 
 !----------------------------------------------------------------------------
@@ -81,7 +81,10 @@ END PROCEDURE obj_GetBoundingEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNptrs
 
 !----------------------------------------------------------------------------
@@ -89,7 +92,10 @@ END PROCEDURE obj_GetNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInternalNptrs
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
@@ -97,7 +103,10 @@ END PROCEDURE obj_GetInternalNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryNptrs
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryNptrs()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetBoundaryNptrs
 
 !----------------------------------------------------------------------------
@@ -105,21 +114,37 @@ END PROCEDURE obj_GetBoundaryNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryNode
-
+CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryNode()"
+ans = .FALSE.
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_isBoundaryNode
 
 !----------------------------------------------------------------------------
 !                                                           isNodePresent
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isNodePresent
-ans = .TRUE.
-IF (globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs) THEN
-  ans = .FALSE.
-ELSE IF (obj%local_nptrs(globalNode) .EQ. 0) THEN
-  ans = .FALSE.
+MODULE PROCEDURE obj_isNodePresent1
+LOGICAL(LGT) :: abool
+
+abool = globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs
+ans = .NOT. abool
+IF (ans) THEN
+  ans = obj%local_nptrs(globalNode) .GT. 0
 END IF
-END PROCEDURE obj_isNodePresent
+
+END PROCEDURE obj_isNodePresent1
+
+!----------------------------------------------------------------------------
+!                                                           isNodePresent
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_isNodePresent2
+INTEGER(I4B) :: ii
+DO ii = 1, SIZE(globalNode)
+  ans(ii) = obj%isNodePresent(globalNode(ii))
+END DO
+END PROCEDURE obj_isNodePresent2
 
 !----------------------------------------------------------------------------
 !                                                           isAnyNodePresent
@@ -174,7 +199,10 @@ END PROCEDURE obj_isElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryElement
-
+CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryElement()"
+ans = .FALSE.
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_isBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -182,7 +210,10 @@ END PROCEDURE obj_isBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainBoundaryElement
-
+CHARACTER(*), PARAMETER :: myName = "obj_isDomainBoundaryElement()"
+ans = .FALSE.
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -190,6 +221,10 @@ END PROCEDURE obj_isDomainBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
+CHARACTER(*), PARAMETER :: myName = "obj_isDomainFacetElement()"
+ans = .FALSE.
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_isDomainFacetElement
 
 !----------------------------------------------------------------------------
@@ -221,7 +256,10 @@ END PROCEDURE obj_GetTotalBoundaryNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryElements
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryElements()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetTotalBoundaryElements
 
 !----------------------------------------------------------------------------
@@ -272,7 +310,10 @@ END PROCEDURE obj_GetBoundingBox2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetConnectivity
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -280,7 +321,9 @@ END PROCEDURE obj_GetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeConnectivity
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeConnectivity()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNodeConnectivity
 
 !----------------------------------------------------------------------------
@@ -328,7 +371,10 @@ END PROCEDURE obj_GetGlobalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalNodeNumber2
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber2()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetGlobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -347,7 +393,10 @@ END PROCEDURE obj_GetGlobalElemNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemNumber2
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalNodeNumber2()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetGlobalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -385,7 +434,10 @@ END PROCEDURE obj_GetLocalElemNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNodeToElements1
 
 !----------------------------------------------------------------------------
@@ -418,7 +470,10 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToNodes1
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToNodes1()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetNodeToNodes1
 
 !----------------------------------------------------------------------------
@@ -451,7 +506,10 @@ END PROCEDURE obj_GetNodeToNodes2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElementToElements
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements()"
+CALL Reallocate(ans, 0, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetElementToElements
 
 !----------------------------------------------------------------------------
@@ -459,7 +517,10 @@ END PROCEDURE obj_GetElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryElementData
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryElementData()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------
@@ -467,7 +528,10 @@ END PROCEDURE obj_GetBoundaryElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetOrder
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
@@ -483,7 +547,10 @@ END PROCEDURE obj_GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetXidimension
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetXidimension()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetXidimension
 
 !----------------------------------------------------------------------------
@@ -530,7 +597,10 @@ END PROCEDURE obj_GetTotalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalFacetElements
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInternalFacetElements()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetTotalInternalFacetElements
 
 !----------------------------------------------------------------------------
@@ -538,7 +608,10 @@ END PROCEDURE obj_GetTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryFacetElements()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetTotalBoundaryFacetElements
 
 !----------------------------------------------------------------------------
@@ -546,7 +619,10 @@ END PROCEDURE obj_GetTotalBoundaryFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMasterCellNumber
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetMasterCellNumber()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetMasterCellNumber
 
 !----------------------------------------------------------------------------
@@ -554,7 +630,10 @@ END PROCEDURE obj_GetMasterCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSlaveCellNumber
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetSlaveCellNumber()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetSlaveCellNumber
 
 !----------------------------------------------------------------------------
@@ -562,7 +641,10 @@ END PROCEDURE obj_GetSlaveCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellNumber
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetCellNumber()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetCellNumber
 
 !----------------------------------------------------------------------------
@@ -570,7 +652,10 @@ END PROCEDURE obj_GetCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalFacetID
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetID()"
+ans = 0
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetLocalFacetID
 
 !----------------------------------------------------------------------------
@@ -578,7 +663,10 @@ END PROCEDURE obj_GetLocalFacetID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity1
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity1()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetFacetConnectivity1
 
 !----------------------------------------------------------------------------
@@ -586,7 +674,10 @@ END PROCEDURE obj_GetFacetConnectivity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity2
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity2()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetFacetConnectivity2
 
 !----------------------------------------------------------------------------
@@ -594,7 +685,10 @@ END PROCEDURE obj_GetFacetConnectivity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetElementType
-
+CHARACTER(*), PARAMETER :: myName = "obj_GetFacetElementType()"
+CALL Reallocate(ans, 0)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 END PROCEDURE obj_GetFacetElementType
 
 !----------------------------------------------------------------------------

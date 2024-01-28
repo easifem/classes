@@ -368,7 +368,7 @@ END INTERFACE
 ! summary: Initiate an instance of MeshFacetData
 
 INTERFACE
-  MODULE PURE SUBROUTINE MeshFacetData_Initiate(obj, n)
+  MODULE SUBROUTINE MeshFacetData_Initiate(obj, n)
     CLASS(MeshFacetData_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
   END SUBROUTINE MeshFacetData_Initiate
@@ -383,7 +383,7 @@ END INTERFACE
 ! summary: Returns true if MeshFacetData initiated
 
 INTERFACE
-  MODULE PURE FUNCTION MeshFacetData_isInitiated(obj) RESULT(ans)
+  MODULE FUNCTION MeshFacetData_isInitiated(obj) RESULT(ans)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION MeshFacetData_isInitiated
@@ -398,7 +398,7 @@ END INTERFACE
 ! summary: Returns the size of MeshFacetData
 
 INTERFACE
-  MODULE PURE FUNCTION MeshFacetData_Size(obj) RESULT(ans)
+  MODULE FUNCTION MeshFacetData_Size(obj) RESULT(ans)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION MeshFacetData_Size
@@ -1134,7 +1134,7 @@ END INTERFACE
 ! summary: This routine returns the number of spatial dimensions
 
 INTERFACE
-  MODULE PURE FUNCTION Domain_GetNSD(obj) RESULT(Ans)
+  MODULE FUNCTION Domain_GetNSD(obj) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION Domain_GetNSD
@@ -1165,7 +1165,7 @@ END INTERFACE
 ! summary: Returns bounding box
 
 INTERFACE
-  MODULE PURE FUNCTION Domain_GetBoundingBox(obj) RESULT(Ans)
+  MODULE FUNCTION Domain_GetBoundingBox(obj) RESULT(Ans)
     CLASS(Domain_), INTENT(IN) :: obj
     TYPE(BoundingBox_) :: ans
   END FUNCTION Domain_GetBoundingBox
@@ -1180,7 +1180,7 @@ END INTERFACE
 ! summary: returns size of meshFacetData
 
 INTERFACE
-  MODULE PURE FUNCTION Domain_GetTotalMeshFacetData(obj, imeshFacetData) &
+  MODULE FUNCTION Domain_GetTotalMeshFacetData(obj, imeshFacetData) &
     & RESULT(ans)
     CLASS(Domain_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: imeshFacetData

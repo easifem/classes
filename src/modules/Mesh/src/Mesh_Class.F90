@@ -554,7 +554,7 @@ END INTERFACE
 ! summary:  Get number of nodes in element
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetNNE(obj, globalElement) RESULT(ans)
+  MODULE FUNCTION obj_GetNNE(obj, globalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B) :: ans
@@ -570,7 +570,7 @@ END INTERFACE
 ! summary:  Get number of nodes in element
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetMaxNNE(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetMaxNNE(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxNNE
@@ -600,7 +600,7 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetNptrs(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetNptrs(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetNptrs
@@ -615,7 +615,7 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers of internal nodes
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetInternalNptrs(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetInternalNptrs(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetInternalNptrs
@@ -630,7 +630,7 @@ END INTERFACE
 ! summary: Returns the vector of global node numbers of boundary nodes
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetBoundaryNptrs(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetBoundaryNptrs(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetBoundaryNptrs
@@ -645,7 +645,7 @@ END INTERFACE
 ! summary: This function returns true if given global node is a boundary node
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION obj_isBoundaryNode(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_isBoundaryNode(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     LOGICAL(LGT) :: ans
@@ -665,7 +665,7 @@ END INTERFACE
 ! A boundary element is one which contains a boundary node.
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION obj_isBoundaryElement(obj, globalElement) &
+  MODULE FUNCTION obj_isBoundaryElement(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -689,7 +689,7 @@ END INTERFACE
 ! no connection with the other mesh.
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION obj_isDomainBoundaryElement(obj, globalElement) &
+  MODULE FUNCTION obj_isDomainBoundaryElement(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -713,7 +713,7 @@ END INTERFACE
 ! no connection with the other mesh.
 
 INTERFACE
-  MODULE ELEMENTAL FUNCTION obj_isDomainFacetElement(obj, facetElement) &
+  MODULE FUNCTION obj_isDomainFacetElement(obj, facetElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -730,7 +730,7 @@ END INTERFACE
 ! summary: returns total number of boundary elements
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetTotalBoundaryElements(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalBoundaryElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalBoundaryElements
@@ -745,7 +745,7 @@ END INTERFACE
 ! summary: This routine returns global node numbers in a given global elem
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetConnectivity(obj, globalElement) RESULT(ans)
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B), ALLOCATABLE :: ans(:)
@@ -779,7 +779,7 @@ END INTERFACE
 ! summary: This routine returns the Global node number from a local node number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
+  MODULE FUNCTION obj_GetGlobalNodeNumber2(obj, localNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: localNode
     INTEGER(I4B) :: ans
@@ -795,7 +795,7 @@ END INTERFACE
 ! summary: This routine returns the Global node number from a local node number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetGlobalElemNumber2(obj, LocalElement) RESULT(ans)
+  MODULE FUNCTION obj_GetGlobalElemNumber2(obj, LocalElement) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: LocalElement
     INTEGER(I4B) :: ans
@@ -821,7 +821,7 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetNodeToElements1(obj, globalNode) RESULT(ans)
+  MODULE FUNCTION obj_GetNodeToElements1(obj, globalNode) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     !! mesh data
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -891,7 +891,7 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetElementToElements(obj, globalElement, &
+  MODULE FUNCTION obj_GetElementToElements(obj, globalElement, &
     & onlyElements) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     !! mesh data
@@ -935,7 +935,7 @@ END INTERFACE
 !@endnote
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetBoundaryElementData(obj, globalElement) &
+  MODULE FUNCTION obj_GetBoundaryElementData(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -953,7 +953,7 @@ END INTERFACE
 ! summary: Returns the order of reference element
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetOrder(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetOrder(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetOrder
@@ -968,7 +968,7 @@ END INTERFACE
 ! summary: Returns the spatial dimension of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetNSD(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetNSD(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetNSD
@@ -983,7 +983,7 @@ END INTERFACE
 ! summary: Returns the xidimension of the mesh
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetXidimension(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetXidimension(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetXidimension
@@ -998,7 +998,7 @@ END INTERFACE
 ! summary: Returns the total number of internal facets element in mesh
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetTotalInternalFacetElements(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalInternalFacetElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalInternalFacetElements
@@ -1009,7 +1009,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetTotalBoundaryFacetElements(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalBoundaryFacetElements(obj) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalBoundaryFacetElements
@@ -1030,7 +1030,7 @@ END INTERFACE
 ! - The master cell number is the global element number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetMasterCellNumber(obj, facetElement, &
+  MODULE FUNCTION obj_GetMasterCellNumber(obj, facetElement, &
     & elementType)&
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
@@ -1055,7 +1055,7 @@ END INTERFACE
 ! - The slave cell number is the global element number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetSlaveCellNumber(obj, facetElement, &
+  MODULE FUNCTION obj_GetSlaveCellNumber(obj, facetElement, &
     & elementType) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -1081,7 +1081,7 @@ END INTERFACE
 ! - ans(2)  contains the slave cell number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetCellNumber(obj, facetElement, &
+  MODULE FUNCTION obj_GetCellNumber(obj, facetElement, &
     & elementType) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -1099,7 +1099,7 @@ END INTERFACE
 ! summary: Returns the local facet id
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetLocalFacetID(obj, facetElement, &
+  MODULE FUNCTION obj_GetLocalFacetID(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -1123,7 +1123,7 @@ END INTERFACE
 ! - facetElement is local facet element number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetFacetConnectivity1(obj, facetElement, &
+  MODULE FUNCTION obj_GetFacetConnectivity1(obj, facetElement, &
     & elementType, isMaster) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: facetElement
@@ -1154,7 +1154,7 @@ END INTERFACE
 ! - iface is the local face number in globalElement
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetFacetConnectivity2(obj, globalElement, &
+  MODULE FUNCTION obj_GetFacetConnectivity2(obj, globalElement, &
     & iface) RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1172,7 +1172,7 @@ END INTERFACE
 ! summary: Returns the facet element type of the cell element number
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetFacetElementType(obj, globalElement) &
+  MODULE FUNCTION obj_GetFacetElementType(obj, globalElement) &
     & RESULT(ans)
     CLASS(Mesh_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1185,7 +1185,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE SUBROUTINE obj_GetQuery(obj, &
+  MODULE SUBROUTINE obj_GetQuery(obj, &
     & isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated, &
     & isExtraNodeToNodesInitiated, isElementToElementsInitiated, &
     & isBoundaryDataInitiated, isFacetDataInitiated, uid, &
@@ -1513,7 +1513,7 @@ END INTERFACE
 ! summary: Set the facet element type of a given cell number
 
 INTERFACE
-  MODULE PURE SUBROUTINE obj_SetFacetElementType(obj, globalElement, &
+  MODULE SUBROUTINE obj_SetFacetElementType(obj, globalElement, &
     & iface, facetElementType)
     CLASS(Mesh_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
