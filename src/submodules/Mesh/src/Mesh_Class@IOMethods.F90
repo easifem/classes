@@ -156,6 +156,7 @@ IF (isok) THEN
     & nsd=obj%nsd, elemType=obj%elemType, ipType=Equidistance)
 
   IF (abool) obj%facetElements = FacetElements(obj%refelem)
+
 END IF
 
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)

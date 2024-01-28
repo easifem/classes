@@ -31,10 +31,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
+CALL obj%IMPORT(hdf5=hdf5, group=group)
+
 obj%readFromFile = .TRUE.
 obj%isInitiated = .TRUE.
-
-CALL obj%IMPORT(hdf5=hdf5, group=group)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
