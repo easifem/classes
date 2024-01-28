@@ -33,7 +33,7 @@ USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
 USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
   & InternalFacetData_Display, BoundaryFacetData_Display
 USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate,  &
-  & AbstractMeshDisplay, AbstractMeshGetQuery
+  & AbstractMeshDisplay, AbstractMeshGetQuery, AbstractMeshImport
 
 IMPLICIT NONE
 PRIVATE
@@ -114,10 +114,6 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => obj_GetNodeCoord
-    !! Read the nodeCoords from the hdf5file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-    !! Export mesh to an hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
     !! Export mesh to a VTKfile
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
@@ -384,40 +380,6 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    GetNodeCoord@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 21 Sept 2021
-! summary: Reads hdf5File for nodecoord of the mesh
-!
-!# Introduction
-!
-! This routine reads [[HDFFile_]] instance for constructing nodeCoord of mesh
-!
-! - Rows of `nodeCoord` represents the spatial component
-! - Columns of `nodeCoord` retpresents the node number
-! - Total number of columns in `nodeCoord` is equal to the number of
-! nodes present in the mesh object.
-!
-!@note
-! The nodeCoord returned by this routine should be used by the mesh object
-! itself. This is because, in nodeCoords the nodes are arranged locally.
-! However, if you wish to use nodeCoord, then Get the localNodeNumber of a
-! global node by calling the mesh methods, and use this localNodeNumber to
-! extract the coordinates.
-!@endnote
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord(obj, nodeCoord, hdf5, group)
-    CLASS(Mesh_), INTENT(IN) :: obj
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_GetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------

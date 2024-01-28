@@ -311,17 +311,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! main
 dsetname = TRIM(group)
 
-IF (.NOT. hdf5%isOpen()) &
-  & CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[INTERNAL ERROR] :: HDF5 file is not opened')
+IF (.NOT. hdf5%isOpen()) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file is not opened')
+END IF
 
-IF (.NOT. hdf5%isRead()) &
-  & CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+IF (.NOT. hdf5%isRead()) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+    & '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+END IF
 
-IF (.NOT. hdf5%pathExists(dsetname)) &
-  & CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & TRIM(dsetname)//' path does not exists')
+IF (.NOT. hdf5%pathExists(dsetname)) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+  & '[INTERNAL ERROR] :: '//dsetname//' path does not exists')
+END IF
 
 ! build nodeCoord
 CALL hdf5%READ(dsetname, xij)
@@ -358,70 +361,6 @@ MODULE PROCEDURE obj_ExportToVTK
 CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
-
-! CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
-! LOGICAL(LGT) :: OpenTag_, CloseTag_, Content_
-! INTEGER(INT8) :: vtkType
-! INTEGER(INT8), ALLOCATABLE :: types(:)
-! INTEGER(I4B) :: nCells, nPoints, ii, jj, nne
-! INTEGER(I4B), ALLOCATABLE :: vtkIndx(:), connectivity(:), &
-!   & offsets(:), localNptrs(:)
-!
-! ! main
-! IF (.NOT. vtkFile%isInitiated) THEN
-!   IF (.NOT. PRESENT(filename)) THEN
-!     CALL e%RaiseError(modName//"::"//myName//" - "// &
-!     & "VTKFile_ is not initiated, and filename is not present.")
-!   ELSE
-!     CALL vtkFile%InitiateVTKFile(filename=filename, &
-!       & mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
-!       & DataStructureType=VTK_UnStructuredGrid)
-!   END IF
-! END IF
-!
-! nCells = obj%GetTotalElements()
-! nPoints = obj%GetTotalNodes()
-! OpenTag_ = INPUT(default=.TRUE., option=OpenTag)
-! CloseTag_ = INPUT(default=.TRUE., option=CloseTag)
-! Content_ = INPUT(default=.TRUE., option=Content)
-! ! Write piece information if OpenTag is true
-! IF (OpenTag_) CALL vtkFile%WritePiece(nPoints=nPoints, nCells=nCells)
-! ! Write Points information
-! IF (PRESENT(nodeCoord)) THEN
-!   IF (ANY(SHAPE(nodeCoord) .NE. [3, nPoints])) &
-!       & CALL e%RaiseError(modName//"::"//myName//" - "// &
-!       & "Shape of nodeCoord should be [3, nPoints]")
-!   CALL vtkFile%WritePoints(x=nodeCoord)
-! END IF
-! ! Write Cells
-! IF (Content_) THEN
-!   CALL GetVTKelementType(elemType=obj%elemType, &
-!     & vtk_type=vtkType, Nptrs=vtkIndx)
-!   nne = SIZE(vtkIndx)
-!   ALLOCATE (types(nCells), offsets(nCells), &
-!     & connectivity(nne * nCells))
-!   types = vtkType; offsets(1) = nne; jj = 0
-!   DO ii = 2, nCells
-!     offsets(ii) = offsets(ii - 1) + nne
-!   END DO
-!   DO ii = obj%minElemNum, obj%maxElemNum
-!     IF (obj%isElementPresent(ii)) THEN
-!       jj = jj + 1
-!       localNptrs = obj%GetLocalNodeNumber( &
-!         & obj%GetConnectivity(globalElement=ii))
-!      connectivity(offsets(jj) - nne + 1:offsets(jj)) = localNptrs(vtkIndx) - 1
-!     END IF
-!   END DO
-!   CALL vtkFile%WriteCells(connectivity=connectivity, offsets=offsets, &
-!     & types=types)
-! END IF
-! IF (CloseTag_) CALL vtkFile%WritePiece()
-! ! clean up
-! IF (ALLOCATED(types)) DEALLOCATE (types)
-! IF (ALLOCATED(vtkIndx)) DEALLOCATE (vtkIndx)
-! IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-! IF (ALLOCATED(offsets)) DEALLOCATE (offsets)
-! IF (ALLOCATED(localNptrs)) DEALLOCATE (localNptrs)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------

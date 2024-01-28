@@ -140,14 +140,14 @@ END PROCEDURE obj_isDomainBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
-!
+
 IF (obj%boundaryFacetData(facetElement)%elementType  &
   & .EQ. DOMAIN_BOUNDARY_ELEMENT) THEN
   ans = .TRUE.
 ELSE
   ans = .FALSE.
 END IF
-!
+
 END PROCEDURE obj_isDomainFacetElement
 
 !----------------------------------------------------------------------------
@@ -228,9 +228,6 @@ END PROCEDURE obj_GetNodeToElements1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToNodes1
-!
-! Define internal variable
-!
 INTEGER(I4B), ALLOCATABLE :: nptrs(:), extranptrs(:)
 INTEGER(I4B) :: i, j
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToNodes1()"
@@ -239,15 +236,15 @@ i = obj%GetLocalNodeNumber(GlobalNode=GlobalNode)
 
 ! check
 IF (obj%isExtraNodeToNodesInitiated) THEN
-  !
+
   IF (i .EQ. 0) THEN
     ALLOCATE (ans(0))
   ELSE
     IF (IncludeSelf) THEN
-      !
+
       nptrs = obj%nodeData(i)%globalNodes
       i = SIZE(nptrs)
-      !
+
       IF (ALLOCATED(obj%nodeData(i)%extraGlobalNodes)) THEN
         extranptrs = obj%nodeData(i)%extraGlobalNodes
         j = SIZE(extranptrs)
@@ -268,9 +265,9 @@ IF (obj%isExtraNodeToNodesInitiated) THEN
         & obj%nodeData(i)%extraGlobalNodes)
     END IF
   END IF
-  !
+
 ELSE
-  !
+
   IF (i .EQ. 0) THEN
     ALLOCATE (ans(0))
   ELSE
@@ -284,14 +281,12 @@ ELSE
       ans = obj%nodeData(i)%globalNodes
     END IF
   END IF
-  !
+
 END IF
-!
-!
-!
+
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 IF (ALLOCATED(extranptrs)) DEALLOCATE (extranptrs)
-!
+
 END PROCEDURE obj_GetNodeToNodes1
 
 !----------------------------------------------------------------------------
@@ -302,11 +297,11 @@ MODULE PROCEDURE obj_GetElementToElements
 LOGICAL(LGT) :: onlyElem
 INTEGER(I4B), ALLOCATABLE :: Indx(:)
 INTEGER(I4B) :: iel
-!
+
 onlyElem = .FALSE.
 IF (PRESENT(onlyElements)) onlyElem = onlyElements
 iel = obj%GetLocalElemNumber(globalElement)
-!
+
 IF (ALLOCATED(obj%elementData(iel)%globalElements)) THEN
   IF (onlyElem) THEN
     Indx = obj%elementData(iel)%globalElements
@@ -329,14 +324,14 @@ END PROCEDURE obj_GetElementToElements
 
 MODULE PROCEDURE obj_GetBoundaryElementData
 INTEGER(I4B) :: iel
-!
+
 IF (obj%isBoundaryElement(globalElement)) THEN
   iel = obj%GetLocalElemNumber(globalElement)
   ans = obj%elementData(iel)%boundaryData
 ELSE
   ALLOCATE (ans(0))
 END IF
-!
+
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------

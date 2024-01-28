@@ -27,6 +27,7 @@ PUBLIC :: AbstractMesh_
 PUBLIC :: AbstractMeshDeallocate
 PUBLIC :: AbstractMeshDisplay
 PUBLIC :: AbstractMeshGetQuery
+PUBLIC :: AbstractMeshImport
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 
@@ -521,13 +522,13 @@ END INTERFACE
 ! This routine Set localNodeNum and globalNodeNum data inside the
 ! nodeData
 
-INTERFACE
+INTERFACE AbstractMeshImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
-END INTERFACE
+END INTERFACE AbstractMeshImport
 
 !----------------------------------------------------------------------------
 !                                                    GetNodeCoord@IOMethods
