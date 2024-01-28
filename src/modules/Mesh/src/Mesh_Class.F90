@@ -76,20 +76,6 @@ TYPE, EXTENDS(AbstractMesh_) :: Mesh_
     !! Reference element of the mesh (spatial)
     !! TODO: Change refelem to Type(ReferenceElement_)
 
-  TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
-    !! Node data
-
-  TYPE(ElemData_), ALLOCATABLE :: elementData(:)
-    !! element data
-
-  TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData(:)
-    !! Internal facet data
-    !! INFO: This data is initiated by InitiateFacetElements method
-
-  TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
-    !! Domain Facet Data
-    !! INFO: This data is initiated by InitiateFacetElements method
-
 CONTAINS
   PRIVATE
 
@@ -1274,7 +1260,7 @@ END INTERFACE
 !
 !- This routine generate the node to nodes mapping
 !- This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
-!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes the
+!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes
 ! global node data surrounding the local node number used for edge-based
 !  stabilization. This list does not include self node.
 !

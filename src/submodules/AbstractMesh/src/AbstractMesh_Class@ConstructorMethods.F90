@@ -83,6 +83,11 @@ IF (ALLOCATED(obj%local_elemNumber)) DEALLOCATE (obj%local_elemNumber)
 IF (ALLOCATED(obj%local_Nptrs)) DEALLOCATE (obj%local_Nptrs)
 IF (ALLOCATED(obj%quality)) DEALLOCATE (obj%quality)
 IF (ALLOCATED(obj%facetElementType)) DEALLOCATE (obj%facetElementType)
+
+IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
+IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
+IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
+IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

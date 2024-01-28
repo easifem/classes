@@ -32,23 +32,11 @@ CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL Display(obj%xidim, "xidim: ", unitno=unitno)
 CALL Display(obj%elemType, "elemType: ", unitno=unitno)
 
-abool = ALLOCATED(obj%facetElements)
-CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
-
-abool = ALLOCATED(obj%nodeData)
-CALL Display(abool, "nodeData ALLOCATED: ", unitno=unitno)
-
-abool = ALLOCATED(obj%elementData)
-CALL Display(abool, "elementData ALLOCATED: ", unitno=unitno)
-
-abool = ALLOCATED(obj%internalFacetData)
-CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
-
-abool = ALLOCATED(obj%boundaryFacetData)
-CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
-
 abool = ASSOCIATED(obj%refElem)
 CALL Display(abool, "refElem ASSOCIATED: ", unitno=unitno)
+
+abool = ALLOCATED(obj%facetElements)
+CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
 
 END PROCEDURE obj_Display
 

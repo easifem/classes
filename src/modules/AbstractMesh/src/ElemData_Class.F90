@@ -24,6 +24,7 @@ PRIVATE
 PUBLIC :: ElemData_
 PUBLIC :: ElemData_Display
 PUBLIC :: TypeElem
+PUBLIC :: ElemDataDeallocate
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -135,5 +136,19 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
     CALL Display(obj%boundaryData, msg="boundaryData: ", unitno=unitno)
   END IF
 END SUBROUTINE ElemData_Display
+
+!----------------------------------------------------------------------------
+!                                                         ElemDataDeallocate
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemDataDeallocate(obj)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  obj%globalElemNum = 0
+  obj%localElemNum = 0
+  obj%elementType = INTERNAL_ELEMENT
+  IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
+  IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
+  IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
+END SUBROUTINE ElemDataDeallocate
 
 END MODULE ElemData_Class

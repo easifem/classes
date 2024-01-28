@@ -127,6 +127,18 @@ CALL Display(abool, "local_nptrs ALLOCATED: ", unitno=unitno)
 abool = ALLOCATED(obj%facetElementType)
 CALL Display(abool, "facetElementType ALLOCATED: ", unitno=unitno)
 
+abool = ALLOCATED(obj%nodeData)
+CALL Display(abool, "nodeData ALLOCATED: ", unitno=unitno)
+
+abool = ALLOCATED(obj%elementData)
+CALL Display(abool, "elementData ALLOCATED: ", unitno=unitno)
+
+abool = ALLOCATED(obj%internalFacetData)
+CALL Display(abool, "internalFacetData ALLOCATED: ", unitno=unitno)
+
+abool = ALLOCATED(obj%boundaryFacetData)
+CALL Display(abool, "boundaryFacetData ALLOCATED: ", unitno=unitno)
+
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
