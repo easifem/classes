@@ -130,6 +130,16 @@ TYPE, ABSTRACT :: AbstractMesh_
     !! number of rows are meshquality
     !! number of columns are elements
 
+  INTEGER(I4B), ALLOCATABLE :: facetElementType(:, :)
+  !! Number of rows of this array is same as the total number of
+  !! facets present in the mesh-reference elements
+  !! Number of columns of this array is equal to the total number of
+  !! elements inside the mesh
+  !! facetElementType(ii, iel) can be
+  !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
+  !! If the face is a part of the mesh boundary then it will be called
+  !! the BOUNDARY_ELEMENT
+
 CONTAINS
   PRIVATE
 

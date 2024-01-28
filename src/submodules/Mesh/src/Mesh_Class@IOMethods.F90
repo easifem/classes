@@ -35,9 +35,6 @@ CALL Display(obj%elemType, "elemType: ", unitno=unitno)
 abool = ALLOCATED(obj%facetElements)
 CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
 
-abool = ALLOCATED(obj%facetElementType)
-CALL Display(abool, "facetElementType ALLOCATED: ", unitno=unitno)
-
 abool = ALLOCATED(obj%nodeData)
 CALL Display(abool, "nodeData ALLOCATED: ", unitno=unitno)
 

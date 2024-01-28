@@ -72,15 +72,9 @@ TYPE, EXTENDS(AbstractMesh_) :: Mesh_
   TYPE(ReferenceElement_), PUBLIC, ALLOCATABLE :: facetElements(:)
     !! Facet Elements in the reference element
 
-  INTEGER(I4B), ALLOCATABLE :: facetElementType(:, :)
-  !! Number of rows of this array is same as the total number of
-  !! facets present in the mesh-reference elements
-  !! Number of columns of this array is equal to the total number of
-  !! elements inside the mesh
-  !! facetElementType(ii, iel) can be
-  !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
-  !! If the face is a part of the mesh boundary then it will be called
-  !! the BOUNDARY_ELEMENT
+  CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
+    !! Reference element of the mesh (spatial)
+    !! TODO: Change refelem to Type(ReferenceElement_)
 
   TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
     !! Node data
@@ -95,10 +89,6 @@ TYPE, EXTENDS(AbstractMesh_) :: Mesh_
   TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
     !! Domain Facet Data
     !! INFO: This data is initiated by InitiateFacetElements method
-
-  CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
-    !! Reference element of the mesh (spatial)
-    !! TODO: Change refelem to Type(ReferenceElement_)
 
 CONTAINS
   PRIVATE

@@ -124,8 +124,8 @@ CALL Display(abool, "local_elemNumber ALLOCATED: ", unitno=unitno)
 abool = ALLOCATED(obj%local_nptrs)
 CALL Display(abool, "local_nptrs ALLOCATED: ", unitno=unitno)
 
-! CALL Display(ALLOCATED(obj%facetElements),  "local_nptrs ALLOCATED: ",  &
-!   & unitno=unitno)
+abool = ALLOCATED(obj%facetElementType)
+CALL Display(abool, "facetElementType ALLOCATED: ", unitno=unitno)
 
 END PROCEDURE obj_Display
 

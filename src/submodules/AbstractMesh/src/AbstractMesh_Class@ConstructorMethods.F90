@@ -82,6 +82,7 @@ IF (ALLOCATED(obj%boundingEntity)) DEALLOCATE (obj%boundingEntity)
 IF (ALLOCATED(obj%local_elemNumber)) DEALLOCATE (obj%local_elemNumber)
 IF (ALLOCATED(obj%local_Nptrs)) DEALLOCATE (obj%local_Nptrs)
 IF (ALLOCATED(obj%quality)) DEALLOCATE (obj%quality)
+IF (ALLOCATED(obj%facetElementType)) DEALLOCATE (obj%facetElementType)
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

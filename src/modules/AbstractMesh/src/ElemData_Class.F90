@@ -54,11 +54,12 @@ TYPE :: ElemData_
     !! Contains the information about the element surrounding an element
     !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
     !! surrounds a local element ielem (its global element number is
-    !! globalElem), then globalElements( [1,2,3] ) contains globalElem1,
-    !! pFace, nFace, globalElements( [4,5,6] ) contains globalElem2,
-    !! pFace, nFace, globalElements( [7,8,9] ) contains globalElem3,
-    !! pFace, nFace.
-    !! Here, pFace is the local facet number of parent element
+    !! globalElem), then
+    !! - globalElements( [1,2,3] ) contains globalElem1, pFace, nFace
+    !! - globalElements( [4,5,6] ) contains globalElem2, pFace, nFace
+    !! - globalElements( [7,8,9] ) contains globalElem3, pFace, nFace.
+    !! Here,
+    !! - pFace is the local facet number of parent element
     !! globalElem (ielem) which is connected to the nFace of the neighbor
     !! element
     !! All element numbers are global element number
