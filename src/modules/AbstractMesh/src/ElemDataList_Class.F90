@@ -15,12 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define FTL_TEMPLATE_TYPE REAL( DFP )
-#define FTL_TEMPLATE_TYPE_NAME Real
+#define FTL_TEMPLATE_TYPE ElemData_
+#define FTL_TEMPLATE_TYPE_IS_DERIVED
+#define FTL_TEMPLATE_TYPE_IS_CLASS
+#define FTL_TEMPLATE_TYPE_NAME ElemData
 #define FTL_INSTANTIATE_TEMPLATE
 
-MODULE RealList_Class
+MODULE ElemDataList_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE Display_Method
+USE ElemData_Class
 #include "../../ftlMacros/ftlList.inc"
-END MODULE RealList_Class
+END MODULE ElemDataList_Class

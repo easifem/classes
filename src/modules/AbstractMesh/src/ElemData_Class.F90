@@ -22,7 +22,7 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: ElemData_
-PUBLIC :: ElemData_Display
+PUBLIC :: Display
 PUBLIC :: TypeElem
 PUBLIC :: ElemDataDeallocate
 
@@ -30,6 +30,10 @@ INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_ELEMENT = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_ELEMENT = -4
+
+INTERFACE Display
+  MODULE PROCEDURE ElemData_Display
+END INTERFACE Display
 
 !----------------------------------------------------------------------------
 !                                                                 ElemData_

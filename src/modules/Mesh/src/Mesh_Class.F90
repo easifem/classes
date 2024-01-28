@@ -29,7 +29,8 @@ USE VTKFile_Class
 USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
   & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode, NodeData_Display
 USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
-  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem, ElemData_Display
+  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem,  &
+  & ElemData_Display => Display
 USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
   & InternalFacetData_Display, BoundaryFacetData_Display
 USE AbstractMesh_Class, ONLY: AbstractMesh_, AbstractMeshDeallocate,  &
