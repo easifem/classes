@@ -15,15 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 !
-! This program is taken from Fortran Template Library. https://github.com/SCM-NV/ftl/tree/master
+! This program is taken from Fortran Template Library.
+! https://github.com/SCM-NV/ftl/tree/master
 !
 ! Copyright (c) 2016, 2017  Robert Rüger
 !
 ! This file is part of of the Fortran Template Library.
 !
-! The Fortran Template Library is free software: you can redistribute it and/or
+! The Fortran Template Library is free software: you can redistribute it
+! and/or
 ! modify it under the terms of the GNU Lesser General Public License as
-! published by the Free Software Foundation, either version 3 of the License, or
+! published by the Free Software Foundation,
+! either version 3 of the License, or
 ! (at your option) any later version.
 !
 ! The Fortran Template Library is distributed in the hope that it will be
@@ -31,8 +34,10 @@
 ! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
 ! General Public License for more details.
 !
-! You should have received a copy of the GNU Lesser General Public License along
-! with the Fortran Template Library.  If not, see <http://www.gnu.org/licenses/>.
+! You should have received a copy of the GNU Lesser General Public
+! License along
+! with the Fortran Template Library.  If not, see
+! <http://www.gnu.org/licenses/>.
 
 
 
@@ -104,7 +109,7 @@ END INTERFACE
 PUBLIC :: ftlMove
 
 INTERFACE Display
-  MODULE PROCEDURE Display_Iterator, obj_Display
+  MODULE PROCEDURE obj_Display_Iterator, obj_Display
 END INTERFACE Display
 
 PUBLIC :: Display
@@ -215,6 +220,7 @@ TYPE, PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,List,_)
 
     PROCEDURE, PASS( obj ), PUBLIC :: Resize
     PROCEDURE, PASS( obj ), PUBLIC :: Clear
+    PROCEDURE, PUBLIC, PASS( obj ) :: Display => obj_Display
 
 END TYPE
 
@@ -234,6 +240,7 @@ TYPE, PUBLIC :: CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)
   GENERIC, PUBLIC :: Initiate => obj_iter_Initiate1, obj_iter_Initiate2
   PROCEDURE, PUBLIC :: Inc
   PROCEDURE, PUBLIC :: Dec
+  PROCEDURE, PUBLIC, PASS( obj ) :: Display => obj_Display_Iterator
 END TYPE
 
 !----------------------------------------------------------------------------
@@ -669,7 +676,7 @@ SUBROUTINE InsertSingle( obj, position, val )
   TYPE( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ) :: position
   FTL_TEMPLATE_TYPE_WRAP, TARGET, INTENT( IN ) :: val
 
-  call obj%InsertFill( position, 1, val )
+  CALL obj%InsertFill( position, 1, val )
 END SUBROUTINE
 
 !----------------------------------------------------------------------------
@@ -694,7 +701,6 @@ SUBROUTINE InsertNodeBefore(beforenode, val)
       TYPE IS( DataNode_ )
 
 #ifdef FTL_TEMPLATE_TYPE_IS_CLASS
-      ! newprev%data => Factory(val)
       newprev%data => val
 #else
       newprev%data = val
@@ -702,7 +708,7 @@ SUBROUTINE InsertNodeBefore(beforenode, val)
 
     END SELECT
   ENDIF
-END SUBROUTINE
+END SUBROUTINE InsertNodeBefore
 
 !----------------------------------------------------------------------------
 !
@@ -721,7 +727,8 @@ SUBROUTINE InsertFill( obj, position, n, val )
   END DO
   obj%psize = obj%psize + n
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+
+END SUBROUTINE InsertFill
 
 !----------------------------------------------------------------------------
 !
@@ -740,7 +747,7 @@ SUBROUTINE InsertArray( obj, position, array )
   END DO
   obj%psize = obj%psize + n
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE InsertArray
 
 !----------------------------------------------------------------------------
 !
@@ -762,7 +769,7 @@ SUBROUTINE InsertIteratorPair( obj, position, first, last )
     CALL it%Inc()
   END DO
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE InsertIteratorPair
 
 !----------------------------------------------------------------------------
 !
@@ -776,7 +783,7 @@ SUBROUTINE EraseSingle( obj, position )
   DEALLOCATE(position%node)
   obj%psize = obj%psize - 1
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE EraseSingle
 
 !----------------------------------------------------------------------------
 !
@@ -797,7 +804,7 @@ SUBROUTINE EraseIteratorPair( obj, first, last )
       CALL obj%EraseSingle(deletor)
     END DO
   END ASSOCIATE
-END SUBROUTINE
+END SUBROUTINE EraseIteratorPair
 
 !----------------------------------------------------------------------------
 !
@@ -827,7 +834,7 @@ SUBROUTINE SwapList( obj, other )
   ! fix front/back pointers for both lists
   CALL obj%FixValuePtrs()
   CALL other%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE SwapList
 
 !----------------------------------------------------------------------------
 !
@@ -860,7 +867,7 @@ SUBROUTINE Resize( obj, n, val )
 
   obj%psize = n
   CALL obj%FixValuePtrs()
-END SUBROUTINE
+END SUBROUTINE Resize
 
 !----------------------------------------------------------------------------
 !
@@ -869,7 +876,7 @@ END SUBROUTINE
 SUBROUTINE Clear( obj )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   CALL obj%Initiate()
-END SUBROUTINE
+END SUBROUTINE Clear
 
 !----------------------------------------------------------------------------
 !
@@ -889,7 +896,7 @@ SUBROUTINE ftlMoveList( src, dest )
   NULLIFY(src%front)
   NULLIFY(src%back)
   src%psize = 0
-END SUBROUTINE
+END SUBROUTINE ftlMoveList
 
 !----------------------------------------------------------------------------
 !
@@ -899,7 +906,7 @@ SUBROUTINE obj_iter_Initiate1(self)
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT(INOUT ) :: self
   NULLIFY( self%node )
   NULLIFY( self%value )
-END SUBROUTINE
+END SUBROUTINE obj_iter_Initiate1
 
 !----------------------------------------------------------------------------
 !
@@ -914,7 +921,7 @@ SUBROUTINE obj_iter_Initiate2( obj, other )
     TYPE IS( DataNode_ )
     obj%value => node%data
   END SELECT
-END SUBROUTINE
+END SUBROUTINE obj_iter_Initiate2
 
 !----------------------------------------------------------------------------
 !
@@ -940,7 +947,7 @@ RECURSIVE SUBROUTINE Inc(obj, n)
       obj%value => node%data
     END SELECT
   END IF
-END SUBROUTINE
+END SUBROUTINE Inc
 
 !----------------------------------------------------------------------------
 !
@@ -967,7 +974,7 @@ RECURSIVE SUBROUTINE Dec(obj, n)
       obj%value => node%data
     END SELECT
   END IF
-END SUBROUTINE
+END SUBROUTINE Dec
 
 !----------------------------------------------------------------------------
 !
@@ -978,7 +985,7 @@ PURE FUNCTION EqualOther( obj, other ) RESULT( ans )
   CLASS(CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_)), INTENT(in) :: other
   LOGICAL( LGT ) :: ans
   ans = ASSOCIATED( obj%node,other%node )
-END FUNCTION
+END FUNCTION EqualOther
 
 !----------------------------------------------------------------------------
 !
@@ -989,27 +996,27 @@ PURE FUNCTION UnequalOther( obj, other ) RESULT( ans )
   CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT( IN ) :: other
   LOGICAL( LGT ) :: ans
   ans = .NOT. ASSOCIATED( obj%node,other%node )
-END FUNCTION
+END FUNCTION UnequalOther
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE  Display_Iterator( obj, msg, unitno )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT( IN ) :: obj
+SUBROUTINE  obj_Display_Iterator( obj, msg, unitno )
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,Iterator_) ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
   IF( ASSOCIATED( obj%value ) ) THEN
     CALL Display( obj%value, msg, unitno=unitno)
   END IF
-END SUBROUTINE
+END SUBROUTINE obj_Display_Iterator
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 SUBROUTINE  obj_Display( obj, msg, unitno )
-  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( IN ) :: obj
+  CLASS( CAT3(FTL_TEMPLATE_TYPE_NAME,List,_) ), INTENT( INOUT ) :: obj
   CHARACTER( LEN = * ), INTENT( IN ) :: msg
   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: unitno
 
@@ -1019,6 +1026,7 @@ SUBROUTINE  obj_Display( obj, msg, unitno )
 
   CALL Display(msg, unitno=unitno)
   CALL Display(obj%isEmpty(), "Is List Empty: ", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
   IF( obj%isEmpty() ) RETURN
 
   it = obj%Begin()
@@ -1026,8 +1034,9 @@ SUBROUTINE  obj_Display( obj, msg, unitno )
   ii = 0
   DO WHILE( it .NE. last )
     ii = ii + 1
-    CALL Display( it, "("// tostring(ii) // "):", &
+    CALL Display( it, msg // "("// tostring(ii) // "):", &
       & unitno=unitno )
+    CALL BlankLines(nol=1, unitno=unitno)
     CALL it%inc()
   END DO
 END SUBROUTINE obj_Display
