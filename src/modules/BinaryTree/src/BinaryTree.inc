@@ -117,7 +117,9 @@ CONTAINS
     & GetValuePointer2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMax => obj_GetMax
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxPointer => obj_GetMaxPointer
   PROCEDURE, PUBLIC, PASS(obj) :: GetMin => obj_GetMin
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinPointer => obj_GetMinPointer
   PROCEDURE, PUBLIC, PASS(obj) :: GetSuccessor => obj_GetSuccessor
   PROCEDURE, PUBLIC, PASS(obj) :: GetPredecessor => obj_GetPredecessor
   PROCEDURE, PASS(obj) :: Remove_1 => obj_Remove_1
@@ -678,6 +680,24 @@ FUNCTION obj_GetMin(obj) RESULT(ans)
 END FUNCTION obj_GetMin
 
 !----------------------------------------------------------------------------
+!                                                             GetMinPointer
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetMinPointer(obj) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  TYPE(TreeData_), POINTER :: ans
+
+  TYPE(Binary_Tree_Type_Name) :: temp
+
+  ans => null()
+  IF (ASSOCIATED(obj%sentinel)) THEN
+    temp%sentinel => TreeNodeGetMinPointer(obj%sentinel)
+    ans => temp%sentinel%value
+  END IF
+
+END FUNCTION obj_GetMinPointer
+
+!----------------------------------------------------------------------------
 !                                                         GetMinPointer
 !----------------------------------------------------------------------------
 
@@ -714,7 +734,25 @@ FUNCTION obj_GetMax(obj) RESULT(ans)
 END FUNCTION obj_GetMax
 
 !----------------------------------------------------------------------------
-!                                                         GetMaxPointer
+!                                                             GetMaxPointer
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetMaxPointer(obj) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  TYPE(TreeData_), POINTER :: ans
+
+  TYPE(Binary_Tree_Type_Name) :: temp
+
+  ans => null()
+  IF (ASSOCIATED(obj%sentinel)) THEN
+    temp%sentinel => TreeNodeGetMaxPointer(obj%sentinel)
+    ans => temp%sentinel%value
+  END IF
+
+END FUNCTION obj_GetMaxPointer
+
+!----------------------------------------------------------------------------
+!                                                     TreeNodeGetMaxPointer
 !----------------------------------------------------------------------------
 
 FUNCTION TreeNodeGetMaxPointer(obj) RESULT(ans)
