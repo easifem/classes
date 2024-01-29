@@ -24,6 +24,19 @@ USE BaseType
 USE BaseMethod
 USE HDF5File_Class
 IMPLICIT NONE
+PRIVATE
+
+PUBLIC :: ExportDOF
+PUBLIC :: ImportDOF
+PUBLIC :: ExportCSRSparsity
+PUBLIC :: ImportCSRSparsity
+PUBLIC :: ExportCSRMatrix
+PUBLIC :: ImportCSRMatrix
+PUBLIC :: ExportRealVector
+PUBLIC :: ImportRealVector
+PUBLIC :: ExportIntVector
+PUBLIC :: ImportIntVector
+
 CONTAINS
 
 !----------------------------------------------------------------------------
