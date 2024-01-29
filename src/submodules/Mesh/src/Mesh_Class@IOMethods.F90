@@ -122,7 +122,6 @@ DO CONCURRENT(ii=1:obj%tElements)
 END DO
 
 obj%tNodes = COUNT(obj%local_Nptrs .NE. 0)
-IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
 ALLOCATE (obj%nodeData(obj%tNodes))
 dummy = 0
 
@@ -151,9 +150,7 @@ abool = obj%xidim .GT. 0
 IF (isok) THEN
   obj%refelem => ReferenceElement_Pointer(xidim=obj%xidim, &
     & nsd=obj%nsd, elemType=obj%elemType, ipType=Equidistance)
-
   IF (abool) obj%facetElements = FacetElements(obj%refelem)
-
 END IF
 
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
