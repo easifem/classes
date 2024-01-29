@@ -58,7 +58,7 @@
 
 ! USE IntTreeData_Class, ONLY: TreeData_ => IntTreeData_
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE Display_Method, ONLY: Display, Tostring
+USE Display_Method, ONLY: Display, Tostring, BlankLines
 USE InputUtility, ONLY: Input
 IMPLICIT NONE
 PRIVATE
@@ -140,6 +140,10 @@ CONTAINS
 !                                                             ASSOCIATED
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29 
+! summary:  Returns the ASSOCIATED status of sentinel
+
 FUNCTION obj_ASSOCIATED(obj) RESULT(ans)
   CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
   LOGICAL(LGT) :: ans
@@ -215,8 +219,8 @@ RECURSIVE SUBROUTINE TreeNodeDeallocate(obj)
   TYPE(TreeNode_), POINTER, INTENT(INOUT) :: obj
 
   IF (ASSOCIATED(obj%VALUE)) THEN
-    CALL TreeData_DEALLOCATE(obj%VALUE)
-    DEALLOCATE (obj%VALUE)
+    !CALL TreeData_DEALLOCATE(obj%VALUE)
+    !DEALLOCATE (obj%VALUE)
     obj%VALUE => NULL()
   END IF
 
@@ -298,6 +302,7 @@ SUBROUTINE obj_Display(obj, msg, unitno)
   CALL Display(msg, unitno=unitno)
   CALL Display(obj%tsize, "tsize: ", unitno=unitno)
   CALL Display("Tree Data:", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
   CALL TreeNodeDisplay(obj%sentinel, msg="node%root:", unitno=unitno)
 
 END SUBROUTINE obj_Display
@@ -322,7 +327,10 @@ RECURSIVE SUBROUTINE TreeNodeDisplay(obj, msg, unitno)
   END IF
 
   bool1 = ASSOCIATED(obj%VALUE)
-  IF (bool1) CALL TreeData_Display(obj%VALUE, msg, unitno=unitno)
+  IF (bool1) THEN 
+    CALL TreeData_Display(obj%VALUE, msg, unitno=unitno)
+    CALL BlankLines(nol=1, unitno=unitno)
+  END IF
 
   IF (ASSOCIATED(obj%right)) THEN
     CALL TreeNodeDisplay(obj=obj%right, msg="node%right:", unitno=unitno)
