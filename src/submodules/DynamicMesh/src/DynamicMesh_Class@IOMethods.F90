@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(DynamicMesh_Class) IOMethods
+USE GlobalData, ONLY: Point1
 USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
 IMPLICIT NONE
 CONTAINS
@@ -26,10 +27,13 @@ CONTAINS
 
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:)
 CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, xidim, elemType
-CLASS(ElemData_), POINTER :: value_ptr
+INTEGER(I4B) :: ii, xidim, elemType, jj, tsize1, tsize2
+LOGICAL(LGT) :: isok
+CLASS(ElemData_), POINTER :: elemdata_ptr
+CLASS(NodeData_), POINTER :: nodedata_ptr
+INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
+  & internalNptrs(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -57,19 +61,47 @@ CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
 CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
   & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
 
-ASSOCIATE (elementDataList => obj%elementDataList)
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
+  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
+
+isok = (elemType .EQ. Point1) .OR. (elemType .EQ. 0)
+
+ASSOCIATE (elementDataList => obj%elementDataList,  &
+  & nodeDataBinaryTree => obj%nodeDataBinaryTree)
+
   CALL elementDataList%Initiate()
+  CALL nodeDataBinaryTree%Initiate()
 
   DO ii = 1, obj%tElements
     ! elementData(ii)%globalElemNum = elemNumber(ii)
     ! elementData(ii)%localElemNum = ii
     ! elementData(ii)%globalNodes = connectivity(:, ii)
 
-    value_ptr => ElemData_Pointer()
-    CALL ElemDataSet(obj=value_ptr, globalElemNum=elemNumber(ii),  &
+    elemdata_ptr => ElemData_Pointer()
+    CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
       & localElemNum=ii, globalNodes=connectivity(:, ii))
-    CALL elementDataList%Add(value_ptr)
+    CALL elementDataList%Add(elemdata_ptr)
+
+    DO jj = 1, SIZE(connectivity, 1)
+
+      nodedata_ptr => NodeData_Pointer()
+      CALL NodeDataSet(obj=nodedata_ptr, globalNodeNum=connectivity(jj, ii))
+
+      tsize1 = nodeDataBinaryTree%SIZE()
+      CALL nodeDataBinaryTree%Insert(nodedata_ptr)
+      tsize2 = nodeDataBinaryTree%SIZE()
+
+      IF (tsize1 .EQ. tsize2) THEN
+        CALL NodeData_Deallocate(nodedata_ptr)
+        DEALLOCATE (nodedata_ptr)
+      END IF
+
+    END DO
+
   END DO
+
+  CALL nodeDataBinaryTree%SetID()
+  obj%tNodes = nodeDataBinaryTree%SIZE()
 
 END ASSOCIATE
 
@@ -90,6 +122,7 @@ END PROCEDURE obj_Import
 MODULE PROCEDURE obj_Display
 CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
+CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
 END PROCEDURE obj_Display
 
 END SUBMODULE IOMethods

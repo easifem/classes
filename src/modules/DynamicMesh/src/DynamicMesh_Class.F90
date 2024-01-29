@@ -24,6 +24,8 @@ USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE ElemData_Class
 USE ElemDataList_Class
+USE NodeData_Class
+USE NodeDataBinaryTree_Class
 USE AbstractMesh_Class
 
 IMPLICIT NONE
@@ -47,6 +49,8 @@ CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 TYPE, EXTENDS(AbstractMesh_) :: DynamicMesh_
   TYPE(ElemDataList_) :: elementDataList
   !! element data
+  TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
+  !! node data
 CONTAINS
   PRIVATE
 
