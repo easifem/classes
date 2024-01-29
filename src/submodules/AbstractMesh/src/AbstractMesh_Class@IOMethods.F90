@@ -18,6 +18,7 @@
 SUBMODULE(AbstractMesh_Class) IOMethods
 USE Display_Method
 USE ReallocateUtility
+USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector
 IMPLICIT NONE
 CONTAINS
 
@@ -188,21 +189,36 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL read_scalar("uid", obj%uid)
-CALL read_scalar("nsd", obj%nsd)
-CALL read_scalar("tIntNodes", obj%tIntNodes)
-CALL read_scalar("tElements", obj%tElements)
-CALL read_scalar("minX", obj%minX)
-CALL read_scalar("minY", obj%minY)
-CALL read_scalar("minZ", obj%minZ)
-CALL read_scalar("maxX", obj%maxX)
-CALL read_scalar("maxY", obj%maxY)
-CALL read_scalar("maxZ", obj%maxZ)
-CALL read_scalar("x", obj%x)
-CALL read_scalar("y", obj%y)
-CALL read_scalar("z", obj%z)
-CALL read_int_vector("physicalTag", obj%physicalTag)
-CALL read_int_vector("elemNumber", elemNumber)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname,  &
+  & fieldname="uid", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname,  &
+  & fieldname="nsd", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tIntNodes, group=dsetname,  &
+  & fieldname="tIntNodes", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname,  &
+  & fieldname="tElements", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minX, group=dsetname,  &
+  & fieldname="minX", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minY, group=dsetname,  &
+  & fieldname="minY", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minZ, group=dsetname,  &
+  & fieldname="minZ", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxX, group=dsetname,  &
+  & fieldname="maxX", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxY, group=dsetname,  &
+  & fieldname="maxY", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxZ, group=dsetname,  &
+  & fieldname="maxZ", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%x, group=dsetname,  &
+  & fieldname="x", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%y, group=dsetname,  &
+  & fieldname="y", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%z, group=dsetname,  &
+  & fieldname="z", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%physicalTag, group=dsetname,  &
+  & fieldname="physicalTag", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
+  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
 IF (ALLOCATED(elemNumber) .AND. SIZE(elemNumber) .NE. 0) THEN
   obj%maxElemNum = MAXVAL(elemNumber)
@@ -258,50 +274,6 @@ IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
-
-CONTAINS
-SUBROUTINE read_scalar(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  CLASS(*), INTENT(INOUT) :: VALUE
-
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-
-  SELECT TYPE (VALUE)
-  TYPE is (INTEGER(I4B))
-    CALL hdf5%READ(astr, VALUE)
-
-  TYPE is (REAL(DFP))
-
-    CALL hdf5%READ(astr, VALUE)
-  END SELECT
-END SUBROUTINE read_scalar
-
-SUBROUTINE read_int_vector(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-  CALL hdf5%READ(astr, VALUE)
-
-END SUBROUTINE read_int_vector
 
 END PROCEDURE obj_Import
 
