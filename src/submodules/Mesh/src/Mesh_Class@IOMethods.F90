@@ -20,7 +20,8 @@ USE Display_Method
 USE ReallocateUtility
 USE ReferenceElement_Method
 USE InputUtility
-USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector
+USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector,  &
+& HDF5ReadMatrix
 IMPLICIT NONE
 CONTAINS
 
@@ -79,20 +80,17 @@ END IF
 CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
   & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
+CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname,  &
+  & fieldname="connectivity", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname,  &
+  & fieldname="intNodeNumber", myname=myname, modname=modname, check=.TRUE.)
+
 DO CONCURRENT(ii=1:obj%tElements)
   obj%elementData(ii)%globalElemNum = elemNumber(ii)
   obj%elementData(ii)%localElemNum = ii
 END DO
 
-! CALL Display('reading connectivity', stdout)
-isok = hdf5%pathExists(TRIM(dsetname)//"/connectivity")
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//dsetname//'/connectivity path does not exists')
-  RETURN
-END IF
-
-CALL hdf5%READ(TRIM(dsetname)//"/connectivity", connectivity)
 isok = (obj%elemType .EQ. Point1) .OR. (obj%elemType .EQ. 0)
 IF (isok) THEN
   obj%tNodes = 1
@@ -136,15 +134,6 @@ END IF
 !> nodeData%localNodeNumber, nodeData%nodeType
 !> mark INTERNAL_NODE
 
-isok = hdf5%pathExists(TRIM(dsetname)//"/intNodeNumber")
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//TRIM(dsetname)// &
-    & '/intNodeNumber path does not exists')
-  RETURN
-END IF
-
-CALL hdf5%READ(TRIM(dsetname)//"/intNodeNumber", internalNptrs)
 abool = obj%elemType .EQ. Point1 .OR. obj%elemType .EQ. 0
 IF (abool) THEN
   obj%nodeData(1)%globalNodeNum = internalNptrs(1)
