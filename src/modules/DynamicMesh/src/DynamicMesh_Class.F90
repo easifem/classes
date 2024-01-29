@@ -50,10 +50,17 @@ TYPE, EXTENDS(AbstractMesh_) :: DynamicMesh_
 CONTAINS
   PRIVATE
 
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+    !! Deallocate memory occupied by the mesh instance
+  FINAL :: obj_Final
+
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
     !! Read mesh from hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
 END TYPE DynamicMesh_
 
@@ -70,6 +77,34 @@ TYPE :: DynamicMeshPointer_
 END TYPE DynamicMeshPointer_
 
 !----------------------------------------------------------------------------
+!                                                    Deallocate@Constructor
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-29
+! summary: Free up the memory stored
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   Final@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  Finalizer
+
+INTERFACE
+  MODULE SUBROUTINE obj_Final(obj)
+    TYPE(DynamicMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
@@ -83,6 +118,25 @@ INTERFACE
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29
+! summary:  Display the content of the mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+    !! mesh object
+    CHARACTER(*), INTENT(IN) :: msg
+    !! message on screen
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    !! unit number of ouput file
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------

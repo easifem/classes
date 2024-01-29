@@ -204,4 +204,13 @@ END SUBROUTINE read_int_vector
 
 END PROCEDURE obj_Import
 
+!----------------------------------------------------------------------------
+!                                                                 Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display
+CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
+CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
+END PROCEDURE obj_Display
+
 END SUBMODULE IOMethods
