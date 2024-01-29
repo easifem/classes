@@ -50,11 +50,10 @@ CALL Display(obj%isElementToElementsInitiated,&
 CALL Display(obj%isBoundaryDataInitiated,  &
   & "isBoundaryDataInitiated: ", unitno=unitno)
 
-CALL Display(obj%isFacetDataInitiated,  &
-  & "isFacetDataInitiated: ", unitno=unitno)
+CALL Display(obj%isFacetDataInitiated, "isFacetDataInitiated: ",  &
+  & unitno=unitno)
 
-CALL Display(obj%uid,  &
-  & "uid: ", unitno=unitno)
+CALL Display(obj%uid, "uid: ", unitno=unitno)
 
 CALL Display(obj%tElements_topology_wise, "tElements Topology wise: ",  &
   & unitno=unitno)
