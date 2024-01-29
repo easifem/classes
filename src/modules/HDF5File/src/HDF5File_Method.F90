@@ -45,8 +45,82 @@ PUBLIC :: ImportRealVector
 PUBLIC :: ExportIntVector
 PUBLIC :: ImportIntVector
 PUBLIC :: HDF5ReadScalar
+PUBLIC :: HDF5ReadVector
+
+INTERFACE HDF5ReadVector
+  MODULE PROCEDURE HDF5ReadIntVector, HDF5ReadRealVector
+END INTERFACE HDF5ReadVector
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                        HDF5ReadRealVector
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadRealVector(hdf5, VALUE, group, fieldname, myname,  &
+  & modname, check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  CALL hdf5%READ(astr, VALUE)
+
+  astr = ""
+END SUBROUTINE HDF5ReadRealVector
+
+!----------------------------------------------------------------------------
+!                                                         HDF5ReadIntVector
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadIntVector(hdf5, VALUE, group, fieldname, myname,  &
+  & modname, check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  CALL hdf5%READ(astr, VALUE)
+
+  astr = ""
+
+END SUBROUTINE HDF5ReadIntVector
+
+!----------------------------------------------------------------------------
+!                                                            HDF5ReadScalar
+!----------------------------------------------------------------------------
 
 SUBROUTINE HDF5ReadScalar(hdf5, VALUE, group, fieldname, myname, modname,  &
   & check)

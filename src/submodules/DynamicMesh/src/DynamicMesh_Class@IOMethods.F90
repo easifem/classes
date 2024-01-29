@@ -16,6 +16,7 @@
 !
 
 SUBMODULE(DynamicMesh_Class) IOMethods
+USE HDF5File_Method, ONLY: HDF5ReadScalar
 IMPLICIT NONE
 CONTAINS
 
@@ -43,8 +44,11 @@ CALL obj%DEALLOCATE()
 dsetname = TRIM(group)
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
 
-CALL read_scalar("xidim", xidim)
-CALL read_scalar("elemType", elemType)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=xidim, group=dsetname,  &
+  & fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname,  &
+  & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
 ! INFO:
 ! obj%tElements is read in AbstractMeshImport
@@ -158,31 +162,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CONTAINS
-
-SUBROUTINE read_scalar(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  CLASS(*), INTENT(INOUT) :: VALUE
-
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-
-  SELECT TYPE (VALUE)
-  TYPE is (INTEGER(I4B))
-    CALL hdf5%READ(astr, VALUE)
-
-  TYPE is (REAL(DFP))
-
-    CALL hdf5%READ(astr, VALUE)
-  END SELECT
-END SUBROUTINE read_scalar
 
 SUBROUTINE read_int_vector(fieldname, VALUE)
   CHARACTER(*), INTENT(IN) :: fieldname
