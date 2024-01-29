@@ -66,6 +66,18 @@ CONTAINS
     !! Read mesh from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
+  ! SET:
+  ! @NodeDataMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
+    & obj_InitiateNodeToElements
+  !! Initiate node to node data
+  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
+  !   & obj_InitiateNodetoNodes
+  ! !! Initiate Node to nodes mapping
+  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
+  !   & obj_InitiateExtraNodetoNodes
+  ! !! Initiate Node to nodes mapping
+
 END TYPE DynamicMesh_
 
 !----------------------------------------------------------------------------
@@ -141,6 +153,20 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
     !! unit number of ouput file
   END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     InitiateNodeToElements@NodeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-29
+! summary: generate Elements surrounding a node mapping
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToElements
 END INTERFACE
 
 !----------------------------------------------------------------------------

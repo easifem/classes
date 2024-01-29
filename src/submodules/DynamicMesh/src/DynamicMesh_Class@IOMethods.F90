@@ -18,6 +18,7 @@
 SUBMODULE(DynamicMesh_Class) IOMethods
 USE GlobalData, ONLY: Point1
 USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector, HDF5ReadMatrix
+USE ReallocateUtility
 IMPLICIT NONE
 CONTAINS
 
@@ -32,6 +33,7 @@ INTEGER(I4B) :: ii, xidim, elemType, jj, tsize1, tsize2
 LOGICAL(LGT) :: isok
 CLASS(ElemData_), POINTER :: elemdata_ptr
 CLASS(NodeData_), POINTER :: nodedata_ptr
+TYPE(NodeData_) :: nodedata
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
 
@@ -73,9 +75,6 @@ ASSOCIATE (elementDataList => obj%elementDataList,  &
   CALL nodeDataBinaryTree%Initiate()
 
   DO ii = 1, obj%tElements
-    ! elementData(ii)%globalElemNum = elemNumber(ii)
-    ! elementData(ii)%localElemNum = ii
-    ! elementData(ii)%globalNodes = connectivity(:, ii)
 
     elemdata_ptr => ElemData_Pointer()
     CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
@@ -85,7 +84,14 @@ ASSOCIATE (elementDataList => obj%elementDataList,  &
     DO jj = 1, SIZE(connectivity, 1)
 
       nodedata_ptr => NodeData_Pointer()
-      CALL NodeDataSet(obj=nodedata_ptr, globalNodeNum=connectivity(jj, ii))
+      CALL NodeDataSet(obj=nodedata_ptr,  &
+        & globalNodeNum=connectivity(jj, ii),  &
+        & nodeType=TypeNode%boundary)
+      ! TypeNode is defined in NodeData_Class
+      ! The above step is unusual, but we know the position of
+      ! internal nptrs, so later we will set the
+      ! those nodes as INTERNAL_NODE, in this way we can
+      ! identify the boundary nodes
 
       tsize1 = nodeDataBinaryTree%SIZE()
       CALL nodeDataBinaryTree%Insert(nodedata_ptr)
@@ -93,6 +99,11 @@ ASSOCIATE (elementDataList => obj%elementDataList,  &
 
       IF (tsize1 .EQ. tsize2) THEN
         CALL NodeData_Deallocate(nodedata_ptr)
+        ! NOTE:
+        !! We have not added nodedata_ptr,
+        !! We know this because tsize1 == tsize2so
+        !! so we should remove this memory
+        !! this step is necessary for avoiding the memory leak
         DEALLOCATE (nodedata_ptr)
       END IF
 
@@ -101,12 +112,48 @@ ASSOCIATE (elementDataList => obj%elementDataList,  &
   END DO
 
   CALL nodeDataBinaryTree%SetID()
+  !! This method will set the local node number in the binarytree
+
   obj%tNodes = nodeDataBinaryTree%SIZE()
+  !! This method returns the total number of nodes in mesh
+
+  nodedata_ptr => nodeDataBinaryTree%GetMinPointer()
+  obj%minNptrs = nodedata_ptr%globalNodeNum
+
+  nodedata_ptr => nodeDataBinaryTree%GetMaxPointer()
+  obj%maxNptrs = nodedata_ptr%globalNodeNum
+
+  nodedata_ptr => NULL()
+  CALL Reallocate(obj%local_Nptrs, obj%maxNptrs)
+
+  DO CONCURRENT(ii=1:obj%tElements)
+    obj%local_Nptrs(connectivity(:, ii)) = connectivity(:, ii)
+  END DO
+
+  ! TODO: Parallel
+  DO ii = 1, obj%maxNptrs
+    IF (obj%local_Nptrs(ii) .NE. 0) THEN
+      nodedata%globalNodeNum = ii
+      nodedata_ptr => nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
+      obj%local_Nptrs(ii) = nodedata_ptr%localNodeNum
+    END IF
+  END DO
+
+  ! TODO: Parallel
+  DO ii = 1, SIZE(internalNptrs)
+    jj = internalNptrs(ii)
+    CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+    nodedata_ptr => nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
+    CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
+  END DO
+
+  nodedata_ptr => NULL()
 
 END ASSOCIATE
 
 IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
 IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
+IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
