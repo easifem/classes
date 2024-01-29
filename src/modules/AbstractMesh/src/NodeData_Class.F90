@@ -26,6 +26,7 @@ PUBLIC :: TypeNode
 PUBLIC :: NodeDataSet
 PUBLIC :: NodeData_Pointer
 PUBLIC :: NodeData_Display
+PUBLIC :: Display
 PUBLIC :: NodeData_Deallocate
 PUBLIC :: NodeData_lt
 PUBLIC :: NodeData_eq
@@ -35,6 +36,10 @@ INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_NODE = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_NODE = -1
 INTEGER(I4B), PARAMETER, PUBLIC :: DOMAIN_BOUNDARY_NODE = -2
 INTEGER(I4B), PARAMETER, PUBLIC :: GHOST_NODE = -3
+
+INTERFACE Display
+  MODULE PROCEDURE NodeData_Display
+END INTERFACE Display
 
 !----------------------------------------------------------------------------
 !                                                                 NodeData_
