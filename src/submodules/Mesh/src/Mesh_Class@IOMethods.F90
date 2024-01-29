@@ -16,7 +16,10 @@
 !
 
 SUBMODULE(Mesh_Class) IOMethods
-USE BaseMethod
+USE Display_Method
+USE ReallocateUtility
+USE ReferenceElement_Method
+USE InputUtility
 USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector
 IMPLICIT NONE
 CONTAINS
