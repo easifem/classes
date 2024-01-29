@@ -24,5 +24,6 @@ target_sources(
           ${src_path}/NodeDataBinaryTree_Class.F90
           ${src_path}/ElemData_Class.F90
           ${src_path}/ElemDataList_Class.F90
+          ${src_path}/ElemDataBinaryTree_Class.F90
           ${src_path}/FacetData_Class.F90
           ${src_path}/ElementShapeFunctionData_Class.F90)
