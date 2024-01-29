@@ -17,6 +17,7 @@
 
 SUBMODULE(Mesh_Class) IOMethods
 USE BaseMethod
+USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector
 IMPLICIT NONE
 CONTAINS
 
@@ -62,14 +63,18 @@ CALL obj%DEALLOCATE()
 dsetname = TRIM(group)
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=group)
 
-CALL read_scalar("xidim", obj%xidim)
-CALL read_scalar("elemType", obj%elemType)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%xidim, group=dsetname,  &
+  & fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
+
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
+  & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
 
 IF (obj%tElements .NE. 0) THEN
   ALLOCATE (obj%elementData(obj%tElements))
 END IF
 
-CALL read_int_vector("elemNumber", elemNumber)
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
+  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
 DO CONCURRENT(ii=1:obj%tElements)
   obj%elementData(ii)%globalElemNum = elemNumber(ii)
@@ -167,51 +172,6 @@ IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
-
-CONTAINS
-
-SUBROUTINE read_scalar(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  CLASS(*), INTENT(INOUT) :: VALUE
-
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-
-  SELECT TYPE (VALUE)
-  TYPE is (INTEGER(I4B))
-    CALL hdf5%READ(astr, VALUE)
-
-  TYPE is (REAL(DFP))
-
-    CALL hdf5%READ(astr, VALUE)
-  END SELECT
-END SUBROUTINE read_scalar
-
-SUBROUTINE read_int_vector(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-  CALL hdf5%READ(astr, VALUE)
-
-END SUBROUTINE read_int_vector
 
 END PROCEDURE obj_Import
 

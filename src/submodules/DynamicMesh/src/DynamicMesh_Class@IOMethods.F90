@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(DynamicMesh_Class) IOMethods
-USE HDF5File_Method, ONLY: HDF5ReadScalar
+USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector
 IMPLICIT NONE
 CONTAINS
 
@@ -54,7 +54,8 @@ CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname,  &
 ! obj%tElements is read in AbstractMeshImport
 IF (obj%tElements .EQ. 0) RETURN
 
-CALL read_int_vector("elemNumber", elemNumber)
+CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname,  &
+  & fieldname="elemNumber", myname=myname, modname=modname, check=.TRUE.)
 
 ASSOCIATE (elementDataList => obj%elementDataList)
   CALL elementDataList%Initiate()
@@ -160,26 +161,6 @@ END ASSOCIATE
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[END] ')
 #endif
-
-CONTAINS
-
-SUBROUTINE read_int_vector(fieldname, VALUE)
-  CHARACTER(*), INTENT(IN) :: fieldname
-  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-
-  ! internal variables
-  LOGICAL(LGT) :: isok0
-  CHARACTER(:), ALLOCATABLE :: astr
-
-  astr = dsetname//"/"//fieldname
-  isok0 = hdf5%pathExists(astr)
-  IF (.NOT. isok0) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-    RETURN
-  END IF
-  CALL hdf5%READ(astr, VALUE)
-END SUBROUTINE read_int_vector
 
 END PROCEDURE obj_Import
 
