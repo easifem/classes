@@ -78,14 +78,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/BinaryTree/CMakeLists.txt)
 # HashTable
 include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
 
-# IntList
-include(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
-
-# RealList
-include(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
-
-# StringList
-include(${CMAKE_CURRENT_LIST_DIR}/StringList/CMakeLists.txt)
+# LinkList
+include(${CMAKE_CURRENT_LIST_DIR}/LinkList/CMakeLists.txt)
 
 # ElementList
 include(${CMAKE_CURRENT_LIST_DIR}/ElementList/CMakeLists.txt)
