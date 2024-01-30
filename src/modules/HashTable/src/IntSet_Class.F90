@@ -16,13 +16,13 @@
 !
 
 !> author: Vikas Sharma, Ph. D.
-! date:
-! summary:  Module for HashTable for Integers
+! date: 2024-01-30
+! summary:  Module for integer sets
 
 ! Define the module for the key type.
 ! Override the hash_value and == operator interface.
 
-MODULE IntIntDictUtility
+MODULE IntSetUtility
 USE GlobalData, ONLY: I4B, LGT
 IMPLICIT NONE
 
@@ -38,18 +38,18 @@ FUNCTION int_hash_value(int) RESULT(hash)
   hash = int
 END FUNCTION int_hash_value
 
-END MODULE IntIntDictUtility
+END MODULE IntSetUtility
 
 !----------------------------------------------------------------------------
-!                                                          IntIntDict_Class
+!                                                          IntSet_Class
 !----------------------------------------------------------------------------
 
-#define FHASH_MODULE_NAME IntIntDict_Class
-#define FHASH_TYPE_NAME IntIntDict_
-#define FHASH_TYPE_ITERATOR_NAME IntIntDictIterator_
+#define FHASH_MODULE_NAME IntSet_Class
+#define FHASH_TYPE_NAME IntSet_
+#define FHASH_TYPE_ITERATOR_NAME IntSetIterator_
 
 ! Define the macros needed by fhash and include fhash.f90
-#define KEY_USE USE IntIntDictUtility
+#define KEY_USE USE IntSetUtility
 !! This is the name of the module where hash_value function for key is
 !! defined
 
@@ -59,10 +59,10 @@ END MODULE IntIntDictUtility
 ! #define VALUE_USE use GlobalData, ONLY: I4B, DFP, LGT
 !! This is the name of the module where value is defined
 
-#define VALUE_TYPE INTEGER(I4B)
+#define VALUE_TYPE LOGICAL(LGT)
 !! This is the data type for value
 
-#define VALUE_TYPE_INIT 0
+#define VALUE_TYPE_INIT .FALSE.
 !! Initial value of data type
 
 #ifndef __GFORTRAN__

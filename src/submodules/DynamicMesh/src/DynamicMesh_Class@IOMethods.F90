@@ -32,8 +32,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 CHARACTER(:), ALLOCATABLE :: dsetname
 INTEGER(I4B) :: ii, xidim, elemType, jj, tsize1, tsize2
 LOGICAL(LGT) :: isok
-CLASS(ElemData_), POINTER :: elemdata_ptr
-CLASS(NodeData_), POINTER :: nodedata_ptr
+TYPE(ElemData_), POINTER :: elemdata_ptr
+TYPE(NodeData_), POINTER :: nodedata_ptr
 TYPE(NodeData_) :: nodedata
 INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:),  &
   & internalNptrs(:)
@@ -74,6 +74,7 @@ IF (isok) RETURN
 CALL obj%elementDataList%Initiate()
 CALL obj%nodeDataBinaryTree%Initiate()
 CALL obj%nodeDataList%Initiate()
+CALL obj%elementDataBinaryTree%Initiate()
 
 DO ii = 1, obj%tElements
 
@@ -81,12 +82,12 @@ DO ii = 1, obj%tElements
   CALL ElemDataSet(obj=elemdata_ptr, globalElemNum=elemNumber(ii),  &
     & localElemNum=ii, globalNodes=connectivity(:, ii))
   CALL obj%elementDataList%Add(elemdata_ptr)
+  CALL obj%elementDataBinaryTree%Insert(elemdata_ptr)
 
   DO jj = 1, SIZE(connectivity, 1)
 
     nodedata_ptr => NodeData_Pointer()
-    CALL NodeDataSet(obj=nodedata_ptr,  &
-      & globalNodeNum=connectivity(jj, ii),  &
+    CALL NodeDataSet(obj=nodedata_ptr, globalNodeNum=connectivity(jj, ii),  &
       & nodeType=TypeNode%boundary)
     ! TypeNode is defined in NodeData_Class
     ! The above step is unusual, but we know the position of
@@ -117,6 +118,9 @@ END DO
 CALL obj%nodeDataBinaryTree%SetID()
   !! This method will set the local node number in the binarytree
 
+CALL obj%elementDataBinaryTree%SetID()
+  !! This method will set the local element number in the binarytree
+
 obj%tNodes = obj%nodeDataBinaryTree%SIZE()
   !! This method returns the total number of nodes in mesh
 
@@ -144,10 +148,12 @@ END DO
 
 ! TODO: Parallel
 DO ii = 1, SIZE(internalNptrs)
-  jj = internalNptrs(ii)
-  CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+  ! jj = internalNptrs(ii)
+  ! CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+  nodedata%globalNodeNum = internalNptrs(ii)
   nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
-  CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
+  nodedata_ptr%nodeType = TypeNode%internal
+  ! CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
 END DO
 
 nodedata_ptr => NULL()
@@ -164,32 +170,33 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                  Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
 CALL AbstractMeshDisplay(obj=obj, msg=msg, unitno=unitno)
 CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
+CALL obj%elementDataBinaryTree%Display("elementDataBinaryTree: ",  &
+  & unitno=unitno)
+
 CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
 CALL obj%nodeDataList%Display("nodeDataList: ", unitno=unitno)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                            DisplayNodeData
+!                                                           DisplayNodeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayNodeData
 CALL obj%nodeDataList%Display("nodeDataList: ", unitno=unitno)
-CALL BlankLines(nol=2, unitno=unitno)
-CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
 END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
-!                                                         DisplayElementData
+!                                                        DisplayElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayElementData
-CALL obj%elementDataList%Display("elementData: ", unitno=unitno)
+CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
 END PROCEDURE obj_DisplayElementData
 
 END SUBMODULE IOMethods

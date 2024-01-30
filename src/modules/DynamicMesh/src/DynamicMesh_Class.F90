@@ -23,6 +23,7 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE ElemData_Class
+USE ElemDataBinaryTree_Class
 USE ElemDataList_Class
 USE NodeData_Class
 USE NodeDataList_Class
@@ -35,7 +36,7 @@ PRIVATE
 PUBLIC :: DynamicMesh_
 PUBLIC :: DynamicMeshPointer_
 
-CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
+CHARACTER(*), PARAMETER :: modName = "DynamicMesh_Class"
 
 !----------------------------------------------------------------------------
 !                                                                     Mesh_
@@ -49,11 +50,13 @@ CHARACTER(*), PARAMETER :: modName = "Mesh_Class"
 
 TYPE, EXTENDS(AbstractMesh_) :: DynamicMesh_
   TYPE(ElemDataList_) :: elementDataList
-  !! element data
-  TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
-  !! node data
+  !! ElemData list
+  TYPE(ElemDataBinaryTree_) :: elementDataBinaryTree
+  !! ElemData binary tree
   TYPE(NodeDataList_) :: nodeDataList
   !! NodeData list
+  TYPE(NodeDataBinaryTree_) :: nodeDataBinaryTree
+  !! NodeData binary tree
 
 CONTAINS
   PRIVATE
@@ -70,18 +73,21 @@ CONTAINS
     !! Read mesh from hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
     !! Display the content
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData => obj_DisplayNodeData
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayNodeData =>  &
+    & obj_DisplayNodeData
     !! Display node data
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData => obj_DisplayElementData
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayElementData =>  &
+    & obj_DisplayElementData
     !! Display element data
 
   ! SET:
   ! @NodeDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & obj_InitiateNodeToElements
-  !! Initiate node to node data
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-  !   & obj_InitiateNodetoNodes
+
+  ! Initiate node to node data
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
+    & obj_InitiateNodetoNodes
   ! !! Initiate Node to nodes mapping
   ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
   !   & obj_InitiateExtraNodetoNodes
@@ -208,6 +214,20 @@ INTERFACE
   MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
     CLASS(DynamicMesh_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateNodeToNodes@NodeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-30
+! summary: Generate node to nodes data
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToNodes(obj)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------

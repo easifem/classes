@@ -1,4 +1,5 @@
-# This program is a part of EASIFEM library Copyright (C) Vikas Sharma, Ph.D
+# This program is a part of EASIFEM library Copyright (C) 2020-2021  Vikas
+# Sharma, Ph.D
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -17,5 +18,5 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/IntIntDict_Class.F90 ${src_path}/IntSet_Class.F90
-          ${src_path}/HashTables.F90)
+  PRIVATE ${src_path}/IntList_Class.F90 ${src_path}/RealList_Class.F90
+          ${src_path}/StringList_Class.F90 ${src_path}/LinkLists.F90)
