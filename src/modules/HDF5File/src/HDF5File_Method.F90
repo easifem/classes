@@ -20,11 +20,207 @@
 ! summary: Some additional methods for HDF5File
 
 MODULE HDF5File_Method
-USE BaseType
-USE BaseMethod
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE BaseType, ONLY: DOF_, CSRSparsity_, CSRMatrix_, RealVector_, IntVector_
+USE String_Class
+USE DOF_Method
+USE CSRSparsity_Method
+USE CSRMatrix_Method
+USE RealVector_Method
+USE IntVector_Method
+
 USE HDF5File_Class
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
+PRIVATE
+
+PUBLIC :: ExportDOF
+PUBLIC :: ImportDOF
+PUBLIC :: ExportCSRSparsity
+PUBLIC :: ImportCSRSparsity
+PUBLIC :: ExportCSRMatrix
+PUBLIC :: ImportCSRMatrix
+PUBLIC :: ExportRealVector
+PUBLIC :: ImportRealVector
+PUBLIC :: ExportIntVector
+PUBLIC :: ImportIntVector
+PUBLIC :: HDF5ReadScalar
+PUBLIC :: HDF5ReadVector
+PUBLIC :: HDF5ReadMatrix
+
+INTERFACE HDF5ReadVector
+  MODULE PROCEDURE HDF5ReadIntVector, HDF5ReadRealVector
+END INTERFACE HDF5ReadVector
+
+INTERFACE HDF5ReadMatrix
+  MODULE PROCEDURE HDF5ReadIntMatrix, HDF5ReadRealMatrix
+END INTERFACE HDF5ReadMatrix
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                          HDF5ReadIntMatrix
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadIntMatrix(hdf5, VALUE, group, fieldname, myname,  &
+  & modname, check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  CALL hdf5%READ(astr, VALUE)
+
+  astr = ""
+END SUBROUTINE HDF5ReadIntMatrix
+
+!----------------------------------------------------------------------------
+!                                                         HDF5ReadRealMatrix
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadRealMatrix(hdf5, VALUE, group, fieldname, myname,  &
+  & modname, check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  CALL hdf5%READ(astr, VALUE)
+
+  astr = ""
+END SUBROUTINE HDF5ReadRealMatrix
+
+!----------------------------------------------------------------------------
+!                                                        HDF5ReadRealVector
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadRealVector(hdf5, VALUE, group, fieldname, myname,  &
+  & modname, check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  CALL hdf5%READ(astr, VALUE)
+
+  astr = ""
+END SUBROUTINE HDF5ReadRealVector
+
+!----------------------------------------------------------------------------
+!                                                         HDF5ReadIntVector
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadIntVector(hdf5, VALUE, group, fieldname, myname,  &
+  & modname, check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  CALL hdf5%READ(astr, VALUE)
+
+  astr = ""
+
+END SUBROUTINE HDF5ReadIntVector
+
+!----------------------------------------------------------------------------
+!                                                            HDF5ReadScalar
+!----------------------------------------------------------------------------
+
+SUBROUTINE HDF5ReadScalar(hdf5, VALUE, group, fieldname, myname, modname,  &
+  & check)
+  TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  CLASS(*), INTENT(INOUT) :: VALUE
+  CHARACTER(*), INTENT(IN) :: group
+  CHARACTER(*), INTENT(IN) :: fieldname
+  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: modname
+  LOGICAL(LGT), INTENT(IN) :: check
+
+  LOGICAL(LGT) :: isok0
+  CHARACTER(:), ALLOCATABLE :: astr
+
+  astr = group//"/"//fieldname
+  isok0 = hdf5%pathExists(astr)
+  IF (check .AND. .NOT. isok0) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+      & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
+    RETURN
+  END IF
+
+  SELECT TYPE (VALUE)
+
+  TYPE is (INTEGER(I4B))
+    CALL hdf5%READ(astr, VALUE)
+
+  TYPE is (REAL(DFP))
+    CALL hdf5%READ(astr, VALUE)
+
+  END SELECT
+
+  astr = ""
+
+END SUBROUTINE HDF5ReadScalar
 
 !----------------------------------------------------------------------------
 !                                                                 ExportDOF

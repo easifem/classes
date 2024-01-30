@@ -58,7 +58,7 @@
 
 ! USE IntTreeData_Class, ONLY: TreeData_ => IntTreeData_
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE Display_Method, ONLY: Display, Tostring
+USE Display_Method, ONLY: Display, Tostring, BlankLines
 USE InputUtility, ONLY: Input
 IMPLICIT NONE
 PRIVATE
@@ -117,7 +117,9 @@ CONTAINS
     & GetValuePointer2
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMax => obj_GetMax
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxPointer => obj_GetMaxPointer
   PROCEDURE, PUBLIC, PASS(obj) :: GetMin => obj_GetMin
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMinPointer => obj_GetMinPointer
   PROCEDURE, PUBLIC, PASS(obj) :: GetSuccessor => obj_GetSuccessor
   PROCEDURE, PUBLIC, PASS(obj) :: GetPredecessor => obj_GetPredecessor
   PROCEDURE, PASS(obj) :: Remove_1 => obj_Remove_1
@@ -139,6 +141,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 !                                                             ASSOCIATED
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-01-29 
+! summary:  Returns the ASSOCIATED status of sentinel
 
 FUNCTION obj_ASSOCIATED(obj) RESULT(ans)
   CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
@@ -215,8 +221,8 @@ RECURSIVE SUBROUTINE TreeNodeDeallocate(obj)
   TYPE(TreeNode_), POINTER, INTENT(INOUT) :: obj
 
   IF (ASSOCIATED(obj%VALUE)) THEN
-    CALL TreeData_DEALLOCATE(obj%VALUE)
-    DEALLOCATE (obj%VALUE)
+    !CALL TreeData_DEALLOCATE(obj%VALUE)
+    !DEALLOCATE (obj%VALUE)
     obj%VALUE => NULL()
   END IF
 
@@ -298,6 +304,7 @@ SUBROUTINE obj_Display(obj, msg, unitno)
   CALL Display(msg, unitno=unitno)
   CALL Display(obj%tsize, "tsize: ", unitno=unitno)
   CALL Display("Tree Data:", unitno=unitno)
+  CALL BlankLines(nol=1, unitno=unitno)
   CALL TreeNodeDisplay(obj%sentinel, msg="node%root:", unitno=unitno)
 
 END SUBROUTINE obj_Display
@@ -322,7 +329,10 @@ RECURSIVE SUBROUTINE TreeNodeDisplay(obj, msg, unitno)
   END IF
 
   bool1 = ASSOCIATED(obj%VALUE)
-  IF (bool1) CALL TreeData_Display(obj%VALUE, msg, unitno=unitno)
+  IF (bool1) THEN 
+    CALL TreeData_Display(obj%VALUE, msg, unitno=unitno)
+    CALL BlankLines(nol=1, unitno=unitno)
+  END IF
 
   IF (ASSOCIATED(obj%right)) THEN
     CALL TreeNodeDisplay(obj=obj%right, msg="node%right:", unitno=unitno)
@@ -670,6 +680,24 @@ FUNCTION obj_GetMin(obj) RESULT(ans)
 END FUNCTION obj_GetMin
 
 !----------------------------------------------------------------------------
+!                                                             GetMinPointer
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetMinPointer(obj) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  TYPE(TreeData_), POINTER :: ans
+
+  TYPE(Binary_Tree_Type_Name) :: temp
+
+  ans => null()
+  IF (ASSOCIATED(obj%sentinel)) THEN
+    temp%sentinel => TreeNodeGetMinPointer(obj%sentinel)
+    ans => temp%sentinel%value
+  END IF
+
+END FUNCTION obj_GetMinPointer
+
+!----------------------------------------------------------------------------
 !                                                         GetMinPointer
 !----------------------------------------------------------------------------
 
@@ -706,7 +734,25 @@ FUNCTION obj_GetMax(obj) RESULT(ans)
 END FUNCTION obj_GetMax
 
 !----------------------------------------------------------------------------
-!                                                         GetMaxPointer
+!                                                             GetMaxPointer
+!----------------------------------------------------------------------------
+
+FUNCTION obj_GetMaxPointer(obj) RESULT(ans)
+  CLASS(Binary_Tree_Type_Name), INTENT(IN) :: obj
+  TYPE(TreeData_), POINTER :: ans
+
+  TYPE(Binary_Tree_Type_Name) :: temp
+
+  ans => null()
+  IF (ASSOCIATED(obj%sentinel)) THEN
+    temp%sentinel => TreeNodeGetMaxPointer(obj%sentinel)
+    ans => temp%sentinel%value
+  END IF
+
+END FUNCTION obj_GetMaxPointer
+
+!----------------------------------------------------------------------------
+!                                                     TreeNodeGetMaxPointer
 !----------------------------------------------------------------------------
 
 FUNCTION TreeNodeGetMaxPointer(obj) RESULT(ans)
