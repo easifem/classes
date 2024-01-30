@@ -148,10 +148,12 @@ END DO
 
 ! TODO: Parallel
 DO ii = 1, SIZE(internalNptrs)
-  jj = internalNptrs(ii)
-  CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+  ! jj = internalNptrs(ii)
+  ! CALL NodeDataSet(obj=nodedata, globalNodeNum=jj)
+  nodedata%globalNodeNum = internalNptrs(ii)
   nodedata_ptr => obj%nodeDataBinaryTree%GetValuePointer(VALUE=nodedata)
-  CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
+  nodedata_ptr%nodeType = TypeNode%internal
+  ! CALL NodeDataSet(obj=nodedata_ptr, nodeType=TypeNode%internal)
 END DO
 
 nodedata_ptr => NULL()
@@ -187,8 +189,6 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_DisplayNodeData
 CALL obj%nodeDataList%Display("nodeDataList: ", unitno=unitno)
-CALL BlankLines(nol=2, unitno=unitno)
-CALL obj%nodeDataBinaryTree%Display("nodeDataBinaryTree: ", unitno=unitno)
 END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
@@ -196,7 +196,7 @@ END PROCEDURE obj_DisplayNodeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayElementData
-CALL obj%elementDataList%Display("elementData: ", unitno=unitno)
+CALL obj%elementDataList%Display("elementDataList: ", unitno=unitno)
 END PROCEDURE obj_DisplayElementData
 
 END SUBMODULE IOMethods

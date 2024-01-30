@@ -85,9 +85,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     & obj_InitiateNodeToElements
 
-  !! Initiate node to node data
-  ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
-  !   & obj_InitiateNodetoNodes
+  ! Initiate node to node data
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
+    & obj_InitiateNodetoNodes
   ! !! Initiate Node to nodes mapping
   ! PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
   !   & obj_InitiateExtraNodetoNodes
@@ -214,6 +214,20 @@ INTERFACE
   MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
     CLASS(DynamicMesh_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_InitiateNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateNodeToNodes@NodeDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-30
+! summary: Generate node to nodes data
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToNodes(obj)
+    CLASS(DynamicMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToNodes
 END INTERFACE
 
 !----------------------------------------------------------------------------
