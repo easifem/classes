@@ -20,5 +20,7 @@
 #define FTL_INSTANTIATE_TEMPLATE
 
 MODULE IntList_Class
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE Display_Method
 #include "../../ftlMacros/ftlList.inc"
 END MODULE IntList_Class
