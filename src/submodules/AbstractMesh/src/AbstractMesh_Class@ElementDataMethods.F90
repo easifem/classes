@@ -15,47 +15,22 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(Mesh_Class) ConstructorMethods
-USE ReferenceElement_Method
+SUBMODULE(AbstractMesh_Class) ElementDataMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    Final
+!                                                 InitiateElementToElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Final
-CALL obj%DEALLOCATE()
-END PROCEDURE obj_Final
+MODULE PROCEDURE obj_InitiateElementToElements
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
+END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (Mesh_ :: ans)
-CALL ans%Initiate(hdf5=hdf5, group=group)
-END PROCEDURE obj_Constructor_1
-
-!----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Deallocate
-INTEGER(I4B) :: ii
-
-CALL AbstractMeshDeallocate(obj)
-obj%xidim = 0
-obj%elemType = 0
-
-IF (ALLOCATED(obj%facetElements)) THEN
-  DO ii = 1, SIZE(obj%facetElements)
-    CALL DEALLOCATE (obj%facetElements(ii))
-  END DO
-  DEALLOCATE (obj%facetElements)
-END IF
-
-obj%refelem => NULL()
-END PROCEDURE obj_Deallocate
-
-END SUBMODULE ConstructorMethods
+END SUBMODULE ElementDataMethods
