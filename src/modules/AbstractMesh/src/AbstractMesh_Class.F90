@@ -20,6 +20,12 @@ USE GlobalData, ONLY: LGT, I4B, DFP
 USE Files, ONLY: HDF5File_, VTKFile_
 USE BaseType, ONLY: BoundingBox_, CSRMatrix_
 USE ExceptionHandler_Class, ONLY: e
+USE NodeData_Class, ONLY: NodeData_, INTERNAL_NODE, BOUNDARY_NODE,  &
+  & DOMAIN_BOUNDARY_NODE, GHOST_NODE, TypeNode, NodeData_Display
+USE ElemData_Class, ONLY: ElemData_, INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
+  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT, TypeElem, ElemData_Display
+USE FacetData_Class, ONLY: InternalFacetData_, BoundaryFacetData_,  &
+  & InternalFacetData_Display, BoundaryFacetData_Display
 IMPLICIT NONE
 
 PRIVATE
@@ -129,6 +135,30 @@ TYPE, ABSTRACT :: AbstractMesh_
   REAL(DFP), ALLOCATABLE :: quality(:, :)
     !! number of rows are meshquality
     !! number of columns are elements
+
+  INTEGER(I4B), ALLOCATABLE :: facetElementType(:, :)
+    !! Number of rows of this array is same as the total number of
+    !! facets present in the mesh-reference elements
+    !! Number of columns of this array is equal to the total number of
+    !! elements inside the mesh
+    !! facetElementType(ii, iel) can be
+    !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
+    !! If the face is a part of the mesh boundary then it will be called
+    !! the BOUNDARY_ELEMENT
+
+  TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
+    !! Node data
+
+  TYPE(ElemData_), ALLOCATABLE :: elementData(:)
+    !! element data
+
+  TYPE(InternalFacetData_), ALLOCATABLE :: internalFacetData(:)
+    !! Internal facet data
+    !! INFO: This data is initiated by InitiateFacetElements method
+
+  TYPE(BoundaryFacetData_), ALLOCATABLE :: boundaryFacetData(:)
+    !! Domain Facet Data
+    !! INFO: This data is initiated by InitiateFacetElements method
 
 CONTAINS
   PRIVATE

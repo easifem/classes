@@ -72,30 +72,6 @@ TYPE, EXTENDS(AbstractMesh_) :: Mesh_
   TYPE(ReferenceElement_), PUBLIC, ALLOCATABLE :: facetElements(:)
     !! Facet Elements in the reference element
 
-  INTEGER(I4B), ALLOCATABLE :: facetElementType(:, :)
-  !! Number of rows of this array is same as the total number of
-  !! facets present in the mesh-reference elements
-  !! Number of columns of this array is equal to the total number of
-  !! elements inside the mesh
-  !! facetElementType(ii, iel) can be
-  !! INTERNAL_ELEMENT, BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT
-  !! If the face is a part of the mesh boundary then it will be called
-  !! the BOUNDARY_ELEMENT
-
-  TYPE(NodeData_), ALLOCATABLE :: nodeData(:)
-    !! Node data
-
-  TYPE(ElemData_), ALLOCATABLE :: elementData(:)
-    !! element data
-
-  TYPE(InternalFacetData_), PUBLIC, ALLOCATABLE :: internalFacetData(:)
-    !! Internal facet data
-    !! INFO: This data is initiated by InitiateFacetElements method
-
-  TYPE(BoundaryFacetData_), PUBLIC, ALLOCATABLE :: boundaryFacetData(:)
-    !! Domain Facet Data
-    !! INFO: This data is initiated by InitiateFacetElements method
-
   CLASS(ReferenceElement_), PUBLIC, POINTER :: refelem => NULL()
     !! Reference element of the mesh (spatial)
     !! TODO: Change refelem to Type(ReferenceElement_)
@@ -1284,7 +1260,7 @@ END INTERFACE
 !
 !- This routine generate the node to nodes mapping
 !- This mapping is stored inside `obj%nodeData%extraGlobalNodeNum`
-!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes the
+!- For a local node number i, `obj%nodeData(i)%ExtraGlobalNodeNum` denotes
 ! global node data surrounding the local node number used for edge-based
 !  stabilization. This list does not include self node.
 !

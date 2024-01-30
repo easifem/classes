@@ -67,25 +67,22 @@ END PROCEDURE obj_setSparsity1
 
 MODULE PROCEDURE obj_setSparsity2
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity2()"
-!
+
 ! check
-!
 IF (.NOT. obj%isInitiated) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     & "Mesh data is not initiated, first initiate")
 END IF
-!
+
 ! check
-!
 IF (.NOT. obj%isNodeToNodesInitiated) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & 'In mesh NodeToNodeData is not initiated')
 END IF
-!
+
 ! Call from MeshUtility
-!
 CALL SetSparsity2(obj=obj, mat=mat)
-!
+
 END PROCEDURE obj_setSparsity2
 
 !----------------------------------------------------------------------------

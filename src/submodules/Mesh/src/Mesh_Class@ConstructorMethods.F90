@@ -55,10 +55,6 @@ IF (ALLOCATED(obj%facetElements)) THEN
   DEALLOCATE (obj%facetElements)
 END IF
 
-IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
-IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
-IF (ALLOCATED(obj%internalFacetData)) DEALLOCATE (obj%internalFacetData)
-IF (ALLOCATED(obj%boundaryFacetData)) DEALLOCATE (obj%boundaryFacetData)
 obj%refelem => NULL()
 END PROCEDURE obj_Deallocate
 

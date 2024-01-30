@@ -24,6 +24,7 @@ PRIVATE
 PUBLIC :: ElemData_
 PUBLIC :: ElemData_Display
 PUBLIC :: TypeElem
+PUBLIC :: ElemDataDeallocate
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -54,11 +55,12 @@ TYPE :: ElemData_
     !! Contains the information about the element surrounding an element
     !! Lets us say that `globalElem1`, `globalElem2`, `globalElem3`
     !! surrounds a local element ielem (its global element number is
-    !! globalElem), then globalElements( [1,2,3] ) contains globalElem1,
-    !! pFace, nFace, globalElements( [4,5,6] ) contains globalElem2,
-    !! pFace, nFace, globalElements( [7,8,9] ) contains globalElem3,
-    !! pFace, nFace.
-    !! Here, pFace is the local facet number of parent element
+    !! globalElem), then
+    !! - globalElements( [1,2,3] ) contains globalElem1, pFace, nFace
+    !! - globalElements( [4,5,6] ) contains globalElem2, pFace, nFace
+    !! - globalElements( [7,8,9] ) contains globalElem3, pFace, nFace.
+    !! Here,
+    !! - pFace is the local facet number of parent element
     !! globalElem (ielem) which is connected to the nFace of the neighbor
     !! element
     !! All element numbers are global element number
@@ -134,5 +136,19 @@ SUBROUTINE ElemData_Display(obj, msg, unitno)
     CALL Display(obj%boundaryData, msg="boundaryData: ", unitno=unitno)
   END IF
 END SUBROUTINE ElemData_Display
+
+!----------------------------------------------------------------------------
+!                                                         ElemDataDeallocate
+!----------------------------------------------------------------------------
+
+SUBROUTINE ElemDataDeallocate(obj)
+  TYPE(ElemData_), INTENT(INOUT) :: obj
+  obj%globalElemNum = 0
+  obj%localElemNum = 0
+  obj%elementType = INTERNAL_ELEMENT
+  IF (ALLOCATED(obj%globalNodes)) DEALLOCATE (obj%globalNodes)
+  IF (ALLOCATED(obj%globalElements)) DEALLOCATE (obj%globalElements)
+  IF (ALLOCATED(obj%boundaryData)) DEALLOCATE (obj%boundaryData)
+END SUBROUTINE ElemDataDeallocate
 
 END MODULE ElemData_Class
