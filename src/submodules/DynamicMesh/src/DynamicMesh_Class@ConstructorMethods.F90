@@ -34,8 +34,14 @@ END PROCEDURE obj_Final
 MODULE PROCEDURE obj_Deallocate
 CALL AbstractMeshDeallocate(obj)
 CALL obj%elementDataList%DEALLOCATE()
+CALL obj%elementDataBinaryTree%DEALLOCATE()
+
 CALL obj%nodeDataList%DEALLOCATE()
 CALL obj%nodeDataBinaryTree%DEALLOCATE()
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

@@ -31,7 +31,7 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ii, globalElemNum, jj, localNodeNum, globalNodeNum,  &
   & tNodes, tsize
 TYPE(ElemDataListIterator_) :: elemdata_iter, elemdata_end
-CLASS(ElemData_), POINTER :: elemdata_ptr
+TYPE(ElemData_), POINTER :: elemdata_ptr
 TYPE(IntList_), ALLOCATABLE :: node_to_elem_list_vec(:)
 TYPE(IntListIterator_) :: intList_iter
 TYPE(NodeDataListIterator_) :: nodeDataList_iter, nodeDataList_end
@@ -84,10 +84,45 @@ DO WHILE (elemdata_iter .NE. elemdata_end)
   CALL elemdata_iter%Inc()
 END DO
 
-DO ii = 1, tNodes
- CALL node_to_elem_list_vec(ii)%Display("nodeToElements("//tostring(ii)//"):")
-  CALL BlankLines(nol=2)
+nodeDataList_iter = obj%nodeDataList%Begin()
+nodeDataList_end = obj%nodeDataList%END()
+
+DO
+  isok = nodeDataList_iter .EQ. nodeDataList_end
+  IF (isok) EXIT
+
+  nodedata_ptr => nodeDataList_iter%VALUE
+  isok = ASSOCIATED(nodedata_ptr)
+  IF (.NOT. isok) CYCLE
+
+  localNodeNum = nodedata_ptr%localNodeNum
+
+  tsize = node_to_elem_list_vec(localNodeNum)%SIZE()
+  CALL Reallocate(nodedata_ptr%globalElements, tsize)
+
+  intList_iter = node_to_elem_list_vec(localNodeNum)%Begin()
+  tsize = node_to_elem_list_vec(localNodeNum)%SIZE()
+
+  DO ii = 1, tsize
+    nodedata_ptr%globalElements(ii) = intList_iter%VALUE
+    CALL intList_iter%Inc()
+  END DO
+
+  CALL nodeDataList_iter%Inc()
 END DO
+
+NULLIFY (nodedata_ptr)
+
+DO ii = 1, tNodes
+  CALL node_to_elem_list_vec(ii)%DEALLOCATE()
+END DO
+
+DEALLOCATE (node_to_elem_list_vec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END] ')
+#endif
 
 END PROCEDURE obj_InitiateNodeToElements
 
@@ -97,33 +132,94 @@ END PROCEDURE obj_InitiateNodeToElements
 
 ! MODULE PROCEDURE obj_InitiateNodetoNodes
 ! ! Define internal  variables
-! INTEGER(I4B) :: iel, iLocalNode, iGlobalNode
+! INTEGER(I4B) :: ii, localNodeNum, globalNodeNum
 ! INTEGER(I4B), ALLOCATABLE :: globalNodes(:), NearElements(:)
-! CHARACTER(LEN=*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
+! CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
+! LOGICAL(LGT) :: isok
+! TYPE(IntList_), ALLOCATABLE :: node_to_node_list_vec(:)
+! TYPE(IntListIterator_) :: intList_iter
+! TYPE(NodeDataListIterator_) :: nodeDataList_iter, nodeDataList_end
+! TYPE(NodeData_), POINTER :: nodedata_ptr
+! TYPE(ElemData_) :: elemdata
 !
-! IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
+! #ifdef DEBUG_VER
 !
 ! IF (obj%isNodeToNodesInitiated) THEN
-!   CALL e%raiseWarning(modName//"::"//myName//" - "// &
-!     & "Node to node information is already initiated. If you want to &
-!     & Reinitiate it then deallocate nodeData, first!!")
+!   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!     & 'isNodeToNodesInitiated is TRUE, Nothing TODO.')
 !   RETURN
 ! END IF
 !
-! IF (.NOT. obj%isNodeToElementsInitiated) &
-!   & CALL obj%InitiateNodeToElements()
+! #else
+!
+! IF (obj%isNodeToNodesInitiated) RETURN
+!
+! #endif
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!   & '[START] ')
+! #endif
+!
+! isok = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
+! IF (isok) RETURN
+!
+! IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 !
 ! obj%isNodeToNodesInitiated = .TRUE.
+!
+! tNodes = obj%GetTotalNodes()
+! ALLOCATE (node_to_node_list_vec(tNodes))
+!
+! DO ii = 1, tNodes
+!   CALL node_to_node_list_vec(ii)%Initiate()
+! END DO
+!
+! nodeDataList_iter = obj%nodeDataList%Begin()
+! nodeDataList_end = obj%nodeDataList%END()
+!
+! DO
+!   isok = nodeDataList_iter .EQ. nodeDataList_end
+!   IF (isok) EXIT
+!
+!   nodedata_ptr => nodeDataList_iter%VALUE
+!   isok = ASSOCIATED(nodedata_ptr)
+!   IF (.NOT. isok) CYCLE
+!
+!   DO ii = 1, SIZE(nodedata_ptr%globalElements)
+!
+!     globalNodes = obj%GetConnectivity(NearElements(iel))
+!     globalNodes = PACK(globalNodes, globalNodes .NE. iGlobalNode)
+!     CALL Append(obj%nodeData(iLocalNode)%globalNodes, globalNodes)
+!   END DO
+!
+!   localNodeNum = nodedata_ptr%localNodeNum
+!
+!   tsize = node_to_node_list_vec(localNodeNum)%SIZE()
+!   CALL Reallocate(nodedata_ptr%globalElements, tsize)
+!
+!   intList_iter = node_to_elem_list_vec(localNodeNum)%Begin()
+!   tsize = node_to_elem_list_vec(localNodeNum)%SIZE()
+!
+!   DO ii = 1, tsize
+!     nodedata_ptr%globalElements(ii) = intList_iter%VALUE
+!     CALL intList_iter%Inc()
+!   END DO
+!
+!   CALL nodeDataList_iter%Inc()
+! END DO
+!
 ! DO iLocalNode = 1, obj%tNodes
-!   iGlobalNode = obj%getGlobalNodeNumber(iLocalNode)
-!   NearElements = obj%getNodeToElements(iGlobalNode)
+!   iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
+!   NearElements = obj%GetNodeToElements(iGlobalNode)
 !   DO iel = 1, SIZE(NearElements)
-!     globalNodes = obj%getConnectivity(NearElements(iel))
+!     globalNodes = obj%GetConnectivity(NearElements(iel))
 !     globalNodes = PACK(globalNodes, globalNodes .NE. iGlobalNode)
 !     CALL Append(obj%nodeData(iLocalNode)%globalNodes, globalNodes)
 !   END DO
 !   CALL RemoveDuplicates(obj%nodeData(iLocalNode)%globalNodes)
 ! END DO
+!
 ! IF (ALLOCATED(globalNodes)) DEALLOCATE (globalNodes)
 ! IF (ALLOCATED(NearElements)) DEALLOCATE (NearElements)
 ! END PROCEDURE obj_InitiateNodetoNodes
@@ -163,12 +259,12 @@ END PROCEDURE obj_InitiateNodeToElements
 !   & CALL obj%InitiateElementToElements()
 !
 ! DO iLocalNode = 1, obj%tNodes
-!   iGlobalNode = obj%getGlobalNodeNumber(iLocalNode)
-!   n2n = obj%getNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
-!   n2e = obj%getNodeToElements(globalNode=iGlobalNode)
+!   iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
+!   n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
+!   n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
 !
 !   DO iel = 1, SIZE(n2e)
-!     e2e = obj%getElementToElements(globalElement=n2e(iel), &
+!     e2e = obj%GetElementToElements(globalElement=n2e(iel), &
 !       & onlyElements=.TRUE.)
 !
 !     mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
@@ -177,7 +273,7 @@ END PROCEDURE obj_InitiateNodeToElements
 !
 !       IF (mask_elem(iel2)) THEN
 !
-!         indx = obj%getConnectivity(globalElement=e2e(iel2, 1))
+!         indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
 !         mask_nptrs = .NOT. (indx.ISIN.n2n)
 !         CALL APPEND(obj%nodeData(iLocalNode)%extraGlobalNodes, &
 !           & indx, mask_nptrs)

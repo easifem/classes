@@ -28,7 +28,7 @@ MODULE PROCEDURE obj_InitiateNodeToElements
 ! Define internal  variables
 INTEGER(I4B) :: ii, jj, globalElemNum
 INTEGER(I4B), ALLOCATABLE :: local_nptrs(:)
-CHARACTER(LEN=*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
 
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
 IF (obj%isNodeToElementsInitiated) THEN
@@ -58,7 +58,7 @@ MODULE PROCEDURE obj_InitiateNodetoNodes
 ! Define internal  variables
 INTEGER(I4B) :: iel, iLocalNode, iGlobalNode
 INTEGER(I4B), ALLOCATABLE :: globalNodes(:), NearElements(:)
-CHARACTER(LEN=*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
 
 IF (obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1) RETURN
 
