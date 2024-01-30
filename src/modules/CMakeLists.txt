@@ -72,11 +72,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/FacetElement/CMakeLists.txt)
 # FE
 include(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
 
-# IntList
-include(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
-
 # BinaryTree
 include(${CMAKE_CURRENT_LIST_DIR}/BinaryTree/CMakeLists.txt)
+
+# HashTable
+include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
+
+# IntList
+include(${CMAKE_CURRENT_LIST_DIR}/IntList/CMakeLists.txt)
 
 # RealList
 include(${CMAKE_CURRENT_LIST_DIR}/RealList/CMakeLists.txt)
